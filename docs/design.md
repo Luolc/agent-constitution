@@ -538,12 +538,13 @@ first one that finds errors, printing all of that one's errors:
 
 1. Format: every TOML file parses; it has exactly the required keys with
    the right types; every text table has exactly the languages of
-   `index.toml`; every directory under `constitution/articles/` has an
-   article's name and an `article.toml`, and every other file in it a
-   section's name; `id` equals the name without its number; `status`,
-   item `number` and `repealed` are well formed and agree with each other
-   and with the status of `index.toml`. Files directly under
-   `constitution/articles/`, and other directories, are not read.
+   `index.toml`; every directory under `constitution/articles/` is an
+   article, with an article's name and an `article.toml`, and every other
+   `.toml` file in it has a section's name; `id` equals the name without
+   its number; `status`, item `number` and `repealed` are well formed and
+   agree with each other and with the status of `index.toml`. Files
+   directly under `constitution/articles/`, and files other than `.toml`
+   files and directories inside an article's directory, are not read.
 2. IDs: each has the format; article and section IDs are unique in the
    constitution, item IDs in their section, rule IDs among the rules; no
    rule's ID is listed in `rules/retired-ids.txt`, and each line there is

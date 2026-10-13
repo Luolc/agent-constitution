@@ -271,10 +271,6 @@ class RenderTest(Tree):
         self.assertEqual((self.root / "constitution/constitution.zh.md").read_bytes(), ZH.encode())
         self.assertEqual(bc.main(["--root", str(self.root), "--check"]), 0)
 
-    def test_old_layout_is_not_read(self):
-        self.write("constitution/articles/gamma.toml", "not toml [")
-        self.write("constitution/sections/gamma-one.toml", "not toml [")
-        self.assertEqual(self.errors(), [])
 
     def test_repealed_placeholders(self):
         self.activate()
@@ -359,6 +355,27 @@ class CheckTest(Tree):
         self.move(f"{B}/01a-beta-two.toml", f"{B}/00-beta-two.toml")
         self.assertFails(1, f"{B}/00-beta-two.toml:1", "section file name is not two digits from 01, an optional"
                          " lowercase letter, a hyphen and the ID (02-<id>, 02a-<id>), then `.toml`")
+
+    def test_1_misplaced_files(self):
+        self.write("constitution/articles/gamma.toml", BETA)
+        self.write("constitution/sections/gamma-one.toml", BETA_ONE)
+        self.write(f"{B}/notes.md", "x\n")
+        self.write(f"{B}/old/01-beta-three.toml", BETA_ONE)
+        self.assertEqual(self.errors(), [
+            "constitution/sections:1: check 1: sections belong in their article's directory,"
+            " constitution/articles/<NN>-<id>/<NN>[a-z]-<id>.toml",
+            f"{B}/notes.md:1: check 1: not a section file; an article's directory holds only its"
+            " article.toml and <NN>[a-z]-<id>.toml section files",
+            f"{B}/old:1: check 1: not a section file; an article's directory holds only its"
+            " article.toml and <NN>[a-z]-<id>.toml section files",
+            "constitution/articles/gamma.toml:1: check 1: not an article directory; an article is"
+            " constitution/articles/<NN>-<id>/ with its article.toml and section files",
+        ])
+
+    def test_hidden_files_are_skipped(self):
+        self.write("constitution/articles/.DS_Store", "x")
+        self.write(f"{B}/.01-beta-one.toml.swp", "x")
+        self.assertEqual(self.errors(), [])
 
     def test_1_article_toml_missing(self):
         (self.root / B / "article.toml").unlink()
