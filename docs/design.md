@@ -252,14 +252,12 @@ suffix: `2` < `2a` < `2b` < `3`. Within one scope (all articles; the
 sections of one article; all list items) numbers are unique; a draft need
 not be contiguous.
 
-From the first approved revision on, numbers follow the constitution's
-own rule (`20261012-stable-numbers`): a number is never changed or
-reused, a new provision goes at the end of its article or list or takes a
-suffix to go between two others, an amended provision keeps its number,
-and a repealed provision keeps its number and is rendered as a one-line
-note. The check `--check --base <git-ref>` enforces this against a base
-commit (see Checkers). While the constitution is a draft, numbers may
-change and the check only says that it did not compare.
+From the first approved revision on, numbers follow
+`20261012-stable-numbers`; the check `--check --base <git-ref>` enforces
+it against a base commit (see Checkers, check 7). A repealed provision is
+rendered as a one-line note in place of its text (table below). While the
+constitution is a draft, numbers may change and the check only says that
+it did not compare.
 
 Rendering, with `20261012-authority` as the third article, its second
 section and a list item `H2` as examples:
@@ -465,7 +463,7 @@ position. What each one proves, and what it does not:
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format above; each ID is well formed and defined once; numbers are unique in their scope and the list items match their definitions; the languages of each file define the same IDs in the same order and cite the same IDs; every citation and authority resolves to an ID that is not repealed; the committed outputs equal a fresh build; with `--base`, nothing numbered in an active base has disappeared or changed number | That the two languages mean the same thing, or that a change to one language was carried to the other |
-| Schema | Front matter has the required keys, allowed values and the flat subset; IDs match their file names | That the text means what the fields claim |
+| Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
 | Private-term scan | No hit from the generic classes (secret-store paths, private address ranges, home-directory paths, email addresses) in CI; no hit from the private term list when the overlay runs it | That nothing private is present: a term not on the list passes |

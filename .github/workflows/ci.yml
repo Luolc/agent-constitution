@@ -68,15 +68,16 @@ jobs:
 
       # Numbering against the base: on a pull request its base commit, on a
       # push the commit before it. The commit hook runs without --base. The
-      # full history above makes both commits available; a push without a
-      # usable `before` (the first push, or a rewritten history) skips the
-      # comparison and says so.
+      # full history above makes both commits available; only a push
+      # without a usable `before` (the first push, or a rewritten history)
+      # skips the comparison and says so. On a pull request a missing base
+      # fails the job through the script's own error.
       - name: Constitution numbering against the base commit
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
           set -euo pipefail
-          if ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+          if [ "${{ github.event_name }}" = push ] && ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
             echo "no base commit to compare with (${BASE}); skipping"
             exit 0
           fi

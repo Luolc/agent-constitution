@@ -373,6 +373,21 @@ class CheckTest(Tree):
                          "section of 20260102-beta number 1 is already used at"
                          " constitution/sections/20260102-beta-one.toml:3")
 
+    def test_3_duplicate_item_number_across_sections(self):
+        self.edit("constitution/sections/20260102-beta-one.toml", "Four, see",
+                  "Four:\n- {#20260102-cash} Cash, see")
+        self.edit("constitution/sections/20260102-beta-one.toml", "四，见", "四：\n- {#20260102-cash} 现金，见")
+        self.write("constitution/sections/20260102-beta-one.toml",
+                   (self.root / "constitution/sections/20260102-beta-one.toml").read_text(encoding="utf-8")
+                   + '\n[[items]]\nid = "20260102-cash"\nnumber = "H1"\n')
+        self.assertFails(3, "constitution/sections/20260102-beta-one.toml:18",
+                         "item number H1 is already used at constitution/sections/20260101-alpha-one.toml:20")
+
+    def test_3_duplicate_article_number(self):
+        self.edit("constitution/articles/20260102-beta.toml", 'number = "2"', 'number = "1"')
+        self.assertFails(3, "constitution/articles/20260102-beta.toml:2",
+                         "article number 1 is already used at constitution/articles/20260101-alpha.toml:2")
+
     def test_3_repealed_article_with_live_section(self):
         self.activate()
         self.edit("constitution/articles/20260102-beta.toml", "[title]", 'repealed = "2026-11"\n\n[title]')
@@ -515,6 +530,36 @@ class BaseTest(Tree):
             " item 20260101-machines changed `number` from `H2` to `H3` since base HEAD",
         ])
 
+    def test_section_moved_to_another_article(self):
+        self.commit_base()
+        self.edit("constitution/sections/20260102-beta-two.toml", 'article = "20260102-beta"',
+                  'article = "20260101-alpha"')
+        self.edit("constitution/sections/20260102-beta-two.toml", 'number = "1a"', 'number = "2"')
+        errors, _ = self.base_errors()
+        self.assertEqual(errors, [
+            "constitution/sections/20260102-beta-two.toml:3: check 7:"
+            " 20260102-beta-two changed `number` from `1a` to `2` since base HEAD",
+            "constitution/sections/20260102-beta-two.toml:2: check 7:"
+            " 20260102-beta-two changed `article` from `20260102-beta` to `20260101-alpha` since base HEAD",
+        ])
+
+    def test_item_removed_or_moved(self):
+        self.commit_base()
+        path = "constitution/sections/20260101-alpha-one.toml"
+        self.edit(path, "- {#20260101-machines} Machines; {braces} and {@nope} stay.\n", "")
+        self.edit(path, "- {#20260101-machines} 机器；{braces} 与 {@nope} 不变。\n", "")
+        self.edit(path, '\n[[items]]\nid = "20260101-machines"\nnumber = "H2"\n', "")
+        gone = ("constitution/sections/20260101-alpha-one.toml:16: check 7:"
+                " item 20260101-machines of 20260101-alpha-one at base HEAD is gone; repeal it instead")
+        self.assertEqual(self.base_errors(), ([gone], ""))
+        # Moved to another section: still gone from this one.
+        other = "constitution/sections/20260102-beta-one.toml"
+        self.edit(other, "Four, see", "Four:\n- {#20260101-machines} Machines, see")
+        self.edit(other, "四，见", "四：\n- {#20260101-machines} 机器，见")
+        self.write(other, (self.root / other).read_text(encoding="utf-8")
+                   + '\n[[items]]\nid = "20260101-machines"\nnumber = "H2"\n')
+        self.assertEqual(self.base_errors(), ([gone], ""))
+
     def test_reused_number_by_replacing_a_section(self):
         self.commit_base()
         (self.root / "constitution/sections/20260102-beta-two.toml").unlink()
@@ -536,7 +581,7 @@ class BaseTest(Tree):
         self.assertEqual(errors, ["constitution/sections/20260102-beta-two.toml:1: check 7:"
                                   " existed at base HEAD and is gone; repeal it instead"])
 
-    def test_unrepealed_rule_and_back_to_draft(self):
+    def test_unrepealed_rule(self):
         self.activate()
         self.edit("rules/20260103-rule.toml", 'status = "active"', 'status = "repealed"')
         self.commit_base(active=False)

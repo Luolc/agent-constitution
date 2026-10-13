@@ -23,9 +23,9 @@ import re
 import subprocess
 import sys
 import tomllib
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from collections.abc import Callable
 
 INDEX = Path("constitution/index.toml")
 ARTICLES = Path("constitution/articles")
@@ -262,7 +262,8 @@ def read_toml(root: Path, path: Path, errors: Errors) -> Doc | None:
 def check_keys(doc: Doc, table: dict, schema: dict, languages: list[str] | None,
                errors: Errors, where: str = "") -> bool:
     """The table has the schema's keys, no others, with the right types;
-    language tables have exactly the languages. Returns True when clean."""
+    language tables have exactly the languages. Returns True when clean.
+    The text of the language tables is normalized later by `strip_texts`."""
     before = len(errors)
     label = f"`{where}` " if where else ""
     for key, kind in schema.items():
@@ -277,19 +278,26 @@ def check_keys(doc: Doc, table: dict, schema: dict, languages: list[str] | None,
         if kind == LANG:
             if not isinstance(value, dict) or not all(isinstance(v, str) for v in value.values()):
                 errors.add(doc.path, line, 1, f"{label}`{name}` must be a table of language to text")
-            elif languages is not None and list(value) != languages:
+            elif languages is not None and set(value) != set(languages):
                 errors.add(doc.path, line, 1,
                            f"{label}`{name}` has languages {list(value)}, index.toml lists {languages}")
-            else:
-                for lang, text in value.items():
-                    value[lang] = text.strip("\n")
-                    if name == "title" and "\n" in value[lang]:
-                        errors.add(doc.path, line, 1, f"{label}`title` must be one line")
+            elif name == "title" and any("\n" in text.strip("\n") for text in value.values()):
+                errors.add(doc.path, line, 1, f"{label}`title` must be one line")
         elif not isinstance(value, kind):
             errors.add(doc.path, line, 1, f"{label}`{name}` must be a {kind.__name__}")
     for name in table.keys() - {k.rstrip("?") for k in schema}:
         errors.add(doc.path, doc.line(f"[{name}]", f"{name} ="), 1, f"{label}unknown key `{name}`")
     return len(errors) == before
+
+
+def strip_texts(table: dict, schema: dict) -> None:
+    """Drop the newline after the opening and before the closing quotes of
+    each text of the table's language tables."""
+    for key, kind in schema.items():
+        name = key.rstrip("?")
+        if kind == LANG and name in table:
+            for lang, text in table[name].items():
+                table[name][lang] = text.strip("\n")
 
 
 def check_repealed(doc: Doc, table: dict, status: str | None, errors: Errors,
@@ -327,6 +335,7 @@ def load(root: Path, errors: Errors) -> Sources | None:
     check_keys(index, index.data, INDEX_SCHEMA, languages, errors)
     if errors:
         return None
+    strip_texts(index.data, INDEX_SCHEMA)
 
     def files(directory: Path) -> list[Path]:
         return sorted(p.relative_to(root) for p in (root / directory).glob("*.toml"))
@@ -357,6 +366,7 @@ def load(root: Path, errors: Errors) -> Sources | None:
         doc = read_toml(root, path, errors)
         if not doc or not check_keys(doc, doc.data, ARTICLE_SCHEMA, languages, errors):
             continue
+        strip_texts(doc.data, ARTICLE_SCHEMA)
         own_id(doc)
         number_of(doc, doc.data, NUMBER, NUMBER_SHAPE)
         check_repealed(doc, doc.data, None, errors)
@@ -368,6 +378,7 @@ def load(root: Path, errors: Errors) -> Sources | None:
         doc = read_toml(root, path, errors)
         if not doc or not check_keys(doc, doc.data, SECTION_SCHEMA, languages, errors):
             continue
+        strip_texts(doc.data, SECTION_SCHEMA)
         own_id(doc)
         number_of(doc, doc.data, NUMBER, NUMBER_SHAPE)
         status = status_of(doc, "section")
@@ -388,6 +399,7 @@ def load(root: Path, errors: Errors) -> Sources | None:
         doc = read_toml(root, path, errors)
         if not doc or not check_keys(doc, doc.data, RULE_SCHEMA, languages, errors):
             continue
+        strip_texts(doc.data, RULE_SCHEMA)
         own_id(doc)
         status = status_of(doc, "rule")
         d = doc.data
