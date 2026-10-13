@@ -1,0 +1,10 @@
+id = "approving-amendments"
+status = "draft"
+
+[content]
+en = '''
+An amendment to the draft takes effect once it has passed review ({@independent-review}). Opening a new edition, the first included ({@new-editions}), or amending the edition in force takes effect only after a principal with authority over this constitution explicitly approves it, on the change itself and on the exact text that is to take effect. An agent's review verdict is not that approval; a relayed approval counts only as {@explicit-yes} says.
+'''
+zh = '''
+对草案的修正案，经审查 ({@independent-review}) 通过即生效。开新的一版，包括第一版 ({@new-editions})，或者修改现行版，必须经对本宪法握有授权的委托人在这次修改本身上、针对将要生效的那份文本明确批准，才能生效。agent 的审查结论不算这种批准；转告的批准，只在{@explicit-yes}规定的情形下才算。
+'''
