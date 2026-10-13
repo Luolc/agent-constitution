@@ -1,9 +1,9 @@
 # Token count on main: exchanges the run's GitHub OIDC token for a
 # short-lived Anthropic access token through Workload Identity Federation,
 # builds the static site with it, and writes the length line of both pages
-# into the job summary (docs/design.md, Static site). The federation rule
-# accepts only pushes to main, so this runs only there. It publishes
-# nothing. A failed exchange or count fails the run.
+# into the job summary and the log (docs/design.md, Static site). The
+# federation rule accepts only pushes to main, so this runs only there. It
+# publishes nothing. A failed exchange or count fails the run.
 # The four IDs are repository variables, identifiers rather than secrets.
 
 name: Token count
@@ -100,7 +100,8 @@ jobs:
           export CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
           python3 tools/build_site.py --require-tokens
 
-      # The length line under the title of each built page.
+      # The length line under the title of each built page, in the job
+      # summary and in the log, which, unlike the summary, the API can read.
       - name: Job summary
         run: |
           set -euo pipefail
@@ -111,4 +112,4 @@ jobs:
               line="$(grep -o '<span class="length">[^<]*</span>' "$page" | sed 's/<[^>]*>//g')"
               echo "- \`${page}\`: ${line}"
             done
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
