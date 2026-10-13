@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-Permitted relaxations. Each declaration names the item it relies on, what it relaxes, and its scope and conditions. Under {@relaxations.project-overrides} and {@relaxations.project-personal-info} it needs approval, on the change that adds it, from a principal with authority over that project.
+Each declaration under the items below names the item it relies on, what it relaxes, and its scope and conditions. A declaration under {@relaxations.project-overrides} or {@relaxations.project-personal-info} needs the approval of a principal with authority over that project, given on the change that adds it.
 '''
 zh = '''
-允许的放宽。每项声明写明所依据的是哪一项、放宽的对象，以及范围和条件。依照{@relaxations.project-overrides}、{@relaxations.project-personal-info}作出的声明，需要对该项目有权限的委托人在引入它的那次变更上批准。
+依照下列各项作出的声明，都要写明依据的是哪一项、放宽什么，以及适用范围和条件。依照{@relaxations.project-overrides}或{@relaxations.project-personal-info}作出的声明，须由对该项目有权限的委托人在加入这项声明的那次变更上批准。
 '''
 
 [[items]]
@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Adjustable rules. Declared in: the instructions of a project or a task. Where an ordinary rule marks a parameter or procedure as adjustable, those instructions may set their own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
+Adjustable rules. Where an ordinary rule marks a parameter or procedure as adjustable, the instructions of a project or a task may set their own value, naming the rule. A rule that implements a hard rule of this constitution may not be adjusted this way.
 '''
 zh = '''
-可调规定。声明于：项目或任务的指令。普通规定把某个参数或做法标为可调的，这些指令可以设定自己的值，并写明所针对的规定。用来落实本宪法硬性规定的规定，不得这样调整。
+可调规定。普通规定把某个参数或做法标为可调的，项目或任务的指令可以设定自己的值，并写明所针对的规定。用来落实本宪法硬性规定的规定，不得这样调整。
 '''
 
 [[items]]
@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Project overrides of the default items of {@must-ask} ({@list-defaults}). Declared in: the project's instructions or its charter. For its own project, the declaration may move any of those items to {@decide-yourself} or the middle ground, wholly or under written conditions. Never {@must-ask.amendments} or {@must-ask.reversing-decisions}.
+Project overrides of the default items of {@must-ask} ({@list-defaults}). For its own project, the project's instructions or its charter may move any of those items to {@decide-yourself} or to the middle ground ({@middle-ground}), wholly or under written conditions. {@must-ask.amendments} and {@must-ask.reversing-decisions} may not be moved.
 '''
 zh = '''
-项目对{@must-ask}默认事项 ({@list-defaults}) 的另行规定。声明于：项目的指令或项目章程。声明可以为本项目把其中任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件。不得用于{@must-ask.amendments}或{@must-ask.reversing-decisions}。
+项目对{@must-ask}默认事项的另行规定 ({@list-defaults})。项目的指令或项目章程可以为本项目把其中任何一项移到{@decide-yourself}或中间地带 ({@middle-ground})，可以整项移动，也可以附书面条件。{@must-ask.amendments}和{@must-ask.reversing-decisions}不得移动。
 '''
 
 [[items]]
@@ -42,8 +42,8 @@ status = "draft"
 
 [items.content]
 en = '''
-Personal information. Declared in: the project's instructions or its charter. Where a project's work needs it, the declaration may set which personal information may be kept as it is, and where it may be made public, in place of the default anonymization or de-identification of {@personal-info}. Personal information that a declaration under this item allows to be made public is made public as declared, without asking each time under {@must-ask.irreversible-effects}.
+Personal information. Where a project's work needs it, the project's instructions or its charter may set which personal information may be kept as it is and where it may be made public, in place of the default anonymization or de-identification of {@personal-info}. Personal information made public as so declared needs no consent each time under {@must-ask.irreversible-effects}.
 '''
 zh = '''
-个人信息。声明于：项目的指令或项目章程。项目的工作需要时，声明可以规定哪些个人信息可以保留原样、可以在哪里公开，代替{@personal-info}默认的匿名化或者脱敏。依本项声明可以公开的个人信息，按声明公开，不再依照{@must-ask.irreversible-effects}逐次征得同意。
+个人信息。项目的工作需要时，项目的指令或项目章程可以规定哪些个人信息可以保留原样、可以在哪里公开，代替{@personal-info}默认的匿名化或者脱敏。按这样的声明公开个人信息，不必再依照{@must-ask.irreversible-effects}逐次征得同意。
 '''
