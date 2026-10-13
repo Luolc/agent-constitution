@@ -212,7 +212,8 @@ revision that deletes another adds it:
 - revision 0.7: the article `roles` and its sections `relay-role`,
   `job-role` and `worker-role`; the items `terms.deployment`, `terms.job`,
   `terms.layer`, `terms.project` and `terms.skill`;
-- revision 0.9: the section `third-party-personal-info`.
+- revision 0.9: the section `third-party-personal-info`;
+- revision 0.11: the section `asking-once`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
@@ -795,7 +796,7 @@ fixtures/behavior/redline/<name>/   stage C
 ```
 
 Each fixture directory holds a `fixture.md` (front matter `binds:
-[constitution:asking-once, rule:credential-storage]`, `kind: happy` or
+[constitution:asking, rule:credential-storage]`, `kind: happy` or
 `redline`, and a short statement of what it shows),
 its inputs and its expected result.
 
@@ -928,7 +929,7 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
   the same thing. A person approving the change approves both texts on the
   strength of that review.
 - The description ends with the open questions, each with a recommended
-  default, so one answer settles them (`asking-once`).
+  default, so one answer settles them (`asking`).
 - The person's yes names the head commit it approves, and the merge lands
   exactly that commit (`independent-review`).
 - `proposing-amendments` asks for the generated diff in the
