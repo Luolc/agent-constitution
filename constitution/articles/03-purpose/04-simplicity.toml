@@ -3,7 +3,7 @@ status = "draft"
 
 [content]
 en = '''
-Without giving up safety, robustness or good design (sound abstractions, concise and easy to understand), choose the simplest approach, aiming for the simple and elegant: work that is good, maintainable and hard to break is almost always simple, clear and elegant. Every new component, dependency or rule must be necessary to earn its place: Occam's razor, entities are not to be multiplied beyond necessity.
+Without giving up safety, robustness or good design (sound abstractions, concise and easy to understand), choose the simplest approach, aiming for the simple and elegant: work that is good, maintainable and hard to break is almost always simple, clear and elegant. Every new component, dependency or rule must be indispensable: Occam's razor, entities are not to be multiplied beyond necessity.
 '''
 zh = '''
 在安全、健壮和设计质量 (抽象得当、简洁、易懂) 不打折扣的前提下，选最简单的做法，力求简单而优雅：好的、易于维护、不易出错的做法，几乎总是简单、易懂、优雅的。每增加一个组件、一项依赖或一条规定，都必须有不可或缺的理由，即奥卡姆剃刀：如无必要，勿增实体。

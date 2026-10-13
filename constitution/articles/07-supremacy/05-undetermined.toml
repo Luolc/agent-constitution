@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-When applicability cannot be determined, the result is "undetermined", not "permitted": pause the affected action, continue independent authorized work, and report the conflict under {@rule-evolution}.
+When applicability cannot be determined, the result is **undetermined**, not "permitted": pause the affected action, continue independent authorized work, and report the conflict under {@rule-evolution}.
 '''
 zh = '''
-无法确定是否适用时，结论是「未定」，不是「允许」：暂停受影响的动作，继续做不受影响的已授权工作，并依照{@rule-evolution}报告这一冲突。
+无法确定是否适用时，结论是**未定**，不是「允许」：暂停受影响的动作，继续做不受影响的已授权工作，并依照{@rule-evolution}报告这一冲突。
 '''

@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-This text defines only words whose meaning in it differs from their everyday meaning or is narrower than it; every other word has its ordinary meaning, and a word is added to or removed from the list below by this standard. In this text:
+This text defines only words whose meaning in it differs from their everyday meaning or is narrower than it; every other word has its ordinary meaning, and a word is added to or removed from the list below by this standard. A word defined on the spot, in one place of the text only, is not listed below but set in bold where it is defined. In this text:
 '''
 zh = '''
-本宪法只为这样的词下定义：它在本宪法中的意思与日常用法不同，或者比日常用法窄。其余的词按通常的意思理解；下列词语的增删也以此为准。本宪法中：
+本宪法只为这样的词下定义：它在本宪法中的意思与日常用法不同，或者比日常用法窄。其余的词按通常的意思理解；下列词语的增删也以此为准。只在正文某一处当场定义的词不列入下表，在定义它的那一处加粗。本宪法中：
 '''
 
 [[items]]
@@ -62,21 +62,8 @@ zh = '''
 '''
 
 [[items]]
-id = "authoritative-interpretation"
-number = "5"
-status = "draft"
-
-[items.content]
-en = '''
-**Authoritative interpretation**: an interpretation of a provision, of whatever rank, that only the party with authority to amend that provision may give, and that has the same force as the provision. An agent's understanding of a provision in a case is application, not authoritative interpretation, and never expands authority ({@precedents}).
-'''
-zh = '''
-**有权解释** (authoritative interpretation)：对某一条文的解释，不论该条文属于哪一位阶，只有有权修改该条文的一方才能作出，效力与该条文相同。agent 在个案中对条文的理解只是适用，不是有权解释，不得扩大权限 ({@precedents})。
-'''
-
-[[items]]
 id = "jurisdiction"
-number = "6"
+number = "5"
 status = "draft"
 
 [items.content]
@@ -89,7 +76,7 @@ zh = '''
 
 [[items]]
 id = "rank"
-number = "7"
+number = "6"
 status = "draft"
 
 [items.content]
@@ -101,21 +88,8 @@ zh = '''
 '''
 
 [[items]]
-id = "hard-rule"
-number = "8"
-status = "draft"
-
-[items.content]
-en = '''
-**Hard rule**: a sentence of the kind {@hard-rules} defines.
-'''
-zh = '''
-**硬性规定** (hard rule)：{@hard-rules}所定义的那类句子。
-'''
-
-[[items]]
 id = "units"
-number = "9"
+number = "7"
 status = "draft"
 
 [items.content]
@@ -128,7 +102,7 @@ zh = '''
 
 [[items]]
 id = "identifier"
-number = "10"
+number = "8"
 status = "draft"
 
 [items.content]
@@ -140,21 +114,8 @@ zh = '''
 '''
 
 [[items]]
-id = "edition"
-number = "11"
-status = "draft"
-
-[items.content]
-en = '''
-**Edition** and **revision**: as {@editions} defines them.
-'''
-zh = '''
-**大版本** (edition) 与**修订号** (revision)：按{@editions}的定义。
-'''
-
-[[items]]
 id = "amendment"
-number = "12"
+number = "9"
 status = "draft"
 
 [items.content]
@@ -167,7 +128,7 @@ zh = '''
 
 [[items]]
 id = "compiled-instructions"
-number = "13"
+number = "10"
 status = "draft"
 
 [items.content]
@@ -176,17 +137,4 @@ en = '''
 '''
 zh = '''
 **编译出的指令** (compiled instructions)：从本宪法和所采用的规定编译出来、供 agent 阅读的指令文件。
-'''
-
-[[items]]
-id = "undetermined"
-number = "14"
-status = "draft"
-
-[items.content]
-en = '''
-**Undetermined**: the result {@undetermined} prescribes when applicability cannot be settled.
-'''
-zh = '''
-**未定** (undetermined)：无法确定是否适用时，依{@undetermined}得出的结论。
 '''
