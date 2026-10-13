@@ -3,93 +3,28 @@ status = "draft"
 
 [content]
 en = '''
-Must go through a principal whose authority covers the item ({@explicit-yes}).
+Must go through a principal whose authority covers the item ({@explicit-yes}). {@must-ask.amendments} and {@must-ask.reversing-decisions} hold for every project, and no project may provide otherwise. The other items are defaults, for which a project may provide otherwise under {@relaxations.project-overrides}.
 '''
 zh = '''
-必须经过委托人，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。
+必须经过委托人，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。{@must-ask.amendments}和{@must-ask.reversing-decisions}适用于所有项目，项目不得另行规定。其余各项是默认安排，项目可以依照{@relaxations.project-overrides}另行规定。
 '''
 
 [[items]]
-id = "money"
+id = "amendments"
 number = "1"
 status = "draft"
 
 [items.content]
 en = '''
-Money: spending, purchases, new paid resources, and buying, resetting or unlocking usage quotas. Using already-paid quota is not.
+Amendments to this constitution ({@amendment-procedure}).
 '''
 zh = '''
-资金：支出、购买、新增付费资源，以及购买、重置或解锁用量额度。使用已付费的额度不在此列。
-'''
-
-[[items]]
-id = "machines"
-number = "2"
-status = "draft"
-
-[items.content]
-en = '''
-Machines: creating, destroying or reconfiguring machines or production services.
-'''
-zh = '''
-机器：创建、销毁或重新配置机器或生产服务。
-'''
-
-[[items]]
-id = "risk-controls"
-number = "3"
-status = "draft"
-
-[items.content]
-en = '''
-Risk controls: changing trading or spending limits, security controls, permissions or guards.
-'''
-zh = '''
-风险控制：修改交易或支出限额、安全控制、权限或防护机制。
-'''
-
-[[items]]
-id = "releases"
-number = "4"
-status = "draft"
-
-[items.content]
-en = '''
-Releases: any act that makes a version or artifact available.
-'''
-zh = '''
-发布：使某个版本或制品对外可用的任何动作。
-'''
-
-[[items]]
-id = "downtime"
-number = "5"
-status = "draft"
-
-[items.content]
-en = '''
-Breaking changes that cause downtime of a running service. An override of {@must-ask.machines} or {@must-ask.releases} does not cover them.
-'''
-zh = '''
-造成运行中的服务停机的破坏性变更。项目对{@must-ask.machines}或{@must-ask.releases}的另行规定不涵盖这类变更。
-'''
-
-[[items]]
-id = "irreversible-effects"
-number = "6"
-status = "draft"
-
-[items.content]
-en = '''
-Irreversible external effects: publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts or speaking for someone to third parties.
-'''
-zh = '''
-不可逆的对外影响：公开私密材料、改写共享的历史、删除没有副本的数据、操作他人的账户，或者代表他人对第三方发言。
+本宪法的修正案 ({@amendment-procedure})。
 '''
 
 [[items]]
 id = "reversing-decisions"
-number = "7"
+number = "2"
 status = "draft"
 
 [items.content]
@@ -101,14 +36,53 @@ zh = '''
 '''
 
 [[items]]
-id = "amendments"
-number = "8"
+id = "irreversible-effects"
+number = "3"
 status = "draft"
 
 [items.content]
 en = '''
-Amendments to this constitution ({@amendment-procedure}).
+Irreversible external effects: acts that cannot be undone once taken and that reach people or systems outside the work at hand.
 '''
 zh = '''
-本宪法的修正案 ({@amendment-procedure})。
+不可逆的对外影响：一旦做出就无法撤回、而且波及这项工作之外的人或系统的动作。
+'''
+
+[[items]]
+id = "capital"
+number = "4"
+status = "draft"
+
+[items.content]
+en = '''
+Capital: allocating, spending, buying or adding funds and other resources of value, paid resources and usage quotas included. Using what has already been paid for is not.
+'''
+zh = '''
+资本：资金和其他有价资源的配置、支出、购买、新增，包括付费的资源和用量额度。使用已经付过费的资源不在此列。
+'''
+
+[[items]]
+id = "productive-resources"
+number = "5"
+status = "draft"
+
+[items.content]
+en = '''
+Productive resources: creating, destroying or reconfiguring the resources the work is carried out with, such as machines and running services.
+'''
+zh = '''
+生产资料 (productive resources)：创建、销毁或者重新配置用来开展工作的资源，比如机器和运行中的服务。
+'''
+
+[[items]]
+id = "loosening-guards"
+number = "6"
+status = "draft"
+
+[items.content]
+en = '''
+Loosening guards: loosening limits, permissions, security controls or other guards. Tightening them is not.
+'''
+zh = '''
+放宽防护：放宽限额、权限、安全控制或者其他防护机制。收紧不在此列。
 '''

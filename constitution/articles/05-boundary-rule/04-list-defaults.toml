@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-The items listed in {@must-ask} and {@decide-yourself} are defaults. Adding an item to {@must-ask}, or moving one there from {@decide-yourself}, tightens; the rule library ({@rule-evolution}) or a project ({@lower-layers}) may do it. Removing an item from {@must-ask}, or moving it to {@decide-yourself}, relaxes: for all projects by amendment ({@amendment-procedure}), for one project under {@relaxations.project-overrides}.
+The items listed in {@decide-yourself} and {@must-ask.irreversible-effects} to {@must-ask.loosening-guards} are defaults. Adding an item to {@must-ask}, or moving one there from {@decide-yourself}, tightens; the rule library ({@rule-evolution}) or a project ({@lower-layers}) may do it, and an item so added counts as a default item of {@must-ask}. Removing a default item from {@must-ask}, or moving it to {@decide-yourself}, relaxes: for all projects by amendment ({@amendment-procedure}), or, for an item the rule library added, by changing that rule; for one project under {@relaxations.project-overrides}. {@must-ask.amendments} and {@must-ask.reversing-decisions} are not defaults: they change only by amendment.
 '''
 zh = '''
-{@must-ask}和{@decide-yourself}所列事项都是默认安排。给{@must-ask}增加事项，或者把某一事项从{@decide-yourself}移到{@must-ask}，属于收紧，规定库 ({@rule-evolution}) 或者项目 ({@lower-layers}) 都可以这样做。从{@must-ask}删除事项，或者把它移到{@decide-yourself}，属于放宽：对所有项目放宽要修宪 ({@amendment-procedure})，只对一个项目放宽依照{@relaxations.project-overrides}。
+{@decide-yourself}所列事项和{@must-ask.irreversible-effects}至{@must-ask.loosening-guards}都是默认安排。给{@must-ask}增加事项，或者把某一事项从{@decide-yourself}移到{@must-ask}，属于收紧，规定库 ({@rule-evolution}) 或者项目 ({@lower-layers}) 都可以这样做；这样增加的事项，视为{@must-ask}的默认事项。从{@must-ask}删除默认事项，或者把它移到{@decide-yourself}，属于放宽：对所有项目放宽要修宪 ({@amendment-procedure})，规定库增加的事项则修改那条规定；只对一个项目放宽，依照{@relaxations.project-overrides}。{@must-ask.amendments}和{@must-ask.reversing-decisions}不是默认安排，只能通过修宪改变。
 '''

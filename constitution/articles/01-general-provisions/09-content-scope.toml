@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-This constitution holds what stays true whatever tools agents use and however they are organized: principles, the limits of authority, and how this text and the rules change. It leaves concrete practices, such as particular roles, procedures, commands and tools, to the rules ({@rules-refine}) and the agent tools; where it names one, it does so as an example or to say where this text itself is kept ({@text-and-sources}).
+A provision is written into this constitution only if it meets both tests: it stays true whatever tools agents use, however they are organized and whatever field they work in; and it concerns principles, the limits of authority, or how this text and the rules change. What fails either test is written in lower-ranking provisions, such as the rules ({@rules-refine}) and the instructions of projects. This constitution sets the classes of matters and where each belongs by default; lower-ranking provisions list and refine the concrete matters within those classes. Where this text names a concrete practice, it does so as an example or to say where this text itself is kept ({@text-and-sources}). Whoever drafts or amends a provision of this constitution first decides under this section whether it belongs here.
 '''
 zh = '''
-本宪法规定的是不随 agent 所用的工具和组织方式而改变的内容：原则、权限的边界，以及本宪法和规定怎样修改。具体的做法，例如特定的角色、流程、命令和工具，留给规定 ({@rules-refine}) 和 agent 工具来定；本宪法提到某种具体做法的，只是举例，或者说明本宪法自身存放在哪里 ({@text-and-sources})。
+一项内容写进本宪法，须同时满足：不随 agent 所用的工具、组织方式和所从事的领域而改变；关乎原则、权限的边界，或者本宪法和规定怎样修改。不满足的，由下位法来写，例如规定 ({@rules-refine}) 和项目的指令。本宪法划定类别和默认的归属，具体的事项由下位法在类别之内列举、细化。本宪法提到某种具体做法的，只是举例，或者说明本宪法自身存放在哪里 ({@text-and-sources})。起草或者修改本宪法的条文时，先依照本款判断它该不该写进本宪法。
 '''
