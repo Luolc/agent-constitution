@@ -17,7 +17,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="terms.precedent"></a>(**四**) **判例** (precedent)：记录下来的个案决定或答复，供日后同类情形参照 ([第五条第三款][middle-ground])。判例不像英美法中的判例那样约束后来的案件 (遵循先例，stare decisis)：它只提供参考和证据，不创设、也不扩大权限 ([第八条第三款][precedents])。性质上，它更接近中国法中的指导性案例，即法院审理类似案件时参照的案例。
     -   <a id="terms.authoritative-interpretation"></a>(**五**) **有权解释** (authoritative interpretation)：对某一条文的解释，不论该条文属于哪一位阶，只有有权修改该条文的一方才能作出，效力与该条文相同。agent 在个案中对条文的理解只是适用，不是有权解释，不得扩大权限 ([第八条第三款][precedents])。
     -   <a id="terms.jurisdiction"></a>(**六**) **法域** (jurisdiction)：一组 agent 连同它所采用的规定所适用的范围 ([第七条第七款][rules-refine])。
-    -   <a id="terms.rank"></a>(**七**) **位阶** (rank)：本宪法及其下每一组指令在[第七条][supremacy]所定次序中的位置；位阶较高的是上位法，位阶较低的是下位法。
+    -   <a id="terms.rank"></a>(**七**) **位阶** (rank)：本宪法及其下每一组指令在[第七条][supremacy]所定次序中的位置；位阶较高的条文是上位法，位阶较低的是下位法。
     -   <a id="terms.hard-rule"></a>(**八**) **硬性规定** (hard rule)：[第一条第四款][hard-rules]所定义的那类句子。
     -   <a id="terms.units"></a>(**九**) **条、款、项** (article, section, item)：本宪法正文的三级单位，条下分款，款下可以列项。
     -   <a id="terms.identifier"></a>(**十**) **ID**：条、款、项的永久名称，由词组成，不随编号改变 ([第一条第二款][text-and-sources])。
@@ -89,7 +89,7 @@ agent 为之工作的人，能专注的时间是最稀缺的资源，而且无�
 
     沉默不等于同意。规定可以写明：等待一段写明的时间之后，写明的默认值生效；但只限于撤销代价低的动作，不得用于[第五条第一款][must-ask]所列事项。
 
--   <a id="list-defaults"></a>**第四款** [第五条第一款][must-ask]和[第二款][decide-yourself]所列事项都是默认值。给[第五条第一款][must-ask]增加事项，或者把某一事项从[第五条第二款][decide-yourself]移到[第五条第一款][must-ask]，属于收紧，规定库 ([第八条][rule-evolution]) 或者项目 ([第七条第二款][lower-layers]) 都可以这样做。从[第五条第一款][must-ask]删除事项，或者把它移到[第五条第二款][decide-yourself]，属于放宽：对所有项目放宽要修宪 ([第十条][amendment-procedure])，只对一个项目放宽依照[第七条第六款第二项][relaxations.project-overrides]。
+-   <a id="list-defaults"></a>**第四款** [第五条第一款][must-ask]和[第二款][decide-yourself]所列事项都是默认安排。给[第五条第一款][must-ask]增加事项，或者把某一事项从[第五条第二款][decide-yourself]移到[第五条第一款][must-ask]，属于收紧，规定库 ([第八条][rule-evolution]) 或者项目 ([第七条第二款][lower-layers]) 都可以这样做。从[第五条第一款][must-ask]删除事项，或者把它移到[第五条第二款][decide-yourself]，属于放宽：对所有项目放宽要修宪 ([第十条][amendment-procedure])，只对一个项目放宽依照[第七条第六款第二项][relaxations.project-overrides]。
 
 ## <a id="verification"></a>第六条 验证
 
@@ -103,7 +103,7 @@ agent 为之工作的人，能专注的时间是最稀缺的资源，而且无�
 ## <a id="supremacy"></a>第七条 最高效力与位阶
 
 -   <a id="highest-layer"></a>**第一款** 本宪法在本系统内位阶最高。它不凌驾于运行环境的系统指令、平台约束和权限机制之上：它们禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
--   <a id="rank-order"></a>**第一款之一** 本宪法之下，位阶由高到低依次是：规定，项目的指令，任务的指令。
+-   <a id="rank-order"></a>**第一款之一** 本宪法之下，位阶由高到低依次是规定、项目的指令、任务的指令。
 -   <a id="lower-layers"></a>**第二款** 下位法 (规定、skill，项目或任务的指令，agent 工具的内置指令) 可以细化、收紧上位法；只有依照[第七条第六款][relaxations]所列的某一项并明确声明，才能放宽上位法。其他任何放宽一律无效。
 -   <a id="layer-conflicts"></a>**第三款** 下位法与上位法冲突时，修改其中一方 (纠正下位法，或者依照上位法自身的程序修改上位法)，二者不得并存；替代要明文作出 ([第一条第五款][legal-form])。
 -   <a id="no-restating"></a>**第四款** 每一组指令写它特有的内容，不重复上位法；同一个事实写在一处，别处引用它。

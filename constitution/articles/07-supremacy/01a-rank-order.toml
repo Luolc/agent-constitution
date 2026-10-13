@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Below this constitution, the rules rank first, then the instructions of a project, then the instructions of a task.
+Below this constitution, the rules rank highest, then the instructions of a project, then those of a task.
 '''
 zh = '''
-本宪法之下，位阶由高到低依次是：规定，项目的指令，任务的指令。
+本宪法之下，位阶由高到低依次是规定、项目的指令、任务的指令。
 '''

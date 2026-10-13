@@ -97,7 +97,7 @@ en = '''
 **Rank**: the place of this constitution and of each body of instructions below it in the order {@supremacy} sets; a provision of higher rank is higher-ranking, one of lower rank is lower-ranking.
 '''
 zh = '''
-**位阶** (rank)：本宪法及其下每一组指令在{@supremacy}所定次序中的位置；位阶较高的是上位法，位阶较低的是下位法。
+**位阶** (rank)：本宪法及其下每一组指令在{@supremacy}所定次序中的位置；位阶较高的条文是上位法，位阶较低的是下位法。
 '''
 
 [[items]]
