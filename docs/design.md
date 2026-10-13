@@ -39,15 +39,14 @@ Non-goals:
 | Public core (this repo) | Private overlay (a separate private repo) |
 | --- | --- |
 | The constitution | Local parameters: the values the rules leave open (machines, model names, secret-store layout, lists of repos) |
-| General rules (`R<n>`) | Private rules (`P<n>`): rules that only make sense on that user's stack |
+| General rules (`R<n>`) | Private rules (`O<n>`): rules that only make sense on that user's stack |
 | General skills | Private skills (for example the orchestra skill) |
 | Compiler, checkers, private-term scanner | Provenance: the casebook of incidents and decisions, with dates and sources |
 | A fictional example overlay and its golden output | The private term list the scanner reads at run time |
 | Static fixtures | The apply step that runs the compiler and installs the output |
 
-The overlay may add and tighten. It may relax only through a declared
-`relaxes: L<n>` (see "Relaxation declarations"). It never edits core files;
-it pins a core version and builds against it.
+The overlay only adds and tightens; it has no way to relax a core rule. It
+never edits core files; it pins a core version and builds against it.
 
 ## Language
 
@@ -111,12 +110,14 @@ private-term scanner, `fixtures/static/` with the fixture gate, then load
 verification. Each step is usable on its own.
 
 The protected foundations of C8 map to these paths in the core:
-`constitution/` (the constitution), `tools/` and `schema/` (compiler and
-checkers), `fixtures/` and `examples/golden/` (the fixture gate and what it
-compares against), and `.github/workflows/` (the CI that runs the checkers
-and gates releases). The configuration that loads instructions and guards
-lives on the private side and is protected there. A change to any of these
-paths follows C8, not the rule-library path of C7.
+`constitution/` (the constitution), `tools/` and `schema/` (compiler,
+checkers and the fixture gate's code), and `.github/workflows/` (the CI that
+runs them and gates releases). A change to any of these paths follows C8,
+not the rule-library path of C7. The gate is protected, not its data: adding
+a fixture or regenerating `examples/golden/` after a rule change goes through
+C7 like the rule change itself; removing or weakening an existing redline
+fixture follows C9. The configuration that loads instructions and guards
+lives on the private side and is protected there.
 
 ## Source formats
 
@@ -126,7 +127,7 @@ need no YAML library and the schema checker can reject anything else.
 
 ### Constitution
 
-As agreed with the constitution PR: `constitution/constitution.md`, front
+Format of `constitution/constitution.md`: front
 matter with at least `status` and `revision`; articles are `## C<n>. <Title>`;
 clauses that need their own citation are `C<n>.<k>`; the permitted
 relaxations are `L<n>`; the boundary lists are `H<n>` (must go to a person)
@@ -171,11 +172,12 @@ authority: [C3, C3.2]
 More fields (`supersedes`, `verification`, `expires`) are added when a real
 rule needs them, not before.
 
-IDs: rules migrated from the current hand-written guide keep their `R<n>`, so
-the references already in repo files, reviews and the casebook keep their
-meaning. New general rules continue the `R` sequence in this repo. Rules
-that exist only in the private overlay use `P<n>`, so the two sides never
-compete for the next number. Retired numbers stay retired. The compiler
+IDs: rules migrated from the current hand-written guide keep their `R<n>`,
+whichever side they move to, so the references already in repo files,
+reviews and the casebook keep their meaning. New general rules continue the
+`R` sequence in this repo, above the highest migrated number. New rules that exist only in the private overlay
+use `O<n>`, so the two sides never compete for the next number (`P0`–`P2`
+are taken by the priority classes of C7.4). Retired numbers stay retired. The compiler
 checks that the union of core and overlay IDs is unique.
 
 ### Relaxation declarations
@@ -195,9 +197,9 @@ naming the constitution's permission for it:
 One item per relaxation, with all four keys: the permission (`L<n>` from the
 list in C6.6), what it relaxes (a rule, a boundary item such as `H2`, or
 under L2 a rule's adjustable value and its new setting), where it applies,
-and how the condition of that `L<n>` is met. The private overlay declares its
-relaxations of core rules the same way, in a `relaxations.md` of its own. A relaxation not declared this way has
-no effect, whatever else the file says.
+and how the condition of that `L<n>` is met. A relaxation not declared this
+way has no effect, whatever else the file says. The private overlay is not
+a layer any `L<n>` opens, so it declares none.
 
 ### Local parameters
 
@@ -227,17 +229,18 @@ Overlay layout:
 ```text
 overlay.toml       core version, output path, size budget
 params.toml        parameter values
-rules/P<n>.md      private rules
-relaxations.md     the overlay's relaxations of core rules, if any
+rules/O<n>.md      private rules
 skills/<name>/     private skills
 ```
 
 The compiler is a deterministic concatenation, no model involved:
 
-1. Validate every input (schema, references, the overlay's relaxations);
-   stop on the first class of error, print all errors of that class.
-2. Emit a header: generated file, do not edit; the core version, the
-   constitution revision, the manifest digest; edit the sources instead.
+1. Validate every input (schema, references); stop on the first class of
+   error, print all errors of that class.
+2. Emit a header in plain text, not an HTML comment: generated file, do not
+   edit, edit the sources instead; the core version, the constitution
+   revision, and the input digest (the SHA-256 of the sorted list of
+   per-input hashes).
 3. Emit the constitution, then active rules (core and overlay) grouped by
    their first `authority` article and ordered by ID inside a group.
    Parameters are substituted here.
@@ -249,8 +252,8 @@ The compiler is a deterministic concatenation, no model involved:
    silently dropped.
 6. Write the output and the manifest: the SHA-256 of each input file (sorted
    by path), core version and commit, compiler version (the core version,
-   since the compiler lives here), constitution revision, output digest and
-   size. No timestamps; the same inputs give byte-identical output.
+   since the compiler lives here), constitution revision, input digest,
+   output digest and size. No timestamps; the same inputs give byte-identical output.
 
 Roles: there is one output for everyone. The core has no role sections. The
 overlay contributes, as a private rule, the one or two sentences that tell
@@ -271,7 +274,7 @@ position. What each one proves, and what it does not:
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
 | Schema | Front matter has the required keys, allowed values and the flat subset; IDs match their file names | That the text means what the fields claim |
-| References | Every cited ID (`C`, `L`, `H`, `A`, `R`, `P`, `K`) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
+| References | Every cited ID (`C`, `L`, `H`, `A`, `R`, `O`, `K`) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
 | Private-term scan | No hit from the generic classes (secret-store paths, private address ranges, home-directory paths, email addresses) in CI; no hit from the private term list when the overlay runs it | That nothing private is present: a term not on the list passes |
 | Relaxations | Each `relaxes:` names an existing `L<n>` open to that layer, an existing target, a scope and a condition; under L2 the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
@@ -287,9 +290,9 @@ Undeclared relaxations cannot be caught completely. The relaxation checker
 also flags, as a warning, lower-layer text that cites a rule or article ID
 next to wording that lifts an obligation ("not required", "instead of",
 "may skip") without a `relaxes:` entry. Review and behavior fixtures carry
-the rest. The checker runs where the lower layer lives: in the compiler for
-the overlay, and in each repo's own CI (against a pinned core version) for
-that repo's `AGENTS.md`.
+the rest. The checker runs in each repo's own CI, against a pinned core
+version, over that repo's `AGENTS.md`. The compiler runs the same warning over
+the overlay's rules, since the overlay may not relax at all.
 
 A check that the output contains a sentence proves the sentence is there. It
 does not prove an agent follows it; only behavior fixtures and real runs say
@@ -318,8 +321,11 @@ its inputs and its expected result.
   breaks ordinary work shows up as a failing happy fixture.
 - Every fixture binds to at least one constitution or rule ID, and the
   checker rejects a fixture whose IDs do not resolve.
-- Before a release, CI runs every fixture, as C5.5 requires: all happy and all redline, static
-  and (once they exist) behavior.
+- Before a release, every fixture runs, as C5.5 requires: all happy and all
+  redline. Static fixtures run in this repo's CI. Behavior fixtures (once
+  they exist) need installed harnesses and model credentials, which this
+  repo's CI does not have; they run on the private side, and a release
+  needs the record of that run at the commit being tagged.
 - Fixtures follow the constitution like any other file: made-up data only
   (`example.test` domains, documentation address ranges, fictional names), no
   real credentials, no private terms. The private-term scan covers
@@ -332,10 +338,15 @@ step checks each harness with its own read-only entry point (as of
 2026-10-12: Codex `debug prompt-input`, Grok `inspect`, and Claude Code's
 `InstructionsLoaded` hook):
 
-- Positive arm: the manifest digest from the output header appears in what
-  each harness actually loaded.
-- Control arm: a string that must not appear does not: the statement of a
-  `draft` rule that is present in the sources but excluded from the build.
+- Positive arm: the input digest from the plain-text header appears in what
+  each harness actually loaded. (Claude Code strips block-level HTML
+  comments before injecting the file, so the digest must not be in one.)
+- Control arm: a string that must not appear does not. The core ships a
+  fixed `draft` canary rule whose statement is a unique string; it is in
+  every build's sources and never in any output.
+- An entry point counts only if it returns the loaded content, not just the
+  file paths; which ones do is confirmed per harness when stage B builds
+  this check.
 
 If the positive arm passes and the control arm also finds its string, the
 check cannot tell a correct load from a load of the wrong file, and it fails.
@@ -364,9 +375,8 @@ event -> proposal -> rule revision, case, or amendment -> release
 - Middle ground (C4.3): when an agent is unsure and asks a person, the
   answer is written as a case candidate on the private side, with its
   source. When the same kind of answer recurs, it becomes a rule proposal.
-  Tightening the boundary (a new item for C4.1, moving an item from C4.2 to
-  C4.1) can go through the rule-library path of C7; relaxing it goes only
-  through amendment (C9).
+  Which boundary changes the rule library may make, and which need an
+  amendment, is C4.4.
 - Rule proposals are pull requests that change `rules/`, adopted under C7,
   each answering what problem, what evidence, why a rule and not a tool fix,
   which IDs, what authority, what could break, how to test and roll back.

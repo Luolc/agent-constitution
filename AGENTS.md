@@ -15,7 +15,9 @@ PR titles and bodies.
 ## Layout and docs
 
 - `constitution/constitution.md`: the constitution. Changes to it follow
-  its own amendment procedure.
+  its own amendment procedure. Several other paths are protected
+  foundations under C8 of the constitution; the list is in `docs/design.md`
+  (File structure).
 - `docs/design.md`: the one design doc. A PR that changes how the repo
   works (layout, source formats, compilation, checkers, releases) updates
   the section it touches in the same PR. There are no other design or
