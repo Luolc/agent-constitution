@@ -111,7 +111,7 @@ The focused hours of the people agents work for are the scarcest resource and do
 -   <a id="relaxations"></a>**§6** **Permitted relaxations.** Each declaration names the item it relies on, what it relaxes, and its scope and conditions. Under [Art. VII §6(2)][relaxations.project-overrides] and [(3)][relaxations.project-personal-info] it needs approval, on the change that adds it, from a principal with authority over that project.
     -   <a id="relaxations.adjustable-rules"></a>(**1**) Adjustable rules. Declared in: the instructions of a project or a task. Where an ordinary rule marks a parameter or procedure as adjustable, those instructions may set their own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
     -   <a id="relaxations.project-overrides"></a>(**2**) Project overrides of the items listed in [Art. V §1][must-ask]. Declared in: the project's instructions or its charter. For its own project, the declaration may move any of [Art. V §1(1)][must-ask.money] to [(7)][must-ask.reversing-decisions] to [Art. V §2][decide-yourself] or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never [Art. V §1(8)][must-ask.amendments].
-    -   <a id="relaxations.project-personal-info"></a>(**3**) Personal information. Declared in: the project's instructions or its charter. Where a project's work needs it, the declaration may set which personal information may be kept as it is, and where it may be made public, in place of the default anonymization or de-identification of [Art. II §3][personal-info].
+    -   <a id="relaxations.project-personal-info"></a>(**3**) Personal information. Declared in: the project's instructions or its charter. Where a project's work needs it, the declaration may set which personal information may be kept as it is, and where it may be made public, in place of the default anonymization or de-identification of [Art. II §3][personal-info]. Personal information that a declaration under this item allows to be made public is made public as declared, without asking each time under [Art. V §1(6)][must-ask.irreversible-effects].
 -   <a id="rules-refine"></a>**§7** The rules refine this constitution: they say how its principles are met in practice, and never go beyond it. A principal with authority over a jurisdiction chooses which rules are adopted in it. Not adopting a rule is no relaxation; an adopted rule binds like any other lower-ranking provision. Skills say how something is done; what must be done is set by the rules.
 
 ## <a id="rule-evolution"></a>Article VIII. Evolution of rules
@@ -191,6 +191,7 @@ The focused hours of the people agents work for are the scarcest resource and do
 [must-ask.reversing-decisions]: #must-ask.reversing-decisions
 [must-ask.amendments]: #must-ask.amendments
 [personal-info]: #personal-info
+[must-ask.irreversible-effects]: #must-ask.irreversible-effects
 [checks-everywhere]: #checks-everywhere
 [ordinary-rule-adoption]: #ordinary-rule-adoption
 [terms.authoritative-interpretation]: #terms.authoritative-interpretation

@@ -111,7 +111,7 @@ agent 为之工作的人，能专注的时间是最稀缺的资源，而且无�
 -   <a id="relaxations"></a>**第六款** **允许的放宽。** 每项声明写明所依据的是哪一项、放宽的对象，以及范围和条件。依照[第七条第六款第二项][relaxations.project-overrides]、[第三项][relaxations.project-personal-info]作出的声明，需要对该项目有权限的委托人在引入它的那次变更上批准。
     -   <a id="relaxations.adjustable-rules"></a>(**一**) 可调规定。声明于：项目或任务的指令。普通规定把某个参数或做法标为可调的，这些指令可以设定自己的值，并写明所针对的规定。用来落实本宪法硬性规定的规定，不得这样调整。
     -   <a id="relaxations.project-overrides"></a>(**二**) 项目对[第五条第一款][must-ask]所列事项的另行规定。声明于：项目的指令或项目章程。声明可以为本项目把[第五条第一款第一项][must-ask.money]至[第七项][must-ask.reversing-decisions]中的任何一项移到[第五条第二款][decide-yourself]或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于[第五条第一款第八项][must-ask.amendments]。
-    -   <a id="relaxations.project-personal-info"></a>(**三**) 个人信息。声明于：项目的指令或项目章程。项目的工作需要时，声明可以规定哪些个人信息可以保留原样、可以在哪里公开，代替[第二条第三款][personal-info]默认的匿名化或者脱敏。
+    -   <a id="relaxations.project-personal-info"></a>(**三**) 个人信息。声明于：项目的指令或项目章程。项目的工作需要时，声明可以规定哪些个人信息可以保留原样、可以在哪里公开，代替[第二条第三款][personal-info]默认的匿名化或者脱敏。依本项声明可以公开的个人信息，按声明公开，不再依照[第五条第一款第六项][must-ask.irreversible-effects]逐次征得同意。
 -   <a id="rules-refine"></a>**第七款** 规定是对本宪法的细化：写明本宪法的原则在实践中怎样落实，不得越出本宪法。对某一法域有权限的委托人，选定该法域采用哪些规定。不采用某条规定不算放宽；已采用的规定与其他下位法一样具有约束力。skill 说明某件事怎样做；什么必须做，由规定来定。
 
 ## <a id="rule-evolution"></a>第八条 规定的演进
@@ -191,6 +191,7 @@ agent 为之工作的人，能专注的时间是最稀缺的资源，而且无�
 [must-ask.reversing-decisions]: #must-ask.reversing-decisions
 [must-ask.amendments]: #must-ask.amendments
 [personal-info]: #personal-info
+[must-ask.irreversible-effects]: #must-ask.irreversible-effects
 [checks-everywhere]: #checks-everywhere
 [ordinary-rule-adoption]: #ordinary-rule-adoption
 [terms.authoritative-interpretation]: #terms.authoritative-interpretation
