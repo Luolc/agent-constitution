@@ -779,7 +779,7 @@ configuration. `tools/lint_zh_sources.py` hands every `zh` text of
 `constitution/index.toml`, `constitution/articles/` and `rules/` to limae
 as a Markdown file of its own and prints each finding as `path:line:
 field: <message>`, the field being the TOML table, with an item's ID
-(`items.money.content`). Before that it replaces each citation `{@...}`
+(`items.capital.content`). Before that it replaces each citation `{@...}`
 with Chinese text shaped like a constitution citation's rendering
 (`第某条`) and puts the citation back afterwards: `agent{@x}` renders as
 `agent第十条` and needs a space that limae cannot see next to a brace,
@@ -916,8 +916,10 @@ event -> proposal -> rule revision, case, or amendment -> release
   IDs applied, the decision and its status. A case explains a rule; it never
   grants a permission. A case that would change a right, a duty or a
   prohibition becomes a rule revision; one that would relax a boundary item
-  for every project becomes an amendment proposal (for one project, a
-  `relaxations.project-overrides` declaration does it).
+  for every project becomes an amendment proposal or, for an item the rule
+  library added, a change to that rule approved by a person on that change
+  (`list-defaults`); for one project, a `relaxations.project-overrides`
+  declaration does it.
 - Middle ground (`middle-ground`): when an agent is unsure and
   asks a person, the
   answer is written as a case candidate on the private side, with its
