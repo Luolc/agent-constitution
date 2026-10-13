@@ -8,5 +8,5 @@ en = '''
 From the first approved revision on, the numbers of articles, sections and list items never change and are never reused. A new provision goes at the end of its article or list; one that must go between two others takes a letter suffix (2a). An amended provision keeps its number. A repealed provision keeps its number, with a one-line note in place of its text. While this text is a draft, numbers may still change.
 '''
 zh = '''
-自第一个经批准的修订版起，条、款和清单项的编号永不更改，也不重复使用。新增的规定放在所在条或清单的末尾；必须插在两项之间的，用「之一」这样的编号 (如第二款之一)。修改过的规定保留原来的编号。废止的规定保留编号，原文换成一行说明。本文本仍是草案期间，编号还可以调整。
+自第一个经批准的修订版起，条、款和清单项的编号永不更改，也不重复使用。新增的规定放在所在条或清单的末尾；必须插在两项之间的，用「之一」这样的编号 (如第二款之一)。修改过的规定保留原来的编号。废止的规定保留编号，原文换成一行说明。本文本还是草案时，编号仍可调整。
 '''
