@@ -605,6 +605,13 @@ def check_refs(src: Sources, errors: Errors) -> None:
 
 # Rendering.
 
+# List markers padded to the indent, so that a section's or an item's
+# further lines start at its content column: CommonMark takes any indent
+# up to that column, Python-Markdown wants four spaces.
+INDENT = " " * 4
+SECTION = "-   "
+ITEM = INDENT + SECTION
+
 def render(lang: str, src: Sources) -> str:
     L = LANGUAGES[lang]
     # short: a section's or an item's citation without its article or
@@ -654,15 +661,15 @@ def render(lang: str, src: Sources) -> str:
         head, *tail = refs(text).split("\n")
         return [first + head, *(indent + t if t else t for t in tail)]
 
-    def section_text(s: Section) -> list[str]:
-        lines = indented(f"- {anchor(s.id)}**{numbers[s.id]}** ", s.content[lang], "  ")
+    def section_entries(s: Section) -> list[list[str]]:
+        entries = [indented(f"{SECTION}{anchor(s.id)}**{numbers[s.id]}** ", s.content[lang], INDENT)]
         for i in sorted(s.items, key=lambda i: number_key(i.number)):
             marker = anchor(i.ref) + L.item_marker(*number_key(i.number))
             if i.status == "repealed":
-                lines.append(f"  - {marker.rstrip()} ({note(i.repealed)})")
+                entries.append([f"{ITEM}{marker.rstrip()} ({note(i.repealed)})"])
             else:
-                lines += indented(f"  - {marker}", i.content[lang], "    ")
-        return lines
+                entries.append(indented(f"{ITEM}{marker}", i.content[lang], 2 * INDENT))
+        return entries
 
     index = src.index.data
     edition = L.edition.format(edition=index["edition"]) if "edition" in index else L.draft
@@ -681,9 +688,15 @@ def render(lang: str, src: Sources) -> str:
         body = []
         for s in own:
             if s.status == "repealed":
-                body.append(f"- {anchor(s.id)}**{numbers[s.id]}** ({note(s.repealed)})")
+                entries = [[f"{SECTION}{anchor(s.id)}**{numbers[s.id]}** ({note(s.repealed)})"]]
             else:
-                body += section_text(s)
+                entries = section_entries(s)
+            for e in entries:
+                # An entry of several paragraphs ends with a blank line, or a
+                # list line right after it would join its last paragraph.
+                body += e + [""] if "" in e else e
+        if body and body[-1] == "":
+            body.pop()
         if body:
             block.append("\n".join(body))
         parts.append("\n\n".join(block))
