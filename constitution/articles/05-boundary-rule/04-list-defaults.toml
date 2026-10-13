@@ -3,8 +3,34 @@ status = "draft"
 
 [content]
 en = '''
-The items listed in {@decide-yourself} and {@must-ask.irreversible-effects} to {@must-ask.loosening-guards} are defaults. Adding an item to {@must-ask}, or moving one there from {@decide-yourself}, tightens; the rule library ({@rule-evolution}) or a project ({@lower-layers}) may do it, and an item so added counts as a default item of {@must-ask}. Removing or narrowing a default item of {@must-ask}, or moving it to {@decide-yourself}, relaxes: for all projects by amendment ({@amendment-procedure}) or, for an item the rule library added, by a change to that rule that a principal whose authority covers the item approves on that change; for one project under {@relaxations.project-overrides}. {@must-ask.amendments} and {@must-ask.reversing-decisions} are not defaults: they change only by amendment.
+The items listed in {@must-ask.irreversible-effects} to {@must-ask.loosening-guards} and in {@decide-yourself} are defaults and may be changed:
 '''
 zh = '''
-{@decide-yourself}所列事项和{@must-ask.irreversible-effects}至{@must-ask.loosening-guards}都是默认安排。给{@must-ask}增加事项，或者把某一事项从{@decide-yourself}移到{@must-ask}，属于收紧，规定库 ({@rule-evolution}) 或者项目 ({@lower-layers}) 都可以这样做；这样增加的事项，视为{@must-ask}的默认事项。删除或者缩小{@must-ask}的默认事项，或者把它移到{@decide-yourself}，属于放宽：对所有项目放宽要修宪 ({@amendment-procedure})，规定库增加的事项则修改那条规定，并由权限覆盖该事项的委托人在这次变更上批准；只对一个项目放宽，依照{@relaxations.project-overrides}。{@must-ask.amendments}和{@must-ask.reversing-decisions}不是默认安排，只能通过修宪改变。
+{@must-ask.irreversible-effects}至{@must-ask.loosening-guards}和{@decide-yourself}所列事项都是默认安排，可以调整：
+'''
+
+[[items]]
+id = "tightening"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Tightening: adding an item to {@must-ask}, or moving one there from {@decide-yourself}. The rule library ({@rule-evolution}) and a project ({@lower-layers}) may both do it; an item so added is also a default item of {@must-ask}.
+'''
+zh = '''
+收紧：给{@must-ask}增加事项，或者把{@decide-yourself}的事项移到{@must-ask}。规定库 ({@rule-evolution}) 和项目 ({@lower-layers}) 都可以这样做；这样增加的事项，也是{@must-ask}的默认事项。
+'''
+
+[[items]]
+id = "relaxing"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Relaxing: removing or narrowing a default item of {@must-ask}, or moving it to {@decide-yourself}. For all projects, by amendment ({@amendment-procedure}); for an item the rule library added, by a change to that rule that a principal whose authority covers the item approves on that change; for one project, under {@relaxations.project-overrides}.
+'''
+zh = '''
+放宽：删除或者缩小{@must-ask}的默认事项，或者把它移到{@decide-yourself}。对所有项目放宽，要修宪 ({@amendment-procedure})；规定库增加的事项，修改那条规定，并由权限覆盖该事项的委托人在这次变更上批准；只对一个项目放宽，依照{@relaxations.project-overrides}。
 '''

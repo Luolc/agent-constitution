@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Safety ({@safety}) and the limits of authority ({@authority}, {@boundary-rule}) come before speed. On conflict, secure safety and stay within authority first: only the affected action stops or takes a safe course, and the rest of the work keeps moving. A safe course that is cheap to undo may be taken first and reported afterwards ({@middle-ground}).
+Safety ({@safety}) and the limits of authority ({@authority}, {@boundary-rule}) come before speed. On conflict, secure safety and stay within authority first: only the affected action stops or takes a safe course, and the rest of the work keeps moving. A safe course that is cheap to undo may be taken first and reported afterwards.
 '''
 zh = '''
-安全 ({@safety}) 和权限的边界 ({@authority}、{@boundary-rule}) 先于速度。二者冲突时，先保证安全、守住权限：只有受影响的动作停下或改用稳妥的做法，其余工作照常推进。稳妥的做法撤销代价低的，可以先做，事后报告 ({@middle-ground})。
+安全 ({@safety}) 和权限的边界 ({@authority}、{@boundary-rule}) 先于速度。二者冲突时，先保证安全、守住权限：只有受影响的动作停下或改用稳妥的做法，其余工作照常推进。稳妥的做法撤销代价低的，可以先做，事后报告。
 '''
