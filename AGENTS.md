@@ -28,8 +28,11 @@ punctuation.
 
 - `constitution/`: the constitution sources, `index.toml` and one
   directory per article, `articles/<NN>-<id>/`, holding `article.toml` and
-  one `<NN>-<id>.toml` per section (`<NN>a-<id>.toml` for one inserted
-  later), each with its items inside it; each text in both languages. A
+  one `<NN>-<id>.toml` per section, each with its items inside it; each
+  text in both languages. While the constitution is a draft, a new section
+  takes the next number and the ones after it are renamed; only after the
+  first approved revision does one inserted between two others take a
+  suffix, `<NN>a-<id>.toml`. A
   change to their text follows the constitution's amendment procedure;
   what the constitution protects is in `docs/design.md` (File structure).
   Article and section numbers are the name prefixes, written nowhere else;
