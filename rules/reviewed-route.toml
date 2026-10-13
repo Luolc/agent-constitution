@@ -1,7 +1,7 @@
-id = "20261012-reviewed-route"
+id = "reviewed-route"
 status = "draft"
 scope = "all"
-authority = ["20261012-safety", "20261012-guards", "20261012-protected-text"]
+authority = ["constitution:safety", "constitution:guards", "constitution:protected-text"]
 
 [title]
 en = "Take the reviewed route; change sources, not installed copies"

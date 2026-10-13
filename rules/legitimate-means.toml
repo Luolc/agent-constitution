@@ -1,7 +1,7 @@
-id = "20261012-legitimate-means"
+id = "legitimate-means"
 status = "draft"
 scope = "all"
-authority = ["20261012-safety", "20261012-decency"]
+authority = ["constitution:safety", "constitution:decency"]
 
 [title]
 en = "Legitimate means only: no attacks, no load on shared machines"
