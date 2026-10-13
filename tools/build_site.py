@@ -61,8 +61,8 @@ PAGES = {
            "omitted_agent": "The version compiled for agents",
            "info": "About these numbers",
            "counted": "Tokens are counted by Anthropic's token counting API (count_tokens) for {model}.",
-           "not_counted": ("Tokens were not counted: the build had no credential for Anthropic's token"
-                           " counting API (count_tokens), or the call failed."),
+           "not_counted": ("Tokens are counted by Anthropic's token counting API (count_tokens) for {model};"
+                           " this build had no credential for it, or the call failed, so they were not counted."),
            "agent_note": ("The numbers are those of the version agents read, which leaves out the text of the"
                           " sections and items written for human readers, keeping only a pointer to the full"
                           " version, and has no anchors or links."),
@@ -79,7 +79,7 @@ PAGES = {
            "omitted_agent": "给 agent 编译的版本",
            "info": "关于这些数字",
            "counted": "token 数由 Anthropic 的 token 计数接口 (count_tokens) 按 {model} 计算。",
-           "not_counted": "token 数未计算：构建时没有 Anthropic token 计数接口 (count_tokens) 的凭证，或者调用失败。",
+           "not_counted": "token 数按 Anthropic 的 token 计数接口 (count_tokens) 以 {model} 计数；这次构建没有凭证，或者调用失败，未计算。",
            "agent_note": "这里的数字是 agent 读的精简版：写给人读的条款不收正文，只留一句「见完整版」，也不含锚点和链接。",
            "full": "本页完整版：{length}。",
            "source": "按修订号 {revision}{commit} 计算。",
@@ -164,7 +164,7 @@ def page(markdown: str, agent_markdown: str, labels: dict[str, str], revision: s
     text = counted(markdown)
     counts = labels["counted"].format(model=COUNT_MODEL)
     if tokens is None or agent_tokens is None:
-        counts = labels["not_counted"]
+        counts = labels["not_counted"].format(model=COUNT_MODEL)
     source = labels["source"].format(revision=revision, commit=labels["commit"].format(commit=commit) if commit else "")
     agent_length = labels["agent_length"].format(length=length(counted(agent_markdown), labels, agent_tokens))
     popup = "".join(f'<span class="count-line">{line}</span>' for line in [

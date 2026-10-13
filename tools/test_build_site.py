@@ -89,8 +89,8 @@ class PageTest(unittest.TestCase):
                 "Counted at revision 0.6, commit abc1234.",
                 '<a href="/agent/">See the version agents read</a>']),
             ("en", None, None, None, [
-                "Tokens were not counted: the build had no credential for Anthropic's token counting API"
-                " (count_tokens), or the call failed.",
+                "Tokens are counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5; this build"
+                " had no credential for it, or the call failed, so they were not counted.",
                 "The full version on this page: 25 characters · 5 words · tokens not counted.",
                 "Counted at revision 0.6."]),
             ("zh", 12345, 345, "abc1234", [
@@ -100,7 +100,7 @@ class PageTest(unittest.TestCase):
                 "按修订号 0.6、commit abc1234 计算。",
                 '<a href="/zh/agent/">查看 agent 读到的版本</a>']),
             ("zh", None, None, None, [
-                "token 数未计算：构建时没有 Anthropic token 计数接口 (count_tokens) 的凭证，或者调用失败。",
+                "token 数按 Anthropic 的 token 计数接口 (count_tokens) 以 claude-opus-5-5 计数；这次构建没有凭证，或者调用失败，未计算。",
                 "本页完整版：15 字符 · token 数未计算。",
                 "按修订号 0.6 计算。"]),
         ]
