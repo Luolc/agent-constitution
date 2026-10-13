@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Each body of instructions writes what is specific to it, without restating higher-ranking provisions; a fact is written once and referenced elsewhere.
+Each body of instructions writes only what is specific to it and does not restate higher-ranking provisions; a fact is written in one place and referenced elsewhere.
 '''
 zh = '''
-每一组指令写它特有的内容，不重复上位法；同一个事实写在一处，别处引用它。
+每一组指令只写它特有的内容，不重复上位法；同一个事实只写在一处，别处引用它。
 '''
