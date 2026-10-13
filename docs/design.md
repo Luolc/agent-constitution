@@ -623,18 +623,25 @@ is a release (`boundary-rule`) and not set up.
   and link definitions included: characters in both languages, words split
   on white space in English, and tokens as counted for `claude-opus-5-5`
   by Anthropic's count_tokens API (`POST /v1/messages/count_tokens`,
-  standard library only). The API key comes only from the environment
-  variable `CONSTITUTION_TOKEN_COUNT_API_KEY`, never from a file in this
-  repo, and never reaches the output, the logs or the page; a failure
-  prints one line with the HTTP status or the exception's class. Without
-  the key, or when the call fails or takes over 10 seconds, the page says
-  the tokens were not counted and the build goes on. The future Pages
-  workflow will pass the key from the repository's GitHub Actions secret
-  of the same name; the CI on pull requests gets no key, and neither does
-  a pull request from a fork. A local build that wants the count sets the
-  variable for that one command, reading the key from the maintainer's
-  secret store. So the pages of one commit differ with and without the
-  key, in that line only.
+  standard library only).
+- Credential: only from the environment, never from a file in this repo,
+  in one of two variables. `CONSTITUTION_TOKEN_COUNT_API_KEY` holds an API
+  key, sent as `x-api-key`. `CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN` holds a
+  short-lived access token that a workflow got through Anthropic's
+  Workload Identity Federation (its OIDC token exchanged at
+  `POST /v1/oauth/token`), sent as `Authorization: Bearer`; when both are
+  set, the token is used, so a key left behind does not shadow the
+  federation. The credential never reaches the output, the logs or the
+  page; a failure prints one line with the HTTP status or the exception's
+  class. Without a credential, or when the call fails or a connect or read
+  stalls for 10 seconds, the page says the tokens were not counted and the
+  build goes on. The future Pages workflow will set one of the two: the
+  key from the repository's GitHub Actions secret of the same name, or the
+  token it has just exchanged; the CI on pull requests gets neither, and
+  neither does a pull request from a fork. A local build that wants the
+  count sets the key variable for that one command, reading the key from
+  the maintainer's secret store. So the pages of one commit differ with
+  and without a credential, in that line only.
 - Generator: Hugo, a single binary pinned by version in `build_site.py`
   and in CI, with the theme hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language

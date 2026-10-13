@@ -6,9 +6,10 @@ language: the header line that says the file is generated is dropped, the
 title goes into the front matter, the revision and the length of the text
 are set under the title, and the text is wrapped in
 `<div class="constitution">` for the style sheet. The token count comes
-from Anthropic's count_tokens API when CONSTITUTION_TOKEN_COUNT_API_KEY is
-set; without the key, or when the call fails, the page says the tokens were
-not counted and the build goes on. The pages are written to a temporary
+from Anthropic's count_tokens API when CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
+or CONSTITUTION_TOKEN_COUNT_API_KEY is set; without either, or when the
+call fails, the page says the tokens were not counted and the build goes
+on. The pages are written to a temporary
 content directory, Hugo builds web/ (the hugo-book theme, a submodule) into
 site/, English at site/ and Chinese at site/zh/, and check_site_anchors.py
 checks the result. site/ is not committed. The setup is described in
@@ -16,6 +17,7 @@ docs/design.md (Static site).
 """
 
 import argparse
+import http.client
 import json
 import os
 import re
@@ -33,10 +35,13 @@ ROOT = Path(__file__).resolve().parent.parent
 HUGO = "hugo-0.167.0"  # the same version as the CI step that builds the site
 # `## <a id="general-provisions"></a>Article I. ...`
 HEADING_ANCHOR = re.compile(r'^(#{2,6}) <a id="([^"]+)"></a>(.*)$', re.M)
-KEY_VARIABLE = "CONSTITUTION_TOKEN_COUNT_API_KEY"
+KEY_VARIABLE = "CONSTITUTION_TOKEN_COUNT_API_KEY"  # sent as x-api-key
+# A short-lived access token from Workload Identity Federation, sent as
+# Authorization: Bearer; it wins over the key when both are set.
+TOKEN_VARIABLE = "CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN"
 COUNT_URL = "https://api.anthropic.com/v1/messages/count_tokens"
 COUNT_MODEL = "claude-opus-5-5"
-COUNT_TIMEOUT = 10  # seconds; a slow API must not hold up the build
+COUNT_TIMEOUT = 10  # seconds per connect or read; a stalled API must not hold up the build
 # Language: the content file and the labels under the title.
 PAGES = {
     "en": {"file": "_index.md", "revision": "Revision",
@@ -55,23 +60,32 @@ def counted(markdown: str) -> str:
     return markdown.partition("\n")[2]
 
 
-def count_tokens(text: str, key: str | None) -> int | None:
-    """The tokens of text for COUNT_MODEL, or None without a key or when the
-    call fails. A failure prints one line with the HTTP status or the
-    exception's class, never the request or the exception, which may hold
-    the key."""
-    if not key:
+def credential(environ: dict[str, str]) -> dict[str, str] | None:
+    """The header that authenticates the count, or None without a credential."""
+    if token := environ.get(TOKEN_VARIABLE):
+        return {"authorization": f"Bearer {token}"}
+    if key := environ.get(KEY_VARIABLE):
+        return {"x-api-key": key}
+    return None
+
+
+def count_tokens(text: str, auth: dict[str, str] | None) -> int | None:
+    """The tokens of text for COUNT_MODEL, or None without a credential or
+    when the call fails. A failure prints one line with the HTTP status or
+    the exception's class, never the request or the exception, which may
+    hold the credential."""
+    if not auth:
         return None
     request = urllib.request.Request(
         COUNT_URL,
         data=json.dumps({"model": COUNT_MODEL, "messages": [{"role": "user", "content": text}]}).encode(),
-        headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+        headers={**auth, "anthropic-version": "2023-06-01", "content-type": "application/json"})
     try:
         with urllib.request.urlopen(request, timeout=COUNT_TIMEOUT) as response:
             return int(json.load(response)["input_tokens"])
     except urllib.error.HTTPError as e:
         print(f"token count: HTTP {e.code}; tokens not counted", file=sys.stderr)
-    except (OSError, ValueError, KeyError, TypeError) as e:
+    except (OSError, http.client.HTTPException, ValueError, KeyError, TypeError) as e:
         print(f"token count: {type(e).__name__}; tokens not counted", file=sys.stderr)
     return None
 
@@ -100,15 +114,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=ROOT / "site", help="the output directory (default: site/)")
     args = parser.parse_args(argv)
     revision = tomllib.loads((ROOT / "constitution/index.toml").read_text(encoding="utf-8"))["revision"]
-    key = os.environ.get(KEY_VARIABLE)
-    if not key:
-        print(f"{KEY_VARIABLE} is not set; tokens not counted", file=sys.stderr)
+    auth = credential(os.environ)
+    if not auth:
+        print(f"neither {TOKEN_VARIABLE} nor {KEY_VARIABLE} is set; tokens not counted", file=sys.stderr)
     with tempfile.TemporaryDirectory() as content:
         for lang, labels in PAGES.items():
             source = ROOT / f"constitution/constitution.{lang}.md"
             markdown = source.read_text(encoding="utf-8")
             try:
-                text = page(markdown, labels, revision, count_tokens(counted(markdown), key))
+                text = page(markdown, labels, revision, count_tokens(counted(markdown), auth))
             except ValueError as e:
                 print(f"{source.relative_to(ROOT)}: {e}", file=sys.stderr)
                 return 1
