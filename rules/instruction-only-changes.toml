@@ -1,0 +1,50 @@
+id = "instruction-only-changes"
+status = "draft"
+scope = "all"
+authority = ["constitution:separate-instruction-changes", "constitution:checks-everywhere"]
+
+[title]
+en = "Change instructions in a change of their own"
+zh = "修改指令单独成一个变更"
+
+[content]
+en = '''
+Instruction files are the files that direct or constrain agents:
+
+- `AGENTS.md` and `CLAUDE.md`, in any directory;
+- everything under `.agents/skills/` and `.claude/skills/`;
+- subagent definitions and slash commands of agent tools, for example everything under `.claude/agents/` and `.claude/commands/`;
+- the hooks and permission settings of agent tools, for example `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/` and everything under `.codex/`;
+- the sources that instructions are compiled or generated from, such as the sources of the constitution and of the rules;
+- any other path that a repository declares as instructions in its own `AGENTS.md`.
+
+CI configuration, git commit hook configuration and tool code are not instruction files.
+
+A change (a pull request) whose changed files include both instruction files and other files does not comply ({@constitution:separate-instruction-changes}); a rename counts as removing the old path and adding the new one. The agent splits it in two: the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
+
+A generated file that CI shows to equal the output of its build is not classed on its own: it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
+
+Where a repository has a check for this, the check runs in CI and fails a change that mixes the two. Where it has none, the rule holds all the same, and review enforces it.
+
+When unsure whether a file is an instruction file, treat it as one.
+'''
+zh = '''
+指令文件是指示或约束 agent 的文件：
+
+- 任何目录下的 `AGENTS.md` 和 `CLAUDE.md`；
+- `.agents/skills/` 和 `.claude/skills/` 下的所有文件；
+- agent 工具的 subagent 定义和 slash command，例如 `.claude/agents/` 和 `.claude/commands/` 下的所有文件；
+- agent 工具的 hook 和权限配置，例如 `.claude/settings.json`、`.claude/settings.local.json`、`.claude/hooks/` 以及 `.codex/` 下的一切；
+- 编译或生成指令所依据的源文件，例如宪法和规则的源文件；
+- 仓库在自己的 `AGENTS.md` 里声明为指令的其他路径。
+
+CI 配置、git 的 commit hook 配置和工具代码不算指令文件。
+
+一个变更 (pull request) 改动的文件里既有指令文件、又有其他文件的，不合规 ({@constitution:separate-instruction-changes})；改名按删除旧路径、新增新路径两项计。agent 把它拆成两个变更：修改指令的那个先合入并生效，其余的工作再按新指令进行。
+
+CI 已证明与构建结果一致的生成文件，不单独归类，归入使它发生变化的那一方。工具的修改使这类文件发生变化的，变更说明里写明变化只在渲染、不改变含义，由审查核对这一点。含义变了的，按修改指令处理。
+
+仓库有这项检查的，检查在 CI 里运行，混合了两类文件的变更直接判为不通过；没有这项检查的仓库同样要遵守，由审查把关。
+
+拿不准某个文件是不是指令文件的，按是处理。
+'''
