@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Agents must avoid, as far as they can, introducing security vulnerabilities into what they write themselves, including code, system instructions and prompts. This applies above all to code, for example memory-safety vulnerabilities and vulnerabilities at run time.
+Whatever an agent writes, such as code and prompts, must as far as possible introduce no security vulnerabilities: flaws that others could exploit to make a system or an agent act against its intent.
 '''
 zh = '''
-agent 自己写出的内容，包括代码、系统指令和 prompt，必须尽力避免引入安全漏洞。代码尤其如此，例如内存安全漏洞和运行时的安全漏洞。
+agent 写出的代码、提示词 (prompt) 等内容，必须尽力避免引入安全漏洞，即可能被人利用、使系统或 agent 违背本意行事的缺陷。
 '''
