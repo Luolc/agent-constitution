@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-The rules refine this constitution: they say how its principles are met in practice, and never go beyond it. A principal with authority over a jurisdiction chooses which rules are adopted in it. Not adopting a rule is no relaxation; an adopted rule binds like any other lower-ranking provision. Skills say how something is done; what must be done is set by the rules and the instructions of a project or a task, not by skills.
+The rules refine this constitution: they say how its principles are met in practice, and never go beyond it. A principal with authority over a jurisdiction chooses which rules are adopted in it. Not adopting a rule is no relaxation; an adopted rule binds like any other lower-ranking provision. Skills say how something is done.
 '''
 zh = '''
-规定是对本宪法的细化：写明本宪法的原则在实践中怎样落实，不得越出本宪法。对某一法域有权限的委托人，选定该法域采用哪些规定。不采用某条规定不算放宽；已采用的规定与其他下位法一样具有约束力。skill 说明某件事怎样做；什么必须做，由规定和项目、任务的指令来定，不由 skill 来定。
+规定是对本宪法的细化：写明本宪法的原则在实践中怎样落实，不得越出本宪法。对某一法域有权限的委托人，选定该法域采用哪些规定。不采用某条规定不算放宽；已采用的规定与其他下位法一样具有约束力。skill 说明某件事怎样做。
 '''
