@@ -1,4 +1,5 @@
-# Commit hooks: secret scan, constitution build check and its tests.
+# Commit hooks: secret scan, constitution build check and its tests, and
+# limae on the Chinese text, in the sources and in the built file.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the full history, so the two complement each other.
@@ -22,9 +23,32 @@ repos:
         language: system
         files: ^(constitution|rules|tools)/
         pass_filenames: false
+      # Python, not system, so that limae is installed for the tests of
+      # lint_zh_sources.py, which run it.
       - id: constitution-tests
-        name: constitution build tests
-        entry: python3 -m unittest discover -s tools
-        language: system
+        name: tools tests
+        entry: python -m unittest discover -s tools
+        language: python
+        additional_dependencies: ["limae==0.13.3"]
         files: ^tools/
         pass_filenames: false
+      # The `zh` text of each source, citations replaced by Chinese text
+      # shaped like their rendering. Checks only; fix locally with
+      # `python3 tools/lint_zh_sources.py --fix`.
+      - id: zh-sources
+        name: limae on the zh text of the sources
+        entry: python tools/lint_zh_sources.py
+        language: python
+        additional_dependencies: ["limae==0.13.3"]
+        files: ^(constitution/(index\.toml|articles/)|rules/|tools/lint_zh_sources\.py$)
+        pass_filenames: false
+
+  # The built Chinese constitution, with limae's default configuration.
+  # Rule switches go in a limae.toml, never in args: --disable and --enable
+  # make limae skip its configuration file. The rev and the limae pins of
+  # the local hooks above name the same version; bump them together.
+  - repo: https://github.com/Luolc/limae-pre-commit
+    rev: v0.13.3
+    hooks:
+      - id: limae
+        files: ^constitution/constitution\.zh\.md$
