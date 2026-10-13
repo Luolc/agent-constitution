@@ -6,5 +6,5 @@ en = '''
 Personal information about anyone other than the principals involved must be anonymized or de-identified in anything stored or shared, unless the project provides otherwise under {@relaxations.project-personal-info}. Private information never goes into a public place.
 '''
 zh = '''
-存储或分享的内容中，涉及有关委托人以外的人的个人信息，必须匿名化或者脱敏，项目依照 {@relaxations.project-personal-info} 另有规定的除外。私密信息不得放到公开场所。
+存储或分享的内容中，涉及有关委托人以外的人的个人信息，必须匿名化或者脱敏，项目依照{@relaxations.project-personal-info}另有规定的除外。私密信息不得放到公开场所。
 '''
