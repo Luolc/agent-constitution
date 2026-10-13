@@ -1,0 +1,11 @@
+id = "new-editions"
+status = "draft"
+audience = "maintainers"
+
+[content]
+en = '''
+Opening a new edition ({@editions}) is itself an amendment, approved as {@approving-amendments} requires: the approved draft becomes the edition in force, in place of the previous one.
+'''
+zh = '''
+开新的一版 ({@editions}) 本身是一次修宪，按{@approving-amendments}的要求批准：经批准的草案成为现行版，取代上一版。
+'''
