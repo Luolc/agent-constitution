@@ -189,8 +189,8 @@ ZH = """\
 导语，见第二条第一款之一。
 
 - 第一款 一，见第二条第一款。
-  - （一）钱。
-  - （二）机器；{braces} 与 {@Nope} 不变。
+  - (一) 钱。
+  - (二) 机器；{braces} 与 {@Nope} 不变。
     更多。
 
 ## 第二条 第二
@@ -287,7 +287,7 @@ class RenderTest(Tree):
         self.assertIn("\n  - (2) (repealed November 2026)\n", outputs["en"])
         self.assertIn("\n- §1 (repealed November 2026)\n", outputs["en"])
         self.assertTrue(outputs["en"].endswith("## Article III (repealed December 2026)\n"))
-        self.assertIn("\n  - （二） (2026 年 11 月废止)\n", outputs["zh"])
+        self.assertIn("\n  - (二) (2026 年 11 月废止)\n", outputs["zh"])
         self.assertIn("\n- 第一款 (2026 年 11 月废止)\n", outputs["zh"])
         self.assertTrue(outputs["zh"].endswith("## 第三条 (2026 年 12 月废止)\n"))
 
@@ -298,7 +298,7 @@ class RenderTest(Tree):
         self.assertEqual(errors, [])
         self.assertIn("\n  - (1a) Machines;", outputs["en"])
         self.assertIn("- §1 Four, see Art. I §1(1a) and", outputs["en"])
-        self.assertIn("\n  - （一之一）机器；", outputs["zh"])
+        self.assertIn("\n  - (一之一) 机器；", outputs["zh"])
         self.assertIn("- 第一款 四，见第一条第一款第一项之一和", outputs["zh"])
 
     def test_active_title_names_the_edition(self):
@@ -391,7 +391,7 @@ class RenderTest(Tree):
         self.assertEqual(zh.section_number(12, "a"), "第十二款之一")
         self.assertEqual(en.item_ref(3, "b"), "(3b)")
         self.assertEqual(zh.item_ref(3, "b"), "第三项之二")
-        self.assertEqual(zh.item_marker(12, ""), "（十二）")
+        self.assertEqual(zh.item_marker(12, ""), "(十二) ")
 
 
 class CheckTest(Tree):
