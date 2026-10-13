@@ -111,13 +111,15 @@ verification. Each step is usable on its own.
 
 The protected foundations of C8 map to these paths in the core:
 `constitution/` (the constitution), `tools/` and `schema/` (compiler,
-checkers and the fixture gate's code), and `.github/workflows/` (the CI that
-runs them and gates releases). A change to any of these paths follows C8,
-not the rule-library path of C7. The gate is protected, not its data: adding
-a fixture or regenerating `examples/golden/` after a rule change goes through
-C7 like the rule change itself; removing or weakening an existing redline
-fixture follows C9. The configuration that loads instructions and guards
-lives on the private side and is protected there.
+checkers and the fixture-gate runner), and `.github/workflows/` (the CI that
+runs them and requires the full fixture set to pass before a release). A
+change to any of these paths needs a person's approval under C9, not the
+rule-library path of C7. The gate is protected, not its data: adding a
+fixture of either kind, editing a happy-path fixture, or regenerating
+`examples/golden/` because rules changed goes through C7 like the rule
+change itself. Removing or weakening an existing redline fixture is a C9
+change. The configuration that loads instructions and guards lives on the
+private side and is protected there.
 
 ## Source formats
 
@@ -175,10 +177,11 @@ rule needs them, not before.
 IDs: rules migrated from the current hand-written guide keep their `R<n>`,
 whichever side they move to, so the references already in repo files,
 reviews and the casebook keep their meaning. New general rules continue the
-`R` sequence in this repo, above the highest migrated number. New rules that exist only in the private overlay
-use `O<n>`, so the two sides never compete for the next number (`P0`–`P2`
-are taken by the priority classes of C7.4). Retired numbers stay retired. The compiler
-checks that the union of core and overlay IDs is unique.
+`R` sequence in this repo, above the highest migrated number. New rules that
+exist only in the private overlay use `O<n>`, so the two sides never compete
+for the next number (`P0`–`P2` are taken by the priority classes of C7.4).
+Retired numbers stay retired. The compiler checks that the union of core and
+overlay IDs is unique.
 
 ### Relaxation declarations
 
@@ -253,7 +256,8 @@ The compiler is a deterministic concatenation, no model involved:
 6. Write the output and the manifest: the SHA-256 of each input file (sorted
    by path), core version and commit, compiler version (the core version,
    since the compiler lives here), constitution revision, input digest,
-   output digest and size. No timestamps; the same inputs give byte-identical output.
+   output digest and size. No timestamps; the same inputs give
+   byte-identical output.
 
 Roles: there is one output for everyone. The core has no role sections. The
 overlay contributes, as a private rule, the one or two sentences that tell
