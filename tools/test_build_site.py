@@ -121,10 +121,15 @@ class PageTest(unittest.TestCase):
                 out = build_site.agent_page(md, labels, "0.6")
                 self.assertTrue(out.startswith(f'+++\ntitle = "{title[2:]}"\nbookHidden = true\n+++\n'
                                                '<div class="constitution">\n'))
-                self.assertIn(f'{title}\n\n<p class="revision">{labels["revision"]} 0.6<br><span class="back">'
-                              f'<a href="{labels["home"]}">{labels["back"]}</a></span></p>\n', out)
-                self.assertIn("\n".join(md.split("\n")[3:]), out)
+                self.assertIn(f'{title} {{anchor=false}}\n\n<p class="revision">{labels["revision"]} 0.6<br>'
+                              f'<span class="back"><a href="{labels["home"]}">{labels["back"]}</a></span></p>\n', out)
                 text = out.split("</p>\n", 1)[1]
+                lines = text.split("\n")
+                headings = [line for line in lines if line.startswith("#")]
+                self.assertEqual(len(headings), md.count("\n## "))
+                for heading in headings:
+                    self.assertTrue(heading.endswith(" {anchor=false}"), heading)
+                self.assertEqual([line.removesuffix(" {anchor=false}") for line in lines[:-3]], md.split("\n")[3:])
                 for anchor_or_link in ("<a ", "](", "{#", "\n[", build_site.OMITTED_MARK):
                     self.assertNotIn(anchor_or_link, text)
 

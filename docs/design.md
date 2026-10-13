@@ -672,7 +672,8 @@ is a release (rule `must-ask-items`) and not set up.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, built the
   same way but with its text as is: no anchors, no links, the provisions
-  for maintainers only their numbers. Under the revision, a link leads
+  for maintainers only their numbers. Its headings carry
+  `{anchor=false}`, so the theme adds no `#` link to them. Under the revision, a link leads
   back to the full version. The page is hidden from hugo-book's list of
   pages; the sidebar, the language switch (to the other language's version
   for agents) and the color switch are as on the home page, the list of
@@ -686,6 +687,8 @@ is a release (rule `must-ask-items`) and not set up.
   button after it opens a popup, on hover or a click or tap; it is a
   disclosure button (`aria-expanded`), reached with the keyboard, and
   Escape closes it (`web/assets/count-info.js`, inlined in `<head>`). The
+  popup hangs from the button with no gap and the button inside its width,
+  so the pointer reaches its link without leaving it. The
   popup says which API counted the tokens for which model (the model is
   `COUNT_MODEL` in `build_site.py`) or why they were not counted, that the
   numbers are those of the version for agents and what it leaves out,

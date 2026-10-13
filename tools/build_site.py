@@ -126,6 +126,10 @@ INFO_ICON = ('<svg viewBox="0 0 16 16" width="1em" height="1em" aria-hidden="tru
              '<circle cx="8" cy="4.75" r="1" fill="currentColor"/>'
              '<path d="M8 7v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>')
 
+# A heading attribute that tells hugo-book's heading render hook to leave
+# out its `#` link.
+NO_ANCHOR = " {anchor=false}"
+
 
 def split(markdown: str) -> tuple[str, list[str]]:
     """The `# ` title of a built constitution and the lines after it."""
@@ -176,11 +180,13 @@ def page(markdown: str, agent_markdown: str, labels: dict[str, str], revision: s
 def agent_page(agent_markdown: str, labels: dict[str, str], revision: str) -> str:
     """The Hugo page of the version for agents: its text as agents read it,
     under the revision and a link back to the full version. Hidden from
-    the sidebar's list of pages."""
+    the sidebar's list of pages; its headings get no anchor link from the
+    theme."""
     title, rest = split(agent_markdown)
     revision_line = (f'<p class="revision">{labels["revision"]} {revision}<br>'
                      f'<span class="back"><a href="{labels["home"]}">{labels["back"]}</a></span></p>')
-    return "\n".join([front(title, "bookHidden = true"), '<div class="constitution">', "", title, "",
+    rest = [line + NO_ANCHOR if line.startswith("#") else line for line in rest]
+    return "\n".join([front(title, "bookHidden = true"), '<div class="constitution">', "", title + NO_ANCHOR, "",
                       revision_line, *rest, "", "</div>", ""])
 
 

@@ -120,11 +120,14 @@
   letter-spacing: normal;
   font-size: .85em;
 }
-/* The info button after the length and its popup. The popup is a block
-   with no top offset, so it starts right under the line of the button;
-   the revision line is its containing block and gives it its width, so it
-   stays on the page on a narrow screen. */
+/* The info button after the length and its popup. The popup hangs from
+   the bottom of the button's box with no gap, its right edge just past the
+   button, so the pointer goes straight from the button into it. On a
+   narrow screen it spans the revision line instead, which holds the
+   button, and starts right under the button. A bridge above the popup
+   covers the space between the button and the popup's border. */
 .constitution .revision { position: relative; }
+.constitution .count-info { position: relative; display: inline-block; }
 .constitution .count-button {
   font: inherit;
   font-size: .85em;
@@ -144,10 +147,10 @@
   display: none;
   position: absolute;
   z-index: 2;
-  left: 0;
-  right: 0;
-  width: min(26em, 100%);
-  margin-inline: auto;
+  top: 100%;
+  right: -.5em;
+  width: 26em;
+  margin-top: .4em;
   padding: .7em 1em;
   font-variant: normal;
   letter-spacing: normal;
@@ -159,6 +162,18 @@
   border: 1px solid var(--c-rule);
   border-radius: .3rem;
   box-shadow: 0 .3em 1em color-mix(in srgb, var(--c-ink) 20%, transparent);
+}
+.constitution .count-popup::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: calc(.4em + 1px);
+}
+@media (max-width: 48rem) {
+  .constitution .count-info { position: static; }
+  .constitution .count-popup { top: auto; left: 0; right: 0; width: auto; }
 }
 .constitution .count-info:hover .count-popup,
 .constitution .count-info.open .count-popup { display: block; }
