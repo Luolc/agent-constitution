@@ -308,6 +308,44 @@ class RenderTest(Tree):
         self.assertIn("\n# Test Constitution (2026-10 Edition)\n", outputs["en"])
         self.assertIn("\n# 测试宪法 (2026-10 版)\n", outputs["zh"])
 
+    def test_adjacent_section_citations_render_short(self):
+        self.write(f"{B}/02-beta-three.toml", 'id = "beta-three"\nstatus = "draft"\n\n'
+                   '[content]\nen = "Three."\nzh = "三。"\n')
+        cites = [
+            ("{@beta-one} and {@beta-two}", "{@beta-one}和{@beta-two}"),
+            ("{@beta-one} to {@beta-three}", "{@beta-one}至{@beta-three}"),
+            ("{@beta-one}, {@beta-two} or {@beta-three}", "{@beta-one}、{@beta-two}或{@beta-three}"),
+            ("{@alpha-one} and {@beta-one}", "{@alpha-one}和{@beta-one}"),
+            ("{@beta-one} and then {@beta-two}", "{@beta-one}和后来的{@beta-two}"),
+            ("{@beta} and {@beta-one}", "{@beta}和{@beta-one}"),
+            ("{@beta-one} and {@beta-two.x}", "{@beta-one}和{@beta-two.x}"),
+            ("{@alpha-one.money} and {@beta-one}", "{@alpha-one.money}和{@beta-one}"),
+        ]
+        self.edit(f"{B}/01a-beta-two.toml", 'status = "draft"', 'status = "draft"\nitems = [{ id = "x",'
+                  ' number = "1", status = "draft", content = { en = "X.", zh = "X。" } }]')
+        en = "\n".join(f"Cite {e}." for e, _ in cites)
+        zh = "\n".join(f"引用{z}。" for _, z in cites)
+        self.edit(f"{A}/01-alpha-one.toml", "One, see {@beta-one}.", en)
+        self.edit(f"{A}/01-alpha-one.toml", "一，见{@beta-one}。", zh)
+        errors, _, outputs = bc.build(self.root)
+        self.assertEqual(errors, [])
+        self.assertIn("- §1 Cite Art. II §1 and §1a.\n"
+                      "  Cite Art. II §1 to §2.\n"
+                      "  Cite Art. II §1, §1a or §2.\n"
+                      "  Cite Art. I §1 and Art. II §1.\n"
+                      "  Cite Art. II §1 and then Art. II §1a.\n"
+                      "  Cite Art. II and Art. II §1.\n"
+                      "  Cite Art. II §1 and Art. II §1a(1).\n"
+                      "  Cite Art. I §1(1) and Art. II §1.\n", outputs["en"])
+        self.assertIn("- 第一款 引用第二条第一款和第一款之一。\n"
+                      "  引用第二条第一款至第二款。\n"
+                      "  引用第二条第一款、第一款之一或第二款。\n"
+                      "  引用第一条第一款和第二条第一款。\n"
+                      "  引用第二条第一款和后来的第二条第一款之一。\n"
+                      "  引用第二条和第二条第一款。\n"
+                      "  引用第二条第一款和第二条第一款之一第一项。\n"
+                      "  引用第一条第一款第一项和第二条第一款。\n", outputs["zh"])
+
     def test_adjacent_item_citations_render_short(self):
         three = '[[items]]\nid = "people"\nnumber = "3"\nstatus = "draft"\n\n[items.content]\nen = "People."\nzh = "人。"\n'
         self.write(f"{A}/01-alpha-one.toml", ALPHA_ONE + "\n" + three)
@@ -734,6 +772,23 @@ class BaseTest(Tree):
         self.assertEqual(self.base_errors(), (["constitution/index.toml:3: check 7:"
                                                " revision 1 is lower than revision 2 at base HEAD;"
                                                " a new edition cannot start in the same month as the base's"], ""))
+
+    def test_base_without_edition(self):
+        self.activate()
+        self.edit("constitution/index.toml", 'edition = "2026-10"\n', "")
+        self.git("init", "-q")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "base")
+        self.edit("constitution/index.toml", 'revision = "1"', 'edition = "2026-10"\nrevision = "1"')
+        self.assertEqual(self.base_errors(), (["constitution/index.toml:2: check 7:"
+                                               " edition 2026-10 is not later than edition None at base HEAD"], ""))
+
+    def test_non_ascii_digit_revision_is_not_compared(self):
+        self.activate()
+        self.edit("constitution/index.toml", 'revision = "1"', 'revision = "²"')
+        self.commit_base(active=False)
+        self.edit("constitution/index.toml", 'revision = "²"', 'revision = "1"')
+        self.assertEqual(self.base_errors(), ([], ""))
 
     def test_draft_base_skips(self):
         self.commit_base(active=False)
