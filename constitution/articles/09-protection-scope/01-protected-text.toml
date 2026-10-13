@@ -1,5 +1,6 @@
 id = "protected-text"
 status = "draft"
+audience = "maintainers"
 
 [content]
 en = '''

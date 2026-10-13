@@ -1,10 +1,11 @@
 id = "new-editions"
 status = "draft"
+audience = "maintainers"
 
 [content]
 en = '''
 Opening a new edition ({@editions}) is itself an amendment: it takes effect only with the approval {@approving-amendments} requires.
 '''
 zh = '''
-开新的大版本 ({@editions}) 本身是一次修宪，经{@approving-amendments}所要求的批准才能生效。
+开新的一版 ({@editions}) 本身是一次修宪，经{@approving-amendments}所要求的批准才能生效。
 '''
