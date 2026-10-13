@@ -749,8 +749,10 @@ first one that finds errors, printing all of that one's errors:
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
 (`tools/test_build_constitution.py`). Checks 1 to 6 and the tests run as
-commit hooks and in CI; check 7 runs in CI only, against the pull
-request's base commit or, on a push to `main`, the commit before the push.
+commit hooks and in CI; check 7 runs in CI only, on a pull request
+against the tip of the base branch the checked-out merge commit was made
+on (its first parent), on a push to `main` against the commit before the
+push.
 
 The instruction-only check (`tools/check_instruction_changes.py`) keeps
 the changes that an agent reads as instructions apart from all others, so

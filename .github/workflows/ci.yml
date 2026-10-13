@@ -89,33 +89,39 @@ jobs:
           mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
           PATH="${bindir}:${PATH}" python3 tools/build_site.py
 
-      # Numbering against the base: on a pull request its base commit, on a
-      # push the commit before it. The commit hook runs without --base. The
-      # full history above makes both commits available; only a push
-      # without a usable `before` (the first push, or a rewritten history)
-      # skips the comparison and says so. On a pull request a missing base
-      # fails the job through the script's own error.
+      # Numbering against the base: on a pull request the first parent of
+      # the checked-out merge commit, which is the tip of the base branch
+      # the PR was merged onto for this run; on a push the commit before it.
+      # The commit hook runs without --base. The full history above makes
+      # both commits available; only a push without a usable `before` (the
+      # first push, or a rewritten history) skips the comparison and says
+      # so. On a pull request a missing base fails the job. The step prints
+      # the base it uses.
       - name: Constitution numbering against the base commit
         env:
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = push ] && ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
             echo "no base commit to compare with (${BASE}); skipping"
             exit 0
           fi
-          python3 tools/build_constitution.py --check --base "$BASE"
+          base="$(git rev-parse --verify "${BASE}^{commit}")"
+          echo "base: ${base}"
+          python3 tools/build_constitution.py --check --base "$base"
 
       # Instruction files and other files never change together (see
       # docs/design.md, Checkers). Same base as the step above, skipped the
       # same way on a push without a usable `before`.
       - name: Instruction-only changes against the base commit
         env:
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = push ] && ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
             echo "no base commit to compare with (${BASE}); skipping"
             exit 0
           fi
-          python3 tools/check_instruction_changes.py --base "$BASE"
+          base="$(git rev-parse --verify "${BASE}^{commit}")"
+          echo "base: ${base}"
+          python3 tools/check_instruction_changes.py --base "$base"
