@@ -6,5 +6,5 @@ en = '''
 Each approved change to this text increments `revision`, the revision number within the edition ({@editions}). Affected lower-ranking provisions are reviewed again, neither assumed valid nor repealed wholesale.
 '''
 zh = '''
-本文本每通过一次修改，大版本内的修订号 `revision` 加一 ({@editions})。受影响的下位规定要重新审查，既不默认仍然有效，也不整体废止。
+本文本每通过一次修改，大版本内的修订号 `revision` 加一 ({@editions})。受影响的下位法要重新审查，既不默认仍然有效，也不整体废止。
 '''

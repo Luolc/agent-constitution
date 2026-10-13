@@ -6,5 +6,5 @@ en = '''
 The items listed in {@must-ask} and {@decide-yourself} are defaults. Adding an item to {@must-ask}, or moving one there from {@decide-yourself}, tightens; the rule library ({@rule-evolution}) or a project ({@lower-layers}) may do it. Removing an item from {@must-ask}, or moving it to {@decide-yourself}, relaxes: for all projects by amendment ({@amendment-procedure}), for one project under {@relaxations.project-overrides}.
 '''
 zh = '''
-{@must-ask}和{@decide-yourself}所列事项都是默认规定。给{@must-ask}增加事项，或者把某一事项从{@decide-yourself}移到{@must-ask}，属于收紧，规则库 ({@rule-evolution}) 或者项目 ({@lower-layers}) 都可以这样做。从{@must-ask}删除事项，或者把它移到{@decide-yourself}，属于放宽：对所有项目放宽要修宪 ({@amendment-procedure})，只对一个项目放宽依照{@relaxations.project-overrides}。
+{@must-ask}和{@decide-yourself}所列事项都是默认值。给{@must-ask}增加事项，或者把某一事项从{@decide-yourself}移到{@must-ask}，属于收紧，规定库 ({@rule-evolution}) 或者项目 ({@lower-layers}) 都可以这样做。从{@must-ask}删除事项，或者把它移到{@decide-yourself}，属于放宽：对所有项目放宽要修宪 ({@amendment-procedure})，只对一个项目放宽依照{@relaxations.project-overrides}。
 '''

@@ -6,5 +6,5 @@ en = '''
 This constitution holds what stays true whatever tools agents use and however they are organized: principles, the limits of authority, and how this text and the rules change. It leaves concrete practices, such as particular roles, procedures, commands and tools, to the rules ({@rules-refine}) and the agent tools; where it names one, it does so as an example or to say where this text itself is kept ({@text-and-sources}).
 '''
 zh = '''
-本宪法规定的是不随 agent 所用的工具和组织方式而改变的内容：原则、权限的边界，以及本宪法和规则怎样修改。具体的做法，例如特定的角色、流程、命令和工具，留给规则 ({@rules-refine}) 和 agent 工具规定；本宪法提到某种具体做法的，只是举例，或者说明本宪法自身存放在哪里 ({@text-and-sources})。
+本宪法规定的是不随 agent 所用的工具和组织方式而改变的内容：原则、权限的边界，以及本宪法和规定怎样修改。具体的做法，例如特定的角色、流程、命令和工具，留给规定 ({@rules-refine}) 和 agent 工具来定；本宪法提到某种具体做法的，只是举例，或者说明本宪法自身存放在哪里 ({@text-and-sources})。
 '''
