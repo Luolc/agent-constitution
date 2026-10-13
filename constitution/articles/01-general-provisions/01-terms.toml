@@ -89,6 +89,7 @@ zh = '''
 
 [[items]]
 id = "units"
+audience = "maintainers"
 number = "7"
 status = "draft"
 
@@ -102,6 +103,7 @@ zh = '''
 
 [[items]]
 id = "identifier"
+audience = "maintainers"
 number = "8"
 status = "draft"
 
@@ -115,6 +117,7 @@ zh = '''
 
 [[items]]
 id = "amendment"
+audience = "maintainers"
 number = "9"
 status = "draft"
 
@@ -128,6 +131,7 @@ zh = '''
 
 [[items]]
 id = "compiled-instructions"
+audience = "maintainers"
 number = "10"
 status = "draft"
 

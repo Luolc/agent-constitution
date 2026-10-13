@@ -1,5 +1,6 @@
 id = "content-scope"
 status = "draft"
+audience = "maintainers"
 
 [content]
 en = '''

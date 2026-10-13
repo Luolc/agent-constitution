@@ -717,9 +717,10 @@ is a release (rule `must-ask-items`) and not set up.
   (`ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`,
   `ANTHROPIC_SERVICE_ACCOUNT_ID`, `ANTHROPIC_WORKSPACE_ID`; identifiers,
   not secrets), builds the site with `--require-tokens`, and writes the
-  length line of both pages into the job summary. It publishes nothing; a
-  failed exchange or count fails the run. The future Pages workflow will
-  get its token the same way. The CI on pull requests gets no credential,
+  length line of both pages into the job summary and into the log, which,
+  unlike the summary, the API can read. It publishes nothing; a failed
+  exchange or count fails the run. The future Pages workflow will get its
+  token the same way. The CI on pull requests gets no credential,
   and neither does a pull request from a fork. A local build that wants the
   count sets the key variable for that one command, reading the key from
   the maintainer's secret store. So the pages of one commit differ with
