@@ -1,8 +1,10 @@
 # agent-constitution design
 
 Status: draft. This is the one design document of the repo. The constitution
-itself is `constitution/constitution.md`; this document cites it only by ID
-(`C<n>`, `C<n>.<k>`, `L<n>`, `H<n>`, `A<n>`) and never restates it.
+itself is built from `constitution/index.md` and `constitution/articles/`
+into [English](../constitution/constitution.en.md) and
+[Chinese](../constitution/constitution.zh.md); this document cites it only by
+ID (`C<n>`, `C<n>.<k>`, `L<n>`, `H<n>`, `A<n>`) and never restates it.
 
 ## Goals and non-goals
 
@@ -10,10 +12,12 @@ Goals:
 
 - Hold the constitution: the few stable principles and the governance rules
   (what binds whom, what only a person may decide, how rules and the
-  constitution change).
-- Hold the general rule library and general skills: everything that is true
-  for any user of this setup, written without one user's machines, accounts
-  or history.
+  constitution change). It names no concrete practice: no command, storage
+  place or tool.
+- Hold the general rule library and general skills: the concrete practices
+  that refine the constitution, written without one user's machines,
+  accounts or history. The rules are a default set; each deployment chooses
+  which of them it uses.
 - Ship the toolchain that turns those sources, plus a private overlay, into
   the one instruction file the coding agents read, and the checkers that keep
   the sources, the overlay and the output consistent.
@@ -39,34 +43,47 @@ Non-goals:
 | Public core (this repo) | Private overlay (a separate private repo) |
 | --- | --- |
 | The constitution | Local parameters: the values the rules leave open (machines, model names, secret-store layout, lists of repos) |
-| General rules (`R<n>`) | Private rules (`O<n>`): rules that only make sense on that user's stack |
+| General rules (`R<n>`), a default set each deployment chooses from | Private rules (`O<n>`): rules that only make sense on that user's stack |
 | General skills | Private skills (for example the orchestra skill) |
 | Compiler, checkers, private-term scanner | Provenance: the casebook of incidents and decisions, with dates and sources |
 | A fictional example overlay and its golden output | The private term list the scanner reads at run time |
 | Static fixtures | The apply step that runs the compiler and installs the output |
 
-The overlay only adds and tightens; it has no way to relax a core rule. It
-never edits core files; it pins a core version and builds against it.
+The overlay never changes or relaxes the constitution. It chooses which
+general rules it uses (C6.7; see Choosing rules), adds private rules and fills
+in parameters. It never edits core files; it pins a core version and builds
+against it.
 
 ## Language
 
-The constitution, the rules, the skills and every other file here are in
-English. Reasons:
+The constitution and the general rules are kept in English and Chinese.
+Every other file here (the skills, the tools, this document) is in English.
 
-- The repo is meant to become public, and English is what a public reader
-  can be assumed to read.
-- All three harnesses read the same compiled file; one language means one
-  text to keep correct, with no translation drift between two authoritative
-  copies.
-- A rule is cited by ID from repo files, reviews and tickets in either
-  language; the ID, not the wording, carries the reference.
+Why two languages: the person who approves the constitution and the rules
+reads Chinese much faster than English, and that review is the one place
+where a person's attention matters most. A Chinese version also helps
+readers of the public repo. English stays the default: it is what a public
+reader can be assumed to read, and it is the first block of every source
+file.
 
-The cost is that the person who approves the constitution reads it in a
-second language, and that review is the one place where a person's attention
-matters most. Mitigation: a plain-language explanation in the person's own
-language, written per constitution revision, kept outside this repo (on the
-private side) and marked as non-authoritative. If the explanation and the
-text disagree, the English text wins and the explanation is fixed.
+Why the rest stays English: skills are installed as they are and tools are
+code; one language there means one text to keep correct. The compiled
+instruction file is built in one language, which the overlay selects, so an
+agent reads one text. A rule is cited by ID from repo files, reviews and
+tickets in either language; the ID, not the wording, carries the reference.
+
+Both languages live in the same source file (see Source formats), so one
+change edits both and a reviewer sees them side by side.
+
+The standing of the two texts of the constitution is set by the
+constitution itself (C9.5, C11.3), as drafted; it stays open until a person
+approves that text. The rules follow the same terms. What this repo adds:
+
+- The checker only proves structural alignment (the same IDs defined in the
+  same order, the same IDs cited). There is no check, based on the git diff,
+  that a change touching one language also touches the other: fixing a typo
+  in one language only is a legitimate change, and such a check would block
+  it or teach people to make empty edits. Review covers meaning.
 
 ## File structure
 
@@ -79,16 +96,23 @@ Directories for C and D are reserved, not created.
 README.md
 AGENTS.md                 repo rules for agents working here           A
 constitution/
-  constitution.md         the constitution                             A
+  index.md                front matter, title and preamble             A
+  articles/C<n>.md        one article per file, English and Chinese    A
+  constitution.en.md      generated: the constitution in English       A
+  constitution.zh.md      generated: the constitution in Chinese       A
 docs/
   design.md               this document                                A
 rules/
-  R<n>.md                 one general rule per file                    B
+  R<n>.md                 one general rule per file, English and
+                          Chinese                                      A
 skills/
   <name>/SKILL.md         general skills, installed as is              B
 schema/                   front matter schemas for constitution,
                           rules, fixtures, the overlay manifest        B
-tools/                    compiler, checkers, private-term scanner     B
+tools/
+  build_constitution.py   builds and checks the constitution           A
+  test_build_constitution.py   its tests                               A
+  <others>                compiler, checkers, private-term scanner     B
 examples/
   overlay/                a fictional private overlay                  B
   golden/                 its compiled output and build manifest       B
@@ -98,28 +122,36 @@ fixtures/
 cases/                    K<n>: decided cases                          C
 proposals/                reserved for the adoption pipeline           D
 .github/workflows/        CI                                           A
-.pre-commit-config.yaml   commit hook                                  A
+.pre-commit-config.yaml   commit hooks                                 A
 .fleet/config.json        issue-tracker metadata for fleet; the
                           toolchain never reads it                     A
 ```
 
+Two stage B pieces start early. `tools/` starts in stage A with the
+constitution build: the constitution is itself compiled from per-article
+sources (see Source formats). `rules/` starts in stage A too, holding the
+concrete practices taken out of the constitution. Compiling and checking the
+rules, and building the instruction file, stay in stage B.
+
 Stage B, in the order to build it: `schema/` and the schema checker,
-`rules/` (empty at first, filled by migration), the compiler, `examples/`
+the rest of `rules/` (filled by migration), the compiler, `examples/`
 with the drift check, the reference and relaxation checkers, the
 private-term scanner, `fixtures/static/` with the fixture gate, then load
 verification. Each step is usable on its own.
 
-The protected foundations of C8 map to these paths in the core:
-`constitution/` (the constitution), `tools/` and `schema/` (compiler,
-checkers and the fixture-gate runner), and `.github/workflows/` (the CI that
-runs them and requires the full fixture set to pass before a release). A
-change to any of these paths needs a person's approval under C9, not the
-rule-library path of C7. The gate is protected, not its data: adding a
-fixture of either kind, editing a happy-path fixture, or regenerating
-`examples/golden/` because rules changed goes through C7 like the rule
-change itself. Removing or weakening an existing redline fixture is a C9
-change. The configuration that loads instructions and guards lives on the
-private side and is protected there.
+What C8 protects is the text of the constitution (C8.1); in the core that
+is the sources under `constitution/` (`index.md` and `articles/`) and the
+wording of the two files built from them. A change to the text needs a
+person's approval under C9 (see Approving an amendment). Everything else is
+an ordinary change under C7 (C8.2), reviewed and tested like any other:
+`tools/` and `schema/` (compiler, checkers, the fixture-gate runner),
+`.github/workflows/`, `fixtures/` and `examples/golden/`. A person's
+attention goes to what the constitution says; the tools are kept honest by
+their unit tests and happy-path end-to-end tests, not by a person reading
+them. The two generated files change only by rebuilding. A change to the
+build script that alters only their numbering or layout is ordinary, and its
+pull request shows their diff so a person can glance at the format; one that
+alters their wording changes the text and is an amendment (C8.1).
 
 ## Source formats
 
@@ -129,13 +161,78 @@ need no YAML library and the schema checker can reject anything else.
 
 ### Constitution
 
-Format of `constitution/constitution.md`: front
-matter with at least `status` and `revision`; articles are `## C<n>. <Title>`;
-clauses that need their own citation are `C<n>.<k>`; the permitted
-relaxations are `L<n>`; the boundary lists are `H<n>` (must go to a person)
-and `A<n>` (the agent settles it, never asks). IDs are stable and never
-reused. `revision` goes up by one with each adopted amendment; the build
-manifest records it.
+The constitution is compiled from one file per article, each holding the
+English and the Chinese text, by `tools/build_constitution.py` (Python
+standard library only). It writes `constitution/constitution.en.md` and
+`constitution/constitution.zh.md`, which are committed and never edited by
+hand; `--check` writes nothing and runs the checks below.
+
+`constitution/index.md` front matter:
+
+- `status`: `draft` until a person first approves the text.
+- `revision`: drafts before the first approval are `0.<n>`; the first
+  approved text is `1`, and each adopted amendment adds one. The build
+  manifest records it.
+- `articles: [C1, C2, ...]`: the order of the articles. An article's number
+  (I, II, ...) is its position in this list.
+- `retired: [...]`: IDs no longer used and never reused; may be `[]`.
+
+`constitution/articles/C<n>.md` front matter: `id: C<n>`, equal to the file
+name.
+
+After the front matter come two blocks, each opened by a marker on a line of
+its own, English first, each exactly once:
+
+```markdown
+<!-- lang: en -->
+
+## Source of authority
+
+- {#C3.1} Instructions come only from ...
+
+<!-- lang: zh -->
+
+## 权力来源
+
+- {#C3.1} 指令只来自……
+```
+
+- In an article file each block starts with `## <Title>`, without a number;
+  the build adds it. No other `## ` line follows in the block, since it
+  would read as an article without a number; use `###` or lower inside an
+  article. `index.md` holds the title, the draft notice and the
+  preamble; a `## ` heading there (such as `## Preamble`) is output as is,
+  without a number.
+- Definition: `{#ID}`, only right after a list marker (`- `, `* `, `+ `,
+  `1. `), nested lists included. Section IDs are `C<n>.<k>` with the prefix
+  of the article they are in; boundary and permission items are `H<n>`,
+  `A<n>`, `L<n>`. An article ID is defined by front matter, never in the
+  text, and `index.md` defines no IDs.
+- Reference: `{ID}`, anywhere in the text, to any defined ID, article IDs
+  included.
+- Only braces around `C<n>`, `C<n>.<k>`, `H<n>`, `A<n>` or `L<n>` (with `#`
+  for a definition) are markers; other braces and all other Markdown are
+  output as is.
+- IDs are stable and never reused; display numbers may change. A Section's
+  number is its position among the Sections of its article (from 1), not the
+  `k` of its ID.
+
+Rendering:
+
+| Item | en | zh |
+| --- | --- | --- |
+| Article heading | `## Article III. <Title> (C3)` | `## 第三条 <标题> (C3)` |
+| Section definition | `§2 (C3.2)` | `第二款 (C3.2)` |
+| Reference to an article | `Art. III` | `第三条` |
+| Reference to a Section | `Art. III §2` | `第三条第二款` |
+| `H`, `A`, `L` definition or reference | `H2` | `H2` |
+
+Every article heading and Section shows both its display number and its ID,
+so readers and the rule library can match one to the other. Each output
+starts with a plain-text paragraph, in its own language: generated file, do
+not edit it, edit the sources; and the `status`, `revision` and language.
+Output is UTF-8 with LF line endings and a final newline, with no timestamp;
+the same sources give byte-identical output.
 
 ### Rules
 
@@ -145,19 +242,36 @@ diff shows exactly one rule changing.
 ```markdown
 ---
 id: R12
-status: active
+status: draft
 scope: all
 authority: [C3, C3.2]
 ---
 
+<!-- lang: en -->
+
 # <Title>
 
 <statement: condition, action, exception, what to do when unsure>
+
+<!-- lang: zh -->
+
+# <标题>
+
+<正文>
 ```
+
+- Two language blocks, with the same markers and order as the constitution
+  sources; each block starts with `# <Title>`.
+- The text cites the constitution or another rule with the same `{ID}`
+  marker (`{C1.1}`, `{R12}`, `{H2}`); how a reference renders is set in
+  stage B. A rule defines no `{#...}` IDs.
+- A rule about messages or notices says whom it covers: agent to agent,
+  agent to person, or both.
 
 - `id`: stable, also the file name. Renaming the title never changes it.
 - `status`: `draft`, `active` or `repealed`. Only `active` is compiled. A
-  repealed rule keeps its file and its ID.
+  repealed rule keeps its file and its ID. While the constitution is a
+  draft, every rule is `draft` too.
 - `scope`: who it addresses: `all`, or one of a short list defined in
   `schema/` (for example `implementer`, `reviewer`, `merger`). The compiler
   renders it as a one-line prefix; it does not filter by it. There is one
@@ -183,6 +297,31 @@ for the next number (`P0`–`P2` are taken by the priority classes of C7.4).
 Retired numbers stay retired. The compiler checks that the union of core and
 overlay IDs is unique.
 
+### Choosing rules
+
+The general rules are a default set, not obligations on every deployment
+(C6.7): one deployment may need a rule that another has good reason to drop (a
+repo that stays private on a self-hosted server may keep credentials in it on
+purpose). Open, for the person to decide. Recommended:
+
+- A deployment uses every general rule by default. Its overlay leaves a rule
+  out only by naming it, with a one-line reason, in `overlay.toml`
+  (`exclude: [R12]`). The build manifest lists what was left out.
+- A repo inside a deployment departs from a rule only by a relaxation
+  declaration (below), where the constitution permits it. It does not leave
+  rules out of the compiled file, because one compiled file serves all of a
+  deployment's repos.
+- To change a rule rather than drop it, the overlay leaves it out and adds a
+  private rule in its place.
+- The constitution cannot be left out or relaxed this way.
+
+Reasons: defaulting to all means a new rule reaches every deployment without
+anyone remembering to list it, where an opt-in list would go stale as rules
+are added. Leaving a rule out is not a relaxation (C6.7), but naming each one,
+with its reason, keeps it visible and puts everything a deployment dropped in
+one place. Exclusion per deployment, not per repo, matches how the output is
+built: one file per deployment.
+
 ### Relaxation declarations
 
 A lower layer (a repo's `AGENTS.md`, or a task file) relaxes a rule only by
@@ -201,8 +340,8 @@ One item per relaxation, with all four keys: the permission (`L<n>` from the
 list in C6.6), what it relaxes (a rule, a boundary item such as `H2`, or
 under L2 a rule's adjustable value and its new setting), where it applies,
 and how the condition of that `L<n>` is met. A relaxation not declared this
-way has no effect, whatever else the file says. The private overlay is not
-a layer any `L<n>` opens, so it declares none.
+way has no effect, whatever else the file says. The private overlay declares
+no relaxations: it leaves rules out instead (see Choosing rules).
 
 ### Local parameters
 
@@ -222,7 +361,10 @@ done stays in a rule, and the skill cites the rule ID.
 ## Compilation
 
 Input: one pinned version of this repo (a tag, checked against its commit
-SHA) and one overlay directory. Output: one file, installed by the overlay as
+SHA) and one overlay directory. The overlay selects the language. The
+compiler takes the constitution from the generated file in that language
+(it does not read the constitution sources) and each rule's block in that
+language. Output: one file, installed by the overlay as
 the user-level instruction file that all three harnesses read through
 symlinks (`~/.agents/AGENTS.md` in the current setup), plus a build
 manifest. Nothing else.
@@ -230,7 +372,8 @@ manifest. Nothing else.
 Overlay layout:
 
 ```text
-overlay.toml       core version, output path, size budget
+overlay.toml       core version, language, rules left out, output path,
+                   size budget
 params.toml        parameter values
 rules/O<n>.md      private rules
 skills/<name>/     private skills
@@ -244,8 +387,9 @@ The compiler is a deterministic concatenation, no model involved:
    edit, edit the sources instead; the core version, the constitution
    revision, and the input digest (the SHA-256 of the sorted list of
    per-input hashes).
-3. Emit the constitution, then active rules (core and overlay) grouped by
-   their first `authority` article and ordered by ID inside a group.
+3. Emit the constitution, then active rules (core and overlay, minus those
+   the overlay leaves out) grouped by their first `authority` article and
+   ordered by ID inside a group.
    Parameters are substituted here.
 4. Before each article and rule, emit a source comment such as `<!-- C3 -->`
    or `<!-- R12 -->`, so any paragraph of the output can be traced to its
@@ -255,9 +399,9 @@ The compiler is a deterministic concatenation, no model involved:
    silently dropped.
 6. Write the output and the manifest: the SHA-256 of each input file (sorted
    by path), core version and commit, compiler version (the core version,
-   since the compiler lives here), constitution revision, input digest,
-   output digest and size. No timestamps; the same inputs give
-   byte-identical output.
+   since the compiler lives here), constitution revision, language, the rules
+   left out, input digest, output digest and size. No timestamps; the same
+   inputs give byte-identical output.
 
 Roles: there is one output for everyone. The core has no role sections. The
 overlay contributes, as a private rule, the one or two sentences that tell
@@ -277,12 +421,35 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
+| Constitution (`build_constitution.py --check`) | Each source file has the format above; `articles` and the files match; each ID is defined once, in its own article, and is not retired; the English and Chinese blocks of each file define the same IDs in the same order and cite the same IDs; every reference resolves to an ID that is not retired; the committed outputs equal a fresh build | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Schema | Front matter has the required keys, allowed values and the flat subset; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (`C`, `L`, `H`, `A`, `R`, `O`, `K`) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
 | Private-term scan | No hit from the generic classes (secret-store paths, private address ranges, home-directory paths, email addresses) in CI; no hit from the private term list when the overlay runs it | That nothing private is present: a term not on the list passes |
 | Relaxations | Each `relaxes:` names an existing `L<n>` open to that layer, an existing target, a scope and a condition; under L2 the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
-| Fixture gate | Every fixture binds to existing IDs and passes; redline fixtures are never skipped | That agents behave as the fixtures expect outside these cases |
+| Fixture gate | Every fixture binds to existing IDs and passes; redline fixtures are never skipped, except those of rules a deployment left out, which its manifest lists as not run | That agents behave as the fixtures expect outside these cases |
+
+The constitution check runs its checks in this order and stops after the
+first one that finds errors, printing all of that one's errors:
+
+1. Format: front matter in the flat subset with exactly the required keys;
+   the en and zh blocks, each once, en first; each article block starts
+   with one `## ` title and has no other; definitions only at the start of a
+   list item.
+2. `articles` in `index.md` and the files in `articles/` match one to one,
+   and each file name equals its `id`.
+3. Each ID is defined once; a Section ID's prefix is its article; no
+   defined ID is retired; `index.md` defines none.
+4. In each file, the en and zh blocks define the same IDs in the same order
+   and cite the same set of IDs.
+5. Each reference points to a defined ID; a reference to a retired ID is an
+   error.
+6. A fresh build equals the committed `constitution.en.md` and
+   `constitution.zh.md` byte for byte (only under `--check`).
+
+Each check has a test that makes it fail and a passing control
+(`tools/test_build_constitution.py`). The check and the tests run as
+commit hooks and in CI.
 
 The private-term scan prints only position and class, never the matched
 text. In CI it runs the generic classes only; the term list is injected at
@@ -296,7 +463,8 @@ next to wording that lifts an obligation ("not required", "instead of",
 "may skip") without a `relaxes:` entry. Review and behavior fixtures carry
 the rest. The checker runs in each repo's own CI, against a pinned core
 version, over that repo's `AGENTS.md`. The compiler runs the same warning over
-the overlay's rules, since the overlay may not relax at all.
+the overlay's private rules: a private rule that lifts an obligation of a
+general rule in use should leave that rule out by name instead.
 
 A check that the output contains a sentence proves the sentence is there. It
 does not prove an agent follows it; only behavior fixtures and real runs say
@@ -325,15 +493,40 @@ its inputs and its expected result.
   breaks ordinary work shows up as a failing happy fixture.
 - Every fixture binds to at least one constitution or rule ID, and the
   checker rejects a fixture whose IDs do not resolve.
-- Before a release, every fixture runs, as C5.5 requires: all happy and all
-  redline. Static fixtures run in this repo's CI. Behavior fixtures (once
-  they exist) need installed harnesses and model credentials, which this
-  repo's CI does not have; they run on the private side, and a release
-  needs the record of that run at the commit being tagged.
+- Before a release, every fixture runs, all happy and all redline, since C5.5
+  requires every check to pass before a release. Static fixtures run in this
+  repo's CI. Behavior fixtures (once they exist) need installed harnesses and
+  model credentials, which this repo's CI does not have; they run on the
+  private side, and a release needs the record of that run at the commit being
+  tagged.
 - Fixtures follow the constitution like any other file: made-up data only
   (`example.test` domains, documentation address ranges, fictional names), no
   real credentials, no private terms. The private-term scan covers
   `fixtures/`.
+
+Open, for the person to decide: where red-line fixtures live. Recommended:
+with the text they test, bound to its ID.
+
+- Constitution: its red-line fixtures live in the core. Those for what no
+  project may change (for example, that an amendment goes through a person,
+  H8) run for every deployment. Those for a default boundary item test the
+  default; a project that overrides that item under L3 runs its own fixture
+  for the override in place of the core's, as with a left-out rule.
+- General rules: each rule's red-line fixtures live in the core, bound to
+  that rule's ID. The core's CI runs all of them. A deployment runs those of
+  the rules it uses; the fixtures of a rule it left out are not run there,
+  and its manifest lists them as not run, never as passed.
+- Private rules and a repo's relaxations: their fixtures live on that side
+  (the overlay, the repo) and run in its CI against the pinned core
+  version, the way the relaxation checker already runs there.
+
+Reasons: a fixture changes together with the text it tests, so it belongs
+where that text is, and binding it to the ID means that leaving a rule out
+leaves its fixtures out too, with no second list to keep. The concrete hard
+rules (credentials, for example) are now optional rules, not constitution,
+so their fixtures cannot sit at the constitution level and run everywhere.
+A copy of the core's fixtures in every project would drift and test text
+the project does not own.
 
 ## Load verification
 
@@ -375,7 +568,8 @@ event -> proposal -> rule revision, case, or amendment -> release
   IDs applied, the decision and its status. A case explains a rule; it never
   grants a permission. A case that would change a right, a duty or a
   prohibition becomes a rule revision; one that would relax a boundary item
-  becomes an amendment proposal.
+  for every project becomes an amendment proposal (for one project, an L3
+  declaration does it).
 - Middle ground (C4.3): when an agent is unsure and asks a person, the
   answer is written as a case candidate on the private side, with its
   source. When the same kind of answer recurs, it becomes a rule proposal.
@@ -394,6 +588,31 @@ event -> proposal -> rule revision, case, or amendment -> release
   run with the reason. Whatever finds work and whatever verifies it exchanges
   these; the core defines them in `schema/` when stage D starts.
 
+## Approving an amendment
+
+Built so that the person spends as little time as possible on it, which is
+what C2 asks for. The person reads what the constitution says and nothing
+else: tools, checks and fixtures are ordinary changes (see File structure).
+
+- An amendment pull request changes only `constitution/`: the sources and
+  the two generated files rebuilt from them.
+- Its description opens with the diff of the generated text in the
+  language the person reads, then the same diff in the other language,
+  collapsed. The generated diff is what agents will read,
+  numbers included; the person does not need to read the sources.
+- Agent review is finished before the person is asked: CI's constitution
+  check is green, and the reviewer has checked that the two languages say
+  the same thing. A person approving the change approves both texts on the
+  strength of that review.
+- The description ends with the open questions, each with a recommended
+  default, so one answer settles them (C2.3).
+- The person's yes names the head commit it approves, and the merge lands
+  exactly that commit (C5.3).
+- C9.1 asks for the generated diff in the language the approving person
+  reads, and C9.5 for both languages to change together; the steps above are
+  how this repo meets them. If the head changes afterwards, the person is
+  asked again with only the diff since the approved head.
+
 ## Releases and versions
 
 - Versions are tags `v<major>.<minor>.<patch>` on `main`. A constitution
@@ -403,8 +622,8 @@ event -> proposal -> rule revision, case, or amendment -> release
 - A release tag goes only on a `main` commit whose push-triggered `check` run
   succeeded on its first attempt. A rerun that turned green does not
   qualify; tag a later commit that passed the first time.
-- Pushing a release tag makes a version available, so the boundary list of
-  C4.1 decides whether an agent may push it or must ask a person.
+- Pushing a release tag makes a version available. By default that is H4
+  and needs a person's yes; a project may move it under L3.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.
