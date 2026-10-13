@@ -153,6 +153,11 @@ For leads and workers that `fleet` starts in this repo.
   with other files. The constitution sources (`constitution/index.toml`,
   `constitution/articles/`) change in a PR of their own, with no other
   file but the regenerated `constitution/constitution.*.md`.
+- While the constitution is a draft, the lead merges an amendment pull
+  request on the reviewer's LGTM, as any other, and the person reads it
+  afterwards on the preview. A change to an approved edition waits for
+  the person's yes on its head (`docs/design.md`, Approving an
+  amendment).
 - Worker report (`fleet done --report-file`): what was done, the PR and its
   merge commit, the checks run and CI's `run_attempt`, why done or
   abandoned, and follow-ups left.
