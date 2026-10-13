@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one, when the proposal states the problem and evidence and passes review ({@independent-review}) and the checks ({@checks-everywhere}).
+Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one. The conditions: the proposal states the problem and the evidence; the change passes review ({@independent-review}) and the checks ({@checks-everywhere}); and the change is not itself a matter listed in {@must-ask}.
 '''
 zh = '''
-提案说明了问题和证据，并且通过了审查 ({@independent-review}) 和检查 ({@checks-everywhere}) 的，agent 可以自行提出、审查和采纳普通规定、skill 和判例，不需要委托人逐一批准。
+agent 可以自行提出、审查和采纳普通规定、skill 和判例，不需要委托人逐一批准。条件是：提案说明问题和证据；变更通过审查 ({@independent-review}) 和检查 ({@checks-everywhere})；变更本身不属于{@must-ask}所列事项。
 '''
