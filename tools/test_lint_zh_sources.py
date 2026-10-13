@@ -1,6 +1,7 @@
 """Tests for lint_zh_sources on a small source tree, with the real limae."""
 
 import contextlib
+import dataclasses
 import io
 import tempfile
 import unittest
@@ -123,6 +124,28 @@ class Sources(unittest.TestCase):
         self.assertIn(f"{S}:8: content: error: [zh-typography-4", out)
         self.run_lint("--fix")
         self.assertIn("依照 agent {@amendment-procedure}批准。", (self.root / S).read_text(encoding="utf-8"))
+
+    def test_fix_puts_citations_back_in_order(self):
+        self.edit(S, "依照{@amendment-procedure}批准。", "依照{@amendment-procedure}和{@must-ask}批准agent。")
+        self.assertEqual(self.run_lint("--fix")[0], 0)
+        self.assertEqual((self.root / S).read_text(encoding="utf-8"),
+                         SECTION.replace("依照{@amendment-procedure}批准。",
+                                         "依照{@amendment-procedure}和{@must-ask}批准 agent。"))
+
+    def test_write_back_refuses_a_change_outside_the_texts(self):
+        texts, problem = lzs.texts(self.root, Path(S))
+        self.assertIsNone(problem)
+        source = (self.root / S).read_text(encoding="utf-8")
+        # The content's text written over another key's: the same text over
+        # an `en` text, and a fix over the item's `zh` text.
+        for other, fixed in [("One, under", texts[0].value), ("第一行。", "改了。")]:
+            with self.subTest(other):
+                start = source.index(other)
+                misplaced = dataclasses.replace(texts[0], start=start, end=source.index("\n", start))
+                self.assertEqual(lzs.write_back(self.root, Path(S), [(misplaced, fixed)]),
+                                 f"{S}:1: writing the fixes back would change more than the fixed texts;"
+                                 " file left as it was")
+                self.assertEqual((self.root / S).read_text(encoding="utf-8"), SECTION)
 
     def test_unsupported_form_is_refused(self):
         self.edit("rules/r.toml", "zh = '''\n规则。\n'''", 'zh = """\n规则。\n"""')

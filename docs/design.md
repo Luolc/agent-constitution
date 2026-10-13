@@ -563,7 +563,7 @@ position. What each one proves, and what it does not:
 | --- | --- | --- |
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
-| Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md`) | Every `zh` text of the constitution and rule sources, and the built Chinese constitution, passes limae's default rules, a citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md`) | Every `zh` text of the constitution and rule sources, and the built Chinese constitution, passes limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
@@ -644,17 +644,21 @@ The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
 either option replaces this repo's own part and generated files.
+
 Chinese typography is checked twice, with limae and its default
 configuration. `tools/lint_zh_sources.py` hands every `zh` text of
 `constitution/index.toml`, `constitution/articles/` and `rules/` to limae
 as a Markdown file of its own and prints each finding as `path:line:
 field: <message>`, the field being the TOML table, with an item's ID
 (`items.money.content`). Before that it replaces each citation `{@...}`
-with Chinese text shaped like its rendering (`第某条`) and puts the
-citation back afterwards: `agent{@x}` renders as `agent第十条` and needs
-a space that limae cannot see next to a brace, while `依照{@x}批准` needs
-none (limae 0.13.3, read 2026-10). With `--fix` it writes limae's fixes back
-in place, changing no other byte, and parses the file again to make sure.
+with Chinese text shaped like a constitution citation's rendering
+(`第某条`) and puts the citation back afterwards: `agent{@x}` renders as
+`agent第十条` and needs a space that limae cannot see next to a brace,
+while `依照{@x}批准` needs none (limae 0.13.3, read 2026-10). A rule
+citation gets the same placeholder, which stands in for its rendering
+only until stage B sets it (a rule's title, which may start or end in
+Latin letters). With `--fix` it writes limae's fixes back in place,
+changing no other byte, and parses the file again to make sure.
 The commit hook and CI only check; the fix is run by hand. The limae hook
 on `constitution/constitution.zh.md` checks what exists only after the
 build: section and item numbers, headings, the text around a rendered

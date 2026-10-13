@@ -4,9 +4,10 @@
 Every `zh` text in constitution/index.toml, constitution/articles/ and
 rules/ goes to limae (Chinese Markdown typography) as a Markdown file of
 its own, with its default configuration. Each citation `{@...}` is first
-replaced by PLACEHOLDER, Chinese text shaped like its rendering (`第十条`),
-so limae judges the spacing around it as it will read once built, and is
-put back afterwards.
+replaced by PLACEHOLDER, Chinese text shaped like the rendering of a
+constitution citation (`第十条`), so limae judges the spacing around it as
+it will read once built, and is put back afterwards. A rule citation gets
+the same placeholder until its rendering is set.
 
 Without --fix nothing is written. With --fix limae fixes what it can and
 each changed text is written back in place; no other byte of the file
