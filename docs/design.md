@@ -213,7 +213,9 @@ revision that deletes another adds it:
   `job-role` and `worker-role`; the items `terms.deployment`, `terms.job`,
   `terms.layer`, `terms.project` and `terms.skill`;
 - revision 0.9: the section `third-party-personal-info`;
-- revision 0.11: the section `asking-once`.
+- revision 0.11: the section `asking-once`;
+- revision 0.14: the items `terms.authoritative-interpretation`,
+  `terms.hard-rule` and `terms.undetermined`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
@@ -928,8 +930,8 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
   check is green, and the reviewer has checked that the two languages say
   the same thing. A person approving the change approves both texts on the
   strength of that review.
-- The description ends with the open questions, each with a recommended
-  default, so one answer settles them (`asking`).
+- The description ends with the open questions, each clear and easy to
+  answer and with a recommended answer (`asking`).
 - The person's yes names the head commit it approves, and the merge lands
   exactly that commit (`independent-review`).
 - `proposing-amendments` asks for the generated diff in the
