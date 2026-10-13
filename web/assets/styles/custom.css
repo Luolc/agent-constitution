@@ -11,12 +11,12 @@
   --c-font-en: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
   --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
     "Source Han Serif SC", "Songti SC", SimSun, serif;
-  /* The text column's max-width, one per language; adjust it here. */
   /* Fluid type: the size grows with the window, from a floor on small
      screens to a ceiling on wide ones (English 20px and Chinese 17px at a
-     1400px window, 22px and 18.7px from about 1710px on). The column is
-     set in em, so it widens with the size and a line keeps its length:
-     about 90 characters in English, 40 in Chinese. */
+     1400px window, 22px and 18.7px from about 1710px on). The column's
+     max-width, one per language, is set in em, so it widens with the size
+     and a line keeps its length: about 90 characters in English, 40 in
+     Chinese. */
   --c-size-en: clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem);
   --c-size-zh: clamp(1rem, 0.548vw + 0.583rem, 1.17rem);
   --c-measure-en: 36em;

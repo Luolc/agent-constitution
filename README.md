@@ -21,3 +21,5 @@ design.
 pages, English and Chinese, under `site/` (not committed). It needs Hugo
 at the version the script names and the theme submodule
 (`git submodule update --init`); the setup is in the design (Static site).
+Look at the pages served, for example with `python3 -m http.server -d
+site`: opened as files, the language switch leads to a directory listing.
