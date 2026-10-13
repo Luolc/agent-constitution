@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-In this text:
+This text defines only words whose meaning in it differs from their everyday meaning or is narrower than it; every other word has its ordinary meaning, and a word is added to or removed from the list below by this standard. In this text:
 '''
 zh = '''
-本宪法中：
+本宪法只为这样的词下定义：它在本宪法中的意思与日常用法不同，或者比日常用法窄。其余的词按通常的意思理解；下列词语的增删也以此为准。本宪法中：
 '''
 
 [[items]]
@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Principal: a person with authority over the work at hand, for whom agents act ({@principals}).
+**Principal**: a person with authority over the work at hand, for whom agents act ({@principals}).
 '''
 zh = '''
-委托人 (principal)：对手头这项工作握有授权、agent 代其行事的人 ({@principals})。译名取自「委托—代理」(principal-agent) 关系：agent 替人办事，人是授权的一方；不是日常所说的律师的客户。
+**委托人** (principal)：对手头这项工作握有授权、agent 代其行事的人 ({@principals})。译名取自「委托—代理」(principal-agent) 关系的说法：替人办事的是 agent，授权的是人；不是日常所说的律师的客户。其中的「代理」只是这一说法的通行译名，本宪法不用它指 agent。
 '''
 
 [[items]]
@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Agent: an AI agent bound by this constitution, in whichever of the roles of {@roles} it acts.
+**Agent**: an AI agent bound by this constitution, whatever its role ({@role-definitions}).
 '''
 zh = '''
-agent：受本宪法约束的 AI agent，不论担任{@roles}中的哪个角色。
+**agent**：受本宪法约束的 AI agent，不论担任什么角色 ({@role-definitions})。中文本里 agent 一律保留原文，不译作「代理」或「智能体」；「代理」在中文技术语境里容易与 proxy 混淆。
 '''
 
 [[items]]
@@ -42,177 +42,151 @@ status = "draft"
 
 [items.content]
 en = '''
-Rule: an ordinary provision that refines this constitution ({@rules-refine}) and evolves under {@rule-evolution}; the rules together are the rule library.
+**Rule**: an ordinary provision that refines this constitution ({@rules-refine}) and evolves under {@rule-evolution}; the rules together are the rule library.
 '''
 zh = '''
-规则 (rule)：细化本宪法的普通规定 ({@rules-refine})，依照{@rule-evolution}演进；全部规则合称规则库。
+**规则** (rule)：细化本宪法的普通规定 ({@rules-refine})，依照{@rule-evolution}演进；全部规则合称规则库。
 '''
 
 [[items]]
-id = "skill"
+id = "precedent"
 number = "4"
 status = "draft"
 
 [items.content]
 en = '''
-Skill: a document that says how something is done; what must be done stays in a rule.
+**Precedent**: a recorded decision or answer in one case, kept for reference in like cases ({@middle-ground}). A precedent does not bind later cases as precedent does in the common law (stare decisis): it gives only reference and evidence, and creates or expands no authority ({@precedents}). It is closer in kind to the guiding cases of Chinese law, which courts refer to when they decide similar cases.
 '''
 zh = '''
-skill：说明某件事怎样做的文件；什么必须做，仍由规则规定。
+**判例** (precedent)：记录下来的个案决定或答复，供日后同类情形参照 ({@middle-ground})。判例不像英美法中的判例那样约束后来的案件 (遵循先例，stare decisis)：它只提供参考和证据，不创设、也不扩大权限 ({@precedents})。性质上，它更接近中国法中的指导性案例，即法院审理类似案件时参照的案例。
 '''
 
 [[items]]
-id = "precedent"
+id = "authoritative-interpretation"
 number = "5"
 status = "draft"
 
 [items.content]
 en = '''
-Precedent: a recorded decision or answer in one case, kept for like cases ({@middle-ground}); it never expands authority ({@precedents}).
+**Authoritative interpretation**: an interpretation of a provision, of whatever rank, that only the party with authority to amend that provision may give, and that has the same force as the provision. An agent's understanding of a provision in a case is application, not authoritative interpretation, and never expands authority ({@precedents}).
 '''
 zh = '''
-先例 (precedent)：记录下来的个案决定或答复，供日后同类情形参照 ({@middle-ground})；先例不得扩大权限 ({@precedents})。
+**有权解释** (authoritative interpretation)：对某一规定的解释，不论该规定属于哪一位阶，只有有权修改该规定的一方才能作出，效力与该规定相同。agent 在个案中对条文的理解只是适用，不是有权解释，不得扩大权限 ({@precedents})。
 '''
 
 [[items]]
-id = "project"
+id = "jurisdiction"
 number = "6"
 status = "draft"
 
 [items.content]
 en = '''
-Project: work organized toward one goal, with its repositories and, where it has one, its charter; a repository holds work and the instructions for that work.
+**Jurisdiction**: the scope within which a set of agents and the rules it adopts apply ({@rules-refine}).
 '''
 zh = '''
-项目 (project)：为同一目标组织起来的一组工作，连同它的仓库和章程 (如果有)；仓库 (repository) 存放工作成果和针对这些成果的指令。
+**法域** (jurisdiction)：一组 agent 连同它所采用的规则所适用的范围 ({@rules-refine})。
 '''
 
 [[items]]
-id = "deployment"
+id = "rank"
 number = "7"
 status = "draft"
 
 [items.content]
 en = '''
-Deployment: one installation of agents, with the rules it adopts ({@rules-refine}).
+**Rank**: the place of this constitution and of each body of instructions below it in the order {@supremacy} sets; a provision of higher rank is higher-ranking, one of lower rank is lower-ranking.
 '''
 zh = '''
-部署 (deployment)：一组 agent 的一次安装，连同它采用的规则 ({@rules-refine})。
+**位阶** (rank)：本宪法及其下每一组指令在{@supremacy}所定次序中的位置；位阶较高的规定是上位规定，位阶较低的是下位规定。
 '''
 
 [[items]]
-id = "job"
+id = "hard-rule"
 number = "8"
 status = "draft"
 
 [items.content]
 en = '''
-Job and task: a job, as {@roles} uses the word, is a whole piece of work that one agent is responsible for; a task is a part of work handed to one agent to do.
+**Hard rule**: a sentence of the kind {@hard-rules} defines.
 '''
 zh = '''
-一项工作 (job) 与任务 (task)：{@roles}所说的「一项工作」，指由一个 agent 负责的一件完整的事；任务指交给一个 agent 去做的一部分工作。
+**硬性规则** (hard rule)：{@hard-rules}所定义的那类句子。
 '''
 
 [[items]]
-id = "layer"
+id = "units"
 number = "9"
 status = "draft"
 
 [items.content]
 en = '''
-Layer: this constitution and each body of instructions below it, ranked under {@supremacy}.
+**Article, section and item**: the three units of this text; an article holds sections, and a section may list items.
 '''
 zh = '''
-层 (layer)：本宪法及其下的每一组指令，位阶由{@supremacy}规定。
+**条、款、项** (article, section, item)：本宪法正文的三级单位，条下分款，款下可以列项。
 '''
 
 [[items]]
-id = "hard-rule"
+id = "identifier"
 number = "10"
 status = "draft"
 
 [items.content]
 en = '''
-Hard rule: a sentence of the kind {@hard-rules} defines.
+**ID**: the permanent name of an article, section or item, made of words and independent of its number ({@text-and-sources}).
 '''
 zh = '''
-硬性规则 (hard rule)：{@hard-rules}所定义的那类句子。
+**ID**：条、款、项的永久名称，由词组成，不随编号改变 ({@text-and-sources})。
 '''
 
 [[items]]
-id = "units"
+id = "edition"
 number = "11"
 status = "draft"
 
 [items.content]
 en = '''
-Article, section and item: the three units of this text; an article holds sections, and a section may list items.
+**Edition** and **revision**: as {@editions} defines them.
 '''
 zh = '''
-条、款、项 (article, section, item)：本宪法正文的三级单位，条下分款，款下可以列项。
+**大版本** (edition) 与**修订号** (revision)：按{@editions}的定义。
 '''
 
 [[items]]
-id = "identifier"
+id = "amendment"
 number = "12"
 status = "draft"
 
 [items.content]
 en = '''
-ID: the permanent name of an article, section or item, made of words and independent of its number ({@text-and-sources}).
+**Amendment**: a change to the text of this constitution ({@proposing-amendments}).
 '''
 zh = '''
-ID：条、款、项的永久名称，由词组成，不随编号改变 ({@text-and-sources})。
+**修正案** (amendment)：对本宪法正文的修改 ({@proposing-amendments})。
 '''
 
 [[items]]
-id = "edition"
+id = "compiled-instructions"
 number = "13"
 status = "draft"
 
 [items.content]
 en = '''
-Edition and revision: as {@editions} defines them.
+**Compiled instructions**: the instruction file built from this text and the rules in use, which an agent reads.
 '''
 zh = '''
-大版本 (edition) 与修订号 (revision)：按{@editions}的定义。
+**编译出的指令** (compiled instructions)：从本宪法和所采用的规则编译出来、供 agent 阅读的指令文件。
 '''
 
 [[items]]
-id = "amendment"
+id = "undetermined"
 number = "14"
 status = "draft"
 
 [items.content]
 en = '''
-Amendment: a change to the text of this constitution ({@proposing-amendments}).
+**Undetermined**: the result {@undetermined} prescribes when applicability cannot be settled.
 '''
 zh = '''
-修正案 (amendment)：对本宪法正文的修改 ({@proposing-amendments})。
-'''
-
-[[items]]
-id = "compiled-instructions"
-number = "15"
-status = "draft"
-
-[items.content]
-en = '''
-Compiled instructions: the instruction file built from this text and the rules in use, which an agent reads.
-'''
-zh = '''
-编译出的指令 (compiled instructions)：从本宪法和所采用的规则编译出来、供 agent 阅读的指令文件。
-'''
-
-[[items]]
-id = "undetermined"
-number = "16"
-status = "draft"
-
-[items.content]
-en = '''
-Undetermined: the result {@undetermined} prescribes when applicability cannot be settled.
-'''
-zh = '''
-未定 (undetermined)：无法确定是否适用时，依{@undetermined}得出的结论。
+**未定** (undetermined)：无法确定是否适用时，依{@undetermined}得出的结论。
 '''

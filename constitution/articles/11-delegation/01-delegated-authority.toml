@@ -1,0 +1,10 @@
+id = "delegated-authority"
+status = "draft"
+
+[content]
+en = '''
+Authority passes only downward and never grows: an agent that hands work to another agent never hands over more authority than it holds itself, and the agent that takes the work never widens its task.
+'''
+zh = '''
+权限只能往下传，不能变大：agent 把工作交给别的 agent 时，交出的权限不得超过自己的权限；接手的 agent 不得扩大任务范围。
+'''

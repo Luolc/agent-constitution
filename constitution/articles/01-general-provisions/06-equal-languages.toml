@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-The English and Chinese texts are equally authoritative. Where they differ in meaning, the provision is undetermined ({@undetermined}) until they agree again; neither text prevails.
+The English and Chinese texts are equally authoritative. Where they differ in meaning, the provision is undetermined ({@undetermined}) until they agree again; neither text prevails. A note on how a word is translated or used in one language only, such as why a word is left untranslated, is written in that language's text alone and is no difference in meaning.
 '''
 zh = '''
-英文本和中文本同等有效。两种文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到两种文本重新一致；任何一种文本都不优先。
+英文本和中文本同等有效。两种文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到两种文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为什么不译，只写在该语言的文本里，不算两种文本意思不一致。
 '''
