@@ -86,7 +86,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 
     沉默不等于同意。规定可以写明：等待一段写明的时间之后，写明的默认值生效；但只限于撤销代价低的动作，不得用于[第五条第一款][must-ask]所列事项。
 
--   <a id="list-defaults"></a>**第四款** [第五条第二款][decide-yourself]所列事项和[第五条第一款第三项][must-ask.irreversible-effects]至[第六项][must-ask.loosening-guards]都是默认安排。给[第五条第一款][must-ask]增加事项，或者把某一事项从[第五条第二款][decide-yourself]移到[第五条第一款][must-ask]，属于收紧，规定库 ([第八条][rule-evolution]) 或者项目 ([第七条第二款][lower-layers]) 都可以这样做；这样增加的事项，视为[第五条第一款][must-ask]的默认事项。从[第五条第一款][must-ask]删除默认事项，或者把它移到[第五条第二款][decide-yourself]，属于放宽：对所有项目放宽要修宪 ([第十条][amendment-procedure])，规定库增加的事项则修改那条规定；只对一个项目放宽，依照[第七条第六款第二项][relaxations.project-overrides]。[第五条第一款第一项][must-ask.amendments]和[第二项][must-ask.reversing-decisions]不是默认安排，只能通过修宪改变。
+-   <a id="list-defaults"></a>**第四款** [第五条第二款][decide-yourself]所列事项和[第五条第一款第三项][must-ask.irreversible-effects]至[第六项][must-ask.loosening-guards]都是默认安排。给[第五条第一款][must-ask]增加事项，或者把某一事项从[第五条第二款][decide-yourself]移到[第五条第一款][must-ask]，属于收紧，规定库 ([第八条][rule-evolution]) 或者项目 ([第七条第二款][lower-layers]) 都可以这样做；这样增加的事项，视为[第五条第一款][must-ask]的默认事项。删除或者缩小[第五条第一款][must-ask]的默认事项，或者把它移到[第五条第二款][decide-yourself]，属于放宽：对所有项目放宽要修宪 ([第十条][amendment-procedure])，规定库增加的事项则修改那条规定，并由权限覆盖该事项的委托人在这次变更上批准；只对一个项目放宽，依照[第七条第六款第二项][relaxations.project-overrides]。[第五条第一款第一项][must-ask.amendments]和[第二项][must-ask.reversing-decisions]不是默认安排，只能通过修宪改变。
 
 ## <a id="verification"></a>第六条 验证
 
