@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Adjustable rules. Layer: repository or task. Where an ordinary rule marks a parameter or procedure as adjustable, a lower layer may set its own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
+Adjustable rules. Declared in: the instructions of a project or a task. Where an ordinary rule marks a parameter or procedure as adjustable, those instructions may set their own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
 '''
 zh = '''
-可调规则。适用层级：仓库或任务。普通规则把某个参数或做法标为可调的，下层可以设定自己的值，并写明所针对的规则。落实本宪法硬性规则的规则，不得这样调整。
+可调规则。声明于：项目或任务的指令。普通规则把某个参数或做法标为可调的，这些指令可以设定自己的值，并写明所针对的规则。落实本宪法硬性规则的规则，不得这样调整。
 '''
 
 [[items]]
@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Project overrides of the items listed in {@must-ask}. Layer: repository or project charter. For its own project, the layer may move any of {@must-ask.money} to {@must-ask.reversing-decisions} to {@decide-yourself} or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never {@must-ask.amendments}.
+Project overrides of the items listed in {@must-ask}. Declared in: the project's instructions or its charter. For its own project, the declaration may move any of {@must-ask.money} to {@must-ask.reversing-decisions} to {@decide-yourself} or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never {@must-ask.amendments}.
 '''
 zh = '''
-项目对{@must-ask}所列事项的另行规定。适用层级：仓库或项目章程。该层可以为本项目把{@must-ask.money}至{@must-ask.reversing-decisions}中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于{@must-ask.amendments}。
+项目对{@must-ask}所列事项的另行规定。声明于：项目的指令或项目章程。声明可以为本项目把{@must-ask.money}至{@must-ask.reversing-decisions}中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于{@must-ask.amendments}。
 '''
 
 [[items]]
@@ -42,8 +42,8 @@ status = "draft"
 
 [items.content]
 en = '''
-Personal information. Layer: repository or project charter. Where a project's work needs it, the layer may set its own handling of personal information in place of the anonymization of {@third-party-personal-info}.
+Personal information. Declared in: the project's instructions or its charter. Where a project's work needs it, the declaration may set its own handling of personal information in place of the anonymization of {@third-party-personal-info}.
 '''
 zh = '''
-个人信息。适用层级：仓库或项目章程。项目的工作需要时，该层可以自行规定个人信息的处理方式，代替{@third-party-personal-info}的匿名化要求。
+个人信息。声明于：项目的指令或项目章程。项目的工作需要时，声明可以自行规定个人信息的处理方式，代替{@third-party-personal-info}的匿名化要求。
 '''

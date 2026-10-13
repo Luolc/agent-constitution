@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Precedents and interpretations never expand authority. If one changes a permission, obligation or prohibition, it is a rule change; if it touches this constitution, an amendment proposal.
+Precedents give evidence and reference for the evolution of rules: when like cases recur, what their precedents show is distilled and settled into a rule ({@ordinary-rule-adoption}), and, where it touches this constitution, into an amendment proposal ({@amendment-procedure}). A permission, obligation or prohibition changes only by these routes. Precedents, and an agent's understanding of a provision in a case, never expand authority, and neither is an authoritative interpretation ({@terms.authoritative-interpretation}).
 '''
 zh = '''
-先例和解释不得扩大权限。改变了许可、义务或禁止的，就是规则的修改；涉及本宪法的，就是修正案提案。
+判例为规则的演进提供证据和参考：同类个案反复出现时，从判例中提炼出的做法固化为规则 ({@ordinary-rule-adoption})；涉及本宪法的，提出修正案 ({@amendment-procedure})。许可、义务或禁止只能经由这两条途径改变。判例，以及 agent 在个案中对条文的理解，都不得扩大权限，也都不是有权解释 ({@terms.authoritative-interpretation})。
 '''
