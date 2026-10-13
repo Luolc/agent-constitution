@@ -71,7 +71,7 @@ en = '''
 Breaking changes that cause downtime of a running service. An override of {@must-ask.machines} or {@must-ask.releases} does not cover them.
 '''
 zh = '''
-造成运行中的服务停机的破坏性变更。项目对 {@must-ask.machines} 或 {@must-ask.releases} 的另行规定不涵盖这类变更。
+造成运行中的服务停机的破坏性变更。项目对{@must-ask.machines}或{@must-ask.releases}的另行规定不涵盖这类变更。
 '''
 
 [[items]]

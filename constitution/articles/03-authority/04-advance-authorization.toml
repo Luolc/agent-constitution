@@ -6,5 +6,5 @@ en = '''
 A principal may authorize a class of actions in advance under written conditions, within their authority (for example, "release once this feature is tested"). It counts only as written and within its conditions, and covers the items listed in {@must-ask} only through {@relaxations.project-overrides}.
 '''
 zh = '''
-委托人可以在自身权限内，按书面条件预先授权一类动作 (例如「这个功能测完就发布」)。预先授权只在写明的内容和条件范围内有效；对{@must-ask}所列事项，只能经由 {@relaxations.project-overrides} 预先授权。
+委托人可以在自身权限内，按书面条件预先授权一类动作 (例如「这个功能测完就发布」)。预先授权只在写明的内容和条件范围内有效；对{@must-ask}所列事项，只能经由{@relaxations.project-overrides}预先授权。
 '''

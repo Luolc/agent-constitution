@@ -6,7 +6,7 @@ en = '''
 **Permitted relaxations.** Each declaration names the item it relies on, what it relaxes, and its scope and conditions. Under {@relaxations.project-overrides} and {@relaxations.project-personal-info} it needs approval, on the change that adds it, from a principal with authority over that project.
 '''
 zh = '''
-**允许的放宽。** 每项声明写明所依据的项、放宽的对象，以及范围和条件。依照 {@relaxations.project-overrides}、{@relaxations.project-personal-info} 作出的声明，需要对该项目有权限的委托人在引入它的那次变更上批准。
+**允许的放宽。** 每项声明写明所依据的是哪一项、放宽的对象，以及范围和条件。依照{@relaxations.project-overrides}、{@relaxations.project-personal-info}作出的声明，需要对该项目有权限的委托人在引入它的那次变更上批准。
 '''
 
 [[items]]
@@ -32,7 +32,7 @@ en = '''
 Project overrides of the items listed in {@must-ask}. Layer: repository or project charter. For its own project, the layer may move any of {@must-ask.money}–{@must-ask.reversing-decisions} to {@decide-yourself} or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never {@must-ask.amendments}.
 '''
 zh = '''
-项目对{@must-ask}所列事项的另行规定。适用层级：仓库或项目章程。该层可以为本项目把 {@must-ask.money} 至 {@must-ask.reversing-decisions} 中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于 {@must-ask.amendments}。
+项目对{@must-ask}所列事项的另行规定。适用层级：仓库或项目章程。该层可以为本项目把{@must-ask.money}至{@must-ask.reversing-decisions}中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于{@must-ask.amendments}。
 '''
 
 [[items]]
