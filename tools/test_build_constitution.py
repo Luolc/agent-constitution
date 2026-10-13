@@ -168,6 +168,10 @@ class CheckTest(Tree):
         self.edit("articles/C1.md", "<!-- lang: zh -->\n\n## 第一", "<!-- lang: en -->\n\n## 第一")
         self.assertFails(1, "constitution/articles/C1.md:5")
 
+    def test_1_duplicate_key(self):
+        self.edit("index.md", "retired: [C2, H9]\n", "retired: [C2, H9]\nretired: []\n")
+        self.assertFails(1, "constitution/index.md:6")
+
     def test_1_title(self):
         self.edit("articles/C3.md", "## 第三\n", "第三\n")
         self.assertFails(1, "constitution/articles/C3.md:14")
