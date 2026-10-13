@@ -86,13 +86,13 @@ class Language:
     header: str                        # {status}, {revision}
     draft: str                         # in the title's parentheses while a draft
     edition: str                       # {edition}, in the title's parentheses once active
-    article_heading: str               # {number}, {title}
-    repealed_article_heading: str      # {number}, {note}
+    article_heading: str               # {anchor}, {number}, {title}
+    repealed_article_heading: str      # {anchor}, {number}, {note}
     article_ref: str                   # {number}
     section_ref: str                   # {article}, {section}
     article_number: Callable[[int, str], str]
     section_number: Callable[[int, str], str]
-    item_marker: Callable[[int, str], str]     # starts an item's list line
+    item_marker: Callable[[int, str], str]     # starts an item's list line, after its anchor
     item_ref: Callable[[int, str], str]        # follows the section's citation
     connectors: tuple[str, ...]        # between item citations rendered short
     repealed_note: Callable[[int, int], str]   # year, month
@@ -108,13 +108,13 @@ LANGUAGES = {
         ),
         draft="Draft",
         edition="{edition} Edition",
-        article_heading="## Article {number}. {title}",
-        repealed_article_heading="## Article {number} ({note})",
+        article_heading="## {anchor}Article {number}. {title}",
+        repealed_article_heading="## {anchor}Article {number} ({note})",
         article_ref="Art. {number}",
         section_ref="{article} {section}",
         article_number=lambda n, s: roman(n) + s,
         section_number=lambda n, s: f"§{n}{s}",
-        item_marker=lambda n, s: f"({n}{s}) ",
+        item_marker=lambda n, s: f"(**{n}{s}**) ",
         item_ref=lambda n, s: f"({n}{s})",
         connectors=(" or ", " and ", ", ", " to "),
         repealed_note=lambda y, m: f"repealed {EN_MONTHS[m - 1]} {y}",
@@ -127,13 +127,13 @@ LANGUAGES = {
         ),
         draft="草案",
         edition="{edition} 版",
-        article_heading="## {number} {title}",
-        repealed_article_heading="## {number} ({note})",
+        article_heading="## {anchor}{number} {title}",
+        repealed_article_heading="## {anchor}{number} ({note})",
         article_ref="{number}",
         section_ref="{article}{section}",
         article_number=lambda n, s: f"第{zh_number(n)}条" + zh_suffix(s),
         section_number=lambda n, s: f"第{zh_number(n)}款" + zh_suffix(s),
-        item_marker=lambda n, s: f"({zh_number(n)}{zh_suffix(s)}) ",
+        item_marker=lambda n, s: f"(**{zh_number(n)}{zh_suffix(s)}**) ",
         item_ref=lambda n, s: f"第{zh_number(n)}项" + zh_suffix(s),
         connectors=("或", "和", "、", "至"),
         repealed_note=lambda y, m: f"{y} 年 {m} 月废止",
@@ -622,20 +622,29 @@ def render(lang: str, src: Sources) -> str:
             labels[i.ref] = labels[s.id] + short[i.ref]
             parent[i.ref] = s.id
 
+    cited = {}  # citation -> None, in order of first use: the link definitions
+
+    def anchor(ref: str) -> str:
+        return f'<a id="{ref}"></a>'
+
     def note(month: str) -> str:
         m = MONTH.fullmatch(month)
         return L.repealed_note(int(m.group(1)), int(m.group(2)))
 
     def refs(text: str) -> str:
-        """Each citation as its label, except that a section or item citation
-        joined by a connector to the citation of another section of the same
-        article, or another item of the same section, just before it renders
-        short: `Art. IV §1 and §2`, `Art. IV §1(2) or (4)`."""
+        """Each citation as a link to its provision's anchor, its label as
+        the link text, except that a section or item citation joined by a
+        connector to the citation of another section of the same article,
+        or another item of the same section, just before it renders short:
+        `Art. IV §1 and §2`, `Art. IV §1(2) or (4)`. Reference links, not
+        inline ones: limae reads the `)` of an inline link followed by a
+        Chinese character as a parenthesis that needs a space after it."""
         out, end, previous = [], 0, None
         for m in MARK.finditer(text):
             ref, between = m.group(2), text[end:m.start()]
             joined = ref in parent and parent[ref] == previous and between in L.connectors
-            out += [between, short[ref] if joined else labels[ref]]
+            cited[ref] = None
+            out += [between, f"[{short[ref] if joined else labels[ref]}][{ref}]"]
             previous, end = parent.get(ref), m.end()
         return "".join(out) + text[end:]
 
@@ -646,9 +655,9 @@ def render(lang: str, src: Sources) -> str:
         return [first + head, *(indent + t if t else t for t in tail)]
 
     def section_text(s: Section) -> list[str]:
-        lines = indented(f"- {numbers[s.id]} ", s.content[lang], "  ")
+        lines = indented(f"- {anchor(s.id)}**{numbers[s.id]}** ", s.content[lang], "  ")
         for i in sorted(s.items, key=lambda i: number_key(i.number)):
-            marker = L.item_marker(*number_key(i.number))
+            marker = anchor(i.ref) + L.item_marker(*number_key(i.number))
             if i.status == "repealed":
                 lines.append(f"  - {marker.rstrip()} ({note(i.repealed)})")
             else:
@@ -661,21 +670,25 @@ def render(lang: str, src: Sources) -> str:
              f"# {refs(index['title'][lang])} ({edition})\n\n{refs(index['front'][lang])}"]
     for a in sorted(src.articles, key=lambda a: number_key(a.number)):
         if a.repealed:
-            parts.append(L.repealed_article_heading.format(number=numbers[a.id], note=note(a.repealed)))
+            parts.append(L.repealed_article_heading.format(
+                anchor=anchor(a.id), number=numbers[a.id], note=note(a.repealed)))
             continue
-        block = [L.article_heading.format(number=numbers[a.id], title=refs(a.title[lang]))]
+        block = [L.article_heading.format(anchor=anchor(a.id), number=numbers[a.id],
+                                          title=refs(a.title[lang]))]
         if a.intro is not None:
             block.append(refs(a.intro[lang]))
         own = sorted((s for s in src.sections if s.article == a.id), key=lambda s: number_key(s.number))
         body = []
         for s in own:
             if s.status == "repealed":
-                body.append(f"- {numbers[s.id]} ({note(s.repealed)})")
+                body.append(f"- {anchor(s.id)}**{numbers[s.id]}** ({note(s.repealed)})")
             else:
                 body += section_text(s)
         if body:
             block.append("\n".join(body))
         parts.append("\n\n".join(block))
+    if cited:
+        parts.append("\n".join(f"[{ref}]: #{ref}" for ref in cited))
     return "\n\n".join(parts) + "\n"
 
 
