@@ -4,6 +4,7 @@ numbering check against a base commit runs on a temporary git repository."""
 
 import contextlib
 import io
+import re
 import subprocess
 import tempfile
 import unittest
@@ -154,25 +155,31 @@ rebuild. Status: draft. Revision: 0.2. Language: English.
 
 # Test Constitution (Draft)
 
-The preamble cites Art. II.
+The preamble cites [Art. II][beta].
 
-## Article I. First
+## <a id="alpha"></a>Article I. First
 
-Intro, see Art. II §1a.
+Intro, see [Art. II §1a][beta-two].
 
-- §1 One, see Art. II §1.
-  - (1) Money.
-  - (2) Machines; {braces} and {@Nope} stay.
+- <a id="alpha-one"></a>**§1** One, see [Art. II §1][beta-one].
+  - <a id="alpha-one.money"></a>(**1**) Money.
+  - <a id="alpha-one.machines"></a>(**2**) Machines; {braces} and {@Nope} stay.
     More.
 
-## Article II. Second
+## <a id="beta"></a>Article II. Second
 
-- §1 Four, see Art. I §1(1) and Art. I.
-- §1a Between:
+- <a id="beta-one"></a>**§1** Four, see [Art. I §1(1)][alpha-one.money] and [Art. I][alpha].
+- <a id="beta-two"></a>**§1a** Between:
   1. first
 
      more
   2. second
+
+[beta]: #beta
+[beta-two]: #beta-two
+[beta-one]: #beta-one
+[alpha-one.money]: #alpha-one.money
+[alpha]: #alpha
 """
 
 ZH = """\
@@ -182,25 +189,31 @@ ZH = """\
 
 # 测试宪法 (草案)
 
-序言引用第二条。
+序言引用[第二条][beta]。
 
-## 第一条 第一
+## <a id="alpha"></a>第一条 第一
 
-导语，见第二条第一款之一。
+导语，见[第二条第一款之一][beta-two]。
 
-- 第一款 一，见第二条第一款。
-  - (一) 钱。
-  - (二) 机器；{braces} 与 {@Nope} 不变。
+- <a id="alpha-one"></a>**第一款** 一，见[第二条第一款][beta-one]。
+  - <a id="alpha-one.money"></a>(**一**) 钱。
+  - <a id="alpha-one.machines"></a>(**二**) 机器；{braces} 与 {@Nope} 不变。
     更多。
 
-## 第二条 第二
+## <a id="beta"></a>第二条 第二
 
-- 第一款 四，见第一条第一款第一项和第一条。
-- 第一款之一 之间：
+- <a id="beta-one"></a>**第一款** 四，见[第一条第一款第一项][alpha-one.money]和[第一条][alpha]。
+- <a id="beta-two"></a>**第一款之一** 之间：
   1. 第一
 
      更多
   2. 第二
+
+[beta]: #beta
+[beta-two]: #beta-two
+[beta-one]: #beta-one
+[alpha-one.money]: #alpha-one.money
+[alpha]: #alpha
 """
 
 A = "constitution/articles/01-alpha"
@@ -215,6 +228,13 @@ FILES = {
     "rules/rule.toml": RULE,
 }
 SECTIONS = [f"{A}/01-alpha-one.toml", f"{B}/01-beta-one.toml", f"{B}/01a-beta-two.toml"]
+
+
+def plain(text):
+    """The text without anchors, bold and link markup, for tests about the
+    words of a rendering."""
+    text = re.sub(r'<a id="[^"]+"></a>', "", text).replace("**", "")
+    return re.sub(r"\[([^\]]+)\]\[[^\]]+\]", r"\1", text)
 
 
 class Tree(unittest.TestCase):
@@ -284,22 +304,22 @@ class RenderTest(Tree):
         self.edit("rules/rule.toml", "{@constitution:beta-one}", "{@constitution:beta-two}", 2)
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
-        self.assertIn("\n  - (2) (repealed November 2026)\n", outputs["en"])
-        self.assertIn("\n- §1 (repealed November 2026)\n", outputs["en"])
-        self.assertTrue(outputs["en"].endswith("## Article III (repealed December 2026)\n"))
-        self.assertIn("\n  - (二) (2026 年 11 月废止)\n", outputs["zh"])
-        self.assertIn("\n- 第一款 (2026 年 11 月废止)\n", outputs["zh"])
-        self.assertTrue(outputs["zh"].endswith("## 第三条 (2026 年 12 月废止)\n"))
+        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**2**) (repealed November 2026)\n', outputs["en"])
+        self.assertIn('\n- <a id="beta-one"></a>**§1** (repealed November 2026)\n', outputs["en"])
+        self.assertIn('\n## <a id="gamma"></a>Article III (repealed December 2026)\n\n[', outputs["en"])
+        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**二**) (2026 年 11 月废止)\n', outputs["zh"])
+        self.assertIn('\n- <a id="beta-one"></a>**第一款** (2026 年 11 月废止)\n', outputs["zh"])
+        self.assertIn('\n## <a id="gamma"></a>第三条 (2026 年 12 月废止)\n\n[', outputs["zh"])
 
     def test_inserted_item(self):
         self.edit(f"{A}/01-alpha-one.toml", 'id = "machines"\nnumber = "2"', 'id = "machines"\nnumber = "1a"')
         self.edit(f"{B}/01-beta-one.toml", "{@alpha-one.money}", "{@alpha-one.machines}", 2)
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
-        self.assertIn("\n  - (1a) Machines;", outputs["en"])
-        self.assertIn("- §1 Four, see Art. I §1(1a) and", outputs["en"])
-        self.assertIn("\n  - (一之一) 机器；", outputs["zh"])
-        self.assertIn("- 第一款 四，见第一条第一款第一项之一和", outputs["zh"])
+        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**1a**) Machines;', outputs["en"])
+        self.assertIn("**§1** Four, see [Art. I §1(1a)][alpha-one.machines] and", outputs["en"])
+        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**一之一**) 机器；', outputs["zh"])
+        self.assertIn("**第一款** 四，见[第一条第一款第一项之一][alpha-one.machines]和", outputs["zh"])
 
     def test_active_title_names_the_edition(self):
         self.activate()
@@ -329,6 +349,9 @@ class RenderTest(Tree):
         self.edit(f"{A}/01-alpha-one.toml", "一，见{@beta-one}。", zh)
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
+        self.assertIn("Cite [Art. II §1][beta-one] and [§1a][beta-two].\n", outputs["en"])
+        self.assertIn("引用[第二条第一款][beta-one]和[第一款之一][beta-two]。\n", outputs["zh"])
+        outputs = {lang: plain(text) for lang, text in outputs.items()}
         self.assertIn("- §1 Cite Art. II §1 and §1a.\n"
                       "  Cite Art. II §1 to §2.\n"
                       "  Cite Art. II §1, §1a or §2.\n"
@@ -367,6 +390,9 @@ class RenderTest(Tree):
         self.edit(f"{B}/01-beta-one.toml", "四，见{@alpha-one.money}和{@alpha}。", zh)
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
+        self.assertIn("Cite [Art. I §1(1)][alpha-one.money] or [(2)][alpha-one.machines].\n", outputs["en"])
+        self.assertIn("引用[第一条第一款第一项][alpha-one.money]或[第二项][alpha-one.machines]。\n", outputs["zh"])
+        outputs = {lang: plain(text) for lang, text in outputs.items()}
         self.assertIn("- §1 Cite Art. I §1(1) or (2).\n"
                       "  Cite Art. I §1(1) to (3).\n"
                       "  Cite Art. I §1(1), (2) and (3).\n"
@@ -391,7 +417,7 @@ class RenderTest(Tree):
         self.assertEqual(zh.section_number(12, "a"), "第十二款之一")
         self.assertEqual(en.item_ref(3, "b"), "(3b)")
         self.assertEqual(zh.item_ref(3, "b"), "第三项之二")
-        self.assertEqual(zh.item_marker(12, ""), "(十二) ")
+        self.assertEqual(zh.item_marker(12, ""), "(**十二**) ")
 
 
 class CheckTest(Tree):
