@@ -100,7 +100,8 @@ Directories for C and D are reserved, not created.
 README.md
 AGENTS.md                 repo rules for agents working here           A
 constitution/
-  index.toml              status, revision, languages, title, front    A
+  index.toml              status, edition, revision, languages, title,
+                          front                                        A
   articles/
     <NN>-<id>/            one directory per article, numbered          A
       article.toml        the article: title, intro                    A
@@ -204,8 +205,10 @@ says which body of text, the dot where in it. The build renders a
 citation of the constitution as the number the provision has in that
 language (below); the generated text shows numbers only, never IDs. A
 long-lived record outside the sources (a case, a pull request, a report)
-may cite a provision by ID or by number: once the constitution is active
-a number never changes (see Numbering).
+may cite a provision by ID or by number; a citation by number names the
+edition, within which a number never changes (see Numbering). An ID
+carries over from one edition to the next for every provision whose
+content carries over.
 
 ### Constitution
 
@@ -228,15 +231,24 @@ constitution/articles/
 
 - `status`: `draft` until a person first approves the text, then
   `active`.
-- `revision`: a string; drafts before the first approval are `0.<n>`, the
-  first approved text is `1`, and each adopted amendment adds one. The
-  build manifest records it.
+- `edition`: the name of the edition, the date a principal approved it
+  as in force, `YYYY-MM-DD`; absent while `status` is `draft`, required
+  once it is `active`. An edition is a whole version of the text, like a
+  constitution named by the year it was adopted. Starting a new edition
+  is itself an amendment and needs a principal's approval; within an
+  edition, numbers never change (see Numbering), and a new edition may
+  renumber freely.
+- `revision`: a string, the revision within the edition: drafts before
+  the first approval are `0.<n>`, the first approved text of an edition
+  is `1`, each adopted amendment adds one, and a new edition starts again
+  at `1`. The build manifest records it.
 - `languages`: the language codes, the first being the default. Each
   must have a rendering entry in the build script (one table,
   `LANGUAGES`, holds everything that differs by language: the file header,
   the shapes of headings, numbers and citations, the repealed note). Adding
   a language means adding one entry there and one key to every text table.
-- `[title]`: the title, one line per language.
+- `[title]`: the title, one line per language; the build adds the
+  edition or the draft mark after it (see Numbering).
 - `[front]`: the Markdown between the title and the first article (draft
   notice, `## Preamble` and its text), per language. It may cite.
 
@@ -308,20 +320,23 @@ order is by integer, then suffix: `2` < `2a` < `2b` < `3`. Within one
 scope (all articles; the sections of one article; the items of one
 section) numbers are unique; a draft need not be contiguous.
 
-From the first approved revision on, numbers follow `stable-numbers`; the
-check `--check --base <git-ref>` enforces it against a base commit (see
-Checkers, check 7): renaming a directory or file to a new number, or
-moving a section to another article's directory, is an error. A repealed
-provision is rendered as a one-line note in place of its text (table
-below). While the constitution is a draft, numbers may change, directories
-and files are renamed with them, and the check only says that it did not
-compare.
+From the first approved revision on, numbers follow `stable-numbers`
+within an edition; the check `--check --base <git-ref>` enforces it
+against a base commit of the same edition (see Checkers, check 7):
+renaming a directory or file to a new number, or moving a section to
+another article's directory, is an error. A repealed provision is
+rendered as a one-line note in place of its text (table below). While the
+constitution is a draft, or when a new edition starts, numbers may
+change, directories and files are renamed with them, and the check only
+says that it did not compare.
 
 Rendering, with `must-ask` as the first section of the fourth article and
 its third item as examples:
 
 | Item | en | zh |
 | --- | --- | --- |
+| Title, draft | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
+| Title, active | `# Agent Constitution (2026-10-20)`, the `edition` | `# Agent 宪法 (2026-10-20)` |
 | Article heading | `## Article IV. <Title>` | `## 第四条 <标题>` |
 | Section | `- §1 <content>` | `- 第一款 <content>` |
 | List item | `  - (3) <content>` | `  - （三）<content>` |
@@ -332,6 +347,16 @@ its third item as examples:
 | Repealed section | `- §3 (repealed November 2026)` | `- 第三款 (2026 年 11 月废止)` |
 | Repealed list item | `  - (3) (repealed November 2026)` | `  - （三） (2026 年 11 月废止)` |
 | Repealed article | `## Article IV (repealed November 2026)`, nothing below it | `## 第四条 (2026 年 11 月废止)` |
+| Adjacent item citations | `Art. IV §1(2) or (4)`, `Art. IV §1(1) to (7)`, `Art. IV §1(1), (2) and (4)` | `第四条第一款第二项或第四项`, `第四条第一款第一项至第七项`, `第四条第一款第一项、第二项和第四项` |
+
+An item citation renders short, as its item number alone (`(4)`, `(2a)`;
+`第四项`, `第二项之一`), when the text just before it is exactly one
+connector and the text before that is a citation of another item of the
+same section. The connectors are ` or `, ` and `, `, ` and ` to ` in
+English and `或`, `和`, `、` and `至` in Chinese. An item of another
+section, a citation after a section's citation, and a citation with any
+other text before it keep the full path. The sources always write the
+full path.
 
 Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
@@ -525,7 +550,7 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, nothing numbered in an active base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, nothing numbered in an active base of the same edition has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
@@ -544,8 +569,10 @@ first one that finds errors, printing all of that one's errors:
    section's name; there is no `constitution/sections/`; `id` equals the
    name without its number; `status`, item `number` and `repealed` are
    well formed and agree with each other and with the status of
-   `index.toml`. Hidden names (starting with `.`, such as `.DS_Store` or an
-   editor's swap file) are skipped.
+   `index.toml`; `edition` is a real date `YYYY-MM-DD`, absent when
+   `index.toml` is `draft` and present when it is `active`. Hidden names
+   (starting with `.`, such as `.DS_Store` or an editor's swap file) are
+   skipped.
 2. IDs: each has the format; article and section IDs are unique in the
    constitution, item IDs in their section, rule IDs among the rules; no
    rule's ID is listed in `rules/retired-ids.txt`, and each line there is
@@ -562,16 +589,17 @@ first one that finds errors, printing all of that one's errors:
 6. A fresh build equals the committed `constitution.<lang>.md` files byte
    for byte (only under `--check`).
 7. Numbering against a base commit (only under `--check --base <git-ref>`,
-   read with `git show`): when the base's `index.toml` is `active`, every
-   article, section and list item of the base, matched by ID, still exists
-   with the same number, a section in the same article's directory and an
-   item in the same section; what was repealed is still repealed; every
-   rule of the base still exists or has its ID in `rules/retired-ids.txt`,
-   and every ID retired at the base is still listed; and the status has not
-   gone back to `draft`. Each error says which it is: gone, renumbered,
-   moved to another article, no longer repealed, no longer retired. A base
-   that is `draft`, or has no article directories yet, skips the step with
-   a printed note.
+   read with `git show`): when the base's `index.toml` is `active`, the
+   status has not gone back to `draft`; and when the current `edition` is
+   the base's, every article, section and list item of the base, matched
+   by ID, still exists with the same number, a section in the same
+   article's directory and an item in the same section; what was repealed
+   is still repealed; every rule of the base still exists or has its ID in
+   `rules/retired-ids.txt`, and every ID retired at the base is still
+   listed. Each error says which it is: gone, renumbered, moved to another
+   article, no longer repealed, no longer retired. A base that is `draft`,
+   has no article directories yet, or has another `edition` than the
+   current one, skips the comparison with a printed note.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
