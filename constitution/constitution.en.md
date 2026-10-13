@@ -123,7 +123,7 @@ This article only sets which classes of matters must go through a principal and 
 
 ## <a id="protection-scope"></a>Article IX. Scope of protection
 
--   <a id="protected-text"></a>**§1**<sup class="omitted">*</sup> The text of this constitution, in both languages, is protected: a change that alters its wording is an amendment ([Art. X][amendment-procedure]), whether it is made in the sources or in the way the versions are compiled from them. A change that alters only the numbering or the layout is not.
+-   <a id="protected-text"></a>**§1**<sup class="omitted">*</sup> The text of this constitution, in both languages, is protected: a change that alters its wording is an amendment ([Art. X][amendment-procedure]), whether it is made in the sources or in the way the versions are compiled from them. A change that alters only how numbers are shown or how the text is laid out is not.
 -   <a id="ordinary-tooling"></a>**§2**<sup class="omitted">*</sup> The tools and processes used to compile, check and distribute this text are not part of it. They change as ordinary rules do ([Art. VIII §1][ordinary-rule-adoption]), without a principal's approval, so that a principal's attention goes to the text ([Art. III][purpose]).
 
 ## <a id="amendment-procedure"></a>Article X. Amendment

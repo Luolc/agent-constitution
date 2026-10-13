@@ -123,8 +123,8 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 
 ## <a id="protection-scope"></a>第九条 保护范围
 
--   <a id="protected-text"></a>**第一款**<sup class="omitted">*</sup> 本宪法的正文 (两种语言) 受保护：改变正文措辞的改动是修正案 ([第十条][amendment-procedure])，不论改的是源文本，还是从源文本编译出各个版本的方式。只改变编号或版式的改动，不是修正案。
--   <a id="ordinary-tooling"></a>**第二款**<sup class="omitted">*</sup> 编译、检查和分发本宪法所用的工具和流程，不属于正文。它们和普通规定一样修改 ([第八条第一款][ordinary-rule-adoption])，不需要委托人批准，让委托人的注意力用在正文上 ([第三条][purpose])。
+-   <a id="protected-text"></a>**第一款**<sup class="omitted">*</sup> 本宪法的正文 (两种语言) 受保护：改变正文措辞的改动是修正案 ([第十条][amendment-procedure])，不论改的是源文本，还是从源文本编译出各个版本的方式。只改变编号的显示方式或版式的改动，不是修正案。
+-   <a id="ordinary-tooling"></a>**第二款**<sup class="omitted">*</sup> 编译、检查和分发本宪法所用的工具和流程，不属于正文。它们按普通规定的方式修改 ([第八条第一款][ordinary-rule-adoption])，不需要委托人批准，让委托人的注意力用在正文上 ([第三条][purpose])。
 
 ## <a id="amendment-procedure"></a>第十条 修改
 

@@ -7,5 +7,5 @@ en = '''
 The tools and processes used to compile, check and distribute this text are not part of it. They change as ordinary rules do ({@ordinary-rule-adoption}), without a principal's approval, so that a principal's attention goes to the text ({@purpose}).
 '''
 zh = '''
-编译、检查和分发本宪法所用的工具和流程，不属于正文。它们和普通规定一样修改 ({@ordinary-rule-adoption})，不需要委托人批准，让委托人的注意力用在正文上 ({@purpose})。
+编译、检查和分发本宪法所用的工具和流程，不属于正文。它们按普通规定的方式修改 ({@ordinary-rule-adoption})，不需要委托人批准，让委托人的注意力用在正文上 ({@purpose})。
 '''

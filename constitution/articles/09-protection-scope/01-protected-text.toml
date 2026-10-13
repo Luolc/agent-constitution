@@ -4,8 +4,8 @@ audience = "maintainers"
 
 [content]
 en = '''
-The text of this constitution, in both languages, is protected: a change that alters its wording is an amendment ({@amendment-procedure}), whether it is made in the sources or in the way the versions are compiled from them. A change that alters only the numbering or the layout is not.
+The text of this constitution, in both languages, is protected: a change that alters its wording is an amendment ({@amendment-procedure}), whether it is made in the sources or in the way the versions are compiled from them. A change that alters only how numbers are shown or how the text is laid out is not.
 '''
 zh = '''
-本宪法的正文 (两种语言) 受保护：改变正文措辞的改动是修正案 ({@amendment-procedure})，不论改的是源文本，还是从源文本编译出各个版本的方式。只改变编号或版式的改动，不是修正案。
+本宪法的正文 (两种语言) 受保护：改变正文措辞的改动是修正案 ({@amendment-procedure})，不论改的是源文本，还是从源文本编译出各个版本的方式。只改变编号的显示方式或版式的改动，不是修正案。
 '''
