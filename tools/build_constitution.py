@@ -166,7 +166,7 @@ LANGUAGES = {
         ),
         omitted="(见完整版)",
         agent_front=(
-            "{opening}；序言不收，讲本宪法自身怎样构成和修改的条文只留编号；"
+            "{opening}；不含序言，讲本宪法自身怎样构成和修改的条文只留编号；"
             "修改本宪法或编译它的工具时，先读完整版 `constitution/constitution.zh.md`。"
         ),
         agent_draft="这是本宪法给 agent 读的版本，本宪法现为草案，尚未生效",
