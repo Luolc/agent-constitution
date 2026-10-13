@@ -618,6 +618,30 @@ is a release (`boundary-rule`) and not set up.
   dropped, the title goes into the front matter, the revision from
   `index.toml` is set under the title, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on.
+- Length: a second line under the revision gives the length of the text
+  the compiler takes, the generated file without its header line, anchors
+  and link definitions included: characters in both languages, words split
+  on white space in English, and tokens as counted for `claude-opus-5-5`
+  by Anthropic's count_tokens API (`POST /v1/messages/count_tokens`,
+  standard library only).
+- Credential: only from the environment, never from a file in this repo,
+  in one of two variables. `CONSTITUTION_TOKEN_COUNT_API_KEY` holds an API
+  key, sent as `x-api-key`. `CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN` holds a
+  short-lived access token that a workflow got through Anthropic's
+  Workload Identity Federation (its OIDC token exchanged at
+  `POST /v1/oauth/token`), sent as `Authorization: Bearer`; when both are
+  set, the token is used, so a key left behind does not shadow the
+  federation. The credential never reaches the output, the logs or the
+  page; a failure prints one line with the HTTP status or the exception's
+  class. Without a credential, or when the call fails or a connect or read
+  stalls for 10 seconds, the page says the tokens were not counted and the
+  build goes on. The future Pages workflow will set one of the two: the
+  key from the repository's GitHub Actions secret of the same name, or the
+  token it has just exchanged; the CI on pull requests gets neither, and
+  neither does a pull request from a fork. A local build that wants the
+  count sets the key variable for that one command, reading the key from
+  the maintainer's secret store. So the pages of one commit differ with
+  and without a credential, in that line only.
 - Generator: Hugo, a single binary pinned by version in `build_site.py`
   and in CI, with the theme hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
@@ -648,8 +672,8 @@ is a release (`boundary-rule`) and not set up.
   block, light and dark; contrast of text on the page and the sidebar is
   above WCAG AA in both, the values are in the style sheet.
 - The few Chinese strings of the site itself (`web/i18n/zh.yaml`, the
-  language label in `hugo.toml`, the revision label in `build_site.py`) are
-  outside limae's reach.
+  language label in `hugo.toml`, the revision and length labels in
+  `build_site.py`) are outside limae's reach.
 - `site/` is not committed: a generated page under review would make every
   amendment touch it, while an amendment may change only the constitution
   sources and their generated Markdown. Hugo needs a download, so the build

@@ -114,6 +114,12 @@
   color: var(--c-muted);
   margin-top: 0;
 }
+/* The length under the revision: numbers and a model ID, not small caps. */
+.constitution .revision .length {
+  font-variant: normal;
+  letter-spacing: normal;
+  font-size: .85em;
+}
 /* The draft notice under the title. */
 .constitution .revision + p {
   border-block: 1px solid var(--c-rule);
