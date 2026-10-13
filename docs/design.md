@@ -635,10 +635,19 @@ is a release (`boundary-rule`) and not set up.
   page; a failure prints one line with the HTTP status or the exception's
   class. Without a credential, or when the call fails or a connect or read
   stalls for 10 seconds, the page says the tokens were not counted and the
-  build goes on. The future Pages workflow will set one of the two: the
-  key from the repository's GitHub Actions secret of the same name, or the
-  token it has just exchanged; the CI on pull requests gets neither, and
-  neither does a pull request from a fork. A local build that wants the
+  build goes on; with `--require-tokens` the build fails instead. The
+  workflow `.github/workflows/token-count.yml` runs on each push to `main`,
+  the only event the federation rule accepts: it asks GitHub for the run's
+  OIDC token (audience `https://api.anthropic.com`), exchanges it for an
+  access token with the IDs of the federation rule, organization, service
+  account and workspace, which are repository variables
+  (`ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`,
+  `ANTHROPIC_SERVICE_ACCOUNT_ID`, `ANTHROPIC_WORKSPACE_ID`; identifiers,
+  not secrets), builds the site with `--require-tokens`, and writes the
+  length line of both pages into the job summary. It publishes nothing; a
+  failed exchange or count fails the run. The future Pages workflow will
+  get its token the same way. The CI on pull requests gets no credential,
+  and neither does a pull request from a fork. A local build that wants the
   count sets the key variable for that one command, reading the key from
   the maintainer's secret store. So the pages of one commit differ with
   and without a credential, in that line only.
