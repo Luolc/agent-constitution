@@ -35,7 +35,7 @@ zh = '''
 - `.agents/skills/` 和 `.claude/skills/` 下的所有文件；
 - agent 工具的 subagent 定义和 slash command，例如 `.claude/agents/` 和 `.claude/commands/` 下的所有文件；
 - agent 工具的 hook 和权限配置，例如 `.claude/settings.json`、`.claude/settings.local.json`、`.claude/hooks/` 以及 `.codex/` 下的一切；
-- 编译或生成指令所依据的源文件，例如宪法和规则的源文件；
+- 编译或生成指令所依据的源文件，例如宪法和规定的源文件；
 - 仓库在自己的 `AGENTS.md` 里声明为指令的其他路径。
 
 CI 配置、git 的 commit hook 配置和工具代码不算指令文件。
