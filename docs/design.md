@@ -1015,6 +1015,15 @@ what `purpose` asks for. The person reads what the constitution
 says and nothing
 else: tools, checks and fixtures are ordinary changes (see File structure).
 
+While the constitution is a draft, an amendment pull request is merged
+once agent review has passed, and the person reads it afterwards on a
+preview of the site; the description is still written as below, so that
+the reading is quick. Only a change to an approved edition waits for the
+person's yes on a named head commit before it is merged. The person who
+approves amendments has also asked for an approved edition and the draft
+of the next one to be kept side by side; how the repo holds the two
+(branches, directories or something else) is open.
+
 - An amendment pull request changes only `constitution/`: the sources and
   the generated files rebuilt from them.
 - Its description opens with the diff of the generated text in the
@@ -1027,8 +1036,8 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
   strength of that review.
 - The description ends with the open questions, each clear and easy to
   answer and with a recommended answer (`asking`).
-- The person's yes names the head commit it approves, and the merge lands
-  exactly that commit (`independent-review`).
+- For an approved edition, the person's yes names the head commit it
+  approves, and the merge lands exactly that commit (`independent-review`).
 - `proposing-amendments` asks for the generated diff in the
   language the approving person reads, and `amendment-languages`
   for both languages to change together; the steps above are how this repo
