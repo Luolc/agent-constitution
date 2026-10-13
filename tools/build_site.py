@@ -10,11 +10,11 @@ provisions left out of the version for agents, and the text is wrapped in
 from Anthropic's count_tokens API when CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
 or CONSTITUTION_TOKEN_COUNT_API_KEY is set; without either, or when the
 call fails, the page says the tokens were not counted and the build goes
-on. The pages are written to a temporary
-content directory, Hugo builds web/ (the hugo-book theme, a submodule) into
-site/, English at site/ and Chinese at site/zh/, and check_site_anchors.py
-checks the result. site/ is not committed. The setup is described in
-docs/design.md (Static site).
+on; with --require-tokens it fails instead. The pages are written to a
+temporary content directory, Hugo builds web/ (the hugo-book theme, a
+submodule) into site/, English at site/ and Chinese at site/zh/, and
+check_site_anchors.py checks the result. site/ is not committed. The
+setup is described in docs/design.md (Static site).
 """
 
 import argparse
@@ -118,17 +118,25 @@ def page(markdown: str, labels: dict[str, str], revision: str, tokens: int | Non
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--out", type=Path, default=ROOT / "site", help="the output directory (default: site/)")
+    parser.add_argument("--require-tokens", action="store_true",
+                        help="fail when the tokens of a page are not counted (the token-count workflow)")
     args = parser.parse_args(argv)
     revision = tomllib.loads((ROOT / "constitution/index.toml").read_text(encoding="utf-8"))["revision"]
     auth = credential(os.environ)
     if not auth:
         print(f"neither {TOKEN_VARIABLE} nor {KEY_VARIABLE} is set; tokens not counted", file=sys.stderr)
+        if args.require_tokens:
+            return 1
     with tempfile.TemporaryDirectory() as content:
         for lang, labels in PAGES.items():
             source = ROOT / f"constitution/constitution.{lang}.md"
             markdown = source.read_text(encoding="utf-8")
+            tokens = count_tokens(counted(markdown), auth)
+            if tokens is None and args.require_tokens:
+                print(f"{source.relative_to(ROOT)}: tokens not counted; --require-tokens fails", file=sys.stderr)
+                return 1
             try:
-                text = page(markdown, labels, revision, count_tokens(counted(markdown), auth))
+                text = page(markdown, labels, revision, tokens)
             except ValueError as e:
                 print(f"{source.relative_to(ROOT)}: {e}", file=sys.stderr)
                 return 1

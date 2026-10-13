@@ -1,9 +1,9 @@
 """Tests for build_site's page and check_site_anchors: a built constitution
 becomes a Hugo page in both languages with its length and its token count
 or a note that the tokens were not counted, the token count asks the API
-(mocked here) and survives its failure, and the site check passes a page
-whose links all have targets and fails a broken link or a leaked list
-marker. Hugo itself runs in CI, not here."""
+(mocked here) and survives its failure unless --require-tokens is given,
+and the site check passes a page whose links all have targets and fails a
+broken link or a leaked list marker. Hugo itself runs in CI, not here."""
 
 import contextlib
 import http.client
@@ -126,6 +126,37 @@ class CountTokensTest(unittest.TestCase):
                 tokens, _, stderr = self.count(side_effect=error)
                 self.assertIsNone(tokens)
                 self.assertEqual(stderr, f"token count: {shown}; tokens not counted\n")
+
+
+class RequireTokensTest(unittest.TestCase):
+    """main with Hugo and the site check mocked: a page without its token
+    count fails the build only under --require-tokens."""
+
+    def main(self, argv, environ, urlopen):
+        stderr = io.StringIO()
+        with (mock.patch.dict(build_site.os.environ, environ, clear=True),
+              mock.patch("urllib.request.urlopen", **urlopen),
+              mock.patch("subprocess.run", return_value=mock.Mock(returncode=0)) as hugo,
+              mock.patch("check_site_anchors.main", return_value=0),
+              contextlib.redirect_stderr(stderr)):
+            code = build_site.main(["--out", "/nonexistent-site", *argv])
+        return code, hugo.called, stderr.getvalue()
+
+    def test_tokens_not_counted(self):
+        failed = {"side_effect": urllib.error.HTTPError("https://api.anthropic.com/", 401, "Unauthorized", {}, None)}
+        for name, environ in (("no credential", {}), ("count fails", {build_site.TOKEN_VARIABLE: TOKEN})):
+            with self.subTest(name):
+                self.assertEqual(self.main([], environ, failed)[:2], (0, True))
+                code, built, stderr = self.main(["--require-tokens"], environ, failed)
+                self.assertEqual((code, built), (1, False))
+                self.assertIn("tokens not counted", stderr)
+                self.assertNotIn(TOKEN, stderr)
+
+    def test_tokens_counted(self):
+        response = mock.MagicMock()
+        response.__enter__.side_effect = lambda: io.BytesIO(b'{"input_tokens": 12345}')
+        code, built, _ = self.main(["--require-tokens"], {build_site.TOKEN_VARIABLE: TOKEN}, {"return_value": response})
+        self.assertEqual((code, built), (0, True))
 
 
 class CheckTest(unittest.TestCase):

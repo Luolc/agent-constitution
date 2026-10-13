@@ -1,0 +1,114 @@
+# Token count on main: exchanges the run's GitHub OIDC token for a
+# short-lived Anthropic access token through Workload Identity Federation,
+# builds the static site with it, and writes the length line of both pages
+# into the job summary (docs/design.md, Static site). The federation rule
+# accepts only pushes to main, so this runs only there. It publishes
+# nothing. A failed exchange or count fails the run.
+# The four IDs are repository variables, identifiers rather than secrets.
+
+name: Token count
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: token-count
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  count:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The site's theme, web/themes/hugo-book.
+          submodules: true
+
+      # As in ci.yml: pinned by version and SHA-256, unpacked outside the
+      # checkout under the name tools/build_site.py calls.
+      - name: Install Hugo
+        env:
+          HUGO_VERSION: 0.167.0
+          HUGO_SHA256: 4d84519b9f619e6d4c3fb45a50157abeabeb724f859c60605f44c23def6e1169
+        run: |
+          set -euo pipefail
+          bindir="$(mktemp -d)"
+          tarball="${bindir}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
+          curl -fsSL -o "$tarball" \
+            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
+          echo "${HUGO_SHA256}  ${tarball}" | sha256sum -c -
+          tar -xzf "$tarball" -C "$bindir" hugo
+          mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
+          echo "$bindir" >> "$GITHUB_PATH"
+
+      # The JWT and the access token live only in this step's shell and in
+      # files under a private temporary directory: never echoed, never put
+      # on a command line or into GITHUB_ENV, masked as soon as they exist.
+      # A failed exchange prints its HTTP status and the error body with
+      # every field named *token replaced.
+      - name: Exchange the OIDC token and build the site
+        env:
+          FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+        run: |
+          set -euo pipefail
+          umask 077
+          work="$(mktemp -d)"
+          curl -fsS -o "${work}/oidc.json" \
+            -H @- "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://api.anthropic.com" \
+            <<< "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"
+          jwt="$(jq -r '.value // empty' "${work}/oidc.json")"
+          if [ -z "$jwt" ]; then
+            echo "::error::no OIDC token from GitHub"
+            exit 1
+          fi
+          echo "::add-mask::${jwt}"
+          unset jwt
+          jq '{
+              grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+              assertion: .value,
+              federation_rule_id: env.FEDERATION_RULE_ID,
+              organization_id: env.ORGANIZATION_ID,
+              service_account_id: env.SERVICE_ACCOUNT_ID,
+              workspace_id: env.WORKSPACE_ID
+            }' "${work}/oidc.json" > "${work}/request.json"
+          rm "${work}/oidc.json"
+          status="$(curl -sS -o "${work}/response.json" -w '%{http_code}' \
+            -H 'content-type: application/json' --data-binary @"${work}/request.json" \
+            https://api.anthropic.com/v1/oauth/token)"
+          rm "${work}/request.json"
+          if [ "$status" != 200 ]; then
+            echo "::error::token exchange failed: HTTP ${status}"
+            jq 'walk(if type == "object" then with_entries(if (.key | test("token$"; "i")) then .value = "<redacted>" else . end) else . end)' \
+              "${work}/response.json" || echo "(the error body is not JSON)"
+            exit 1
+          fi
+          CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN="$(jq -r '.access_token // empty' "${work}/response.json")"
+          rm "${work}/response.json"
+          if [ -z "$CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN" ]; then
+            echo "::error::the token exchange returned no access_token"
+            exit 1
+          fi
+          echo "::add-mask::${CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN}"
+          export CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
+          python3 tools/build_site.py --require-tokens
+
+      # The length line under the title of each built page.
+      - name: Job summary
+        run: |
+          set -euo pipefail
+          {
+            echo "## Constitution length"
+            echo
+            for page in site/index.html site/zh/index.html; do
+              line="$(grep -o '<span class="length">[^<]*</span>' "$page" | sed 's/<[^>]*>//g')"
+              echo "- \`${page}\`: ${line}"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
