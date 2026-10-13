@@ -16,7 +16,7 @@ Goals:
   place or tool.
 - Hold the general rule library and general skills: the concrete practices
   that refine the constitution, written without one user's machines,
-  accounts or history. The rules are a default set; each deployment chooses
+  accounts or history. The rules are a default set; each jurisdiction chooses
   which of them it uses.
 - Ship the toolchain that turns those sources, plus a private overlay, into
   the one instruction file the coding agents read, and the checkers that keep
@@ -43,7 +43,7 @@ Non-goals:
 | Public core (this repo) | Private overlay (a separate private repo) |
 | --- | --- |
 | The constitution | Local parameters: the values the rules leave open (machines, model names, secret-store layout, lists of repos) |
-| General rules, a default set each deployment chooses from | Private rules: rules that only make sense on that user's stack |
+| General rules, a default set each jurisdiction chooses from | Private rules: rules that only make sense on that user's stack |
 | General skills | Private skills (for example the orchestra skill) |
 | Compiler, checkers, private-term scanner | Provenance: the casebook of incidents and decisions, with dates and sources |
 | A fictional example overlay and its golden output | The private term list the scanner reads at run time |
@@ -193,9 +193,20 @@ are unique across the whole constitution, and a list item's ID only
 within its section, so items can have short names (`money`). In the
 rules, a rule ID is unique among the rules, the private overlay's rules
 included. The same word may be used once in each namespace. An ID is
-never reused: a provision of the constitution is only ever repealed,
-never deleted, so the sources hold every ID ever used and the build
-rejects a second one; a rule may be deleted, and its ID then goes into
+never reused. From the first approved revision on, a provision of the
+constitution is only ever repealed, never deleted, so the sources hold
+every ID used since then and the build rejects a second one. While the
+constitution was a draft, revisions deleted provisions outright; the
+build does not see those IDs, so they are listed here, and a draft
+revision that deletes another adds it:
+
+- revision 0.5: the article `interpretation`;
+- revision 0.7: the article `roles` and its sections `relay-role`,
+  `job-role` and `worker-role`; the items `terms.deployment`, `terms.job`,
+  `terms.layer`, `terms.project` and `terms.skill`.
+
+The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
+retired as well. A rule may be deleted, and its ID then goes into
 `rules/retired-ids.txt` (see Rules).
 
 Text cites with `{@...}`; nothing else in the text is markup, and any
@@ -444,7 +455,7 @@ zh = '''
   rests on, cited as in the text (`constitution:<id>`); none of them
   repealed. A rule with no authority does
   not compile.
-- `adjustable` (optional): the values in this rule that a lower layer may
+- `adjustable` (optional): the values in this rule that a lower-ranking text may
   change under `relaxations.adjustable-rules`, each with its default, for
   example `adjustable = ["wait_hours=24"]`. A rule without it cannot be
   relaxed that way. These are distinct from local parameters (below): a
@@ -460,33 +471,33 @@ is unique and that none of them is retired in either.
 
 ### Choosing rules
 
-The general rules are a default set, not obligations on every deployment
-(`rules-refine`): one deployment may need a rule that another has
+The general rules are a default set, not obligations on every jurisdiction
+(`rules-refine`): one jurisdiction may need a rule that another has
 good reason to drop (a repo that stays private on a self-hosted server may
 keep credentials in it on purpose). Open, for the person to decide. Recommended:
 
-- A deployment uses every general rule by default. Its overlay leaves a rule
+- A jurisdiction uses every general rule by default. Its overlay leaves a rule
   out only by naming it, with a one-line reason, in `overlay.toml`
   (`exclude = ["credential-storage"]`). The build manifest lists
   what was left out.
-- A repo inside a deployment departs from a rule only by a relaxation
+- A repo inside a jurisdiction departs from a rule only by a relaxation
   declaration (below), where the constitution permits it. It does not leave
   rules out of the compiled file, because one compiled file serves all of a
-  deployment's repos.
+  jurisdiction's repos.
 - To change a rule rather than drop it, the overlay leaves it out and adds a
   private rule in its place.
 - The constitution cannot be left out or relaxed this way.
 
-Reasons: defaulting to all means a new rule reaches every deployment without
+Reasons: defaulting to all means a new rule reaches every jurisdiction without
 anyone remembering to list it, where an opt-in list would go stale as rules
 are added. Leaving a rule out is not a relaxation (`rules-refine`),
 but naming each one, with its reason, keeps it visible and puts everything a
-deployment dropped in one place. Exclusion per deployment, not per repo, matches how the output is
-built: one file per deployment.
+jurisdiction dropped in one place. Exclusion per jurisdiction, not per repo, matches how the output is
+built: one file per jurisdiction.
 
 ### Relaxation declarations
 
-A lower layer (a repo's `AGENTS.md`, or a task file) relaxes a rule only by
+A lower-ranking text (a repo's `AGENTS.md`, or a task file) relaxes a rule only by
 naming the constitution's permission for it:
 
 ```markdown
@@ -495,7 +506,7 @@ naming the constitution's permission for it:
 - relaxes: constitution:relaxations.adjustable-rules
   target: rule:example-rule/wait_hours=4
   scope: <this repo, or this task>
-  condition: <how this layer meets the condition that item states>
+  condition: <how this text meets the condition that item states>
 ```
 
 One item per relaxation, with all four keys: the permission (an item of
@@ -591,8 +602,8 @@ position. What each one proves, and what it does not:
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
 | Private-term scan | No hit from the generic classes (secret-store paths, private address ranges, home-directory paths, email addresses) in CI; no hit from the private term list when the overlay runs it | That nothing private is present: a term not on the list passes |
-| Relaxations | Each `relaxes:` names an existing item of `relaxations` open to that layer, an existing target, a scope and a condition; under `relaxations.adjustable-rules` the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
-| Fixture gate | Every fixture binds to existing IDs and passes; redline fixtures are never skipped, except those of rules a deployment left out, which its manifest lists as not run | That agents behave as the fixtures expect outside these cases |
+| Relaxations | Each `relaxes:` names an existing item of `relaxations` open to that rank, an existing target, a scope and a condition; under `relaxations.adjustable-rules` the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
+| Fixture gate | Every fixture binds to existing IDs and passes; redline fixtures are never skipped, except those of rules a jurisdiction left out, which its manifest lists as not run | That agents behave as the fixtures expect outside these cases |
 
 The constitution check runs its checks in this order and stops after the
 first one that finds errors, printing all of that one's errors:
@@ -696,7 +707,7 @@ is first run against a control string that must match, so a broken pattern
 cannot pass silently.
 
 Undeclared relaxations cannot be caught completely. The relaxation checker
-also flags, as a warning, lower-layer text that cites a rule or article ID
+also flags, as a warning, lower-ranking text that cites a rule or article ID
 next to wording that lifts an obligation ("not required", "instead of",
 "may skip") without a `relaxes:` entry. Review and behavior fixtures carry
 the rest. The checker runs in each repo's own CI, against a pinned core
@@ -722,7 +733,7 @@ Each fixture directory holds a `fixture.md` (front matter `binds:
 `redline`, and a short statement of what it shows),
 its inputs and its expected result.
 
-- Static fixtures are deterministic: an input overlay or a lower-layer file,
+- Static fixtures are deterministic: an input overlay or a lower-ranking file,
   and an assertion on the compiler or a checker (builds; fails with this
   error; this declaration is rejected). They run in every CI run.
 - Behavior fixtures (later) give a real agent a scenario and judge what it
@@ -750,12 +761,12 @@ with the text they test, bound to its ID.
 
 - Constitution: its red-line fixtures live in the core. Those for what no
   project may change (for example, that an amendment goes through a person,
-  `must-ask.amendments`) run for every deployment. Those for a default
+  `must-ask.amendments`) run for every jurisdiction. Those for a default
   boundary item test the default; a project that overrides that item under
   `relaxations.project-overrides` runs its own fixture
   for the override in place of the core's, as with a left-out rule.
 - General rules: each rule's red-line fixtures live in the core, bound to
-  that rule's ID. The core's CI runs all of them. A deployment runs those of
+  that rule's ID. The core's CI runs all of them. A jurisdiction runs those of
   the rules it uses; the fixtures of a rule it left out are not run there,
   and its manifest lists them as not run, never as passed.
 - Private rules and a repo's relaxations: their fixtures live on that side
