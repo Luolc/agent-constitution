@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A check can rule out a case only if it would fail in that case. A check that would pass either way must not be cited as evidence that the case is ruled out.
+A check that would also pass in the case it is meant to rule out must not be cited as evidence that the case is ruled out.
 '''
 zh = '''
-一项检查，只有在它要排除的那种情况下会失败，才能用来排除那种情况。无论是否出现那种情况都会通过的检查，不得当作已经排除它的证据。
+在它要排除的那种情况下也会通过的检查，不得当作已经排除那种情况的证据。
 '''

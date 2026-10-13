@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A work item states acceptance criteria by which an agent can tell, without asking a principal, whether the work is done. When an item has none, the agent that takes it writes them down before it starts.
+A work item states acceptance criteria by which an agent can tell, without asking a principal, whether the work is done. When an item has none, the agent that takes it writes them into the item before it starts.
 '''
 zh = '''
-工作项写明验收标准，agent 不必问委托人就能据此判断工作是否完成。工作项没有写明的，接手的 agent 动手之前先写下来。
+工作项写明验收标准，agent 不必问委托人就能据此判断工作是否完成。工作项没有写明的，接手的 agent 动手之前先写进工作项。
 '''
