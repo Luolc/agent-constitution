@@ -368,7 +368,7 @@ def load(root: Path, errors: Errors) -> Sources | None:
         errors.add(INDEX, index.line("edition ="), 1, "a draft has no `edition`")
     elif index_status == "active" and edition is None:
         errors.add(INDEX, 1, 1, "lacks `edition`, which an active constitution has")
-    elif isinstance(edition, str) and not MONTH.fullmatch(edition):
+    elif edition is not None and not MONTH.fullmatch(edition):
         errors.add(INDEX, index.line("edition ="), 1, f"`edition` must be `YYYY-MM`, got `{edition}`")
     check_keys(index, index.data, INDEX_SCHEMA, languages, errors)
     if errors:
@@ -607,32 +607,36 @@ def check_refs(src: Sources, errors: Errors) -> None:
 
 def render(lang: str, src: Sources) -> str:
     L = LANGUAGES[lang]
-    labels, numbers, short = {}, {}, {}
+    # short: a section's or an item's citation without its article or
+    # section; parent: the article or section that short leaves out.
+    labels, numbers, short, parent = {}, {}, {}, {}
     for a in src.articles:
         numbers[a.id] = L.article_number(*number_key(a.number))
         labels[a.id] = L.article_ref.format(number=numbers[a.id])
     for s in src.sections:
-        numbers[s.id] = L.section_number(*number_key(s.number))
+        numbers[s.id] = short[s.id] = L.section_number(*number_key(s.number))
         labels[s.id] = L.section_ref.format(article=labels[s.article], section=numbers[s.id])
+        parent[s.id] = s.article
         for i in s.items:
             short[i.ref] = L.item_ref(*number_key(i.number))
             labels[i.ref] = labels[s.id] + short[i.ref]
+            parent[i.ref] = s.id
 
     def note(month: str) -> str:
         m = MONTH.fullmatch(month)
         return L.repealed_note(int(m.group(1)), int(m.group(2)))
 
     def refs(text: str) -> str:
-        """Each citation as its label, except that an item citation joined by
-        a connector to the citation of another item of the same section just
-        before it renders short: `Art. IV §1(2) or (4)`."""
+        """Each citation as its label, except that a section or item citation
+        joined by a connector to the citation of another section of the same
+        article, or another item of the same section, just before it renders
+        short: `Art. IV §1 and §2`, `Art. IV §1(2) or (4)`."""
         out, end, previous = [], 0, None
         for m in MARK.finditer(text):
             ref, between = m.group(2), text[end:m.start()]
-            section, dot, _ = ref.partition(".")
-            joined = dot and section == previous and between in L.connectors
+            joined = ref in parent and parent[ref] == previous and between in L.connectors
             out += [between, short[ref] if joined else labels[ref]]
-            previous, end = section if dot else None, m.end()
+            previous, end = parent.get(ref), m.end()
         return "".join(out) + text[end:]
 
     def indented(first: str, text: str, indent: str) -> list[str]:
@@ -754,7 +758,8 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
             errors.add(INDEX, src.index.line("edition ="), 7,
                        f"edition {edition} is not later than edition {base_edition} at base {ref}")
             return ""
-        if revision.isdigit() and base_revision.isdigit() and int(revision) < int(base_revision):
+        if re.fullmatch(r"[0-9]+", revision) and re.fullmatch(r"[0-9]+", base_revision) \
+                and int(revision) < int(base_revision):
             errors.add(INDEX, src.index.line("revision ="), 7,
                        f"revision {revision} is lower than revision {base_revision} at base {ref};"
                        " a new edition cannot start in the same month as the base's")

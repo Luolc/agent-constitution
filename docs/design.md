@@ -349,15 +349,21 @@ its third item as examples:
 | Repealed list item | `  - (3) (repealed November 2026)` | `  - （三） (2026 年 11 月废止)` |
 | Repealed article | `## Article IV (repealed November 2026)`, nothing below it | `## 第四条 (2026 年 11 月废止)` |
 | Adjacent item citations | `Art. IV §1(2) or (4)`, `Art. IV §1(1) to (7)`, `Art. IV §1(1), (2) and (4)` | `第四条第一款第二项或第四项`, `第四条第一款第一项至第七项`, `第四条第一款第一项、第二项和第四项` |
+| Adjacent section citations | `Art. IV §1 and §2`, `Art. IV §1 to §3`, `Art. IV §1, §2 and §4` | `第四条第一款和第二款`, `第四条第一款至第三款`, `第四条第一款、第二款和第四款` |
 
 An item citation renders short, as its item number alone (`(4)`, `(2a)`;
 `第四项`, `第二项之一`), when the text just before it is exactly one
 connector and the text before that is a citation of another item of the
-same section. The connectors are ` or `, ` and `, `, ` and ` to ` in
-English and `或`, `和`, `、` and `至` in Chinese. An item of another
-section, a citation after a section's citation, and a citation with any
-other text before it keep the full path. The sources always write the
-full path.
+same section. A section citation renders short the same way, as its
+section number alone (`§2`, `§1a`; `第二款`, `第一款之一`), after a
+connector and a citation of another section of the same article. The
+connectors are ` or `, ` and `, `, ` and ` to ` in English and `或`,
+`和`, `、` and `至` in Chinese; a range is written in the sources with
+` to ` or `至` between its first and last citation. An item of another
+section, a section of another article, a citation after a citation one
+level up or down (an article and its section, a section and an item),
+and a citation with any other text before it keep the full path. The
+sources always write the full path.
 
 Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
