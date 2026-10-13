@@ -284,7 +284,8 @@ constitution/articles/
 - `revision`: a string, the revision within the edition: drafts before
   the first approval are `0.<n>`, the first approved text of an edition
   is `1`, each adopted amendment adds one, and a new edition starts again
-  at `1`. The build manifest records it.
+  at `1`. The build manifest records it. Within an edition it rises
+  exactly when the constitution text changes (Checkers, check 7).
 - `languages`: the language codes, the first being the default. Each
   must have a rendering entry in the build script (one table,
   `LANGUAGES`, holds everything that differs by language: the file header,
@@ -753,7 +754,7 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds both pages without a warning; on every page each in-page link `#id` has an element with that id, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
@@ -798,18 +799,29 @@ first one that finds errors, printing all of that one's errors:
 7. Numbering against a base commit (only under `--check --base <git-ref>`,
    read with `git show`): when the base's `index.toml` is `active`, the
    status has not gone back to `draft`, and the current `edition` is the
-   base's or a later month; when it is the base's, `revision` is not lower
-   than the base's (a new edition started in the same month would restart
-   it at `1`), and every article, section and list item of the base, matched
+   base's or a later month; when it is the base's, every article, section and list item of the base, matched
    by ID, still exists with the same number, a section in the same
    article's directory and an item in the same section; what was repealed
    is still repealed; every rule of the base still exists or has its ID in
    `rules/retired-ids.txt`, and every ID retired at the base is still
    listed. Each error says which it is: an edition not later than the
-   base's, a lower revision, gone, renumbered, moved to another article,
+   base's, gone, renumbered, moved to another article,
    no longer repealed, no longer retired. A base that is `draft`, has no
    article directories yet, or has an earlier `edition` than the current
    one, skips the comparison with a printed note.
+
+   The revision part of check 7 also runs when the base is a `draft`, as
+   long as the base and the current `index.toml` have the same `edition`
+   (a draft has none) and the base has an `index.toml`. The constitution
+   text has changed when a file under `constitution/articles/` was added,
+   removed or edited, or `index.toml` differs in any line other than
+   `revision`; the generated files and `rules/` do not count. If it
+   changed, `revision` must be greater than the base's; if not, equal to
+   it. "Greater" is strict, not "plus one", so that a change which jumps
+   ahead is not an error. A draft `0.<n>` compares by the number `n`
+   (`0.9` < `0.10`) and is below every whole-number revision; a revision
+   of any other form is an error. When the edition differs, the revisions
+   are not compared. Its purpose is that one revision names one text.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
@@ -818,6 +830,15 @@ commit hooks and in CI; check 7 runs in CI only, on a pull request
 against the tip of the base branch the checked-out merge commit was made
 on (its first parent), on a push to `main` against the commit before the
 push.
+
+The revision part is only as good as that base. The required check `check`
+is strict: a pull request must be up to date with `main` before it merges,
+so its CI run has seen the revision of every amendment merged before it,
+and two amendments cannot both take the same revision. The push run on
+`main` applies the same test to each merge commit as a backstop; if it
+turns red on a repeated revision, the one who merged opens a correcting
+amendment that gives the text a revision of its own. Revisions already
+repeated in history stay; each push is judged on its own commit.
 
 The instruction-only check (`tools/check_instruction_changes.py`) keeps
 the changes that an agent reads as instructions apart from all others, so

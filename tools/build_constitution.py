@@ -22,8 +22,10 @@ written. With --check nothing is written: the sources are validated and the
 committed outputs must equal a fresh build byte for byte. With --check
 --base <git-ref> the numbering is also compared with that commit: once the
 constitution is active, the edition may only move to a later month,
-within an edition the revision may not go down and nothing numbered may
+within an edition nothing numbered may
 disappear, change number or move, and no deleted rule may go unretired.
+Within an edition, draft or active, the revision rises when the
+constitution text changes and stays when it does not.
 Errors print as `path:line: check N: message`; the exit status is 1 on any
 error.
 """
@@ -838,7 +840,7 @@ def git(root: Path, *args: str) -> str | None:
 
 def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
     """Once the base is active: the edition is the base's or a later one.
-    While it is the base's: the revision is not lower, and every article,
+    While it is the base's: every article,
     section and item of the base still exists, by ID, with the same number,
     a section in the same article; what was repealed is still repealed;
     every rule of the base still exists or is retired, and every retired ID
@@ -864,7 +866,6 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
         errors.add(INDEX, src.index.line("status ="), 7, f"status went back to draft from active at base {ref}")
     else:
         edition, base_edition = src.index.data["edition"], base.get("edition")
-        revision, base_revision = src.index.data["revision"], str(base.get("revision"))
         # Both are `YYYY-MM`, so string order is month order.
         if edition != base_edition:
             if isinstance(base_edition, str) and edition > base_edition:
@@ -872,11 +873,6 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
             errors.add(INDEX, src.index.line("edition ="), 7,
                        f"edition {edition} is not later than edition {base_edition} at base {ref}")
             return ""
-        if re.fullmatch(r"[0-9]+", revision) and re.fullmatch(r"[0-9]+", base_revision) \
-                and int(revision) < int(base_revision):
-            errors.add(INDEX, src.index.line("revision ="), 7,
-                       f"revision {revision} is lower than revision {base_revision} at base {ref};"
-                       " a new edition cannot start in the same month as the base's")
 
     def base_toml(path: Path) -> dict | None:
         try:
@@ -962,6 +958,61 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
     return ""
 
 
+def revision_key(revision: str) -> tuple[int, int] | None:
+    """Sort key of a revision: a draft `0.<n>` by its number, before every
+    approved integer revision; None for any other string."""
+    if re.fullmatch(r"0\.[0-9]+", revision):
+        return 0, int(revision[2:])
+    if re.fullmatch(r"[1-9][0-9]*", revision):
+        return int(revision), 0
+    return None
+
+
+def source_text_changed(root: Path, ref: str) -> bool:
+    """The article sources or `index.toml` other than its `revision` line
+    differ from the base's. The working tree is compared, so the result
+    does not depend on what is committed."""
+    drop = re.compile(r'^revision = ".*"\n', re.MULTILINE)
+    base_paths = {Path(p) for p in (git(root, "ls-tree", "-r", "--name-only", ref, "--", str(ARTICLES)) or "").split("\n") if p}
+    paths = {p.relative_to(root) for p in (root / ARTICLES).rglob("*") if p.is_file()}
+    if paths != base_paths:
+        return True
+    if any((root / p).read_text(encoding="utf-8") != git(root, "show", f"{ref}:{p}") for p in paths):
+        return True
+    base_index = git(root, "show", f"{ref}:{INDEX}") or ""
+    return drop.sub("", (root / INDEX).read_text(encoding="utf-8")) != drop.sub("", base_index)
+
+
+def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
+    """Within one edition (a draft has none) the revision is greater than
+    the base's when the constitution text changed since it, and equal to it
+    when the text did not change. A different edition is not compared. Runs
+    whatever the status of the base."""
+    base_index = git(root, "show", f"{ref}:{INDEX}")
+    if base_index is None:
+        return
+    try:
+        base = tomllib.loads(base_index)
+    except tomllib.TOMLDecodeError:
+        return  # check_base reports it
+    revision, base_revision = src.index.data["revision"], str(base.get("revision"))
+    if src.index.data.get("edition") != base.get("edition"):
+        return
+    line = src.index.line("revision =")
+    key, base_key = revision_key(revision), revision_key(base_revision)
+    if key is None:
+        errors.add(INDEX, line, 7, f"revision {revision} is neither `0.<n>` nor a whole number from 1")
+    elif base_key is None:
+        return
+    elif source_text_changed(root, ref):
+        if key <= base_key:
+            errors.add(INDEX, line, 7, f"the constitution text changed since base {ref} but revision {revision}"
+                                       f" is not greater than the base's {base_revision}")
+    elif revision != base_revision:
+        errors.add(INDEX, line, 7, f"revision {revision} differs from revision {base_revision} at base {ref}"
+                                   " but the constitution text did not change")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent,
@@ -980,6 +1031,7 @@ def main(argv: list[str] | None = None) -> int:
         note = check_base(args.root, args.base, src, errors)
         if note:
             print(note)
+        check_revision(args.root, args.base, src, errors)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
