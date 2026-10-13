@@ -245,7 +245,7 @@ class Tree(unittest.TestCase):
     def activate(self):
         """Make the tree active: index, sections, items and rules."""
         self.edit("constitution/index.toml", 'status = "draft"', 'status = "active"')
-        self.edit("constitution/index.toml", 'revision = "0.2"', 'edition = "2026-10-20"\nrevision = "1"')
+        self.edit("constitution/index.toml", 'revision = "0.2"', 'edition = "2026-10"\nrevision = "1"')
         for name in SECTIONS + ["rules/rule.toml"]:
             self.edit(name, 'status = "draft"', 'status = "active"', -1)
 
@@ -305,8 +305,8 @@ class RenderTest(Tree):
         self.activate()
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
-        self.assertIn("\n# Test Constitution (2026-10-20)\n", outputs["en"])
-        self.assertIn("\n# 测试宪法 (2026-10-20)\n", outputs["zh"])
+        self.assertIn("\n# Test Constitution (2026-10 edition)\n", outputs["en"])
+        self.assertIn("\n# 测试宪法 (2026-10 版)\n", outputs["zh"])
 
     def test_adjacent_item_citations_render_short(self):
         three = '[[items]]\nid = "people"\nnumber = "3"\nstatus = "draft"\n\n[items.content]\nen = "People."\nzh = "人。"\n'
@@ -445,16 +445,16 @@ class CheckTest(Tree):
 
     def test_1_edition(self):
         index = "constitution/index.toml"
-        self.edit(index, 'revision =', 'edition = "2026-10-20"\nrevision =')
+        self.edit(index, 'revision =', 'edition = "2026-10"\nrevision =')
         self.assertFails(1, f"{index}:2", "a draft has no `edition`")
-        self.edit(index, 'edition = "2026-10-20"\n', '')
+        self.edit(index, 'edition = "2026-10"\n', '')
         self.activate()
         self.assertEqual(self.errors(), [])
-        self.edit(index, 'edition = "2026-10-20"\n', '')
+        self.edit(index, 'edition = "2026-10"\n', '')
         self.assertFails(1, f"{index}:1", "lacks `edition`, which an active constitution has")
-        for bad in ("2026-02-30", "20261020"):
+        for bad in ("2026-13", "2026-10-20"):
             self.edit(index, 'revision =', f'edition = "{bad}"\nrevision =')
-            self.assertFails(1, f"{index}:2", f"`edition` must be a date `YYYY-MM-DD`, got `{bad}`")
+            self.assertFails(1, f"{index}:2", f"`edition` must be `YYYY-MM`, got `{bad}`")
             self.edit(index, f'edition = "{bad}"\n', '')
 
     def test_1_repealed_date(self):
@@ -698,7 +698,7 @@ class BaseTest(Tree):
     def test_back_to_draft(self):
         self.commit_base()
         self.edit("constitution/index.toml", 'status = "active"', 'status = "draft"')
-        self.edit("constitution/index.toml", 'edition = "2026-10-20"\n', '')
+        self.edit("constitution/index.toml", 'edition = "2026-10"\n', '')
         for name in SECTIONS + ["rules/rule.toml"]:
             self.edit(name, 'status = "active"', 'status = "draft"', -1)
         errors, _ = self.base_errors()
@@ -715,10 +715,25 @@ class BaseTest(Tree):
     def test_new_edition_skips(self):
         self.commit_base()
         self.move(f"{B}/01a-beta-two.toml", f"{B}/02-beta-two.toml")
-        self.edit("constitution/index.toml", 'edition = "2026-10-20"', 'edition = "2027-03-01"')
+        self.edit("constitution/index.toml", 'edition = "2026-10"', 'edition = "2027-03"')
         errors, note = self.base_errors()
         self.assertEqual(errors, [])
-        self.assertEqual(note, "base HEAD is edition 2026-10-20, this is edition 2027-03-01; numbering not compared")
+        self.assertEqual(note, "base HEAD is edition 2026-10, this is edition 2027-03; numbering not compared")
+
+    def test_earlier_edition(self):
+        self.commit_base()
+        self.edit("constitution/index.toml", 'edition = "2026-10"', 'edition = "2026-09"')
+        self.assertEqual(self.base_errors(), (["constitution/index.toml:2: check 7:"
+                                               " edition 2026-09 is not later than edition 2026-10 at base HEAD"], ""))
+
+    def test_lower_revision_in_same_edition(self):
+        self.activate()
+        self.edit("constitution/index.toml", 'revision = "1"', 'revision = "2"')
+        self.commit_base(active=False)
+        self.edit("constitution/index.toml", 'revision = "2"', 'revision = "1"')
+        self.assertEqual(self.base_errors(), (["constitution/index.toml:3: check 7:"
+                                               " revision 1 is lower than revision 2 at base HEAD;"
+                                               " a new edition cannot start in the same month as the base's"], ""))
 
     def test_draft_base_skips(self):
         self.commit_base(active=False)

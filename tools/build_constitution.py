@@ -14,14 +14,14 @@ Without --check the sources are validated and one output per language is
 written. With --check nothing is written: the sources are validated and the
 committed outputs must equal a fresh build byte for byte. With --check
 --base <git-ref> the numbering is also compared with that commit: once the
-constitution is active, nothing numbered may disappear, change number or
-move within an edition, and no deleted rule may go unretired.
+constitution is active, the edition may only move to a later month,
+within an edition the revision may not go down and nothing numbered may
+disappear, change number or move, and no deleted rule may go unretired.
 Errors print as `path:line: check N: message`; the exit status is 1 on any
 error.
 """
 
 import argparse
-import datetime
 import re
 import subprocess
 import sys
@@ -47,7 +47,6 @@ SECTION_NAME_SHAPE = "two digits from 01, an optional lowercase letter, a hyphen
 NUMBER = re.compile(r"([1-9][0-9]*)([a-z]?)")
 NUMBER_SHAPE = "an integer with an optional letter suffix (2, 2a)"
 MONTH = re.compile(r"([0-9]{4})-(0[1-9]|1[0-2])")
-DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 ROMAN = [
     (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"),
@@ -86,6 +85,7 @@ class Language:
     means adding one entry to LANGUAGES and listing it in index.toml."""
     header: str                        # {status}, {revision}
     draft: str                         # in the title's parentheses while a draft
+    edition: str                       # {edition}, in the title's parentheses once active
     article_heading: str               # {number}, {title}
     repealed_article_heading: str      # {number}, {note}
     article_ref: str                   # {number}
@@ -107,6 +107,7 @@ LANGUAGES = {
             " Status: {status}. Revision: {revision}. Language: English."
         ),
         draft="Draft",
+        edition="{edition} edition",
         article_heading="## Article {number}. {title}",
         repealed_article_heading="## Article {number} ({note})",
         article_ref="Art. {number}",
@@ -125,6 +126,7 @@ LANGUAGES = {
             "改源文件后重新生成。状态：{status}。修订版：{revision}。语言：中文。"
         ),
         draft="草案",
+        edition="{edition} 版",
         article_heading="## {number} {title}",
         repealed_article_heading="## {number} ({note})",
         article_ref="{number}",
@@ -264,13 +266,6 @@ def name_number(digits: str, suffix: str = "") -> str:
     return f"{int(digits)}{suffix}"
 
 
-def valid_date(text: str) -> bool:
-    try:
-        return bool(DATE.fullmatch(text)) and bool(datetime.date.fromisoformat(text))
-    except ValueError:
-        return False
-
-
 def citations(text: str) -> list[str]:
     """The citations in the text as written, with their namespace if any:
     `leaks`, `must-ask.money`, `constitution:leaks`, `rule:x`."""
@@ -373,8 +368,8 @@ def load(root: Path, errors: Errors) -> Sources | None:
         errors.add(INDEX, index.line("edition ="), 1, "a draft has no `edition`")
     elif index_status == "active" and edition is None:
         errors.add(INDEX, 1, 1, "lacks `edition`, which an active constitution has")
-    elif isinstance(edition, str) and not valid_date(edition):
-        errors.add(INDEX, index.line("edition ="), 1, f"`edition` must be a date `YYYY-MM-DD`, got `{edition}`")
+    elif isinstance(edition, str) and not MONTH.fullmatch(edition):
+        errors.add(INDEX, index.line("edition ="), 1, f"`edition` must be `YYYY-MM`, got `{edition}`")
     check_keys(index, index.data, INDEX_SCHEMA, languages, errors)
     if errors:
         return None
@@ -657,8 +652,9 @@ def render(lang: str, src: Sources) -> str:
         return lines
 
     index = src.index.data
+    edition = L.edition.format(edition=index["edition"]) if "edition" in index else L.draft
     parts = [L.header.format(status=index["status"], revision=index["revision"]),
-             f"# {refs(index['title'][lang])} ({index.get('edition', L.draft)})\n\n{refs(index['front'][lang])}"]
+             f"# {refs(index['title'][lang])} ({edition})\n\n{refs(index['front'][lang])}"]
     for a in sorted(src.articles, key=lambda a: number_key(a.number)):
         if a.repealed:
             parts.append(L.repealed_article_heading.format(number=numbers[a.id], note=note(a.repealed)))
@@ -723,11 +719,12 @@ def git(root: Path, *args: str) -> str | None:
 
 
 def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
-    """Once the base is active, and while the edition is the base's: every
-    article, section and item of the base still exists, by ID, with the
-    same number, a section in the same article; what was repealed is still
-    repealed; every rule of the base still exists or is retired, and every
-    retired ID stays retired. Returns a note when the step is skipped."""
+    """Once the base is active: the edition is the base's or a later one.
+    While it is the base's: the revision is not lower, and every article,
+    section and item of the base still exists, by ID, with the same number,
+    a section in the same article; what was repealed is still repealed;
+    every rule of the base still exists or is retired, and every retired ID
+    stays retired. Returns a note when the step is skipped."""
     if git(root, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}") is None:
         errors.add(INDEX, 1, 7, f"base `{ref}` is not a commit")
         return ""
@@ -747,9 +744,20 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
         return f"base {ref} has no {ARTICLES}/<NN>-<id>/{ARTICLE_FILE}; numbering not compared"
     if src.index.data["status"] != "active":
         errors.add(INDEX, src.index.line("status ="), 7, f"status went back to draft from active at base {ref}")
-    elif src.index.data["edition"] != base.get("edition"):
-        return (f"base {ref} is edition {base.get('edition')}, this is edition {src.index.data['edition']};"
-                " numbering not compared")
+    else:
+        edition, base_edition = src.index.data["edition"], base.get("edition")
+        revision, base_revision = src.index.data["revision"], str(base.get("revision"))
+        # Both are `YYYY-MM`, so string order is month order.
+        if edition != base_edition:
+            if isinstance(base_edition, str) and edition > base_edition:
+                return f"base {ref} is edition {base_edition}, this is edition {edition}; numbering not compared"
+            errors.add(INDEX, src.index.line("edition ="), 7,
+                       f"edition {edition} is not later than edition {base_edition} at base {ref}")
+            return ""
+        if revision.isdigit() and base_revision.isdigit() and int(revision) < int(base_revision):
+            errors.add(INDEX, src.index.line("revision ="), 7,
+                       f"revision {revision} is lower than revision {base_revision} at base {ref};"
+                       " a new edition cannot start in the same month as the base's")
 
     def base_toml(path: Path) -> dict | None:
         try:
