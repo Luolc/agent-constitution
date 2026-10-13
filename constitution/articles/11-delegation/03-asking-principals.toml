@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Which agents may ask principals directly is set by the rules; how to ask follows {@asking}. Where the rules set nothing, each task asks principals through one fixed channel only, so that several agents do not interrupt them at once ({@purpose}).
+Which agents may ask principals directly is set by the rules; how to ask follows {@asking}. Where the rules set nothing, each task asks principals through one fixed channel only, so that several agents do not interrupt them at once.
 '''
 zh = '''
-哪些 agent 可以直接问委托人，由规定写明；怎样提问，依照{@asking}。规定没有写明的，一项任务只能经一个固定的途径向委托人提问，免得几个 agent 同时打扰委托人 ({@purpose})。
+哪些 agent 可以直接问委托人，由规定写明；怎样提问，依照{@asking}。规定没有写明的，一项任务只能经一个固定的途径向委托人提问，免得几个 agent 同时打扰委托人。
 '''

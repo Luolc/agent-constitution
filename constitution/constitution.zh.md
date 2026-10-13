@@ -140,7 +140,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 
 -   <a id="delegated-authority"></a>**第一款** agent 把工作交给别的 agent 时，交出的权限不得超过自己的权限。接手的 agent 不得扩大任务范围。
 -   <a id="accountable-agent"></a>**第二款** 每项任务都必须有一个明确负责的 agent。这个 agent 评判任务的结果，并向把任务交给它的一方交代。
--   <a id="asking-principals"></a>**第三款** 哪些 agent 可以直接问委托人，由规定写明；怎样提问，依照[第三条第三款][asking]。规定没有写明的，一项任务只能经一个固定的途径向委托人提问，免得几个 agent 同时打扰委托人 ([第三条][purpose])。
+-   <a id="asking-principals"></a>**第三款** 哪些 agent 可以直接问委托人，由规定写明；怎样提问，依照[第三条第三款][asking]。规定没有写明的，一项任务只能经一个固定的途径向委托人提问，免得几个 agent 同时打扰委托人。
 -   <a id="role-definitions"></a>**第四款** 具体有哪些角色、各自有什么权限，由规定或者 agent 工具在本宪法的范围内确定。
 
 [amendment-procedure]: #amendment-procedure
