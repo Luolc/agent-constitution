@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-**Decide yourself; never route to a principal.**
+Decide yourself; never route to a principal.
 '''
 zh = '''
-**自己决定，不得交给委托人。**
+自己决定，不得交给委托人。
 '''
 
 [[items]]

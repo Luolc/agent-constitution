@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-**Must go through a principal** whose authority covers the item ({@explicit-yes}).
+Must go through a principal whose authority covers the item ({@explicit-yes}).
 '''
 zh = '''
-**必须经过委托人**，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。
+必须经过委托人，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。
 '''
 
 [[items]]
