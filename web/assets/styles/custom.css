@@ -8,18 +8,10 @@
    serif fonts. */
 
 :root {
-  /* Light: warm paper. Contrast on --c-paper (WCAG): ink 12.95, muted
-     6.15, accent 8.33. */
-  --c-ink: #2b2620;
-  --c-muted: #5f574b;
-  --c-paper: #f4eedf;
-  --c-rule: #cfc4ae;
-  --c-accent: #7a2a1f;
-  --c-target: #ecd9a8;
   --c-font-en: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
   --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
     "Source Han Serif SC", "Songti SC", SimSun, serif;
-  --c-measure-en: 35em;   /* about 90 characters a line */
+  --c-measure-en: 35em;   /* about 85 characters a line */
   --c-measure-zh: 40em;   /* 40 characters a line */
   /* Body a little above regular, which reads thin on screen; bold far
      enough above it to stand out. Both fonts are variable. */
@@ -27,34 +19,45 @@
   --c-weight-bold: 750;
 }
 
-
-/* Dark, by choice or, with the theme set to follow the system, by the
-   system's setting. Contrast on --c-paper: ink 11.92, muted 6.14, accent
-   7.74. */
 /* Noto Serif SC is lighter than EB Garamond at the same weight. */
 :root:lang(zh) {
   --c-weight: 500;
   --c-weight-bold: 800;
 }
 
+/* Palette: light, and dark by choice or, with the theme set to follow
+   the system, by the system's setting. Contrast (WCAG) of text, muted text and accent on the
+   background: light 11.81, 5.88, 6.29; dark 11.02, 5.94, 7.40. */
+:root {
+  --c-paper: #f1e8d6;
+  --c-sidebar: #e8dcc4;
+  --c-ink: #33281c;
+  --c-muted: #66553f;
+  --c-accent: #8c3a22;
+  --c-rule: #d4c4a4;
+  --c-target: #e6cf97;
+}
 :root[data-theme="dark"] {
-  --c-ink: #e4dccb;
-  --c-muted: #a89e8c;
-  --c-paper: #22201c;
-  --c-rule: #4a443b;
-  --c-accent: #e3a493;
+  --c-paper: #262119;
+  --c-sidebar: #2e281f;
+  --c-ink: #e2d5bc;
+  --c-muted: #ab9c82;
+  --c-accent: #e3a27c;
+  --c-rule: #463d30;
   --c-target: #5a4a24;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] {
-    --c-ink: #e4dccb;
-    --c-muted: #a89e8c;
-    --c-paper: #22201c;
-    --c-rule: #4a443b;
-    --c-accent: #e3a493;
+    --c-paper: #262119;
+    --c-sidebar: #2e281f;
+    --c-ink: #e2d5bc;
+    --c-muted: #ab9c82;
+    --c-accent: #e3a27c;
+    --c-rule: #463d30;
     --c-target: #5a4a24;
   }
 }
+/* End of palette. */
 
 /* The theme switch shows the name of the current setting. */
 .theme-toggle {
@@ -73,7 +76,7 @@
 
 .constitution {
   font-family: var(--c-font-en);
-  font-size: 1.625rem;
+  font-size: 1.125rem;
   font-weight: var(--c-weight);
   color: var(--c-ink);
   line-height: 1.65;
@@ -82,7 +85,7 @@
 }
 :lang(zh) .constitution {
   font-family: var(--c-font-zh);
-  font-size: 1.42rem;
+  font-size: 1.0625rem;
   max-width: var(--c-measure-zh);
   line-height: 1.9;
 }
@@ -160,12 +163,6 @@
 .constitution-nav a { color: var(--c-ink); text-decoration: none; }
 .constitution-nav a:hover { color: var(--c-accent); }
 
-/* Wide screens: the same measure, a larger size. */
-@media (min-width: 100em) {
-  .constitution { font-size: 1.785rem; }
-  :lang(zh) .constitution { font-size: 1.56rem; }
-}
-
 @media print {
   :root, body { background: #fff; }
   .constitution { max-width: none; font-size: 11pt; }
@@ -178,6 +175,9 @@
 /* hugo-book: its light, dark and auto themes take their colors from the
    variables above. */
 :root, :root[data-theme] {
+  /* The page spans the window: the sidebar at the left edge, the text
+     centered in the rest. */
+  --container-max-width: none;
   --body-background: var(--c-paper);
   --body-font-color: var(--c-ink);
   --color-link: var(--c-accent);
@@ -190,5 +190,9 @@
 body { font-family: var(--c-font-en); }
 :lang(zh) body { font-family: var(--c-font-zh); }
 .book-menu { font-size: .95rem; }
+/* The sidebar: a shade off the page, with a faint rule. The column
+   carries it down the whole page; its content scrolls on its own. */
+.book-menu, .book-menu .book-menu-content { background: var(--c-sidebar); }
+.book-menu { border-inline-end: 1px solid var(--c-rule); }
 /* The heading's own self-link: the sidebar already links each article. */
 .constitution h2 a.anchor { display: none; }
