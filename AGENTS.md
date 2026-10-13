@@ -133,8 +133,9 @@ For leads and workers that `fleet` starts in this repo.
   it recorded at `fleet job end`.
 - Instruction files change in a task and a PR of their own
   (`rules/instruction-only-changes.toml`); CI fails a PR that mixes them
-  with other files. Among them, `constitution/` changes also go apart
-  from `rules/`, in a PR of their own.
+  with other files. The constitution sources (`constitution/index.toml`,
+  `constitution/articles/`) change in a PR of their own, with no other
+  file but the regenerated `constitution/constitution.*.md`.
 - Worker report (`fleet done --report-file`): what was done, the PR and its
   merge commit, the checks run and CI's `run_attempt`, why done or
   abandoned, and follow-ups left.
