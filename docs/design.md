@@ -113,6 +113,8 @@ constitution/
                           text in every language, list items           A
   constitution.en.md      generated: the constitution in English       A
   constitution.zh.md      generated: the constitution in Chinese       A
+  constitution.en.agent.md  generated: the version for agents, English A
+  constitution.zh.agent.md  generated: the version for agents, Chinese A
 docs/
   design.md               this document                                A
 rules/
@@ -173,11 +175,19 @@ Everything else is an ordinary change under `rule-evolution`
 `.github/workflows/`, `fixtures/` and `examples/golden/`. A person's
 attention goes to what the constitution says; the tools are kept honest by
 their unit tests and happy-path end-to-end tests, not by a person reading
-them. The two generated files change only by rebuilding. A change to the
+them. The generated files change only by rebuilding. A change to the
 build script that alters only their numbering or layout is ordinary, and its
 pull request shows their diff so a person can glance at the format; one that
 alters their wording changes the text and is an amendment
-(`protected-text`).
+(`protected-text`). The notes the build script writes itself (the header
+line, the repealed note, and in the version for agents the opening note and
+the note in place of a provision's text) are not the text of the
+constitution: they change as the script does, by an ordinary change
+(`ordinary-tooling`), and may only say what the text already says (that
+the constitution binds every agent, `terms.agent`), point to the full
+text and describe the layout; a note that would change a meaning needs an
+amendment first. Which provisions the version for agents leaves out is set
+in the sources (`audience`, below), so changing it is an amendment.
 
 ## Source formats
 
@@ -242,11 +252,12 @@ content carries over.
 ### Constitution
 
 The constitution is compiled by `tools/build_constitution.py` (Python
-standard library only) from `constitution/index.toml` and one directory
-per article under `constitution/articles/`. It writes
-`constitution/constitution.<lang>.md` for each language in `index.toml`,
-committed and never edited by hand; `--check` writes nothing and runs the
-checks under Checkers.
+standard library only) from `constitution/index.toml` and one directory per
+article under `constitution/articles/`. It writes two files for each
+language in `index.toml`, `constitution/constitution.<lang>.md` (the full
+version) and `constitution/constitution.<lang>.agent.md` (the version for
+agents, see The version for agents), committed and never edited by hand;
+`--check` writes nothing and runs the checks under Checkers.
 
 ```text
 constitution/articles/
@@ -295,16 +306,19 @@ hyphen, its ID and `.toml`. The section belongs to the article whose
 directory holds it; there is no field for it. The file holds `id` (equal
 to the file name without the number and `.toml`), `status` (`draft`,
 `active` or `repealed`), `repealed = "YYYY-MM"` exactly when the status is
-`repealed`, and `[content]`, the section's text per language: the first
+`repealed`, an optional `audience = "maintainers"` (its only value) for a
+provision on how the constitution itself is made, arranged and amended,
+and `[content]`, the section's text per language: the first
 line is the sentence after the section's number, further lines, nested
 lists and blank lines follow as they are, and the build indents them
 under the list item.
 
 A section with list items has one `[[items]]` table per item, in the
 section's file: `id`, `number` (`1`, `2`, `2a`, within the section),
-`status` and `repealed` as for a section, and `[items.content]`, the
-item's text per language. The section's `[content]` then holds only the
-lead-in; the build renders the items below it in number order.
+`status`, `repealed` and `audience` as for a section, and
+`[items.content]`, the item's text per language. The section's `[content]`
+then holds only the lead-in; the build renders the items below it in number
+order.
 
 ```toml
 id = "must-ask"
@@ -423,8 +437,38 @@ between `**` and a parenthesis.
 
 Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
-`revision` and language. Output is UTF-8 with LF line endings and a final
-newline, with no timestamp; the same sources give byte-identical output.
+`revision` and language; in the full version, when a provision is marked
+for maintainers, also what the asterisk means. Output is UTF-8 with LF
+line endings and a final newline, with no timestamp; the same sources give
+byte-identical output.
+
+### The version for agents
+
+Agents read the constitution through the compiled instructions, where
+every token counts; the preamble and the provisions on how the
+constitution itself is made and amended matter to the people who maintain
+it and to an agent drafting an amendment, who reads the full version. So
+the build writes a second file per language, `constitution.<lang>.agent.md`,
+which differs from the full version in this:
+
+- The header line says it is the version for agents.
+- `[front]` (the draft notice and the preamble) is left out. In its place
+  is a note of the build script's own, one sentence per language in
+  `LANGUAGES`: that this is the version for agents, while `index.toml` is
+  `draft` that the constitution is a draft not in force, once `active`
+  that every agent must follow it; that the preamble and the provisions
+  for maintainers are left out; and that before changing the constitution
+  or the tools that build it, an agent reads the full text, named by its
+  path. It is not the text of the constitution (see File structure).
+- A section or item with `audience = "maintainers"` keeps its number and
+  shows a note in place of its text: `-   **§2** (see the full text)`,
+  `-   **第二款** (见完整版)`; a repealed one shows its repealed note as
+  usual. In the full version the same provision keeps its text and has an
+  asterisk after its number, `**§2**<sup class="omitted">*</sup>`, which
+  the header line explains.
+- There are no anchors and no link definitions: a citation is its label
+  as plain text (`Art. VII §6`, `第七条第六款`), short where the full
+  version is short.
 
 ### Rules
 
@@ -554,8 +598,9 @@ done stays in a rule, and the skill cites the rule ID.
 
 Input: one pinned version of this repo (a tag, checked against its commit
 SHA) and one overlay directory. The overlay selects the language. The
-compiler takes the constitution from the generated file in that language
-(it does not read the constitution sources) and each rule's block in that
+compiler takes the constitution from the version for agents in that
+language, `constitution.<lang>.agent.md` (it does not read the
+constitution sources) and each rule's block in that
 language. Output: one file, installed by the overlay as
 the user-level instruction file that all three harnesses read through
 symlinks (`~/.agents/AGENTS.md` in the current setup), plus a build
@@ -619,10 +664,14 @@ is a release (rule `must-ask-items`) and not set up.
   its language in a temporary content directory: the header line is
   dropped, the title goes into the front matter, the revision from
   `index.toml` is set under the title, and the text is wrapped in
-  `<div class="constitution">`, the root the style sheet hangs on.
-- Length: a second line under the revision gives the length of the text
-  the compiler takes, the generated file without its header line, anchors
-  and link definitions included: characters in both languages, words split
+  `<div class="constitution">`, the root the style sheet hangs on. When
+  the text marks a provision for maintainers, a third line under the title
+  says what the asterisk means; the asterisk is set small and bold in the
+  accent color.
+- Length: a second line under the revision gives the length of the full
+  version, the generated file without its header line, anchors and link
+  definitions included (the compiler takes the shorter version for
+  agents): characters in both languages, words split
   on white space in English, and tokens as counted for `claude-opus-5-5`
   by Anthropic's count_tokens API (`POST /v1/messages/count_tokens`,
   standard library only).
@@ -692,7 +741,7 @@ position. What each one proves, and what it does not:
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds both pages without a warning; on every page each in-page link `#id` has an element with that id, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
-| Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md`) | Every `zh` text of the constitution and rule sources, and the built Chinese constitution, passes limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
@@ -728,8 +777,9 @@ first one that finds errors, printing all of that one's errors:
    error; the constitution cites only itself, without a namespace; a rule
    cites with `constitution:` or `rule:`; `authority` names only
    constitution provisions.
-6. A fresh build equals the committed `constitution.<lang>.md` files byte
-   for byte (only under `--check`).
+6. A fresh build equals the committed `constitution.<lang>.md` and
+   `constitution.<lang>.agent.md` files byte for byte (only under
+   `--check`).
 7. Numbering against a base commit (only under `--check --base <git-ref>`,
    read with `git show`): when the base's `index.toml` is `active`, the
    status has not gone back to `draft`, and the current `edition` is the
@@ -789,9 +839,9 @@ only until stage B sets it (a rule's title, which may start or end in
 Latin letters). With `--fix` it writes limae's fixes back in place,
 changing no other byte, and parses the file again to make sure.
 The commit hook and CI only check; the fix is run by hand. The limae hook
-on `constitution/constitution.zh.md` checks what exists only after the
-build: section and item numbers, headings, the text around a rendered
-citation. A finding there is fixed in the source or in the build script,
+on `constitution/constitution.zh.md` and `constitution.zh.agent.md`
+checks what exists only after the build: section and item numbers,
+headings, the text around a rendered citation. A finding there is fixed in the source or in the build script,
 never in the generated file. The rules have no built text yet, so the
 source check is what covers their Chinese.
 
@@ -949,7 +999,7 @@ says and nothing
 else: tools, checks and fixtures are ordinary changes (see File structure).
 
 - An amendment pull request changes only `constitution/`: the sources and
-  the two generated files rebuilt from them.
+  the generated files rebuilt from them.
 - Its description opens with the diff of the generated text in the
   language the person reads, then the same diff in the other language,
   collapsed. The generated diff is what agents will read,

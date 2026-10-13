@@ -120,6 +120,13 @@
   letter-spacing: normal;
   font-size: .85em;
 }
+/* The line on the asterisk under the length. */
+.constitution .revision .legend {
+  font-variant: normal;
+  letter-spacing: normal;
+  font-size: .85em;
+}
+.constitution .revision .legend sup.omitted { font-size: 1.1em; }
 /* The draft notice under the title. */
 .constitution .revision + p {
   border-block: 1px solid var(--c-rule);
@@ -165,6 +172,16 @@
 }
 .constitution a[href^="#"]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
 .constitution code { font-size: .85em; }
+
+/* The asterisk after the number of a section or an item that the version
+   for agents leaves out: small, in the accent color, close to the number. */
+.constitution sup.omitted {
+  color: var(--c-accent);
+  font-size: .9em;
+  font-weight: var(--c-weight-bold);
+  line-height: 0;
+  margin-inline-start: .05em;
+}
 
 /* A cross-reference's target flashes once: the element with the id, or
    the heading or list item an empty <a id> anchor starts. */

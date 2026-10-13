@@ -4,7 +4,8 @@
 Each constitution/constitution.<lang>.md becomes the home page of its
 language: the header line that says the file is generated is dropped, the
 title goes into the front matter, the revision and the length of the text
-are set under the title, and the text is wrapped in
+are set under the title, with a line on the asterisk when the text marks
+provisions left out of the version for agents, and the text is wrapped in
 `<div class="constitution">` for the style sheet. The token count comes
 from Anthropic's count_tokens API when CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
 or CONSTITUTION_TOKEN_COUNT_API_KEY is set; without either, or when the
@@ -42,21 +43,26 @@ TOKEN_VARIABLE = "CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN"
 COUNT_URL = "https://api.anthropic.com/v1/messages/count_tokens"
 COUNT_MODEL = "claude-opus-5-5"
 COUNT_TIMEOUT = 10  # seconds per connect or read; a stalled API must not hold up the build
+# The mark build_constitution.py sets after the number of a provision that
+# the version for agents leaves out.
+OMITTED_MARK = '<sup class="omitted">*</sup>'
 # Language: the content file and the labels under the title.
 PAGES = {
     "en": {"file": "_index.md", "revision": "Revision",
            "length": "{chars:,} characters · {words:,} words",
-           "tokens": "{tokens:,} tokens (counted for {model})", "no_tokens": "tokens not counted"},
+           "tokens": "{tokens:,} tokens (counted for {model})", "no_tokens": "tokens not counted",
+           "omitted": "not in the version for agents"},
     "zh": {"file": "_index.zh.md", "revision": "修订版",
            "length": "{chars:,} 字符",
-           "tokens": "{tokens:,} token (按 {model} 计数)", "no_tokens": "token 数未计算"},
+           "tokens": "{tokens:,} token (按 {model} 计数)", "no_tokens": "token 数未计算",
+           "omitted": "不编入给 agent 的版本"},
 }
 
 
 def counted(markdown: str) -> str:
-    """The text whose length the page gives: the built constitution without
-    its header line, anchors and link definitions included, since the
-    compiler takes that text into an instruction file."""
+    """The text whose length the page gives: the full version of the built
+    constitution without its header line, anchors and link definitions
+    included."""
     return markdown.partition("\n")[2]
 
 
@@ -102,8 +108,10 @@ def page(markdown: str, labels: dict[str, str], revision: str, tokens: int | Non
         length += " · " + labels["no_tokens"]
     else:
         length += " · " + labels["tokens"].format(tokens=tokens, model=COUNT_MODEL)
-    revision_line = (f'<p class="revision">{labels["revision"]} {revision}<br>'
-                     f'<span class="length">{length}</span></p>')
+    revision_line = f'<p class="revision">{labels["revision"]} {revision}<br><span class="length">{length}</span>'
+    if OMITTED_MARK in text:
+        revision_line += f'<br><span class="legend">{OMITTED_MARK} {labels["omitted"]}</span>'
+    revision_line += "</p>"
     body = HEADING_ANCHOR.sub(r"\1 \3 {#\2}", "\n".join(lines[3:]))
     return "\n".join([front, '<div class="constitution">', "", lines[2], "", revision_line,
                       body, "", "</div>", ""])
