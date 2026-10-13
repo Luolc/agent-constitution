@@ -127,6 +127,9 @@ def parse(root: Path, path: Path, errors: Errors) -> Source | None:
             errors.add(path, n, 1, "front matter line is not `key: value`")
             continue
         key, value = m.groups()
+        if key in meta:
+            errors.add(path, n, 1, f"`{key}` appears twice")
+            continue
         if value.startswith("["):
             if not value.endswith("]"):
                 errors.add(path, n, 1, "list value does not end with ']'")
