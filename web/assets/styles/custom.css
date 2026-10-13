@@ -194,5 +194,10 @@ body { font-family: var(--c-font-en); }
    carries it down the whole page; its content scrolls on its own. */
 .book-menu, .book-menu .book-menu-content { background: var(--c-sidebar); }
 .book-menu { border-inline-end: 1px solid var(--c-rule); }
+/* The theme pads the page on wide screens; keep the sidebar flush with the
+   window's top and left edges. */
+@media screen and (min-width: 90rem) {
+  main.container { padding-top: 0; padding-inline-start: 0; }
+}
 /* The heading's own self-link: the sidebar already links each article. */
 .constitution h2 a.anchor { display: none; }
