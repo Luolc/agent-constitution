@@ -128,10 +128,11 @@ one job, `check`, scans the full history with gitleaks (pinned by version and
 SHA-256), runs `pre-commit run --all-files` with the gitleaks hook skipped,
 so the constitution build check, the tests and both limae checks run there
 too, builds the static site with the pinned Hugo and checks its links, and
-then runs the build check with `--base` and the instruction-only check, both against the pull request's base commit, or on a push to `main`
-against the commit before the push. `check` is the
-required status check on `main`: a merge waits for it to pass. Runners are
-pinned to `ubuntu-24.04`, and actions by commit SHA.
+then runs the build check with `--base` and the instruction-only check,
+both against the pull request's base commit, or on a push to `main` against
+the commit before the push. `check` is the required status check on
+`main`: a merge waits for it to pass. Runners are pinned to
+`ubuntu-24.04`, and actions by commit SHA.
 
 ## Fleet
 
