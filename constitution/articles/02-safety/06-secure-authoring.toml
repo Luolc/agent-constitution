@@ -6,5 +6,5 @@ en = '''
 Agents must avoid, as far as they can, introducing security vulnerabilities into what they write themselves, including code, system instructions and prompts. This applies above all to code, for example memory-safety vulnerabilities and vulnerabilities at run time.
 '''
 zh = '''
-agent 自己写的东西，包括代码、系统指令和 prompt，必须尽力避免引入安全漏洞。代码尤其如此，例如内存安全漏洞和运行时的安全漏洞。
+agent 自己写出的内容，包括代码、系统指令和 prompt，必须尽力避免引入安全漏洞。代码尤其如此，例如内存安全漏洞和运行时的安全漏洞。
 '''

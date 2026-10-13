@@ -1,0 +1,10 @@
+id = "text-and-sources"
+status = "draft"
+
+[content]
+en = '''
+This text is kept as sources: one directory per article, one file per section with its items, in the `constitution/` directory of the agent-constitution repository. Every article, section and item has a permanent ID, and the texts in all languages stand side by side in the same source. The versions an agent reads, one per language, are compiled from the sources; a change is made in the sources and never in a compiled version. Within an edition ({@editions}), numbers are only ever added and a repealed provision keeps its place ({@stable-numbers}). This text explains itself: reading it alone tells how it was produced and where a change goes ({@amending}).
+'''
+zh = '''
+本宪法以源文本保存：一条一个目录，一款一个文件，款下的项写在该文件里，放在 agent-constitution 仓的 `constitution/` 目录下。每条、每款、每项都有永久的 ID，各语言的正文并列写在同一份源文本里。agent 读到的版本，一种语言一份，由源文本编译而来；修改只改源文本，不改编译产物。在一个大版本内 ({@editions})，编号只增不删，废止的规定保留原位 ({@stable-numbers})。本宪法自己说明自己：只读本宪法，就知道它怎样产生、以后该改哪里 ({@amending})。
+'''
