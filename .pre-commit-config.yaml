@@ -1,4 +1,4 @@
-# Commit hook: secret scan only.
+# Commit hooks: secret scan, constitution build check and its tests.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the full history, so the two complement each other.
@@ -9,3 +9,20 @@ repos:
     hooks:
       - id: gitleaks
         args: ["--redact", "--no-banner", "."]
+
+  # The constitution build: --check validates the sources and requires the
+  # committed outputs to match a fresh build; the tests cover the script.
+  - repo: local
+    hooks:
+      - id: constitution
+        name: constitution build check
+        entry: python3 tools/build_constitution.py --check
+        language: system
+        files: ^(constitution|tools)/
+        pass_filenames: false
+      - id: constitution-tests
+        name: constitution build tests
+        entry: python3 -m unittest discover -s tools
+        language: system
+        files: ^tools/
+        pass_filenames: false
