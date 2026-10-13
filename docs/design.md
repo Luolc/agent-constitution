@@ -91,7 +91,7 @@ approves that text. The rules follow the same terms. What this repo adds:
 - The Chinese text follows the typography that limae checks with its
   default rules (Checkers): full-width commas, full stops, enumeration
   commas, semicolons and colons; half-width parentheses with one space
-  outside. Item numbers render half-width for the same reason, `(三) `.
+  outside. Item numbers render half-width for the same reason, `(**三**) `.
 
 ## File structure
 
@@ -335,23 +335,24 @@ constitution is a draft, or when a new edition starts, numbers may
 change, directories and files are renamed with them, and the check only
 says that it did not compare.
 
-Rendering, with `must-ask` as the first section of the fourth article and
-its third item as examples:
+Rendering, with `must-ask` as the first section of the fourth article,
+`money` as its third item and `authority` as the article's ID; `<a id="must-ask"></a>`
+is written `⟨must-ask⟩` in the table:
 
 | Item | en | zh |
 | --- | --- | --- |
 | Title, draft | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
 | Title, active | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
-| Article heading | `## Article IV. <Title>` | `## 第四条 <标题>` |
-| Section | `- §1 <content>` | `- 第一款 <content>` |
-| List item | `  - (3) <content>` | `  - (三) <content>` |
-| Citation of an article | `Art. IV` | `第四条` |
-| Citation of a section | `Art. IV §1` | `第四条第一款` |
-| Citation of a list item | `Art. IV §1(3)` | `第四条第一款第三项` |
+| Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
+| Section | `- ⟨must-ask⟩**§1** <content>` | `- ⟨must-ask⟩**第一款** <content>` |
+| List item | `  - ⟨must-ask.money⟩(**3**) <content>` | `  - ⟨must-ask.money⟩(**三**) <content>` |
+| Citation of an article | `[Art. IV][authority]` | `[第四条][authority]` |
+| Citation of a section | `[Art. IV §1][must-ask]` | `[第四条第一款][must-ask]` |
+| Citation of a list item | `[Art. IV §1(3)][must-ask.money]` | `[第四条第一款第三项][must-ask.money]` |
 | Suffix | `§1a`, `(3a)`, `Art. IV §1(3a)` | `第一款之一`, `(三之一)`, `第四条第一款第三项之一` (a is 之一, b is 之二) |
-| Repealed section | `- §3 (repealed November 2026)` | `- 第三款 (2026 年 11 月废止)` |
-| Repealed list item | `  - (3) (repealed November 2026)` | `  - (三) (2026 年 11 月废止)` |
-| Repealed article | `## Article IV (repealed November 2026)`, nothing below it | `## 第四条 (2026 年 11 月废止)` |
+| Repealed section | `- ⟨…⟩**§3** (repealed November 2026)` | `- ⟨…⟩**第三款** (2026 年 11 月废止)` |
+| Repealed list item | `  - ⟨…⟩(**3**) (repealed November 2026)` | `  - ⟨…⟩(**三**) (2026 年 11 月废止)` |
+| Repealed article | `## ⟨…⟩Article IV (repealed November 2026)`, nothing below it | `## ⟨…⟩第四条 (2026 年 11 月废止)` |
 | Adjacent item citations | `Art. IV §1(2) or (4)`, `Art. IV §1(1) to (7)`, `Art. IV §1(1), (2) and (4)` | `第四条第一款第二项或第四项`, `第四条第一款第一项至第七项`, `第四条第一款第一项、第二项和第四项` |
 | Adjacent section citations | `Art. IV §1 and §2`, `Art. IV §1 to §3`, `Art. IV §1, §2 and §4` | `第四条第一款和第二款`, `第四条第一款至第三款`, `第四条第一款、第二款和第四款` |
 
@@ -368,6 +369,20 @@ section, a section of another article, a citation after a citation one
 level up or down (an article and its section, a section and an item),
 and a citation with any other text before it keep the full path. The
 sources always write the full path.
+
+Every article, section and item starts with an anchor named by its ID,
+not its number: `<a id="<article-id>">`, `<a id="<section-id>">` and
+`<a id="<section-id>.<item-id>">` (IDs). The anchors are the same in every
+language and survive renumbering; article and section IDs are unique in
+the whole constitution, so they do not collide. A citation is a link to
+its provision's anchor, a short one too: `[Art. IV §1][must-ask] and
+[§2][…]`, each number its own link. The links are reference links, with
+one definition `[<ref>]: #<ref>` per cited provision at the end of the
+file, in order of first citation: limae reads the `)` of an inline link
+`[…](#…)` followed by a Chinese character as a parenthesis that needs a
+space (limae 0.13.3, read 2026-10). Section numbers are bold; an item
+number is bold inside its parentheses, because limae asks for a space
+between `**` and a parenthesis.
 
 Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
