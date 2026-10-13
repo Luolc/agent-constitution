@@ -371,9 +371,13 @@ A list marker is padded to four characters, and the further lines of a
 section or an item, nested lists and paragraphs included, are indented
 to its content column: four spaces for a section, eight for an item.
 A section or an item whose text has a blank line in it is followed by a
-blank line. The output then renders alike in CommonMark (GitHub) and in
-Python-Markdown, which nests only what is indented four spaces and joins
-a list line to the paragraph just above it.
+blank line. Python-Markdown nests only what is indented four spaces and
+joins a list line to the paragraph just above it; with this layout the
+output renders alike there and in CommonMark (GitHub) as long as a
+source text's own nested blocks are indented four spaces and a list line
+after a paragraph has a blank line before it. A source text that breaks
+either still renders wrong in Python-Markdown; the constitution has none
+today.
 
 An item citation renders short, as its item number alone (`(4)`, `(2a)`;
 `第四项`, `第二项之一`), when the text just before it is exactly one
