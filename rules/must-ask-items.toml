@@ -14,7 +14,9 @@ This rule adds two items to those listed in {@constitution:must-ask} ({@constitu
 - Releases: any act that makes a version or artifact available, such as pushing a release tag or publishing a package.
 - Breaking changes that cause downtime of a running service. A project's declaration under {@constitution:relaxations.project-overrides} covers them only if it names them; one that covers releases, or changes to machines and services, does not cover them.
 
-Irreversible external effects ({@constitution:must-ask.irreversible-effects}) include publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts and speaking for someone to third parties.
+The following count as irreversible external effects ({@constitution:must-ask.irreversible-effects}): publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts and speaking for someone to third parties.
+
+Buying, resetting or unlocking usage quotas is among the items of {@constitution:must-ask}.
 
 When unsure whether an action is one of these, treat it as one.
 '''
@@ -24,7 +26,9 @@ zh = '''
 - 发布：使某个版本或制品对外可用的任何动作，例如推送发布 tag、发布软件包。
 - 造成运行中的服务停机的破坏性变更。项目依照{@constitution:relaxations.project-overrides}作出的声明，写明了这一项才涵盖它；声明涵盖发布或者对机器和服务的变更，并不因此涵盖这一项。
 
-不可逆的对外影响 ({@constitution:must-ask.irreversible-effects}) 包括：公开私密材料、改写共享的历史、删除没有副本的数据、操作他人的账户，以及代表他人对第三方发言。
+以下动作按不可逆的对外影响 ({@constitution:must-ask.irreversible-effects}) 处理：公开私密材料、改写共享的历史、删除没有副本的数据、操作他人的账户，以及代表他人对第三方发言。
+
+购买、重置或者解锁用量额度，属于{@constitution:must-ask}所列事项。
 
 拿不准某个动作是否属于以上各项的，按属于处理。
 '''
