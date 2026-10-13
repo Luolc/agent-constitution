@@ -211,7 +211,8 @@ revision that deletes another adds it:
 - revision 0.5: the article `interpretation`;
 - revision 0.7: the article `roles` and its sections `relay-role`,
   `job-role` and `worker-role`; the items `terms.deployment`, `terms.job`,
-  `terms.layer`, `terms.project` and `terms.skill`.
+  `terms.layer`, `terms.project` and `terms.skill`;
+- revision 0.9: the section `third-party-personal-info`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
