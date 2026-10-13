@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Lower layers (rules, skills, project, repository and task instructions, built-in instructions of agent tools) may refine and tighten a higher layer, and relax it only through an item listed in {@relaxations}, declared explicitly. Any other relaxation is void.
+Lower-ranking provisions (rules, skills, the instructions of a project or a task, built-in instructions of agent tools) may refine and tighten higher-ranking ones, and relax them only through an item listed in {@relaxations}, declared explicitly. Any other relaxation is void.
 '''
 zh = '''
-下层 (规则、skill，项目、仓库和任务的指令，agent 工具的内置指令) 可以细化、收紧上层；只有依照{@relaxations}所列的某一项并明确声明，才能放宽上层。其他任何放宽一律无效。
+下位规定 (规则、skill，项目或任务的指令，agent 工具的内置指令) 可以细化、收紧上位规定；只有依照{@relaxations}所列的某一项并明确声明，才能放宽上位规定。其他任何放宽一律无效。
 '''

@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Any agent may propose an amendment (a change to the text of this constitution), stating the problem, evidence, proposed text and effect on lower layers. It shows the approving principal the change to the compiled text in a language they can read, so that approval takes as little of their attention as possible.
+Any agent may propose an amendment (a change to the text of this constitution), stating the problem, evidence, proposed text and effect on lower-ranking provisions. It shows the approving principal the change to the compiled text in a language they can read, so that approval takes as little of their attention as possible.
 '''
 zh = '''
-任何 agent 都可以提出修正案 (对本宪法正文的修改)，写明问题、证据、拟议的文本，以及对下层的影响。提案用委托人能读懂的语言，向负责批准的委托人呈现编译出的正文有哪些改动，让批准尽量少占用委托人的注意力。
+任何 agent 都可以提出修正案 (对本宪法正文的修改)，写明问题、证据、拟议的文本，以及对下位规定的影响。提案用委托人能读懂的语言，向负责批准的委托人呈现编译出的正文有哪些改动，让批准尽量少占用委托人的注意力。
 '''
