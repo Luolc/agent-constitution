@@ -337,7 +337,7 @@ its third item as examples:
 | Item | en | zh |
 | --- | --- | --- |
 | Title, draft | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
-| Title, active | `# Agent Constitution (2026-10 edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
+| Title, active | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## Article IV. <Title>` | `## 第四条 <标题>` |
 | Section | `- §1 <content>` | `- 第一款 <content>` |
 | List item | `  - (3) <content>` | `  - （三）<content>` |

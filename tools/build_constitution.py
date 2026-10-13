@@ -107,7 +107,7 @@ LANGUAGES = {
             " Status: {status}. Revision: {revision}. Language: English."
         ),
         draft="Draft",
-        edition="{edition} edition",
+        edition="{edition} Edition",
         article_heading="## Article {number}. {title}",
         repealed_article_heading="## Article {number} ({note})",
         article_ref="Art. {number}",

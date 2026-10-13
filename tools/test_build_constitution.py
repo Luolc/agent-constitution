@@ -305,7 +305,7 @@ class RenderTest(Tree):
         self.activate()
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
-        self.assertIn("\n# Test Constitution (2026-10 edition)\n", outputs["en"])
+        self.assertIn("\n# Test Constitution (2026-10 Edition)\n", outputs["en"])
         self.assertIn("\n# 测试宪法 (2026-10 版)\n", outputs["zh"])
 
     def test_adjacent_item_citations_render_short(self):
