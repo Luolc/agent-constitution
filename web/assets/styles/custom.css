@@ -12,8 +12,15 @@
   --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
     "Source Han Serif SC", "Songti SC", SimSun, serif;
   /* The text column's max-width, one per language; adjust it here. */
-  --c-measure-en: 36em;   /* 720px at 20px */
-  --c-measure-zh: 40em;   /* 680px at 17px */
+  /* Fluid type: the size grows with the window, from a floor on small
+     screens to a ceiling on wide ones (English 20px and Chinese 17px at a
+     1400px window, 22px and 18.7px from about 1710px on). The column is
+     set in em, so it widens with the size and a line keeps its length:
+     about 90 characters in English, 40 in Chinese. */
+  --c-size-en: clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem);
+  --c-size-zh: clamp(1rem, 0.548vw + 0.583rem, 1.17rem);
+  --c-measure-en: 36em;
+  --c-measure-zh: 40em;
   /* Body a little above regular, which reads thin on screen; bold far
      enough above it to stand out. Both fonts are variable. */
   --c-weight: 450;
@@ -26,36 +33,38 @@
   --c-weight-bold: 800;
 }
 
-/* Palette: light, and dark by choice or, with the theme set to follow
-   the system, by the system's setting. Contrast (WCAG) of text, muted text and accent on the
-   background: light 11.81, 5.88, 6.29; dark 11.02, 5.94, 7.40. */
+/* Palette (sage): light, and dark by choice or, with the theme set to
+   follow the system, by the system's setting. WCAG contrast on the page
+   of text (and the links, which take its color), muted text and accent:
+   light 10.80, 5.81, 6.55; dark 11.12, 6.48, 7.13. On the sidebar, text
+   and muted text: light 9.76, 5.25; dark 10.05, 5.86. */
 :root {
-  --c-paper: #f1e8d6;
-  --c-sidebar: #e8dcc4;
-  --c-ink: #33281c;
-  --c-muted: #66553f;
-  --c-accent: #8c3a22;
-  --c-rule: #d4c4a4;
-  --c-target: #e6cf97;
+  --c-paper: #dde6d5;
+  --c-sidebar: #d1dcc8;
+  --c-ink: #23301f;
+  --c-muted: #4b5946;
+  --c-accent: #7d3a1e;
+  --c-rule: #b5c4aa;
+  --c-target: #e3d79c;
 }
 :root[data-theme="dark"] {
-  --c-paper: #262119;
-  --c-sidebar: #2e281f;
-  --c-ink: #e2d5bc;
-  --c-muted: #ab9c82;
-  --c-accent: #e3a27c;
-  --c-rule: #463d30;
-  --c-target: #5a4a24;
+  --c-paper: #1e2520;
+  --c-sidebar: #252d27;
+  --c-ink: #d3dccf;
+  --c-muted: #9cab98;
+  --c-accent: #dba37f;
+  --c-rule: #38453a;
+  --c-target: #4a4a2a;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] {
-    --c-paper: #262119;
-    --c-sidebar: #2e281f;
-    --c-ink: #e2d5bc;
-    --c-muted: #ab9c82;
-    --c-accent: #e3a27c;
-    --c-rule: #463d30;
-    --c-target: #5a4a24;
+    --c-paper: #1e2520;
+    --c-sidebar: #252d27;
+    --c-ink: #d3dccf;
+    --c-muted: #9cab98;
+    --c-accent: #dba37f;
+    --c-rule: #38453a;
+    --c-target: #4a4a2a;
   }
 }
 /* End of palette. */
@@ -77,7 +86,7 @@
 
 .constitution {
   font-family: var(--c-font-en);
-  font-size: 1.25rem;
+  font-size: var(--c-size-en);
   font-weight: var(--c-weight);
   color: var(--c-ink);
   line-height: 1.65;
@@ -86,7 +95,7 @@
 }
 :lang(zh) .constitution {
   font-family: var(--c-font-zh);
-  font-size: 1.0625rem;
+  font-size: var(--c-size-zh);
   max-width: var(--c-measure-zh);
   line-height: 1.9;
 }
@@ -126,7 +135,7 @@
 /* English ragged right: justified, its word spaces stretch where
    hyphenation does not reach. Chinese justified, as printed. */
 .constitution p { text-align: start; }
-:lang(zh) .constitution p { text-align: justify; }
+:lang(zh) .constitution p:not(.revision, .revision + p) { text-align: justify; }
 :lang(zh) .constitution p { text-indent: 2em; }
 :lang(zh) .constitution :is(li p, .revision, .revision + p) { text-indent: 0; }
 
@@ -194,6 +203,9 @@
 body { font-family: var(--c-font-en); }
 :lang(zh) body { font-family: var(--c-font-zh); }
 .book-menu { font-size: .95rem; }
+/* Room on both sides of the text on small screens, where the column fills
+   the page. */
+.book-page { padding-inline: clamp(1.25rem, 5vw, 3rem); }
 /* The sidebar: a shade off the page, with a faint rule. The column
    carries it down the whole page; its content scrolls on its own. */
 .book-menu, .book-menu .book-menu-content { background: var(--c-sidebar); }

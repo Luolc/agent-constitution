@@ -634,11 +634,15 @@ is a release (`boundary-rule`) and not set up.
   Its first part uses only the page's own markup and moves to another
   generator as is; the last part maps it onto hugo-book's variables.
   Centered article headings, bold section and item numbers (bold in the
-  Markdown), justified text about 85 characters a line in English and 40
-  in Chinese, a print style without link decoration. Fonts: EB Garamond
-  and Noto Serif SC (SIL Open Font License 1.1) from Google Fonts, falling
-  back to local serif fonts. Contrast of body text on the background is
-  above WCAG AA in both color themes; the values are in the style sheet.
+  Markdown), English text ragged right and Chinese justified, a print
+  style without link decoration. The text size grows with the window
+  between a floor and a ceiling (`clamp()`), and the column is set in em,
+  so a line keeps about 90 characters in English and 40 in Chinese; the
+  column is centered right of the sidebar. Fonts: EB Garamond and Noto
+  Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
+  fonts, falling back to local serif fonts. The colors are one palette
+  block, light and dark; contrast of text on the page and the sidebar is
+  above WCAG AA in both, the values are in the style sheet.
 - The few Chinese strings of the site itself (`web/i18n/zh.yaml`, the
   language label in `hugo.toml`, the revision label in `build_site.py`) are
   outside limae's reach.
