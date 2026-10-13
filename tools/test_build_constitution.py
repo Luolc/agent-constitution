@@ -161,19 +161,19 @@ The preamble cites [Art. II][beta].
 
 Intro, see [Art. II §1a][beta-two].
 
-- <a id="alpha-one"></a>**§1** One, see [Art. II §1][beta-one].
-  - <a id="alpha-one.money"></a>(**1**) Money.
-  - <a id="alpha-one.machines"></a>(**2**) Machines; {braces} and {@Nope} stay.
-    More.
+-   <a id="alpha-one"></a>**§1** One, see [Art. II §1][beta-one].
+    -   <a id="alpha-one.money"></a>(**1**) Money.
+    -   <a id="alpha-one.machines"></a>(**2**) Machines; {braces} and {@Nope} stay.
+        More.
 
 ## <a id="beta"></a>Article II. Second
 
-- <a id="beta-one"></a>**§1** Four, see [Art. I §1(1)][alpha-one.money] and [Art. I][alpha].
-- <a id="beta-two"></a>**§1a** Between:
-  1. first
+-   <a id="beta-one"></a>**§1** Four, see [Art. I §1(1)][alpha-one.money] and [Art. I][alpha].
+-   <a id="beta-two"></a>**§1a** Between:
+    1. first
 
-     more
-  2. second
+       more
+    2. second
 
 [beta]: #beta
 [beta-two]: #beta-two
@@ -195,19 +195,19 @@ ZH = """\
 
 导语，见[第二条第一款之一][beta-two]。
 
-- <a id="alpha-one"></a>**第一款** 一，见[第二条第一款][beta-one]。
-  - <a id="alpha-one.money"></a>(**一**) 钱。
-  - <a id="alpha-one.machines"></a>(**二**) 机器；{braces} 与 {@Nope} 不变。
-    更多。
+-   <a id="alpha-one"></a>**第一款** 一，见[第二条第一款][beta-one]。
+    -   <a id="alpha-one.money"></a>(**一**) 钱。
+    -   <a id="alpha-one.machines"></a>(**二**) 机器；{braces} 与 {@Nope} 不变。
+        更多。
 
 ## <a id="beta"></a>第二条 第二
 
-- <a id="beta-one"></a>**第一款** 四，见[第一条第一款第一项][alpha-one.money]和[第一条][alpha]。
-- <a id="beta-two"></a>**第一款之一** 之间：
-  1. 第一
+-   <a id="beta-one"></a>**第一款** 四，见[第一条第一款第一项][alpha-one.money]和[第一条][alpha]。
+-   <a id="beta-two"></a>**第一款之一** 之间：
+    1. 第一
 
-     更多
-  2. 第二
+       更多
+    2. 第二
 
 [beta]: #beta
 [beta-two]: #beta-two
@@ -304,11 +304,11 @@ class RenderTest(Tree):
         self.edit("rules/rule.toml", "{@constitution:beta-one}", "{@constitution:beta-two}", 2)
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
-        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**2**) (repealed November 2026)\n', outputs["en"])
-        self.assertIn('\n- <a id="beta-one"></a>**§1** (repealed November 2026)\n', outputs["en"])
+        self.assertIn('\n    -   <a id="alpha-one.machines"></a>(**2**) (repealed November 2026)\n', outputs["en"])
+        self.assertIn('\n-   <a id="beta-one"></a>**§1** (repealed November 2026)\n', outputs["en"])
         self.assertIn('\n## <a id="gamma"></a>Article III (repealed December 2026)\n\n[', outputs["en"])
-        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**二**) (2026 年 11 月废止)\n', outputs["zh"])
-        self.assertIn('\n- <a id="beta-one"></a>**第一款** (2026 年 11 月废止)\n', outputs["zh"])
+        self.assertIn('\n    -   <a id="alpha-one.machines"></a>(**二**) (2026 年 11 月废止)\n', outputs["zh"])
+        self.assertIn('\n-   <a id="beta-one"></a>**第一款** (2026 年 11 月废止)\n', outputs["zh"])
         self.assertIn('\n## <a id="gamma"></a>第三条 (2026 年 12 月废止)\n\n[', outputs["zh"])
 
     def test_inserted_item(self):
@@ -316,10 +316,26 @@ class RenderTest(Tree):
         self.edit(f"{B}/01-beta-one.toml", "{@alpha-one.money}", "{@alpha-one.machines}", 2)
         errors, _, outputs = bc.build(self.root)
         self.assertEqual(errors, [])
-        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**1a**) Machines;', outputs["en"])
+        self.assertIn('\n    -   <a id="alpha-one.machines"></a>(**1a**) Machines;', outputs["en"])
         self.assertIn("**§1** Four, see [Art. I §1(1a)][alpha-one.machines] and", outputs["en"])
-        self.assertIn('\n  - <a id="alpha-one.machines"></a>(**一之一**) 机器；', outputs["zh"])
+        self.assertIn('\n    -   <a id="alpha-one.machines"></a>(**一之一**) 机器；', outputs["zh"])
         self.assertIn("**第一款** 四，见[第一条第一款第一项之一][alpha-one.machines]和", outputs["zh"])
+
+    def test_section_of_several_paragraphs_before_the_next(self):
+        """A nested list and a further paragraph sit at the section's content
+        column, and a blank line keeps the next section's line out of that
+        paragraph: Python-Markdown nests only what is indented four spaces
+        and joins a list line to the paragraph just above it."""
+        self.edit(f"{B}/01a-beta-two.toml", "2. second\n", "2. second\n\nAfter.\n")
+        self.edit(f"{B}/01a-beta-two.toml", "2. 第二\n", "2. 第二\n\n之后。\n")
+        self.write(f"{B}/02-beta-three.toml",
+                   'id = "beta-three"\nstatus = "draft"\n\n[content]\nen = "Next."\nzh = "下一款。"\n')
+        errors, _, outputs = bc.build(self.root)
+        self.assertEqual(errors, [])
+        self.assertIn('**§1a** Between:\n    1. first\n\n       more\n    2. second\n\n'
+                      '    After.\n\n-   <a id="beta-three"></a>**§2** Next.\n', outputs["en"])
+        self.assertIn('**第一款之一** 之间：\n    1. 第一\n\n       更多\n    2. 第二\n\n'
+                      '    之后。\n\n-   <a id="beta-three"></a>**第二款** 下一款。\n', outputs["zh"])
 
     def test_active_title_names_the_edition(self):
         self.activate()
@@ -352,22 +368,22 @@ class RenderTest(Tree):
         self.assertIn("Cite [Art. II §1][beta-one] and [§1a][beta-two].\n", outputs["en"])
         self.assertIn("引用[第二条第一款][beta-one]和[第一款之一][beta-two]。\n", outputs["zh"])
         outputs = {lang: plain(text) for lang, text in outputs.items()}
-        self.assertIn("- §1 Cite Art. II §1 and §1a.\n"
-                      "  Cite Art. II §1 to §2.\n"
-                      "  Cite Art. II §1, §1a or §2.\n"
-                      "  Cite Art. I §1 and Art. II §1.\n"
-                      "  Cite Art. II §1 and then Art. II §1a.\n"
-                      "  Cite Art. II and Art. II §1.\n"
-                      "  Cite Art. II §1 and Art. II §1a(1).\n"
-                      "  Cite Art. I §1(1) and Art. II §1.\n", outputs["en"])
-        self.assertIn("- 第一款 引用第二条第一款和第一款之一。\n"
-                      "  引用第二条第一款至第二款。\n"
-                      "  引用第二条第一款、第一款之一或第二款。\n"
-                      "  引用第一条第一款和第二条第一款。\n"
-                      "  引用第二条第一款和后来的第二条第一款之一。\n"
-                      "  引用第二条和第二条第一款。\n"
-                      "  引用第二条第一款和第二条第一款之一第一项。\n"
-                      "  引用第一条第一款第一项和第二条第一款。\n", outputs["zh"])
+        self.assertIn("-   §1 Cite Art. II §1 and §1a.\n"
+                      "    Cite Art. II §1 to §2.\n"
+                      "    Cite Art. II §1, §1a or §2.\n"
+                      "    Cite Art. I §1 and Art. II §1.\n"
+                      "    Cite Art. II §1 and then Art. II §1a.\n"
+                      "    Cite Art. II and Art. II §1.\n"
+                      "    Cite Art. II §1 and Art. II §1a(1).\n"
+                      "    Cite Art. I §1(1) and Art. II §1.\n", outputs["en"])
+        self.assertIn("-   第一款 引用第二条第一款和第一款之一。\n"
+                      "    引用第二条第一款至第二款。\n"
+                      "    引用第二条第一款、第一款之一或第二款。\n"
+                      "    引用第一条第一款和第二条第一款。\n"
+                      "    引用第二条第一款和后来的第二条第一款之一。\n"
+                      "    引用第二条和第二条第一款。\n"
+                      "    引用第二条第一款和第二条第一款之一第一项。\n"
+                      "    引用第一条第一款第一项和第二条第一款。\n", outputs["zh"])
 
     def test_adjacent_item_citations_render_short(self):
         three = '[[items]]\nid = "people"\nnumber = "3"\nstatus = "draft"\n\n[items.content]\nen = "People."\nzh = "人。"\n'
@@ -393,20 +409,20 @@ class RenderTest(Tree):
         self.assertIn("Cite [Art. I §1(1)][alpha-one.money] or [(2)][alpha-one.machines].\n", outputs["en"])
         self.assertIn("引用[第一条第一款第一项][alpha-one.money]或[第二项][alpha-one.machines]。\n", outputs["zh"])
         outputs = {lang: plain(text) for lang, text in outputs.items()}
-        self.assertIn("- §1 Cite Art. I §1(1) or (2).\n"
-                      "  Cite Art. I §1(1) to (3).\n"
-                      "  Cite Art. I §1(1), (2) and (3).\n"
-                      "  Cite Art. I §1(1) or Art. II §1(1).\n"
-                      "  Cite Art. I §1(1) or else Art. I §1(2).\n"
-                      "  Cite Art. I §1 or Art. I §1(1).\n"
-                      "  Cite Art. I §1(1) or Art. I §1.\n", outputs["en"])
-        self.assertIn("- 第一款 引用第一条第一款第一项或第二项。\n"
-                      "  引用第一条第一款第一项至第三项。\n"
-                      "  引用第一条第一款第一项、第二项和第三项。\n"
-                      "  引用第一条第一款第一项或第二条第一款第一项。\n"
-                      "  引用第一条第一款第一项或者第一条第一款第二项。\n"
-                      "  引用第一条第一款或第一条第一款第一项。\n"
-                      "  引用第一条第一款第一项或第一条第一款。\n", outputs["zh"])
+        self.assertIn("-   §1 Cite Art. I §1(1) or (2).\n"
+                      "    Cite Art. I §1(1) to (3).\n"
+                      "    Cite Art. I §1(1), (2) and (3).\n"
+                      "    Cite Art. I §1(1) or Art. II §1(1).\n"
+                      "    Cite Art. I §1(1) or else Art. I §1(2).\n"
+                      "    Cite Art. I §1 or Art. I §1(1).\n"
+                      "    Cite Art. I §1(1) or Art. I §1.\n", outputs["en"])
+        self.assertIn("-   第一款 引用第一条第一款第一项或第二项。\n"
+                      "    引用第一条第一款第一项至第三项。\n"
+                      "    引用第一条第一款第一项、第二项和第三项。\n"
+                      "    引用第一条第一款第一项或第二条第一款第一项。\n"
+                      "    引用第一条第一款第一项或者第一条第一款第二项。\n"
+                      "    引用第一条第一款或第一条第一款第一项。\n"
+                      "    引用第一条第一款第一项或第一条第一款。\n", outputs["zh"])
 
     def test_numerals(self):
         self.assertEqual([bc.roman(n) for n in (1, 4, 9, 14, 40)], ["I", "IV", "IX", "XIV", "XL"])
