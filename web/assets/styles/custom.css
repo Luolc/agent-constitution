@@ -12,8 +12,8 @@
   --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
     "Source Han Serif SC", "Songti SC", SimSun, serif;
   /* The text column's max-width, one per language; adjust it here. */
-  --c-measure-en: 42.75em; /* 770px at 18px */
-  --c-measure-zh: 46.75em; /* 795px at 17px */
+  --c-measure-en: 36em;   /* 720px at 20px */
+  --c-measure-zh: 40em;   /* 680px at 17px */
   /* Body a little above regular, which reads thin on screen; bold far
      enough above it to stand out. Both fonts are variable. */
   --c-weight: 450;
@@ -77,7 +77,7 @@
 
 .constitution {
   font-family: var(--c-font-en);
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: var(--c-weight);
   color: var(--c-ink);
   line-height: 1.65;
