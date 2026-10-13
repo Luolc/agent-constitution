@@ -106,8 +106,7 @@ class Errors(list):
 
 
 def parse(root: Path, path: Path, errors: Errors) -> Source | None:
-    """Check 1 for one file: front matter, the two language blocks, markers."""
-    keys = INDEX_KEYS if path == INDEX else ARTICLE_KEYS
+    """Check 1 for one file: front matter, then the two language blocks."""
     try:
         lines = (root / path).read_text(encoding="utf-8").split("\n")
     except OSError as e:
@@ -120,8 +119,16 @@ def parse(root: Path, path: Path, errors: Errors) -> Source | None:
         errors.add(path, 1, 1, "no front matter block delimited by '---' lines")
         return None
     end = lines.index("---", 1)
+    meta, meta_lines = parse_front_matter(path, lines[1:end], errors)
+    blocks = parse_blocks(path, lines, end, errors)
+    return Source(path, meta, meta_lines, blocks) if blocks else None
+
+
+def parse_front_matter(path: Path, lines: list[str], errors: Errors) -> tuple[dict, dict]:
+    """The flat subset: `key: scalar` or `key: [a, b]`, exactly the required keys."""
+    keys = INDEX_KEYS if path == INDEX else ARTICLE_KEYS
     meta, meta_lines = {}, {}
-    for n, text in enumerate(lines[1:end], start=2):
+    for n, text in enumerate(lines, start=2):
         m = FRONT_LINE.fullmatch(text)
         if not m:
             errors.add(path, n, 1, "front matter line is not `key: value`")
@@ -144,7 +151,12 @@ def parse(root: Path, path: Path, errors: Errors) -> Source | None:
             errors.add(path, meta_lines[key], 1, f"`{key}` must be a {kind.__name__}")
     for key in meta.keys() - keys.keys():
         errors.add(path, meta_lines[key], 1, f"unknown front matter key `{key}`")
+    return meta, meta_lines
 
+
+def parse_blocks(path: Path, lines: list[str], end: int, errors: Errors) -> dict | None:
+    """The en and zh blocks after the front matter (which ends at index
+    `end`), with the definitions and references in each."""
     marker_at = {}
     for n, text in enumerate(lines[end + 1:], start=end + 2):
         m = re.fullmatch(r"<!-- lang: (\w+) -->", text.rstrip())
@@ -155,7 +167,8 @@ def parse(root: Path, path: Path, errors: Errors) -> Source | None:
         elif not marker_at and text.strip():
             errors.add(path, n, 1, "text before the `<!-- lang: en -->` marker")
     if set(marker_at) != set(LANGS):
-        errors.add(path, end + 1, 1, "needs one `<!-- lang: en -->` and one `<!-- lang: zh -->` block")
+        errors.add(path, end + 1, 1,
+                   "needs one `<!-- lang: en -->` and one `<!-- lang: zh -->` block")
         return None
     if marker_at["en"] > marker_at["zh"]:
         errors.add(path, marker_at["zh"], 1, "the zh block comes before the en block")
@@ -173,6 +186,8 @@ def parse(root: Path, path: Path, errors: Errors) -> Source | None:
             body.pop()
         block = Block(body, first)
         for n, text in enumerate(body, start=first):
+            if path != INDEX and n > first and text.startswith("## "):
+                errors.add(path, n, 1, "a second `## ` title in an article block")
             item = LIST_ITEM.match(text)
             for m in MARK.finditer(text):
                 if not m.group(1):
@@ -180,11 +195,12 @@ def parse(root: Path, path: Path, errors: Errors) -> Source | None:
                 elif item and m.start() == item.end():
                     block.defs.append(Mark(m.group(2), n))
                 else:
-                    errors.add(path, n, 1, f"definition {{#{m.group(2)}}} is not at the start of a list item")
+                    errors.add(path, n, 1,
+                               f"definition {{#{m.group(2)}}} is not at the start of a list item")
         if path != INDEX and not (body and body[0].startswith("## ")):
             errors.add(path, first, 1, f"{lang} block does not start with a `## ` title")
         blocks[lang] = block
-    return Source(path, meta, meta_lines, blocks)
+    return blocks
 
 
 def check_files(root: Path, index: Source, errors: Errors) -> list[Source]:
@@ -201,14 +217,16 @@ def check_files(root: Path, index: Source, errors: Errors) -> list[Source]:
             errors.add(INDEX, line, 2, f"`{aid}` has no file {ARTICLES / aid}.md")
     for stem in files:
         if stem not in listed:
-            errors.add(ARTICLES / f"{stem}.md", 1, 2, "file is not listed in `articles` of index.md")
+            errors.add(ARTICLES / f"{stem}.md", 1, 2,
+                       "file is not listed in `articles` of index.md")
     if errors:
         return []
     articles = []
     for aid in dict.fromkeys(listed):
         source = parse(root, ARTICLES / f"{aid}.md", errors)
         if source and source.meta.get("id") != aid:
-            errors.add(source.path, source.meta_lines.get("id", 1), 2, f"`id` must equal the file name `{aid}`")
+            errors.add(source.path, source.meta_lines.get("id", 1), 2,
+                       f"`id` must equal the file name `{aid}`")
         articles.append(source)
     return articles
 
@@ -225,17 +243,21 @@ def check_ids(index: Source, articles: list[Source], errors: Errors) -> None:
         for mark in source.blocks["en"].defs:
             section = SECTION_ID.fullmatch(mark.id)
             if ARTICLE_ID.fullmatch(mark.id):
-                errors.add(source.path, mark.line, 3, f"article ID {mark.id} is defined by front matter, not in the text")
+                errors.add(source.path, mark.line, 3,
+                           f"article ID {mark.id} is defined by front matter, not in the text")
             elif section and section.group(1) != aid:
-                errors.add(source.path, mark.line, 3, f"{mark.id} is defined in article {aid}, not {section.group(1)}")
+                errors.add(source.path, mark.line, 3,
+                           f"{mark.id} is defined in article {aid}, not {section.group(1)}")
             if mark.id in retired:
                 errors.add(source.path, mark.line, 3, f"{mark.id} is retired")
             if mark.id in seen:
-                errors.add(source.path, mark.line, 3, f"{mark.id} is already defined at {seen[mark.id]}")
+                errors.add(source.path, mark.line, 3,
+                           f"{mark.id} is already defined at {seen[mark.id]}")
             seen.setdefault(mark.id, f"{source.path}:{mark.line}")
     for lang in LANGS:
         for mark in index.blocks[lang].defs:
-            errors.add(INDEX, mark.line, 3, f"{mark.id} is defined in index.md; IDs are defined in articles")
+            errors.add(INDEX, mark.line, 3,
+                       f"{mark.id} is defined in index.md; IDs are defined in articles")
 
 
 def check_languages(sources: list[Source], errors: Errors) -> None:
@@ -244,20 +266,25 @@ def check_languages(sources: list[Source], errors: Errors) -> None:
         en, zh = source.blocks["en"], source.blocks["zh"]
         en_defs, zh_defs = [m.id for m in en.defs], [m.id for m in zh.defs]
         if en_defs != zh_defs:
-            i = next((i for i, (a, b) in enumerate(zip(en_defs, zh_defs)) if a != b), min(len(en_defs), len(zh_defs)))
+            pairs = enumerate(zip(en_defs, zh_defs))
+            i = next((i for i, (a, b) in pairs if a != b), min(len(en_defs), len(zh_defs)))
             line = zh.defs[i].line if i < len(zh.defs) else zh.first_line
-            errors.add(source.path, line, 4, f"zh defines {zh_defs[i:i + 1] or 'nothing'} where en defines {en_defs[i:i + 1] or 'nothing'} (definition {i + 1})")
+            got, want = zh_defs[i:i + 1] or "nothing", en_defs[i:i + 1] or "nothing"
+            errors.add(source.path, line, 4,
+                       f"zh defines {got} where en defines {want} (definition {i + 1})")
         en_refs, zh_refs = {m.id for m in en.refs}, {m.id for m in zh.refs}
         for lang, block, other in (("en", en, zh_refs), ("zh", zh, en_refs)):
             for mark in block.refs:
                 if mark.id not in other:
-                    errors.add(source.path, mark.line, 4, f"{lang} cites {mark.id}; the other language does not")
+                    errors.add(source.path, mark.line, 4,
+                               f"{lang} cites {mark.id}; the other language does not")
 
 
 def check_refs(index: Source, articles: list[Source], errors: Errors) -> None:
     """Check 5: every reference resolves and none points to a retired ID."""
     retired = set(index.meta["retired"])
-    defined = {s.meta["id"] for s in articles} | {m.id for s in articles for m in s.blocks["en"].defs}
+    defined = {s.meta["id"] for s in articles}
+    defined |= {m.id for s in articles for m in s.blocks["en"].defs}
     for source in [index, *articles]:
         for lang in LANGS:
             for mark in source.blocks[lang].refs:
@@ -313,12 +340,15 @@ def build(root: Path) -> tuple[Errors, dict]:
     articles = check_files(root, index, errors)
     if errors:
         return errors, {}
-    for check in (lambda: check_ids(index, articles, errors),
-                  lambda: check_languages([index, *articles], errors),
-                  lambda: check_refs(index, articles, errors)):
-        check()
-        if errors:
-            return errors, {}
+    check_ids(index, articles, errors)
+    if errors:
+        return errors, {}
+    check_languages([index, *articles], errors)
+    if errors:
+        return errors, {}
+    check_refs(index, articles, errors)
+    if errors:
+        return errors, {}
     return errors, {lang: render(lang, index, articles) for lang in LANGS}
 
 
@@ -334,7 +364,8 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
         built = text.encode("utf-8")
         if committed != built:
             old, new = committed.split(b"\n"), built.split(b"\n")
-            line = next((i for i, (a, b) in enumerate(zip(old, new), start=1) if a != b), min(len(old), len(new)))
+            pairs = enumerate(zip(old, new), start=1)
+            line = next((i for i, (a, b) in pairs if a != b), min(len(old), len(new)))
             errors.add(path, line, 6, "differs from a fresh build; run tools/build_constitution.py")
 
 

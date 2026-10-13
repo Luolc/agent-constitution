@@ -136,11 +136,11 @@ class Tree(unittest.TestCase):
         errors, _ = bc.build(self.root)
         return errors
 
-    def assertFails(self, check, location):
+    def assertFails(self, check, location, message):
         errors = self.errors()
         self.assertTrue(errors, "expected an error, got none")
         self.assertTrue(all(f": check {check}: " in e for e in errors), errors)
-        self.assertIn(location, [e.split(": check")[0] for e in errors])
+        self.assertIn(f"{location}: check {check}: {message}", errors)
 
 
 class RenderTest(Tree):
@@ -156,7 +156,8 @@ class RenderTest(Tree):
 
     def test_numerals(self):
         self.assertEqual([bc.roman(n) for n in (1, 4, 9, 14, 40)], ["I", "IV", "IX", "XIV", "XL"])
-        self.assertEqual([bc.zh_number(n) for n in (1, 10, 11, 20, 23)], ["一", "十", "十一", "二十", "二十三"])
+        self.assertEqual([bc.zh_number(n) for n in (1, 10, 11, 20, 23)],
+                         ["一", "十", "十一", "二十", "二十三"])
 
 
 class CheckTest(Tree):
@@ -166,62 +167,78 @@ class CheckTest(Tree):
     def test_1_format(self):
         self.edit("articles/C1.md", "<!-- lang: en -->", "<!-- lang: zh -->")
         self.edit("articles/C1.md", "<!-- lang: zh -->\n\n## 第一", "<!-- lang: en -->\n\n## 第一")
-        self.assertFails(1, "constitution/articles/C1.md:5")
+        self.assertFails(1, "constitution/articles/C1.md:5",
+                         "the zh block comes before the en block")
 
     def test_1_duplicate_key(self):
         self.edit("index.md", "retired: [C2, H9]\n", "retired: [C2, H9]\nretired: []\n")
-        self.assertFails(1, "constitution/index.md:6")
+        self.assertFails(1, "constitution/index.md:6", "`retired` appears twice")
+
+    def test_1_second_title(self):
+        self.edit("articles/C3.md", "  - {#C3.2} Nested", "## Extra\n  - {#C3.2} Nested")
+        self.edit("articles/C3.md", "  - {#C3.2} 嵌套", "## 额外\n  - {#C3.2} 嵌套")
+        self.assertFails(1, "constitution/articles/C3.md:10",
+                         "a second `## ` title in an article block")
 
     def test_1_title(self):
         self.edit("articles/C3.md", "## 第三\n", "第三\n")
-        self.assertFails(1, "constitution/articles/C3.md:14")
+        self.assertFails(1, "constitution/articles/C3.md:14",
+                         "zh block does not start with a `## ` title")
 
     def test_1_definition_not_at_item_start(self):
         self.edit("articles/C1.md", "- {#H1} Money.", "- Money {#H1}.")
-        self.assertFails(1, "constitution/articles/C1.md:10")
+        self.assertFails(1, "constitution/articles/C1.md:10",
+                         "definition {#H1} is not at the start of a list item")
 
     def test_2_unlisted_file(self):
         self.write("articles/C4.md", C3.replace("C3", "C4"))
-        self.assertFails(2, "constitution/articles/C4.md:1")
+        self.assertFails(2, "constitution/articles/C4.md:1",
+                         "file is not listed in `articles` of index.md")
 
     def test_2_id_differs_from_file_name(self):
         self.edit("articles/C3.md", "id: C3", "id: C4")
-        self.assertFails(2, "constitution/articles/C3.md:2")
+        self.assertFails(2, "constitution/articles/C3.md:2",
+                         "`id` must equal the file name `C3`")
 
     def test_3_duplicate(self):
         self.edit("articles/C3.md", "  - {#C3.2} Nested;", "  - {#H1} Nested;")
         self.edit("articles/C3.md", "  - {#C3.2} 嵌套；", "  - {#H1} 嵌套；")
-        self.assertFails(3, "constitution/articles/C3.md:10")
+        self.assertFails(3, "constitution/articles/C3.md:10",
+                         "H1 is already defined at constitution/articles/C1.md:10")
 
     def test_3_section_prefix(self):
         self.edit("articles/C3.md", "{#C3.2} Nested", "{#C1.2} Nested")
         self.edit("articles/C3.md", "{#C3.2} 嵌套", "{#C1.2} 嵌套")
-        self.assertFails(3, "constitution/articles/C3.md:10")
+        self.assertFails(3, "constitution/articles/C3.md:10",
+                         "C1.2 is defined in article C3, not C1")
 
     def test_3_retired_definition(self):
         self.edit("articles/C1.md", "{#H1} Money", "{#H9} Money")
         self.edit("articles/C1.md", "{#H1} 钱", "{#H9} 钱")
         self.edit("articles/C3.md", "see {H1}", "see {C1.1}")
         self.edit("articles/C3.md", "见{H1}", "见{C1.1}")
-        self.assertFails(3, "constitution/articles/C1.md:10")
+        self.assertFails(3, "constitution/articles/C1.md:10", "H9 is retired")
 
     def test_4_definition_order(self):
-        self.edit("articles/C1.md", "- {#C1.1} 一，见{C3.4}。\n- {#H1} 钱。", "- {#H1} 钱。\n- {#C1.1} 一，见{C3.4}。")
-        self.assertFails(4, "constitution/articles/C1.md:16")
+        self.edit("articles/C1.md", "- {#C1.1} 一，见{C3.4}。\n- {#H1} 钱。",
+                  "- {#H1} 钱。\n- {#C1.1} 一，见{C3.4}。")
+        self.assertFails(4, "constitution/articles/C1.md:16",
+                         "zh defines ['H1'] where en defines ['C1.1'] (definition 1)")
 
     def test_4_reference_set(self):
         self.edit("index.md", "序言引用{C3}。", "序言引用{C1}。")
-        self.assertFails(4, "constitution/index.md:12")
+        self.assertFails(4, "constitution/index.md:12",
+                         "en cites C3; the other language does not")
 
     def test_5_undefined(self):
         self.edit("articles/C1.md", "see {C3.4}", "see {C3.5}")
         self.edit("articles/C1.md", "见{C3.4}", "见{C3.5}")
-        self.assertFails(5, "constitution/articles/C1.md:9")
+        self.assertFails(5, "constitution/articles/C1.md:9", "cites undefined C3.5")
 
     def test_5_retired(self):
         self.edit("index.md", "cites {C3}", "cites {C2}")
         self.edit("index.md", "引用{C3}", "引用{C2}")
-        self.assertFails(5, "constitution/index.md:12")
+        self.assertFails(5, "constitution/index.md:12", "cites retired C2")
 
     def test_6_outputs_match(self):
         self.assertEqual(bc.main(["--root", str(self.root)]), 0)
@@ -235,7 +252,8 @@ class CheckTest(Tree):
         path.write_bytes(path.read_bytes().replace(b"Money.", b"Money!"))
         errors = bc.Errors()
         bc.check_outputs(self.root, bc.build(self.root)[1], errors)
-        self.assertEqual(errors, ["constitution/constitution.en.md:10: check 6: differs from a fresh build; run tools/build_constitution.py"])
+        self.assertEqual(errors, ["constitution/constitution.en.md:10: check 6: differs from a"
+                                  " fresh build; run tools/build_constitution.py"])
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(bc.main(["--root", str(self.root), "--check"]), 1)
 

@@ -50,8 +50,8 @@ Non-goals:
 | Static fixtures | The apply step that runs the compiler and installs the output |
 
 The overlay never changes or relaxes the constitution. It chooses which
-general rules it uses (see Choosing rules), adds private rules and fills in
-parameters. It never edits core files; it pins a core version and builds
+general rules it uses (C6.7; see Choosing rules), adds private rules and fills
+in parameters. It never edits core files; it pins a core version and builds
 against it.
 
 ## Language
@@ -75,14 +75,10 @@ tickets in either language; the ID, not the wording, carries the reference.
 Both languages live in the same source file (see Source formats), so one
 change edits both and a reviewer sees them side by side.
 
-Standing of the two texts, for the constitution and the rules alike
-(recommended; open until the person decides):
+The standing of the two texts of the constitution is set by the
+constitution itself (C9.5, C11.3), as drafted; it stays open until a person
+approves that text. The rules follow the same terms. What this repo adds:
 
-- Both texts are equally authoritative. They change together in one change,
-  and a person approving an amendment approves both.
-- If the two texts are found to differ in meaning, the clause is treated as
-  unclear: pause the actions it affects, continue the work it does not, and
-  report it. Neither text is acted on until the clause is fixed.
 - The checker only proves structural alignment (the same IDs defined in the
   same order, the same IDs cited). There is no check, based on the git diff,
   that a change touching one language also touches the other: fixing a typo
@@ -143,18 +139,19 @@ with the drift check, the reference and relaxation checkers, the
 private-term scanner, `fixtures/static/` with the fixture gate, then load
 verification. Each step is usable on its own.
 
-The protected foundation of C8 is the text of the constitution, which in
-the core is the sources under `constitution/` (`index.md` and `articles/`).
-A change to them needs a person's approval under C9 (see Approving an
-amendment). Everything else is an ordinary change, reviewed and tested like
-any other: `tools/` and `schema/` (compiler, checkers, the fixture-gate
-runner), `.github/workflows/`, `fixtures/` and `examples/golden/`. A person's
+What C8 protects is the text of the constitution (C8.1); in the core that
+is the sources under `constitution/` (`index.md` and `articles/`) and the
+wording of the two files built from them. A change to the text needs a
+person's approval under C9 (see Approving an amendment). Everything else is
+an ordinary change under C7 (C8.2), reviewed and tested like any other:
+`tools/` and `schema/` (compiler, checkers, the fixture-gate runner),
+`.github/workflows/`, `fixtures/` and `examples/golden/`. A person's
 attention goes to what the constitution says; the tools are kept honest by
 their unit tests and happy-path end-to-end tests, not by a person reading
-them. The two generated files change only by rebuilding: with a source
-change they are part of the amendment, and with a change to the build
-script they are part of that ordinary change, whose pull request shows their
-diff so a person can glance at the format.
+them. The two generated files change only by rebuilding. A change to the
+build script that alters only their numbering or layout is ordinary, and its
+pull request shows their diff so a person can glance at the format; one that
+alters their wording changes the text and is an amendment (C8.1).
 
 ## Source formats
 
@@ -201,7 +198,9 @@ its own, English first, each exactly once:
 ```
 
 - In an article file each block starts with `## <Title>`, without a number;
-  the build adds it. `index.md` holds the title, the draft notice and the
+  the build adds it. No other `## ` line follows in the block, since it
+  would read as an article without a number; use `###` or lower inside an
+  article. `index.md` holds the title, the draft notice and the
   preamble; a `## ` heading there (such as `## Preamble`) is output as is,
   without a number.
 - Definition: `{#ID}`, only right after a list marker (`- `, `* `, `+ `,
@@ -300,9 +299,9 @@ overlay IDs is unique.
 
 ### Choosing rules
 
-The general rules are a default set, not obligations on every deployment:
-one deployment may need a rule that another has good reason to drop (a repo
-that stays private on a self-hosted server may keep credentials in it on
+The general rules are a default set, not obligations on every deployment
+(C6.7): one deployment may need a rule that another has good reason to drop (a
+repo that stays private on a self-hosted server may keep credentials in it on
 purpose). Open, for the person to decide. Recommended:
 
 - A deployment uses every general rule by default. Its overlay leaves a rule
@@ -318,9 +317,9 @@ purpose). Open, for the person to decide. Recommended:
 
 Reasons: defaulting to all means a new rule reaches every deployment without
 anyone remembering to list it, where an opt-in list would go stale as rules
-are added. Naming each exclusion keeps the principle that a relaxation is
-declared, never silent, and puts everything a deployment dropped in one
-place. Exclusion per deployment, not per repo, matches how the output is
+are added. Leaving a rule out is not a relaxation (C6.7), but naming each one,
+with its reason, keeps it visible and puts everything a deployment dropped in
+one place. Exclusion per deployment, not per repo, matches how the output is
 built: one file per deployment.
 
 ### Relaxation declarations
@@ -400,9 +399,9 @@ The compiler is a deterministic concatenation, no model involved:
    silently dropped.
 6. Write the output and the manifest: the SHA-256 of each input file (sorted
    by path), core version and commit, compiler version (the core version,
-   since the compiler lives here), constitution revision, language, the
-   rules left out, input digest, output digest and size. No timestamps; the same inputs give
-   byte-identical output.
+   since the compiler lives here), constitution revision, language, the rules
+   left out, input digest, output digest and size. No timestamps; the same
+   inputs give byte-identical output.
 
 Roles: there is one output for everyone. The core has no role sections. The
 overlay contributes, as a private rule, the one or two sentences that tell
@@ -435,7 +434,8 @@ first one that finds errors, printing all of that one's errors:
 
 1. Format: front matter in the flat subset with exactly the required keys;
    the en and zh blocks, each once, en first; each article block starts
-   with `## `; definitions only at the start of a list item.
+   with one `## ` title and has no other; definitions only at the start of a
+   list item.
 2. `articles` in `index.md` and the files in `articles/` match one to one,
    and each file name equals its `id`.
 3. Each ID is defined once; a Section ID's prefix is its article; no
@@ -493,11 +493,12 @@ its inputs and its expected result.
   breaks ordinary work shows up as a failing happy fixture.
 - Every fixture binds to at least one constitution or rule ID, and the
   checker rejects a fixture whose IDs do not resolve.
-- Before a release, every fixture runs, as C5.5 requires: all happy and all
-  redline. Static fixtures run in this repo's CI. Behavior fixtures (once
-  they exist) need installed harnesses and model credentials, which this
-  repo's CI does not have; they run on the private side, and a release
-  needs the record of that run at the commit being tagged.
+- Before a release, every fixture runs, all happy and all redline, since C5.5
+  requires every check to pass before a release. Static fixtures run in this
+  repo's CI. Behavior fixtures (once they exist) need installed harnesses and
+  model credentials, which this repo's CI does not have; they run on the
+  private side, and a release needs the record of that run at the commit being
+  tagged.
 - Fixtures follow the constitution like any other file: made-up data only
   (`example.test` domains, documentation address ranges, fictional names), no
   real credentials, no private terms. The private-term scan covers
@@ -506,9 +507,11 @@ its inputs and its expected result.
 Open, for the person to decide: where red-line fixtures live. Recommended:
 with the text they test, bound to its ID.
 
-- Constitution: its red-line fixtures (for example, that an amendment goes
-  through a person, and the default boundary items) live in the core and
-  run for every deployment.
+- Constitution: its red-line fixtures live in the core. Those for what no
+  project may change (for example, that an amendment goes through a person,
+  H8) run for every deployment. Those for a default boundary item test the
+  default; a project that overrides that item under L3 runs its own fixture
+  for the override in place of the core's, as with a left-out rule.
 - General rules: each rule's red-line fixtures live in the core, bound to
   that rule's ID. The core's CI runs all of them. A deployment runs those of
   the rules it uses; the fixtures of a rule it left out are not run there,
@@ -565,7 +568,8 @@ event -> proposal -> rule revision, case, or amendment -> release
   IDs applied, the decision and its status. A case explains a rule; it never
   grants a permission. A case that would change a right, a duty or a
   prohibition becomes a rule revision; one that would relax a boundary item
-  becomes an amendment proposal.
+  for every project becomes an amendment proposal (for one project, an L3
+  declaration does it).
 - Middle ground (C4.3): when an agent is unsure and asks a person, the
   answer is written as a case candidate on the private side, with its
   source. When the same kind of answer recurs, it becomes a rule proposal.
@@ -603,7 +607,10 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
 - The description ends with the open questions, each with a recommended
   default, so one answer settles them (C2.3).
 - The person's yes names the head commit it approves, and the merge lands
-  exactly that commit (C5.3). If the head changes afterwards, the person is
+  exactly that commit (C5.3).
+- C9.1 asks for the generated diff in the language the approving person
+  reads, and C9.5 for both languages to change together; the steps above are
+  how this repo meets them. If the head changes afterwards, the person is
   asked again with only the diff since the approved head.
 
 ## Releases and versions
@@ -615,9 +622,8 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
 - A release tag goes only on a `main` commit whose push-triggered `check` run
   succeeded on its first attempt. A rerun that turned green does not
   qualify; tag a later commit that passed the first time.
-- Pushing a release tag makes a version available. By the constitution's
-  default boundary list (C4.1) that needs a person's yes; a project layer
-  may override that default.
+- Pushing a release tag makes a version available. By default that is H4
+  and needs a person's yes; a project may move it under L3.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.
