@@ -32,6 +32,7 @@ from pathlib import Path
 INDEX = Path("constitution/index.toml")
 ARTICLES = Path("constitution/articles")
 ARTICLE_FILE = "article.toml"
+OLD_SECTIONS = Path("constitution/sections")
 RULES = Path("rules")
 RETIRED = RULES / "retired-ids.txt"
 
@@ -377,8 +378,20 @@ def load(root: Path, errors: Errors) -> Sources | None:
         strip_texts(doc.data, schema)
         return doc
 
+    def entries(directory: Path) -> list[Path]:
+        """What the directory holds, skipping hidden names (`.DS_Store`,
+        editor swap files)."""
+        return sorted(p.relative_to(root) for p in (root / directory).glob("*") if not p.name.startswith("."))
+
+    if (root / OLD_SECTIONS).exists():
+        errors.add(OLD_SECTIONS, 1, 1, "sections belong in their article's directory,"
+                                       f" {ARTICLES}/<NN>-<id>/<NN>[a-z]-<id>.toml")
     articles, sections, rules = [], [], []
-    for directory in sorted(p.relative_to(root) for p in (root / ARTICLES).glob("*") if p.is_dir()):
+    for directory in entries(ARTICLES):
+        if not (root / directory).is_dir():
+            errors.add(directory, 1, 1, f"not an article directory; an article is {ARTICLES}/<NN>-<id>/"
+                                        f" with its {ARTICLE_FILE} and section files")
+            continue
         m = ARTICLE_NAME.fullmatch(directory.name)
         if not m:
             errors.add(directory, 1, 1, f"article directory name is not {ARTICLE_NAME_SHAPE}")
@@ -397,8 +410,12 @@ def load(root: Path, errors: Errors) -> Sources | None:
             d = doc.data
             articles.append(Article(doc, d["id"], name_number(m.group(1)), d.get("repealed"),
                                     d["title"], d.get("intro")))
-        for path in sorted(p.relative_to(root) for p in (root / directory).glob("*.toml")):
+        for path in entries(directory):
             if path.name == ARTICLE_FILE:
+                continue
+            if path.suffix != ".toml" or not (root / path).is_file():
+                errors.add(path, 1, 1, f"not a section file; an article's directory holds only its"
+                                       f" {ARTICLE_FILE} and <NN>[a-z]-<id>.toml section files")
                 continue
             m = SECTION_NAME.fullmatch(path.stem)
             if not m:
