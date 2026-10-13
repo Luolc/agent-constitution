@@ -2,7 +2,7 @@
 status: draft
 revision: 0.2
 articles: [C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11]
-retired: [C1.2, C1.3, C8.3]
+retired: [C1.2, C1.3, L1]
 ---
 
 <!-- lang: en -->
