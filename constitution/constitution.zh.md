@@ -1,4 +1,4 @@
-本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。修订版：0.19。语言：中文。标 \* 的款、项在给 agent 的版本 `constitution/constitution.zh.agent.md` 里只留编号。
+本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。修订版：0.20。语言：中文。标 \* 的款、项在给 agent 的版本 `constitution/constitution.zh.agent.md` 里只留编号。
 
 # Agent 宪法 (草案)
 
@@ -123,8 +123,8 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 
 ## <a id="protection-scope"></a>第九条 保护范围
 
--   <a id="protected-text"></a>**第一款**<sup class="omitted">*</sup> 只有本宪法的正文 (两种语言) 受保护：对正文措辞 (不含编号和版式) 的任何改动，无论是改源文件，还是借编译它的工具，都是修正案 ([第十条][amendment-procedure])。
--   <a id="ordinary-tooling"></a>**第二款**<sup class="omitted">*</sup> 编译器、检查器、fixture、CI 和发布流程都属于普通改动 ([第八条][rule-evolution])：经过审查和测试即可修改，不需要委托人批准，让委托人的注意力用在正文上 ([第三条][purpose])。
+-   <a id="protected-text"></a>**第一款**<sup class="omitted">*</sup> 本宪法的正文 (两种语言) 受保护：改变正文措辞的改动是修正案 ([第十条][amendment-procedure])，不论改的是源文本，还是从源文本编译出各个版本的方式。只改变编号的显示方式或版式的改动，不是修正案。
+-   <a id="ordinary-tooling"></a>**第二款**<sup class="omitted">*</sup> 编译、检查和分发本宪法所用的工具和流程，不属于正文。它们按普通规定的方式修改 ([第八条第一款][ordinary-rule-adoption])，让委托人的注意力用在正文上 ([第三条][purpose])。
 
 ## <a id="amendment-procedure"></a>第十条 修改
 
