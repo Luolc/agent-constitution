@@ -16,3 +16,8 @@ section, each holding both languages; edit them and rebuild, never the two
 generated files. The general rules under `rules/` are TOML files of the
 same kind, one per rule. The format, the IDs and the numbering are in the
 design.
+
+`python3 tools/build_site.py` builds the constitution into two static web
+pages, English and Chinese, under `site/` (not committed). It needs Hugo
+at the version the script names and the theme submodule
+(`git submodule update --init`); the setup is in the design (Static site).

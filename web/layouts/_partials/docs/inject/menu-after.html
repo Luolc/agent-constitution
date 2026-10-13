@@ -1,0 +1,16 @@
+{{- /* The articles of the page, in the left sidebar under the language and
+  color switches: the level-2 headings, which sit under the page's `#`
+  title. Titles are plain text. */ -}}
+{{- with .Fragments }}
+<nav class="constitution-nav">
+  <ul>
+  {{- range .Headings }}
+    {{- range .Headings }}
+      {{- if eq .Level 2 }}
+    <li><a href="#{{ .ID }}">{{ .Title | plainify }}</a></li>
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  </ul>
+</nav>
+{{- end }}

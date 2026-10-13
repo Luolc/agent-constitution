@@ -1,0 +1,219 @@
+/* The look of the constitution: a printed statute. Loaded by the theme
+   after its own styles. The first part uses only the page's own markup
+   (.constitution, headings, lists, .revision, :target) so that it
+   moves to another generator or theme as is; the part at the end maps it
+   onto the hugo-book theme. The fonts (EB Garamond for English, Noto
+   Serif SC for Chinese, SIL Open Font License 1.1) are loaded in
+   layouts/_partials/docs/inject/head.html; the stacks fall back to local
+   serif fonts. */
+
+:root {
+  --c-font-en: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
+  --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
+    "Source Han Serif SC", "Songti SC", SimSun, serif;
+  /* The text column's max-width, one per language; adjust it here. */
+  /* Fluid type: the size grows with the window, from a floor on small
+     screens to a ceiling on wide ones (English 20px and Chinese 17px at a
+     1400px window, 22px and 18.7px from about 1710px on). The column is
+     set in em, so it widens with the size and a line keeps its length:
+     about 90 characters in English, 40 in Chinese. */
+  --c-size-en: clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem);
+  --c-size-zh: clamp(1rem, 0.548vw + 0.583rem, 1.17rem);
+  --c-measure-en: 36em;
+  --c-measure-zh: 40em;
+  /* Body a little above regular, which reads thin on screen; bold far
+     enough above it to stand out. Both fonts are variable. */
+  --c-weight: 450;
+  --c-weight-bold: 750;
+}
+
+/* Noto Serif SC is lighter than EB Garamond at the same weight. */
+:root:lang(zh) {
+  --c-weight: 500;
+  --c-weight-bold: 800;
+}
+
+/* Palette (sage): light, and dark by choice or, with the theme set to
+   follow the system, by the system's setting. WCAG contrast on the page
+   of text (and the links, which take its color), muted text and accent:
+   light 10.80, 5.81, 6.55; dark 11.12, 6.48, 7.13. On the sidebar, text
+   and muted text: light 9.76, 5.25; dark 10.05, 5.86. */
+:root {
+  --c-paper: #dde6d5;
+  --c-sidebar: #d1dcc8;
+  --c-ink: #23301f;
+  --c-muted: #4b5946;
+  --c-accent: #7d3a1e;
+  --c-rule: #b5c4aa;
+  --c-target: #e3d79c;
+}
+:root[data-theme="dark"] {
+  --c-paper: #1e2520;
+  --c-sidebar: #252d27;
+  --c-ink: #d3dccf;
+  --c-muted: #9cab98;
+  --c-accent: #dba37f;
+  --c-rule: #38453a;
+  --c-target: #4a4a2a;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --c-paper: #1e2520;
+    --c-sidebar: #252d27;
+    --c-ink: #d3dccf;
+    --c-muted: #9cab98;
+    --c-accent: #dba37f;
+    --c-rule: #38453a;
+    --c-target: #4a4a2a;
+  }
+}
+/* End of palette. */
+
+/* The theme switch shows the name of the current setting. */
+.theme-toggle {
+  font: inherit;
+  color: var(--c-ink);
+  background: none;
+  border: 1px solid var(--c-rule);
+  border-radius: .25rem;
+  padding: .2em .6em;
+  cursor: pointer;
+}
+.theme-toggle span { display: none; }
+:root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .auto,
+:root[data-theme="light"] .theme-toggle .light,
+:root[data-theme="dark"] .theme-toggle .dark { display: inline; }
+
+.constitution {
+  font-family: var(--c-font-en);
+  font-size: var(--c-size-en);
+  font-weight: var(--c-weight);
+  color: var(--c-ink);
+  line-height: 1.65;
+  max-width: var(--c-measure-en);
+  margin-inline: auto;
+}
+:lang(zh) .constitution {
+  font-family: var(--c-font-zh);
+  font-size: var(--c-size-zh);
+  max-width: var(--c-measure-zh);
+  line-height: 1.9;
+}
+
+.constitution h1 {
+  text-align: center;
+  font-size: 2em;
+  font-weight: var(--c-weight-bold);
+  letter-spacing: .04em;
+  margin: 1.2em 0 .2em;
+}
+.constitution .revision {
+  text-align: center;
+  font-variant: small-caps;
+  letter-spacing: .08em;
+  color: var(--c-muted);
+  margin-top: 0;
+}
+/* The draft notice under the title. */
+.constitution .revision + p {
+  border-block: 1px solid var(--c-rule);
+  padding: .6em 1em;
+  text-align: center;
+  color: var(--c-accent);
+}
+
+/* Articles and the preamble: centered headings, as in a statute. */
+.constitution h2 {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: var(--c-weight-bold);
+  letter-spacing: .05em;
+  margin: 2.4em 0 1em;
+}
+:lang(zh) .constitution h2 { letter-spacing: .15em; }
+
+/* English ragged right: justified, its word spaces stretch where
+   hyphenation does not reach. Chinese justified, as printed. */
+.constitution p { text-align: start; }
+:lang(zh) .constitution p:not(.revision, .revision + p) { text-align: justify; }
+:lang(zh) .constitution p { text-indent: 2em; }
+:lang(zh) .constitution :is(li p, .revision, .revision + p) { text-indent: 0; }
+
+/* Short last lines: pretty wrapping where the browser has it. */
+.constitution :is(p, li) { text-wrap: pretty; }
+.constitution :is(h1, h2) { text-wrap: balance; }
+.constitution strong { font-weight: var(--c-weight-bold); }
+
+/* Sections and items: no bullets; the numbers are bold in the source. */
+.constitution ul { list-style: none; padding-left: 0; margin-left: 0; }
+.constitution ul > li { margin: 0 0 .7em; }
+.constitution ul ul { margin: .4em 0 0 1.6em; }
+.constitution ul ul > li { margin-bottom: .3em; }
+.constitution ol { margin: .4em 0 .4em 1.6em; padding-left: 1em; }
+
+.constitution a[href^="#"] {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--c-rule);
+  text-underline-offset: .18em;
+}
+.constitution a[href^="#"]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
+.constitution code { font-size: .85em; }
+
+/* A cross-reference's target flashes once: the element with the id, or
+   the heading or list item an empty <a id> anchor starts. */
+.constitution [id] { scroll-margin-top: 1rem; }
+.constitution :target,
+.constitution :is(h2, li, p):has(> a:target) { animation: c-target 2s ease-out; }
+@keyframes c-target {
+  from { background-color: var(--c-target); }
+  to { background-color: transparent; }
+}
+
+/* The list of articles in the sidebar. */
+.constitution-nav ul { list-style: none; padding-left: 0; }
+.constitution-nav li { margin: .35em 0; }
+.constitution-nav a { color: var(--c-ink); text-decoration: none; }
+.constitution-nav a:hover { color: var(--c-accent); }
+
+@media print {
+  :root, body { background: #fff; }
+  .constitution { max-width: none; font-size: 11pt; }
+  .constitution a { color: inherit; text-decoration: none; }
+  .constitution a[href]::after { content: none; }
+  .constitution h2 { break-after: avoid; }
+  .constitution ul ul > li { break-inside: avoid; }
+}
+
+/* hugo-book: its light, dark and auto themes take their colors from the
+   variables above. */
+:root, :root[data-theme] {
+  /* The page spans the window: the sidebar at the left edge, the text
+     centered in the rest. */
+  --container-max-width: none;
+  --body-background: var(--c-paper);
+  --body-font-color: var(--c-ink);
+  --color-link: var(--c-accent);
+  --color-visited-link: var(--c-accent);
+  --gray-100: color-mix(in srgb, var(--c-paper) 92%, var(--c-ink));
+  --gray-200: color-mix(in srgb, var(--c-paper) 85%, var(--c-ink));
+  --gray-500: var(--c-muted);
+}
+.book-menu .theme-toggle { margin: 0 0 1rem; }
+body { font-family: var(--c-font-en); }
+:lang(zh) body { font-family: var(--c-font-zh); }
+.book-menu { font-size: .95rem; }
+/* Room on both sides of the text on small screens, where the column fills
+   the page. */
+.book-page { padding-inline: clamp(1.25rem, 5vw, 3rem); }
+/* The sidebar: a shade off the page, with a faint rule. The column
+   carries it down the whole page; its content scrolls on its own. */
+.book-menu, .book-menu .book-menu-content { background: var(--c-sidebar); }
+.book-menu { border-inline-end: 1px solid var(--c-rule); }
+/* The theme pads the page on wide screens; keep the sidebar flush with the
+   window's top and left edges. */
+@media screen and (min-width: 90rem) {
+  main.container { padding-top: 0; padding-inline-start: 0; }
+}
+/* The heading's own self-link: the sidebar already links each article. */
+.constitution h2 a.anchor { display: none; }

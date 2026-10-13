@@ -126,6 +126,9 @@ schema/                   schemas for the rules, fixtures and the
 tools/
   build_constitution.py   builds and checks the constitution           A
   test_build_constitution.py   its tests                               A
+  build_site.py           builds the static site with Hugo              A
+  check_site_anchors.py   checks the built site's in-page links         A
+  test_build_site.py      tests of both                                 A
   <others>                compiler, checkers, private-term scanner     B
 examples/
   overlay/                a fictional private overlay                  B
@@ -135,6 +138,11 @@ fixtures/
   behavior/               real-agent scenarios                         C
 cases/<id>.md             decided cases                                C
 proposals/                reserved for the adoption pipeline           D
+web/                      the static site's Hugo project: hugo.toml,
+                          layouts, style sheet, script, i18n           A
+  themes/hugo-book/       the theme, a git submodule at a pinned
+                          commit                                       A
+site/                     built static site, not committed             A
 .github/workflows/        CI                                           A
 .pre-commit-config.yaml   commit hooks                                 A
 .fleet/config.json        issue-tracker metadata for fleet; the
@@ -592,6 +600,58 @@ need private input (the private-term scan), installs the output and the
 skills, then runs load verification. The real output is never committed to
 this repo.
 
+## Static site
+
+The built constitution is also published as two static web pages, English
+at `site/index.html` and Chinese at `site/zh/index.html`, built by
+`python3 tools/build_site.py`. Only the build exists here; publishing it
+is a release (`boundary-rule`) and not set up.
+
+- Input: the generated `constitution/constitution.<lang>.md`, not the
+  sources: the citations, numbers and anchors are rendered once, by
+  `build_constitution.py`. `build_site.py` turns each into the home page of
+  its language in a temporary content directory: the header line is
+  dropped, the title goes into the front matter, the revision from
+  `index.toml` is set under the title, and the text is wrapped in
+  `<div class="constitution">`, the root the style sheet hangs on.
+- Generator: Hugo, a single binary pinned by version in `build_site.py`
+  and in CI, with the theme hugo-book (MIT license) as a git submodule at
+  `web/themes/hugo-book`, pinned to a commit. The theme gives the language
+  switch and the light, dark and auto color themes; the site adds, through
+  the theme's inject partials, the list of articles in the left sidebar, a
+  switch for the color theme (follow the system, light, dark; the choice
+  kept in `localStorage`, set in `<head>` before the page is drawn), and
+  the fonts. A submodule keeps the theme's files out of this repo's
+  diffs; a Hugo module would need Go on every machine that builds.
+- Raw HTML: Goldmark's `unsafe` renderer is on, since the anchors
+  (`<a id="...">`) and the wrapper are raw HTML. The content is only this
+  repo's own built constitution, never outside input.
+- Anchors: the ID of the article, section or item: `#general-provisions`,
+  `#terms`, `#terms.principal`, the same in both languages and in the
+  Markdown. A citation is a reference link to it. `:target` flashes the
+  element an anchor starts.
+- Style: `web/assets/styles/custom.css`, loaded by the theme after its own.
+  Its first part uses only the page's own markup and moves to another
+  generator as is; the last part maps it onto hugo-book's variables.
+  Centered article headings, bold section and item numbers (bold in the
+  Markdown), English text ragged right and Chinese justified, a print
+  style without link decoration. The text size grows with the window
+  between a floor and a ceiling (`clamp()`), and the column is set in em,
+  so a line keeps about 90 characters in English and 40 in Chinese; the
+  column is centered right of the sidebar. Fonts: EB Garamond and Noto
+  Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
+  fonts, falling back to local serif fonts. The colors are one palette
+  block, light and dark; contrast of text on the page and the sidebar is
+  above WCAG AA in both, the values are in the style sheet.
+- The few Chinese strings of the site itself (`web/i18n/zh.yaml`, the
+  language label in `hugo.toml`, the revision label in `build_site.py`) are
+  outside limae's reach.
+- `site/` is not committed: a generated page under review would make every
+  amendment touch it, while an amendment may change only the constitution
+  sources and their generated Markdown. Hugo needs a download, so the build
+  is not a commit hook; CI builds the site on every pull request and push
+  and runs `check_site_anchors.py` on it.
+
 ## Checkers
 
 Every checker is a command that exits non-zero on failure and prints file and
@@ -601,6 +661,7 @@ position. What each one proves, and what it does not:
 | --- | --- | --- |
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
+| Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds both pages without a warning; on every page each in-page link `#id` has an element with that id, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md`) | Every `zh` text of the constitution and rule sources, and the built Chinese constitution, passes limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
