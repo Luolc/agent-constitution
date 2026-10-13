@@ -1,0 +1,179 @@
+/* The look of the constitution: a printed statute. Loaded by the theme
+   after its own styles. The first part uses only the page's own markup
+   (.constitution, headings, lists, .revision, :target) so that it
+   moves to another generator or theme as is; the part at the end maps it
+   onto the hugo-book theme. The fonts (EB Garamond for English, Noto
+   Serif SC for Chinese, SIL Open Font License 1.1) are loaded in
+   layouts/_partials/docs/inject/head.html; the stacks fall back to local
+   serif fonts. */
+
+:root {
+  /* Light: warm paper. Contrast on --c-paper (WCAG): ink 12.95, muted
+     6.15, accent 8.33. */
+  --c-ink: #2b2620;
+  --c-muted: #5f574b;
+  --c-paper: #f4eedf;
+  --c-rule: #cfc4ae;
+  --c-accent: #7a2a1f;
+  --c-target: #ecd9a8;
+  --c-font-en: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
+  --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
+    "Source Han Serif SC", "Songti SC", SimSun, serif;
+  --c-measure-en: 38em;   /* about 85 characters a line */
+  --c-measure-zh: 40em;   /* 40 characters a line */
+  --c-weight: 500;        /* the 400 cuts read thin on screen */
+  --c-weight-bold: 700;
+}
+
+
+/* Dark, by choice or, with the theme set to follow the system, by the
+   system's setting. Contrast on --c-paper: ink 11.92, muted 6.14, accent
+   7.74. */
+:root[data-theme="dark"] {
+  --c-ink: #e4dccb;
+  --c-muted: #a89e8c;
+  --c-paper: #22201c;
+  --c-rule: #4a443b;
+  --c-accent: #e3a493;
+  --c-target: #5a4a24;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --c-ink: #e4dccb;
+    --c-muted: #a89e8c;
+    --c-paper: #22201c;
+    --c-rule: #4a443b;
+    --c-accent: #e3a493;
+    --c-target: #5a4a24;
+  }
+}
+
+/* The theme switch shows the name of the current setting. */
+.theme-toggle {
+  font: inherit;
+  color: var(--c-ink);
+  background: none;
+  border: 1px solid var(--c-rule);
+  border-radius: .25rem;
+  padding: .2em .6em;
+  cursor: pointer;
+}
+.theme-toggle span { display: none; }
+:root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .auto,
+:root[data-theme="light"] .theme-toggle .light,
+:root[data-theme="dark"] .theme-toggle .dark { display: inline; }
+
+.constitution {
+  font-family: var(--c-font-en);
+  font-size: 1.1875rem;
+  font-weight: var(--c-weight);
+  color: var(--c-ink);
+  line-height: 1.65;
+  max-width: var(--c-measure-en);
+  margin-inline: auto;
+}
+:lang(zh) .constitution {
+  font-family: var(--c-font-zh);
+  font-size: 1.125rem;
+  max-width: var(--c-measure-zh);
+  line-height: 1.9;
+}
+
+.constitution h1 {
+  text-align: center;
+  font-size: 2em;
+  font-weight: var(--c-weight-bold);
+  letter-spacing: .04em;
+  margin: 1.2em 0 .2em;
+}
+.constitution .revision {
+  text-align: center;
+  font-variant: small-caps;
+  letter-spacing: .08em;
+  color: var(--c-muted);
+  margin-top: 0;
+}
+/* The draft notice under the title. */
+.constitution .revision + p {
+  border-block: 1px solid var(--c-rule);
+  padding: .6em 1em;
+  text-align: center;
+  color: var(--c-accent);
+}
+
+/* Articles and the preamble: centered headings, as in a statute. */
+.constitution h2 {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: var(--c-weight-bold);
+  letter-spacing: .05em;
+  margin: 2.4em 0 1em;
+}
+:lang(zh) .constitution h2 { letter-spacing: .15em; }
+
+.constitution p { text-align: justify; hyphens: auto; }
+:lang(zh) .constitution p { text-indent: 2em; }
+:lang(zh) .constitution :is(li p, .revision, .revision + p) { text-indent: 0; }
+
+/* Short last lines: pretty wrapping where the browser has it. */
+.constitution :is(p, li) { text-wrap: pretty; }
+.constitution :is(h1, h2) { text-wrap: balance; }
+.constitution strong { font-weight: var(--c-weight-bold); }
+
+/* Sections and items: no bullets; the numbers are bold in the source. */
+.constitution ul { list-style: none; padding-left: 0; margin-left: 0; }
+.constitution ul > li { margin: 0 0 .7em; }
+.constitution ul ul { margin: .4em 0 0 1.6em; }
+.constitution ul ul > li { margin-bottom: .3em; }
+.constitution ol { margin: .4em 0 .4em 1.6em; padding-left: 1em; }
+
+.constitution a[href^="#"] {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--c-rule);
+  text-underline-offset: .18em;
+}
+.constitution a[href^="#"]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
+.constitution code { font-size: .85em; }
+
+/* A cross-reference's target flashes once: the element with the id, or
+   the heading or list item an empty <a id> anchor starts. */
+.constitution [id] { scroll-margin-top: 1rem; }
+.constitution :target,
+.constitution :is(h2, li, p):has(> a:target) { animation: c-target 2s ease-out; }
+@keyframes c-target {
+  from { background-color: var(--c-target); }
+  to { background-color: transparent; }
+}
+
+/* The list of articles in the sidebar. */
+.constitution-nav ul { list-style: none; padding-left: 0; }
+.constitution-nav li { margin: .35em 0; }
+.constitution-nav a { color: var(--c-ink); text-decoration: none; }
+.constitution-nav a:hover { color: var(--c-accent); }
+
+@media print {
+  .constitution { max-width: none; font-size: 11pt; }
+  .constitution a { color: inherit; text-decoration: none; }
+  .constitution a[href]::after { content: none; }
+  .constitution h2 { break-after: avoid; }
+  .constitution li { break-inside: avoid; }
+}
+
+/* hugo-book: its light, dark and auto themes take their colors from the
+   variables above. */
+:root, :root[data-theme] {
+  --body-background: var(--c-paper);
+  --body-font-color: var(--c-ink);
+  --color-link: var(--c-accent);
+  --color-visited-link: var(--c-accent);
+  --gray-100: color-mix(in srgb, var(--c-paper) 92%, var(--c-ink));
+  --gray-200: color-mix(in srgb, var(--c-paper) 85%, var(--c-ink));
+  --gray-500: var(--c-muted);
+}
+.book-menu .theme-toggle { margin: 0 0 1rem; }
+body { font-family: var(--c-font-en); }
+:lang(zh) body { font-family: var(--c-font-zh); }
+.book-menu { font-size: .95rem; }
+/* The heading's own self-link: the sidebar already links each article. */
+.constitution h2 a.anchor { display: none; }

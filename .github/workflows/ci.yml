@@ -1,7 +1,8 @@
 # PR gate: full-history secret scan, then pre-commit on all files, which
 # includes the constitution build check and its tests (local hooks), then
-# the constitution numbering check and the instruction-only check, both
-# against the base commit.
+# the static site build with its link check, then the constitution
+# numbering check and the instruction-only check, both against the base
+# commit.
 # The job name `check` is the required status check.
 
 name: CI
@@ -27,6 +28,8 @@ jobs:
           # Full history: the secret scan reads every commit, and a shallow
           # clone would miss the older ones.
           fetch-depth: 0
+          # The site's theme, web/themes/hugo-book.
+          submodules: true
 
       # The pre-commit gitleaks hook scans only the staged diff; CI has no
       # staged diff, so this step scans the full history. Pinned by version
@@ -66,6 +69,25 @@ jobs:
       - run: pre-commit run --all-files
         env:
           SKIP: gitleaks
+
+      # The static site (docs/design.md, Static site). Hugo is pinned by
+      # version and SHA-256, unpacked outside the checkout under the name
+      # tools/build_site.py calls; change the version in both places. The
+      # script builds both pages and runs the in-page link check.
+      - name: Static site build and link check
+        env:
+          HUGO_VERSION: 0.167.0
+          HUGO_SHA256: 4d84519b9f619e6d4c3fb45a50157abeabeb724f859c60605f44c23def6e1169
+        run: |
+          set -euo pipefail
+          bindir="$(mktemp -d)"
+          tarball="${bindir}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
+          curl -fsSL -o "$tarball" \
+            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
+          echo "${HUGO_SHA256}  ${tarball}" | sha256sum -c -
+          tar -xzf "$tarball" -C "$bindir" hugo
+          mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
+          PATH="${bindir}:${PATH}" python3 tools/build_site.py
 
       # Numbering against the base: on a pull request its base commit, on a
       # push the commit before it. The commit hook runs without --base. The

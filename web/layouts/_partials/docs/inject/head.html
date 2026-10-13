@@ -1,0 +1,12 @@
+{{- /* EB Garamond and Noto Serif SC, SIL Open Font License 1.1; the style
+  sheet falls back to local serif fonts when these do not load. */ -}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{{- if eq .Site.Language.Name "zh" }}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,700;1,500&family=Noto+Serif+SC:wght@500;700&display=swap">
+{{- else }}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,700;1,500&display=swap">
+{{- end }}
+{{- with resources.Get "theme.js" | resources.Minify }}
+<script>{{ .Content | safeJS }}</script>
+{{- end }}
