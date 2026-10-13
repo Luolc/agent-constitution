@@ -1,0 +1,11 @@
+# Commit hook: secret scan only.
+repos:
+  # Scans only the staged diff (the upstream entry ends in --staged); CI
+  # scans the full history, so the two complement each other.
+  # --redact is repeated here: inherited arguments are not visible in this
+  # file and could be dropped when the rev is bumped.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+        args: ["--redact", "--no-banner", "."]
