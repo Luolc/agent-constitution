@@ -1,0 +1,10 @@
+id = "personal-info"
+status = "draft"
+
+[content]
+en = '''
+Personal information in anything stored or shared is anonymized or de-identified by default; a project may provide which of it may be disclosed, and how, under {@relaxations.project-personal-info}. Private information never goes into a public place.
+'''
+zh = '''
+存储或分享的内容中的个人信息，默认匿名化或者脱敏；哪些可以公开、怎样公开，由项目依照{@relaxations.project-personal-info}另行规定。私密信息不得放到公开场所。
+'''

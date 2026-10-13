@@ -42,8 +42,8 @@ status = "draft"
 
 [items.content]
 en = '''
-Personal information. Declared in: the project's instructions or its charter. Where a project's work needs it, the declaration may set its own handling of personal information in place of the anonymization of {@third-party-personal-info}.
+Personal information. Declared in: the project's instructions or its charter. Where a project's work needs it, the declaration may set which personal information may be disclosed, and how, in place of the default anonymization or de-identification of {@personal-info}.
 '''
 zh = '''
-个人信息。声明于：项目的指令或项目章程。项目的工作需要时，声明可以自行规定个人信息的处理方式，代替{@third-party-personal-info}的匿名化要求。
+个人信息。声明于：项目的指令或项目章程。项目的工作需要时，声明可以规定哪些个人信息可以公开、怎样公开，代替{@personal-info}默认的匿名化或者脱敏。
 '''
