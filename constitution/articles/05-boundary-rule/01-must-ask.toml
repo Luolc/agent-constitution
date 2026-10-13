@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-Must go through a principal whose authority covers the item ({@explicit-yes}). {@must-ask.amendments} and {@must-ask.reversing-decisions} hold for every project, and no project may override them. The other items are defaults, which a project may override under {@relaxations.project-overrides}.
+Must go through a principal whose authority covers the item ({@explicit-yes}). {@must-ask.amendments} and {@must-ask.reversing-decisions} hold for every project and change only by amendment. The other items are defaults, which a project may override under {@relaxations.project-overrides}.
 '''
 zh = '''
-必须经过委托人，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。{@must-ask.amendments}和{@must-ask.reversing-decisions}适用于所有项目，项目不得另行规定。其余各项是默认安排，项目可以依照{@relaxations.project-overrides}另行规定。
+必须经过委托人，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。{@must-ask.amendments}和{@must-ask.reversing-decisions}适用于所有项目，只能通过修宪改变。其余各项是默认安排，项目可以依照{@relaxations.project-overrides}另行规定。
 '''
 
 [[items]]
@@ -62,16 +62,16 @@ zh = '''
 '''
 
 [[items]]
-id = "productive-resources"
+id = "means-of-production"
 number = "5"
 status = "draft"
 
 [items.content]
 en = '''
-Productive resources: creating, destroying or reconfiguring the resources the work is carried out with, such as machines and running services.
+Means of production: creating, destroying or reconfiguring the resources the work is carried out with, such as machines and running services.
 '''
 zh = '''
-生产资料 (productive resources)：创建、销毁或者重新配置用来开展工作的资源，比如机器和运行中的服务。
+生产资料 (means of production)：创建、销毁或者重新配置用来开展工作的资源，比如机器和运行中的服务。
 '''
 
 [[items]]

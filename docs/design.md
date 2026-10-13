@@ -227,7 +227,9 @@ revision that deletes another adds it:
 - revision 0.14: the items `terms.authoritative-interpretation`,
   `terms.edition`, `terms.hard-rule` and `terms.undetermined`;
 - revision 0.16: the items `must-ask.downtime`, `must-ask.machines`,
-  `must-ask.money`, `must-ask.releases` and `must-ask.risk-controls`.
+  `must-ask.money`, `must-ask.releases` and `must-ask.risk-controls`;
+- revision 0.18: the item `must-ask.productive-resources`, renamed
+  `must-ask.means-of-production`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
@@ -358,7 +360,10 @@ of its directory name and a section's the prefix of its file name, written
 there and nowhere else; a list item's is its `number` field. A section or
 item number is an integer with an optional lowercase letter suffix (`2`,
 `2a`), the suffix marking one inserted later between `2` and `3`; articles
-are only ever appended and take no suffix. A name prefix is that number
+are only ever appended and take no suffix. Only after the first approved
+revision does an insertion take a suffix (`<NN>a-<id>.toml`); while the
+constitution is a draft, a new provision takes the next number in order
+and the ones after it are renumbered. A name prefix is that number
 with two digits (`02`, `02a`), so the files sort in reading order. Sort
 order is by integer, then suffix: `2` < `2a` < `2b` < `3`. Within one
 scope (all articles; the sections of one article; the items of one
@@ -573,7 +578,7 @@ naming the constitution's permission for it:
 
 One item per relaxation, with all four keys: the permission (an item of
 `relaxations`, cited as a rule cites it), what it relaxes (a rule, a
-boundary item such as `must-ask.productive-resources`, or under
+boundary item such as `must-ask.means-of-production`, or under
 `relaxations.adjustable-rules` a rule's adjustable value and its new
 setting), where it applies, and how the condition of that item is met. A relaxation not declared this
 way has no effect, whatever else the file says. The private overlay declares
@@ -1036,6 +1041,15 @@ what `purpose` asks for. The person reads what the constitution
 says and nothing
 else: tools, checks and fixtures are ordinary changes (see File structure).
 
+While the constitution is a draft, an amendment pull request is merged
+once agent review has passed, and the person reads it afterwards on a
+preview of the site; the description is still written as below, so that
+the reading is quick. Only a change to an approved edition waits for the
+person's yes on a named head commit before it is merged. An approved
+edition and the draft of the next one are to be kept side by side; how
+the repo holds the two (branches, directories or something else) is
+open.
+
 - An amendment pull request changes only `constitution/`: the sources and
   the generated files rebuilt from them.
 - Its description opens with the diff of the generated text in the
@@ -1048,8 +1062,8 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
   strength of that review.
 - The description ends with the open questions, each clear and easy to
   answer and with a recommended answer (`asking`).
-- The person's yes names the head commit it approves, and the merge lands
-  exactly that commit (`independent-review`).
+- For an approved edition, the person's yes names the head commit it
+  approves, and the merge lands exactly that commit (`independent-review`).
 - `proposing-amendments` asks for the generated diff in the
   language the approving person reads, and `amendment-languages`
   for both languages to change together; the steps above are how this repo

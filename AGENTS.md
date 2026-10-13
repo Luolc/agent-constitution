@@ -28,8 +28,11 @@ punctuation.
 
 - `constitution/`: the constitution sources, `index.toml` and one
   directory per article, `articles/<NN>-<id>/`, holding `article.toml` and
-  one `<NN>-<id>.toml` per section (`<NN>a-<id>.toml` for one inserted
-  later), each with its items inside it; each text in both languages. A
+  one `<NN>-<id>.toml` per section, each with its items inside it; each
+  text in both languages. While the constitution is a draft, a new section
+  takes the next number and the ones after it are renamed; only after the
+  first approved revision does one inserted between two others take a
+  suffix, `<NN>a-<id>.toml`. A
   change to their text follows the constitution's amendment procedure;
   what the constitution protects is in `docs/design.md` (File structure).
   Article and section numbers are the name prefixes, written nowhere else;
@@ -158,6 +161,11 @@ For leads and workers that `fleet` starts in this repo.
   with other files. The constitution sources (`constitution/index.toml`,
   `constitution/articles/`) change in a PR of their own, with no other
   file but the regenerated `constitution/constitution.*.md`.
+- While the constitution is a draft, the lead merges an amendment pull
+  request on the reviewer's LGTM, as any other, and the person reads it
+  afterwards on the preview. A change to an approved edition waits for
+  the person's yes on its head (`docs/design.md`, Approving an
+  amendment).
 - Worker report (`fleet done --report-file`): what was done, the PR and its
   merge commit, the checks run and CI's `run_attempt`, why done or
   abandoned, and follow-ups left.

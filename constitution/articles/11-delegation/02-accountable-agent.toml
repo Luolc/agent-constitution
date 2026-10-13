@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Each task has one agent clearly responsible for it, which judges the result and answers for it to whoever handed it the task.
+Each task must have one agent clearly responsible for it. That agent judges the result of the task and answers for it to whoever handed it the task.
 '''
 zh = '''
-每项任务都有一个明确负责的 agent，由它评判结果，并向交给它任务的一方交代。
+每项任务都必须有一个明确负责的 agent。这个 agent 评判任务的结果，并向把任务交给它的一方交代。
 '''
