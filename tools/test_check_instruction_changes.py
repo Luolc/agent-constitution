@@ -33,8 +33,9 @@ class Change(unittest.TestCase):
         self.git("tag", "base")
 
     def git(self, *args):
+        # No user-level ignore file: it may ignore paths these tests change.
         subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Test", "-c", "user.email=test@example.test",
-                        *args], check=True, capture_output=True)
+                        "-c", "core.excludesFile=/dev/null", *args], check=True, capture_output=True)
 
     def write(self, name, text):
         path = self.root / name
@@ -84,9 +85,14 @@ class Change(unittest.TestCase):
                                                "generated files:\n  M constitution/constitution.en.md\n"
                                                "other files:\n  M docs/design.md\n"))
 
-    def test_harness_config_counts_as_instructions(self):
-        self.change(".claude/settings.json", "docs/design.md")
-        self.assertEqual(self.run_check()[0], 1)
+    def test_each_generic_path_counts_as_instructions(self):
+        for name in ["CLAUDE.md", "sub/AGENTS.md", ".agents/skills/x/SKILL.md", "sub/.claude/skills/x/SKILL.md",
+                     ".claude/agents/x.md", ".claude/commands/x.md", ".claude/settings.json",
+                     ".claude/settings.local.json", ".claude/hooks/x.sh", ".codex/config.toml"]:
+            with self.subTest(name):
+                self.git("reset", "-q", "--hard", "base")
+                self.change(name, "docs/design.md")
+                self.assertEqual(self.run_check()[0], 1)
 
     def test_rename_of_instruction_file_to_other_path_fails(self):
         self.git("mv", "AGENTS.md", "docs/agents.md")

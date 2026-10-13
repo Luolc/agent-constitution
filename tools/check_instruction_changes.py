@@ -18,12 +18,15 @@ import subprocess
 import sys
 
 # Instruction files in any repo: what an agent harness reads as
-# instructions, skills, hooks or permissions, in any directory.
+# instructions, skills, subagents, commands, hooks or permissions, in any
+# directory.
 GENERIC = [
     r"(.*/)?AGENTS\.md",
     r"(.*/)?CLAUDE\.md",
     r"(.*/)?\.agents/skills/.+",
     r"(.*/)?\.claude/skills/.+",
+    r"(.*/)?\.claude/agents/.+",
+    r"(.*/)?\.claude/commands/.+",
     r"(.*/)?\.claude/settings(\.local)?\.json",
     r"(.*/)?\.claude/hooks/.+",
     r"(.*/)?\.codex/.+",
@@ -83,14 +86,14 @@ def main(argv: list[str] | None = None) -> int:
     if groups["instruction"] and groups["other"]:
         print(f"instruction-only check: this change mixes instruction files with other files"
               f" since {args.base}; split it into two changes")
-        for kind in groups:
-            if groups[kind]:
-                print(f"{kind} files:")
-                print("\n".join(f"  {line}" for line in groups[kind]))
+        for group, lines in groups.items():
+            if lines:
+                print(f"{group} files:")
+                print("\n".join(f"  {line}" for line in lines))
         return 1
-    kind = "instruction files only" if groups["instruction"] else "other files only" if groups["other"] \
+    summary = "instruction files only" if groups["instruction"] else "other files only" if groups["other"] \
         else "no instruction or other files"
-    print(f"instruction-only check: {kind} since {args.base}"
+    print(f"instruction-only check: {summary} since {args.base}"
           f" ({len(groups['instruction'])} instruction, {len(groups['other'])} other,"
           f" {len(groups['generated'])} generated)")
     return 0
