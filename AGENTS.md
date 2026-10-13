@@ -28,14 +28,14 @@ punctuation.
 
 - `constitution/`: the constitution sources, `index.toml` and one
   directory per article, `articles/<NN>-<id>/`, holding `article.toml` and
-  one `<NN>[a-z]-<id>.toml` per section, the section's list items inside
-  it; each text in both languages. A change to their text follows the
-  constitution's amendment procedure; what the constitution protects is in
-  `docs/design.md` (File structure). Article and section numbers are the
-  name prefixes, written nowhere else; while the constitution is a draft
-  they may change and the files are renamed with them, and once it is
-  active they never change and a section never moves to another article
-  (`docs/design.md`, Numbering).
+  one `<NN>-<id>.toml` per section (`<NN>a-<id>.toml` for one inserted
+  later), each with its items inside it; each text in both languages. A
+  change to their text follows the constitution's amendment procedure;
+  what the constitution protects is in `docs/design.md` (File structure).
+  Article and section numbers are the name prefixes, written nowhere else;
+  while the constitution is a draft they may change and the files are
+  renamed with them, and once it is active they never change and a section
+  never moves to another article (`docs/design.md`, Numbering).
 - `rules/<id>.toml`: one general rule per file, both languages, checked by
   the same build. A rule may be deleted; its ID then goes into
   `rules/retired-ids.txt` and is never used again.
