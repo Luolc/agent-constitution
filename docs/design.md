@@ -198,7 +198,7 @@ changed; it says what the provision is about, not where it stands.
 
 There are two namespaces. In the constitution, article and section IDs
 are unique across the whole constitution, and a list item's ID only
-within its section, so items can have short names (`money`). In the
+within its section, so items can have short names (`capital`). In the
 rules, a rule ID is unique among the rules, the private overlay's rules
 included. The same word may be used once in each namespace. An ID is
 never reused. From the first approved revision on, a provision of the
@@ -215,7 +215,9 @@ revision that deletes another adds it:
 - revision 0.9: the section `third-party-personal-info`;
 - revision 0.11: the section `asking-once`;
 - revision 0.14: the items `terms.authoritative-interpretation`,
-  `terms.edition`, `terms.hard-rule` and `terms.undetermined`.
+  `terms.edition`, `terms.hard-rule` and `terms.undetermined`;
+- revision 0.16: the items `must-ask.downtime`, `must-ask.machines`,
+  `must-ask.money`, `must-ask.releases` and `must-ask.risk-controls`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
@@ -225,9 +227,9 @@ Text cites with `{@...}`; nothing else in the text is markup, and any
 other braces are output as is. The constitution cites only itself,
 without a namespace: an article or section by its ID (`{@safety}`,
 `{@leaks}`), a list item by its section's ID, a dot and the item's ID
-(`{@must-ask.money}`), always this full path, even inside the same
+(`{@must-ask.capital}`), always this full path, even inside the same
 section. A rule always names the namespace: `{@constitution:leaks}`,
-`{@constitution:must-ask.money}`, `{@rule:credential-storage}`; the colon
+`{@constitution:must-ask.capital}`, `{@rule:credential-storage}`; the colon
 says which body of text, the dot where in it. The build renders a
 citation of the constitution as the number the provision has in that
 language (below); the generated text shows numbers only, never IDs. A
@@ -317,16 +319,16 @@ zh = '''
 '''
 
 [[items]]
-id = "money"
+id = "capital"
 number = "1"
 status = "draft"
 
 [items.content]
 en = '''
-Money: spending, purchases, ...
+Capital: allocating, spending, ...
 '''
 zh = '''
-资金：支出、购买……
+资本：资金和其他有价资源的配置……
 '''
 ```
 
@@ -359,7 +361,7 @@ change, directories and files are renamed with them, and the check only
 says that it did not compare.
 
 Rendering, with `must-ask` as the first section of the fourth article,
-`money` as its third item and `authority` as the article's ID; `<a id="must-ask"></a>`
+`capital` as its third item and `authority` as the article's ID; `<a id="must-ask"></a>`
 is written `⟨must-ask⟩` in the table:
 
 | Item | en | zh |
@@ -368,10 +370,10 @@ is written `⟨must-ask⟩` in the table:
 | Title, active | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
 | Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
-| List item | `    -   ⟨must-ask.money⟩(**3**) <content>` | `    -   ⟨must-ask.money⟩(**三**) <content>` |
+| List item | `    -   ⟨must-ask.capital⟩(**3**) <content>` | `    -   ⟨must-ask.capital⟩(**三**) <content>` |
 | Citation of an article | `[Art. IV][authority]` | `[第四条][authority]` |
 | Citation of a section | `[Art. IV §1][must-ask]` | `[第四条第一款][must-ask]` |
-| Citation of a list item | `[Art. IV §1(3)][must-ask.money]` | `[第四条第一款第三项][must-ask.money]` |
+| Citation of a list item | `[Art. IV §1(3)][must-ask.capital]` | `[第四条第一款第三项][must-ask.capital]` |
 | Suffix | `§1a`, `(3a)`, `Art. IV §1(3a)` | `第一款之一`, `(三之一)`, `第四条第一款第三项之一` (a is 之一, b is 之二) |
 | Repealed section | `-   ⟨…⟩**§3** (repealed November 2026)` | `-   ⟨…⟩**第三款** (2026 年 11 月废止)` |
 | Repealed list item | `    -   ⟨…⟩(**3**) (repealed November 2026)` | `    -   ⟨…⟩(**三**) (2026 年 11 月废止)` |
@@ -527,7 +529,7 @@ naming the constitution's permission for it:
 
 One item per relaxation, with all four keys: the permission (an item of
 `relaxations`, cited as a rule cites it), what it relaxes (a rule, a
-boundary item such as `must-ask.machines`, or under
+boundary item such as `must-ask.productive-resources`, or under
 `relaxations.adjustable-rules` a rule's adjustable value and its new
 setting), where it applies, and how the condition of that item is met. A relaxation not declared this
 way has no effect, whatever else the file says. The private overlay declares
@@ -609,7 +611,7 @@ this repo.
 The built constitution is also published as two static web pages, English
 at `site/index.html` and Chinese at `site/zh/index.html`, built by
 `python3 tools/build_site.py`. Only the build exists here; publishing it
-is a release (`boundary-rule`) and not set up.
+is a release (rule `must-ask-items`) and not set up.
 
 - Input: the generated `constitution/constitution.<lang>.md`, not the
   sources: the citations, numbers and anchors are rendered once, by
@@ -973,8 +975,9 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
 - A release tag goes only on a `main` commit whose push-triggered `check` run
   succeeded on its first attempt. A rerun that turned green does not
   qualify; tag a later commit that passed the first time.
-- Pushing a release tag makes a version available. By default that is
-  `must-ask.releases` and needs a person's yes; a project may move it under
+- Pushing a release tag makes a version available. By default a release
+  is an item of `must-ask`, added by the rule `must-ask-items`, and needs a
+  person's yes; a project may move it under
   `relaxations.project-overrides`.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
