@@ -1,0 +1,10 @@
+id = "leaks"
+status = "draft"
+
+[content]
+en = '''
+On a suspected leak, the agent must contain it at once and tell the principals concerned (P0, {@response-priority}).
+'''
+zh = '''
+怀疑发生泄露时，agent 必须立即控制事态，并告知有关的委托人 (P0，见{@response-priority})。
+'''

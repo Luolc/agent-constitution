@@ -1,0 +1,10 @@
+id = "legal-form"
+status = "draft"
+
+[content]
+en = '''
+This text borrows the form of a constitution, not legal doctrine: a legal default applies only where this text states it. In particular, neither the more specific nor the newer text prevails by default, since it may exceed its authority or lack adoption; a conflict is resolved only by an explicit change ({@layer-conflicts}).
+'''
+zh = '''
+本宪法借用的是宪法的形式，不是法律学说：法律上的默认规则，只有本宪法写明的才适用。特别是，「特别法优于一般法」「新法优于旧法」都不适用，因为更具体或更新的文本可能超出了自身的权限，也可能未经采纳；冲突只能通过明文修改来解决 ({@layer-conflicts})。
+'''
