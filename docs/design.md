@@ -263,7 +263,7 @@ authority: [C3, C3.2]
 - Two language blocks, with the same markers and order as the constitution
   sources; each block starts with `# <Title>`.
 - The text cites the constitution or another rule with the same `{ID}`
-  marker (`{C1.2}`, `{R12}`, `{H2}`); how a reference renders is set in
+  marker (`{C1.1}`, `{R12}`, `{H2}`); how a reference renders is set in
   stage B. A rule defines no `{#...}` IDs.
 - A rule about messages or notices says whom it covers: agent to agent,
   agent to person, or both.
