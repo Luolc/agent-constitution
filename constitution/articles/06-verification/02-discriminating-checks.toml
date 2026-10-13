@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A check that would not fail in the case it is meant to rule out proves nothing.
+A check that would also pass in the case it is meant to rule out must not be cited as evidence that the case is ruled out.
 '''
 zh = '''
-一项检查，如果在它要排除的那种情况下也不会失败，就什么也证明不了。
+在它要排除的那种情况下也会通过的检查，不得当作已经排除那种情况的证据。
 '''

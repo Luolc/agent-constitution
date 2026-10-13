@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Someone other than its author reviews a change against this constitution and the rules. The author never merges it, and a merge lands exactly the reviewed version.
+Before a change takes effect, someone other than its author reviews it against this constitution and the lower-ranking provisions that apply to it. The author never puts the change into effect. What takes effect must be exactly the version that was reviewed.
 '''
 zh = '''
-变更由作者以外的一方对照本宪法和规定审查。作者不得合并自己的变更，合并进去的正是审查过的那个版本。
+变更生效之前，由作者以外的一方对照本宪法和适用于它的下位法审查。作者不得让自己的变更生效。生效的必须正是审查过的那个版本。
 '''

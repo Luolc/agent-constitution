@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A wrong checker is fixed, with the reason recorded; a disputed case goes to a principal. A rule and its checker change together.
+A checker found to be wrong is fixed, and the fix records why. When the agents involved disagree on whether the checker or the checked work is wrong, they ask a principal whose authority covers the matter ({@asking}). When what a provision requires changes, its checker is changed to match.
 '''
 zh = '''
-检查器错了就修，并记录理由；有争议的个案交委托人决定。规定和它的检查器一起修改。
+检查器错了就修正，并在修正时写明理由。相关的 agent 对错在检查器还是错在被检查的工作意见不一时，问权限覆盖该事项的委托人 ({@asking})。条文的要求改变时，它的检查器随之修改。
 '''
