@@ -114,21 +114,8 @@ zh = '''
 '''
 
 [[items]]
-id = "edition"
-number = "9"
-status = "draft"
-
-[items.content]
-en = '''
-**Edition** and **revision**: as {@editions} defines them.
-'''
-zh = '''
-**大版本** (edition) 与**修订号** (revision)：按{@editions}的定义。
-'''
-
-[[items]]
 id = "amendment"
-number = "10"
+number = "9"
 status = "draft"
 
 [items.content]
@@ -141,7 +128,7 @@ zh = '''
 
 [[items]]
 id = "compiled-instructions"
-number = "11"
+number = "10"
 status = "draft"
 
 [items.content]
