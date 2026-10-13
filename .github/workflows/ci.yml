@@ -1,6 +1,7 @@
 # PR gate: full-history secret scan, then pre-commit on all files, which
 # includes the constitution build check and its tests (local hooks), then
-# the constitution numbering check against the base commit.
+# the constitution numbering check and the instruction-only check, both
+# against the base commit.
 # The job name `check` is the required status check.
 
 name: CI
@@ -82,3 +83,17 @@ jobs:
             exit 0
           fi
           python3 tools/build_constitution.py --check --base "$BASE"
+
+      # Instruction files and other files never change together (see
+      # docs/design.md, Checkers). Same base as the step above, skipped the
+      # same way on a push without a usable `before`.
+      - name: Instruction-only changes against the base commit
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = push ] && ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "no base commit to compare with (${BASE}); skipping"
+            exit 0
+          fi
+          python3 tools/check_instruction_changes.py --base "$BASE"

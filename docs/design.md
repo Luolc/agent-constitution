@@ -562,6 +562,7 @@ position. What each one proves, and what it does not:
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md`) | Every `zh` text of the constitution and rule sources, and the built Chinese constitution, passes limae's default rules, a citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
@@ -622,6 +623,27 @@ numbering check is tested on a temporary git repository
 commit hooks and in CI; check 7 runs in CI only, against the pull
 request's base commit or, on a push to `main`, the commit before the push.
 
+The instruction-only check (`tools/check_instruction_changes.py`) keeps
+the changes that an agent reads as instructions apart from all others, so
+each can be reviewed and reverted on its own. Which paths are instruction
+files, which are generated and which are other files is one table at the
+top of the script: a generic part that holds in any repo, this repo's own
+part (the constitution and rule sources) and this repo's generated files.
+A generated file goes with whichever side changed it: with the
+constitution sources it is an amendment, alone with the tools it is a
+tools change. The script compares `HEAD` with `--base` (`git diff
+<base>...HEAD`, renames off) and lists both groups when they mix. CI runs
+it against the same base as check 7; a push to `main` that carries
+several changes at once is checked as one.
+
+Another repo runs the same check in its own CI: it fetches this repo at a
+pinned tag and commit SHA, as an overlay pins the core (Releases and
+versions), and runs `python3 <core>/tools/check_instruction_changes.py
+--root . --base <base>` in its checkout. The generic part always applies.
+The repo declares its own instruction paths in its `AGENTS.md`, in words
+for agents, and passes the same paths to the script as `--instructions
+<regex>`, one per path, and its generated files as `--generated <regex>`;
+either option replaces this repo's own part and generated files.
 Chinese typography is checked twice, with limae and its default
 configuration. `tools/lint_zh_sources.py` hands every `zh` text of
 `constitution/index.toml`, `constitution/articles/` and `rules/` to limae
