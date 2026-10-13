@@ -1,0 +1,12 @@
+id = "20261012-advance-authorization"
+article = "20261012-authority"
+number = "4"
+status = "draft"
+
+[content]
+en = '''
+A principal may authorize a class of actions in advance under written conditions, within their authority (for example, "release once this feature is tested"). It counts only as written and within its conditions, and covers H items only through {@20261012-h-overrides}.
+'''
+zh = '''
+委托人可以在自身权限内，按书面条件预先授权一类动作 (例如「这个功能测完就发布」)。预先授权只在写明的内容和条件范围内有效；对 H 清单上的事项，只能经由 {@20261012-h-overrides} 预先授权。
+'''

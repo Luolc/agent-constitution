@@ -1,0 +1,12 @@
+id = "20261012-independent-review"
+article = "20261012-verification"
+number = "3"
+status = "draft"
+
+[content]
+en = '''
+Someone other than its author reviews a change against this constitution and the rules. The author never merges it, and a merge lands exactly the reviewed version.
+'''
+zh = '''
+变更由作者以外的一方对照本宪法和规则审查。作者不得合并自己的变更，合并进去的正是审查过的那个版本。
+'''

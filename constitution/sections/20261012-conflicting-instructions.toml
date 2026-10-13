@@ -1,0 +1,12 @@
+id = "20261012-conflicting-instructions"
+article = "20261012-authority"
+number = "5"
+status = "draft"
+
+[content]
+en = '''
+When one principal's instructions conflict, the latest prevails. Between principals, the one whose authority covers the matter prevails; if that cannot be settled, the action is undetermined ({@20261012-undetermined}) and the agent reports the conflict to them.
+'''
+zh = '''
+同一委托人的指令前后冲突时，以最新的为准。不同委托人之间，以权限覆盖该事项的一方为准；无法确定的，该动作按「未定」处理 ({@20261012-undetermined})，agent 把冲突报告给他们。
+'''

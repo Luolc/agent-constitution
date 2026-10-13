@@ -1,0 +1,12 @@
+id = "20261012-ordinary-rule-adoption"
+article = "20261012-rule-evolution"
+number = "1"
+status = "draft"
+
+[content]
+en = '''
+Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one, when the proposal states the problem and evidence and passes review ({@20261012-independent-review}) and the checks ({@20261012-checks-everywhere}).
+'''
+zh = '''
+提案说明了问题和证据，并且通过了审查 ({@20261012-independent-review}) 和检查 ({@20261012-checks-everywhere}) 的，agent 可以自行提出、审查和采纳普通规则、skill 和先例，不需要委托人逐一批准。
+'''

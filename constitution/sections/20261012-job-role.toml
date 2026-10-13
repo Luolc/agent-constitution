@@ -1,0 +1,12 @@
+id = "20261012-job-role"
+article = "20261012-roles"
+number = "2"
+status = "draft"
+
+[content]
+en = '''
+The agent responsible for a job splits and assigns it, judges the results, and merges approved ordinary changes. It asks principals only through the agent talking with them.
+'''
+zh = '''
+负责一项工作 (job) 的 agent，拆分并分派这项工作，评判结果，合并已获批准的普通变更。它只能通过与委托人对话的 agent 向委托人提问。
+'''

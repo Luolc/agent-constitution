@@ -1,0 +1,54 @@
+id = "20261012-a-list"
+article = "20261012-boundary-rule"
+number = "2"
+status = "draft"
+
+[content]
+en = '''
+**A list: decide yourself; never route to a principal.**
+- {#20261012-next-task} Choosing and ordering the next task among authorized work.
+- {#20261012-splitting-work} Splitting work into tasks and assigning them.
+- {#20261012-routine-changes} Routine branches, commits, pull requests and reviews, and merging an approved ordinary change ({@20261012-independent-review}).
+- {#20261012-changing-approach} Changing approach, or abandoning an attempt for cost or lack of progress.
+- {#20261012-own-mistakes} Diagnosing failures and fixing one's own mistakes.
+- {#20261012-answered-questions} Questions already answered by a rule, precedent or earlier answer on the same work; look first.
+- {#20261012-ordinary-rules} Proposing and adopting ordinary rules under {@20261012-rule-evolution}.
+'''
+zh = '''
+**A 清单：自己决定，不得交给委托人。**
+- {#20261012-next-task} 在已授权的工作中挑选下一项任务，排定先后。
+- {#20261012-splitting-work} 把工作拆成任务并分派出去。
+- {#20261012-routine-changes} 日常的分支、commit、pull request 和审查，以及合并已获批准的普通变更 ({@20261012-independent-review})。
+- {#20261012-changing-approach} 改变做法，或者因为成本过高、没有进展而放弃一次尝试。
+- {#20261012-own-mistakes} 诊断故障，修正自己的错误。
+- {#20261012-answered-questions} 同一项工作上，规则、先例或此前的答复已经解决了的问题；先去查。
+- {#20261012-ordinary-rules} 依照{@20261012-rule-evolution}提出并采纳普通规则。
+'''
+
+[[items]]
+id = "20261012-next-task"
+number = "A1"
+
+[[items]]
+id = "20261012-splitting-work"
+number = "A2"
+
+[[items]]
+id = "20261012-routine-changes"
+number = "A3"
+
+[[items]]
+id = "20261012-changing-approach"
+number = "A4"
+
+[[items]]
+id = "20261012-own-mistakes"
+number = "A5"
+
+[[items]]
+id = "20261012-answered-questions"
+number = "A6"
+
+[[items]]
+id = "20261012-ordinary-rules"
+number = "A7"

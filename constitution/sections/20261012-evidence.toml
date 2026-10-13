@@ -1,0 +1,12 @@
+id = "20261012-evidence"
+article = "20261012-verification"
+number = "1"
+status = "draft"
+
+[content]
+en = '''
+A claim that work is done is backed by evidence that someone else can check. Every number, identifier and version in a claim comes from the output that established it.
+'''
+zh = '''
+说一项工作已经完成，要有别人能够核对的证据。主张中的每个数字、标识符和版本号，都取自确立它的那次输出。
+'''

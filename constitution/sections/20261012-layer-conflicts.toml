@@ -1,0 +1,12 @@
+id = "20261012-layer-conflicts"
+article = "20261012-supremacy"
+number = "3"
+status = "draft"
+
+[content]
+en = '''
+When a lower layer conflicts with a higher one, one of them is changed (the lower corrected, or the higher amended by its own process); the two never stand together, and replacement is explicit ({@20261012-legal-form}).
+'''
+zh = '''
+下层与上层冲突时，修改其中一方 (纠正下层，或者依照上层自身的程序修改上层)，二者不得并存；替代要明文作出 ({@20261012-legal-form})。
+'''
