@@ -1,5 +1,6 @@
 # PR gate: full-history secret scan, then pre-commit on all files, which
-# includes the constitution build check and its tests (local hooks).
+# includes the constitution build check and its tests (local hooks), then
+# the constitution numbering check against the base commit.
 # The job name `check` is the required status check.
 
 name: CI
@@ -64,3 +65,19 @@ jobs:
       - run: pre-commit run --all-files
         env:
           SKIP: gitleaks
+
+      # Numbering against the base: on a pull request its base commit, on a
+      # push the commit before it. The commit hook runs without --base. The
+      # full history above makes both commits available; a push without a
+      # usable `before` (the first push, or a rewritten history) skips the
+      # comparison and says so.
+      - name: Constitution numbering against the base commit
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "no base commit to compare with (${BASE}); skipping"
+            exit 0
+          fi
+          python3 tools/build_constitution.py --check --base "$BASE"
