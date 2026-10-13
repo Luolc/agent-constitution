@@ -231,11 +231,12 @@ constitution/articles/
 
 - `status`: `draft` until a person first approves the text, then
   `active`.
-- `edition`: the name of the edition, the date a principal approved it
-  as in force, `YYYY-MM-DD`; absent while `status` is `draft`, required
+- `edition`: the name of the edition, the month a principal approved it
+  as in force, `YYYY-MM`; absent while `status` is `draft`, required
   once it is `active`. An edition is a whole version of the text, like a
   constitution named by the year it was adopted. Starting a new edition
-  is itself an amendment and needs a principal's approval; within an
+  is itself an amendment and needs a principal's approval, and at most
+  one edition starts in a month, so no two share a name; within an
   edition, numbers never change (see Numbering), and a new edition may
   renumber freely.
 - `revision`: a string, the revision within the edition: drafts before
@@ -336,7 +337,7 @@ its third item as examples:
 | Item | en | zh |
 | --- | --- | --- |
 | Title, draft | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
-| Title, active | `# Agent Constitution (2026-10-20)`, the `edition` | `# Agent 宪法 (2026-10-20)` |
+| Title, active | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## Article IV. <Title>` | `## 第四条 <标题>` |
 | Section | `- §1 <content>` | `- 第一款 <content>` |
 | List item | `  - (3) <content>` | `  - （三）<content>` |
@@ -550,7 +551,7 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, nothing numbered in an active base of the same edition has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
@@ -569,7 +570,7 @@ first one that finds errors, printing all of that one's errors:
    section's name; there is no `constitution/sections/`; `id` equals the
    name without its number; `status`, item `number` and `repealed` are
    well formed and agree with each other and with the status of
-   `index.toml`; `edition` is a real date `YYYY-MM-DD`, absent when
+   `index.toml`; `edition` is a real month `YYYY-MM`, absent when
    `index.toml` is `draft` and present when it is `active`. Hidden names
    (starting with `.`, such as `.DS_Store` or an editor's swap file) are
    skipped.
@@ -590,16 +591,19 @@ first one that finds errors, printing all of that one's errors:
    for byte (only under `--check`).
 7. Numbering against a base commit (only under `--check --base <git-ref>`,
    read with `git show`): when the base's `index.toml` is `active`, the
-   status has not gone back to `draft`; and when the current `edition` is
-   the base's, every article, section and list item of the base, matched
+   status has not gone back to `draft`, and the current `edition` is the
+   base's or a later month; when it is the base's, `revision` is not lower
+   than the base's (a new edition started in the same month would restart
+   it at `1`), and every article, section and list item of the base, matched
    by ID, still exists with the same number, a section in the same
    article's directory and an item in the same section; what was repealed
    is still repealed; every rule of the base still exists or has its ID in
    `rules/retired-ids.txt`, and every ID retired at the base is still
-   listed. Each error says which it is: gone, renumbered, moved to another
-   article, no longer repealed, no longer retired. A base that is `draft`,
-   has no article directories yet, or has another `edition` than the
-   current one, skips the comparison with a printed note.
+   listed. Each error says which it is: an edition not later than the
+   base's, a lower revision, gone, renumbered, moved to another article,
+   no longer repealed, no longer retired. A base that is `draft`, has no
+   article directories yet, or has an earlier `edition` than the current
+   one, skips the comparison with a printed note.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
