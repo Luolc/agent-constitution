@@ -1,4 +1,5 @@
-# PR gate: full-history secret scan, then pre-commit on all files.
+# PR gate: full-history secret scan, then pre-commit on all files, which
+# includes the constitution build check and its tests (local hooks).
 # The job name `check` is the required status check.
 
 name: CI
@@ -58,7 +59,8 @@ jobs:
       - run: pip install --user pre-commit==4.6.2
 
       # The gitleaks hook scans only the staged diff, so CI skips it; the
-      # full-history scan above is the step that counts.
+      # full-history scan above is the step that counts. The local hooks run
+      # on the Python set up above.
       - run: pre-commit run --all-files
         env:
           SKIP: gitleaks
