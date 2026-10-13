@@ -10,8 +10,9 @@ but not yet written.
 
 The constitution is kept in English and Chinese, both built from the same
 sources: [English](constitution/constitution.en.md),
-[中文](constitution/constitution.zh.md). The sources are TOML files, one
-per article and one per section under `constitution/`, each holding both
-languages; edit them and rebuild, never the two generated files. The
-general rules under `rules/` are TOML files of the same kind, one per rule.
-The format, the IDs and the numbering are in the design.
+[中文](constitution/constitution.zh.md). The sources are TOML files under
+`constitution/articles/`, one directory per article and one file per
+section, each holding both languages; edit them and rebuild, never the two
+generated files. The general rules under `rules/` are TOML files of the
+same kind, one per rule. The format, the IDs and the numbering are in the
+design.

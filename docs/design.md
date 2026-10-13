@@ -1,8 +1,8 @@
 # agent-constitution design
 
 Status: draft. This is the one design document of the repo. The constitution
-itself is built from `constitution/index.toml`, `constitution/articles/` and
-`constitution/sections/` into [English](../constitution/constitution.en.md)
+itself is built from `constitution/index.toml` and `constitution/articles/`
+into [English](../constitution/constitution.en.md)
 and [Chinese](../constitution/constitution.zh.md); this document cites it
 only by ID (see Source formats, IDs) and never restates it.
 
@@ -50,7 +50,7 @@ Non-goals:
 | Static fixtures | The apply step that runs the compiler and installs the output |
 
 The overlay never changes or relaxes the constitution. It chooses which
-general rules it uses (`20261012-rules-refine`; see Choosing rules), adds
+general rules it uses (`rules-refine`; see Choosing rules), adds
 private rules and fills
 in parameters. It never edits core files; it pins a core version and builds
 against it.
@@ -78,8 +78,8 @@ table (see Source formats), so one change edits both and a reviewer sees
 them side by side.
 
 The standing of the two texts of the constitution is set by the
-constitution itself (`20261012-amendment-languages`,
-`20261012-equal-languages`), as drafted; it stays open until a person
+constitution itself (`amendment-languages`,
+`equal-languages`), as drafted; it stays open until a person
 approves that text. The rules follow the same terms. What this repo adds:
 
 - The checker only proves structural alignment (every text table has every
@@ -101,9 +101,11 @@ README.md
 AGENTS.md                 repo rules for agents working here           A
 constitution/
   index.toml              status, revision, languages, title, front    A
-  articles/<id>.toml      one article per file: number, title, intro   A
-  sections/<id>.toml      one section per file: its article, number,
-                          status, text in every language, list items   A
+  articles/
+    <NN>-<id>/            one directory per article, numbered          A
+      article.toml        the article: title, intro                    A
+      <NN>[a-z]-<id>.toml one section per file, numbered: status,
+                          text in every language, list items           A
   constitution.en.md      generated: the constitution in English       A
   constitution.zh.md      generated: the constitution in Chinese       A
 docs/
@@ -111,6 +113,7 @@ docs/
 rules/
   <id>.toml               one general rule per file, text in every
                           language                                     A
+  retired-ids.txt         IDs of deleted rules, one per line           A
 skills/
   <name>/SKILL.md         general skills, installed as is              B
 schema/                   schemas for the rules, fixtures and the
@@ -134,8 +137,8 @@ proposals/                reserved for the adoption pipeline           D
 ```
 
 Two stage B pieces start early. `tools/` starts in stage A with the
-constitution build: the constitution is itself compiled from per-article
-and per-section sources (see Source formats). `rules/` starts in stage A too,
+constitution build: the constitution is itself compiled from one directory
+per article and one file per section (see Source formats). `rules/` starts in stage A too,
 holding the
 concrete practices taken out of the constitution. Compiling and checking the
 rules, and building the instruction file, stay in stage B.
@@ -146,13 +149,13 @@ with the drift check, the reference and relaxation checkers, the
 private-term scanner, `fixtures/static/` with the fixture gate, then load
 verification. Each step is usable on its own.
 
-What `20261012-protection-scope` protects is the text of the constitution
-(`20261012-protected-text`); in the core that is the sources under
-`constitution/` (`index.toml`, `articles/` and `sections/`) and the wording
+What `protection-scope` protects is the text of the constitution
+(`protected-text`); in the core that is the sources under
+`constitution/` (`index.toml` and `articles/`) and the wording
 of the files built from them. A change to the text needs a person's
-approval under `20261012-amendment-procedure` (see Approving an amendment).
-Everything else is an ordinary change under `20261012-rule-evolution`
-(`20261012-ordinary-tooling`), reviewed and tested like any other:
+approval under `amendment-procedure` (see Approving an amendment).
+Everything else is an ordinary change under `rule-evolution`
+(`ordinary-tooling`), reviewed and tested like any other:
 `tools/` and `schema/` (compiler, checkers, the fixture-gate runner),
 `.github/workflows/`, `fixtures/` and `examples/golden/`. A person's
 attention goes to what the constitution says; the tools are kept honest by
@@ -161,7 +164,7 @@ them. The two generated files change only by rebuilding. A change to the
 build script that alters only their numbering or layout is ordinary, and its
 pull request shows their diff so a person can glance at the format; one that
 alters their wording changes the text and is an amendment
-(`20261012-protected-text`).
+(`protected-text`).
 
 ## Source formats
 
@@ -175,32 +178,51 @@ the opening quotes and before the closing ones.
 ### IDs
 
 Every provision of the constitution (article, section, list item) and
-every rule has an ID of the form `<YYYYMMDD>-<words>`: the date it was
-first written into the repo, a hyphen, and one or more lowercase words
-joined by hyphens, for example `20261012-credential-storage`. The format
-is `^[0-9]{8}-[a-z0-9]+(-[a-z0-9]+)*$` with a real date. There is no
-prefix for the article or the kind of provision: the ID is a key, like a
-BibTeX key, chosen by a person once and never changed. The constitution
-and the rules share one ID space, and the private overlay's rules are in
-it too: an ID is unique across all of them, a deleted ID is never reused,
-and a repealed provision keeps its file and its ID.
+every rule has an ID: one or more lowercase words joined by hyphens,
+`^[a-z0-9]+(-[a-z0-9]+)*$`, for example `leaks` or `credential-storage`.
+The ID is a key, like a BibTeX key, chosen by a person once and never
+changed; it says what the provision is about, not where it stands.
 
-Text cites a provision with `{@<id>}` and a section's content defines a
-list item with `{#<id>}`; only `{@` or `{#`, an ID of the form above and
-`}` make a mark, all other braces are output as is. The build renders a
-citation as the number the provision has in that language (below); the
-generated text shows numbers only, never IDs. A long-lived record outside
-the sources (a case, a pull request, a report) may cite a provision by
-ID or by number: once the constitution is active a number never changes
-(see Numbering).
+There are two namespaces. In the constitution, article and section IDs
+are unique across the whole constitution, and a list item's ID only
+within its section, so items can have short names (`money`). In the
+rules, a rule ID is unique among the rules, the private overlay's rules
+included. The same word may be used once in each namespace. An ID is
+never reused: a provision of the constitution is only ever repealed,
+never deleted, so the sources hold every ID ever used and the build
+rejects a second one; a rule may be deleted, and its ID then goes into
+`rules/retired-ids.txt` (see Rules).
+
+Text cites with `{@...}`; nothing else in the text is markup, and any
+other braces are output as is. The constitution cites only itself,
+without a namespace: an article or section by its ID (`{@safety}`,
+`{@leaks}`), a list item by its section's ID, a dot and the item's ID
+(`{@must-ask.money}`), always this full path, even inside the same
+section. A rule always names the namespace: `{@constitution:leaks}`,
+`{@constitution:must-ask.money}`, `{@rule:credential-storage}`; the colon
+says which body of text, the dot where in it. The build renders a
+citation of the constitution as the number the provision has in that
+language (below); the generated text shows numbers only, never IDs. A
+long-lived record outside the sources (a case, a pull request, a report)
+may cite a provision by ID or by number: once the constitution is active
+a number never changes (see Numbering).
 
 ### Constitution
 
-The constitution is compiled from one file per article and one file per
-section by `tools/build_constitution.py` (Python standard library only).
-It writes `constitution/constitution.<lang>.md` for each language in
-`index.toml`, committed and never edited by hand; `--check` writes
-nothing and runs the checks under Checkers.
+The constitution is compiled by `tools/build_constitution.py` (Python
+standard library only) from `constitution/index.toml` and one directory
+per article under `constitution/articles/`. It writes
+`constitution/constitution.<lang>.md` for each language in `index.toml`,
+committed and never edited by hand; `--check` writes nothing and runs the
+checks under Checkers.
+
+```text
+constitution/articles/
+  04-boundary-rule/
+    article.toml
+    01-must-ask.toml
+    02-decide-yourself.toml
+```
 
 `constitution/index.toml`:
 
@@ -216,63 +238,99 @@ nothing and runs the checks under Checkers.
   a language means adding one entry there and one key to every text table.
 - `[title]`: the title, one line per language.
 - `[front]`: the Markdown between the title and the first article (draft
-  notice, `## Preamble` and its text), per language. It may cite; it
-  defines nothing.
+  notice, `## Preamble` and its text), per language. It may cite.
 
-`constitution/articles/<id>.toml`: `id` (equal to the file name), `number`,
-`[title]`, an optional `[intro]` (the paragraph between the heading and
-the first section) and, only when the whole article is repealed,
+An article is a directory `constitution/articles/<NN>-<id>/`: its number,
+two digits from `01`, a hyphen and its ID. In it, `article.toml` holds
+`id` (equal to the directory name without the number), `[title]`, an
+optional `[intro]` (the paragraph between the heading and the first
+section) and, only when the whole article is repealed,
 `repealed = "YYYY-MM"`.
 
-`constitution/sections/<id>.toml`: `id` (equal to the file name),
-`article` (the ID of its article), `number` (within that article),
-`status` (`draft`, `active` or `repealed`), `repealed = "YYYY-MM"` exactly
-when the status is `repealed`, and `[content]`, the section's text per
-language: the first line is the sentence after the section's number,
-further lines, nested lists and blank lines follow as they are, and the
-build indents them under the list item. A section whose text defines list
-items has one `[[items]]` entry per item, with `id`, `number` and an
-optional `repealed = "YYYY-MM"`; the `{#id}` definitions in the content,
-each at the start of a list item, are the items in number order, in every
-language. A repealed item's line in the content is `- {#id}` and nothing
-else.
+Each section is a file `<NN>[a-z]-<id>.toml` in its article's directory:
+its number, two digits from `01` with an optional lowercase letter, a
+hyphen, its ID and `.toml`. The section belongs to the article whose
+directory holds it; there is no field for it. The file holds `id` (equal
+to the file name without the number and `.toml`), `status` (`draft`,
+`active` or `repealed`), `repealed = "YYYY-MM"` exactly when the status is
+`repealed`, and `[content]`, the section's text per language: the first
+line is the sentence after the section's number, further lines, nested
+lists and blank lines follow as they are, and the build indents them
+under the list item.
 
-Section order inside an article, and article order, come from `number`
-alone; there is no separate list. While `index.toml` is `draft`, every
-section is `draft` and nothing is repealed; once it is `active`, every
-section is `active` or `repealed`.
+A section with list items has one `[[items]]` table per item, in the
+section's file: `id`, `number` (`1`, `2`, `2a`, within the section),
+`status` and `repealed` as for a section, and `[items.content]`, the
+item's text per language. The section's `[content]` then holds only the
+lead-in; the build renders the items below it in number order.
+
+```toml
+id = "must-ask"
+status = "draft"
+
+[content]
+en = '''
+**Must go through a principal** whose authority covers the item ({@explicit-yes}).
+'''
+zh = '''
+**必须经过委托人**，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。
+'''
+
+[[items]]
+id = "money"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Money: spending, purchases, ...
+'''
+zh = '''
+资金：支出、购买……
+'''
+```
+
+Article, section and item order come from the numbers alone; there is no
+separate list. While `index.toml` is `draft`, every section, item and rule
+is `draft` and nothing is repealed; once it is `active`, every section and
+item is `active` or `repealed`.
 
 ### Numbering
 
-Numbers are written in the sources, not derived from position. An article
-or section number is an integer with an optional lowercase letter suffix
-(`2`, `2a`); a list item number is a capital-letter prefix and an integer
-with the same optional suffix (`H2`, `H2a`). Sort order is by integer, then
-suffix: `2` < `2a` < `2b` < `3`. Within one scope (all articles; the
-sections of one article; all list items) numbers are unique; a draft need
-not be contiguous.
+Numbers are not derived from position. An article's number is the prefix
+of its directory name and a section's the prefix of its file name, written
+there and nowhere else; a list item's is its `number` field. A section or
+item number is an integer with an optional lowercase letter suffix (`2`,
+`2a`), the suffix marking one inserted later between `2` and `3`; articles
+are only ever appended and take no suffix. A name prefix is that number
+with two digits (`02`, `02a`), so the files sort in reading order. Sort
+order is by integer, then suffix: `2` < `2a` < `2b` < `3`. Within one
+scope (all articles; the sections of one article; the items of one
+section) numbers are unique; a draft need not be contiguous.
 
-From the first approved revision on, numbers follow
-`20261012-stable-numbers`; the check `--check --base <git-ref>` enforces
-it against a base commit (see Checkers, check 7). A repealed provision is
-rendered as a one-line note in place of its text (table below). While the
-constitution is a draft, numbers may change and the check only says that
-it did not compare.
+From the first approved revision on, numbers follow `stable-numbers`; the
+check `--check --base <git-ref>` enforces it against a base commit (see
+Checkers, check 7): renaming a directory or file to a new number, or
+moving a section to another article's directory, is an error. A repealed
+provision is rendered as a one-line note in place of its text (table
+below). While the constitution is a draft, numbers may change, directories
+and files are renamed with them, and the check only says that it did not
+compare.
 
-Rendering, with `20261012-authority` as the third article, its second
-section and a list item `H2` as examples:
+Rendering, with `must-ask` as the first section of the fourth article and
+its third item as examples:
 
 | Item | en | zh |
 | --- | --- | --- |
-| Article heading | `## Article III. <Title>` | `## 第三条 <标题>` |
-| Section definition | `- §2 <content>` | `- 第二款 <content>` |
-| List item definition | `  - H2 <text>` | `  - H2 <text>` |
-| Citation of an article | `Art. III` | `第三条` |
-| Citation of a section | `Art. III §2` | `第三条第二款` |
-| Citation of a list item | `H2` | `H2` |
-| Suffix | `Article IIIa`, `§2a`, `H2a` | `第三条之一`, `第二款之一` (a is 之一, b is 之二), `H2a` |
+| Article heading | `## Article IV. <Title>` | `## 第四条 <标题>` |
+| Section | `- §1 <content>` | `- 第一款 <content>` |
+| List item | `  - (3) <content>` | `  - （三）<content>` |
+| Citation of an article | `Art. IV` | `第四条` |
+| Citation of a section | `Art. IV §1` | `第四条第一款` |
+| Citation of a list item | `Art. IV §1(3)` | `第四条第一款第三项` |
+| Suffix | `§1a`, `(3a)`, `Art. IV §1(3a)` | `第一款之一`, `（三之一）`, `第四条第一款第三项之一` (a is 之一, b is 之二) |
 | Repealed section | `- §3 (repealed November 2026)` | `- 第三款 (2026 年 11 月废止)` |
-| Repealed list item | `  - H3 (repealed November 2026)` | `  - H3 (2026 年 11 月废止)` |
+| Repealed list item | `  - (3) (repealed November 2026)` | `  - （三） (2026 年 11 月废止)` |
 | Repealed article | `## Article IV (repealed November 2026)`, nothing below it | `## 第四条 (2026 年 11 月废止)` |
 
 Each output starts with a plain-text paragraph, in its own language:
@@ -286,10 +344,10 @@ One rule per file, `rules/<id>.toml`, so that one proposal is one file and
 a diff shows exactly one rule changing.
 
 ```toml
-id = "20261012-credential-storage"
+id = "credential-storage"
 status = "draft"
 scope = "all"
-authority = ["20261012-safety", "20261012-sensitive-info"]
+authority = ["constitution:safety", "constitution:sensitive-info"]
 
 [title]
 en = "<Title>"
@@ -305,24 +363,30 @@ zh = '''
 ```
 
 - `[title]` and `[content]` have one key per language of `index.toml`.
-- The text cites the constitution or another rule with `{@<id>}`; how a
-  citation renders in the compiled instruction file is set in stage B. A
-  rule has no number and defines no `{#...}` IDs.
+- The text cites the constitution with `{@constitution:<id>}` and another
+  rule with `{@rule:<id>}` (see IDs); in the compiled instruction file a
+  citation of a rule renders as that rule's title, and the rest of the
+  rendering is set in stage B. A rule has no number.
 - A rule about messages or notices says whom it covers: agent to agent,
   agent to person, or both.
 - `id`: stable, also the file name. Renaming the title never changes it.
 - `status`: `draft`, `active` or `repealed`. Only `active` is compiled. A
   repealed rule keeps its file and its ID. While the constitution is a
   draft, every rule is `draft` too.
+- Unlike the constitution, a rule may be deleted. Its ID then goes on a line
+  of its own in `rules/retired-ids.txt` and is never used again; the build
+  rejects a rule whose ID is listed there. A missing file is an empty
+  list.
 - `scope`: who it addresses: `all`, or one of a short list defined in
   `schema/` (for example `implementer`, `reviewer`, `merger`). The compiler
   renders it as a one-line prefix; it does not filter by it. There is one
   compiled file for every role.
 - `authority`: the constitution articles, sections or list items the rule
-  rests on, by ID; none of them repealed. A rule with no authority does
+  rests on, cited as in the text (`constitution:<id>`); none of them
+  repealed. A rule with no authority does
   not compile.
 - `adjustable` (optional): the values in this rule that a lower layer may
-  change under `20261012-adjustable-rules`, each with its default, for
+  change under `relaxations.adjustable-rules`, each with its default, for
   example `adjustable = ["wait_hours=24"]`. A rule without it cannot be
   relaxed that way. These are distinct from local parameters (below): a
   local parameter is a value the private overlay fills in; an adjustable
@@ -331,21 +395,20 @@ zh = '''
 More fields (`supersedes`, `verification`, `expires`) are added when a real
 rule needs them, not before.
 
-Private rules in the overlay have the same format and the same kind of ID
-(the date they were written, then words). The compiler checks that the
-union of core and overlay IDs is unique. `P0`–`P2` are the priority
-classes of `20261012-response-priority`, not IDs.
+Private rules in the overlay have the same format and share the rules'
+namespace. The compiler checks that the union of core and overlay rule IDs
+is unique and that none of them is retired in either.
 
 ### Choosing rules
 
 The general rules are a default set, not obligations on every deployment
-(`20261012-rules-refine`): one deployment may need a rule that another has
+(`rules-refine`): one deployment may need a rule that another has
 good reason to drop (a repo that stays private on a self-hosted server may
 keep credentials in it on purpose). Open, for the person to decide. Recommended:
 
 - A deployment uses every general rule by default. Its overlay leaves a rule
   out only by naming it, with a one-line reason, in `overlay.toml`
-  (`exclude = ["20261012-credential-storage"]`). The build manifest lists
+  (`exclude = ["credential-storage"]`). The build manifest lists
   what was left out.
 - A repo inside a deployment departs from a rule only by a relaxation
   declaration (below), where the constitution permits it. It does not leave
@@ -357,7 +420,7 @@ keep credentials in it on purpose). Open, for the person to decide. Recommended:
 
 Reasons: defaulting to all means a new rule reaches every deployment without
 anyone remembering to list it, where an opt-in list would go stale as rules
-are added. Leaving a rule out is not a relaxation (`20261012-rules-refine`),
+are added. Leaving a rule out is not a relaxation (`rules-refine`),
 but naming each one, with its reason, keeps it visible and puts everything a
 deployment dropped in one place. Exclusion per deployment, not per repo, matches how the output is
 built: one file per deployment.
@@ -370,17 +433,17 @@ naming the constitution's permission for it:
 ```markdown
 ## Relaxations
 
-- relaxes: 20261012-adjustable-rules
-  target: 20261012-example-rule/wait_hours=4
+- relaxes: constitution:relaxations.adjustable-rules
+  target: rule:example-rule/wait_hours=4
   scope: <this repo, or this task>
-  condition: <how this layer meets the condition that L item states>
+  condition: <how this layer meets the condition that item states>
 ```
 
-One item per relaxation, with all four keys: the permission (an L item of
-`20261012-l-list`, by ID), what it relaxes (a rule, a boundary item such as
-`20261012-machines`, or under `20261012-adjustable-rules` a rule's
-adjustable value and its new setting), where it applies, and how the
-condition of that L item is met. A relaxation not declared this
+One item per relaxation, with all four keys: the permission (an item of
+`relaxations`, cited as a rule cites it), what it relaxes (a rule, a
+boundary item such as `must-ask.machines`, or under
+`relaxations.adjustable-rules` a rule's adjustable value and its new
+setting), where it applies, and how the condition of that item is met. A relaxation not declared this
 way has no effect, whatever else the file says. The private overlay declares
 no relaxations: it leaves rules out instead (see Choosing rules).
 
@@ -433,7 +496,7 @@ The compiler is a deterministic concatenation, no model involved:
    `authority` and ordered by ID inside a group.
    Parameters are substituted here.
 4. Before each article and rule, emit a source comment holding its ID,
-   such as `<!-- 20261012-authority -->`, so any paragraph of the output
+   such as `<!-- constitution:authority -->`, so any paragraph of the output
    can be traced to its file.
 5. Measure the result against the budget in `overlay.toml` (the core sets a
    ceiling the overlay cannot raise). Over budget fails the build; nothing is
@@ -462,12 +525,12 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format above; each ID is well formed and defined once; numbers are unique in their scope and the list items match their definitions; the languages of each file define the same IDs in the same order and cite the same IDs; every citation and authority resolves to an ID that is not repealed; the committed outputs equal a fresh build; with `--base`, nothing numbered in an active base has disappeared or changed number | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, nothing numbered in an active base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
 | Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
 | Private-term scan | No hit from the generic classes (secret-store paths, private address ranges, home-directory paths, email addresses) in CI; no hit from the private term list when the overlay runs it | That nothing private is present: a term not on the list passes |
-| Relaxations | Each `relaxes:` names an existing L item open to that layer, an existing target, a scope and a condition; under `20261012-adjustable-rules` the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
+| Relaxations | Each `relaxes:` names an existing item of `relaxations` open to that layer, an existing target, a scope and a condition; under `relaxations.adjustable-rules` the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
 | Fixture gate | Every fixture binds to existing IDs and passes; redline fixtures are never skipped, except those of rules a deployment left out, which its manifest lists as not run | That agents behave as the fixtures expect outside these cases |
 
 The constitution check runs its checks in this order and stops after the
@@ -475,29 +538,38 @@ first one that finds errors, printing all of that one's errors:
 
 1. Format: every TOML file parses; it has exactly the required keys with
    the right types; every text table has exactly the languages of
-   `index.toml`; `id` equals the file name; `status`, `number` and
-   `repealed` are well formed and agree with each other and with the status
-   of `index.toml`.
-2. IDs: each has the format with a real date and is defined once across
-   the constitution and the rules.
-3. Structure: each section's `article` exists; numbers are unique in their
-   scope; a repealed article has only repealed sections; `{#id}`
-   definitions stand only at the start of a list item of a section's
-   content and are exactly that section's `[[items]]` in number order.
-4. Languages: in each text table, every language defines the same IDs in
-   the same order and cites the same set of IDs as the default language.
-5. References: each `{@id}` and each `authority` entry resolves; a repealed
-   target is an error; the constitution cites only itself; `authority`
-   names only constitution provisions.
+   `index.toml`; every directory under `constitution/articles/` has an
+   article's name and an `article.toml`, and every other file in it a
+   section's name; `id` equals the name without its number; `status`,
+   item `number` and `repealed` are well formed and agree with each other
+   and with the status of `index.toml`. Files directly under
+   `constitution/articles/`, and other directories, are not read.
+2. IDs: each has the format; article and section IDs are unique in the
+   constitution, item IDs in their section, rule IDs among the rules; no
+   rule's ID is listed in `rules/retired-ids.txt`, and each line there is
+   an ID.
+3. Structure: numbers are unique in their scope; a repealed article has
+   only repealed sections.
+4. Languages: in each text table, every language cites the same set of
+   IDs as the default language.
+5. References: each `{@...}` and each `authority` entry resolves; a
+   repealed target (an item of a repealed section counts as repealed) is an
+   error; the constitution cites only itself, without a namespace; a rule
+   cites with `constitution:` or `rule:`; `authority` names only
+   constitution provisions.
 6. A fresh build equals the committed `constitution.<lang>.md` files byte
    for byte (only under `--check`).
 7. Numbering against a base commit (only under `--check --base <git-ref>`,
    read with `git show`): when the base's `index.toml` is `active`, every
-   article, section and list item of the base still exists with the same
-   number (a section also in the same article), what was repealed is still
-   repealed, every rule file of the base still exists, and the status has
-   not gone back to `draft`. A base that is `draft`, or has no TOML
-   sources yet, skips the step with a printed note.
+   article, section and list item of the base, matched by ID, still exists
+   with the same number, a section in the same article's directory and an
+   item in the same section; what was repealed is still repealed; every
+   rule of the base still exists or has its ID in `rules/retired-ids.txt`,
+   and every ID retired at the base is still listed; and the status has not
+   gone back to `draft`. Each error says which it is: gone, renumbered,
+   moved to another article, no longer repealed, no longer retired. A base
+   that is `draft`, or has no article directories yet, skips the step with
+   a printed note.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
@@ -534,7 +606,7 @@ fixtures/behavior/redline/<name>/   stage C
 ```
 
 Each fixture directory holds a `fixture.md` (front matter `binds:
-[20261012-asking-once, 20261012-adjustable-rules]`, `kind: happy` or
+[constitution:asking-once, rule:credential-storage]`, `kind: happy` or
 `redline`, and a short statement of what it shows),
 its inputs and its expected result.
 
@@ -546,10 +618,11 @@ its inputs and its expected result.
   how each failed; one pass is never reported as a guarantee.
 - Happy-path and redline fixtures stay apart, so a fix for a safety case that
   breaks ordinary work shows up as a failing happy fixture.
-- Every fixture binds to at least one constitution or rule ID, and the
-  checker rejects a fixture whose IDs do not resolve.
+- Every fixture binds to at least one constitution or rule ID, written
+  with its namespace as a rule cites it, and the checker rejects a fixture
+  whose IDs do not resolve.
 - Before a release, every fixture runs, all happy and all redline, since
-  `20261012-checks-everywhere` requires every check to pass before a
+  `checks-everywhere` requires every check to pass before a
   release. Static fixtures run in this
   repo's CI. Behavior fixtures (once they exist) need installed harnesses and
   model credentials, which this repo's CI does not have; they run on the
@@ -565,9 +638,9 @@ with the text they test, bound to its ID.
 
 - Constitution: its red-line fixtures live in the core. Those for what no
   project may change (for example, that an amendment goes through a person,
-  `20261012-amendments`) run for every deployment. Those for a default
+  `must-ask.amendments`) run for every deployment. Those for a default
   boundary item test the default; a project that overrides that item under
-  `20261012-h-overrides` runs its own fixture
+  `relaxations.project-overrides` runs its own fixture
   for the override in place of the core's, as with a left-out rule.
 - General rules: each rule's red-line fixtures live in the core, bound to
   that rule's ID. The core's CI runs all of them. A deployment runs those of
@@ -626,21 +699,21 @@ event -> proposal -> rule revision, case, or amendment -> release
   grants a permission. A case that would change a right, a duty or a
   prohibition becomes a rule revision; one that would relax a boundary item
   for every project becomes an amendment proposal (for one project, a
-  `20261012-h-overrides` declaration does it).
-- Middle ground (`20261012-middle-ground`): when an agent is unsure and
+  `relaxations.project-overrides` declaration does it).
+- Middle ground (`middle-ground`): when an agent is unsure and
   asks a person, the
   answer is written as a case candidate on the private side, with its
   source. When the same kind of answer recurs, it becomes a rule proposal.
   Which boundary changes the rule library may make, and which need an
-  amendment, is `20261012-list-defaults`.
+  amendment, is `list-defaults`.
 - Rule proposals are pull requests that change `rules/`, adopted under
-  `20261012-rule-evolution`,
+  `rule-evolution`,
   each answering what problem, what evidence, why a rule and not a tool fix,
   which IDs, what authority, what could break, how to test and roll back.
-  The priority classes of `20261012-response-priority` decide how fast a
+  The priority classes of `response-priority` decide how fast a
   proposal is handled.
 - Amendment proposals are pull requests that change `constitution/`; they
-  take effect only under `20261012-amendment-procedure`.
+  take effect only under `amendment-procedure`.
 - Finding the next work and verifying it (stage D): the interface is two
   record shapes, kept independent of any tracker. A work item: what, why,
   acceptance criteria, stop conditions. An acceptance record: each check run,
@@ -651,7 +724,7 @@ event -> proposal -> rule revision, case, or amendment -> release
 ## Approving an amendment
 
 Built so that the person spends as little time as possible on it, which is
-what `20261012-purpose` asks for. The person reads what the constitution
+what `purpose` asks for. The person reads what the constitution
 says and nothing
 else: tools, checks and fixtures are ordinary changes (see File structure).
 
@@ -666,11 +739,11 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
   the same thing. A person approving the change approves both texts on the
   strength of that review.
 - The description ends with the open questions, each with a recommended
-  default, so one answer settles them (`20261012-asking-once`).
+  default, so one answer settles them (`asking-once`).
 - The person's yes names the head commit it approves, and the merge lands
-  exactly that commit (`20261012-independent-review`).
-- `20261012-proposing-amendments` asks for the generated diff in the
-  language the approving person reads, and `20261012-amendment-languages`
+  exactly that commit (`independent-review`).
+- `proposing-amendments` asks for the generated diff in the
+  language the approving person reads, and `amendment-languages`
   for both languages to change together; the steps above are how this repo
   meets them. If the head changes afterwards, the person is
   asked again with only the diff since the approved head.
@@ -685,8 +758,8 @@ else: tools, checks and fixtures are ordinary changes (see File structure).
   succeeded on its first attempt. A rerun that turned green does not
   qualify; tag a later commit that passed the first time.
 - Pushing a release tag makes a version available. By default that is
-  `20261012-releases` and needs a person's yes; a project may move it under
-  `20261012-h-overrides`.
+  `must-ask.releases` and needs a person's yes; a project may move it under
+  `relaxations.project-overrides`.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.
