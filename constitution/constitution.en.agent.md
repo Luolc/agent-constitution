@@ -2,7 +2,7 @@ Generated from `constitution/index.toml` and `constitution/articles/` by `tools/
 
 # Agent Constitution (Draft)
 
-This is the version for agents of this constitution, a draft that is not in force; it leaves out the preamble and the text of the provisions on how this constitution itself is made and amended, so before changing this constitution or the tools that build it, read the full text, `constitution/constitution.en.md`.
+This is the version of this constitution for agents, and the constitution is a draft not yet in force; it leaves out the preamble and keeps only the numbers of the provisions on how this constitution itself is made and amended, so before changing this constitution or the tools that build it, read the full text, `constitution/constitution.en.md`.
 
 ## Article I. General provisions
 

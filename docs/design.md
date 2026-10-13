@@ -456,10 +456,10 @@ which differs from the full version in this:
   is a note of the build script's own, one sentence per language in
   `LANGUAGES`: that this is the version for agents, while `index.toml` is
   `draft` that the constitution is a draft not in force, once `active`
-  that every agent must follow it; that the preamble and the provisions
-  for maintainers are left out; and that before changing the constitution
-  or the tools that build it, an agent reads the full text, named by its
-  path. It is not the text of the constitution (see File structure).
+  that every agent must follow it; that the preamble is left out and the
+  provisions for maintainers keep only their numbers; and that before
+  changing the constitution or the tools that build it, an agent reads the
+  full text, named by its path. It is not the text of the constitution (see File structure).
 - A section or item with `audience = "maintainers"` keeps its number and
   shows a note in place of its text: `-   **§2** (see the full text)`,
   `-   **第二款** (见完整版)`; a repealed one shows its repealed note as

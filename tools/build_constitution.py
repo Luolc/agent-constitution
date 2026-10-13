@@ -120,7 +120,7 @@ LANGUAGES = {
             " Status: {status}. Revision: {revision}. Language: English."
         ),
         legend=(
-            " Sections and items marked \\* are left out of the version for agents,"
+            " Sections and items marked \\* keep only their numbers in the version for agents,"
             " `constitution/constitution.en.agent.md`."
         ),
         agent_header=(
@@ -132,11 +132,12 @@ LANGUAGES = {
         ),
         omitted="(see the full text)",
         agent_front=(
-            "{opening}; it leaves out the preamble and the text of the provisions on how this"
-            " constitution itself is made and amended, so before changing this constitution or"
-            " the tools that build it, read the full text, `constitution/constitution.en.md`."
+            "{opening}; it leaves out the preamble and keeps only the numbers of the provisions on"
+            " how this constitution itself is made and amended, so before changing this"
+            " constitution or the tools that build it, read the full text,"
+            " `constitution/constitution.en.md`."
         ),
-        agent_draft="This is the version for agents of this constitution, a draft that is not in force",
+        agent_draft="This is the version of this constitution for agents, and the constitution is a draft not yet in force",
         agent_active="This is the version of this constitution for agents, and every agent must follow it",
         draft="Draft",
         edition="{edition} Edition",
@@ -157,7 +158,7 @@ LANGUAGES = {
             " `constitution/articles/` 生成，不要手改；"
             "改源文件后重新生成。状态：{status}。修订版：{revision}。语言：中文。"
         ),
-        legend="标 \\* 的款、项不编入给 agent 的版本 `constitution/constitution.zh.agent.md`。",
+        legend="标 \\* 的款、项在给 agent 的版本 `constitution/constitution.zh.agent.md` 里只留编号。",
         agent_header=(
             "本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和"
             " `constitution/articles/` 生成，是给 agent 的版本，不含写给维护者的条文；"
@@ -165,7 +166,7 @@ LANGUAGES = {
         ),
         omitted="(见完整版)",
         agent_front=(
-            "{opening}；它略去了序言，以及讲本宪法自身怎样构成和修改的条文的正文，"
+            "{opening}；序言不收，讲本宪法自身怎样构成和修改的条文只留编号；"
             "修改本宪法或编译它的工具时，先读完整版 `constitution/constitution.zh.md`。"
         ),
         agent_draft="这是本宪法给 agent 读的版本，本宪法现为草案，尚未生效",

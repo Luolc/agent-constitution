@@ -31,6 +31,7 @@ import urllib.request
 from pathlib import Path
 
 import check_site_anchors
+from build_constitution import OMITTED_MARK
 
 ROOT = Path(__file__).resolve().parent.parent
 HUGO = "hugo-0.167.0"  # the same version as the CI step that builds the site
@@ -43,19 +44,16 @@ TOKEN_VARIABLE = "CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN"
 COUNT_URL = "https://api.anthropic.com/v1/messages/count_tokens"
 COUNT_MODEL = "claude-opus-5-5"
 COUNT_TIMEOUT = 10  # seconds per connect or read; a stalled API must not hold up the build
-# The mark build_constitution.py sets after the number of a provision that
-# the version for agents leaves out.
-OMITTED_MARK = '<sup class="omitted">*</sup>'
 # Language: the content file and the labels under the title.
 PAGES = {
     "en": {"file": "_index.md", "revision": "Revision",
            "length": "{chars:,} characters · {words:,} words",
            "tokens": "{tokens:,} tokens (counted for {model})", "no_tokens": "tokens not counted",
-           "omitted": "not in the version for agents"},
+           "omitted": "only the number in the version for agents"},
     "zh": {"file": "_index.zh.md", "revision": "修订版",
            "length": "{chars:,} 字符",
            "tokens": "{tokens:,} token (按 {model} 计数)", "no_tokens": "token 数未计算",
-           "omitted": "不编入给 agent 的版本"},
+           "omitted": "给 agent 的版本只留编号"},
 }
 
 

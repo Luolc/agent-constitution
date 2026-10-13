@@ -363,10 +363,10 @@ class RenderTest(Tree):
         self.assertIn(f'\n    -   <a id="alpha-one.machines"></a>(**2**){star} Machines;', outputs["en"])
         self.assertIn(f'\n-   <a id="beta-two"></a>**第一款之一**{star} 之间：\n', outputs["zh"])
         self.assertIn(f'\n    -   <a id="alpha-one.machines"></a>(**二**){star} 机器；', outputs["zh"])
-        self.assertIn("Language: English. Sections and items marked \\* are left out of the version"
-                      " for agents, `constitution/constitution.en.agent.md`.\n", outputs["en"])
-        self.assertIn("语言：中文。标 \\* 的款、项不编入给 agent 的版本"
-                      " `constitution/constitution.zh.agent.md`。\n", outputs["zh"])
+        self.assertIn("Language: English. Sections and items marked \\* keep only their numbers in"
+                      " the version for agents, `constitution/constitution.en.agent.md`.\n", outputs["en"])
+        self.assertIn("语言：中文。标 \\* 的款、项在给 agent 的版本"
+                      " `constitution/constitution.zh.agent.md` 里只留编号。\n", outputs["zh"])
         self.assertEqual(outputs["en"].replace(star, "").replace(bc.LANGUAGES["en"].legend, ""), EN)
         self.assertEqual(outputs["zh"].replace(star, "").replace(bc.LANGUAGES["zh"].legend, ""), ZH)
         self.assertEqual(outputs["en.agent"], EN_AGENT.replace(
@@ -439,7 +439,7 @@ class RenderTest(Tree):
         draft = bc.build(self.root)[2]
         self.activate()
         active = bc.build(self.root)[2]
-        cases = [("en", "a draft that is not in force", "every agent must follow it"),
+        cases = [("en", "a draft not yet in force", "every agent must follow it"),
                  ("zh", "本宪法现为草案，尚未生效", "每个 agent 都必须遵守它")]
         for lang, in_draft, in_force in cases:
             with self.subTest(lang=lang):
