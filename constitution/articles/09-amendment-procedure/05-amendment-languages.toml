@@ -1,0 +1,10 @@
+id = "amendment-languages"
+status = "draft"
+
+[content]
+en = '''
+An amendment that changes meaning must change the English and Chinese texts together, and its approval covers both.
+'''
+zh = '''
+改变含义的修正案，必须同时修改英文本和中文本；批准一并适用于两种文本。
+'''

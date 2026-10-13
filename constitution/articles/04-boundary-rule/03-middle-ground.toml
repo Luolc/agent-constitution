@@ -1,0 +1,20 @@
+id = "middle-ground"
+status = "draft"
+
+[content]
+en = '''
+**Middle ground**, everything else:
+1. Decide by the written rules and recorded precedents, with best judgment.
+2. If still unsure, ask a principal whose authority covers it ({@asking-once}), naming what it blocks. Meanwhile continue independent authorized work, building on the default where undoing it is cheap.
+3. Record the answer as a precedent, then decide whether a rule should change ({@rule-evolution}) or an amendment be proposed ({@amendment-procedure}). "No change needed" is a valid outcome.
+
+Silence is not consent. A rule may let a stated default take effect after a stated wait, only for actions cheap to undo, never for the items listed in {@must-ask}.
+'''
+zh = '''
+**中间地带**，即其余一切事项：
+1. 依照成文规则和已记录的先例，尽力作出判断。
+2. 仍然拿不准的，问权限覆盖该事项的委托人 ({@asking-once})，说明它影响了哪些工作。等待期间，继续做不受影响的已授权工作；撤销代价低的，先按默认值往下做。
+3. 把答复记录为先例，再判断是否需要修改规则 ({@rule-evolution}) 或者提出修正案 ({@amendment-procedure})。「无需修改」也是有效的结论。
+
+沉默不等于同意。规则可以规定：等待一段写明的时间之后，写明的默认值生效；但只限于撤销代价低的动作，不得用于{@must-ask}所列事项。
+'''

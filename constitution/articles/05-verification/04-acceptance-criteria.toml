@@ -1,0 +1,10 @@
+id = "acceptance-criteria"
+status = "draft"
+
+[content]
+en = '''
+Work items carry acceptance criteria an agent can check without a principal.
+'''
+zh = '''
+工作项带有验收标准，agent 不靠委托人就能自行检查。
+'''

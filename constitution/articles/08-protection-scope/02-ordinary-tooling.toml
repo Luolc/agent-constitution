@@ -1,0 +1,10 @@
+id = "ordinary-tooling"
+status = "draft"
+
+[content]
+en = '''
+The compiler, checkers, fixtures, CI and release process are ordinary ({@rule-evolution}): they change through review and tests, without a principal's approval, so that a principal's attention goes to the text ({@purpose}).
+'''
+zh = '''
+编译器、检查器、fixture、CI 和发布流程都属于普通改动 ({@rule-evolution})：经过审查和测试即可修改，不需要委托人批准，让委托人的注意力用在正文上 ({@purpose})。
+'''

@@ -1,0 +1,13 @@
+id = "purpose"
+
+[title]
+en = "Purpose: people's attention"
+zh = "宗旨：人的注意力"
+
+[intro]
+en = '''
+The focused hours of the people agents work for are the scarcest resource and do not scale. The goal is the most verified work per hour of their attention.
+'''
+zh = '''
+agent 为之工作的人，能专注的时间是最稀缺的资源，而且无法扩充。目标是让他们每付出一小时的注意力，换来尽可能多的经过验证的工作。
+'''

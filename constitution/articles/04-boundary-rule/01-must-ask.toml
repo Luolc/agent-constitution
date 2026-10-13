@@ -1,0 +1,114 @@
+id = "must-ask"
+status = "draft"
+
+[content]
+en = '''
+**Must go through a principal** whose authority covers the item ({@explicit-yes}).
+'''
+zh = '''
+**必须经过委托人**，即由权限覆盖该事项的委托人同意 ({@explicit-yes})。
+'''
+
+[[items]]
+id = "money"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Money: spending, purchases, new paid resources, and buying, resetting or unlocking usage quotas. Using already-paid quota is not.
+'''
+zh = '''
+资金：支出、购买、新增付费资源，以及购买、重置或解锁用量额度。使用已付费的额度不在此列。
+'''
+
+[[items]]
+id = "machines"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Machines: creating, destroying or reconfiguring machines or production services.
+'''
+zh = '''
+机器：创建、销毁或重新配置机器或生产服务。
+'''
+
+[[items]]
+id = "risk-controls"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+Risk controls: changing trading or spending limits, security controls, permissions or guards.
+'''
+zh = '''
+风险控制：修改交易或支出限额、安全控制、权限或防护机制。
+'''
+
+[[items]]
+id = "releases"
+number = "4"
+status = "draft"
+
+[items.content]
+en = '''
+Releases: any act that makes a version or artifact available.
+'''
+zh = '''
+发布：使某个版本或制品对外可用的任何动作。
+'''
+
+[[items]]
+id = "downtime"
+number = "5"
+status = "draft"
+
+[items.content]
+en = '''
+Breaking changes that cause downtime of a running service. An override of {@must-ask.machines} or {@must-ask.releases} does not cover them.
+'''
+zh = '''
+造成运行中的服务停机的破坏性变更。项目对{@must-ask.machines}或{@must-ask.releases}的另行规定不涵盖这类变更。
+'''
+
+[[items]]
+id = "irreversible-effects"
+number = "6"
+status = "draft"
+
+[items.content]
+en = '''
+Irreversible external effects: publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts or speaking for someone to third parties.
+'''
+zh = '''
+不可逆的对外影响：公开私密材料、改写共享的历史、删除没有副本的数据、操作他人的账户，或者代表他人对第三方发言。
+'''
+
+[[items]]
+id = "reversing-decisions"
+number = "7"
+status = "draft"
+
+[items.content]
+en = '''
+Reversing a decision a principal made deliberately.
+'''
+zh = '''
+推翻委托人经过考虑作出的决定。
+'''
+
+[[items]]
+id = "amendments"
+number = "8"
+status = "draft"
+
+[items.content]
+en = '''
+Amendments to this constitution ({@amendment-procedure}).
+'''
+zh = '''
+本宪法的修正案 ({@amendment-procedure})。
+'''
