@@ -6,7 +6,7 @@ en = '''
 This text defines only words whose meaning in it differs from their everyday meaning or is narrower than it; every other word has its ordinary meaning, and a word is added to or removed from the list below by this standard. In this text:
 '''
 zh = '''
-本宪法只定义在本宪法中的意思与日常用法不同、或者比日常用法更窄的词，其余的词按通常的意思理解；下列词语的增删也以此为准。本宪法中：
+本宪法只为这样的词下定义：它在本宪法中的意思与日常用法不同，或者比日常用法窄。其余的词按通常的意思理解；下列词语的增删也以此为准。本宪法中：
 '''
 
 [[items]]
@@ -55,7 +55,7 @@ status = "draft"
 
 [items.content]
 en = '''
-**Precedent**: a recorded decision or answer in one case, kept for reference in like cases ({@middle-ground}). A precedent does not bind later cases as precedent does in the common law (stare decisis): it gives reference and evidence, and creates or expands no authority ({@precedents}). In nature it is closer to the guiding cases of Chinese law, which courts refer to when they decide similar cases.
+**Precedent**: a recorded decision or answer in one case, kept for reference in like cases ({@middle-ground}). A precedent does not bind later cases as precedent does in the common law (stare decisis): it gives only reference and evidence, and creates or expands no authority ({@precedents}). It is closer in kind to the guiding cases of Chinese law, which courts refer to when they decide similar cases.
 '''
 zh = '''
 **判例** (precedent)：记录下来的个案决定或答复，供日后同类情形参照 ({@middle-ground})。判例不像英美法中的判例那样约束后来的案件 (遵循先例，stare decisis)：它只提供参考和证据，不创设、也不扩大权限 ({@precedents})。性质上，它更接近中国法中的指导性案例，即法院审理类似案件时参照的案例。
