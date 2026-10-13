@@ -82,8 +82,9 @@ class PageTest(unittest.TestCase):
         cases = [
             ("en", 12345, 345, "abc1234", [
                 "Tokens are counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5.",
-                "The numbers are those of the version agents read, which keeps only the numbers of the provisions"
-                " for maintainers and has no anchors or links.",
+                "The numbers are those of the version agents read, which leaves out the text of the sections and"
+                " items written for human readers, keeping only a pointer to the full version, and has no anchors"
+                " or links.",
                 "The full version on this page: 25 characters · 5 words · 12,345 tokens (counted for claude-opus-5-5).",
                 "Counted at revision 0.6, commit abc1234.",
                 '<a href="/agent/">See the version agents read</a>']),
@@ -94,7 +95,7 @@ class PageTest(unittest.TestCase):
                 "Counted at revision 0.6."]),
             ("zh", 12345, 345, "abc1234", [
                 "token 数由 Anthropic 的 token 计数接口 (count_tokens) 按 claude-opus-5-5 计算。",
-                "这里的数字是 agent 读的精简版：写给维护者的条文只留编号，也不含锚点和链接。",
+                "这里的数字是 agent 读的精简版：写给人读的条款不收正文，只留一句「见完整版」，也不含锚点和链接。",
                 "本页完整版：15 字符 · 12,345 token (按 claude-opus-5-5 计数)。",
                 "按修订号 0.6、commit abc1234 计算。",
                 '<a href="/zh/agent/">查看 agent 读到的版本</a>']),
@@ -134,14 +135,23 @@ class PageTest(unittest.TestCase):
                     self.assertNotIn(anchor_or_link, text)
 
     def test_legend_when_a_provision_is_marked(self):
-        for lang, labels in build_site.PAGES.items():
+        """The legend says in words what the asterisk marks and links to the
+        version for agents; the asterisk in it is not a superscript."""
+        legends = {
+            "en": ('<span class="legend">Sections and items marked <span class="mark">*</span> are written for human'
+                   ' readers: how this constitution is organized and amended. <a href="/agent/">The version compiled'
+                   ' for agents</a> leaves out their text and keeps only a pointer to this full version.</span></p>\n'),
+            "zh": ('<span class="legend">标 <span class="mark">*</span> 的条款写给人读，讲本宪法怎样编排、怎样修改。'
+                   '<a href="/zh/agent/">给 agent 编译的版本</a>不收这些条款的正文，只留一句「见完整版」。</span></p>\n'),
+        }
+        for lang, legend in legends.items():
             with self.subTest(lang=lang):
+                labels = build_site.PAGES[lang]
                 self.assertNotIn('class="legend"', build_site.page(SHORT[lang], AGENT[lang], labels, "0.6", None,
                                                                    None, None))
                 marked = SHORT[lang] + f"\n-   **§2**{build_site.OMITTED_MARK} Text.\n"
                 out = build_site.page(marked, AGENT[lang], labels, "0.6", None, None, None)
-                self.assertIn(f'</span></span><br><span class="legend">{build_site.OMITTED_MARK} {labels["omitted"]}'
-                              '</span></p>\n', out)
+                self.assertIn(f"</span></span><br>{legend}", out)
 
 
 class CountTokensTest(unittest.TestCase):

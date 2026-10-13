@@ -667,8 +667,12 @@ is a release (rule `must-ask-items`) and not set up.
   `index.toml` is set under the title, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. When
   the text marks a provision for maintainers, a third line under the title
-  says what the asterisk means; the asterisk is set small and bold in the
-  accent color.
+  says in words what the asterisk marks (provisions written for human
+  readers, on how the constitution is organized and amended) and that the
+  version compiled for agents, linked, keeps only a pointer to the full
+  version in their place. The asterisk is set small and bold in the accent
+  color, its top level with the top of the number, not a superscript and
+  without opening up the line; in the legend it sits on the line.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, built the
   same way but with its text as is: no anchors, no links, the provisions

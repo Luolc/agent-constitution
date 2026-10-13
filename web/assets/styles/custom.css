@@ -125,7 +125,9 @@
    button, so the pointer goes straight from the button into it. On a
    narrow screen it spans the revision line instead, which holds the
    button, and starts right under the button. A bridge above the popup
-   covers the space between the button and the popup's border. */
+   covers the space between the button and the popup's border and the
+   line beside the button, so a pointer that leaves the button sideways on
+   its way down stays inside; the button sits above the bridge. */
 .constitution .revision { position: relative; }
 .constitution .count-info { position: relative; display: inline-block; }
 .constitution .count-button {
@@ -139,6 +141,8 @@
   vertical-align: -.2em;
   line-height: 0;
   cursor: pointer;
+  position: relative;
+  z-index: 3;
 }
 .constitution .count-button:hover,
 .constitution .count-info.open .count-button { color: var(--c-accent); }
@@ -169,7 +173,7 @@
   left: 0;
   right: 0;
   bottom: 100%;
-  height: calc(.4em + 1px);
+  height: calc(.4em + 1px + 1.6em);
 }
 @media (max-width: 48rem) {
   .constitution .count-info { position: static; }
@@ -190,13 +194,22 @@
   font-size: .85em;
 }
 
-/* The line on the asterisk under the length. */
+/* The legend of the asterisk under the length: the asterisk on the line,
+   in the accent color. */
 .constitution .revision .legend {
+  display: inline-block;
+  max-width: 34em;
   font-variant: normal;
   letter-spacing: normal;
   font-size: .85em;
+  line-height: 1.5;
+  margin-top: .3em;
+  text-wrap: balance;
 }
-.constitution .revision .legend sup.omitted { font-size: 1.1em; }
+.constitution .revision .legend .mark {
+  color: var(--c-accent);
+  font-weight: var(--c-weight-bold);
+}
 /* The draft notice under the title. */
 .constitution .revision + p {
   border-block: 1px solid var(--c-rule);
@@ -244,11 +257,15 @@
 .constitution code { font-size: .85em; }
 
 /* The asterisk after the number of a section or an item that the version
-   for agents leaves out: small, in the accent color, close to the number. */
+   for agents leaves out: small, in the accent color, close to the number,
+   and without opening up the line. Not raised as a superscript: the glyph
+   itself sits at the height of the capitals, so it is lowered a little,
+   which puts its top level with the top of the number. */
 .constitution sup.omitted {
   color: var(--c-accent);
-  font-size: .9em;
+  font-size: .85em;
   font-weight: var(--c-weight-bold);
+  vertical-align: -.15em;
   line-height: 0;
   margin-inline-start: .05em;
 }
