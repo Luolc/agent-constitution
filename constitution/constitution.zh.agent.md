@@ -1,4 +1,4 @@
-本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，是给 agent 的版本，不含写给维护者的条文；不要手改，改源文件后重新生成。状态：draft。修订版：0.22。语言：中文。
+本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，是给 agent 的版本，不含写给维护者的条文；不要手改，改源文件后重新生成。状态：draft。修订版：0.23。语言：中文。
 
 # Agent 宪法 (草案)
 
