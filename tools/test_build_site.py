@@ -68,6 +68,16 @@ class PageTest(unittest.TestCase):
                 self.assertIn(f'0.6<br><span class="length">{line}</span></p>\n', out)
 
 
+    def test_legend_when_a_provision_is_marked(self):
+        for lang, labels in build_site.PAGES.items():
+            with self.subTest(lang=lang):
+                self.assertNotIn('class="legend"', build_site.page(SHORT[lang], labels, "0.6", None))
+                marked = SHORT[lang] + f"\n-   **§2**{build_site.OMITTED_MARK} Text.\n"
+                out = build_site.page(marked, labels, "0.6", None)
+                self.assertIn(f'</span><br><span class="legend">{build_site.OMITTED_MARK} {labels["omitted"]}'
+                              '</span></p>\n', out)
+
+
 class CountTokensTest(unittest.TestCase):
     def count(self, environ=None, **urlopen):
         auth = build_site.credential(environ or {build_site.KEY_VARIABLE: KEY})
