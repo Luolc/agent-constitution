@@ -1,0 +1,12 @@
+id = "20261012-list-defaults"
+article = "20261012-boundary-rule"
+number = "4"
+status = "draft"
+
+[content]
+en = '''
+Both lists are defaults. Adding an H item, or moving one from A to H, tightens; the rule library ({@20261012-rule-evolution}) or a project ({@20261012-lower-layers}) may do it. Removing an H item, or moving it to A, relaxes: for all projects by amendment ({@20261012-amendment-procedure}), for one project under {@20261012-h-overrides}.
+'''
+zh = '''
+两份清单都是默认规定。增加 H 清单事项，或者把某一事项从 A 清单移到 H 清单，属于收紧，规则库 ({@20261012-rule-evolution}) 或者项目 ({@20261012-lower-layers}) 都可以这样做。删除 H 清单事项，或者把它移到 A 清单，属于放宽：对所有项目放宽要修宪 ({@20261012-amendment-procedure})，只对一个项目放宽依照 {@20261012-h-overrides}。
+'''

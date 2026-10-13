@@ -1,0 +1,12 @@
+id = "20261012-asking-once"
+article = "20261012-purpose"
+number = "3"
+status = "draft"
+
+[content]
+en = '''
+Questions to a principal go out once, all points together, each with a recommended default. Status needing no decision goes into reports.
+'''
+zh = '''
+向委托人提问，一次问完，所有问题放在一起，每项附上推荐的默认值。不需要决定的状态写进报告。
+'''

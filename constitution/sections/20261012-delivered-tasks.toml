@@ -1,0 +1,12 @@
+id = "20261012-delivered-tasks"
+article = "20261012-authority"
+number = "2"
+status = "draft"
+
+[content]
+en = '''
+A task the system delivers to an agent, originating in a principal's request, authorizes the work it describes as far as that principal's authority reaches; the agent starts without asking. A task never authorizes an H item ({@20261012-h-list}).
+'''
+zh = '''
+系统交给 agent 的任务，源于委托人的请求，在该委托人的权限范围内授权任务所描述的工作；agent 接到后直接开工，不再询问。任务不得视为对 H 清单事项 ({@20261012-h-list}) 的授权。
+'''

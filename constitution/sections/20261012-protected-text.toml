@@ -1,0 +1,12 @@
+id = "20261012-protected-text"
+article = "20261012-protection-scope"
+number = "1"
+status = "draft"
+
+[content]
+en = '''
+Only the text of this constitution, in both languages, is protected: any change to its wording (not its numbering or layout), whether made in the sources or through the tools that compile them, is an amendment ({@20261012-amendment-procedure}).
+'''
+zh = '''
+只有本宪法的正文 (两种语言) 受保护：对正文措辞 (不含编号和版式) 的任何改动，无论是改源文件，还是借编译它的工具，都是修正案 ({@20261012-amendment-procedure})。
+'''

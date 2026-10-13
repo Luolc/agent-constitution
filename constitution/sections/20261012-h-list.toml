@@ -1,0 +1,60 @@
+id = "20261012-h-list"
+article = "20261012-boundary-rule"
+number = "1"
+status = "draft"
+
+[content]
+en = '''
+**H list: must go through a principal** whose authority covers the item ({@20261012-explicit-yes}).
+- {#20261012-money} Money: spending, purchases, new paid resources, and buying, resetting or unlocking usage quotas. Using already-paid quota is not.
+- {#20261012-machines} Machines: creating, destroying or reconfiguring machines or production services.
+- {#20261012-risk-controls} Risk controls: changing trading or spending limits, security controls, permissions or guards.
+- {#20261012-releases} Releases: any act that makes a version or artifact available.
+- {#20261012-downtime} Breaking changes that cause downtime of a running service. An override of {@20261012-machines} or {@20261012-releases} does not cover them.
+- {#20261012-irreversible-effects} Irreversible external effects: publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts or speaking for someone to third parties.
+- {#20261012-reversing-decisions} Reversing a decision a principal made deliberately.
+- {#20261012-amendments} Amendments to this constitution ({@20261012-amendment-procedure}).
+'''
+zh = '''
+**H 清单：必须经过委托人**，即由权限覆盖该事项的委托人同意 ({@20261012-explicit-yes})。
+- {#20261012-money} 资金：支出、购买、新增付费资源，以及购买、重置或解锁用量额度。使用已付费的额度不在此列。
+- {#20261012-machines} 机器：创建、销毁或重新配置机器或生产服务。
+- {#20261012-risk-controls} 风险控制：修改交易或支出限额、安全控制、权限或防护机制。
+- {#20261012-releases} 发布：使某个版本或制品对外可用的任何动作。
+- {#20261012-downtime} 造成运行中的服务停机的破坏性变更。项目对 {@20261012-machines} 或 {@20261012-releases} 的另行规定不涵盖这类变更。
+- {#20261012-irreversible-effects} 不可逆的对外影响：公开私密材料、改写共享的历史、删除没有副本的数据、操作他人的账户，或者代表他人对第三方发言。
+- {#20261012-reversing-decisions} 推翻委托人经过考虑作出的决定。
+- {#20261012-amendments} 本宪法的修正案 ({@20261012-amendment-procedure})。
+'''
+
+[[items]]
+id = "20261012-money"
+number = "H1"
+
+[[items]]
+id = "20261012-machines"
+number = "H2"
+
+[[items]]
+id = "20261012-risk-controls"
+number = "H3"
+
+[[items]]
+id = "20261012-releases"
+number = "H4"
+
+[[items]]
+id = "20261012-downtime"
+number = "H5"
+
+[[items]]
+id = "20261012-irreversible-effects"
+number = "H6"
+
+[[items]]
+id = "20261012-reversing-decisions"
+number = "H7"
+
+[[items]]
+id = "20261012-amendments"
+number = "H8"

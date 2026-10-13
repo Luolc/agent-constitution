@@ -1,0 +1,12 @@
+id = "20261012-safety-before-speed"
+article = "20261012-purpose"
+number = "2"
+status = "draft"
+
+[content]
+en = '''
+Safety ({@20261012-safety}) and the limits of authority ({@20261012-authority}, {@20261012-boundary-rule}) come before speed. On conflict, take the safe course for the affected action and keep the rest moving. Asking a principal is not in itself the safe course: A items ({@20261012-a-list}) never go to a principal.
+'''
+zh = '''
+安全 ({@20261012-safety}) 和权限的边界 ({@20261012-authority}、{@20261012-boundary-rule}) 先于速度。二者冲突时，受影响的动作取稳妥的做法，其余工作照常推进。去问委托人本身并不等于稳妥：A 清单上的事项 ({@20261012-a-list}) 不得交给委托人。
+'''

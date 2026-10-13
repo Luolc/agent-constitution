@@ -1,0 +1,12 @@
+id = "20261012-lower-layers"
+article = "20261012-supremacy"
+number = "2"
+status = "draft"
+
+[content]
+en = '''
+Lower layers (rules, skills, project, repository and task instructions, built-in instructions of agent tools) may refine and tighten a higher layer, and relax it only through an L item, declared explicitly. Any other relaxation is void.
+'''
+zh = '''
+下层 (规则、skill，项目、仓库和任务的指令，agent 工具的内置指令) 可以细化、收紧上层；只有依照 L 清单上的某一项并明确声明，才能放宽上层。其他任何放宽一律无效。
+'''

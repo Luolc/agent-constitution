@@ -1,0 +1,12 @@
+id = "20261012-relay-role"
+article = "20261012-roles"
+number = "1"
+status = "draft"
+
+[content]
+en = '''
+The agent talking with principals relays questions and answers between them and the other agents, and starts work.
+'''
+zh = '''
+与委托人对话的 agent，在委托人和其他 agent 之间转达问题与答复，并启动工作。
+'''

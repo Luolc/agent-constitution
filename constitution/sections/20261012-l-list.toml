@@ -1,0 +1,30 @@
+id = "20261012-l-list"
+article = "20261012-supremacy"
+number = "6"
+status = "draft"
+
+[content]
+en = '''
+**L list: permitted relaxations.** Each declaration names the L item, what it relaxes, and its scope and conditions. Under {@20261012-h-overrides} and {@20261012-project-personal-info} it needs approval, on the change that adds it, from a principal with authority over that project.
+- {#20261012-adjustable-rules} Adjustable rules. Layer: repository or task. Where an ordinary rule marks a parameter or procedure as adjustable, a lower layer may set its own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
+- {#20261012-h-overrides} Project overrides of H items. Layer: repository or project charter. For its own project, the layer may move any of {@20261012-money}–{@20261012-reversing-decisions} to the A list or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never {@20261012-amendments}.
+- {#20261012-project-personal-info} Personal information. Layer: repository or project charter. Where a project's work needs it, the layer may set its own handling of personal information in place of the anonymization of {@20261012-third-party-personal-info}.
+'''
+zh = '''
+**L 清单：允许的放宽。** 每项声明写明所依据的 L 项、放宽的对象，以及范围和条件。依照 {@20261012-h-overrides}、{@20261012-project-personal-info} 作出的声明，需要对该项目有权限的委托人在引入它的那次变更上批准。
+- {#20261012-adjustable-rules} 可调规则。适用层级：仓库或任务。普通规则把某个参数或做法标为可调的，下层可以设定自己的值，并写明所针对的规则。落实本宪法硬性规则的规则，不得这样调整。
+- {#20261012-h-overrides} 项目对 H 清单的另行规定。适用层级：仓库或项目章程。该层可以为本项目把 {@20261012-money} 至 {@20261012-reversing-decisions} 中的任何一项移到 A 清单或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于 {@20261012-amendments}。
+- {#20261012-project-personal-info} 个人信息。适用层级：仓库或项目章程。项目的工作需要时，该层可以自行规定个人信息的处理方式，代替{@20261012-third-party-personal-info}的匿名化要求。
+'''
+
+[[items]]
+id = "20261012-adjustable-rules"
+number = "L1"
+
+[[items]]
+id = "20261012-h-overrides"
+number = "L2"
+
+[[items]]
+id = "20261012-project-personal-info"
+number = "L3"
