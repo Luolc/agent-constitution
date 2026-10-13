@@ -156,13 +156,13 @@ LANGUAGES = {
         header=(
             "本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和"
             " `constitution/articles/` 生成，不要手改；"
-            "改源文件后重新生成。状态：{status}。修订版：{revision}。语言：中文。"
+            "改源文件后重新生成。状态：{status}。修订号：{revision}。语言：中文。"
         ),
         legend="标 \\* 的款、项在给 agent 的版本 `constitution/constitution.zh.agent.md` 里只留编号。",
         agent_header=(
             "本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和"
             " `constitution/articles/` 生成，是给 agent 的版本，不含写给维护者的条文；"
-            "不要手改，改源文件后重新生成。状态：{status}。修订版：{revision}。语言：中文。"
+            "不要手改，改源文件后重新生成。状态：{status}。修订号：{revision}。语言：中文。"
         ),
         omitted="(见完整版)",
         agent_front=(

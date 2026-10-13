@@ -120,6 +120,61 @@
   letter-spacing: normal;
   font-size: .85em;
 }
+/* The info button after the length and its popup. The popup is a block
+   with no top offset, so it starts right under the line of the button;
+   the revision line is its containing block and gives it its width, so it
+   stays on the page on a narrow screen. */
+.constitution .revision { position: relative; }
+.constitution .count-button {
+  font: inherit;
+  font-size: .85em;
+  color: var(--c-muted);
+  background: none;
+  border: 0;
+  padding: .25em;
+  margin-inline-start: .15em;
+  vertical-align: -.2em;
+  line-height: 0;
+  cursor: pointer;
+}
+.constitution .count-button:hover,
+.constitution .count-info.open .count-button { color: var(--c-accent); }
+.constitution .count-button:focus-visible { outline: 2px solid var(--c-accent); border-radius: 50%; }
+.constitution .count-popup {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  width: min(26em, 100%);
+  margin-inline: auto;
+  padding: .7em 1em;
+  font-variant: normal;
+  letter-spacing: normal;
+  font-size: .85em;
+  line-height: 1.5;
+  text-align: start;
+  color: var(--c-ink);
+  background: var(--c-sidebar);
+  border: 1px solid var(--c-rule);
+  border-radius: .3rem;
+  box-shadow: 0 .3em 1em color-mix(in srgb, var(--c-ink) 20%, transparent);
+}
+.constitution .count-info:hover .count-popup,
+.constitution .count-info.open .count-popup { display: block; }
+.constitution .count-info.dismissed .count-popup { display: none; }
+.constitution .count-line { display: block; }
+.constitution .count-line + .count-line { margin-top: .4em; }
+.constitution .count-popup a { color: var(--c-accent); }
+
+/* The link back to the full version, on the page of the version for
+   agents. */
+.constitution .revision .back {
+  font-variant: normal;
+  letter-spacing: normal;
+  font-size: .85em;
+}
+
 /* The line on the asterisk under the length. */
 .constitution .revision .legend {
   font-variant: normal;
