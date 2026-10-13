@@ -6,5 +6,5 @@ en = '''
 Once the first edition ({@editions}) is approved, the edition in force and the draft of the next edition are kept side by side: the edition in force is the text that applies, and the next edition is prepared in the draft. How the two are kept is set by the rules.
 '''
 zh = '''
-第一版 ({@editions}) 经批准以后，现行版与下一版的草案并行维护：适用的是现行版，下一版在草案上准备。两者怎样保存，由规定写明。
+第一版 ({@editions}) 经批准以后，现行版与下一版的草案并行维护：适用的是现行版，草案用来准备下一版。两者怎样保存，由规定写明。
 '''
