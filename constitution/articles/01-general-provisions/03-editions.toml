@@ -1,0 +1,10 @@
+id = "editions"
+status = "draft"
+
+[content]
+en = '''
+An edition is one approved text of this constitution as a whole. It is named by the date on which the principal with authority over this constitution approved it, and the title carries that date; while the text is a draft, the title says so instead. Within an edition, the revision number counts from one and rises by one with each approved amendment ({@revision-count}), and numbers never change ({@stable-numbers}). A new edition may rearrange and renumber the whole text; opening one is itself an amendment ({@amendment-procedure}). A provision carried into a new edition keeps its ID, so a record that cites by ID stays valid; a citation by number names the edition. Naming an edition by its date follows the practice of calling a constitution by the year of its adoption, as China does with its constitutions of 1954 and 1982, Spain with that of 1978, Brazil with that of 1988 and France with that of 1958. The distinction between an edition and the amendments within it follows the Federal Constitution of Switzerland, which distinguishes total revision, carried out in 1874 and 1999, from partial revision.
+'''
+zh = '''
+大版本 (edition) 指本宪法经批准的一份完整文本。大版本以对本宪法握有授权的委托人批准它的日期命名，标题写明这个日期；还是草案时，标题写「草案」。一个大版本内，修订号从一起算，每通过一次修正案加一 ({@revision-count})，编号永不更改 ({@stable-numbers})。新的大版本可以对全文大范围重排、重新编号；开新的大版本本身是一次修宪 ({@amendment-procedure})。延续到新大版本的规定保留原来的 ID，旧记录按 ID 的引用仍然有效；按编号引用时要写明大版本。大版本以日期命名，参照的是按通过年份称呼一部宪法的做法，如中国的 1954 年宪法与 1982 年宪法、西班牙的 1978 年宪法、巴西的 1988 年宪法、法国的 1958 年宪法；大版本与版本内修正案的区分，参照的是瑞士联邦宪法对全面修订与部分修订的区分，瑞士在 1874 年和 1999 年做过两次全面修订。
+'''

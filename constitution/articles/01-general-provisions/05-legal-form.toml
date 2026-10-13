@@ -1,0 +1,10 @@
+id = "legal-form"
+status = "draft"
+
+[content]
+en = '''
+The way laws are written, structured and amended, and the procedures around them, are the background against which this text is read and maintained. Where this text provides for something expressly, the express provision prevails. In particular, neither the more specific nor the newer text prevails by default, since it may exceed its authority or lack adoption; a conflict is resolved only by an explicit change ({@layer-conflicts}).
+'''
+zh = '''
+法律的写法、结构与程序惯例，是读懂和维护本宪法的默认背景。本宪法对某事有明文规定的，以明文为准。特别是，「特别法优于一般法」「新法优于旧法」都不适用，因为更具体或更新的文本可能超出了自身的权限，也可能未经采纳；冲突只能通过明文修改来解决 ({@layer-conflicts})。
+'''
