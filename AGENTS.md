@@ -129,8 +129,8 @@ For leads and workers that `fleet` starts in this repo.
   checkout of a PR head is `fleet worktree agent-constitution --name <name>
   --detach <head-sha>`, never a bare `git worktree add`: fleet removes what
   it recorded at `fleet job end`.
-- Instruction files (the path table in `tools/check_instruction_changes.py`)
-  change in a task and a PR of their own; CI fails a PR that mixes them
+- Instruction files change in a task and a PR of their own
+  (`rules/instruction-only-changes.toml`); CI fails a PR that mixes them
   with other files.
 - Worker report (`fleet done --report-file`): what was done, the PR and its
   merge commit, the checks run and CI's `run_attempt`, why done or
