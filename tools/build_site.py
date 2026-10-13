@@ -12,8 +12,8 @@ call fails, the page says the tokens were not counted and the build goes
 on; with --require-tokens it fails instead. The pages are written to a
 temporary content directory, Hugo builds web/ (the hugo-book theme, a
 submodule) into site/, English at site/ and Chinese at site/zh/, and
-check_site_anchors.py checks the result. site/ is not committed. The setup is described in
-docs/design.md (Static site).
+check_site_anchors.py checks the result. site/ is not committed. The
+setup is described in docs/design.md (Static site).
 """
 
 import argparse

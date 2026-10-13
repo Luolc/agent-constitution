@@ -1,9 +1,9 @@
 """Tests for build_site's page and check_site_anchors: a built constitution
 becomes a Hugo page in both languages with its length and its token count
 or a note that the tokens were not counted, the token count asks the API
-(mocked here) and survives its failure unless --require-tokens is given, and the site check passes a page
-whose links all have targets and fails a broken link or a leaked list
-marker. Hugo itself runs in CI, not here."""
+(mocked here) and survives its failure unless --require-tokens is given,
+and the site check passes a page whose links all have targets and fails a
+broken link or a leaked list marker. Hugo itself runs in CI, not here."""
 
 import contextlib
 import http.client

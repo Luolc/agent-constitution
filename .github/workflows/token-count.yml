@@ -1,9 +1,9 @@
 # Token count on main: exchanges the run's GitHub OIDC token for a
 # short-lived Anthropic access token through Workload Identity Federation,
 # builds the static site with it, and writes the length line of both pages
-# (characters and tokens) into the job summary (docs/design.md, Static
-# site). The federation rule accepts only pushes to main, so this runs only
-# there. It publishes nothing. A failed exchange or count fails the run.
+# into the job summary (docs/design.md, Static site). The federation rule
+# accepts only pushes to main, so this runs only there. It publishes
+# nothing. A failed exchange or count fails the run.
 # The four IDs are repository variables, identifiers rather than secrets.
 
 name: Token count
@@ -65,21 +65,21 @@ jobs:
             -H @- "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://api.anthropic.com" \
             <<< "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"
           jwt="$(jq -r '.value // empty' "${work}/oidc.json")"
-          rm "${work}/oidc.json"
           if [ -z "$jwt" ]; then
             echo "::error::no OIDC token from GitHub"
             exit 1
           fi
           echo "::add-mask::${jwt}"
-          jq -n --arg assertion "$jwt" '{
+          unset jwt
+          jq '{
               grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-              assertion: $assertion,
+              assertion: .value,
               federation_rule_id: env.FEDERATION_RULE_ID,
               organization_id: env.ORGANIZATION_ID,
               service_account_id: env.SERVICE_ACCOUNT_ID,
               workspace_id: env.WORKSPACE_ID
-            }' > "${work}/request.json"
-          unset jwt
+            }' "${work}/oidc.json" > "${work}/request.json"
+          rm "${work}/oidc.json"
           status="$(curl -sS -o "${work}/response.json" -w '%{http_code}' \
             -H 'content-type: application/json' --data-binary @"${work}/request.json" \
             https://api.anthropic.com/v1/oauth/token)"
