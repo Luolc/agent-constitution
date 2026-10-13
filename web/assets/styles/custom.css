@@ -11,8 +11,9 @@
   --c-font-en: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
   --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
     "Source Han Serif SC", "Songti SC", SimSun, serif;
-  --c-measure-en: 35em;   /* about 85 characters a line */
-  --c-measure-zh: 40em;   /* 40 characters a line */
+  /* The text column's max-width, one per language; adjust it here. */
+  --c-measure-en: 42.75em; /* 770px at 18px */
+  --c-measure-zh: 46.75em; /* 795px at 17px */
   /* Body a little above regular, which reads thin on screen; bold far
      enough above it to stand out. Both fonts are variable. */
   --c-weight: 450;
@@ -122,7 +123,10 @@
 }
 :lang(zh) .constitution h2 { letter-spacing: .15em; }
 
-.constitution p { text-align: justify; hyphens: auto; }
+/* English ragged right: justified, its word spaces stretch where
+   hyphenation does not reach. Chinese justified, as printed. */
+.constitution p { text-align: start; }
+:lang(zh) .constitution p { text-align: justify; }
 :lang(zh) .constitution p { text-indent: 2em; }
 :lang(zh) .constitution :is(li p, .revision, .revision + p) { text-indent: 0; }
 
