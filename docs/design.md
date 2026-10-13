@@ -312,7 +312,7 @@ fixtures/behavior/redline/<name>/   stage C
 ```
 
 Each fixture directory holds a `fixture.md` (front matter `binds: [C2.3,
-L1]`, `kind: happy` or `redline`, and a short statement of what it shows),
+L2]`, `kind: happy` or `redline`, and a short statement of what it shows),
 its inputs and its expected result.
 
 - Static fixtures are deterministic: an input overlay or a lower-layer file,
