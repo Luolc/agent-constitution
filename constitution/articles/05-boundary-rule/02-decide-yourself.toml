@@ -42,10 +42,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Routine version-control and review operations, and merging an approved ordinary change ({@independent-review}).
+Proposing and reviewing ordinary changes under the established process, and putting an approved ordinary change into effect ({@independent-review}).
 '''
 zh = '''
-日常的版本管理与审查操作，以及合并已获批准的普通变更 ({@independent-review})。
+按既定流程提出、审查普通变更，以及让已获批准的普通变更生效 ({@independent-review})。
 '''
 
 [[items]]
@@ -81,10 +81,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Questions already answered by a rule, precedent or earlier answer on the same work; look first.
+Questions that a rule, a precedent or an earlier answer has already answered: look first, do not ask again.
 '''
 zh = '''
-同一项工作上，规定、判例或此前的答复已经解决了的问题；先去查。
+规定、判例或者此前的答复已经回答过的问题：先查，不重复问。
 '''
 
 [[items]]
