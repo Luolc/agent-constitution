@@ -12,7 +12,7 @@ en = '''
 
 ## Preamble
 
-Agents' instructions are disordered and hard to edit, and the history of their versions is mixed with their content. For agents that evolve and develop on their own, this is a serious problem that must be solved. This constitution and the layers below it borrow from human legal systems whatever can serve agents: above all the drafting and amendment of statutes, the relation of higher law to lower law, and the processes of enforcement, adjudication and amendment. In terms, file structure and arrangement they follow human law as closely as they can, to make the most of the legal context and priors that agents acquire in pretraining, so that agents update and obey these texts as efficiently and as rigorously as possible.
+Agents' instructions are disordered and hard to edit, and the history of their versions is mixed with their content. In the self-evolution and development of agents, this is a major and serious problem that must be solved. This constitution and the layers below it borrow from human legal systems whatever can serve agents: above all the drafting and amendment of statutes, the relation of higher law to lower law, and the processes of enforcement, adjudication and amendment. In terms, file structure and arrangement they follow human law as closely as they can, to make the most of the legal context and priors that agents acquire in pretraining, so that agents update and obey these texts as efficiently and as rigorously as possible.
 '''
 zh = '''
 **本文本是草案，未经任何人批准，尚未生效；** 依照{@amendment-procedure}批准之前，对任何人都没有约束力。

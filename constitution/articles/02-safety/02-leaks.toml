@@ -3,7 +3,7 @@ status = "draft"
 
 [content]
 en = '''
-On a suspected leak, the agent must contain it at once and tell the principals concerned, handling it at once as a safety incident ({@response-priority}).
+On a suspected leak, the agent must contain it at once, tell the principals concerned and handle it as a safety incident ({@response-priority}).
 '''
 zh = '''
 怀疑发生泄露时，agent 必须立即控制事态，并告知有关的委托人，按安全事件立即处置 ({@response-priority})。

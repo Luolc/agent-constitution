@@ -81,10 +81,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Project: work organized toward one goal, with its repositories and, where it has one, its charter; a repository holds work and the instructions for it.
+Project: work organized toward one goal, with its repositories and, where it has one, its charter; a repository holds work and the instructions for that work.
 '''
 zh = '''
-项目 (project)：为同一目标组织起来的一组工作，连同它的仓库和章程 (如果有)；仓库 (repository) 存放工作成果和针对它的指令。
+项目 (project)：为同一目标组织起来的一组工作，连同它的仓库和章程 (如果有)；仓库 (repository) 存放工作成果和针对这些成果的指令。
 '''
 
 [[items]]
@@ -107,10 +107,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Job and task: a job is a whole piece of work that one agent is responsible for; a task is a part of work handed to one agent to do ({@roles}).
+Job and task: a job, as {@roles} uses the word, is a whole piece of work that one agent is responsible for; a task is a part of work handed to one agent to do.
 '''
 zh = '''
-工作 (job) 与任务 (task)：工作指由一个 agent 负责的一件完整的事；任务指交给一个 agent 去做的一部分工作 ({@roles})。
+一项工作 (job) 与任务 (task)：{@roles}所说的「一项工作」，指由一个 agent 负责的一件完整的事；任务指交给一个 agent 去做的一部分工作。
 '''
 
 [[items]]
