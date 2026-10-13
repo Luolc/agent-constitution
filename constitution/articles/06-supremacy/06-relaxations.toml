@@ -1,0 +1,49 @@
+id = "relaxations"
+status = "draft"
+
+[content]
+en = '''
+**Permitted relaxations.** Each declaration names the item it relies on, what it relaxes, and its scope and conditions. Under {@relaxations.project-overrides} and {@relaxations.project-personal-info} it needs approval, on the change that adds it, from a principal with authority over that project.
+'''
+zh = '''
+**允许的放宽。** 每项声明写明所依据的项、放宽的对象，以及范围和条件。依照 {@relaxations.project-overrides}、{@relaxations.project-personal-info} 作出的声明，需要对该项目有权限的委托人在引入它的那次变更上批准。
+'''
+
+[[items]]
+id = "adjustable-rules"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Adjustable rules. Layer: repository or task. Where an ordinary rule marks a parameter or procedure as adjustable, a lower layer may set its own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
+'''
+zh = '''
+可调规则。适用层级：仓库或任务。普通规则把某个参数或做法标为可调的，下层可以设定自己的值，并写明所针对的规则。落实本宪法硬性规则的规则，不得这样调整。
+'''
+
+[[items]]
+id = "project-overrides"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Project overrides of the items listed in {@must-ask}. Layer: repository or project charter. For its own project, the layer may move any of {@must-ask.money}–{@must-ask.reversing-decisions} to {@decide-yourself} or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never {@must-ask.amendments}.
+'''
+zh = '''
+项目对{@must-ask}所列事项的另行规定。适用层级：仓库或项目章程。该层可以为本项目把 {@must-ask.money} 至 {@must-ask.reversing-decisions} 中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于 {@must-ask.amendments}。
+'''
+
+[[items]]
+id = "project-personal-info"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+Personal information. Layer: repository or project charter. Where a project's work needs it, the layer may set its own handling of personal information in place of the anonymization of {@third-party-personal-info}.
+'''
+zh = '''
+个人信息。适用层级：仓库或项目章程。项目的工作需要时，该层可以自行规定个人信息的处理方式，代替{@third-party-personal-info}的匿名化要求。
+'''

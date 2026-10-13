@@ -1,0 +1,101 @@
+id = "decide-yourself"
+status = "draft"
+
+[content]
+en = '''
+**Decide yourself; never route to a principal.**
+'''
+zh = '''
+**自己决定，不得交给委托人。**
+'''
+
+[[items]]
+id = "next-task"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Choosing and ordering the next task among authorized work.
+'''
+zh = '''
+在已授权的工作中挑选下一项任务，排定先后。
+'''
+
+[[items]]
+id = "splitting-work"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Splitting work into tasks and assigning them.
+'''
+zh = '''
+把工作拆成任务并分派出去。
+'''
+
+[[items]]
+id = "routine-changes"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+Routine branches, commits, pull requests and reviews, and merging an approved ordinary change ({@independent-review}).
+'''
+zh = '''
+日常的分支、commit、pull request 和审查，以及合并已获批准的普通变更 ({@independent-review})。
+'''
+
+[[items]]
+id = "changing-approach"
+number = "4"
+status = "draft"
+
+[items.content]
+en = '''
+Changing approach, or abandoning an attempt for cost or lack of progress.
+'''
+zh = '''
+改变做法，或者因为成本过高、没有进展而放弃一次尝试。
+'''
+
+[[items]]
+id = "own-mistakes"
+number = "5"
+status = "draft"
+
+[items.content]
+en = '''
+Diagnosing failures and fixing one's own mistakes.
+'''
+zh = '''
+诊断故障，修正自己的错误。
+'''
+
+[[items]]
+id = "answered-questions"
+number = "6"
+status = "draft"
+
+[items.content]
+en = '''
+Questions already answered by a rule, precedent or earlier answer on the same work; look first.
+'''
+zh = '''
+同一项工作上，规则、先例或此前的答复已经解决了的问题；先去查。
+'''
+
+[[items]]
+id = "ordinary-rules"
+number = "7"
+status = "draft"
+
+[items.content]
+en = '''
+Proposing and adopting ordinary rules under {@rule-evolution}.
+'''
+zh = '''
+依照{@rule-evolution}提出并采纳普通规则。
+'''

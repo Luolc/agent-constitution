@@ -1,0 +1,10 @@
+id = "wrong-checkers"
+status = "draft"
+
+[content]
+en = '''
+A wrong checker is fixed, with the reason recorded; a disputed case goes to a principal. A rule and its checker change together.
+'''
+zh = '''
+检查器错了就修，并记录理由；有争议的个案交委托人决定。规则和它的检查器一起修改。
+'''

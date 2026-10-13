@@ -1,0 +1,10 @@
+id = "equal-languages"
+status = "draft"
+
+[content]
+en = '''
+The English and Chinese texts are equally authoritative. Where they differ in meaning, the provision is undetermined ({@undetermined}) until they agree again; neither text prevails.
+'''
+zh = '''
+英文本和中文本同等有效。两种文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到两种文本重新一致；任何一种文本都不优先。
+'''
