@@ -17,8 +17,10 @@ sources (format in `docs/design.md`, Source formats). Write it in plain,
 natural simplified Chinese that says what the English block says, clause by
 clause, not word by word. Keep the same `{#ID}` definitions in the same
 order and cite the same `{ID}`s as the English block; the build checks
-both. Code, paths, commands and IDs stay as they are; Chinese text takes
-full-width punctuation.
+both. Punctuation: full-width commas, full stops, enumeration commas,
+semicolons and colons; half-width parentheses, with one space outside and
+none inside, as in `第二款 (C3.2)`. Code, paths, commands and IDs stay as
+they are, with half-width punctuation.
 
 ## Layout and docs
 
