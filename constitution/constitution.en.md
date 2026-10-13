@@ -89,7 +89,7 @@ The focused hours of the people agents work for are the scarcest resource and do
   3. Record the answer as a precedent, then decide whether a rule should change (Art. VIII) or an amendment be proposed (Art. X). "No change needed" is a valid outcome.
 
   Silence is not consent. A rule may let a stated default take effect after a stated wait, only for actions cheap to undo, never for the items listed in Art. V §1.
-- §4 The items listed in Art. V §1 and Art. V §2 are defaults. Adding an item to Art. V §1, or moving one there from Art. V §2, tightens; the rule library (Art. VIII) or a project (Art. VII §2) may do it. Removing an item from Art. V §1, or moving it to Art. V §2, relaxes: for all projects by amendment (Art. X), for one project under Art. VII §6(2).
+- §4 The items listed in Art. V §1 and §2 are defaults. Adding an item to Art. V §1, or moving one there from Art. V §2, tightens; the rule library (Art. VIII) or a project (Art. VII §2) may do it. Removing an item from Art. V §1, or moving it to Art. V §2, relaxes: for all projects by amendment (Art. X), for one project under Art. VII §6(2).
 
 ## Article VI. Verification
 
