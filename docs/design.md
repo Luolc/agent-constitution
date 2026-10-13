@@ -164,11 +164,12 @@ with the drift check, the reference and relaxation checkers, the
 private-term scanner, `fixtures/static/` with the fixture gate, then load
 verification. Each step is usable on its own.
 
-What `protection-scope` protects is the text of the constitution
+What the amendment article protects is the text of the constitution
 (`protected-text`); in the core that is the sources under
 `constitution/` (`index.toml` and `articles/`) and the wording
-of the files built from them. A change to the text needs a person's
-approval under `amendment-procedure` (see Approving an amendment).
+of the files built from them. A change to the text is an amendment and
+takes effect as `approving-amendments` says (see Approving an
+amendment).
 Everything else is an ordinary change under `rule-evolution`
 (`ordinary-tooling`), reviewed and tested like any other:
 `tools/` and `schema/` (compiler, checkers, the fixture-gate runner),
@@ -229,7 +230,10 @@ revision that deletes another adds it:
 - revision 0.16: the items `must-ask.downtime`, `must-ask.machines`,
   `must-ask.money`, `must-ask.releases` and `must-ask.risk-controls`;
 - revision 0.18: the item `must-ask.productive-resources`, renamed
-  `must-ask.means-of-production`.
+  `must-ask.means-of-production`;
+- revision 0.24: the article `protection-scope`, whose sections
+  `protected-text` and `ordinary-tooling` moved into
+  `amendment-procedure`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
