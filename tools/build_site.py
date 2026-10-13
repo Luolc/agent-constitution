@@ -3,21 +3,28 @@
 
 Each constitution/constitution.<lang>.md becomes the home page of its
 language: the header line that says the file is generated is dropped, the
-title goes into the front matter, the revision is set under the title, and
-the text is wrapped in `<div class="constitution">` for the style sheet.
-The pages are written to a temporary content directory, Hugo builds web/
-(the hugo-book theme, a submodule) into site/, English at site/ and Chinese
-at site/zh/, and check_site_anchors.py checks the result. site/ is not
-committed. The setup is described in docs/design.md (Static site).
+title goes into the front matter, the revision and the length of the text
+are set under the title, and the text is wrapped in
+`<div class="constitution">` for the style sheet. The token count comes
+from Anthropic's count_tokens API when CONSTITUTION_TOKEN_COUNT_API_KEY is
+set; without the key, or when the call fails, the page says the tokens were
+not counted and the build goes on. The pages are written to a temporary
+content directory, Hugo builds web/ (the hugo-book theme, a submodule) into
+site/, English at site/ and Chinese at site/zh/, and check_site_anchors.py
+checks the result. site/ is not committed. The setup is described in
+docs/design.md (Static site).
 """
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 import tempfile
 import tomllib
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import check_site_anchors
@@ -26,20 +33,63 @@ ROOT = Path(__file__).resolve().parent.parent
 HUGO = "hugo-0.167.0"  # the same version as the CI step that builds the site
 # `## <a id="general-provisions"></a>Article I. ...`
 HEADING_ANCHOR = re.compile(r'^(#{2,6}) <a id="([^"]+)"></a>(.*)$', re.M)
-# Language: (content file, revision label).
+KEY_VARIABLE = "CONSTITUTION_TOKEN_COUNT_API_KEY"
+COUNT_URL = "https://api.anthropic.com/v1/messages/count_tokens"
+COUNT_MODEL = "claude-opus-5-5"
+COUNT_TIMEOUT = 10  # seconds; a slow API must not hold up the build
+# Language: the content file and the labels under the title.
 PAGES = {
-    "en": ("_index.md", "Revision"),
-    "zh": ("_index.zh.md", "修订版"),
+    "en": {"file": "_index.md", "revision": "Revision",
+           "length": "{chars:,} characters · {words:,} words",
+           "tokens": "{tokens:,} tokens (counted for {model})", "no_tokens": "tokens not counted"},
+    "zh": {"file": "_index.zh.md", "revision": "修订版",
+           "length": "{chars:,} 字符",
+           "tokens": "{tokens:,} token (按 {model} 计数)", "no_tokens": "token 数未计算"},
 }
 
 
-def page(markdown: str, label: str, revision: str) -> str:
+def counted(markdown: str) -> str:
+    """The text whose length the page gives: the built constitution without
+    its header line, anchors and link definitions included, since the
+    compiler takes that text into an instruction file."""
+    return markdown.partition("\n")[2]
+
+
+def count_tokens(text: str, key: str | None) -> int | None:
+    """The tokens of text for COUNT_MODEL, or None without a key or when the
+    call fails. A failure prints one line with the HTTP status or the
+    exception's class, never the request or the exception, which may hold
+    the key."""
+    if not key:
+        return None
+    request = urllib.request.Request(
+        COUNT_URL,
+        data=json.dumps({"model": COUNT_MODEL, "messages": [{"role": "user", "content": text}]}).encode(),
+        headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=COUNT_TIMEOUT) as response:
+            return int(json.load(response)["input_tokens"])
+    except urllib.error.HTTPError as e:
+        print(f"token count: HTTP {e.code}; tokens not counted", file=sys.stderr)
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        print(f"token count: {type(e).__name__}; tokens not counted", file=sys.stderr)
+    return None
+
+
+def page(markdown: str, labels: dict[str, str], revision: str, tokens: int | None) -> str:
     """The Hugo page of one built constitution."""
     lines = markdown.split("\n")
     if len(lines) < 3 or "tools/build_constitution.py" not in lines[0] or not lines[2].startswith("# "):
         raise ValueError("does not start with the build's header line, a blank line and the `# ` title")
     front = f"+++\ntitle = {json.dumps(lines[2][2:], ensure_ascii=False)}\n+++"
-    revision_line = f'<p class="revision">{label} {revision}</p>'
+    text = counted(markdown)
+    length = labels["length"].format(chars=len(text), words=len(text.split()))
+    if tokens is None:
+        length += " · " + labels["no_tokens"]
+    else:
+        length += " · " + labels["tokens"].format(tokens=tokens, model=COUNT_MODEL)
+    revision_line = (f'<p class="revision">{labels["revision"]} {revision}<br>'
+                     f'<span class="length">{length}</span></p>')
     body = HEADING_ANCHOR.sub(r"\1 \3 {#\2}", "\n".join(lines[3:]))
     return "\n".join([front, '<div class="constitution">', "", lines[2], "", revision_line,
                       body, "", "</div>", ""])
@@ -50,15 +100,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=ROOT / "site", help="the output directory (default: site/)")
     args = parser.parse_args(argv)
     revision = tomllib.loads((ROOT / "constitution/index.toml").read_text(encoding="utf-8"))["revision"]
+    key = os.environ.get(KEY_VARIABLE)
+    if not key:
+        print(f"{KEY_VARIABLE} is not set; tokens not counted", file=sys.stderr)
     with tempfile.TemporaryDirectory() as content:
-        for lang, (name, label) in PAGES.items():
+        for lang, labels in PAGES.items():
             source = ROOT / f"constitution/constitution.{lang}.md"
+            markdown = source.read_text(encoding="utf-8")
             try:
-                text = page(source.read_text(encoding="utf-8"), label, revision)
+                text = page(markdown, labels, revision, count_tokens(counted(markdown), key))
             except ValueError as e:
                 print(f"{source.relative_to(ROOT)}: {e}", file=sys.stderr)
                 return 1
-            (Path(content) / name).write_text(text, encoding="utf-8")
+            (Path(content) / labels["file"]).write_text(text, encoding="utf-8")
         build = subprocess.run([HUGO, "--source", str(ROOT / "web"), "--contentDir", content,
                                 "--destination", str(args.out.resolve()), "--cleanDestinationDir",
                                 "--panicOnWarning"])
