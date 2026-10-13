@@ -2,6 +2,8 @@
 # from constitution/constitution.<lang>.md. See docs/design.md (Static
 # site).
 baseURL = "/"
+# Relative links, so that site/index.html also opens as a file.
+relativeURLs = true
 title = "Agent Constitution"
 theme = "hugo-book"
 defaultContentLanguage = "en"

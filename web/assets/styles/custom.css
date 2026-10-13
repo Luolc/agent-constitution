@@ -19,16 +19,24 @@
   --c-font-en: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
   --c-font-zh: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
     "Source Han Serif SC", "Songti SC", SimSun, serif;
-  --c-measure-en: 38em;   /* about 85 characters a line */
+  --c-measure-en: 35em;   /* about 90 characters a line */
   --c-measure-zh: 40em;   /* 40 characters a line */
-  --c-weight: 500;        /* the 400 cuts read thin on screen */
-  --c-weight-bold: 700;
+  /* Body a little above regular, which reads thin on screen; bold far
+     enough above it to stand out. Both fonts are variable. */
+  --c-weight: 450;
+  --c-weight-bold: 750;
 }
 
 
 /* Dark, by choice or, with the theme set to follow the system, by the
    system's setting. Contrast on --c-paper: ink 11.92, muted 6.14, accent
    7.74. */
+/* Noto Serif SC is lighter than EB Garamond at the same weight. */
+:root:lang(zh) {
+  --c-weight: 500;
+  --c-weight-bold: 800;
+}
+
 :root[data-theme="dark"] {
   --c-ink: #e4dccb;
   --c-muted: #a89e8c;
@@ -65,7 +73,7 @@
 
 .constitution {
   font-family: var(--c-font-en);
-  font-size: 1.1875rem;
+  font-size: 1.625rem;
   font-weight: var(--c-weight);
   color: var(--c-ink);
   line-height: 1.65;
@@ -74,7 +82,7 @@
 }
 :lang(zh) .constitution {
   font-family: var(--c-font-zh);
-  font-size: 1.125rem;
+  font-size: 1.42rem;
   max-width: var(--c-measure-zh);
   line-height: 1.9;
 }
@@ -152,12 +160,19 @@
 .constitution-nav a { color: var(--c-ink); text-decoration: none; }
 .constitution-nav a:hover { color: var(--c-accent); }
 
+/* Wide screens: the same measure, a larger size. */
+@media (min-width: 100em) {
+  .constitution { font-size: 1.785rem; }
+  :lang(zh) .constitution { font-size: 1.56rem; }
+}
+
 @media print {
+  :root, body { background: #fff; }
   .constitution { max-width: none; font-size: 11pt; }
   .constitution a { color: inherit; text-decoration: none; }
   .constitution a[href]::after { content: none; }
   .constitution h2 { break-after: avoid; }
-  .constitution li { break-inside: avoid; }
+  .constitution ul ul > li { break-inside: avoid; }
 }
 
 /* hugo-book: its light, dark and auto themes take their colors from the
