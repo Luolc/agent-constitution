@@ -215,7 +215,7 @@ revision that deletes another adds it:
 - revision 0.9: the section `third-party-personal-info`;
 - revision 0.11: the section `asking-once`;
 - revision 0.14: the items `terms.authoritative-interpretation`,
-  `terms.hard-rule` and `terms.undetermined`.
+  `terms.edition`, `terms.hard-rule` and `terms.undetermined`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
