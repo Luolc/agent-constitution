@@ -6,5 +6,5 @@ en = '''
 Lower-ranking provisions (rules, the instructions of a project or a task, skills, built-in instructions of agent tools) may refine and tighten higher-ranking ones, and relax them only through an item listed in {@relaxations}, declared explicitly. Any other relaxation is void.
 '''
 zh = '''
-下位法 (规定，项目或任务的指令，skill，agent 工具的内置指令) 可以细化、收紧上位法；只有依照{@relaxations}所列的某一项并明确声明，才能放宽上位法。其他任何放宽一律无效。
+下位法 (规定、项目或任务的指令、skill、agent 工具的内置指令) 可以细化、收紧上位法；只有依照{@relaxations}所列的某一项并明确声明，才能放宽上位法。其他任何放宽一律无效。
 '''
