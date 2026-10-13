@@ -87,7 +87,9 @@ search reads content: run the same search on a file where it must match.
   the staged diff, `python3 tools/build_constitution.py --check`,
   `python3 -m unittest discover -s tools`, `tools/lint_zh_sources.py` and
   limae on `constitution/constitution.zh.md`. Install the hooks once after
-  cloning with `uvx pre-commit install`.
+  cloning with `uvx pre-commit install`. The hooks install `limae` for
+  themselves; the tests and `tools/lint_zh_sources.py` run by hand need it
+  on PATH.
 - `python3 tools/build_constitution.py`: rebuilds the generated files
   after a change to the constitution sources. With `--check` it writes
   nothing and fails on an error in the constitution or rule sources or a
@@ -104,7 +106,7 @@ search reads content: run the same search on a file where it must match.
   constitution and rule sources and prints `file:line: field: finding`;
   `--fix` writes limae's fixes back into the sources. A limae finding in
   `constitution/constitution.zh.md` is fixed in the sources or the build
-  script, never in that file. Needs `limae` on PATH.
+  script, never in that file.
 - `gitleaks git --redact --no-banner --verbose .`: the full-history scan
   that CI runs. Keep `--redact`; without it a hit prints the secret.
 
@@ -131,7 +133,8 @@ For leads and workers that `fleet` starts in this repo.
   it recorded at `fleet job end`.
 - Instruction files change in a task and a PR of their own
   (`rules/instruction-only-changes.toml`); CI fails a PR that mixes them
-  with other files.
+  with other files. Among them, `constitution/` changes also go apart
+  from `rules/`, in a PR of their own.
 - Worker report (`fleet done --report-file`): what was done, the PR and its
   merge commit, the checks run and CI's `run_attempt`, why done or
   abandoned, and follow-ups left.
