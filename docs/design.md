@@ -363,17 +363,29 @@ is written `⟨must-ask⟩` in the table:
 | Title, draft | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
 | Title, active | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
-| Section | `- ⟨must-ask⟩**§1** <content>` | `- ⟨must-ask⟩**第一款** <content>` |
-| List item | `  - ⟨must-ask.money⟩(**3**) <content>` | `  - ⟨must-ask.money⟩(**三**) <content>` |
+| Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
+| List item | `    -   ⟨must-ask.money⟩(**3**) <content>` | `    -   ⟨must-ask.money⟩(**三**) <content>` |
 | Citation of an article | `[Art. IV][authority]` | `[第四条][authority]` |
 | Citation of a section | `[Art. IV §1][must-ask]` | `[第四条第一款][must-ask]` |
 | Citation of a list item | `[Art. IV §1(3)][must-ask.money]` | `[第四条第一款第三项][must-ask.money]` |
 | Suffix | `§1a`, `(3a)`, `Art. IV §1(3a)` | `第一款之一`, `(三之一)`, `第四条第一款第三项之一` (a is 之一, b is 之二) |
-| Repealed section | `- ⟨…⟩**§3** (repealed November 2026)` | `- ⟨…⟩**第三款** (2026 年 11 月废止)` |
-| Repealed list item | `  - ⟨…⟩(**3**) (repealed November 2026)` | `  - ⟨…⟩(**三**) (2026 年 11 月废止)` |
+| Repealed section | `-   ⟨…⟩**§3** (repealed November 2026)` | `-   ⟨…⟩**第三款** (2026 年 11 月废止)` |
+| Repealed list item | `    -   ⟨…⟩(**3**) (repealed November 2026)` | `    -   ⟨…⟩(**三**) (2026 年 11 月废止)` |
 | Repealed article | `## ⟨…⟩Article IV (repealed November 2026)`, nothing below it | `## ⟨…⟩第四条 (2026 年 11 月废止)` |
 | Adjacent item citations | `Art. IV §1(2) or (4)`, `Art. IV §1(1) to (7)`, `Art. IV §1(1), (2) and (4)` | `第四条第一款第二项或第四项`, `第四条第一款第一项至第七项`, `第四条第一款第一项、第二项和第四项` |
 | Adjacent section citations | `Art. IV §1 and §2`, `Art. IV §1 to §3`, `Art. IV §1, §2 and §4` | `第四条第一款和第二款`, `第四条第一款至第三款`, `第四条第一款、第二款和第四款` |
+
+A list marker is padded to four characters, and the further lines of a
+section or an item, nested lists and paragraphs included, are indented
+to its content column: four spaces for a section, eight for an item.
+A section or an item whose text has a blank line in it is followed by a
+blank line. Python-Markdown nests only what is indented four spaces and
+joins a list line to the paragraph just above it; with this layout the
+output renders alike there and in CommonMark (GitHub) as long as a
+source text's own nested blocks are indented four spaces and a list line
+after a paragraph has a blank line before it. A source text that breaks
+either still renders wrong in Python-Markdown; the constitution has none
+today.
 
 An item citation renders short, as its item number alone (`(4)`, `(2a)`;
 `第四项`, `第二项之一`), when the text just before it is exactly one
