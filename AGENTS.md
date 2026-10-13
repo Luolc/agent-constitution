@@ -84,9 +84,12 @@ search reads content: run the same search on a file where it must match.
 ## Checks
 
 - `uvx pre-commit run --all-files`: the commit hooks, which are gitleaks on
-  the staged diff, `python3 tools/build_constitution.py --check` and
-  `python3 -m unittest discover -s tools`. Install the hooks once after
-  cloning with `uvx pre-commit install`.
+  the staged diff, `python3 tools/build_constitution.py --check`,
+  `python3 -m unittest discover -s tools`, `tools/lint_zh_sources.py` and
+  limae on `constitution/constitution.zh.md`. Install the hooks once after
+  cloning with `uvx pre-commit install`. The hooks install `limae` for
+  themselves; the tests and `tools/lint_zh_sources.py` run by hand need it
+  on PATH.
 - `python3 tools/build_constitution.py`: rebuilds the generated files
   after a change to the constitution sources. With `--check` it writes
   nothing and fails on an error in the constitution or rule sources or a
@@ -95,6 +98,15 @@ search reads content: run the same search on a file where it must match.
   or a rule of that base is gone without being retired (a draft base is
   skipped with a note); `--root <dir>` runs it on another
   checkout.
+- `python3 tools/check_instruction_changes.py --base origin/main`: fails
+  when the branch changes instruction files (the path table at the top of
+  the script) together with other files; generated files do not count.
+  Run it before a push; CI runs it on every pull request.
+- `python3 tools/lint_zh_sources.py`: runs limae on the `zh` text of the
+  constitution and rule sources and prints `file:line: field: finding`;
+  `--fix` writes limae's fixes back into the sources. A limae finding in
+  `constitution/constitution.zh.md` is fixed in the sources or the build
+  script, never in that file.
 - `gitleaks git --redact --no-banner --verbose .`: the full-history scan
   that CI runs. Keep `--redact`; without it a hit prints the secret.
 
@@ -103,9 +115,10 @@ search reads content: run the same search on a file where it must match.
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`. Its
 one job, `check`, scans the full history with gitleaks (pinned by version and
 SHA-256), runs `pre-commit run --all-files` with the gitleaks hook skipped,
-so the constitution build check and its tests run there too, and then runs
-the build check with `--base`: against the pull request's base commit, or
-on a push to `main` against the commit before the push. `check` is the
+so the constitution build check, the tests and both limae checks run there
+too, and then runs the build check with `--base` and the instruction-only
+check, both against the pull request's base commit, or on a push to `main`
+against the commit before the push. `check` is the
 required status check on `main`: a merge waits for it to pass. Runners are
 pinned to `ubuntu-24.04`, and actions by commit SHA.
 
@@ -118,8 +131,11 @@ For leads and workers that `fleet` starts in this repo.
   checkout of a PR head is `fleet worktree agent-constitution --name <name>
   --detach <head-sha>`, never a bare `git worktree add`: fleet removes what
   it recorded at `fleet job end`.
-- `constitution/` changes in a task of its own; do not mix it with other
-  files in one PR.
+- Instruction files change in a task and a PR of their own
+  (`rules/instruction-only-changes.toml`); CI fails a PR that mixes them
+  with other files. The constitution sources (`constitution/index.toml`,
+  `constitution/articles/`) change in a PR of their own, with no other
+  file but the regenerated `constitution/constitution.*.md`.
 - Worker report (`fleet done --report-file`): what was done, the PR and its
   merge commit, the checks run and CI's `run_attempt`, why done or
   abandoned, and follow-ups left.
