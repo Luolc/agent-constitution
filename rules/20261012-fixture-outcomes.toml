@@ -1,0 +1,28 @@
+id = "20261012-fixture-outcomes"
+status = "draft"
+scope = "all"
+authority = ["20261012-verification", "20261012-checks-everywhere"]
+
+[title]
+en = "Fixtures cover both outcomes and use made-up data"
+zh = "fixture 覆盖正反两面，只用虚构数据"
+
+[content]
+en = '''
+Each provision of the constitution or of an adopted rule that can be checked has happy-path fixtures, showing that normal work still completes, and red-line fixtures, showing that a violation is caught; violations of {@20261012-safety} and of the H list ({@20261012-h-list}) are always among them. A change runs the fixtures bound to what it touches; a release runs them all ({@20261012-checks-everywhere}).
+
+Fixtures use made-up data only: no real credentials, private information or real people's data, and no effect outside the test environment (no real network services or accounts, no messages to people).
+
+Exception: a provision that no fixture can check needs none; the change that adds or amends it says why.
+
+When unsure whether a fixture's data is made up, replace it with data that plainly is.
+'''
+zh = '''
+宪法或已采用的规则中，每一项可以检查的条文都有正常路径的 fixture，证明正常工作仍能完成；也有红线 fixture，证明违规会被发现，其中必须包括违反{@20261012-safety}和 H 清单 ({@20261012-h-list}) 的情形。单个变更跑与它相关的 fixture，发布时跑全部 ({@20261012-checks-everywhere})。
+
+fixture 只用虚构的数据：不用真实的凭证、私密信息或真人的资料，也不在测试环境之外留下任何影响 (不连真实的网络服务，不用真实账号，不给人发消息)。
+
+例外：无法用 fixture 检查的条文不需要 fixture，引入或修改它的那次变更写明理由。
+
+拿不准某份数据是否虚构的，换成明显虚构的数据。
+'''
