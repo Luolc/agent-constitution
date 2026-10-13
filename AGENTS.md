@@ -131,10 +131,18 @@ SHA-256), runs `pre-commit run --all-files` with the gitleaks hook skipped,
 so the constitution build check, the tests and both limae checks run there
 too, builds the static site with the pinned Hugo and checks its links, and
 then runs the build check with `--base` and the instruction-only check,
-both against the pull request's base commit, or on a push to `main` against
-the commit before the push. `check` is the required status check on
-`main`: a merge waits for it to pass. Runners are pinned to
-`ubuntu-24.04`, and actions by commit SHA.
+both against the first parent of the checked-out merge commit on a pull
+request (`docs/design.md`, Checkers), or against the commit before the push
+on a push to `main`. `check` is the required status check on `main`: a merge
+waits for it to pass. Runners are pinned to `ubuntu-24.04`, and actions by
+commit SHA.
+
+`.github/workflows/token-count.yml` ("Token count") runs only on pushes to
+`main`. It gets an access token through Workload Identity Federation, builds
+the site with `--require-tokens`, and writes the length lines of the two
+pages to the job summary and the log; it publishes nothing. It is not a
+required check, and it goes red when the token exchange or the count fails
+(`docs/design.md`, Static site, Credential).
 
 ## Fleet
 
