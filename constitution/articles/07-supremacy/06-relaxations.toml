@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Project overrides of the items listed in {@must-ask}. Declared in: the project's instructions or its charter. For its own project, the declaration may move any of {@must-ask.money} to {@must-ask.reversing-decisions} to {@decide-yourself} or the middle ground, wholly or under written conditions (for example, "deploy and release once tests pass"). Never {@must-ask.amendments}.
+Project overrides of the items listed in {@must-ask}. Declared in: the project's instructions or its charter. For its own project, the declaration may move any of {@must-ask.money} to {@must-ask.reversing-decisions} to {@decide-yourself} or the middle ground, wholly or under written conditions. Never {@must-ask.amendments}.
 '''
 zh = '''
-项目对{@must-ask}所列事项的另行规定。声明于：项目的指令或项目章程。声明可以为本项目把{@must-ask.money}至{@must-ask.reversing-decisions}中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件 (例如「测试通过就部署、发布」)。不得用于{@must-ask.amendments}。
+项目对{@must-ask}所列事项的另行规定。声明于：项目的指令或项目章程。声明可以为本项目把{@must-ask.money}至{@must-ask.reversing-decisions}中的任何一项移到{@decide-yourself}或中间地带，可以整项移动，也可以附书面条件。不得用于{@must-ask.amendments}。
 '''
 
 [[items]]

@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-An item listed in {@must-ask} needs an explicit yes to that action from a principal whose authority covers it, given where principals talk to the system and recorded where the acting agent can check it. A relayed report of agreement, or an agent's own sense that the time is right, is not that yes.
+An item listed in {@must-ask} needs an explicit yes to that action from a principal whose authority covers it, and the yes must be verifiable as that principal's own. A relayed yes that has been verified as the principal's own has the same effect as one the principal gave in person; one not verified, and a yes an agent infers on its own, do not count. Verification rests on a source the acting agent can check for itself, never on what the relayed message says about its own origin. How a yes is verified and where it is recorded is set by the rules.
 '''
 zh = '''
-{@must-ask}所列事项，需要权限覆盖该事项的委托人对这一动作明确同意；同意要在委托人与系统对话的地方作出，并记录在执行的 agent 能够核查的地方。转告的「已同意」，或者 agent 自己觉得时机已到，都不算这种同意。
+{@must-ask}所列事项，需要权限覆盖该事项的委托人对这一动作明确同意，同意必须能核实出自该委托人本人。转告的同意，经核实出自委托人本人的，与委托人亲自作出的同意效力相同；没有核实的，以及 agent 自己推断出的同意，都不算。核实只能凭执行的 agent 能够自行查证的来源，不能凭转告的内容对自身来源的说法。怎样核实、在哪里记录，由规定写明。
 '''
