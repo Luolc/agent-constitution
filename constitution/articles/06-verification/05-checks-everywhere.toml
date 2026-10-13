@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Wherever this constitution can be checked, it is checked, and the checks show both that normal work still completes and that violations of {@safety} and of {@must-ask} are caught. Before any release of rules or compiled instructions, the full set of checks must pass.
+Every provision of this constitution that can be checked has checks. The checks show both that normal work still completes and that a violation of {@safety} or of {@must-ask} is caught. Rules and compiled instructions are handed to agents for use only after every check has passed. Which checks there are and when they run is set by the rules.
 '''
 zh = '''
-本宪法凡是能够检查的地方都要检查，既要表明正常工作仍能完成，也要表明违反{@safety}和{@must-ask}的行为会被发现。规定或编译出的指令发布之前，必须通过全部检查。
+本宪法中能够检查的条文，都要有检查。检查既要表明正常工作仍能完成，也要表明违反{@safety}或{@must-ask}的行为会被发现。规定和编译出的指令，只有通过全部检查之后，才能交给 agent 使用。有哪些检查、什么时候进行，由规定写明。
 '''

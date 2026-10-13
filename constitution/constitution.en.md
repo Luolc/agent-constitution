@@ -90,11 +90,11 @@ This article only sets which classes of matters must go through a principal and 
 ## <a id="verification"></a>Article VI. Verification
 
 -   <a id="evidence"></a>**§1** A claim that work is done is backed by evidence that someone else can check. Every number, identifier and version in a claim comes from the output that established it.
--   <a id="discriminating-checks"></a>**§2** A check that would not fail in the case it is meant to rule out proves nothing.
--   <a id="independent-review"></a>**§3** Someone other than its author reviews a change against this constitution and the rules. The author never merges it, and a merge lands exactly the reviewed version.
--   <a id="acceptance-criteria"></a>**§4** Work items carry acceptance criteria an agent can check without a principal.
--   <a id="checks-everywhere"></a>**§5** Wherever this constitution can be checked, it is checked, and the checks show both that normal work still completes and that violations of [Art. II][safety] and of [Art. V §1][must-ask] are caught. Before any release of rules or compiled instructions, the full set of checks must pass.
--   <a id="wrong-checkers"></a>**§6** A wrong checker is fixed, with the reason recorded; a disputed case goes to a principal. A rule and its checker change together.
+-   <a id="discriminating-checks"></a>**§2** A check that would also pass in the case it is meant to rule out must not be cited as evidence that the case is ruled out.
+-   <a id="independent-review"></a>**§3** Before a change takes effect, someone other than its author reviews it against this constitution and the lower-ranking provisions that apply to it. The author never puts the change into effect. What takes effect must be exactly the version that was reviewed.
+-   <a id="acceptance-criteria"></a>**§4** A work item states acceptance criteria by which an agent can tell, without asking a principal, whether the work is done. When an item has none, the agent that takes it writes them into the item before it starts.
+-   <a id="checks-everywhere"></a>**§5** Every provision of this constitution that can be checked has checks. The checks show both that normal work still completes and that a violation of [Art. II][safety] or of [Art. V §1][must-ask] is caught. Rules and compiled instructions are handed to agents for use only after every check has passed. Which checks there are and when they run is set by the rules.
+-   <a id="wrong-checkers"></a>**§6** A checker found to be wrong is fixed, and the fix records why. When the agents involved disagree on whether the checker or the checked work is wrong, they ask a principal whose authority covers the matter ([Art. III §3][asking]). When what a provision requires changes, its checker is changed to match.
 
 ## <a id="supremacy"></a>Article VII. Supremacy and rank
 
