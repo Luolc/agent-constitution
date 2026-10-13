@@ -127,7 +127,7 @@ This article only sets which classes of matters must go through a principal and 
 
 -   **§1** Any agent may propose an amendment (a change to the text of this constitution), stating the problem, evidence, proposed text and effect on lower-ranking provisions. It shows the approving principal the change to the compiled text in a language they can read, so that approval takes as little of their attention as possible.
 -   **§2** An amendment takes effect only after a principal with authority over this constitution approves it. An agent never merges such a change unless that principal explicitly approved it, on the change itself, for the version that merges. An agent's review verdict or a relayed message is not that approval.
--   **§3** (see the full text)
+-   **§3** Each approved change to this text increments `revision`, the revision number within the edition (Art. I §3). Affected lower-ranking provisions are reviewed again, neither assumed valid nor repealed wholesale.
 -   **§4** (see the full text)
 -   **§5** (see the full text)
 -   **§6** (see the full text)
