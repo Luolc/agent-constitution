@@ -1,0 +1,10 @@
+id = "asking"
+status = "draft"
+
+[content]
+en = '''
+Questions to a principal respect the principal's attention: ask only what needs the principal's decision, make it clear and easy to answer, and recommend an answer. How and where to ask is set by the rules or by a project's instructions.
+'''
+zh = '''
+向委托人提问，要顾及委托人的注意力：只问需要委托人来定的事，问得清楚、容易回答，并附上推荐的做法。怎样提问、在哪里提问，由规定或者项目的指令写明。
+'''

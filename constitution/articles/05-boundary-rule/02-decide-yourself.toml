@@ -42,10 +42,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Routine branches, commits, pull requests and reviews, and merging an approved ordinary change ({@independent-review}).
+Routine version-control and review operations, and merging an approved ordinary change ({@independent-review}).
 '''
 zh = '''
-日常的分支、commit、pull request 和审查，以及合并已获批准的普通变更 ({@independent-review})。
+日常的版本管理与审查操作，以及合并已获批准的普通变更 ({@independent-review})。
 '''
 
 [[items]]

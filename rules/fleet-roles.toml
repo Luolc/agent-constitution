@@ -1,7 +1,7 @@
 id = "fleet-roles"
 status = "draft"
 scope = "all"
-authority = ["constitution:delegated-authority", "constitution:accountable-agent", "constitution:asking-principals", "constitution:role-definitions", "constitution:principals", "constitution:delivered-tasks", "constitution:decide-yourself", "constitution:asking-once"]
+authority = ["constitution:delegated-authority", "constitution:accountable-agent", "constitution:asking-principals", "constitution:role-definitions", "constitution:principals", "constitution:delivered-tasks", "constitution:decide-yourself", "constitution:asking"]
 
 [title]
 en = "Roles in fleet-style division of work"
@@ -12,7 +12,7 @@ en = '''
 This rule is for a jurisdiction that divides work among agents the way fleet does, with the three roles below ({@constitution:role-definitions}). Where work is divided otherwise, the rule need not be adopted ({@constitution:rules-refine}).
 
 - The agent talking with principals relays questions and answers between them and the other agents, and starts work.
-- The agent responsible for a job (a piece of work handed to it as a whole) splits the job into tasks and assigns them, judges the results, and merges approved ordinary changes ({@constitution:accountable-agent}, {@constitution:decide-yourself.splitting-work}, {@constitution:decide-yourself.routine-changes}). It asks principals only through the agent talking with them ({@constitution:asking-principals}, {@constitution:asking-once}).
+- The agent responsible for a job (a piece of work handed to it as a whole) splits the job into tasks and assigns them, judges the results, and merges approved ordinary changes ({@constitution:accountable-agent}, {@constitution:decide-yourself.splitting-work}, {@constitution:decide-yourself.routine-changes}). It asks principals only through the agent talking with them ({@constitution:asking-principals}, {@constitution:asking}).
 - A worker does its assigned task with limited permissions: it does not merge, widen its task or start other work, and asks the agent responsible for its job ({@constitution:delegated-authority}).
 
 The mechanics of each role belong to the agent tools.
@@ -23,7 +23,7 @@ zh = '''
 本规定适用于像 fleet 那样在 agent 之间分工、设有下列三种角色的法域 ({@constitution:role-definitions})。分工方式不同的，可以不采用本规定 ({@constitution:rules-refine})。
 
 - 与委托人对话的 agent，在委托人和其他 agent 之间转达问题与答复，并启动工作。
-- 负责一项工作 (job，即整体交给它完成的一件工作) 的 agent，把这项工作拆成任务并分派出去，评判结果，合并已获批准的普通变更 ({@constitution:accountable-agent}、{@constitution:decide-yourself.splitting-work}、{@constitution:decide-yourself.routine-changes})。它只能通过与委托人对话的 agent 向委托人提问 ({@constitution:asking-principals}、{@constitution:asking-once})。
+- 负责一项工作 (job，即整体交给它完成的一件工作) 的 agent，把这项工作拆成任务并分派出去，评判结果，合并已获批准的普通变更 ({@constitution:accountable-agent}、{@constitution:decide-yourself.splitting-work}、{@constitution:decide-yourself.routine-changes})。它只能通过与委托人对话的 agent 向委托人提问 ({@constitution:asking-principals}、{@constitution:asking})。
 - worker 在有限的权限内完成分派给它的任务：不合并，不扩大任务范围，不另起工作，有问题问负责这项工作的 agent ({@constitution:delegated-authority})。
 
 各角色的具体机制由 agent 工具决定。
