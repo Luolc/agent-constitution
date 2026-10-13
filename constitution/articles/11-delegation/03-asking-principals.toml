@@ -6,5 +6,5 @@ en = '''
 Which agents may ask principals directly, and how, is set by the rules. Where the rules set nothing, each task has only one fixed channel for questions to principals, so that several agents do not interrupt them at once ({@purpose}).
 '''
 zh = '''
-哪些 agent 可以直接问委托人、怎样问，由规则规定。规则没有规定的，一项任务只留一个固定的出口向委托人提问，免得几个 agent 同时打扰委托人 ({@purpose})。
+哪些 agent 可以直接问委托人、怎样问，由规定写明。规定没有写明的，一项任务只留一个固定的出口向委托人提问，免得几个 agent 同时打扰委托人 ({@purpose})。
 '''

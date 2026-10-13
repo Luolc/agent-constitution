@@ -6,5 +6,5 @@ en = '''
 Precedents give evidence and reference for the evolution of rules: when like cases recur, what their precedents show is distilled and settled into a rule ({@ordinary-rule-adoption}), and, where it touches this constitution, into an amendment proposal ({@amendment-procedure}). What a precedent shows changes a permission, obligation or prohibition only by these routes. Precedents, and an agent's understanding of a provision in a case, never expand authority, and neither is an authoritative interpretation ({@terms.authoritative-interpretation}).
 '''
 zh = '''
-判例为规则的演进提供证据和参考：同类个案反复出现时，从判例中提炼出的做法固化为规则 ({@ordinary-rule-adoption})；涉及本宪法的，提出修正案 ({@amendment-procedure})。判例所反映的做法，只有经由这两条途径，才能改变许可、义务或禁止。判例，以及 agent 在个案中对条文的理解，都不得扩大权限，也都不是有权解释 ({@terms.authoritative-interpretation})。
+判例为规定的演进提供证据和参考：同类个案反复出现时，从判例中提炼出的做法固化为规定 ({@ordinary-rule-adoption})；涉及本宪法的，提出修正案 ({@amendment-procedure})。判例所反映的做法，只有经由这两条途径，才能改变许可、义务或禁止。判例，以及 agent 在个案中对条文的理解，都不得扩大权限，也都不是有权解释 ({@terms.authoritative-interpretation})。
 '''

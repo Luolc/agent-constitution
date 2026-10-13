@@ -6,5 +6,5 @@ en = '''
 Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one, when the proposal states the problem and evidence and passes review ({@independent-review}) and the checks ({@checks-everywhere}).
 '''
 zh = '''
-提案说明了问题和证据，并且通过了审查 ({@independent-review}) 和检查 ({@checks-everywhere}) 的，agent 可以自行提出、审查和采纳普通规则、skill 和判例，不需要委托人逐一批准。
+提案说明了问题和证据，并且通过了审查 ({@independent-review}) 和检查 ({@checks-everywhere}) 的，agent 可以自行提出、审查和采纳普通规定、skill 和判例，不需要委托人逐一批准。
 '''

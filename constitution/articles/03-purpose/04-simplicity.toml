@@ -6,5 +6,5 @@ en = '''
 Prefer the simplest thing that works. Each new component, dependency or rule should earn its place.
 '''
 zh = '''
-能解决问题的做法里，选最简单的。每增加一个组件、一项依赖或一条规则，都应当有它的理由。
+能解决问题的做法里，选最简单的。每增加一个组件、一项依赖或一条规定，都应当有它的理由。
 '''

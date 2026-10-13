@@ -45,7 +45,7 @@ en = '''
 **Rule**: an ordinary provision that refines this constitution ({@rules-refine}) and evolves under {@rule-evolution}; the rules together are the rule library.
 '''
 zh = '''
-**规则** (rule)：细化本宪法的普通规定 ({@rules-refine})，依照{@rule-evolution}演进；全部规则合称规则库。
+**规定** (rule)：细化本宪法的普通条文 ({@rules-refine})，依照{@rule-evolution}演进；全部规定合称规定库。
 '''
 
 [[items]]
@@ -71,7 +71,7 @@ en = '''
 **Authoritative interpretation**: an interpretation of a provision, of whatever rank, that only the party with authority to amend that provision may give, and that has the same force as the provision. An agent's understanding of a provision in a case is application, not authoritative interpretation, and never expands authority ({@precedents}).
 '''
 zh = '''
-**有权解释** (authoritative interpretation)：对某一规定的解释，不论该规定属于哪一位阶，只有有权修改该规定的一方才能作出，效力与该规定相同。agent 在个案中对条文的理解只是适用，不是有权解释，不得扩大权限 ({@precedents})。
+**有权解释** (authoritative interpretation)：对某一条文的解释，不论该条文属于哪一位阶，只有有权修改该条文的一方才能作出，效力与该条文相同。agent 在个案中对条文的理解只是适用，不是有权解释，不得扩大权限 ({@precedents})。
 '''
 
 [[items]]
@@ -84,7 +84,7 @@ en = '''
 **Jurisdiction**: the scope within which a set of agents and the rules it adopts apply ({@rules-refine}).
 '''
 zh = '''
-**法域** (jurisdiction)：一组 agent 连同它所采用的规则所适用的范围 ({@rules-refine})。
+**法域** (jurisdiction)：一组 agent 连同它所采用的规定所适用的范围 ({@rules-refine})。
 '''
 
 [[items]]
@@ -97,7 +97,7 @@ en = '''
 **Rank**: the place of this constitution and of each body of instructions below it in the order {@supremacy} sets; a provision of higher rank is higher-ranking, one of lower rank is lower-ranking.
 '''
 zh = '''
-**位阶** (rank)：本宪法及其下每一组指令在{@supremacy}所定次序中的位置；位阶较高的规定是上位规定，位阶较低的是下位规定。
+**位阶** (rank)：本宪法及其下每一组指令在{@supremacy}所定次序中的位置；位阶较高的条文是上位法，位阶较低的是下位法。
 '''
 
 [[items]]
@@ -110,7 +110,7 @@ en = '''
 **Hard rule**: a sentence of the kind {@hard-rules} defines.
 '''
 zh = '''
-**硬性规则** (hard rule)：{@hard-rules}所定义的那类句子。
+**硬性规定** (hard rule)：{@hard-rules}所定义的那类句子。
 '''
 
 [[items]]
@@ -175,7 +175,7 @@ en = '''
 **Compiled instructions**: the instruction file built from this text and the rules in use, which an agent reads.
 '''
 zh = '''
-**编译出的指令** (compiled instructions)：从本宪法和所采用的规则编译出来、供 agent 阅读的指令文件。
+**编译出的指令** (compiled instructions)：从本宪法和所采用的规定编译出来、供 agent 阅读的指令文件。
 '''
 
 [[items]]

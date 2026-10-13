@@ -19,7 +19,7 @@ en = '''
 Adjustable rules. Declared in: the instructions of a project or a task. Where an ordinary rule marks a parameter or procedure as adjustable, those instructions may set their own value, naming the rule. Never for a rule that implements a hard rule of this constitution.
 '''
 zh = '''
-可调规则。声明于：项目或任务的指令。普通规则把某个参数或做法标为可调的，这些指令可以设定自己的值，并写明所针对的规则。落实本宪法硬性规则的规则，不得这样调整。
+可调规定。声明于：项目或任务的指令。普通规定把某个参数或做法标为可调的，这些指令可以设定自己的值，并写明所针对的规定。用来落实本宪法硬性规定的规定，不得这样调整。
 '''
 
 [[items]]

@@ -6,5 +6,5 @@ en = '''
 When a lower-ranking provision conflicts with a higher-ranking one, one of them is changed (the lower-ranking one corrected, or the higher-ranking one amended by its own process); the two never stand together, and replacement is explicit ({@legal-form}).
 '''
 zh = '''
-下位规定与上位规定冲突时，修改其中一方 (纠正下位规定，或者依照上位规定自身的程序修改上位规定)，二者不得并存；替代要明文作出 ({@legal-form})。
+下位法与上位法冲突时，修改其中一方 (纠正下位法，或者依照上位法自身的程序修改上位法)，二者不得并存；替代要明文作出 ({@legal-form})。
 '''
