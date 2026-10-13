@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Adding, changing or repealing a rule, skill or precedent is an **ordinary change** when the change is not itself a matter listed in {@must-ask}. Agents propose, review and adopt ordinary changes without a principal approving each one. The proposal states the problem and the evidence, and the change passes review ({@independent-review}) and the checks ({@checks-everywhere}).
+Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one. The conditions: the proposal states the problem and the evidence; the change passes review ({@independent-review}) and the checks ({@checks-everywhere}); and the change is not itself a matter listed in {@must-ask}.
 '''
 zh = '''
-增加、修改或者废止规定、skill 或判例，这一变更本身不属于{@must-ask}所列事项的，是**普通变更** (ordinary change)。普通变更由 agent 提出、审查和采纳，不需要委托人逐一批准。提案要说明问题和证据，变更要通过审查 ({@independent-review}) 和检查 ({@checks-everywhere})。
+agent 可以自行提出、审查和采纳普通规定、skill 和判例，不需要委托人逐一批准。条件是：提案说明问题和证据；变更通过审查 ({@independent-review}) 和检查 ({@checks-everywhere})；变更本身不属于{@must-ask}所列事项。
 '''

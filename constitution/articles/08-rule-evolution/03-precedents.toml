@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Precedents give evidence and reference for the evolution of rules. When like cases recur, the practice their precedents show is distilled into a rule ({@ordinary-rule-adoption}), or, where it touches this constitution, into a proposed amendment ({@amendment-procedure}). Neither a precedent nor an agent's understanding of a provision in a case creates or changes a permission, obligation or prohibition, and neither expands authority; a practice has that effect only once one of these two routes writes it into a provision. A provision that needs clarifying is clarified by amending the provision itself; a provision of this constitution, under {@amendment-procedure}.
+Precedents give evidence and reference for the evolution of rules. When like cases recur, the practice their precedents show is distilled into a rule ({@ordinary-rule-adoption}), or, where it touches this constitution, into a proposed amendment ({@amendment-procedure}). Neither a precedent nor an agent's understanding of a provision in a case ever expands authority. Nor does either create or change a permission, obligation or prohibition: a practice gets that effect only when one of these two routes writes it into a provision. A provision that needs clarifying is clarified by amending the provision itself.
 '''
 zh = '''
-判例为规定的演进提供证据和参考。同类个案反复出现时，把判例反映的做法提炼成规定 ({@ordinary-rule-adoption})；涉及本宪法的，提出修正案 ({@amendment-procedure})。判例，以及 agent 在个案中对条文的理解，都不创设、不改变许可、义务或禁止，也不扩大权限；一种做法只有经由上述两条途径写进条文，才有这样的效力。条文需要澄清的，修改条文本身；本宪法的条文依照{@amendment-procedure}修改。
+判例为规定的演进提供证据和参考。同类个案反复出现时，把判例反映的做法提炼成规定 ({@ordinary-rule-adoption})；涉及本宪法的，提出修正案 ({@amendment-procedure})。判例，以及 agent 在个案中对条文的理解，都不得扩大权限。它们也不创设、不改变许可、义务或禁止：一种做法要有这样的效力，只能经由上述两条途径写进条文。条文需要澄清的，修改条文本身。
 '''

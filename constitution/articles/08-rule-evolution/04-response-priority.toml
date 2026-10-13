@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Clear productivity gains: adopt as an ordinary change ({@ordinary-rule-adoption}) once evidence shows the gain and shows that safety ({@safety}) is no weaker.
+Clear productivity gains: adopt under {@ordinary-rule-adoption} once evidence shows the gain and shows that safety ({@safety}) is no weaker.
 '''
 zh = '''
-明显的效率提升：有证据表明收益确实存在、安全 ({@safety}) 也没有削弱之后，作为普通变更采纳 ({@ordinary-rule-adoption})。
+明显的效率提升：有证据表明收益确实存在、安全 ({@safety}) 也没有削弱之后，依照{@ordinary-rule-adoption}采纳。
 '''
 
 [[items]]
