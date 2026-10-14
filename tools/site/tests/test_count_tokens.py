@@ -33,6 +33,10 @@ UNAUTHORIZED = urllib.error.HTTPError(
 )
 
 
+def tearDownModule():
+  UNAUTHORIZED.close()
+
+
 class CountTokensTest(unittest.TestCase):
   def count(self, environ=None, **urlopen):
     auth = count_tokens.credential(environ or {count_tokens.KEY_VARIABLE: KEY})
