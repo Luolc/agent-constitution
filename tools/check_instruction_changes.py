@@ -13,6 +13,7 @@ Exit status: 0 on pass, 1 on a mixed change, 2 when git cannot give the diff.
 """
 
 import argparse
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -108,8 +109,8 @@ def main(argv: list[str] | None = None) -> int:
   )
   parser.add_argument(
     "--root",
-    default=".",
-    help="the repository (default: the current directory)",
+    default=str(Path(__file__).resolve().parent.parent),
+    help="the repository (default: the repo this script is in)",
   )
   parser.add_argument(
     "--instructions",
