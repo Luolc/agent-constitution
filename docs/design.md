@@ -459,9 +459,9 @@ Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
 `revision` and language; in the full version, when a part has the
 asterisk (a provision marked for maintainers, or the preamble's heading),
-also what the asterisk means: the part is about how the constitution came
-about, is organized and is amended, is shown to people by default, and the
-version compiled for agents leaves out its text by default. Output is UTF-8 with LF
+also what the asterisk means: the parts marked are background for people,
+where the constitution comes from, how it is organized and how it is
+amended, and the version for agents omits them. Output is UTF-8 with LF
 line endings and a final newline, with no timestamp; the same sources give
 byte-identical output.
 
@@ -694,16 +694,16 @@ is a release (rule `must-ask-items`) and not set up.
   dropped, the title goes into the front matter, the revision from
   `index.toml` is set under the title, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. Under
-  the title is a bulleted list: the revision, the length (below), and,
-  when the text has an asterisk, its legend: the parts marked are about
-  how the constitution came about, is organized and is amended, are shown
-  to people by default, and the version compiled for agents, linked,
-  leaves out their text by default. The asterisk is set small and bold in
+  the title is a bulleted list, its left edge at the column's: the
+  revision, the length (below), and, when the text has an asterisk, its
+  legend, smaller and fainter than the two items above it: the asterisk,
+  then that the parts marked are background for people (where the
+  constitution comes from, how it is organized and how it is amended) and
+  that the version for agents, linked, omits them. The asterisk is set small and bold in
   the accent color, not a superscript and without opening up the line,
   lowered until its middle sits a little above the middle of an item
-  number's parentheses and its top well under the top of the number; in
-  the legend it sits on the line. The sidebar's list of articles shows the
-  preamble's asterisk the same way.
+  number's parentheses and its top well under the top of the number. The
+  legend and the sidebar's list of articles show it the same way.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, built the
   same way but with its text as is: no anchors, no links, the provisions
@@ -723,17 +723,20 @@ is a release (rule `must-ask-items`) and not set up.
   button after it opens a popup, on hover or a click or tap; it is a
   disclosure button (`aria-expanded`), reached with the keyboard, and
   Escape closes it (`web/assets/count-info.js`, inlined in `<head>`). The
-  popup hangs from the button with no gap and the button inside its width,
-  so the pointer reaches its link without leaving it. The
+  popup hangs from the button with no gap, its left edge at the start of
+  the length and the button inside its width, so the pointer reaches its
+  link without leaving it. The
   popup first says that the length under the title is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
   full version is the generated file without its header line, anchors and
-  link definitions included; a token count not made is a dash); under it,
-  smaller and fainter, which API counted the tokens for which model (the
-  model is `COUNT_MODEL` in `build_site.py`) or why they were not counted,
-  what the version for agents leaves out, and the revision and the
-  abbreviated commit of the build (left out outside git); last, on a line
+  link definitions included; a token count not made is a dash), the table
+  as wide as the popup; under it, smaller and fainter, a bulleted list
+  (spans with ARIA list roles): what the version for agents omits, which
+  API counted the tokens for which model or why they were not counted (the
+  model is `COUNT_MODEL` in `build_site.py`, named in words by
+  `COUNT_MODEL_NAME` next to it), and the revision and the abbreviated
+  commit of the build (left out outside git); last, on a line
   of its own, the link to the page of the version for agents. Each page's two versions are counted
   separately, so a build with a credential makes four calls.
 - Credential: only from the environment, never from a file in this repo,
@@ -785,7 +788,11 @@ is a release (rule `must-ask-items`) and not set up.
   generator as is; the last part maps it onto hugo-book's variables.
   Centered article headings, bold section and item numbers (bold in the
   Markdown), English text ragged right and Chinese justified, a print
-  style without link decoration. The text size grows with the window
+  style without link decoration. Every link on the page and in the
+  sidebar is underlined, in the text color like the citations, so that it
+  is told apart without its color; the underline has a contrast of at
+  least 3:1 against the page and the sidebar in both color themes. The
+  text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
   so a line keeps about 90 characters in English and 40 in Chinese; the
   column is centered right of the sidebar. Fonts: EB Garamond and Noto
