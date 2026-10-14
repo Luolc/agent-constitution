@@ -506,3 +506,81 @@ fn a_pack_enters_a_one_of_through_the_child_an_overriding_rule_takes() {
     assert!(!rules.contains(&"R6".to_owned()), "{rules:?}");
     assert!(!run.stderr.contains("warning"), "{}", run.stderr);
 }
+
+#[test]
+fn a_rule_does_not_override_a_rule_it_is_enabled_through() {
+    let r13 = ("r/rules", rule(13, 1, "requires = [\"team:6\"]"));
+    let dir = repo(
+        "through",
+        &manifest("\"R13\""),
+        &[r13, ("team/rules", overriding(6, "R13", ""))],
+    );
+    fails(
+        &dir,
+        "team/rules/6.toml: error: `overrides` names \"R13\", which brings in team:6 along `parent` or `requires`; a rule cannot take the place of a rule it is enabled through",
+    );
+    // Without the requirement, the override holds.
+    let dir = repo(
+        "through-not",
+        &manifest("\"R13\", \"team:6\""),
+        &[
+            ("r/rules", rule(13, 1, "")),
+            ("team/rules", overriding(6, "R13", "")),
+        ],
+    );
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(locked(&dir), ["R13 by team:6", "team:6"]);
+}
+
+#[test]
+fn overrides_that_do_not_settle_fail() {
+    // R13 brings in team:6, which overrides R14; R14 brings in here:20,
+    // which overrides R13. Each override takes away what brings in the
+    // other.
+    let nodes = [
+        ("r/rules", rule(13, 1, "requires = [\"team:6\"]")),
+        ("r/rules", rule(14, 1, "requires = [\"here:20\"]")),
+        ("team/rules", overriding(6, "R14", "")),
+        ("here/rules", overriding(20, "R13", "")),
+    ];
+    let dir = repo("unsettled", &manifest("\"R13\", \"R14\""), &nodes);
+    fails(
+        &dir,
+        "statute.toml: error: the overrides do not settle: here:20 (Rule 20), team:6 (Rule 6) come in only through rules that are overridden once they are in; list them in `rules`",
+    );
+    // Listed in `rules`, they settle.
+    let dir = repo(
+        "settled",
+        &manifest("\"R13\", \"R14\", \"team:6\", \"here:20\""),
+        &nodes,
+    );
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(
+        locked(&dir),
+        ["R13 by here:20", "R14 by team:6", "here:20", "team:6"]
+    );
+}
+
+#[test]
+fn a_citation_of_an_overridden_rule_is_the_rule_in_its_place() {
+    let r9 = (
+        "r/rules",
+        edit(
+            rule(9, 1, "requires = [2]"),
+            "Do the thing 9.",
+            "Do the thing 9, after {@rule:2}.",
+        ),
+    );
+    let dir = repo(
+        "citation",
+        &manifest("\"R9\", \"20\""),
+        &[r9, ("rules", overriding(20, "R2", ""))],
+    );
+    ok(&statute(&dir, &["lock"]));
+    ok(&statute(&dir, &["compile"]));
+    let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    assert!(
+        out.contains("Do the thing 9, after [Rule 20](#rule-L20).\n"),
+        "{out}"
+    );
+}

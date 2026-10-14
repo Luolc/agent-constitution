@@ -231,7 +231,9 @@ pub fn resolve(
     let chosen = res.enabled.clone();
     let mut one_of_requirements: Vec<(Key, Key)>;
     let mut overridden: BTreeMap<Key, Key> = BTreeMap::new();
-    let mut rounds = 0;
+    // The sets of overridden rules of the rounds before, to tell a closure
+    // that goes round from one still settling.
+    let mut seen: Vec<BTreeMap<Key, Key>> = Vec::new();
     loop {
         res.enabled = chosen.clone();
         one_of_requirements = Vec::new();
@@ -277,10 +279,33 @@ pub fn resolve(
                 })
             })
             .collect();
-        rounds += 1;
-        if now == overridden || rounds > sources.nodes().count() {
+        if now == overridden {
             break;
         }
+        if seen.contains(&now) {
+            // The closure goes round: a rule that overrides is brought in
+            // only through a rule that is overridden while it is in.
+            let unsettled: BTreeSet<&Key> = now
+                .values()
+                .chain(overridden.values())
+                .filter(|by| {
+                    now.values().any(|b| b == *by) != overridden.values().any(|b| b == *by)
+                })
+                .collect();
+            diags.error(
+                file,
+                format!(
+                    "the overrides do not settle: {} come in only through rules that are overridden once they are in; list them in `rules`",
+                    unsettled
+                        .iter()
+                        .map(|k| label(sources, k))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+            );
+            break;
+        }
+        seen.push(overridden);
         overridden = now;
     }
     res.overridden = overridden;

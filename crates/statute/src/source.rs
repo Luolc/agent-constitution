@@ -380,19 +380,50 @@ impl Sources {
             }
         }
         self.check_cycles(diags);
+        self.check_overrides_brought_in(diags);
+    }
+
+    /// The nodes a node leads to: its parent, the parent of its place
+    /// for a rule that overrides another, and what it requires.
+    fn edges(&self, key: &Key) -> Vec<Key> {
+        self.parent(&self.place(key))
+            .into_iter()
+            .chain(self.requires(key))
+            .filter(|k| self.get(k).is_some())
+            .collect()
+    }
+
+    /// Fails a rule that overrides a rule which brings it in, along
+    /// `parent` and `requires`: it would stand in the place of the very
+    /// rule that enables it.
+    fn check_overrides_brought_in(&self, diags: &mut Diagnostics) {
+        for (key, _) in self.nodes() {
+            let Some(target) = self.overrides(&key) else {
+                continue;
+            };
+            let mut seen = BTreeSet::new();
+            let mut stack = vec![target.clone()];
+            while let Some(at) = stack.pop() {
+                if seen.insert(at.clone()) {
+                    stack.extend(self.edges(&at));
+                }
+            }
+            if seen.contains(&key) {
+                diags.error(
+                    self.file(&key),
+                    format!(
+                        "`overrides` names \"{target}\", which brings in {key} along `parent` or `requires`; a rule cannot take the place of a rule it is enabled through"
+                    ),
+                );
+            }
+        }
     }
 
     /// Fails a cycle of requirements that goes through more than one
     /// source, a parent counting as a requirement; each source has found
     /// those within it already.
     fn check_cycles(&self, diags: &mut Diagnostics) {
-        let edges = |key: &Key| -> Vec<Key> {
-            self.parent(&self.place(key))
-                .into_iter()
-                .chain(self.requires(key))
-                .filter(|k| self.get(k).is_some())
-                .collect()
-        };
+        let edges = |key: &Key| self.edges(key);
         // 0: not visited, 1: on the path, 2: done.
         let mut state: HashMap<Key, u8> = HashMap::new();
         let mut reported = BTreeSet::new();

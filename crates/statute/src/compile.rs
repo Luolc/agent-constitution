@@ -480,6 +480,14 @@ pub fn cited(
                     "cites `{{@rule:{text}}}`, which is not a reference"
                 ));
             };
+            if project.sources.get(&cited).is_none() {
+                return fail(&format!(
+                    "cites `{{@rule:{text}}}`, which is not in {}",
+                    describe(&cited.source)
+                ));
+            }
+            // An overridden rule is shown as the rule in its place.
+            let cited = project.resolution.standing(&cited);
             match project.sources.get(&cited) {
                 Some(n) if links && shown(project, &cited) => Ok(format!(
                     "[{}](#{})",
