@@ -178,7 +178,10 @@ measured as for the instruction files of subdirectories
 Monorepos), and B is the alternative the measurement may lead to.
 
 - A: `AGENTS.private.md`, which `output` in `[compile]` names as in the
-  example above, holds only the rules the private layer adds. The
+  example above, holds only the rules the private layer adds: its own
+  rules and the public rules that only it brings in. A requirement of
+  one of them on a rule of the committed `AGENTS.md` is a link into that
+  file, `AGENTS.md#rule-R42`. The
   committed `AGENTS.md` ends with one fixed line, the same in every
   public repository, that tells an agent to read `AGENTS.private.md`
   next when it exists, with a link to it.
@@ -206,8 +209,11 @@ to this way.
 
 An override is for a rule that cannot hold together with what a rule set
 needs. A public rule says that pull request descriptions are written in
-English; a repository whose readers all read Chinese writes a local rule
+English, a value the source chose rather than leaving it to the layers
+below; a repository whose readers all read Chinese writes a local rule
 that its descriptions are in Chinese, which overrides the public one.
+The lasting fix is to propose to the source the rule in its
+principle-only form.
 The compiled file then has only the local rule, at the place of the one
 it overrides, with a line that says which one: "Overrides R200". The
 public rule is not superseded: it stays in force in every other rule
@@ -236,8 +242,8 @@ may override only a rule of a lower rank:
 1. the first-party source, `R`, which overrides nothing;
 2. every other global source, public or private: a team's or a person's
    own rules may replace a first-party rule for all of their
-   repositories (a private source's rules only in a private repository,
-   below);
+   repositories (in a public repository, only a rule that the private
+   layer alone enables, below);
 3. local rules: the repository's `rules/` and any source with
    `scope = "local"`.
 
@@ -262,9 +268,10 @@ one that `statute.toml` enables, directly or through a requirement:
 error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `statute.private.toml` may only add rules
 ```
 
-Within the private layer, a private rule may override another private
-rule of a lower rank, and within the public layer a local rule may
-override a public rule of a lower rank, as in a private repository.
+Within the private layer, a rule may override any rule of a lower rank
+that only the private layer enables, since both are compiled into the
+private output; within the public layer, a local rule may override a
+public rule of a lower rank. Both work as in a private repository.
 
 **What the build does.** An override takes effect when the overriding
 rule is enabled:
@@ -465,5 +472,5 @@ marking what is not built:
   override.
 
 Building it replaces what the tools do today: `constitution-build` fails
-a domain with a `parent` and a rule with `overrides`, and statute fails a
-domain with a `parent` and reads one source on disk only.
+a domain with a `parent` and a rule with `overrides`, and statute fails
+every new field and reads one source on disk only.

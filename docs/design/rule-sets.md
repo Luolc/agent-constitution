@@ -50,9 +50,7 @@ and each source but `R` says `public` of itself and may have `scope`,
 repository names its private sources in `statute.private.toml`, which
 git ignores, inherits `statute.toml` through `base = "statute.toml"`
 and has its own lock file, `statute.private.lock`. It compiles to the
-file `output` in `[compile]` names, for now an `AGENTS.private.md` with
-only the rules it adds, which the committed `AGENTS.md` points to in its
-last line; that form is provisional
+file `output` in `[compile]` names, in a form that is provisional
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 
 The lock file is TOML, written by statute and never edited by hand. It
