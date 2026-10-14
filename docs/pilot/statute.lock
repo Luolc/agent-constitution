@@ -1,0 +1,166 @@
+# Written by statute from statute.toml; do not edit by hand.
+
+[constitution]
+path = "../.."
+edition = "2026-10"
+revision = "1"
+
+[[sources]]
+name = "ac"
+path = "../.."
+
+[[rules]]
+source = "ac"
+id = 1
+revision = 1
+sha256 = "1f8c86e7836aa8d27e85519ad002edf352ab74cf88d817fcdcaf7b0d82659d13"
+
+[[rules]]
+source = "ac"
+id = 3
+revision = 1
+sha256 = "8c3872671024a5dee84d42ae4a077e4138c5ceaa697f6322b79c36504d3ee02a"
+
+[[rules]]
+source = "ac"
+id = 7
+revision = 1
+sha256 = "457b5283bea144aa7045d73a5bb9b78d4b4578b2487d5fe8f38e8d4c8a226262"
+
+[[rules]]
+source = "ac"
+id = 17
+revision = 1
+sha256 = "737bd8193a46d9ac5c14be152dfae0ef59c49f8b9bc0e38c6d8f4adc18a4bc82"
+
+[[rules]]
+source = "ac"
+id = 18
+revision = 1
+sha256 = "5fa8d1c8fbe988216ba69cd18ed6a5edad989b871d3374367b3f133021f21961"
+
+[[rules]]
+source = "ac"
+id = 19
+revision = 1
+sha256 = "b08707739f8dbcb1c4f72e780fd8050d7859247daae180d9a5e891c29baee81a"
+
+[[rules]]
+source = "ac"
+id = 20
+revision = 1
+sha256 = "393d3423d3163ac67284e18f387c26bf71f61ef114a5b7e9318ae576f37a3867"
+
+[[rules]]
+source = "ac"
+id = 21
+revision = 1
+sha256 = "f17ec77ebe6c0b7ff50b2cdc1ae9d17bf202f27aed3aba0d4105ff6a1ad840c0"
+
+[[rules]]
+source = "ac"
+id = 22
+revision = 1
+sha256 = "179da5d4636630565ca3260588b5d90783c8c764dc249d1d27e9ef3c4cccdda0"
+
+[[rules]]
+source = "ac"
+id = 23
+revision = 1
+sha256 = "6088cbc980d13c6e2b873126ddaf100923fc9862ee71c4ef1176890d7747662d"
+
+[[rules]]
+source = "ac"
+id = 24
+revision = 1
+sha256 = "1942373048b0017cac7249402d80e0a1782359828be5b3fab93e329abd35e384"
+
+[[rules]]
+source = "ac"
+id = 28
+revision = 1
+sha256 = "5862d6864489ad86aa0330652bcf0e821e9912f52792d1d3b41ba55c5c487dcd"
+
+[[rules]]
+source = "ac"
+id = 29
+revision = 1
+sha256 = "208d8f5c7973b4d1d26ba63ea79f6a75fbf76122d11512ea20f1b796ecd2580a"
+
+[[rules]]
+source = "ac"
+id = 30
+revision = 1
+sha256 = "3f322bed8eb1b7b769941d4eee0583b65fba94c3f1650def7ab67bf09f6e33fb"
+
+[[rules]]
+source = "ac"
+id = 31
+revision = 1
+sha256 = "928a8e22e89aa081bd2ea2d53db05fa0651c119027b08d0cf0d345fb700effe8"
+
+[[rules]]
+source = "ac"
+id = 32
+revision = 1
+sha256 = "7bf4d2bfe8256a368109185c3deb9aed91773d41696cab52513a312896cca99d"
+
+[[rules]]
+source = "ac"
+id = 33
+revision = 1
+sha256 = "82ef90a6bcbd6961978e5d03895021e0121f4b6e4fae68f83372259a6d64adf6"
+
+[[rules]]
+source = "ac"
+id = 34
+revision = 1
+sha256 = "2d5a354119094ea151f569848b83bb7142928abf576c01ce68ef708157ba4ec6"
+
+[[rules]]
+source = "ac"
+id = 35
+revision = 1
+sha256 = "f9bcf94e9b2ffd0ed69a25831227c27602fe572f08aad1a59c7c8721eb5bea7d"
+
+[[rules]]
+source = "ac"
+id = 36
+revision = 1
+sha256 = "84967c66cf6e428f3d18466447b7d69585aef15f154a35be9264ac8629d25210"
+
+[[rules]]
+source = "ac"
+id = 37
+revision = 1
+sha256 = "667f77ff9d73a497ad4ae32d1c2bd9f16efed9e6bd2f07ffe06bd2cb704c84e0"
+
+[[rules]]
+source = "ac"
+id = 38
+revision = 1
+sha256 = "8642211efffb3d04f65c1a07b4e42e20823b7655bbc0e75be6344a05bf1dca1b"
+
+[[rules]]
+source = "ac"
+id = 39
+revision = 1
+sha256 = "bb5c48c88c19f1475372a18957ba50877accc5b43a203cdbbb43f648265a333b"
+
+[[rules]]
+source = "ac"
+id = 40
+revision = 1
+sha256 = "6b3e65e12c8c04f53510b73b7c7a9af7666def3b779ed6c6cf3a95b37c2fd2e3"
+
+[[rules]]
+source = "ac"
+id = 41
+revision = 1
+sha256 = "faa29398cca7a081a6cb42adb6fcb3b9a626e9e98d772a3c2d8e1af5ca2c7f54"
+
+[[rules]]
+source = "ac"
+id = 42
+revision = 1
+sha256 = "7b566cc68c43228fbb78db908fd5586e05650c7fb5b38a2e216942ce676b3cd7"

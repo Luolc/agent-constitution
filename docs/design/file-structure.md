@@ -36,6 +36,9 @@ docs/
                           by README.md                                 A
     zh/                   its Chinese translation, one file of the
                           same name per file                           A
+  pilot/                  this repo's trial of statute: its rule set,
+                          lock file and compiled output, which no
+                          agent reads (rule-system.md, Moving over)    A
 rules/
   <id>.toml               one node of the rule tree per file, named
                           by its number                                A

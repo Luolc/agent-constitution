@@ -1,0 +1,16 @@
+constitution = { source = "ac", edition = "2026-10" }
+rules = [
+  # Security
+  "ac:3", "ac:22", "ac:23", "ac:24", "ac:36", "ac:37",
+  "ac:30", "ac:31", "ac:41", "ac:42",
+  # Collaboration
+  "ac:28", "ac:29", "ac:32", "ac:33", "ac:34", "ac:35",
+  "ac:38", "ac:39", "ac:40",
+  # Verification
+  "ac:1", "ac:7",
+  # Documentation
+  "ac:17", "ac:18", "ac:19", "ac:20", "ac:21",
+]
+
+[sources]
+ac = { path = "../.." }
