@@ -34,11 +34,13 @@ GENERIC = [
   r"(.*/)?\.claude/hooks/.+",
   r"(.*/)?\.codex/.+",
 ]
-# This repo's own instruction files: the constitution and rule sources.
+# This repo's own instruction files: the constitution, rule and skill
+# sources.
 REPO = [
   r"constitution/index\.toml",
   r"constitution/articles/.+",
   r"rules/.+",
+  r"skills/.+",
 ]
 # Generated files: CI proves they equal a build of the sources with the
 # tools, so they go with whichever side changed them.

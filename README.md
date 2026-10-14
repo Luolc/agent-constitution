@@ -8,6 +8,11 @@ holds the constitution draft, the [design](docs/design.md) and the script
 that builds the constitution; the rule compiler and checkers are designed
 but not yet written.
 
+The constitution, the general rules and the general skills are the three
+kinds of content the repo provides for installing; a user picks which of
+them to install through configuration. How they are installed is not
+decided yet.
+
 The constitution is kept in English and Chinese, both built from the same
 sources: [English](constitution/constitution.en.md),
 [中文](constitution/constitution.zh.md). The sources are TOML files under
@@ -15,7 +20,8 @@ sources: [English](constitution/constitution.en.md),
 section, each holding both languages; edit them and rebuild, never the two
 generated files. The general rules under `rules/` are TOML files of the
 same kind, one per rule. The format, the IDs and the numbering are in the
-design.
+design. The general skills are under `skills/`, one directory per skill
+with its `SKILL.md`, in English.
 
 The scripts under `tools/` run with [uv](https://docs.astral.sh/uv/):
 `pyproject.toml` sets the Python version and pins limae, which they
