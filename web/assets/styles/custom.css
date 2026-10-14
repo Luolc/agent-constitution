@@ -138,22 +138,19 @@
    underlined like the citations: the text color with a light underline in
    the color of the rules, both turning to the accent color under the
    pointer. The theme's heading self-links are left out. The navigation, in
-   the sidebar and in the top bar of a narrow screen, is known by where it
-   stands and is not underlined; under the pointer or the keyboard's focus
-   it is. */
+   the sidebar, in the table of contents and in the top bar of a narrow
+   screen, is known by where it stands and is not underlined; under the
+   pointer or the keyboard's focus it is. */
 .constitution a[href]:not(.anchor),
-.book-menu a[href],
-.book-header a[href] {
+:is(.book-menu, .book-toc, .book-header) a[href] {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: var(--c-rule);
   text-underline-offset: .18em;
 }
-.book-menu a[href]:not(:hover, :focus-visible),
-.book-header a[href]:not(:hover, :focus-visible) { text-decoration-line: none; }
+:is(.book-menu, .book-toc, .book-header) a[href]:not(:hover, :focus-visible) { text-decoration-line: none; }
 .constitution a[href]:not(.anchor):hover,
-.book-menu a[href]:hover,
-.book-header a[href]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
+:is(.book-menu, .book-toc, .book-header) a[href]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
 /* The info button after the length and its popup. The popup hangs from
    the bottom of the button's box with no gap, centered under the length
    and as wide as the length with its button at least, so the pointer goes
@@ -293,14 +290,14 @@
 
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text
-   and in the sidebar: small, in the accent color, close to the number,
+   and in the table of contents: small, in the accent color, close to the number,
    and without opening up the line. Not raised as a superscript: the glyph
    itself sits at the height of the capitals, so it is lowered until its
    middle sits a little above the middle of the parentheses around an
    item's number and its top well under the top of the number, as a mark
    on the line, not above it. */
 .constitution sup.omitted,
-.constitution-nav sup.omitted {
+.book-toc sup.omitted {
   color: var(--c-accent);
   font-size: .85em;
   font-weight: var(--c-weight-bold);
@@ -318,12 +315,6 @@
   from { background-color: var(--c-target); }
   to { background-color: transparent; }
 }
-
-/* The list of articles in the sidebar. */
-.constitution-nav ul { list-style: none; padding-left: 0; }
-.constitution-nav li { margin: .35em 0; }
-/* Block, not the theme's flex, so that the asterisk sits in the line. */
-.constitution-nav a { display: block; }
 
 @media print {
   :root, body { background: #fff; }
@@ -364,5 +355,33 @@ body { font-family: var(--c-font-en); }
 @media screen and (min-width: 90rem) {
   main.container { padding-top: 0; padding-inline-start: 0; }
 }
-/* The heading's own self-link: the sidebar already links each article. */
+/* The heading's own self-link: the table of contents already links each
+   article. */
 .constitution h2 a.anchor { display: none; }
+
+/* The sidebar lists the pages, the current one in the accent color; the
+   link to the source sits under the site's title, its icon the size of a
+   letter. */
+.book-menu a.active { color: var(--c-accent); }
+.book-menu .source-link {
+  display: flex;
+  align-items: center;
+  gap: .4em;
+  margin: -.25rem 0 1rem;
+  color: var(--c-muted);
+}
+.book-menu .source-link .book-icon { width: 1em; height: 1em; flex: none; }
+/* The table of contents at the right: the articles of the page, the size
+   of the sidebar's text, under a muted heading. On a narrow screen the
+   theme hides it behind the button at the right of the top bar, which
+   opens it above the text. */
+.book-toc { font-size: .95rem; }
+.book-toc .toc-heading {
+  margin: 0 0 .6em;
+  color: var(--c-muted);
+  font-size: .9em;
+  letter-spacing: .05em;
+}
+/* Block, so that the asterisk sits in the line; closer than the theme
+   sets its lists, as one list of a dozen short lines. */
+.book-toc nav a { display: block; padding: .3em 0; }
