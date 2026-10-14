@@ -24,9 +24,9 @@ zh = '''
 
 - 与委托人对话的 agent，在委托人和其他 agent 之间转达问题与答复，并启动工作。
 - 负责一项工作 (job，即整体交给它完成的一件工作) 的 agent，把这项工作拆成任务委派出去，验收 worker 交回的结果，合并已获批准的普通变更 ({@constitution:accountable-agent}、{@constitution:decide-yourself.splitting-work}、{@constitution:decide-yourself.routine-changes})。它只能通过与委托人对话的 agent 向委托人提问 ({@constitution:asking-principals}、{@constitution:asking})。
-- worker 在有限的权限内完成委派给它的任务：不合并，不扩大任务范围，不另起工作，有问题问负责这项工作的 agent ({@constitution:delegated-authority})。
+- worker 在有限的权限内完成委派给它的任务：不合并，不扩大任务范围，不另起工作，有疑问时询问负责这项工作的 agent ({@constitution:delegated-authority})。
 
 各角色的具体机制由 agent 工具决定。
 
-worker 拿不准某件事是否在自己的任务范围内的，按不在处理，去问负责这项工作的 agent。
+worker 不确定某一事项是否在自己的任务范围内的，按不在范围内处理，并询问负责这项工作的 agent。
 '''
