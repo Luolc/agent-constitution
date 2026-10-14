@@ -1,6 +1,6 @@
 id = 13
 slug = "security"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -9,5 +9,13 @@ lang = "en"
 en = "Security"
 zh = "安全"
 
+[applicability]
+en = '''
+Keeps credentials in their place and out of every output, private details out of public repositories, and load and lasting processes off shared machines, and sends an agent that a guard blocks along the reviewed route. Enable it wherever agents work.
+'''
+zh = '''
+管凭证放在指定的地方、不出现在任何输出里，私密信息不进公开仓库，共享机器上不留负载和长期运行的进程，agent 被拦住时走审查过的途径。凡有 agent 工作的地方都要启用。
+'''
+
 [translations]
-zh = "8f6fb4eb7f42c0e245e29e63f5b82cc3ba19852681d1ed9aed291f59cf75ec0e"
+zh = "ba3fbad922f16bb83731f71f06fb3199772e15b6395a76c7e3573f73bf100847"

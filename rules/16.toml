@@ -1,6 +1,6 @@
 id = 16
 slug = "documentation"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -9,5 +9,13 @@ lang = "en"
 en = "Documentation"
 zh = "文档"
 
+[applicability]
+en = '''
+Covers where knowledge and design are written down so that they outlast a task: in the repository, in one place, matching what is built and claiming no more than its grounds. Enable it wherever agents write a repository's documents or design.
+'''
+zh = '''
+管知识和设计写在哪里，才能在任务结束后留下来：写进仓库，只写在一处，与已经实现的东西一致，说法不超出依据。agent 要写仓库的文档或设计时就要启用。
+'''
+
 [translations]
-zh = "c205924de0fe636ccdde4ed616fef66f75b78e98b03620637965c033fd161141"
+zh = "173799b6db4225c0342683910d4fafb4113956669b8b4730bb11cf382d12fc2d"
