@@ -691,6 +691,19 @@ repetition, not before (`simplicity`). The crate builds into one binary,
 released with the rules, so a downstream user installs one binary and has
 every check, with no scripts to deploy.
 
+A check that needs the state of GitHub, of a pull request or of a CI
+run, reads it through the `gh` on the machine, run in the repository,
+where `gh api` finds the repository from its GitHub remote. statute never
+reads, stores or prints a token: the credential stays in `gh`'s own
+configuration. No `gh` on `PATH`, no login, a repository that is not on
+GitHub, a call that fails and one that has not answered within 60 s
+(stopped like a command past its time, below) are inconclusive, like any
+missing tool. What such a check looks at comes from the repository
+itself: the pull requests are those GitHub associates with `HEAD` (the
+one that merged it into the default branch, or else the open and merged
+ones that hold it), and a release is a tag on `HEAD`. A commit not pushed yet has no pull request,
+and a `HEAD` without a tag no release, and both are inconclusive.
+
 When a rule is superseded, its successor gets a new module, copied from
 the old one and changed as needed. The old module stays in the code,
 marked superseded, and does not run unless asked to.
@@ -739,7 +752,7 @@ reviewer, the reason and the verification of each rule that is
 inconclusive or for review. It exits with status 1 when a rule is
 violated, and 0 otherwise. A built-in check that covers only part of its
 rule, finding nothing, is inconclusive, not a pass, since the rest of
-the rule is still for the reviewer:
+the rule is still for the reviewer. The built-in checks:
 
 - rule 46 (instruction-files-apart) tells instruction files, generated
   files and other files apart with the same path tables as
@@ -753,9 +766,40 @@ the rule is still for the reviewer:
   history, and is violated by a hit, shown by its place and gitleaks rule
   only; credentials gitleaks does not recognize, and places outside the
   repository, are left to the reviewer, and without gitleaks it is
-  inconclusive.
+  inconclusive;
+- rule 50 (commit-hook-credential-scan) reads `.pre-commit-config.yaml`,
+  and passes when a hook runs gitleaks with `--staged` and `--redact`,
+  at the commit stage and for every commit, with no file filter; the
+  hooks gitleaks publishes, under its present or its former repository
+  name, count by their own entry when their `rev` is v8.1.1 or later.
+  A hook whose command statute cannot see (gitleaks' own at an older or
+  unreadable `rev`, a hook of another repository, a local hook that runs
+  a script), a gitleaks hook without `--redact` or with a file filter,
+  another scanner, another hook framework's configuration and YAML
+  statute does not read are inconclusive. No hook configuration at all,
+  or one whose hooks at the commit stage all show their command and none
+  scans the staged changes, is a violation;
+- rule 58 (release-first-green-commit) takes a tag on `HEAD` as the
+  release, the default branch as the main branch, and as CI the workflow
+  holding a check the default branch requires, by branch protection or a
+  ruleset; it passes when that workflow's run for the push of `HEAD` to
+  the default branch concluded in success on attempt 1, and is violated
+  when it did not. Without a tag on `HEAD`, without a required check,
+  without such a run (no CI on pushes, or a commit not on the branch) and
+  while the run has not finished, it is inconclusive;
+- rule 61 (verdict-names-version) reads the verdicts on the pull
+  requests of `HEAD`: each comment or review whose text opens with
+  `Verdict:`, and each review that approves or asks for changes. A verdict
+  without the full SHA of a commit of its pull request is a violation; a
+  review also names the commit GitHub records it on;
+  verdicts given elsewhere, and whether the SHA named is the version
+  reviewed, are left to the reviewer;
+- rule 71 (no-automatic-merge) reads the timeline of the pull requests of
+  `HEAD`, and is violated when auto-merge was ever enabled on one, even if
+  it was disabled again or has merged it; other ways of merging
+  automatically, and who enabled it, are left to the reviewer.
 
-The rules these two supersede, 3 and 7, keep their modules, which run
+The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
 only for a rule set that still enables them.
 
 For each rule it is handed, the reviewer decides whether the rule is met
@@ -940,8 +984,8 @@ which try the whole process on real work.
 
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
-(built-in checks for rules 43 and 46, and for 3 and 7, which they
-supersede), for one source on disk. Inherited rule sets and path segments are
+(built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
+which 43 and 46 supersede), for one source on disk. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
 another source, in `requires` or `conflicts` (`"team:7"`), are reported
 as not supported yet.
