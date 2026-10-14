@@ -159,16 +159,35 @@ with `public = true`:
   here = { path = "../my-rules/repos/example", public = false, scope = "local" }
   ```
 
+  It has no `packs` and no `[compile]`, since its output's place is
+  fixed (below). Its sources' names may not repeat those of
+  `statute.toml`, nor its rules those `statute.toml` lists. In a private
+  repository (`public = false`) the file fails: there `statute.toml`
+  names everything. `statute add --private` and `statute remove
+  --private` change it.
+
 - This private layer only adds to the public one. It may not override a
   rule of `statute.toml`, nor leave one out
   ([Overrides](#overrides)): the committed `AGENTS.md` holds that rule
   whatever the private layer does, and an agent that read both files
   would find two rules that disagree.
-- It has its own lock file, `statute.private.lock`, and its own
-  output, below. Before writing any of them, `statute compile` checks
-  with `git check-ignore` that git ignores `statute.private.toml` and
-  each file it would write, and writes nothing when one is not ignored
-  or when it cannot tell, as outside a git repository.
+- It has its own lock file, `statute.private.lock`, which pins both
+  layers together; `statute lock` writes it with `statute.lock`, the
+  commands that change either rule set write it again, and `statute
+  compile` checks the full text against it. It has its own output,
+  below. Before writing any of these, statute checks with
+  `git check-ignore` that git ignores `statute.private.toml`,
+  `statute.private.lock`, each file it would write and the files
+  `add --private` and `remove --private` write first under `.statute/`
+  and then move into place. A path whose last matching pattern is a
+  negation (`!`) counts as not ignored. It writes nothing when one is
+  not ignored or when git cannot tell, as outside a git repository.
+- The skills and the `check = "command"` checks of the rules only the
+  private layer enables are left out of the committed files,
+  `.agents/skills/` and `statute-checks.toml`
+  ([Compilation and the site](statute-command.md#compilation-and-the-site));
+  `statute check` runs those checks all the same. How a private rule's
+  skills are installed is an open question.
 
 **The private output** is one file, `.statute/AGENTS.full.md`: the
 committed `AGENTS.md` with the rules only the private layer brings in
@@ -233,10 +252,11 @@ subdirectory either, neither at the start in that subdirectory nor when
 it touches a file there, as it does without it. The rules of a
 subdirectory are lost to it, unless the model happens to read the file.
 So with the private output, a repository keeps such rules in its rule
-set, not in `AGENTS.md` files of subdirectories, and `statute compile`
-warns of each `AGENTS.md` that git tracks outside the repository's
-root, saying that Claude Code does not load it and that its rules
-belong in the rule set. Not built yet.
+set, not in `AGENTS.md` files of subdirectories. When it compiles the
+private layer, `statute compile` warns of each `AGENTS.md` that git
+tracks below the top of the repository, saying that Claude Code does not load it and that its rules
+belong in the rule set. statute does not compile their content into
+the full text.
 
 Files git does not track do not come with `git worktree add`. Each
 worktree needs its own `statute compile` to write `.statute/` and the
@@ -298,7 +318,7 @@ and Grok's reading of a subdirectory's `AGENTS.md` under this layout.
 Each negative result holds only for the runs counted; the others are
 one run each.
 
-None of the private layer is built yet.
+The private layer is built as described here.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
@@ -584,5 +604,5 @@ marking what is not built:
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
 
-Building the rest replaces what the tools do today: statute fails
-`base` and a git source, and does not read `statute.private.toml`.
+Building the rest replaces what the tools do today: statute fails a
+git source, and `base` anywhere but in `statute.private.toml`.

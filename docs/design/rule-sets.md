@@ -46,8 +46,8 @@ default.
 required, says whether the repository is public, and each source but
 `R` says `public` of itself, and may have `scope`, `"global"` by
 default or `"local"`
-([Four kinds of source](rule-sources.md#four-kinds-of-source)); these are
-built. Not built yet: a public repository names its private sources in `statute.private.toml`,
+([Four kinds of source](rule-sources.md#four-kinds-of-source)). A public
+repository names its private sources in `statute.private.toml`,
 which git ignores, inherits `statute.toml` through
 `base = "statute.toml"` and has its own lock file,
 `statute.private.lock`. It compiles to `.statute/AGENTS.full.md`, the

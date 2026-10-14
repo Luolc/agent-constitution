@@ -1,4 +1,4 @@
-<!-- en-sha256: 48341117f0db3f13d2262994c7d443134fb1f1e311b6f4cf59ab54442b09748f -->
+<!-- en-sha256: 726d5907c746d9cc56a112bd0c99d83ea2d0c9cacd22e2ee214fc508fb1554b5 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -88,8 +88,11 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
   here = { path = "../my-rules/repos/example", public = false, scope = "local" }
   ```
 
+  它没有 `packs`，也没有 `[compile]`，因为它的输出位置是固定的 (见下文)。它的规定源不能与 `statute.toml` 的重名，它的规定也不能与 `statute.toml` 列出的重复。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。`statute add --private` 和 `statute remove --private` 修改它。
+
 - 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
-- 它有自己的锁文件 `statute.private.lock` 和自己的输出 (见下文)。`statute compile` 在写其中任何一个之前，先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml` 和它要写的每个文件；有一个没被忽略，或者确认不了 (比如不在 git 仓库里)，就什么都不写。
+- 它有自己的锁文件 `statute.private.lock`，同时锁定两层；`statute lock` 把它和 `statute.lock` 一起写出，改动任一份规定清单的命令都会重写它，`statute compile` 按它核对全文。它还有自己的输出，见下文。写其中任何一个之前，statute 先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml`、`statute.private.lock`、它要写的每个文件，以及 `add --private` 和 `remove --private` 先写在 `.statute/` 下、再挪到位的那些文件。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了 (比如不在 git 仓库里)，就什么都不写。
+- 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute-checks.toml` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
 
 **私有输出**是一个文件 `.statute/AGENTS.full.md`：提交进仓库的 `AGENTS.md` 加上只由私有层带进来的规定 (它自己的规定，以及只由它启用的公开规定)，每条放在它在规定树里的位置。`.statute/` 这个目录写在公开的 `.gitignore` 里。有两个软链指向这个文件：
 
@@ -111,7 +114,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 
 Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到工作目录的各级文件合在一起算，超出的部分截掉。`AGENTS.full.md` 单独就会超过这个大小时，`statute compile` 失败；子目录里的 `AGENTS.md` 也算在同一个上限里，statute 不把它们加进来算。
 
-有 `CLAUDE.local.md` 时，Claude Code 也不加载任何子目录里的 `AGENTS.md`：工作目录在那个子目录时启动不加载，碰到那里的文件时也不加载，而没有 `CLAUDE.local.md` 时这两种情况它都会加载。子目录的规定对它就丢了，除非模型碰巧自己去读那个文件。所以有私有输出的仓库把这类规定写进规定清单，不放在子目录的 `AGENTS.md` 里；`statute compile` 遇到 git 跟踪的、不在仓库根目录的 `AGENTS.md`，逐个给出 warning，说明 Claude Code 不加载它，其中的规定应当并入规定清单。尚未实现。
+有 `CLAUDE.local.md` 时，Claude Code 也不加载任何子目录里的 `AGENTS.md`：工作目录在那个子目录时启动不加载，碰到那里的文件时也不加载，而没有 `CLAUDE.local.md` 时这两种情况它都会加载。子目录的规定对它就丢了，除非模型碰巧自己去读那个文件。所以有私有输出的仓库把这类规定写进规定清单，不放在子目录的 `AGENTS.md` 里。编译私有层时，`statute compile` 遇到 git 跟踪的、不在仓库顶层的 `AGENTS.md`，逐个给出 warning，说明 Claude Code 不加载它，其中的规定应当并入规定清单。statute 不把它们的内容编进全文。
 
 git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都要各自跑一次 `statute compile`，写出 `.statute/` 和两个软链；`.git/info/exclude` 由一个 clone 的各个 worktree 共用。开 worktree 时跑它是调用方的事，不归 statute。软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
@@ -128,7 +131,7 @@ git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都�
 
 没有测的：交互模式；没有用户级指令和 skill 时的兜底那一行；写在 OpenCode 全局配置文件里的 `instructions`，以及它指向软链的情况；子目录里的 `CLAUDE.md -> AGENTS.md`，以及它能不能让 Claude Code 重新读到那个子目录的规定；Claude Code 在 `CLAUDE.md` 之外也读 `AGENTS.md` 的那个设置，对子目录的效果；以及这个布局下 Grok 读不读子目录的 `AGENTS.md`。每个否定结论只对所数的那几次运行成立；其余的各只跑了一次。
 
-私有层还完全没有实现。
+私有层已按这里所写实现。
 
 私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库。
 
@@ -257,4 +260,4 @@ parent = 104
 - [检查程序](checkers.md#checkers)：`constitution-build` 对新字段查什么，哪些归 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
 
-实现其余部分会替换掉工具现在的行为：statute 遇到 `base` 和 git 规定源会失败，也不读 `statute.private.toml`。
+实现其余部分会替换掉工具现在的行为：statute 遇到 git 规定源会失败，遇到 `statute.private.toml` 以外的 `base` 也会失败。
