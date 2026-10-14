@@ -272,8 +272,7 @@ file. It prints the path of `index.html`.
   `.statute/site/`, and when git tracks a file there it writes nothing
   and fails, naming the file and the way out,
   `git rm -r --cached .statute/site`. Outside a git repository there is
-  nothing to commit and nothing to ask. This check is not built yet;
-  the built command asks `git check-ignore` about a page's path.
+  nothing to commit and nothing to ask.
 - **The index** has the four kinds of source
   ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
   sections: global public, global private, local public and local
