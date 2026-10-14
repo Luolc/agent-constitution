@@ -336,6 +336,33 @@ fn a_superseded_rule_is_a_warning_naming_its_successor() {
 }
 
 #[test]
+fn a_rule_split_in_two_is_a_warning_naming_both() {
+    let s = source(&[
+        domain(1),
+        rule(2, 1, ""),
+        rule(3, 1, ""),
+        edit(
+            rule(8, 1, "superseded-by = [2, 3]"),
+            "status = \"draft\"",
+            "status = \"superseded\"",
+        ),
+    ]);
+    warns(
+        &s,
+        &[8],
+        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2), 3 (Rule 3); replace ac:8 in `rules` with those of ac:2, ac:3 that apply",
+    );
+    let (_, diags) = run(&s, &[], &[8], 1);
+    let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
+    assert_eq!(
+        warnings,
+        [
+            "statute.toml: warning: pack 8 (Rule 8) enables nothing: its root is superseded by 2 (Rule 2), 3 (Rule 3); replace ac:8 in `packs` with those of ac:2, ac:3 that apply"
+        ]
+    );
+}
+
+#[test]
 fn a_repealed_rule_is_a_warning() {
     let s = source(&[
         domain(1),

@@ -9,7 +9,7 @@ use statute::lock;
 use statute::manifest::{self, Manifest};
 use statute::node::{Id, Kind, Status, id_from_file_name};
 use statute::project::Project;
-use statute::resolve::{Reason, label};
+use statute::resolve::{Reason, label, refs};
 
 /// Compile a constitution and the rules a repository chooses into the
 /// instruction files coding agents read. Run in the directory of
@@ -311,7 +311,10 @@ fn lock_command(root: &Path) -> Result<(), ()> {
         for (id, revision) in same_revision_new_content(&old, &project) {
             eprintln!(
                 "{}: warning: rule {name}:{} changed since {} and is still at revision {revision}; {}",
-                manifest::FILE,
+                statute::project::shown(
+                    &project.manifest.source.path,
+                    &format!("rules/{}", statute::node::file_name(id))
+                ),
                 label(&project.source, id),
                 lock::FILE,
                 RAISE_REVISION
@@ -457,24 +460,31 @@ fn why(project: &Project, id: Id) -> String {
         .join("; ")
 }
 
-/// The rule that takes the place of superseded `id`, following the chain
-/// to its end; `None` when `id` is not superseded.
-fn successor(project: &Project, id: Id) -> Option<Id> {
+/// What takes the place of superseded `id`, following the chain while
+/// each rule on it has one successor: nothing when `id` is not superseded,
+/// the rule at the end of the chain, or the successors of the rule where
+/// the chain splits.
+fn successors(project: &Project, id: Id) -> Vec<Id> {
     let mut seen = vec![id];
     let mut at = id;
     while let Some(node) = project.source.get(at)
         && node.status == Status::Superseded
-        && let Some(next) = node.superseded_by
-        && !seen.contains(&next)
     {
-        seen.push(next);
-        at = next;
+        match node.superseded_by.as_slice() {
+            [next] if !seen.contains(next) => {
+                seen.push(*next);
+                at = *next;
+            }
+            [_] | [] => break,
+            many => return many.to_vec(),
+        }
     }
-    (at != id).then_some(at)
+    if at == id { Vec::new() } else { vec![at] }
 }
 
 /// The rule set with each superseded entry of `rules` and `packs` replaced
-/// by its successor, or taken out when the successor is listed already:
+/// by its successor, or taken out when the successor is listed already; an
+/// entry with more than one successor is left for the user to choose:
 /// the original text, the changed one and a line per replacement. `None`
 /// when nothing is superseded.
 fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec<String>)>, ()> {
@@ -505,8 +515,16 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
         let mut listed = ids.clone();
         for i in (0..ids.len()).rev() {
             let Some(old) = ids[i] else { continue };
-            let Some(new) = successor(project, old) else {
-                continue;
+            let new = match successors(project, old).as_slice() {
+                [] => continue,
+                [new] => *new,
+                many => {
+                    lines.push(format!(
+                        "left {name}:{old} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
+                        refs(name, many)
+                    ));
+                    continue;
+                }
             };
             if listed.contains(&Some(new)) {
                 let removed = list.remove(i);
