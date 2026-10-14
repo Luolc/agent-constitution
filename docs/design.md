@@ -941,8 +941,10 @@ passes to Hugo as `--baseURL`.
   color alone. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
-  so a line keeps about 90 characters in English and 40 in Chinese where
-  the window has room for it. Three columns would leave the text under
+  so a line keeps about 75 characters in English, the usual measure
+  (30em, measured on the text's full lines: EB Garamond's letters are
+  narrower than `ch`), and 40 in Chinese where the window has room for
+  it. Three columns would leave the text under
   about 65 characters a line in English below 70rem (1120px), so there
   the table of contents goes behind the theme's top-bar button, floating
   at the top right, which opens it over the text at the right edge; the
