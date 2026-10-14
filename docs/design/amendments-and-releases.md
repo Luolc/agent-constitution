@@ -48,6 +48,9 @@ keeps the edition in force and a draft of the next one is settled by
   is an item of `must-ask`, added by the rule `must-ask-items`, and needs a
   person's yes; a project may move it under
   `relaxations.project-overrides`.
+- The crates under `crates/` are published to crates.io, each with its
+  own version in its `Cargo.toml`; publishing one is a release too.
+  `statute` 0.0.1 is a placeholder that holds the name.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.

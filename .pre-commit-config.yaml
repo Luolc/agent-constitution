@@ -61,7 +61,7 @@ repos:
         name: cargo fmt
         entry: cargo fmt --check
         language: system
-        files: ^(crates/.*\.rs|rust-toolchain\.toml)$
+        files: ^(crates/.*\.rs|(.*/)?Cargo\.toml|rust-toolchain\.toml)$
         pass_filenames: false
       # The constitution build: --check validates the sources (the
       # constitution and the rules) and requires the committed outputs to
