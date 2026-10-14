@@ -4,9 +4,10 @@
 use std::collections::BTreeSet;
 
 use statute::diag::{Diagnostics, Severity};
+use statute::manifest::Key;
 use statute::manifest::Manifest;
 use statute::resolve::{Reason, Resolution, resolve};
-use statute::source::Source;
+use statute::source::Sources;
 
 mod common;
 use common::{domain, edit, one_of, rule, source};
@@ -20,21 +21,26 @@ fn manifest(rules: &[u64], packs: &[u64]) -> Manifest {
             .join(", ")
     };
     Manifest::parse(&format!(
-        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [{}]\npacks = [{}]\n\n[sources]\nR = {{ path = \".\" }}\n",
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\nrules = [{}]\npacks = [{}]\n\n[sources]\nR = {{ path = \".\" }}\n",
         list(rules),
         list(packs)
     ))
     .unwrap()
 }
 
-fn run(source: &Source, rules: &[u64], packs: &[u64], revision: u64) -> (Resolution, Diagnostics) {
+/// Rule `id` of source `R`.
+fn r(id: u64) -> Key {
+    Key::new("R", id)
+}
+
+fn run(source: &Sources, rules: &[u64], packs: &[u64], revision: u64) -> (Resolution, Diagnostics) {
     let mut diags = Diagnostics::default();
     let res = resolve(source, &manifest(rules, packs), revision, &mut diags);
     (res, diags)
 }
 
 #[track_caller]
-fn enabled(source: &Source, rules: &[u64], packs: &[u64]) -> Resolution {
+fn enabled(source: &Sources, rules: &[u64], packs: &[u64]) -> Resolution {
     let (res, diags) = run(source, rules, packs, 1);
     assert!(
         diags.0.is_empty(),
@@ -46,11 +52,11 @@ fn enabled(source: &Source, rules: &[u64], packs: &[u64]) -> Resolution {
 
 #[track_caller]
 fn ids(res: &Resolution) -> Vec<u64> {
-    res.enabled.keys().copied().collect()
+    res.enabled.keys().map(|k| k.id).collect()
 }
 
 #[track_caller]
-fn fails(source: &Source, rules: &[u64], packs: &[u64], revision: u64, needle: &str) {
+fn fails(source: &Sources, rules: &[u64], packs: &[u64], revision: u64, needle: &str) {
     let (_, diags) = run(source, rules, packs, revision);
     let errors: Vec<String> = diags
         .0
@@ -67,7 +73,7 @@ fn fails(source: &Source, rules: &[u64], packs: &[u64], revision: u64, needle: &
 }
 
 #[track_caller]
-fn warns(source: &Source, rules: &[u64], needle: &str) {
+fn warns(source: &Sources, rules: &[u64], needle: &str) {
     let (_, diags) = run(source, rules, &[], 1);
     assert!(!diags.has_errors(), "unexpected errors: {:#?}", diags.0);
     let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
@@ -78,7 +84,7 @@ fn warns(source: &Source, rules: &[u64], needle: &str) {
 }
 
 fn reasons(res: &Resolution, id: u64) -> BTreeSet<Reason> {
-    res.enabled[&id].clone()
+    res.enabled[&r(id)].clone()
 }
 
 // Parents.
@@ -88,7 +94,7 @@ fn a_parent_rule_is_brought_in() {
     let s = source(&[domain(1), rule(2, 1, ""), rule(3, 2, "")]);
     let res = enabled(&s, &[3], &[]);
     assert_eq!(ids(&res), [2, 3]);
-    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::ParentOf(3)]));
+    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::ParentOf(r(3))]));
     assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::Direct]));
 }
 
@@ -109,7 +115,7 @@ fn the_parent_requirement_passes_through_a_one_of() {
     ]);
     let res = enabled(&s, &[4], &[]);
     assert_eq!(ids(&res), [2, 4]);
-    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::ParentOf(4)]));
+    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::ParentOf(r(4))]));
 }
 
 // Requirements.
@@ -124,8 +130,8 @@ fn requirements_are_added_transitively() {
     ]);
     let res = enabled(&s, &[4], &[]);
     assert_eq!(ids(&res), [2, 3, 4]);
-    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::RequiredBy(3)]));
-    assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::RequiredBy(4)]));
+    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::RequiredBy(r(3))]));
+    assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::RequiredBy(r(4))]));
     // Not brought in when nothing requires it.
     assert_eq!(ids(&enabled(&s, &[3], &[])), [2, 3]);
 }
@@ -243,7 +249,7 @@ fn a_rule_brought_in_must_accept_the_revision_too() {
 
 // Packs.
 
-fn pack_source() -> Source {
+fn pack_source() -> Sources {
     // Domain 1: rule 2, its child 3; one-of 4 with children 5 and 6, and 7
     // under 5; rule 8 superseded by 2.
     source(&[
@@ -269,7 +275,7 @@ fn a_pack_enables_its_subtree_but_no_child_of_a_one_of_unchosen() {
     let s = pack_source();
     let res = enabled(&s, &[], &[1]);
     assert_eq!(ids(&res), [2, 3]);
-    assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::Pack(1)]));
+    assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::Pack(r(1))]));
 }
 
 #[test]
@@ -279,7 +285,7 @@ fn a_pack_goes_through_the_chosen_child_of_a_one_of() {
     assert_eq!(ids(&res), [2, 3, 5, 7]);
     assert_eq!(
         reasons(&res, 5),
-        BTreeSet::from([Reason::Direct, Reason::Pack(1), Reason::ParentOf(7)])
+        BTreeSet::from([Reason::Direct, Reason::Pack(r(1)), Reason::ParentOf(r(7))])
     );
 }
 

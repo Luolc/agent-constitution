@@ -93,12 +93,15 @@ impl Hook {
 }
 
 pub fn check(ctx: &Context) -> Report {
+    // The configuration is the repository's, at the top of its work tree,
+    // wherever in it the rule set is.
+    let top = ctx.top();
     let others: Vec<&str> = OTHER_CONFIGS
         .iter()
         .copied()
-        .filter(|p| ctx.root.join(p).exists())
+        .filter(|p| top.join(p).exists())
         .collect();
-    let text = match std::fs::read_to_string(ctx.root.join(CONFIG)) {
+    let text = match std::fs::read_to_string(top.join(CONFIG)) {
         Ok(text) => text,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
             if others.is_empty() {

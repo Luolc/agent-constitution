@@ -7,10 +7,11 @@ use toml_edit::{Array, DocumentMut, Item, Value};
 
 use statute::diag::Diagnostics;
 use statute::lock;
-use statute::manifest::{self, Manifest, RuleRef, SourceSpec, show};
-use statute::node::{Id, Kind, Status};
+use statute::manifest::{self, Key, Manifest};
+use statute::node::{Kind, Status};
 use statute::project::Project;
 use statute::resolve::{Reason, label, refs};
+use statute::source::describe;
 
 /// Compile a constitution and the rules a repository chooses into the
 /// instruction files coding agents read. Run in the directory of
@@ -57,6 +58,12 @@ enum Command {
         /// holds.
         #[arg(long)]
         edition: Option<String>,
+        /// The repository is public: anyone can read it.
+        #[arg(long, required_unless_present = "private", conflicts_with = "private")]
+        public: bool,
+        /// The repository is private.
+        #[arg(long)]
+        private: bool,
     },
     /// Write AGENTS.md from the constitution and the locked rule set, and
     /// next to it the skills and the checks.
@@ -96,7 +103,12 @@ fn main() -> ExitCode {
         Command::Remove { rule, pack } => edit(root, &rule, pack, false),
         Command::Compile { output } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
-        Command::Init { source, edition } => init(root, &source, edition),
+        Command::Init {
+            source,
+            edition,
+            public,
+            private: _,
+        } => init(root, &source, edition, public),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
     };
     match result {
@@ -144,8 +156,10 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
 fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     use statute::check::{Context, Outcome};
     let project = load(root)?;
-    let reports = statute::check::run(&project, &Context { root, base });
-    let source = &project.source;
+    let ctx = Context { root, base };
+    let visibility = statute::check::visibility(&project, &ctx);
+    let reports = statute::check::run(&project, &ctx);
+    let sources = &project.sources;
     let for_reviewer =
         |r: &statute::check::Report| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review);
     // The labels are read only when a rule's text is printed.
@@ -156,27 +170,36 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     } else {
         None
     };
-    let mut by_domain: BTreeMap<Id, Vec<_>> = BTreeMap::new();
+    println!("## {}", manifest::FILE);
+    println!(
+        "\n{:<12}  public: {}",
+        visibility.outcome.name(),
+        visibility.note
+    );
+    for f in &visibility.findings {
+        println!("{:<12}    {}: {}", "", f.location, f.reason);
+    }
+    let mut by_domain: BTreeMap<Key, Vec<_>> = BTreeMap::new();
     for entry in &reports {
         by_domain
-            .entry(source.root(entry.0))
+            .entry(sources.root(&entry.0))
             .or_default()
             .push(entry);
     }
-    for (i, (domain, entries)) in by_domain.iter().enumerate() {
-        let gap = if i == 0 { "" } else { "\n" };
-        println!("{gap}## {}", label(source, *domain));
-        for (id, report) in entries {
+    for (domain, entries) in &by_domain {
+        println!("\n## {}", label(sources, domain));
+        for (key, report) in entries {
             println!(
                 "\n{:<12}  {}: {}",
                 report.outcome.name(),
-                label(source, *id),
+                label(sources, key),
                 report.note
             );
             for f in &report.findings {
                 println!("{:<12}    {}: {}", "", f.location, f.reason);
             }
-            let (true, Some(labels), Some(node)) = (for_reviewer(report), &labels, source.get(*id))
+            let (true, Some(labels), Some(node)) =
+                (for_reviewer(report), &labels, sources.get(key))
             else {
                 continue;
             };
@@ -184,7 +207,7 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
             let lang = &project.manifest.lang;
             let text = |part: &str, text| {
                 let text = statute::compile::pick(text, node, lang);
-                statute::compile::cited(&project, labels, node, part, text, false)
+                statute::compile::cited(&project, labels, key, part, text, false)
                     .map_err(|e| eprintln!("statute: error: {e}"))
             };
             let reason = text("reason", &rule.reason)?;
@@ -192,7 +215,8 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
             println!("\nReason: {reason}\n\nVerification: {verification}");
         }
     }
-    if reports.iter().any(|(_, r)| r.outcome == Outcome::Violation) {
+    let violated = |r: &statute::check::Report| r.outcome == Outcome::Violation;
+    if violated(&visibility) || reports.iter().any(|(_, r)| violated(r)) {
         Err(())
     } else {
         Ok(())
@@ -202,10 +226,11 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
 /// The source's name in the rule set `init` writes.
 const INIT_SOURCE: &str = manifest::FIRST_PARTY;
 
-/// Writes a new `statute.toml` that rests on the constitution of `source`
-/// and enables no rule, after trying that it resolves. An existing file is
+/// Writes a new `statute.toml` that rests on the constitution of `source`,
+/// for a repository that is `public` or not, and enables no rule, after
+/// trying that it resolves. An existing file is
 /// left as it is.
-fn init(root: &Path, source: &str, edition: Option<String>) -> Result<(), ()> {
+fn init(root: &Path, source: &str, edition: Option<String>, public: bool) -> Result<(), ()> {
     let path = root.join(manifest::FILE);
     let exists = || {
         eprintln!(
@@ -225,6 +250,7 @@ fn init(root: &Path, source: &str, edition: Option<String>) -> Result<(), ()> {
     let text = format!(
         "# Written by `statute init`; `statute add` and `statute remove` change the rules.\n\
          constitution = {{ source = \"{INIT_SOURCE}\", edition = {} }}\n\
+         public = {public}\n\
          rules = []\n\
          \n\
          [sources]\n\
@@ -315,14 +341,11 @@ fn lock_command(root: &Path) -> Result<(), ()> {
         .ok()
         .and_then(|text| lock::read(&text).ok())
     {
-        for (id, revision) in same_revision_new_content(&old, &project) {
+        for (key, revision) in same_revision_new_content(&old, &project) {
             eprintln!(
                 "{}: warning: rule {} changed since {} and is still at revision {revision}; {}",
-                statute::project::shown(
-                    &project.manifest.source.path,
-                    &format!("rules/{}", statute::node::file_name(id))
-                ),
-                label(&project.source, id),
+                project.sources.file(&key),
+                label(&project.sources, &key),
                 lock::FILE,
                 RAISE_REVISION
             );
@@ -337,12 +360,12 @@ const RAISE_REVISION: &str = "an edited rule's revision goes up by one";
 
 /// The enabled rules whose file differs from the one `old` locked while
 /// the revision is the same, each with that revision.
-fn same_revision_new_content(old: &lock::Locked, project: &Project) -> Vec<(Id, u64)> {
+fn same_revision_new_content(old: &lock::Locked, project: &Project) -> Vec<(Key, u64)> {
     lock::current(project)
         .rules
         .into_iter()
-        .filter_map(|(id, (revision, sha256))| match old.rules.get(&id) {
-            Some((was, before)) if *was == revision && *before != sha256 => Some((id, revision)),
+        .filter_map(|(key, (revision, sha256))| match old.rules.get(&key) {
+            Some((was, before)) if *was == revision && *before != sha256 => Some((key, revision)),
             _ => None,
         })
         .collect()
@@ -406,7 +429,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
 /// Prints how `project` differs from the lock file `old`.
 fn report_changes(old: &lock::Locked, project: &Project) {
     let new = lock::current(project);
-    let source = &project.source;
+    let sources = &project.sources;
     let mut any = false;
     let mut line = |text: String| {
         any = true;
@@ -424,69 +447,70 @@ fn report_changes(old: &lock::Locked, project: &Project) {
             old.revision, new.revision
         ));
     }
-    for (id, (revision, sha256)) in &new.rules {
-        match old.rules.get(id) {
+    for (key, (revision, sha256)) in &new.rules {
+        match old.rules.get(key) {
             Some((was, _)) if was != revision => line(format!(
                 "changed: rule {}: revision {was} -> {revision}",
-                label(source, *id)
+                label(sources, key)
             )),
             Some((_, was)) if was != sha256 => line(format!(
                 "changed: rule {}: content changed, still revision {revision}; {RAISE_REVISION}",
-                label(source, *id)
+                label(sources, key)
             )),
             Some(_) => {}
             None => line(format!(
                 "brought in: rule {}, {}",
-                label(source, *id),
-                why(project, *id)
+                label(sources, key),
+                why(project, key)
             )),
         }
     }
-    for id in old.rules.keys().filter(|id| !new.rules.contains_key(id)) {
-        line(format!("dropped: rule {}", label(source, *id)));
+    for key in old.rules.keys().filter(|k| !new.rules.contains_key(k)) {
+        line(format!("dropped: rule {}", label(sources, key)));
     }
     if !any {
         println!("{} is up to date", lock::FILE);
     }
 }
 
-/// The reasons `id` is enabled, one step down the chain `explain` follows.
-fn why(project: &Project, id: Id) -> String {
-    let source = &project.source;
-    let reasons = project.resolution.enabled.get(&id);
+/// The reasons `key` is enabled, one step down the chain `explain`
+/// follows.
+fn why(project: &Project, key: &Key) -> String {
+    let sources = &project.sources;
+    let reasons = project.resolution.enabled.get(key);
     reasons
         .into_iter()
         .flatten()
-        .map(|r| match *r {
+        .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
-            Reason::Pack(root) => format!("in pack {}", label(source, root)),
-            Reason::ParentOf(c) => format!("the parent of {}", label(source, c)),
-            Reason::RequiredBy(b) => format!("required by {}", label(source, b)),
+            Reason::Pack(root) => format!("in pack {}", label(sources, root)),
+            Reason::ParentOf(c) => format!("the parent of {}", label(sources, c)),
+            Reason::RequiredBy(b) => format!("required by {}", label(sources, b)),
         })
         .collect::<Vec<_>>()
         .join("; ")
 }
 
-/// What takes the place of superseded `id`, following the chain while
-/// each rule on it has one successor: nothing when `id` is not superseded,
-/// the rule at the end of the chain, or the successors of the rule where
-/// the chain splits.
-fn successors(project: &Project, id: Id) -> Vec<Id> {
-    let mut seen = vec![id];
-    let mut at = id;
-    while let Some(node) = project.source.get(at)
+/// What takes the place of superseded `key`, following the chain while
+/// each rule on it has one successor: nothing when `key` is not
+/// superseded, the rule at the end of the chain, or the successors of the
+/// rule where the chain splits.
+fn successors(project: &Project, key: &Key) -> Vec<Key> {
+    let mut seen = vec![key.clone()];
+    let mut at = key.clone();
+    while let Some(node) = project.sources.get(&at)
         && node.status == Status::Superseded
     {
-        match node.superseded_by.as_slice() {
+        match statute::resolve::successors(&at, node).as_slice() {
             [next] if !seen.contains(next) => {
-                seen.push(*next);
-                at = *next;
+                seen.push(next.clone());
+                at = next.clone();
             }
             [_] | [] => break,
             many => return many.to_vec(),
         }
     }
-    if at == id { Vec::new() } else { vec![at] }
+    if at == *key { Vec::new() } else { vec![at] }
 }
 
 /// The rule set with each superseded entry of `rules` and `packs` replaced
@@ -501,34 +525,32 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
     let mut doc: DocumentMut = original
         .parse()
         .map_err(|e| eprintln!("{}: error: {e}", manifest::FILE))?;
-    let spec = &project.manifest.source;
-    let show = |id: Id| show(&spec.name, id);
+    let m = &project.manifest;
     let mut lines = Vec::new();
     for field in ["rules", "packs"] {
         let Some(list) = doc.get_mut(field).and_then(Item::as_array_mut) else {
             continue;
         };
         // Manifest::parse has already checked that each entry names a
-        // rule of the one source.
-        let ids: Vec<Option<Id>> = list.iter().map(|v| listed_id(v, spec)).collect();
-        // The IDs listed once this pass is done, so that two rules with
+        // rule of a source of the rule set.
+        let keys: Vec<Option<Key>> = list.iter().map(|v| listed_key(v, m)).collect();
+        // The keys listed once this pass is done, so that two rules with
         // one successor do not both become it.
-        let mut listed = ids.clone();
-        for i in (0..ids.len()).rev() {
-            let Some(old) = ids[i] else { continue };
+        let mut listed = keys.clone();
+        for i in (0..keys.len()).rev() {
+            let Some(old) = &keys[i] else { continue };
             let new = match successors(project, old).as_slice() {
                 [] => continue,
-                [new] => *new,
+                [new] => new.clone(),
                 many => {
                     lines.push(format!(
-                        "left {} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
-                        show(old),
-                        refs(&project.source, many)
+                        "left {old} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
+                        refs(many)
                     ));
                     continue;
                 }
             };
-            if listed.contains(&Some(new)) {
+            if listed.contains(&Some(new.clone())) {
                 let removed = list.remove(i);
                 // The next entry takes the place of the first, spacing
                 // included.
@@ -539,22 +561,16 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
                     first.decor_mut().set_prefix(prefix);
                 }
                 lines.push(format!(
-                    "took {} out of `{field}`: superseded by {}, which it lists already",
-                    show(old),
-                    show(new)
+                    "took {old} out of `{field}`: superseded by {new}, which it lists already"
                 ));
             } else {
                 let decor = list.get(i).map(|v| v.decor().clone());
-                list.replace(i, show(new));
-                listed.push(Some(new));
+                list.replace(i, Manifest::entry(&new));
+                listed.push(Some(new.clone()));
                 if let (Some(decor), Some(v)) = (decor, list.get_mut(i)) {
                     *v.decor_mut() = decor;
                 }
-                lines.push(format!(
-                    "replaced {} with {} in `{field}`",
-                    show(old),
-                    show(new)
-                ));
+                lines.push(format!("replaced {old} with {new} in `{field}`"));
             }
         }
     }
@@ -566,30 +582,27 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
     Ok(Some((original, changed, lines)))
 }
 
-/// The ID a command-line reference names in the rule set's source,
-/// written as in `statute.toml`.
-fn parse_ref(text: &str, source: &SourceSpec) -> Result<Id, ()> {
-    RuleRef::parse(text)
-        .and_then(|r| source.id_of(&r).map_err(|e| format!("`{text}` {e}")))
+/// The key a command-line reference names in the rule set, written as in
+/// `statute.toml`.
+fn parse_ref(text: &str, manifest: &Manifest) -> Result<Key, ()> {
+    manifest
+        .key(text)
         .map_err(|e| eprintln!("statute: error: {e}"))
 }
 
-/// The ID an entry of `rules` or `packs` names, when it is a reference to
-/// a rule of `source`.
-fn listed_id(value: &Value, source: &SourceSpec) -> Option<Id> {
-    let r = RuleRef::parse(value.as_str()?).ok()?;
-    source.id_of(&r).ok()
+/// The key an entry of `rules` or `packs` names.
+fn listed_key(value: &Value, manifest: &Manifest) -> Option<Key> {
+    manifest.key(value.as_str()?).ok()
 }
 
 fn explain(root: &Path, text: &str) -> Result<(), ()> {
     let project = load(root)?;
-    let id = parse_ref(text, &project.manifest.source)?;
-    let source = &project.source;
-    let Some(node) = source.get(id) else {
+    let key = parse_ref(text, &project.manifest)?;
+    let sources = &project.sources;
+    let Some(node) = sources.get(&key) else {
         eprintln!(
-            "statute: error: {} does not exist in source `{}`",
-            source.show(id),
-            project.manifest.source.name
+            "statute: error: {key} does not exist in {}",
+            describe(&key.source)
         );
         return Err(());
     };
@@ -598,78 +611,82 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
         Kind::Domain => {
             println!(
                 "{} is a domain: it is never enabled itself, and gives a heading to the enabled rules under it",
-                label(source, id)
+                label(sources, &key)
             );
             return Ok(());
         }
         Kind::OneOf => {
-            let chosen: Vec<String> = source
-                .children(id)
-                .filter(|c| project.resolution.enabled.contains_key(&c.id))
-                .map(|c| label(source, c.id))
+            let chosen: Vec<String> = sources
+                .children(&key)
+                .iter()
+                .filter(|c| project.resolution.enabled.contains_key(*c))
+                .map(|c| label(sources, c))
                 .collect();
             if chosen.is_empty() {
                 println!(
                     "one-of {} is not enabled: none of its children is",
-                    label(source, id)
+                    label(sources, &key)
                 );
             } else {
                 println!(
                     "one-of {} is enabled through its child {}",
-                    label(source, id),
+                    label(sources, &key),
                     chosen.join(", ")
                 );
             }
             return Ok(());
         }
     }
-    if !project.resolution.enabled.contains_key(&id) {
-        println!("rule {} is not enabled by the rule set", label(source, id));
+    if !project.resolution.enabled.contains_key(&key) {
+        println!(
+            "rule {} is not enabled by the rule set",
+            label(sources, &key)
+        );
         return Err(());
     }
-    println!("rule {} is enabled:", label(source, id));
+    println!("rule {} is enabled:", label(sources, &key));
     let mut out = String::new();
-    reasons(&project, id, 0, &mut vec![id], &mut out);
+    reasons(&project, &key, 0, &mut vec![key.clone()], &mut out);
     print!("{out}");
     Ok(())
 }
 
-/// Writes why `id` is enabled, one line per reason, and under each rule
+/// Writes why `key` is enabled, one line per reason, and under each rule
 /// that brought it in, why that rule is enabled, down to the rules chosen
 /// directly.
-fn reasons(project: &Project, id: Id, depth: usize, path: &mut Vec<Id>, out: &mut String) {
-    let source = &project.source;
+fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out: &mut String) {
+    let sources = &project.sources;
     let indent = "  ".repeat(depth);
-    let Some(set) = project.resolution.enabled.get(&id) else {
+    let Some(set) = project.resolution.enabled.get(key) else {
         return;
     };
     for reason in set {
-        let by = match *reason {
+        let by = match reason {
             Reason::Direct => {
                 out.push_str(&format!("{indent}- listed in `rules`\n"));
                 continue;
             }
             Reason::Pack(root) => {
-                out.push_str(&format!("{indent}- in pack {}\n", label(source, root)));
+                out.push_str(&format!("{indent}- in pack {}\n", label(sources, root)));
                 continue;
             }
             Reason::ParentOf(child) => {
                 out.push_str(&format!(
                     "{indent}- the parent of {}, which is enabled:\n",
-                    label(source, child)
+                    label(sources, child)
                 ));
                 child
             }
             Reason::RequiredBy(by) => {
                 out.push_str(&format!(
                     "{indent}- required by {}, which is enabled:\n",
-                    label(source, by)
+                    label(sources, by)
                 ));
                 by
             }
         };
-        if !path.contains(&by) {
-            path.push(by);
+        if !path.contains(by) {
+            path.push(by.clone());
             reasons(project, by, depth + 1, path, out);
             path.pop();
         }
@@ -689,8 +706,8 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
             eprintln!("{}: error: {e}", manifest::FILE);
         }
     })?;
-    let id = parse_ref(text, &manifest.source)?;
-    let entry = show(&manifest.source.name, id);
+    let key = parse_ref(text, &manifest)?;
+    let entry = Manifest::entry(&key);
     let field = if pack { "packs" } else { "rules" };
 
     let mut doc: DocumentMut = original
@@ -701,14 +718,14 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
         .or_insert_with(|| Item::Value(Value::Array(Array::new())))
         .as_array_mut()
         .ok_or_else(|| eprintln!("{}: error: `{field}` is not a list", manifest::FILE))?;
-    // Entries of the list that name this ID; Manifest::parse has already
-    // checked that each names a rule of the one source.
+    // Entries of the list that name this key; Manifest::parse has already
+    // checked that each names a rule of a source of the rule set.
     let position = list
         .iter()
-        .position(|v| listed_id(v, &manifest.source) == Some(id));
+        .position(|v| listed_key(v, &manifest).as_ref() == Some(&key));
     match (adding, position) {
         (true, Some(_)) => {
-            println!("{entry} is already in `{field}`");
+            println!("{key} is already in `{field}`");
             return Ok(());
         }
         (true, None) => list.push(entry.as_str()),
@@ -716,7 +733,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
             list.remove(i);
         }
         (false, None) => {
-            eprintln!("{}: error: `{field}` does not list {entry}", manifest::FILE);
+            eprintln!("{}: error: `{field}` does not list {key}", manifest::FILE);
             return Err(());
         }
     }
@@ -734,11 +751,11 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
     };
     write_both(root, &original, &changed, &project)?;
     if adding {
-        println!("added {entry} to `{field}`");
+        println!("added {key} to `{field}`");
     } else {
-        println!("removed {entry} from `{field}`");
-        if !pack && project.resolution.enabled.contains_key(&id) {
-            println!("{entry} is still enabled; `statute explain {entry}` says why");
+        println!("removed {key} from `{field}`");
+        if !pack && project.resolution.enabled.contains_key(&key) {
+            println!("{key} is still enabled; `statute explain {entry}` says why");
         }
     }
     print_locked(&project);

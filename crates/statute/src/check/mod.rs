@@ -2,10 +2,11 @@
 //! Checks, and Outcomes and the review loop). A check has three outcomes;
 //! a rule without an automatic check goes to the reviewer as it is.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::node::{Check, Id};
+use crate::manifest::{FIRST_PARTY, Key};
+use crate::node::Check;
 use crate::project::Project;
 
 mod command;
@@ -74,38 +75,95 @@ pub struct Context<'a> {
     pub base: Option<&'a str>,
 }
 
-/// The checks of every enabled rule, in order of ID.
-pub fn run(project: &Project, ctx: &Context) -> Vec<(Id, Report)> {
+impl Context<'_> {
+    /// The top of the git work tree that holds `root`, where a
+    /// repository's own configuration lives; `root` itself when git
+    /// cannot say.
+    pub fn top(&self) -> PathBuf {
+        git(self.root)
+            .args(["rev-parse", "--show-toplevel"])
+            .output()
+            .ok()
+            .filter(|out| out.status.success())
+            .map(|out| PathBuf::from(String::from_utf8_lossy(&out.stdout).trim_end_matches('\n')))
+            .unwrap_or_else(|| self.root.to_path_buf())
+    }
+}
+
+/// The checks of every enabled rule, in order of key. A built-in check
+/// belongs to a rule of the first-party source; a rule of another source
+/// with `check = "builtin"` has none in statute.
+pub fn run(project: &Project, ctx: &Context) -> Vec<(Key, Report)> {
     project
         .resolution
         .enabled
         .keys()
-        .filter_map(|&id| {
-            let rule = project.source.get(id)?.rule.as_ref()?;
+        .filter_map(|key| {
+            let rule = project.sources.get(key)?.rule.as_ref()?;
+            let first_party = key.source == FIRST_PARTY;
             let report = match &rule.check {
                 Check::Review => Report::new(Outcome::Review, "no automatic check"),
-                Check::Builtin => match id {
-                    3 => r3::check(ctx),
-                    7 => r7::check(ctx),
-                    43 => r43::check(ctx),
-                    46 => r46::check(ctx),
-                    50 => r50::check(ctx),
-                    58 => r58::check(ctx),
-                    61 => r61::check(ctx),
-                    71 => r71::check(ctx),
+                Check::Builtin => match key.id {
+                    3 if first_party => r3::check(ctx),
+                    7 if first_party => r7::check(ctx),
+                    43 if first_party => r43::check(ctx),
+                    46 if first_party => r46::check(ctx),
+                    50 if first_party => r50::check(ctx),
+                    58 if first_party => r58::check(ctx),
+                    61 if first_party => r61::check(ctx),
+                    71 if first_party => r71::check(ctx),
+                    _ if first_party => Report::new(
+                        Outcome::Inconclusive,
+                        format!("no built-in check for rule {key} in this version of statute"),
+                    ),
                     _ => Report::new(
                         Outcome::Inconclusive,
                         format!(
-                            "no built-in check for rule {} in this version of statute",
-                            project.source.show(id)
+                            "statute has built-in checks only for rules of the first-party source, `{FIRST_PARTY}`, so none for {key}"
                         ),
                     ),
                 },
                 Check::Command { run, tools } => command::check(ctx, run, tools),
             };
-            Some((id, report))
+            Some((key.clone(), report))
         })
         .collect()
+}
+
+#[derive(serde::Deserialize)]
+struct Visibility {
+    visibility: String,
+}
+
+/// Compares the rule set's `public` with the repository's visibility on
+/// GitHub (`docs/design/rule-sources.md`, Public or not): a rule set that
+/// says private in a repository GitHub shows as public is a violation,
+/// since its private rules would be published.
+pub fn visibility(project: &Project, ctx: &Context) -> Report {
+    let declared = project.manifest.public;
+    let said = format!("statute.toml says `public = {declared}`");
+    let answer: Visibility = match github::gh(ctx, &["repo", "view", "--json", "visibility"]) {
+        Ok(answer) => answer,
+        Err(mut report) => {
+            report.note = format!("{said}, and GitHub was not asked: {}", report.note);
+            return report;
+        }
+    };
+    let on_github = answer.visibility;
+    match (declared, on_github.as_str()) {
+        (false, "PUBLIC") => Report {
+            outcome: Outcome::Violation,
+            findings: vec![Finding {
+                location: crate::manifest::FILE.to_owned(),
+                reason: "`public = false`, and anyone can read the repository; write `public = true`, and name private sources in statute.private.toml".to_owned(),
+            }],
+            note: format!("{said}, and GitHub shows the repository as {on_github}"),
+        },
+        _ => Report::new(
+            Outcome::Pass,
+            format!("{said}, and GitHub shows the repository as {on_github}"),
+        ),
+    }
 }
 
 /// `git` for the repository at `root`.
