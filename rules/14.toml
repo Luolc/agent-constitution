@@ -1,0 +1,13 @@
+id = 14
+slug = "collaboration"
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Collaboration"
+zh = "协作"
+
+[translations]
+zh = "11a2b0f914523300e925a7f9172ddd404e2f700bb5099b1b3d5304e7cf000242"

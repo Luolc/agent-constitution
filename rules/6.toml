@@ -1,13 +1,32 @@
-id = "fleet-roles"
+id = 6
+slug = "fleet-roles"
+revision = 1
+kind = "rule"
 status = "draft"
-scope = "all"
-authority = ["constitution:delegated-authority", "constitution:accountable-agent", "constitution:asking-principals", "constitution:principals", "constitution:delivered-tasks", "constitution:decide-yourself", "constitution:asking"]
+lang = "en"
+parent = 14
+authority = ["delegated-authority", "accountable-agent", "asking-principals", "principals", "delivered-tasks", "decide-yourself", "asking"]
+constitution = ">=1"
+level = "project"
+check = "review"
 
 [title]
 en = "Roles in fleet-style division of work"
 zh = "fleet 式分工中的角色"
 
-[content]
+[text.statement]
+en = "Where work is divided among agents the way fleet does, keep each agent to what its role allows: the agent talking with principals, the agent responsible for a job, or a worker."
+zh = "在像 fleet 那样在 agent 之间分工的法域里，每个 agent 只做它的角色允许的事：与委托人对话的 agent、负责一项工作的 agent，或者 worker。"
+
+[text.reason]
+en = '''
+Each task has exactly one responsible agent ({@constitution:accountable-agent}), the rules set which agents may ask principals directly ({@constitution:asking-principals}), and a delegated agent does not act beyond the scope of its task ({@constitution:delegated-authority}).
+'''
+zh = '''
+每项任务有且只有一个负责的 agent ({@constitution:accountable-agent})，哪些 agent 可以直接向委托人提问由规定确定 ({@constitution:asking-principals})，受委派的 agent 不超出其任务范围行事 ({@constitution:delegated-authority})。
+'''
+
+[text.verification]
 en = '''
 This rule is for a jurisdiction that divides work among agents the way fleet does, with the three roles below. Where work is divided otherwise, the rule need not be adopted ({@constitution:division-of-instructions.rules}).
 
@@ -18,6 +37,8 @@ This rule is for a jurisdiction that divides work among agents the way fleet doe
 The mechanics of each role belong to the agent tools.
 
 When a worker is unsure whether something is inside its task, it treats it as outside and asks the agent responsible for its job.
+
+Violated when an agent does what its role above does not give it, such as a worker merging, widening its task or starting other work, or the agent responsible for a job asking principals other than through the agent talking with them.
 '''
 zh = '''
 本规定适用于像 fleet 那样在 agent 之间分工、设有下列三种角色的法域。分工方式不同的，可以不采用本规定 ({@constitution:division-of-instructions.rules})。
@@ -29,4 +50,9 @@ zh = '''
 各角色的具体机制由 agent 工具决定。
 
 worker 不确定某一事项是否在自己的任务范围内的，按不在范围内处理，并询问负责这项工作的 agent。
+
+agent 做了上述角色没有赋予它的事，例如 worker 合并变更、扩大任务范围或另起工作，或者负责一项工作的 agent 不经与委托人对话的 agent 而直接向委托人提问的，即为违反本规定。
 '''
+
+[translations]
+zh = "cf7ea86a78989d3ba5427d76d5334b55e15523e82d0537d02fb63f6cbc10bd11"

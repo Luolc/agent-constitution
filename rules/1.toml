@@ -1,0 +1,56 @@
+id = 1
+slug = "acceptance-record"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "evidence"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Back every \"done\" with an acceptance record"
+zh = "报告完成时附验收记录"
+
+[text.statement]
+en = "When you report work as done, whether to another agent or to a person, attach an acceptance record to the report."
+zh = "向其他 agent 或人报告工作完成时，在报告里附一份验收记录。"
+
+[text.reason]
+en = '''
+A report that work is done is a claim, and a claim comes with grounds that someone else can check ({@constitution:evidence}): the record shows which checks the work passed, on which version, and which it did not undergo ({@constitution:verification}).
+'''
+zh = '''
+报告工作完成是一项主张，主张要附上别人能够核对的依据 ({@constitution:evidence})：验收记录写明工作通过了哪些检查、基于哪个版本，以及哪些检查没有做 ({@constitution:verification})。
+'''
+
+[text.verification]
+en = '''
+The record lists:
+
+- each check that ran, the version it ran on (a commit, a build or a file revision), and the line of its output that shows the result;
+- each check that applies but did not run, and why.
+
+Each value in the record is copied from the output that established it ({@constitution:evidence.facts}). When the work changes after a check ran, the record moves to the new version: the check runs again, or it is listed as not run on that version, with the reason.
+
+When unsure whether a check applies, list it as not run, with the reason, rather than leave it out.
+
+A report of done without such a record, or with a record that lacks any of the above, violates the rule.
+'''
+zh = '''
+验收记录列出：
+
+- 已运行的每项检查，运行所基于的版本 (commit、构建或文件版本)，以及显示结果的那一行输出；
+- 适用但未运行的每项检查，以及未运行的原因。
+
+记录中的每个值都按实际取得的输出原样填写，不凭记忆 ({@constitution:evidence.facts})。检查运行之后工作又有改动的，记录随之更新到新版本：重新运行这项检查，或者将其列为在新版本上未运行，并写明原因。
+
+不确定某项检查是否适用的，列为未运行并写明原因，不得略去。
+
+报告完成却没有这样的验收记录，或者记录缺了上述任何一项的，即为违反本规定。
+'''
+
+[translations]
+zh = "a1c203c2cf3a00d20be2539eaa9735e8030559f6945201b53a940c99298c86dd"
