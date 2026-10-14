@@ -349,6 +349,20 @@ class RenderTest(Tree):
         self.assertEqual((self.root / "constitution/constitution.zh.agent.md").read_bytes(), ZH_AGENT.encode())
         self.assertEqual(bc.main(["--root", str(self.root), "--check"]), 0)
 
+    def test_preamble_heading_is_marked(self):
+        """The version for agents leaves out the front text, so a heading in
+        it has the asterisk in the full version, and the header explains it."""
+        self.edit("constitution/index.toml", "The preamble cites", "## Preamble\n\nThe preamble cites")
+        self.edit("constitution/index.toml", "序言引用{@beta}", "## 序言\n\n序言引用{@beta}")
+        errors, _, outputs = bc.build(self.root)
+        self.assertEqual(errors, [])
+        star = '<sup class="omitted">*</sup>'
+        self.assertIn(f"\n## Preamble{star}\n\nThe preamble cites", outputs["en"])
+        self.assertIn(f"\n## 序言{star}\n\n序言引用", outputs["zh"])
+        for lang in ("en", "zh"):
+            self.assertIn(bc.LANGUAGES[lang].legend + "\n", outputs[lang])
+            self.assertNotIn(star, outputs[lang + bc.AGENT])
+
     def test_provisions_for_maintainers(self):
         """A section and an item marked for maintainers keep their text, with
         an asterisk, in the full version; the version for agents keeps only
@@ -363,13 +377,12 @@ class RenderTest(Tree):
         self.assertIn(f'\n    -   <a id="alpha-one.machines"></a>(**2**){star} Machines;', outputs["en"])
         self.assertIn(f'\n-   <a id="beta-two"></a>**第一款之一**{star} 之间：\n', outputs["zh"])
         self.assertIn(f'\n    -   <a id="alpha-one.machines"></a>(**二**){star} 机器；', outputs["zh"])
-        self.assertIn("Language: English. Sections and items marked \\* are written for human readers: how"
-                      " this constitution is organized and amended. The version compiled for agents,"
-                      " `constitution/constitution.en.agent.md`, leaves out their text and keeps only a"
-                      " pointer to this full version.\n", outputs["en"])
-        self.assertIn("语言：中文。标 \\* 的条款写给人读，讲本宪法怎样编排、怎样修改。给 agent 编译的版本"
-                      " `constitution/constitution.zh.agent.md` 不收这些条款的正文，只留一句「见完整版」。\n",
-                      outputs["zh"])
+        self.assertIn("Language: English. Parts marked \\* are about how this constitution came about, is"
+                      " organized and is amended, and are shown to people by default; the version compiled for"
+                      " agents, `constitution/constitution.en.agent.md`, leaves out their text by default.\n",
+                      outputs["en"])
+        self.assertIn("语言：中文。标 \\* 的部分讲本宪法的由来、编排和修改，默认只对人可见；给 agent 编译的版本"
+                      " `constitution/constitution.zh.agent.md` 默认不收录它们的正文。\n", outputs["zh"])
         self.assertEqual(outputs["en"].replace(star, "").replace(bc.LANGUAGES["en"].legend, ""), EN)
         self.assertEqual(outputs["zh"].replace(star, "").replace(bc.LANGUAGES["zh"].legend, ""), ZH)
         self.assertEqual(outputs["en.agent"], EN_AGENT.replace(
