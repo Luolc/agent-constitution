@@ -294,14 +294,14 @@ constitution/articles/
 - `status`: `draft` until a person first approves the text, then
   `active`.
 - `edition`: the name of the edition, the month a principal approved it as
-  in force, `YYYY-MM`; required once `status` is `active`. A draft may
-  name the edition it prepares, the month it is meant to be approved in;
-  if it is approved in another month, the edition is renamed then. An
-  edition is a whole version of the text, like a constitution named by the
-  year it was adopted. Starting a new edition is itself an amendment and
-  needs a principal's approval, and at most one edition starts in a month,
-  so no two share a name; within an edition, numbers never change (see
-  Numbering), and a new edition may renumber freely.
+  in force, `YYYY-MM`; required. A draft names the edition it prepares,
+  the month it is meant to be approved in; if it is approved in another
+  month, the edition is renamed then. An edition is a whole version of the
+  text, like a constitution named by the year it was adopted. Starting a
+  new edition is itself an amendment and needs a principal's approval, and
+  at most one edition starts in a month, so no two share a name; within an
+  edition, numbers never change (see Numbering), and a new edition may
+  renumber freely.
 - `revision`: a string, the revision within the edition: a draft is
   `0.<n>`, with `<n>` counting from 1 in every draft (the first
   edition's and each later one's), the first approved text of an edition
@@ -314,8 +314,7 @@ constitution/articles/
   the shapes of headings, numbers and citations, the repealed note). Adding
   a language means adding one entry there and one key to every text table.
 - `[title]`: the title, one line per language; the build adds the
-  edition after it, or the draft mark for a draft that names none (see
-  Numbering).
+  edition after it (see Numbering).
 - `[front]`: the Markdown between the title and the first article (draft
   notice, `## Preamble` and its text), per language. It may cite.
 
@@ -410,7 +409,6 @@ is written `⟨must-ask⟩` in the table:
 | Item | en | zh |
 | --- | --- | --- |
 | Title | `# Agent Constitution (2026-10 edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
-| Title, draft without `edition` | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
 | Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
 | List item | `    -   ⟨must-ask.capital⟩(**3**) <content>` | `    -   ⟨must-ask.capital⟩(**三**) <content>` |
@@ -870,8 +868,7 @@ first one that finds errors, printing all of that one's errors:
    section's name; there is no `constitution/sections/`; `id` equals the
    name without its number; `status`, item `number` and `repealed` are
    well formed and agree with each other and with the status of
-   `index.toml`; `edition` is a real month `YYYY-MM`, present when
-   `index.toml` is `active`. Hidden names
+   `index.toml`; `edition` is a real month `YYYY-MM`. Hidden names
    (starting with `.`, such as `.DS_Store` or an editor's swap file) are
    skipped.
 2. IDs: each has the format; article and section IDs are unique in the
