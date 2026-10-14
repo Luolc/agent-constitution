@@ -150,6 +150,7 @@ site/                     built static site, not committed             A
 pyproject.toml            the Python environment of tools/: Python
                           version, limae and pre-commit pins           A
 uv.lock                   its lock file, written by uv                 A
+.python-version           the Python minor version uv runs tools/ on   A
 .fleet/config.json        issue-tracker metadata for fleet; the
                           toolchain never reads it                     A
 ```

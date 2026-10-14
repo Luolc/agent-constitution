@@ -1,6 +1,8 @@
 # The Python environment of tools/: not a package, only the interpreter and
 # the tools the scripts and the commit hooks run. `uv run` creates and syncs
 # it from uv.lock; the pins here are the one place their versions are set.
+# The interpreter's minor version is in .python-version, which uv and CI
+# read.
 [project]
 name = "agent-constitution-tools"
 version = "0.0.0"
