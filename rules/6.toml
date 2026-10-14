@@ -1,9 +1,9 @@
 id = 6
 slug = "fleet-roles"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 28
+superseded-by = [28, 29]
 lang = "en"
 parent = 14
 authority = ["delegated-authority", "accountable-agent", "asking-principals", "principals", "delivered-tasks", "decide-yourself", "asking"]
