@@ -1,0 +1,46 @@
+id = 25
+slug = "fixtures-for-both-outcomes"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give each provision that can be checked happy-path and red-line fixtures"
+zh = "每项可以检查的条文都有正常路径和红线 fixture"
+
+[text.statement]
+en = "Give each provision of the constitution or of an adopted rule that can be checked both happy-path and red-line fixtures."
+zh = "宪法或已采用的规定中，每一项可以检查的条文都要有正常路径的 fixture 和红线 fixture。"
+
+[text.reason]
+en = '''
+A check must be shown both to pass correct work and to catch the error it is meant to rule out ({@constitution:discriminating-checks}).
+'''
+zh = '''
+一项检查要证明两面：正确的工作能通过，它要排除的错误确实会被发现 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
+en = '''
+Happy-path fixtures show that normal work still completes; red-line fixtures show that a violation is caught. Violations of {@constitution:safety} and of the items listed in {@constitution:must-ask} are always among the red-line fixtures.
+
+Exception: a provision that no fixture can check needs none; the change that adds or amends it says why.
+
+Violated when a provision that can be checked lacks either kind of fixture, or a provision is left without fixtures and the change that adds or amends it does not say why.
+'''
+zh = '''
+正常路径的 fixture 证明正常工作仍能完成；红线 fixture 证明违规会被发现。红线 fixture 中必须包括违反{@constitution:safety}和{@constitution:must-ask}所列事项的情形。
+
+例外：无法用 fixture 检查的条文不需要 fixture，引入或修改它的那次变更写明理由。
+
+可以检查的条文缺少其中任何一种 fixture，或者条文没有 fixture、引入或修改它的变更又没有写明理由的，即为违反本规定。
+'''
+
+[translations]
+zh = "62c9d197694879ab97d8a0fd7116bbd6f0afe618146e30b315a64000ab0ffe2b"

@@ -1,0 +1,46 @@
+id = 35
+slug = "usage-quotas-must-ask"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["boundary-rule", "must-ask.capital"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Buying, resetting or unlocking usage quotas goes through a principal"
+zh = "购买、重置或解锁用量额度须经委托人"
+
+[text.statement]
+en = "Treat buying, resetting or unlocking a usage quota as an item of {@constitution:must-ask}, which goes through a principal."
+zh = "购买、重置或者解锁用量额度，按{@constitution:must-ask}所列事项处理，须经委托人。"
+
+[text.reason]
+en = '''
+Usage quotas are among the resources of {@constitution:must-ask.capital}, and the rules say which concrete matters fall in each class ({@constitution:boundary-rule}): resetting or unlocking a quota adds usage just as buying it does.
+'''
+zh = '''
+用量额度属于{@constitution:must-ask.capital}所说的资源，各类事项具体包括哪些由规定写明 ({@constitution:boundary-rule})：重置或解锁额度，和购买一样增加了可用的用量。
+'''
+
+[text.verification]
+en = '''
+This covers every equivalent way in, such as an offer to unlock extra usage. Using usage already paid for is not covered.
+
+When unsure whether an act adds usage, treat it as one that does.
+
+Violated when an agent buys, resets or unlocks a usage quota without the yes that {@constitution:must-ask} requires.
+'''
+zh = '''
+这包括所有等价的入口，例如解锁额外用量的选项。使用已经付费的用量不在此列。
+
+不确定某个动作是否增加了用量的，按增加处理。
+
+agent 未取得{@constitution:must-ask}所要求的同意就购买、重置或者解锁用量额度的，即为违反本规定。
+'''
+
+[translations]
+zh = "2db8e0f980f76484e69eb64ff42f81f2cd9e32a0ad39091b86bb58d42427c2c9"
