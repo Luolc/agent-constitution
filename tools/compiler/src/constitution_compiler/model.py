@@ -42,6 +42,9 @@ NODE_NAME = re.compile(r"[0-9]+")
 NODE_ID = re.compile(r"[1-9][0-9]*")
 # An entry of `requires` or `conflicts` naming a node of another source.
 FOREIGN_REF = re.compile(rf"{ID}:[1-9][0-9]*")
+# A first-party rule as a rule set names it, `R12`: in this repo's rules,
+# a node of the same source.
+FIRST_PARTY_REF = re.compile(r"R[1-9][0-9]*")
 # A language code such as `en`, `zh` or `zh-Hant`.
 LANG_CODE = re.compile(r"[a-z]{2,3}(?:-[A-Za-z0-9]+)*")
 # One clause of `constitution`: revisions are whole numbers, so only the
@@ -311,7 +314,11 @@ class Node:
     kind: rule, one-of or domain.
     status: draft, trial, active, superseded or repealed.
     lang: the language of its original.
-    parent: the number of its parent, None for a domain.
+    parent: the number of its parent, or for a rule a reference
+      `<source>:<id>` to a domain of another source; None for a domain
+      that is not a subdomain, and for a rule that overrides another.
+    overrides: the rule of another source it overrides, `<source>:<id>`;
+      None for a rule that overrides none, as for a domain or a one-of.
     superseded_by: the numbers of the rules that supersede it; empty
       unless it is superseded.
     authority: the constitution provisions it refines, without a
@@ -331,7 +338,8 @@ class Node:
   kind: str
   status: str
   lang: str
-  parent: int | None
+  parent: int | str | None
+  overrides: str | None
   superseded_by: list[int]
   authority: list[str]
   title: Texts

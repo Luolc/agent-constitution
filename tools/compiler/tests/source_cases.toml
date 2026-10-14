@@ -1,0 +1,511 @@
+# Node 20, a domain, a one-of or a rule, with a `parent` or `overrides`,
+# in a source that also holds domain 2, one-of 3 and rule 10 under it,
+# and `subdomain`, domain 4 under domain 2. Only what one source can tell
+# is checked here (docs/design/rule-sources.md, Overrides and
+# Subdomains): a reference to another source, `team:7`, is checked for
+# its form alone. The compiler (test_rule_tree.py) builds the source with
+# each node. A case that fails draws errors on rules/20.toml and on no
+# other file, among them one holding its `compiler` text.
+
+subdomain = """
+id = 4
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 2
+
+[title]
+en = "Subdomain"
+"""
+
+[[cases]]
+name = "a subdomain under a domain"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 2
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a rule under a subdomain"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 4
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a one-of under a subdomain"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 4
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a rule under a domain of another source"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = "team:7"
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a one-of under a domain of another source"
+passes = false
+compiler = "a one-of's `parent` `team:7` is not the number of a node of this source"
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = "team:7"
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a rule that overrides a rule of another source"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+overrides = "team:8"
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a domain under a subdomain"
+passes = false
+compiler = "a domain's parent is a domain with no parent; 4 is a subdomain, under 2"
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 4
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a domain under a one-of"
+passes = false
+compiler = "a domain's parent is a domain with no parent; 3 is a one-of"
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 3
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a domain under a rule"
+passes = false
+compiler = "a domain's parent is a domain with no parent; 10 is a rule"
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 10
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a domain under itself"
+passes = false
+compiler = "a domain's parent is a domain with no parent; 20 is the domain itself"
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 20
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a domain under a node the source does not have"
+passes = false
+compiler = 'parent 99 is no node'
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = 99
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a domain under a domain of another source"
+passes = false
+compiler = "a domain's `parent` `team:7` is not the number of a domain of this source"
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+parent = "team:7"
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a domain that overrides"
+passes = false
+compiler = 'unknown key `overrides`'
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+overrides = "team:8"
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a one-of that overrides"
+passes = false
+compiler = 'unknown key `overrides`'
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 2
+overrides = "team:8"
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a rule with both overrides and parent"
+passes = false
+compiler = 'a rule has `parent` or `overrides`, not both'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 2
+overrides = "team:8"
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a rule with neither overrides nor parent"
+passes = false
+compiler = 'a rule needs `parent`, or `overrides` in its place'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a rule that overrides a rule of its own source"
+passes = false
+compiler = 'a rule of this source; within one source a rule is changed in place or superseded, never overridden'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+overrides = 10
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a rule that overrides itself"
+passes = false
+compiler = 'a rule of this source; within one source a rule is changed in place or superseded, never overridden'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+overrides = 20
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "an override that is not a reference"
+passes = false
+compiler = '`overrides` `seven` is not a reference to a rule of another source'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+overrides = "seven"
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "an override of two rules"
+passes = false
+compiler = '`overrides` names one rule, as a string'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+overrides = ["team:8", "team:9"]
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a parent that is not a reference"
+passes = false
+compiler = '`parent` `seven` is not a reference'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = "seven"
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a parent that is a boolean"
+passes = false
+compiler = '`parent` `true` is not a reference'
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = true
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""

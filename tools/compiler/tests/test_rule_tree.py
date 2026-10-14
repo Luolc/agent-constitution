@@ -25,6 +25,7 @@ from constitution_compiler import checks as cc
 CASES = Path(__file__).parent / "superseded_by_cases.toml"
 # Shared with statute's tests (crates/statute/tests/compile.rs).
 APPLICABILITY_CASES = Path(__file__).parent / "applicability_cases.toml"
+SOURCE_CASES = Path(__file__).parent / "source_cases.toml"
 
 
 class FormatTest(Tree):
@@ -49,9 +50,13 @@ class FormatTest(Tree):
     self.edit("rules/10.toml", "[text.reason]", "[text.reasons]")
     self.assertError(1, "rules/10.toml", "`text` lacks `reason`")
 
-  def test_domain_has_no_parent_or_text(self):
+  def test_domain_has_a_domain_or_no_parent_and_no_text(self):
     self.edit("rules/2.toml", 'lang = "en"', 'lang = "en"\nparent = 3')
-    self.assertError(1, "rules/2.toml", "unknown key `parent`")
+    self.assertError(
+      3,
+      "rules/2.toml",
+      "a domain's parent is a domain with no parent; 3 is a one-of",
+    )
     self.edit("rules/2.toml", "parent = 3\n", "")
     self.write(
       "rules/2.toml", DOMAIN + "\n[text.statement]\nen = '''\nDo.\n'''\n"
@@ -375,6 +380,41 @@ class ApplicabilityTest(Tree):
       "rules/3.toml", 'zh = "二选一"\n', 'zh = "二选一"\n' + applicability
     )
     self.assertError(1, "rules/3.toml", "unknown key `applicability`")
+
+
+class SourceTest(Tree):
+  def test_source_cases(self):
+    """Overrides and subdomains, as far as one source can tell."""
+    cases = tomllib.loads(SOURCE_CASES.read_text(encoding="utf-8"))
+    self.write("rules/4.toml", cases["subdomain"])
+    self.assertEqual(self.errors(), [])
+    self.assertGreater(len(cases["cases"]), 0)
+    for case in cases["cases"]:
+      with self.subTest(case["name"]):
+        self.write("rules/20.toml", case["node"])
+        errors = self.errors()
+        self.assertEqual(not errors, case["passes"], errors)
+        self.assertTrue(
+          all(e.startswith("rules/20.toml:") for e in errors), errors
+        )
+        if not case["passes"]:
+          self.assertTrue(any(case["compiler"] in e for e in errors), errors)
+
+  def test_first_party_reference_is_this_source(self):
+    """This repo's rules are the first-party ones: `R2` is a node here."""
+    self.edit("rules/10.toml", "parent = 2", 'parent = "R2"')
+    self.assertError(
+      1, "rules/10.toml", "`parent` `R2` names a node of this source; write 2"
+    )
+    self.edit("rules/10.toml", 'parent = "R2"', 'overrides = "R3"')
+    self.assertError(
+      1,
+      "rules/10.toml",
+      "`overrides` names R3, a rule of this source; within one source a"
+      " rule is changed in place or superseded, never overridden",
+    )
+    self.edit("rules/10.toml", 'overrides = "R3"', 'overrides = "team:3"')
+    self.assertEqual(self.errors(), [])
 
 
 class TreeTest(Tree):

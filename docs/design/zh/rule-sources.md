@@ -1,7 +1,7 @@
-<!-- en-sha256: 9384ea47d1d2d49f0c6e7ee563b9ce6bcfd964f87cd2263aa2567a218905a599 -->
+<!-- en-sha256: 8f99ee3ed371cf84346428fb3352fbbd60209c0b8531d24eceb7d722fc981e96 -->
 # 规定源
 
-状态：已定，尚未实现。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现它会替换掉工具现在的哪些行为。公开仓库的私有输出用什么形式，目前是暂定的 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))。
+状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
 
 ## <a id="contents"></a>目录
 
@@ -85,20 +85,41 @@ rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`
   [sources]
   me = { path = "../my-rules", public = false }
   here = { path = "../my-rules/repos/example", public = false, scope = "local" }
-
-  [compile]
-  output = "AGENTS.private.md"
   ```
 
 - 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
-- 它有自己的锁文件 `statute.private.lock` 和自己的输出。`statute compile` 在写这两样之前，先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml` 和它要写的每个文件；有一个没被忽略，或者确认不了 (比如不在 git 仓库里)，就什么都不写。
+- 它有自己的锁文件 `statute.private.lock` 和自己的输出 (见下文)。`statute compile` 在写其中任何一个之前，先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml` 和它要写的每个文件；有一个没被忽略，或者确认不了 (比如不在 git 仓库里)，就什么都不写。
 
-**私有输出暂定如此。** 在各家 agent 测量出结果之前，先按下面的 A 做：要测的是每家 agent 读本地指令文件时，是在提交进仓库的那份之外追加读，还是用它代替那份。测法与测子目录里的指令文件相同 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，B 是测量结果可能指向的另一种做法。
+**私有输出**是 `.statute/` 里的两个文件，再加上指向它们、供各家 agent 找到的两个软链。`.statute/` 这个目录写在公开的 `.gitignore` 里：
 
-- A：`AGENTS.private.md` (即上面例子里 `[compile]` 的 `output`) 只含私有层新加的规定：它自己的规定，以及只由它带进来的公开规定。其中的规定依赖提交进仓库的 `AGENTS.md` 里的规定时，写成指向那个文件的链接 `AGENTS.md#rule-R42`。提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `AGENTS.private.md` 时接着读它，并附上链接。
-- B：statute 为每家 agent 读的本地指令文件 (`CLAUDE.local.md`、`AGENTS.override.md` 之类) 编译出一份私有版，再把这些文件名分别软链到它。
+```text
+.statute/
+  AGENTS.private.md       只由私有层带进来的规定
+  AGENTS.full.md          公开规定加上这些规定，合成一份
+.claude/rules/statute-private.md -> ../../.statute/AGENTS.private.md
+AGENTS.override.md -> .statute/AGENTS.full.md
+```
 
-私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 (同一节，放在哪里一段)；在那之前，它们这样进入一个仓库。
+- `AGENTS.private.md` 含私有层自己的规定，以及只由它带进来的公开规定。其中的规定依赖提交进仓库的 `AGENTS.md` 里的规定时，写成指向那个文件的链接，路径相对于这个文件所在的 `.statute/`：`../AGENTS.md#rule-R42`。
+- `AGENTS.full.md` 是提交进仓库的 `AGENTS.md` 加上这些规定，每条放在它在规定树里的位置；下面说的固定那一行不写进去，因为它已经包含私有规定。
+- Claude Code 和 Grok 在 `AGENTS.md` 之外，还会追加读 `.claude/rules/` 下的每个 `*.md`，所以它们经第一个软链读到私有规定。两家也都追加读 `CLAUDE.local.md`，但这里不用它：只要有这个文件，Claude Code 就不再读 `AGENTS.md`。
+- Codex 和 Pi 读 `AGENTS.override.md`，用它代替同一目录下的 `AGENTS.md`，所以第二个软链指向全文。别的 agent 不读这个文件名，因此没有哪家会经这两个软链把一条规定加载两遍。
+- OpenCode 没有仓库层的本地文件名。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.private.md` 时，它才读到私有规定；那是机器的配置，不归 statute 管。
+- 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.private.md` 时接着读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。
+
+两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则什么都不写，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
+
+Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到工作目录的各级文件合在一起算，超出的部分截掉。`AGENTS.full.md` 单独就会超过这个大小时，`statute compile` 失败；子目录里的 `AGENTS.md` 也算在同一个上限里，statute 不把它们加进来算。
+
+git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都要各自跑一次 `statute compile`，写出 `.statute/` 和两个软链；`.git/info/exclude` 由一个 clone 的各个 worktree 共用。开 worktree 时跑它是调用方的事，不归 statute。软链指向 worktree 之内，不指向外面：按 Claude Code 的文档，`.claude/rules/` 里的软链指向工作目录之外时，交互会话里要先批准一次才加载。
+
+私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
+
+各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；OpenCode 1.19.0 与 Pi 1.2.0 只依据它们的文档和源码，Codex 的 32 KiB 也依据文档和源码。交互模式没有测，路径写在反引号里的兜底那一行也没有测；每个否定结论都只跑了一次。在一个小任务的几次运行里，Codex 和 Grok 各两次都读了兜底那一行指向的文件；Claude Code 的一次运行读到了它，是因为那一行把路径写成了 `@` 路径。
+
+尚未实现。私有层会先按一个较早的形式实现，之后由上面的布局取代：只有一个文件 `AGENTS.private.md`，由 `[compile]` 里的 `output` 指定，提交进仓库的 `AGENTS.md` 那固定的一行指向它。
+
+私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库。
 
 ## <a id="overrides"></a>覆盖
 
@@ -218,11 +239,11 @@ parent = 104
 设计里受这一部分影响的地方已经按它写好，并各自标明尚未实现的内容：
 
 - [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，规定可以用 `overrides` 代替 `parent`。
-- [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、`statute.private.toml`、`base`、`[compile]` 里的 `output`，以及锁文件里的 `overridden-by`。
+- [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、`statute.private.toml`、`base`，以及锁文件里的 `overridden-by`。
 - [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：两级领域。
 - [编译与网站](statute-command.md#compilation-and-the-site)：子领域的标题，以及哪些依赖显示为链接。
 - [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
 - [检查程序](checkers.md#checkers)：`constitution-build` 对新字段查什么，哪些归 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
 
-实现它会替换掉工具现在的行为：`constitution-build` 遇到带 `parent` 的领域和带 `overrides` 的规定会失败；statute 遇到任何一个新字段都会失败，而且只读一个磁盘上的规定源。
+实现其余部分会替换掉工具现在的行为：`constitution-build` 遇到带 `parent` 的领域和带 `overrides` 的规定会失败。statute 能读磁盘上的多个规定源，读 `public` 和规定源之间的引用，并检查 `requires`、`conflicts` 和 `{@rule:...}` 里哪些规定可以引用哪些；它遇到 `scope`、`base`、`overrides`、带 `parent` 的领域、`parent` 指向另一个规定源的规定以及 git 规定源都会失败，也不读 `statute.private.toml`。

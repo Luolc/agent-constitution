@@ -121,14 +121,17 @@ named by a word, lives on as the node whose `slug` is that word.
 The relations between the nodes are not checked here but by `statute`
 ([The command and the first version](statute-command.md#the-command-and-the-first-version)):
 the targets of `requires` and `conflicts` exist and are of the right kind,
-`requires` has no cycle and nothing redundant, a rule conflicts with
+in another source too, `requires` has no cycle, within a source or across
+sources, and nothing redundant, a rule conflicts with
 nothing it brings in, and the warnings of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 In CI, `crates/statute/tests/real_rules.rs` reads this repo's `rules/`
 with `statute` and fails on any error or warning.
 
-[Rule sources](rule-sources.md) divides its checks the same way, and
-none is built yet; until then check 1 fails a domain with a `parent`
+[Rule sources](rule-sources.md) divides its checks the same way. Of
+statute's, the reference direction in `requires`, `conflicts` and
+`{@rule:...}` is built; nothing of the build's is, and until then
+check 1 fails a domain with a `parent`
 and a rule with `overrides`. The build will accept `overrides` on a rule,
 a `parent` on a domain and a rule's `parent` in another source, and check
 what one source shows: each field's type; a domain's `parent` is the

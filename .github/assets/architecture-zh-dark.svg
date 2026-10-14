@@ -13,39 +13,30 @@
 <rect x="40" y="196" width="820" height="96" rx="14" fill="#151b23" stroke="#3d444d" stroke-width="1.5"/>
 <g transform="translate(64 218) scale(1.15)" fill="none" stroke="#e3a27c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></g>
 <text x="106" y="238" font-size="20" font-weight="600" fill="#f0f6fc">规定</text>
-<rect x="106.0" y="251.3" width="140.1" height="20.0" rx="5" fill="#656c76" fill-opacity="0.2"/>
-<text x="176.0" y="266" font-size="13.34" text-anchor="middle" textLength="120.1" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>rules/&lt;id&gt;.toml</text>
+<rect x="106.0" y="251.3" width="140.1" height="20.0" rx="5" fill="#2a1d16" stroke="#5c3a28"/>
+<text x="176.0" y="266" font-size="13.34" font-weight="500" text-anchor="middle" textLength="120.1" lengthAdjust="spacing" fill="#e3a27c" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>rules/&lt;id&gt;.toml</text>
 <text x="254" y="266" font-size="14.5" fill="#9198a1">· 按编号、归入 domain · 状态为 draft、trial 或 active</text>
 <path d="M450 300v20M445 315l5 5 5-5" fill="none" stroke="#9198a1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="301.4" y="328.3" width="109.4" height="18.6" rx="5" fill="#656c76" fill-opacity="0.2"/>
-<text x="356.1" y="342" font-size="12.42" text-anchor="middle" textLength="89.4" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute.toml</text>
-<rect x="475.8" y="328.3" width="109.4" height="18.6" rx="5" fill="#656c76" fill-opacity="0.2"/>
-<text x="530.5" y="342" font-size="12.42" text-anchor="middle" textLength="89.4" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute.lock</text>
-<text x="293.4" y="342" font-size="13.5" text-anchor="end" fill="#9198a1">在</text>
-<text x="413.8" y="342" font-size="13.5" text-anchor="start" fill="#9198a1">里选，由</text>
-<text x="593.1" y="342" font-size="13.5" text-anchor="start" fill="#9198a1">锁定</text>
+<text x="450" y="342" font-size="13.5" text-anchor="middle" fill="#9198a1">在 <tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">statute.toml</tspan> 里选，由 <tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">statute.lock</tspan> 锁定</text>
 <rect x="40" y="364" width="820" height="96" rx="14" fill="#151b23" stroke="#3d444d" stroke-width="1.5"/>
 <g transform="translate(64 386) scale(1.15)" fill="none" stroke="#e3a27c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="m6.5 9 3 3-3 3M12 15h5.5"/></g>
-<rect x="194" y="384" width="104" height="30" rx="6" fill="#656c76" fill-opacity="0.2"/>
+<rect x="194" y="384" width="104" height="30" rx="6" fill="#2a1d16" stroke="#5c3a28"/>
 <text x="106" y="405" font-size="15" font-weight="500" fill="#9198a1">Command:</text>
-<text x="246" y="406" font-size="20" font-weight="600" text-anchor="middle" textLength="84" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute</text>
-<rect x="106.0" y="419.3" width="300.1" height="20.0" rx="5" fill="#656c76" fill-opacity="0.2"/>
-<text x="256.1" y="434" font-size="13.34" text-anchor="middle" textLength="280.1" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>init · add · lock · compile · check</text>
-<text x="414.1" y="434" font-size="14.5" fill="#9198a1">解析规定集并编译</text>
+<text x="246" y="406" font-size="20" font-weight="600" text-anchor="middle" textLength="84" lengthAdjust="spacing" fill="#e3a27c" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute</text>
+<text x="106" y="434" font-size="14.5" fill="#9198a1"><tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">init · add · lock · compile · check</tspan><tspan dx="8">解析规定集并编译</tspan></text>
 <path d="M450 468v20M445 483l5 5 5-5" fill="none" stroke="#9198a1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="450" y="510" font-size="13.5" text-anchor="middle" fill="#9198a1">写进仓库，交给审查</text>
 <rect x="40" y="532" width="400" height="112" rx="14" fill="#151b23" stroke="#3d444d" stroke-width="1.5"/>
 <g transform="translate(64 554) scale(1.15)" fill="none" stroke="#e3a27c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6.5A2 2 0 0 0 4.5 5v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8.5z"/><path d="M14 3v5.5h5.5M8.5 13h7M8.5 17h5"/></g>
-<rect x="106.0" y="552.0" width="128.0" height="30.0" rx="5" fill="#656c76" fill-opacity="0.2"/>
-<text x="170.0" y="574" font-size="20" font-weight="600" text-anchor="middle" textLength="108.0" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>AGENTS.md</text>
+<text x="106" y="574" font-size="20" font-weight="600" fill="#f0f6fc"><tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>AGENTS.md</tspan></text>
 <text x="106" y="602" font-size="14.5" fill="#9198a1">宪法的 agent 版和选中的每条规定，</text>
 <text x="106" y="624" font-size="14.5" fill="#9198a1">所需的 skill 写在它旁边</text>
 <rect x="460" y="532" width="400" height="112" rx="14" fill="#151b23" stroke="#3d444d" stroke-width="1.5"/>
 <g transform="translate(484 554) scale(1.15)" fill="none" stroke="#e3a27c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19.5 6v6c0 4.4-3.2 7.6-7.5 9-4.3-1.4-7.5-4.6-7.5-9V6z"/><path d="m8.7 12.2 2.3 2.3 4.4-4.6"/></g>
 <text x="526" y="574" font-size="20" font-weight="600" fill="#f0f6fc">审查</text>
 <text x="526" y="603" font-size="14" font-weight="500" fill="#9198a1">Command:</text>
-<rect x="609.0" y="585.0" width="137.0" height="26.0" rx="6" fill="#656c76" fill-opacity="0.2"/>
-<text x="677.5" y="603" font-size="15" font-weight="600" text-anchor="middle" textLength="117.0" lengthAdjust="spacing" fill="#f0f6fc" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute check</text>
+<rect x="609.0" y="585.0" width="137.0" height="26.0" rx="6" fill="#2a1d16" stroke="#5c3a28"/>
+<text x="677.5" y="603" font-size="15" font-weight="600" text-anchor="middle" textLength="117.0" lengthAdjust="spacing" fill="#e3a27c" font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute check</text>
 <text x="526" y="624" font-size="14.5" fill="#9198a1">逐条规定的审查清单</text>
 <path d="M450 652v20M445 667l5 5 5-5" fill="none" stroke="#9198a1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="450" y="694" font-size="13.5" text-anchor="middle" fill="#9198a1">agent 工作时读，审查时运行</text>

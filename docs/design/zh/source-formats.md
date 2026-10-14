@@ -1,4 +1,4 @@
-<!-- en-sha256: b9b33ce2e5abfa775373f91a47b2a621feb92f3f82f89471ea5c4874efd2dc16 -->
+<!-- en-sha256: d9c82338f9269e606fd88472df3c88732ef07f425731a7119665af8445fce38c -->
 # 源文件格式
 
 所有源文件都是 TOML，用标准库的 `tomllib` 读取。读者看到的每一段文字都是一张表：键是宪法 `index.toml` 里列出的语言代码，值是该语言的文字，所以一个文件里并排放着一条条文的所有语言。规定的文字只需要原文那一种语言，译文靠哈希跟踪 ([规定文件格式](rule-format.md#rule-file-format))。多行文字用字面量字符串 (`'''...'''`)；构建时去掉开头引号之后、结尾引号之前的换行。
@@ -25,4 +25,4 @@ ID 有两个命名空间。在宪法里，条和款的 ID 在整部宪法内唯�
 
 早先扁平源文件中以日期开头的 ID (`20261012-...`) 也已作废。规定从不删除，而是被取代或废止 ([ID 与修订号](rule-format.md#ids-and-revisions))。
 
-文字里用 `{@...}` 引用；除此之外文字中没有任何标记，其他花括号原样输出。宪法只引用自己，不写命名空间：条或款写它的 ID (`{@safety}`、`{@leaks}`)，项写所在款的 ID、一个点和项的 ID (`{@must-ask.capital}`)，始终写这个完整路径，即使在同一款内也一样。规定总要写明命名空间：`{@constitution:leaks}`、`{@constitution:must-ask.capital}`、`{@rule:3}`；冒号说明是哪一部文本，点说明在其中的哪个位置。构建把对宪法的引用渲染成该条文在这种语言里的编号 (见[编号](constitution.md#numbering))；生成的文本只显示编号，从不显示 ID。源文件以外长期保存的记录 (案例、pull request、报告) 可以按 ID 或按编号引用条文；按编号引用要写明是哪一版，同一版内编号永不改变 (见[编号](constitution.md#numbering))。内容延续到下一版的条文，ID 也一并延续。
+文字里用 `{@...}` 引用；除此之外文字中没有任何标记，其他花括号原样输出。宪法只引用自己，不写命名空间：条或款写它的 ID (`{@safety}`、`{@leaks}`)，项写所在款的 ID、一个点和项的 ID (`{@must-ask.capital}`)，始终写这个完整路径，即使在同一款内也一样。规定总要写明命名空间：`{@constitution:leaks}`、`{@constitution:must-ask.capital}`、`{@rule:3}`；冒号说明是哪一部文本，点说明在其中的哪个位置。同一规定源的规定按编号引用，`{@rule:3}`；别的规定源的规定按 `requires` 的写法引用，`{@rule:R12}` 或 `{@rule:team:7}` (见[规定源与引用](rule-sets.md#sources-and-references))。构建把对宪法的引用渲染成该条文在这种语言里的编号 (见[编号](constitution.md#numbering))；生成的文本只显示编号，从不显示 ID。源文件以外长期保存的记录 (案例、pull request、报告) 可以按 ID 或按编号引用条文；按编号引用要写明是哪一版，同一版内编号永不改变 (见[编号](constitution.md#numbering))。内容延续到下一版的条文，ID 也一并延续。

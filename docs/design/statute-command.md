@@ -38,14 +38,16 @@ for agents in the rule set's language, the file
 `constitution/<edition>/generated/constitution.<lang>.agent.md` that the
 constitution's build writes, unchanged; and a heading "Rules" with the
 enabled rules. In a public repository it ends with one more line, which
-tells an agent to read `AGENTS.private.md` next when it exists, with a
-link to it, and the private layer compiles to that file
+tells an agent to read `.statute/AGENTS.private.md` next when it exists,
+and the private layer compiles to that file and one more
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
-provisional, not built yet). Each domain is a heading of level two, a subdomain one of
+not built yet). Each domain is a heading of level two, a subdomain one of
 level three ([Subdomains](rule-sources.md#subdomains); not built yet),
 and each level of the tree one level deeper, down to level six, where
 deeper levels stay;
-a one-of none of whose children is enabled does not appear. A node's
+a one-of none of whose children is enabled does not appear. The
+first-party source's domains come first, then those of the other
+sources by the sources' names, then the repository's own. A node's
 heading is its title and its reference as statute shows it (`R42`),
 after an anchor of `rule-` and that reference with a colon made a
 hyphen: `rule-R42`, `rule-L12`, `rule-team-7`, so the anchors of
@@ -72,8 +74,9 @@ lock file are unchanged.
 In the directory of the `AGENTS.md`, `statute compile` also writes:
 
 - each skill an enabled rule needs ([Rules and skills](rule-format.md#rules-and-skills)),
-  copied whole from `skills/<name>/` of the source to
-  `.agents/skills/<name>/`, with a file `.statute-generated` added, and a
+  copied whole from `skills/<name>/` of the rule's source to
+  `.agents/skills/<name>/` (two needed skills of one name, from two
+  sources, fail the command), with a file `.statute-generated` added, and a
   link to that copy, `.claude/skills/<name>`, whose target is the
   relative path `../../.agents/skills/<name>`. Each skill has a link of
   its own, never one for the whole directory nor one for `SKILL.md`
@@ -150,21 +153,25 @@ which try the whole process on real work.
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
 (built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
-which 43 and 46 supersede), for one source on disk. Inherited rule sets and path segments are
-not built; a git source, more than one source and a reference to
-another source, in `requires` or `conflicts` (`"R12"` or `"team:7"`),
-are reported as not supported yet. The three kinds of reference are
-read and shown as above, but with one source a rule set can use only
-the rules of that source: a local rule fails with a note to write
-`R12` when the first-party source is the rule set's own directory, and
-is reported as not supported yet when it is elsewhere, since the local
-rules would then be a second source. Nothing of
-[Rule sources](rule-sources.md) is built: `public` and `scope`,
-`statute.private.toml`, overrides and subdomains.
+which 43 and 46 supersede), for sources on disk, as many as
+`[sources]` names. The `rules/` next to `statute.toml` are the
+repository's own rules, `L12`, when no source is at `.`; with
+`R = { path = "." }` they are first-party, and a local reference fails
+with a note to write `R12`. A rule names a rule of another source in
+`requires`, `conflicts` and `{@rule:...}` as `R12` or `team:7`, with
+the names of the rule set's `[sources]`: a source's own `[sources]`
+table ([Sources and references](rule-sets.md#sources-and-references))
+is not read yet. Of [Rule sources](rule-sources.md), `public` is built,
+with which rules may cite which in `requires`, `conflicts` and
+`{@rule:...}`, and the check of `public` against GitHub
+([Checks](rule-checks.md#checks)). Inherited rule sets, path segments
+and git sources are not built, nor `scope`, `statute.private.toml` and
+its output, overrides and subdomains.
 
 **`init`** writes `statute.toml` in the current directory: the
-constitution's source and edition, an empty `rules`, and one source on
-disk, the first-party source `R`. `--source <dir>` gives the source's directory, relative
+constitution's source and edition, `public = true` or `public = false`,
+an empty `rules`, and one source on disk, the first-party source `R`.
+It takes `--public` or `--private`, one of them and not both. `--source <dir>` gives the source's directory, relative
 to the current one, `.` by default. `--edition` names the edition;
 without it, `init` takes the one directory under the source's
 `constitution/` that holds an `index.toml`, and fails when there is none

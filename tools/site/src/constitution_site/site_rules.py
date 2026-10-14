@@ -88,17 +88,19 @@ def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
   """Return the nodes along the parent tree, each with its depth.
 
   Each node comes before its children, which follow in order of ID, as
-  the domains do.
+  the domains do; a node with no parent in this source starts at depth 0.
 
   Args:
     nodes: the nodes, a valid tree.
 
   Returns:
-    Each node and its depth, 0 for a domain.
+    Each node and its depth, 0 for a domain that is not a subdomain.
   """
   children: dict[int | None, list[Node]] = defaultdict(list)
   for n in sorted(nodes, key=lambda n: n.id):
-    children[n.parent].append(n)
+    # A node under a domain of another source, or in place of a rule of
+    # another source, heads a tree of its own here.
+    children[n.parent if isinstance(n.parent, int) else None].append(n)
   order: list[tuple[Node, int]] = []
 
   def visit(parent: int | None, depth: int) -> None:
@@ -210,7 +212,7 @@ class _Language:
     data = node.doc.data
     shown = self.shown(node)
     groups, ancestor = [], node.parent
-    while ancestor is not None:
+    while isinstance(ancestor, int):
       parent = self.nodes[ancestor]
       if parent.kind != "rule":
         groups.insert(0, self.ref(parent.id) | {"kind": parent.kind})
@@ -238,6 +240,7 @@ class _Language:
         if node.text
       },
       "parent": self.ref(node.parent) if node.parent else None,
+      "overrides": self.ref(node.overrides) if node.overrides else None,
       "supersededBy": [self.ref(t) for t in node.superseded_by],
       "children": [
         self.ref(n.id) for n in self.src.nodes if n.parent == node.id
