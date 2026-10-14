@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-The order from highest to lowest is: the rules, the instructions of a project, those of a task, skills, and the built-in instructions of agent tools.
+The order from highest to lowest is: the rules, the instructions of a project, those of a task, skills, and the built-in instructions of agent tools (for example, the system prompt that comes with Claude Code).
 '''
 zh = '''
-位阶由高到低依次是规定、项目的指令、任务的指令、skill、agent 工具的内置指令。
+位阶由高到低依次是规定、项目的指令、任务的指令、skill、agent 工具的内置指令 (例如 Claude Code 自带的系统提示词)。
 '''
 
 [[items]]

@@ -1,7 +1,7 @@
 id = "legitimate-means"
 status = "draft"
 scope = "all"
-authority = ["constitution:safety", "constitution:decency"]
+authority = ["constitution:safety", "constitution:decency.legitimate-means"]
 
 [title]
 en = "No load on shared machines"
