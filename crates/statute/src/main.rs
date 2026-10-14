@@ -46,8 +46,17 @@ enum Command {
         #[arg(long)]
         pack: bool,
     },
-    /// Write a new statute.toml (not implemented yet).
-    Init,
+    /// Write a new statute.toml in this directory, with no rules enabled.
+    Init {
+        /// The source of the rules and the constitution, a directory
+        /// relative to this one.
+        #[arg(long, default_value = ".")]
+        source: String,
+        /// The constitution's edition; by default the only one the source
+        /// holds.
+        #[arg(long)]
+        edition: Option<String>,
+    },
     /// Write AGENTS.md from the constitution and the locked rule set.
     Compile {
         /// Write here instead of AGENTS.md next to statute.toml.
@@ -80,7 +89,8 @@ fn main() -> ExitCode {
         Command::Remove { rule, pack } => edit(root, &rule, pack, false),
         Command::Compile { output } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
-        Command::Init | Command::Upgrade => {
+        Command::Init { source, edition } => init(root, &source, edition),
+        Command::Upgrade => {
             eprintln!("statute: this command is not implemented yet");
             return ExitCode::from(NOT_IMPLEMENTED);
         }
@@ -178,6 +188,102 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
         Err(())
     } else {
         Ok(())
+    }
+}
+
+/// The source's name in the rule set `init` writes.
+const INIT_SOURCE: &str = "ac";
+
+/// Writes a new `statute.toml` that rests on the constitution of `source`
+/// and enables no rule, after trying that it resolves. An existing file is
+/// left as it is.
+fn init(root: &Path, source: &str, edition: Option<String>) -> Result<(), ()> {
+    let path = root.join(manifest::FILE);
+    let exists = || {
+        eprintln!(
+            "{}: error: already exists, so it is left as it is; `statute add` and `statute remove` change it",
+            manifest::FILE
+        );
+    };
+    if path.exists() {
+        exists();
+        return Err(());
+    }
+    let edition = match edition {
+        Some(edition) => edition,
+        None => only_edition(&root.join(source), source)?,
+    };
+    let quote = |s: &str| toml_edit::Value::from(s).to_string();
+    let text = format!(
+        "# Written by `statute init`; `statute add` and `statute remove` change the rules.\n\
+         constitution = {{ source = \"{INIT_SOURCE}\", edition = {} }}\n\
+         rules = []\n\
+         \n\
+         [sources]\n\
+         {INIT_SOURCE} = {{ path = {} }}\n",
+        quote(&edition),
+        quote(source)
+    );
+    let (project, diags) = Project::with_manifest(root, &text);
+    print(&diags);
+    if project.is_none() {
+        eprintln!("statute: {} is not written", manifest::FILE);
+        return Err(());
+    }
+    let written = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)
+        .and_then(|mut file| std::io::Write::write_all(&mut file, text.as_bytes()));
+    match written {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+            exists();
+            return Err(());
+        }
+        Err(e) => {
+            eprintln!("{}: error: cannot write: {e}", manifest::FILE);
+            return Err(());
+        }
+    }
+    println!(
+        "wrote {}: edition {edition} of the constitution, source `{INIT_SOURCE}` at {source}",
+        manifest::FILE
+    );
+    println!("`statute add {INIT_SOURCE}:<id>` enables a rule");
+    Ok(())
+}
+
+/// The one edition under `<source>/constitution/`, a directory that holds
+/// an `index.toml`; an error when there is none or more than one.
+fn only_edition(dir: &Path, source: &str) -> Result<String, ()> {
+    let shown = Path::new(source).join("constitution");
+    let entries = std::fs::read_dir(dir.join("constitution")).map_err(|e| {
+        eprintln!("{}: error: cannot read the directory: {e}", shown.display());
+    })?;
+    let mut editions: Vec<String> = entries
+        .filter_map(Result::ok)
+        .filter(|e| e.path().join("index.toml").is_file())
+        .filter_map(|e| e.file_name().into_string().ok())
+        .collect();
+    editions.sort();
+    match editions.as_slice() {
+        [edition] => Ok(edition.clone()),
+        [] => {
+            eprintln!(
+                "{}: error: holds no edition of the constitution (a directory with an index.toml)",
+                shown.display()
+            );
+            Err(())
+        }
+        _ => {
+            eprintln!(
+                "{}: error: holds editions {}; choose one with --edition",
+                shown.display(),
+                editions.join(", ")
+            );
+            Err(())
+        }
     }
 }
 
