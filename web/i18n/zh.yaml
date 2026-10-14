@@ -25,3 +25,5 @@ not-counted: "token 数由 Anthropic 的 token 计数接口按 {{ .model }} 计�
 count-source: "按修订号 {{ .revision }}{{ with .commit }}、commit {{ . }}{{ end }} 计算。"
 agent-link: "查看 agent 读到的版本"
 back: "回到完整版"
+# 设计文档还没有中文译文时页首的说明 (layouts/design/page.html)。
+untranslated: "本页还没有中文译文，下面是英文原文。"

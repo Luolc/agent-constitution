@@ -3,8 +3,11 @@
 The templates, built by Hugo from a made-up constitution, put the revision,
 the length of the version for agents and the legend of the asterisk under
 the title, and a popup that gives both versions' lengths; the tokens come
-from data/lengths.json only when it counted the same text. The template
-tests need hugo-0.167.0 and are skipped without it, except in CI.
+from data/lengths.json only when it counted the same text. A made-up
+design gets its pages, in the sidebar's design group, with its links
+rewritten for the site and the English text where a translation is
+missing. The template tests need hugo-0.167.0 and are skipped without
+it, except in CI.
 """
 
 import hashlib
@@ -47,6 +50,25 @@ FILES = {
     "由 `uv run constitution-build` 生成。\n\n# 标题\n\n## 第一条\n\n不言。\n"
   ),
 }
+# A made-up design: its README listing one file, which links to the
+# README, to its own heading, to a file of the repo and to the built
+# Chinese constitution; a translation of that file but not of the README.
+DESIGN = {
+  "README.md": "# Design\n\nIntro.\n\n- [One](one.md): the first.\n",
+  "one.md": (
+    "# One\n\n## Part A\n\nSee [the README](README.md),"
+    " [part A](#part-a), [AGENTS.md](../../AGENTS.md) and"
+    " [the constitution](../../constitution/2026-10/generated/"
+    "constitution.zh.md#one).\n"
+  ),
+}
+DESIGN["zh/one.md"] = (
+  "<!-- en-sha256: "
+  + hashlib.sha256(DESIGN["one.md"].encode()).hexdigest()
+  + ' -->\n# 一\n\n## <a id="part-a"></a>甲\n\n见 [README](README.md)、'
+  "[甲](#part-a)、[AGENTS.md](../../../AGENTS.md) 和"
+  " [宪法](../../../constitution/2026-10/generated/constitution.zh.md#one)。\n"
+)
 INDEX = (
   'status = "draft"\nedition = "2026-10"\nrevision = "0.6"\n'
   'languages = ["en", "zh"]\n'
@@ -79,6 +101,7 @@ class SiteTest(unittest.TestCase):
     lengths: dict[str, object] | None = None,
     raw: bool = False,
     index: str = INDEX,
+    design: dict[str, str] = DESIGN,
   ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
@@ -86,9 +109,11 @@ class SiteTest(unittest.TestCase):
       lengths: The content of web/data/lengths.json, or None for no file.
       raw: Whether to return the pages' HTML instead of their text.
       index: The content of index.toml.
+      design: The files of docs/design/ by path.
 
     Returns:
-      The visible text of the four pages, or their HTML, by path.
+      The visible text of the four pages of the constitution and the
+      design's, or their HTML, by path.
     """
     with tempfile.TemporaryDirectory() as tmp:
       root = Path(tmp)
@@ -105,6 +130,9 @@ class SiteTest(unittest.TestCase):
       (sources / "index.toml").write_text(index)
       for name, text in FILES.items():
         (generated / f"constitution.{name}.md").write_text(text)
+      for name, text in design.items():
+        (root / "docs/design" / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / "docs/design" / name).write_text(text)
       if lengths is not None:
         (root / "web/data").mkdir()
         (root / "web/data/lengths.json").write_text(json.dumps(lengths))
@@ -128,6 +156,10 @@ class SiteTest(unittest.TestCase):
           "agent/index.html",
           "zh/index.html",
           "zh/agent/index.html",
+          "design/index.html",
+          "design/one/index.html",
+          "zh/design/index.html",
+          "zh/design/one/index.html",
         )
       }
       return pages if raw else {p: visible(t) for p, t in pages.items()}
@@ -193,11 +225,39 @@ class SiteTest(unittest.TestCase):
       with self.subTest(status):
         pages = self.build(index=INDEX.replace("draft", status))
         for page, text in (
-          ("index.html", f"Constitution {en} Agent Constitution"),
-          ("agent/index.html", f"Constitution {en} Agent Constitution"),
-          ("zh/index.html", f"宪法 {zh} Agent 宪法"),
+          ("index.html", f"Constitution {en} Design"),
+          ("agent/index.html", f"Constitution {en} Design"),
+          ("zh/index.html", f"宪法 {zh} 设计"),
         ):
           self.assertIn(text, pages[page])
+
+  def test_design(self):
+    """The design's pages, the README's list in the sidebar, the links."""
+    raw = self.build(raw=True)
+    pages = {p: visible(t) for p, t in raw.items()}
+    self.assertIn("Design One Agent Constitution", pages["design/index.html"])
+    self.assertIn("设计 One Agent 宪法", pages["zh/design/one/index.html"])
+    self.assertIn("Design Intro.", pages["design/index.html"])
+    self.assertIn(
+      "本页还没有中文译文，下面是英文原文。 Intro.",
+      pages["zh/design/index.html"],
+    )
+    self.assertNotIn("本页还没有中文译文", pages["zh/design/one/index.html"])
+    self.assertIn('<h2 id="part-a">甲', raw["zh/design/one/index.html"])
+    github = "https://github.com/Luolc/agent-constitution/blob/main/AGENTS.md"
+    for page, home, readme in (
+      ("design/one/index.html", "../../zh/#one", "../../design/"),
+      ("zh/design/one/index.html", "../../../zh/#one", "../../../zh/design/"),
+    ):
+      with self.subTest(page=page):
+        for href in (readme, "#part-a", github, home):
+          self.assertIn(f'href="{href}"', raw[page])
+
+  def test_design_link_to_no_page(self):
+    """A link to a file of the design that has no page fails the build."""
+    design = dict(DESIGN, **{"one.md": DESIGN["one.md"] + "[x](two.md)\n"})
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.build(design=design)
 
   def test_title(self):
     """The title breaks only before the parenthesis and has no `#` link."""

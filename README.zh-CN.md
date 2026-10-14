@@ -12,7 +12,7 @@
 
 [![Website](https://img.shields.io/badge/read-online-7d3a1e)](https://agent-constitution.luolc.com/zh/) [![CI](https://github.com/Luolc/agent-constitution/actions/workflows/ci.yml/badge.svg)](https://github.com/Luolc/agent-constitution/actions/workflows/ci.yml) [![Revision](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuolc%2Fagent-constitution%2Fmain%2Fconstitution%2F2026-10%2Findex.toml&query=%24.revision&label=revision&color=4b5946)](constitution/2026-10/index.toml) [![Code: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-23301f)](LICENSE) [![Text: CC BY 4.0](https://img.shields.io/badge/text-CC%20BY%204.0-23301f)](LICENSE-CC-BY-4.0)
 
-**[在线阅读](https://agent-constitution.luolc.com/zh/)** &nbsp;·&nbsp; **[设计](docs/design/README.md)** &nbsp;·&nbsp; **[规定](rules/)** &nbsp;·&nbsp; **[Skill](skills/)** &nbsp;·&nbsp; [English](README.md) · **简体中文**
+**[在线阅读](https://agent-constitution.luolc.com/zh/)** &nbsp;·&nbsp; **[设计](https://agent-constitution.luolc.com/zh/design/)** &nbsp;·&nbsp; **[规定](rules/)** &nbsp;·&nbsp; **[Skill](skills/)** &nbsp;·&nbsp; [English](README.md) · **简体中文**
 
 <br>
 
@@ -67,7 +67,7 @@ uv run python -m http.server -d site
 
 ## 开发
 
-本仓的目录结构、源文件格式、检查和发布都写在[设计文档里](docs/design/README.md) (英文)；命令见 [AGENTS.md](AGENTS.md) 的 Checks 一节。简单说：
+本仓的目录结构、源文件格式、检查和发布都写在[设计文档里](docs/design/zh/README.md)；命令见 [AGENTS.md](AGENTS.md) 的 Checks 一节。简单说：
 
 - `constitution/2026-10/` 是 2026-10 版的源文件：`index.toml`，以及 `articles/` 下每条一个目录、每节一个文件，各含中英两种语言。改源文件后用 `uv run constitution-build` 重新构建，不要直接改 `generated/` 里的文件 ([The constitution](docs/design/constitution.md)，[Source formats](docs/design/source-formats.md))。
 - `rules/` 是通用规定，每条一个 TOML 文件，中英两种语言；`skills/` 是通用 skill，每个一个目录，含它的 `SKILL.md`，用英文写。

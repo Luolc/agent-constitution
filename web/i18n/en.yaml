@@ -27,3 +27,5 @@ not-counted: "Tokens are counted by Anthropic's token counting API for {{ .model
 count-source: "Counted at revision {{ .revision }}{{ with .commit }}, commit {{ . }}{{ end }}."
 agent-link: "See the version agents read"
 back: "Back to the full version"
+# A Chinese design page without a translation yet (layouts/design/page.html).
+untranslated: "This page has no translation yet; below is the English text."
