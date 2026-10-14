@@ -3,7 +3,7 @@ status = "draft"
 
 [content]
 en = '''
-Sentences with *must*, *never* or *only* are **hard rules**; the rest are principles applied with judgment. Where the words allow more than one reading, take the one that best serves the provision's purpose; never read a provision so that it grants more authority, or binds less, than its purpose allows.
+Sentences that express *must*, *must not* or *only* are **hard rules**; the rest are principles applied with judgment. Where the words allow more than one reading, take the one that best serves the provision's purpose; never read a provision so that it grants more authority, or binds less, than its purpose allows.
 '''
 zh = '''
 表达「必须」「不得」或「只能」之意的句子是**硬性规定**，其余是原则，凭判断适用。条文的字面可以有不止一种理解时，取最符合其目的的那一种；不得把条文解释成授予的权限比其目的允许的更多，或者约束比其目的要求的更少。
