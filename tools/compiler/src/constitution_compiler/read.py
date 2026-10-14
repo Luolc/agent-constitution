@@ -178,7 +178,9 @@ class _Reader:
         1,
         f"{what} is {status} while index.toml is draft",
       )
-    elif self.index_status == "active" and what != "rule" and status == "draft":
+    elif (
+      self.index_status == "active" and what != "a rule" and status == "draft"
+    ):
       self.errors.add(
         doc.path,
         line,
