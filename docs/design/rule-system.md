@@ -158,7 +158,7 @@ that is an open question.
 ## Tracing rules to the constitution
 
 Every rule cites the provisions of the constitution it refines, in the
-`authority` field it has today ([Rules](../design.md#rules)). That link is
+`authority` field it has today ([Rules](rules.md#rules)). That link is
 used in both directions:
 
 - When a provision of the constitution is amended, the rules that cite it
@@ -255,7 +255,7 @@ and a rule set with its lock file, and writes:
 
 Compiling, checking and upgrading a rule set are one command-line tool.
 The constitution's compiler stays in Python for now
-([Compilation](../design.md#compilation)) and moves into that tool later.
+([Compilation](compilation.md)) and moves into that tool later.
 
 **The public site** lists every rule that is not superseded, so that
 people can choose from the full list. The parent tree is its table of
@@ -282,33 +282,33 @@ Once this design is implemented, it replaces parts of the current design.
 Those sections are not changed now; they will be when the work that
 implements this design lands.
 
-- [IDs](../design.md#ids): rule IDs become numbers, assigned in sequence,
-  in place of words. The rules in `rules/*.toml` get numbers when they are
-  moved to the new format, and a citation `{@rule:<id>}` then names a
-  number.
-- [Rules](../design.md#rules): no rule is deleted any more, so
+- [IDs](source-formats.md#ids): rule IDs become numbers, assigned in
+  sequence, in place of words. The rules in `rules/*.toml` get numbers
+  when they are moved to the new format, and a citation `{@rule:<id>}`
+  then names a number.
+- [Rules](rules.md#rules): no rule is deleted any more, so
   `rules/retired-ids.txt` is no longer needed; a rule is superseded or
   repealed instead. `status` gains `trial` and `superseded`, and the
   fields `supersedes`, a per-rule revision, `parent`, `requires` and
   `provides` are added. The verification method is part of each
   rule's text, and its check is code (see [Checks](#checks)).
-- [Choosing rules](../design.md#choosing-rules): a rule set with a lock
+- [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". Choosing rules per
   jurisdiction, with one compiled file for all of a jurisdiction's
   repositories, may conflict with a repository naming its own rule set;
   this is undecided (see [Open questions](#open-questions)).
-- [Relaxation declarations](../design.md#relaxation-declarations): a
+- [Relaxation declarations](rules.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another rule for the same
   capability, needs no relaxation. Whether `adjustable` values and the
   `relaxes:` declarations stay as they are is decided when this design is
   implemented.
-- [Skills](../design.md#skills): a skill declares the rules it implements
+- [Skills](skills.md): a skill declares the rules it implements
   and is installed only when one of them is chosen.
-- [Compilation](../design.md#compilation): the output gains skill
+- [Compilation](compilation.md): the output gains skill
   directories, checks and hook configuration, and the rules are grouped
   along the parent tree, not by the article of their first `authority`.
-- [Checkers](../design.md#checkers): the rule checks run by the Rust
+- [Checkers](checkers.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of
   the repo's sources stay.
 

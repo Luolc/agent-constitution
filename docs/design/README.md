@@ -35,3 +35,6 @@ the whole design.
   amendment, releases and versions.
 - [Fleet and migration](fleet-and-migration.md): relation to fleet and
   migrating from the hand-written guide.
+- [Rule system](rule-system.md): the planned rule system (numbered
+  rules, rule sets and lock files, dependencies, checks and the review
+  loop), not built yet, and which parts above it will replace.
