@@ -1,6 +1,6 @@
 id = 3
 slug = "credential-storage"
-revision = 2
+revision = 3
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 13
 authority = ["safety", "sensitive-info"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "builtin"
 
 [title]
 en = "Credentials stay in the places designated for them"
