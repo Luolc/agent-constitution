@@ -65,8 +65,9 @@ enum Command {
         /// holds.
         #[arg(long)]
         edition: Option<String>,
-        /// The repository is public: anyone can read it.
-        #[arg(long, required_unless_present = "private", conflicts_with = "private")]
+        /// The repository is public: anyone can read it. Without
+        /// `--public` or `--private`, GitHub is asked through gh.
+        #[arg(long, conflicts_with = "private")]
         public: bool,
         /// The repository is private.
         #[arg(long)]
@@ -122,8 +123,13 @@ fn main() -> ExitCode {
             source,
             edition,
             public,
-            private: _,
-        } => init(root, &source, edition, public),
+            private,
+        } => init(
+            root,
+            &source,
+            edition,
+            (public || private).then_some(public),
+        ),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
     };
     match result {
@@ -299,10 +305,15 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
 const INIT_SOURCE: &str = manifest::FIRST_PARTY;
 
 /// Writes a new `statute.toml` that rests on the constitution of `source`,
-/// for a repository that is `public` or not, and enables no rule, after
-/// trying that it resolves. An existing file is
-/// left as it is.
-fn init(root: &Path, source: &str, edition: Option<String>, public: bool) -> Result<(), ()> {
+/// for a repository that is `public` or not (by default, as GitHub shows
+/// it), and enables no rule, after trying that it resolves. An existing
+/// file is left as it is.
+fn init(
+    root: &Path,
+    source: &str,
+    edition: Option<String>,
+    public: Option<bool>,
+) -> Result<(), ()> {
     let path = root.join(manifest::FILE);
     let exists = || {
         eprintln!(
@@ -317,6 +328,10 @@ fn init(root: &Path, source: &str, edition: Option<String>, public: bool) -> Res
     let edition = match edition {
         Some(edition) => edition,
         None => only_edition(&root.join(source), source)?,
+    };
+    let (public, said) = match public {
+        Some(public) => (public, None),
+        None => asked_public(root),
     };
     let quote = |s: &str| toml_edit::Value::from(s).to_string();
     let text = format!(
@@ -356,8 +371,50 @@ fn init(root: &Path, source: &str, edition: Option<String>, public: bool) -> Res
         "wrote {}: edition {edition} of the constitution, source `{INIT_SOURCE}` at {source}",
         manifest::FILE
     );
+    match said {
+        Some(Ok(line)) => println!("{line}"),
+        Some(Err(warning)) => eprintln!("{}: warning: {warning}", manifest::FILE),
+        None => {}
+    }
     println!("`statute add {INIT_SOURCE}<id>` enables a rule");
     Ok(())
+}
+
+/// Whether the repository at `root` is public, as GitHub shows it, and
+/// what to say about it: a line, or a warning when the answer is taken
+/// to the safe side, public, since a public rule set compiles nothing
+/// private into the committed files.
+fn asked_public(root: &Path) -> (bool, Option<Result<String, String>>) {
+    let private =
+        "if it is to be private, write `public = false`, as `statute init --private` does";
+    let said = match statute::check::github_visibility(root).as_deref() {
+        Ok("PUBLIC") => {
+            return (
+                true,
+                Some(Ok(
+                    "`public = true`: GitHub shows the repository as PUBLIC".to_owned()
+                )),
+            );
+        }
+        Ok("PRIVATE") => {
+            return (
+                false,
+                Some(Ok(
+                    "`public = false`: GitHub shows the repository as PRIVATE".to_owned(),
+                )),
+            );
+        }
+        Ok("INTERNAL") => format!(
+            "`public = true`: GitHub shows the repository as INTERNAL, which everyone in its enterprise can read, so nothing private is compiled into the committed AGENTS.md; {private}"
+        ),
+        Ok(other) => format!(
+            "`public = true`: GitHub shows the repository as {other}, which statute does not know, so it is taken as public, the safe side; {private}"
+        ),
+        Err(why) => format!(
+            "`public = true`: GitHub could not tell whether the repository is public ({why}), so it is taken as public, the safe side, where nothing private is compiled into the committed AGENTS.md; {private}"
+        ),
+    };
+    (true, Some(Err(said)))
 }
 
 /// The one edition under `<source>/constitution/`, a directory that holds

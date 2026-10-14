@@ -79,7 +79,7 @@ cargo install --path agent-constitution/crates/statute
 Then, in the repository the agents work in, with the clone next to it:
 
 ```sh
-statute init --source ../agent-constitution --public  # write statute.toml; --private for a private repository
+statute init --source ../agent-constitution  # write statute.toml; public or not as GitHub shows it, or say --public / --private
 statute add R43       # enable rule 43, and write statute.lock
 statute lock          # resolve statute.toml again after editing it by hand
 statute compile       # write AGENTS.md, the skills and the checks
