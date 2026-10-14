@@ -4,6 +4,9 @@ The format of docs/design/rule-system.md (Rule file format). Each check
 fails on a broken node and passes on its control, the tree as set up.
 """
 
+from pathlib import Path
+import tomllib
+
 import test_constitution_base as tcb
 from test_constitution_fixture import (
   DOMAIN,
@@ -14,6 +17,9 @@ from test_constitution_fixture import (
 )
 
 from constitution_compiler import build as bc
+
+# Shared with statute's tests (crates/statute/tests/superseded_by.rs).
+CASES = Path(__file__).parent / "superseded_by_cases.toml"
 
 
 class FormatTest(Tree):
@@ -275,6 +281,31 @@ class SupersededTest(Tree):
         )
         self.edit(
           "rules/11.toml", f"superseded-by = {target}", "superseded-by = 10"
+        )
+
+  def test_superseded_by_cases(self):
+    """The cases statute reads too, with the same outcome."""
+    self.write(
+      "rules/12.toml",
+      self.SUPERSEDED.replace("id = 11", "id = 12")
+      .replace('slug = "old-rule"', 'slug = "other-rule"')
+      .replace('status = "draft"', 'status = "active"'),
+    )
+    cases = tomllib.loads(CASES.read_text(encoding="utf-8"))["cases"]
+    self.assertGreater(len(cases), 0)
+    value = "10"
+    for case in cases:
+      with self.subTest(case["value"]):
+        self.edit(
+          "rules/11.toml",
+          f"superseded-by = {value}\n",
+          f"superseded-by = {case['value']}\n",
+        )
+        value = case["value"]
+        errors = self.errors()
+        self.assertEqual(not errors, case["passes"], errors)
+        self.assertTrue(
+          all(e.startswith("rules/11.toml:") for e in errors), errors
         )
 
 

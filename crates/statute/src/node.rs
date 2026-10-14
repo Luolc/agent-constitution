@@ -87,7 +87,8 @@ pub struct Node {
     pub revision: u64,
     pub kind: Kind,
     pub status: Status,
-    pub superseded_by: Option<Id>,
+    /// The rules that supersede this one; empty unless it is superseded.
+    pub superseded_by: Vec<Id>,
     pub lang: String,
     pub parent: Option<Id>,
     pub title: Text,
@@ -106,7 +107,7 @@ struct RawNode {
     revision: u64,
     kind: Kind,
     status: Status,
-    superseded_by: Option<Id>,
+    superseded_by: Option<RawSuccessors>,
     lang: String,
     parent: Option<Id>,
     requires: Option<Vec<RawRef>>,
@@ -120,6 +121,14 @@ struct RawNode {
     title: Text,
     text: Option<RawText>,
     translations: Option<BTreeMap<String, String>>,
+}
+
+/// `superseded-by`: one ID, or a list of them when a rule is split.
+#[derive(Clone, Deserialize)]
+#[serde(untagged)]
+enum RawSuccessors {
+    One(Id),
+    Many(Vec<Id>),
 }
 
 #[derive(Clone, Deserialize)]
@@ -278,7 +287,12 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         err("`parent` names the node itself".to_owned());
     }
 
-    match (raw.status, raw.superseded_by) {
+    let superseded_by = match &raw.superseded_by {
+        None => Vec::new(),
+        Some(RawSuccessors::One(id)) => vec![*id],
+        Some(RawSuccessors::Many(ids)) => ids.clone(),
+    };
+    match (raw.status, &raw.superseded_by) {
         (Status::Superseded, _) if raw.kind != Kind::Rule => err(format!(
             "only a rule can be superseded; a {} cannot have `status = \"superseded\"`",
             raw.kind.name()
@@ -292,8 +306,16 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         }
         _ => {}
     }
-    if raw.superseded_by == Some(raw.id) {
+    if matches!(&raw.superseded_by, Some(RawSuccessors::Many(ids)) if ids.is_empty()) {
+        err("`superseded-by` is empty; name the rule that replaces it".to_owned());
+    }
+    if superseded_by.contains(&raw.id) {
         err("`superseded-by` names the rule itself".to_owned());
+    }
+    for (i, id) in superseded_by.iter().enumerate() {
+        if superseded_by[..i].contains(id) {
+            err(format!("`superseded-by` lists {id} twice"));
+        }
     }
 
     let rule = if kind == Kind::Rule {
@@ -333,7 +355,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         revision: raw.revision,
         kind,
         status: raw.status,
-        superseded_by: raw.superseded_by,
+        superseded_by,
         lang: raw.lang,
         parent: raw.parent,
         title: raw.title,
