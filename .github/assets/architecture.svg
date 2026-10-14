@@ -1,71 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" width="1160" height="440" role="img" aria-label="How Agent Constitution fits together: the constitution is built into Markdown today; the rule tree, skills, per-repository rule sets, the compiler, checks and the reviewer loop are designed, not built yet.">
-<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8a9a82"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d3a1e"/></marker></defs>
-<g font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;PingFang SC&quot;, &quot;Hiragino Sans GB&quot;, &quot;Microsoft YaHei&quot;, &quot;Noto Sans CJK SC&quot;, Helvetica, Arial, sans-serif">
-<rect x="1" y="1" width="1158" height="438" rx="18" fill="#dde6d5" stroke="#b5c4aa"/>
-<rect x="920" y="48" width="28" height="16" rx="4" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
-<text x="958" y="61" font-size="12.5" fill="#4b5946">Built</text>
-<rect x="920" y="76" width="28" height="16" rx="4" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="958" y="89" font-size="12.5" fill="#4b5946">Designed, not built yet</text>
-<path d="M258 69.0 C288.0 69.0 288.0 69.0 317 69.0" fill="none" stroke="#7d3a1e" stroke-width="1.5" marker-end="url(#b)"/>
-<path d="M554 69.0 C584.0 69.0 584.0 69.0 613 69.0" fill="none" stroke="#7d3a1e" stroke-width="1.5" marker-end="url(#b)"/>
-<path d="M436.0 98 C436.0 156 656 130 656 177" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M258 167.0 C288.0 167.0 288.0 207.0 317 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M258 247.0 C288.0 247.0 288.0 207.0 317 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M554 207.0 C584.0 207.0 584.0 207.0 613 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M850 207.0 C880.0 207.0 880.0 147.0 909 147.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M850 207.0 C880.0 207.0 880.0 207.0 909 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M850 207.0 C880.0 207.0 880.0 267.0 909 267.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M1024.0 296 L1024.0 351" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M910 381.0 L851 381.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<path d="M614 381.0 C456 381.0 140.0 381.0 140.0 277" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<text x="200.0" y="403.0" font-size="12.5" font-style="italic" fill="#4b5946">a wrong check: fix the check or the rule</text>
-<rect x="24" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
-<text x="40" y="65" font-size="15" font-weight="600" fill="#23301f">Constitution</text>
-<text x="40" y="84" font-size="12.5" fill="#4b5946">TOML sources, two languages</text>
-
-<rect x="320" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
-<text x="336" y="65" font-size="15" font-weight="600" fill="#23301f">constitution-build</text>
-<text x="336" y="84" font-size="12.5" fill="#4b5946">builds and checks</text>
-
-<rect x="616" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
-<text x="632" y="65" font-size="15" font-weight="600" fill="#23301f">Markdown</text>
-<text x="632" y="84" font-size="12.5" fill="#4b5946">full version and agent version</text>
-
-<rect x="24" y="140" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="40" y="163" font-size="15" font-weight="600" fill="#23301f">Skills</text>
-<text x="40" y="182" font-size="12.5" fill="#4b5946">how to meet a rule</text>
-
-<rect x="24" y="220" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="40" y="243" font-size="15" font-weight="600" fill="#23301f">Rule tree</text>
-<text x="40" y="262" font-size="12.5" fill="#4b5946">numbered rules, one parent each</text>
-
-<rect x="320" y="180" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="336" y="203" font-size="15" font-weight="600" fill="#23301f">Rule set + lock file</text>
-<text x="336" y="222" font-size="12.5" fill="#4b5946">the rules a repo chose, pinned</text>
-
-<rect x="616" y="180" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="632" y="203" font-size="15" font-weight="600" fill="#23301f">Compiler</text>
-<text x="632" y="222" font-size="12.5" fill="#4b5946">one command</text>
-
-<rect x="912" y="120" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="928" y="143" font-size="15" font-weight="600" fill="#23301f">AGENTS.md</text>
-<text x="928" y="162" font-size="12.5" fill="#4b5946">the chosen rules</text>
-
-<rect x="912" y="180" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="928" y="203" font-size="15" font-weight="600" fill="#23301f">Skills</text>
-<text x="928" y="222" font-size="12.5" fill="#4b5946">the ones those rules need</text>
-
-<rect x="912" y="240" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="928" y="263" font-size="15" font-weight="600" fill="#23301f">Checks and hooks</text>
-<text x="928" y="282" font-size="12.5" fill="#4b5946">one binary, external commands</text>
-
-<rect x="912" y="354" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="928" y="377" font-size="15" font-weight="600" fill="#23301f">Check results</text>
-<text x="928" y="396" font-size="12.5" fill="#4b5946">pass · violation · inconclusive</text>
-
-<rect x="616" y="354" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
-<text x="632" y="377" font-size="15" font-weight="600" fill="#23301f">Reviewer</text>
-<text x="632" y="396" font-size="12.5" fill="#4b5946">an agent judges the rest</text>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 840" width="960" height="840" role="img" aria-labelledby="t">
+<title id="t">How Agent Constitution fits together: the constitution is refined by rules; a repository chooses rules in statute.toml, pinned in statute.lock; statute compiles them into AGENTS.md and writes the checks and hooks; agents work and review under them; a gap no rule covers becomes a trial rule.</title>
+<g font-family='-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif'>
+<rect x="1" y="1" width="958" height="838" rx="20" fill="#ffffff" stroke="#d1d9e0" stroke-width="1.5"/>
+<rect x="40" y="28" width="820" height="96" rx="14" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.5"/>
+<g transform="translate(64 50) scale(1.15)" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9.5 12 3l9.5 6.5z"/><path d="M5 9.5V19M9.7 9.5V19M14.3 9.5V19M19 9.5V19M2.5 21h19"/></g>
+<text x="106" y="70" font-size="20" font-weight="600" fill="#1f2328">Constitution</text>
+<rect x="712" y="48" width="128" height="26" rx="13" fill="#f5ece7" stroke="#e3cfc3"/>
+<text x="776" y="66" font-size="13" font-weight="500" text-anchor="middle" fill="#7d3a1e">2026-10 edition</text>
+<text x="106" y="98" font-size="14.5" fill="#59636e">Principles, who may decide what, and how rules and the constitution change</text>
+<path d="M450 132v20M445 147l5 5 5-5" fill="none" stroke="#818b98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="450" y="174" font-size="13.5" text-anchor="middle" fill="#59636e">refined by</text>
+<rect x="40" y="196" width="820" height="96" rx="14" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.5"/>
+<g transform="translate(64 218) scale(1.15)" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></g>
+<text x="106" y="238" font-size="20" font-weight="600" fill="#1f2328">Rules</text>
+<text x="106" y="266" font-size="14.5" fill="#59636e"><tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">rules/&lt;id&gt;.toml</tspan> · numbered, under domains · draft, trial or active</text>
+<path d="M450 300v20M445 315l5 5 5-5" fill="none" stroke="#818b98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="450" y="342" font-size="13.5" text-anchor="middle" fill="#59636e">chosen in <tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">statute.toml</tspan>, pinned in <tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">statute.lock</tspan></text>
+<rect x="40" y="364" width="820" height="96" rx="14" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.5"/>
+<g transform="translate(64 386) scale(1.15)" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="m6.5 9 3 3-3 3M12 15h5.5"/></g>
+<text x="106" y="406" font-size="20" font-weight="600" fill="#1f2328"><tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>statute</tspan></text>
+<text x="106" y="434" font-size="14.5" fill="#59636e">Resolves a rule set and compiles it: <tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">init · add · lock · compile · check</tspan></text>
+<path d="M450 468v20M445 483l5 5 5-5" fill="none" stroke="#818b98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="450" y="510" font-size="13.5" text-anchor="middle" fill="#59636e">writes into the repository</text>
+<rect x="40" y="532" width="400" height="112" rx="14" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.5"/>
+<g transform="translate(64 554) scale(1.15)" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6.5A2 2 0 0 0 4.5 5v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8.5z"/><path d="M14 3v5.5h5.5M8.5 13h7M8.5 17h5"/></g>
+<text x="106" y="574" font-size="20" font-weight="600" fill="#1f2328"><tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'>AGENTS.md</tspan></text>
+<text x="106" y="602" font-size="14.5" fill="#59636e">The constitution’s version for agents</text>
+<text x="106" y="624" font-size="14.5" fill="#59636e">and each chosen rule; the skills beside it</text>
+<rect x="460" y="532" width="400" height="112" rx="14" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.5"/>
+<g transform="translate(484 554) scale(1.15)" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19.5 6v6c0 4.4-3.2 7.6-7.5 9-4.3-1.4-7.5-4.6-7.5-9V6z"/><path d="m8.7 12.2 2.3 2.3 4.4-4.6"/></g>
+<text x="526" y="574" font-size="20" font-weight="600" fill="#1f2328">Checks and hooks</text>
+<text x="526" y="602" font-size="14.5" fill="#59636e"><tspan font-family='ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace' font-size="0.92em">statute check</tspan>, also as a commit hook:</text>
+<text x="526" y="624" font-size="14.5" fill="#59636e">pass · violation · inconclusive · review</text>
+<path d="M450 652v20M445 667l5 5 5-5" fill="none" stroke="#818b98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="450" y="694" font-size="13.5" text-anchor="middle" fill="#59636e">read and run while agents work</text>
+<rect x="40" y="716" width="820" height="96" rx="14" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.5"/>
+<g transform="translate(64 738) scale(1.15)" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4.8"/><circle cx="12" cy="3.6" r="1.2"/><path d="M9 13.2v1.6M15 13.2v1.6M2 13v3M22 13v3"/></g>
+<text x="106" y="758" font-size="20" font-weight="600" fill="#1f2328">Agents work and review</text>
+<text x="106" y="786" font-size="14.5" fill="#59636e">The checks run first; a reviewer agent judges the rest, and a wrong check gets fixed</text>
+<path d="M864 764H888a12 12 0 0 0 12-12V256a12 12 0 0 0-12-12H866M872 238l-6 6 6 6" fill="none" stroke="#7d3a1e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="887" y="388" width="26" height="232" fill="#ffffff"/>
+<text transform="translate(905 504) rotate(-90)" font-size="13.5" text-anchor="middle" fill="#7d3a1e">a gap no rule covers → a trial rule</text>
 </g>
 </svg>

@@ -1,4 +1,4 @@
-<!-- en-sha256: 502418c256e3d0a23f748ebcc25f5bd32477e2d5a25f439cc0c634517a6d9f95 -->
+<!-- en-sha256: 95824c03f76818d0b91c311dbdce407ce866f4d28987544a95d69932604fa9a8 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -83,8 +83,8 @@ web/                      静态网站的 Hugo 项目：hugo.toml、
   themes/hugo-book/       主题，一个固定在某个提交的 git submodule     A
 site/                     构建出的静态网站，不提交                     A
 .github/workflows/        CI                                           A
-.github/assets/           README 的图标、示意图和截图，
-                          分浅色与深色                                 A
+.github/assets/           README 的图标和示意图，分浅色
+                          与深色                                       A
 .pre-commit-config.yaml   提交钩子                                     A
 pyproject.toml            workspace 的根：成员、Python 版本、
                           limae、pre-commit 和 Python 检查程序的
