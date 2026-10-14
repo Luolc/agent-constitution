@@ -13,6 +13,7 @@ use crate::cite::{self, Citation, Labels};
 use crate::lock;
 use crate::manifest::{Key, Part};
 use crate::node::{self, Check, Kind, Node, Text};
+use crate::private;
 use crate::project::Project;
 use crate::skill;
 use crate::source::describe;
@@ -120,7 +121,7 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
 /// rule's text cites a rule or provision that is not there, or a skill's
 /// declaration cannot be read or names a rule that is not there.
 pub fn compile(project: &Project) -> Result<Output, String> {
-    let agents_md = agents_md(project)?;
+    let agents_md = agents_md(project, lock::FILE, true)?;
     let mut skills: Vec<(String, PathBuf)> = Vec::new();
     let mut from: Vec<&str> = Vec::new();
     for source in project.sources.iter() {
@@ -359,21 +360,44 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
     Ok(files)
 }
 
-/// The text of `AGENTS.md`.
-fn agents_md(project: &Project) -> Result<String, String> {
+/// The full text of the private layer of a public repository: the
+/// `AGENTS.md` of `project`, which holds both layers, checked against the
+/// private lock file, without the line that points to it
+/// (`docs/design/rule-sources.md`, Private rules in a public repository).
+/// Fails as `compile` does, and when it is larger than Codex reads.
+pub fn full_text(project: &Project) -> Result<String, String> {
+    let text = agents_md(project, private::LOCK, false)?;
+    if text.len() > private::MAX_BYTES {
+        return Err(format!(
+            "{}: {} bytes, more than the {} that Codex reads of a project's instruction files; enable fewer rules",
+            private::full().display(),
+            text.len(),
+            private::MAX_BYTES
+        ));
+    }
+    Ok(text)
+}
+
+/// The text of `AGENTS.md`, checked against the lock file `lock_file`;
+/// with `fallback`, in a public repository, ending with the line that
+/// points to the private layer's full text.
+fn agents_md(project: &Project, lock_file: &str, fallback: bool) -> Result<String, String> {
     let current = lock::render(project);
-    match std::fs::read_to_string(project.root.join(lock::FILE)) {
+    match std::fs::read_to_string(project.root.join(lock_file)) {
         Ok(text) if text == current => {}
         Ok(_) => {
+            let set = if lock_file == lock::FILE {
+                crate::manifest::FILE.to_owned()
+            } else {
+                format!("{} with {}", crate::manifest::FILE, private::MANIFEST)
+            };
             return Err(format!(
-                "{} is not what statute.toml and the rules give now; run `statute lock` first",
-                lock::FILE
+                "{lock_file} is not what {set} and the rules give now; run `statute lock` first"
             ));
         }
         Err(e) => {
             return Err(format!(
-                "cannot read {}: {e}; run `statute lock` first",
-                lock::FILE
+                "cannot read {lock_file}: {e}; run `statute lock` first"
             ));
         }
     }
@@ -424,6 +448,9 @@ fn agents_md(project: &Project) -> Result<String, String> {
         .collect();
     for domain in &domains {
         render(project, &w, &labels, domain, 2, &mut out)?;
+    }
+    if fallback && m.public {
+        let _ = writeln!(out, "\n---\n\n{}", private::fallback(lang));
     }
     Ok(out)
 }
