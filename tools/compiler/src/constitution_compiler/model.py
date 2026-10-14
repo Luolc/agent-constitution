@@ -317,6 +317,8 @@ class Node:
     authority: the constitution provisions it refines, without a
       namespace; empty for a one-of or a domain.
     title: its title, by language.
+    applicability: a domain's applicability, by language; empty when it
+      has none, as a rule or a one-of always.
     text: its three parts, part -> text by language; empty for a one-of
       or a domain.
     translations: language -> the hash of the original it follows.
@@ -333,6 +335,7 @@ class Node:
   superseded_by: list[int]
   authority: list[str]
   title: Texts
+  applicability: Texts
   text: dict[str, Texts]
   translations: dict[str, str]
   original: str
@@ -454,6 +457,10 @@ class Sources:
     for n in self.nodes:
       repealed = n.status == "repealed"
       yield Text(n.doc, "title", n.title, True, repealed, n.lang)
+      if n.applicability:
+        yield Text(
+          n.doc, "applicability", n.applicability, True, repealed, n.lang
+        )
       for part, texts in n.text.items():
         yield Text(n.doc, f"text.{part}", texts, True, repealed, n.lang)
 

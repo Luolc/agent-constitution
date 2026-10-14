@@ -65,6 +65,9 @@ STATEMENTS = {
 }
 
 
+APPLICABILITY = "For every repository; see {@rule:3}."
+
+
 def original(*texts: str) -> str:
   """Return the hash a translation records.
 
@@ -80,6 +83,8 @@ def original(*texts: str) -> str:
 def group(node_id: int, kind: str, parent: int | None) -> str:
   """Return the file of a domain or a one-of, translated.
 
+  A domain has an applicability that cites rule 3.
+
   Args:
     node_id: its ID.
     kind: domain or one-of.
@@ -89,13 +94,18 @@ def group(node_id: int, kind: str, parent: int | None) -> str:
     The TOML text.
   """
   title = f"Group {node_id}"
-  return (
+  texts = [title]
+  text = (
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
     f'kind = "{kind}"\nstatus = "active"\nlang = "en"\n'
     + (f"parent = {parent}\n" if parent else "")
     + f'\n[title]\nen = "{title}"\nzh = "组 {node_id}"\n'
-    + f'\n[translations]\nzh = "{original(title)}"\n'
   )
+  if kind == "domain":
+    texts.append(APPLICABILITY)
+    text += f'\n[applicability]\nen = "{APPLICABILITY}"\n'
+    text += 'zh = "所有仓库，见{@rule:3}。"\n'
+  return text + f'\n[translations]\nzh = "{original(*texts)}"\n'
 
 
 def rule(node_id: int, parent: int, extra: str = "") -> str:

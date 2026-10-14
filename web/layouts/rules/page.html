@@ -3,7 +3,8 @@
   when the text is not in the page's language; a rule's statement, reason
   and verification, their citations linked; the provisions of the
   constitution it cites; its relations; and all its metadata. A domain or
-  a one-of has no text, and lists the nodes below it. The title starts
+  a one-of has no text, and lists the nodes below it; a domain's
+  applicability, when it has one, follows its title. The title starts
   with the node's label; the table of contents at the right lists the
   headings below it. */ -}}
 {{ define "main" }}
@@ -18,6 +19,9 @@
 {{- end }}
 {{- if ne $rule.shown $lang }}
 <p class="rule-note untranslated">{{ i18n "rule-untranslated" (dict "lang" (partial "rules/language.html" $rule.shown)) }}</p>
+{{- end }}
+{{- with $rule.applicability }}
+<div class="rule-text applicability" lang="{{ $rule.shown }}">{{ . | $.RenderString (dict "display" "block") }}</div>
 {{- end }}
 {{- with $rule.text }}
 <div class="rule-text" lang="{{ $rule.shown }}">

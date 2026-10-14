@@ -23,6 +23,8 @@ from constitution_compiler import checks as cc
 
 # Shared with statute's tests (crates/statute/tests/superseded_by.rs).
 CASES = Path(__file__).parent / "superseded_by_cases.toml"
+# Shared with statute's tests (crates/statute/tests/compile.rs).
+APPLICABILITY_CASES = Path(__file__).parent / "applicability_cases.toml"
 
 
 class FormatTest(Tree):
@@ -344,6 +346,33 @@ class SupersededTest(Tree):
         self.assertTrue(
           all(e.startswith("rules/11.toml:") for e in errors), errors
         )
+
+
+class ApplicabilityTest(Tree):
+  def test_applicability_cases(self):
+    """The cases statute reads too, with the same outcome."""
+    cases = tomllib.loads(APPLICABILITY_CASES.read_text(encoding="utf-8"))
+    self.assertGreater(len(cases["cases"]), 0)
+    for case in cases["cases"]:
+      with self.subTest(case["name"]):
+        self.write("rules/20.toml", case["node"])
+        errors = self.errors()
+        self.assertEqual(not errors, case["passes"], errors)
+        self.assertTrue(
+          all(e.startswith("rules/20.toml:") for e in errors), errors
+        )
+
+  def test_only_a_domain_has_applicability(self):
+    applicability = (
+      '\n[applicability]\nen = "For every repository."\nzh = "所有仓库。"\n'
+    )
+    self.write("rules/2.toml", DOMAIN + applicability)
+    self.rehash("rules/2.toml")
+    self.assertEqual(self.errors(), [])
+    self.edit(
+      "rules/3.toml", 'zh = "二选一"\n', 'zh = "二选一"\n' + applicability
+    )
+    self.assertError(1, "rules/3.toml", "unknown key `applicability`")
 
 
 class TreeTest(Tree):

@@ -498,6 +498,11 @@ fn render(
         pick(&node.title, node, lang),
         project.source.show(node.id)
     );
+    if let Some(applicability) = &node.applicability {
+        let text = pick(applicability, node, lang);
+        let text = cited(project, labels, node, "applicability", text, true)?;
+        let _ = writeln!(out, "\n{text}");
+    }
     if let Some(rule) = &node.rule {
         for part in &project.manifest.agents_md {
             let (name, label, text) = match part {

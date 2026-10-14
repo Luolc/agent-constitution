@@ -373,6 +373,42 @@ fn a_translation_is_used_in_its_language() {
     );
 }
 
+/// Domain 1 of `nodes`, with an applicability that cites rule 3,
+/// translated into Chinese.
+fn domain_1_with_applicability() -> String {
+    let applicability = "For every repository; see {@rule:3}.";
+    let hash = original_hash(&["Domain 1", applicability]);
+    let d = edit(
+        domain(1),
+        "en = \"Domain 1\"",
+        "en = \"Domain 1\"\nzh = \"领域 1\"",
+    );
+    format!(
+        "{}\n[applicability]\nen = \"{applicability}\"\nzh = \"所有仓库，见{{@rule:3}}。\"\n\n[translations]\nzh = \"{hash}\"\n",
+        d.1
+    )
+}
+
+#[test]
+fn a_domains_applicability_follows_its_heading() {
+    let dir = repo("applicability-en", &manifest(""));
+    std::fs::write(dir.join("rules/1.toml"), domain_1_with_applicability()).unwrap();
+    let out = compiled(&dir);
+    assert!(
+        out.contains("## Domain 1 (R1)\n\nFor every repository; see [Rule 3](#rule-R3).\n\n<a id=\"rule-R2\"></a>\n"),
+        "{out}"
+    );
+
+    let compile = "\n[compile]\nlang = \"zh\"\n";
+    let dir = repo("applicability-zh", &manifest(compile));
+    std::fs::write(dir.join("rules/1.toml"), domain_1_with_applicability()).unwrap();
+    let out = compiled(&dir);
+    assert!(
+        out.contains("## 领域 1 (R1)\n\n所有仓库，见[Rule 3](#rule-R3)。\n"),
+        "{out}"
+    );
+}
+
 #[test]
 fn compile_replaces_a_generated_file_and_leaves_a_hand_written_one() {
     let dir = repo("default-path", &manifest(""));
@@ -464,6 +500,52 @@ fn a_citation_of_nothing_fails_and_names_where_it_is() {
         assert_eq!(run.code, 1);
         assert!(run.stderr.contains(message), "{}", run.stderr);
         assert!(!dir.join("out.md").exists());
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct ApplicabilityCases {
+    cases: Vec<ApplicabilityCase>,
+}
+
+#[derive(serde::Deserialize)]
+struct ApplicabilityCase {
+    name: String,
+    passes: bool,
+    node: String,
+}
+
+/// The compiler's cases of `[applicability]`
+/// (`tools/compiler/tests/applicability_cases.toml`): node 20 with rule
+/// 21 under it enabled, so that a domain's applicability is compiled.
+#[test]
+fn the_compilers_applicability_cases() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tools/compiler/tests/applicability_cases.toml");
+    let cases: ApplicabilityCases =
+        toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    assert!(!cases.cases.is_empty());
+    for case in cases.cases {
+        let manifest = manifest("").replace("\"R10\"]", "\"R10\", \"R21\"]");
+        let dir = repo("applicability", &manifest);
+        std::fs::write(dir.join("rules/20.toml"), &case.node).unwrap();
+        std::fs::write(dir.join("rules/21.toml"), rule(21, 20, "").1).unwrap();
+        let lock = statute(&dir, &["lock"]);
+        let run = if lock.code == 0 {
+            statute(&dir, &["compile", "--output", "out.md"])
+        } else {
+            lock
+        };
+        assert_eq!(run.code == 0, case.passes, "{}: {}", case.name, run.stderr);
+        // Rule 21 draws an error too when node 20 cannot be read at all.
+        if !case.passes {
+            assert!(
+                run.stderr.contains("rules/20.toml"),
+                "{}: {}",
+                case.name,
+                run.stderr
+            );
+        }
     }
 }
 
