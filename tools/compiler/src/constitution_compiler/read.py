@@ -637,8 +637,8 @@ class _Reader:
   def parent(self, doc: Doc, kind: str) -> None:
     """Check the form of a node's `parent`.
 
-    A domain's is the number of a domain of this source; a one-of's or a
-    rule's may also name a node of another source, of which only the
+    A domain's or a one-of's is the number of a node of this source; a
+    rule's may also name a domain of another source, of which only the
     form is checked (docs/design/rule-sources.md, Subdomains). What the
     number names is check 3, `check_tree`.
 
@@ -650,14 +650,15 @@ class _Reader:
     if "parent" not in d:
       return
     v = d["parent"]
-    if kind == "domain":
+    if kind != "rule":
       if not is_number(v):
+        target = "domain" if kind == "domain" else "node"
         self.errors.add(
           path,
           doc.line("parent ="),
           1,
-          f"a domain's `parent` `{toml_text(v)}` is not the number of a"
-          " domain of this source",
+          f"a {kind}'s `parent` `{toml_text(v)}` is not the number of a"
+          f" {target} of this source",
         )
     elif first_party(v):
       self.errors.add(

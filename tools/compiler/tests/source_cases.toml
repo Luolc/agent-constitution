@@ -107,7 +107,8 @@ en = "Violated when not."
 
 [[cases]]
 name = "a one-of under a domain of another source"
-passes = true
+passes = false
+compiler = "a one-of's `parent` `team:7` is not the number of a node of this source"
 node = """
 id = 20
 revision = 1

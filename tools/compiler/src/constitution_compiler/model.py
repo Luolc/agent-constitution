@@ -314,9 +314,9 @@ class Node:
     kind: rule, one-of or domain.
     status: draft, trial, active, superseded or repealed.
     lang: the language of its original.
-    parent: the number of its parent, or a reference `<source>:<id>` to
-      a domain of another source; None for a domain that is not a
-      subdomain, and for a rule that overrides another.
+    parent: the number of its parent, or for a rule a reference
+      `<source>:<id>` to a domain of another source; None for a domain
+      that is not a subdomain, and for a rule that overrides another.
     overrides: the rule of another source it overrides, `<source>:<id>`;
       None for a rule that overrides none, as for a domain or a one-of.
     superseded_by: the numbers of the rules that supersede it; empty

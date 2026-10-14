@@ -51,8 +51,8 @@ NODE_SCHEMA = {
   "title": TEXT,
   "translations?": dict,
 }
-# `parent` is a number, or for a one-of or a rule a reference to another
-# source; `overrides` takes the place of a rule's `parent`.
+# `parent` is a number, or for a rule a reference to another source;
+# `overrides` takes the place of a rule's `parent`.
 # `_Reader.parent` and `_Reader.overrides` check them.
 NODE_SCHEMAS = {
   "domain": NODE_SCHEMA | {"parent?": object, "applicability?": TEXT},
