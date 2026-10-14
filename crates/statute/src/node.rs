@@ -92,6 +92,8 @@ pub struct Node {
     pub lang: String,
     pub parent: Option<Id>,
     pub title: Text,
+    /// Which repositories a domain is for; only a domain has it.
+    pub applicability: Option<Text>,
     pub translations: BTreeMap<String, String>,
     /// Present exactly when `kind` is `rule`.
     pub rule: Option<RuleFields>,
@@ -119,6 +121,7 @@ struct RawNode {
     run: Option<String>,
     tools: Option<Vec<String>>,
     title: Text,
+    applicability: Option<Text>,
     text: Option<RawText>,
     translations: Option<BTreeMap<String, String>>,
 }
@@ -169,8 +172,9 @@ pub fn id_from_file_name(name: &str) -> Option<Id> {
 }
 
 /// The hash a translation records: the original-language values of the
-/// title and the three parts, joined with one NUL byte, or of the title
-/// alone for a domain or a one-of.
+/// title and the three parts, joined with one NUL byte; for a domain or
+/// a one-of, of the title alone, or of the title and the applicability
+/// for a domain that has one.
 pub fn original_hash(parts: &[&str]) -> String {
     hex(&Sha256::digest(parts.join("\0").as_bytes()))
 }
@@ -325,6 +329,13 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         }
     }
 
+    if raw.applicability.is_some() && kind != Kind::Domain {
+        err(format!(
+            "only a domain has [applicability]; remove it from this {}",
+            kind.name()
+        ));
+    }
+
     let rule = if kind == Kind::Rule {
         parse_rule_fields(&raw, &mut err)
     } else {
@@ -345,8 +356,13 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         .collect();
         if !present.is_empty() {
             err(format!(
-                "a {} has only id, slug, revision, kind, status, lang, parent, title and translations; remove {}",
+                "a {} has only id, slug, revision, kind, status, lang, parent, {} and translations; remove {}",
                 kind.name(),
+                if kind == Kind::Domain {
+                    "title, applicability"
+                } else {
+                    "title"
+                },
                 present.join(", ")
             ));
         }
@@ -366,6 +382,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         lang: raw.lang,
         parent: raw.parent,
         title: raw.title,
+        applicability: raw.applicability,
         translations,
         rule,
         sha256,
@@ -485,6 +502,9 @@ fn check_languages(
 ) {
     let lang = raw.lang.as_str();
     let mut texts: Vec<(&str, &Text)> = vec![("title", &raw.title)];
+    if let Some(applicability) = &raw.applicability {
+        texts.push(("applicability", applicability));
+    }
     if let Some(text) = &raw.text {
         texts.extend([
             ("text.statement", &text.statement),
@@ -549,6 +569,7 @@ fn check_languages(
     // The hash can be checked only when every original text is there.
     let original = |t: &Text| t.get(lang).cloned();
     let mut parts = vec![original(&raw.title)];
+    parts.extend(raw.applicability.as_ref().map(original));
     match (&raw.text, raw.kind) {
         (Some(t), Kind::Rule) => parts.extend([
             original(&t.statement),

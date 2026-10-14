@@ -510,9 +510,13 @@ class SiteTest(unittest.TestCase):
       "Conflicts with R3 Rule 3 team:7", pages["rules/5/index.html"]
     )
     self.assertIn(
-      "R1 Group 1 Relations Below it R2 Group 2 R4 Rule 4 R5 Rule 5"
-      " Metadata ID 1",
+      "R1 Group 1 For every repository; see rule 3 . Relations Below it"
+      " R2 Group 2 R4 Rule 4 R5 Rule 5 Metadata ID 1",
       pages["rules/1/index.html"],
+    )
+    self.assertIn('href="../3/"', raw["rules/1/index.html"])
+    self.assertIn(
+      "R1 组 1 所有仓库，见 规定 3 。", pages["zh/rules/1/index.html"]
     )
     # A domain has no text: its contents list only the headings it has.
     self.assertIn(

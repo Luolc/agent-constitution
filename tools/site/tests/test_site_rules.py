@@ -95,6 +95,14 @@ class SiteRulesTest(unittest.TestCase):
       zh[6]["authority"], [{"ref": "one-a.x", "label": "第一条第一款第一项"}]
     )
 
+  def test_applicability(self):
+    en, zh = self.nodes("en"), self.nodes("zh")
+    self.assertEqual(
+      en[1]["applicability"], "For every repository; see [rule 3](../3/)."
+    )
+    self.assertEqual(zh[1]["applicability"], "所有仓库，见[规定 3](../3/)。")
+    self.assertIsNone(en[2]["applicability"])
+
   def test_listed_only_in_force(self):
     errors = Errors()
     src = load(self.root, errors)

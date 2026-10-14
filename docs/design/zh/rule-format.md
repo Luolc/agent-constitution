@@ -1,4 +1,4 @@
-<!-- en-sha256: 2023e4bc379f0395068104d0609dc4eae2685101cf563e98dba9739c0c72a02d -->
+<!-- en-sha256: 65ea469e33a93174f4aa419d66915b5b49e26a90258f734f8a06c507eb6b7ba3 -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -95,6 +95,13 @@ lang = "en"
 
 [title]
 en = "Python"
+
+[applicability]
+en = '''
+How Python code is written, tested and packaged. Enable it in a
+repository that holds Python code; a repository with none does not need
+it.
+'''
 ```
 
 各字段：
@@ -114,12 +121,13 @@ en = "Python"
 - `level`：默认层级，`project` 或 `user` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
 - `check`：怎样检查是否合规 ([检查](rule-checks.md#checks))。`builtin`：这条规定在本仓的 crate 里有一个模块。`command`：外部命令，另由两个字段给出，`run` 是命令行，`tools` 是它需要的工具列表 (`["uv"]`)。`review`：没有自动检查，这条规定直接交给审查方。
 - `[title]`：简短的标题，只占一行 (多行字符串可以以换行结尾)。
+- `[applicability]` (可选，只有领域有)：一两句话，说明这个领域管什么、哪些仓库该启用它、什么情况下不必启用。它可以像规定正文一样引用规定 (`{@rule:<id>}`) 和条款 ([ID](source-formats.md#ids))。编译出的 `AGENTS.md` 把它放在领域的标题下面 ([编译与网站](statute-command.md#compilation-and-the-site))，网站把它放在领域详情页的标题下面 ([静态网站](static-site.md))。
 - `[text.statement]`、`[text.reason]` 和 `[text.verification]`：正文的三部分 ([一条规定包含什么](#what-one-rule-holds))。
 - `[translations]` (可选)：每种译文语言一个键，原文语言不在其中；值是这份译文所依据的原文的 SHA-256。
 
-领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (只有 one-of 有)、`[title]`，以及标题有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
+领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (只有 one-of 有)、`[title]`、`[applicability]` (只有领域有，可选)，以及有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
 
-**语言。** 每段文字，即 `[title]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这种语言的标题和全部三部分，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把文件里的每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同；转义写出的 `\r\n` 不是行尾，原样保留)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
+**语言。** 每段文字，即 `[title]`、`[applicability]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这个节点在这种语言里的每段文字 (规定是标题和全部三部分，领域是标题和 applicability，如果有的话)，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把文件里的每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同；转义写出的 `\r\n` 不是行尾，原样保留)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；有 applicability 的领域对 `title` 和 `applicability` 计算，连接方式相同，其他领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
 
 ## <a id="rules-and-skills"></a>规定与 skill
 

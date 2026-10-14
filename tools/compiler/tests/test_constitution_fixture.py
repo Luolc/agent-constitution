@@ -472,9 +472,15 @@ class Tree(unittest.TestCase):
     text = path.read_text(encoding="utf-8")
     data = tomllib.loads(text)
     lang = data["lang"]
-    texts = [data["title"]] + [
-      data["text"][p] for p in ("statement", "reason", "verification")
-    ] * ("text" in data)
+    texts = (
+      [data["title"]]
+      + ([data["applicability"]] if "applicability" in data else [])
+      + [
+        data["text"][p]
+        for p in ("statement", "reason", "verification")
+        if "text" in data
+      ]
+    )
     new = original(*(t[lang] for t in texts))
     path.write_text(
       re.sub(r'(?m)^(\w+) = "[0-9a-f]{64}"$', rf'\1 = "{new}"', text),

@@ -11,7 +11,8 @@ and a rule set with its lock file, and writes:
 - an `AGENTS.md`, which opens with the repository, the edition and the
   revision of the constitution it rests on, and then has the enabled rules
   in nested blocks along the parent tree, one heading level per level of
-  the tree, each domain with an enabled rule below it as a top heading; a
+  the tree, each domain with an enabled rule below it as a top heading,
+  followed by the domain's applicability when it has one; a
   subtree whose root is not enabled (for a one-of: none of its children
   is) contributes nothing, since none of its rules can be enabled without
   it, and a requirement that crosses subtrees is rendered as a link. By
@@ -44,7 +45,10 @@ hyphen: `rule-R42`, `rule-L12`, `rule-team-7`, so the anchors of
 different sources never clash. A requirement of a node under another domain is
 a line "Requires:" with a link to that anchor; one within the domain is
 not rendered. A rule uses its translation into the language when it has
-one, and its original otherwise. The citations in a rule's text are
+one, and its original otherwise. A domain's applicability, when it has
+one ([Rule file format](rule-format.md#rule-file-format)), is a paragraph
+under its heading, in the same language as the heading, its citations
+rendered as in a rule's text. The citations in a rule's text are
 rendered ([IDs](source-formats.md#ids)): `{@rule:<id>}` as the cited
 node's title, in the language as its heading is, linked to its anchor
 when the node is in the file, and followed by "(rule R42)" otherwise; and
