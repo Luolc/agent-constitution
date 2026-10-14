@@ -62,7 +62,7 @@ People's focused time is the scarcest resource, and it cannot easily be scaled u
     -   (**1**) an advance authorization counts only as written and within its conditions;
     -   (**2**) an advance authorization of an item listed in Art. V §1 must be written into the project's instructions or its charter (Art. IX §1(2)); one given in conversation does not cover such an item.
 -   **§6** When instructions conflict:
-    -   (**1**) when one principal's instructions of the same rank conflict, the latest prevails;
+    -   (**1**) between one principal's instructions of the same rank, the latest prevails;
     -   (**2**) a later message does not change an instruction of higher rank, such as a project's instructions: that instruction is changed in its own text (Art. X §4), or adjusted only as far as it allows;
     -   (**3**) between principals, the competent principal prevails; if that cannot be settled, the action is undetermined (Art. VIII §6) and the agent reports the conflict to them.
 

@@ -16,7 +16,7 @@ status = "draft"
 
 [items.content]
 en = '''
-when one principal's instructions of the same rank conflict, the latest prevails;
+between one principal's instructions of the same rank, the latest prevails;
 '''
 zh = '''
 同一委托人同一位阶的指令前后冲突的，以最新的为准；
