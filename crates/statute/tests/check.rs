@@ -254,11 +254,13 @@ fn r7_agrees_with_check_instruction_changes() {
             .arg(&dir)
             .current_dir(&repo_root)
             .output()
-            .unwrap();
+            .unwrap_or_else(|e| {
+                panic!("cannot run uv ({e}); install uv, then run `uv sync` first")
+            });
         let python_code = python.status.code().unwrap();
         assert!(
             python_code == 0 || python_code == 1,
-            "{name}: {}",
+            "{name}: check-instruction-changes could not run; run `uv sync` first: {}",
             String::from_utf8_lossy(&python.stderr)
         );
         if python_code == 1 {

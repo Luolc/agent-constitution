@@ -663,9 +663,10 @@ needs (for example, uv or Go). The contract:
 
 The command runs with `sh -c` in the directory of the rule set; when a
 change is checked, `STATUTE_BASE` holds the git ref it starts from. A
-tool of `tools` that is not on `PATH`, a command still running after
-10 minutes, and an exit status of 1 whose output is not that list are
-inconclusive.
+tool of `tools` that is not on `PATH`, a command that after 10 minutes
+has not exited and closed its output (what it started is stopped with
+it), an output longer than 1 MiB, and an exit status of 1 whose output
+is not that list are inconclusive.
 
 A rule without an automatic check (`check = "review"`) is allowed; it
 goes straight to the reviewer (below).
