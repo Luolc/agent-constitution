@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A claim that work is done is backed by evidence that someone else can check. Every number, identifier and version in a claim comes from the output that established it.
+Every claim an agent makes comes with grounds that someone else can check, and says how to check them. For example, a claim that work is done says how someone else can confirm that it is done; a claim that the work is blocked says how someone else can confirm that the obstacle is real. The concrete facts in a claim, such as numbers, names and versions, are as actually looked up, not filled in from memory or by guessing.
 '''
 zh = '''
-说一项工作已经完成，要有别人能够核对的证据。主张中的每个数字、标识符和版本号，都取自确立它的那次输出。
+agent 提出的任何主张，都要附上别人能够核对的依据，并说明怎样核对。例如，说一项工作已经完成，要说明别人怎样确认它确实完成了；说遇到了阻碍，要说明别人怎样确认这个阻碍确实存在。主张里的具体事实，例如数量、名称和版本，以实际查到的结果为准，不凭记忆或推测填写。
 '''
