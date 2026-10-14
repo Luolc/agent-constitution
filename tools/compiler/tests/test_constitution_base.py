@@ -20,6 +20,7 @@ from test_constitution_fixture import (
   B,
   BETA_ONE,
   BETA_TWO,
+  NODES,
   SECTIONS,
   Tree,
 )
@@ -221,44 +222,17 @@ class BaseTest(Tree):
       ],
     )
 
-  def test_deleted_rule_must_be_retired(self):
-    self.commit_base()
-    (self.root / "rules/rule.toml").unlink()
-    errors, _ = self.base_errors()
-    self.assertEqual(
-      errors,
-      [
-        "rules/rule.toml:1: check 7: rule rule existed at base HEAD and is gone"
-        " without being listed in rules/retired-ids.txt"
-      ],
-    )
-    self.write("rules/retired-ids.txt", "rule\n")
-    self.assertEqual(self.base_errors(), ([], ""))
-
-  def test_retired_id_stays_retired(self):
-    self.write("rules/retired-ids.txt", "old-rule\n")
-    self.commit_base()
-    self.write("rules/retired-ids.txt", "")
-    errors, _ = self.base_errors()
-    self.assertEqual(
-      errors,
-      [
-        "rules/retired-ids.txt:1: check 7:"
-        " old-rule was retired at base HEAD and is no longer listed"
-      ],
-    )
-
   def test_unrepealed_rule(self):
     self.activate()
-    self.edit("rules/rule.toml", 'status = "active"', 'status = "repealed"')
+    self.edit("rules/10.toml", 'status = "active"', 'status = "repealed"')
     self.commit_base(active=False)
-    self.edit("rules/rule.toml", 'status = "repealed"', 'status = "active"')
+    self.edit("rules/10.toml", 'status = "repealed"', 'status = "active"')
     errors, _ = self.base_errors()
     self.assertEqual(
       errors,
       [
-        "rules/rule.toml:2: check 7: rule rule was repealed at base HEAD and "
-        "is no longer"
+        "rules/10.toml:5: check 7: rule 10 was repealed at base HEAD and is"
+        " no longer"
       ],
     )
 
@@ -267,7 +241,7 @@ class BaseTest(Tree):
     self.edit(
       "constitution/2026-10/index.toml", 'status = "active"', 'status = "draft"'
     )
-    for name in SECTIONS + ["rules/rule.toml"]:
+    for name in SECTIONS + NODES:
       self.edit(name, 'status = "active"', 'status = "draft"', -1)
     errors, _ = self.base_errors()
     self.assertEqual(
@@ -425,7 +399,7 @@ class BaseTest(Tree):
 
   def test_changes_outside_the_constitution_text_are_ignored(self):
     self.commit_base()
-    self.edit("rules/rule.toml", 'en = "A rule"', 'en = "A changed rule"')
+    self.edit("rules/10.toml", 'zh = "一条新规定"', 'zh = "一条改过的规定"')
     self.write("constitution/2026-10/generated/constitution.en.md", "changed\n")
     self.assertEqual(self.revision_check(), [])
 
@@ -511,7 +485,7 @@ class BaseTest(Tree):
     self.edit(
       "constitution/2026-10/index.toml", 'status = "draft"', 'status = "active"'
     )
-    for name in SECTIONS + ["rules/rule.toml"]:
+    for name in SECTIONS + NODES:
       self.edit(name, 'status = "draft"', 'status = "active"', -1)
     self.assertEqual(
       self.revision_check(),

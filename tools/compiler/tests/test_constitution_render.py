@@ -170,11 +170,12 @@ class RenderTest(Tree):
     # A citation of a repealed section would be an error; move it.
     self.edit(f"{A}/01-alpha-one.toml", "{@beta-one}", "{@beta-two}", 2)
     self.edit(
-      "rules/rule.toml",
+      "rules/10.toml",
       "{@constitution:beta-one}",
       "{@constitution:beta-two}",
       2,
     )
+    self.rehash("rules/10.toml")
     errors, _, outputs = bc.build(self.root)
     self.assertEqual(errors, [])
     self.assertIn(

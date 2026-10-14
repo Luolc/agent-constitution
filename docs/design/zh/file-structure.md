@@ -1,4 +1,4 @@
-<!-- en-sha256: c4603f882bd2e3ce06a9264dbf1533abee19859dbd4edd3a4df747be95e49b58 -->
+<!-- en-sha256: 1e267776f05a36a5dd799ae3afb235585092202dee1d93fbae2676a2842dff9a -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -31,8 +31,7 @@ docs/
                           由 README.md 索引                            A
     zh/                   本设计的中文译文，每个文件一份同名译文       A
 rules/
-  <id>.toml               一条通用规定一个文件，含各语言的正文         A
-  retired-ids.txt         已删除规定的 ID，一行一个                    A
+  <id>.toml               parent 树上的一个节点一个文件，以编号命名    A
 skills/
   <name>/SKILL.md         一个通用 skill 一个目录，模板文件放在
                           旁边，原样安装                               A

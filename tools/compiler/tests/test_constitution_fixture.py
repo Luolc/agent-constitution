@@ -4,9 +4,11 @@ A small valid constitution with its rules, its expected outputs, and the
 TestCase that writes it.
 """
 
+import hashlib
 from pathlib import Path
 import re
 import tempfile
+import tomllib
 import unittest
 
 from constitution_compiler import build as bc
@@ -130,24 +132,92 @@ zh = '''
 '''
 """
 
-RULE = """\
-id = "rule"
+
+def original(*texts: str) -> str:
+  """Return the hash a translation records, as the design defines it.
+
+  Args:
+    *texts: the original's title and parts, as TOML parses them.
+
+  Returns:
+    The SHA-256 of the texts joined by NUL, in hex.
+  """
+  return hashlib.sha256(b"\0".join(t.encode() for t in texts)).hexdigest()
+
+
+DOMAIN = f"""\
+id = 2
+slug = "process"
+revision = 1
+kind = "domain"
 status = "draft"
-scope = "all"
-authority = ["constitution:alpha", "constitution:alpha-one.money"]
+lang = "en"
 
 [title]
-en = "A rule"
-zh = "一条规则"
+en = "Process"
+zh = "流程"
 
-[content]
+[translations]
+zh = "{original("Process")}"
+"""
+
+ONE_OF = """\
+id = 3
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "zh"
+parent = 2
+
+[title]
+zh = "二选一"
+"""
+
+STATEMENT = "Cite {@constitution:beta-one} and {@rule:3}.\n"
+RULE = f"""\
+id = 10
+slug = "new-rule"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 2
+authority = ["alpha", "alpha-one.money"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "A new rule"
+zh = "一条新规定"
+
+[text.statement]
 en = '''
-Cites {@constitution:beta-one} and {@rule:rule}.
+{STATEMENT}'''
+zh = '''
+引用{{@constitution:beta-one}}与{{@rule:3}}。
+'''
+
+[text.reason]
+en = '''
+Because.
 '''
 zh = '''
-引用{@constitution:beta-one}与{@rule:rule}。
+因为。
 '''
+
+[text.verification]
+en = '''
+Violated when not.
+'''
+zh = '''
+没有做到即为违反。
+'''
+
+[translations]
+zh = "{original("A new rule", STATEMENT, "Because.\n", "Violated when not.\n")}"
 """
+
 
 EN = """\
 Generated from `constitution/2026-10/index.toml` and `constitution/2026-10/articles/` by \
@@ -295,8 +365,11 @@ FILES = {
   f"{B}/article.toml": BETA,
   f"{B}/01-beta-one.toml": BETA_ONE,
   f"{B}/01a-beta-two.toml": BETA_TWO,
-  "rules/rule.toml": RULE,
+  "rules/2.toml": DOMAIN,
+  "rules/3.toml": ONE_OF,
+  "rules/10.toml": RULE,
 }
+NODES = ["rules/2.toml", "rules/3.toml", "rules/10.toml"]
 SECTIONS = [
   f"{A}/01-alpha-one.toml",
   f"{B}/01-beta-one.toml",
@@ -364,8 +437,34 @@ class Tree(unittest.TestCase):
     self.edit(
       "constitution/2026-10/index.toml", 'revision = "0.2"', 'revision = "1"'
     )
-    for name in SECTIONS + ["rules/rule.toml"]:
+    for name in SECTIONS + NODES:
       self.edit(name, 'status = "draft"', 'status = "active"', -1)
+
+  def rehash(self, name: str) -> None:
+    """Record the current original's hash for each translation of a node.
+
+    Args:
+      name: the node's file.
+    """
+    path = self.root / name
+    text = path.read_text(encoding="utf-8")
+    data = tomllib.loads(text)
+    lang = data["lang"]
+    texts = [data["title"]] + [
+      data["text"][p] for p in ("statement", "reason", "verification")
+    ] * ("text" in data)
+    new = original(*(t[lang] for t in texts))
+    path.write_text(
+      re.sub(r'(?m)^(\w+) = "[0-9a-f]{64}"$', rf'\1 = "{new}"', text),
+      encoding="utf-8",
+    )
+
+  def assertError(self, check, path, message):  # noqa: N802
+    errors = self.errors()
+    pattern = re.compile(rf"{re.escape(path)}:\d+: check {check}: ")
+    self.assertTrue(
+      any(pattern.match(e) and e.endswith(message) for e in errors), errors
+    )
 
   def errors(self):
     errors, _, _ = bc.build(self.root)

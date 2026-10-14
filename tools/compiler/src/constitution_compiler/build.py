@@ -9,14 +9,11 @@ Sources, in the edition directory: index.toml (status, revision,
 languages, title and front text); articles/<NN>-<id>/, one directory per
 article,
 holding its article.toml and one <NN>[a-z]-<id>.toml per section, the
-section's list items inside it; rules/<id>.toml, one rule each, and
-rules/retired-ids.txt, the IDs of deleted rules (checked, not rendered).
-A rule file named by a number is a node of the rule tree, a rule, a one-of
-or a domain, in the format of docs/design/rule-system.md (Rule file
-format); one named by a word is in the older format.
+section's list items inside it; rules/<id>.toml, one node of the rule
+tree each, a rule, a one-of or a domain (checked, not rendered).
 Article and section numbers are the name prefixes. The formats, the
 numbering and the checks are described in docs/design/source-formats.md,
-constitution.md, rules.md and checkers.md.
+constitution.md, rule-system.md and checkers.md.
 
 The version for agents has, in place of the front text, a note of this
 script's own that says what the file is and where the full text is; it
@@ -30,7 +27,7 @@ committed outputs must equal a fresh build byte for byte. With --check
 --base <git-ref> the numbering is also compared with that commit: once the
 constitution is active, the edition may only move to a later month,
 within an edition nothing numbered may
-disappear, change number or move, and no deleted rule may go unretired.
+disappear, change number or move, and no rule may disappear.
 Within an edition, and from a draft whatever edition it names, the
 revision rises when the constitution text changes and stays when it
 does not.

@@ -7,7 +7,7 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name in [Source formats](source-formats.md), [The constitution](constitution.md) and [Rules](rules.md#rules); each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name in [Source formats](source-formats.md), [The constitution](constitution.md) and [Rules](rules.md#rules); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint-zh-sources`; limae on every Markdown file of the repo) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text gets limae's rules too, which mostly find nothing there |
@@ -37,9 +37,7 @@ first one that finds errors, printing all of that one's errors:
    (starting with `.`, such as `.DS_Store` or an editor's swap file) are
    skipped.
 2. IDs: each has the format; article and section IDs are unique in the
-   constitution, item IDs in their section, rule IDs among the rules; no
-   rule's ID is listed in `rules/retired-ids.txt`, and each line there is
-   an ID.
+   constitution, item IDs in their section.
 3. Structure: numbers are unique in their scope; a repealed article has
    only repealed sections.
 4. Languages: in each text table, every language cites the same set of
@@ -47,8 +45,7 @@ first one that finds errors, printing all of that one's errors:
 5. References: each `{@...}` and each `authority` entry resolves; a
    repealed target (an item of a repealed section counts as repealed) is an
    error; the constitution cites only itself, without a namespace; a rule
-   cites with `constitution:` or `rule:`; `authority` names only
-   constitution provisions.
+   cites with `constitution:` or `rule:`.
 6. A fresh build equals the committed `constitution.<lang>.md` and
    `constitution.<lang>.agent.md` files byte for byte (only under
    `--check`).
@@ -58,11 +55,10 @@ first one that finds errors, printing all of that one's errors:
    base's or a later month; when it is the base's, every article, section and list item of the base, matched
    by ID, still exists with the same number, a section in the same
    article's directory and an item in the same section; what was repealed
-   is still repealed; every rule of the base still exists or has its ID in
-   `rules/retired-ids.txt`, and every ID retired at the base is still
-   listed. Each error says which it is: an edition not later than the
+   is still repealed; every node of the rule tree of the base still
+   exists. Each error says which it is: an edition not later than the
    base's, gone, renumbered, moved to another article,
-   no longer repealed, no longer retired. The base's files are found in
+   no longer repealed. The base's files are found in
    the base's own edition directory, which may have another name than the
    current one. A base that is `draft`, has no edition directory or no
    article directories yet, or has an earlier `edition` than the current
@@ -85,12 +81,10 @@ first one that finds errors, printing all of that one's errors:
    an active base of another edition, the revisions are not compared. Its
    purpose is that one revision names one text.
 
-While the rules move to the format of
-[Rule file format](rule-system.md#rule-file-format), `rules/` may hold
-both formats: a file named by a number, `rules/<id>.toml`, is a node of the
-rule tree, and one named by a word is a rule of the older format. The
-nodes are read in the order of their numbers and get the same checks,
-with what the new format adds. 1: the keys of the node's `kind`, with
+The rules are nodes of the rule tree in the format of
+[Rule file format](rule-system.md#rule-file-format), each in
+`rules/<id>.toml`, read in the order of their numbers. The checks above
+cover them as follows. 1: the keys of the node's `kind`, with
 their types; `id` is the file name, which has no leading zeros; `revision` is
 1 or more; `kind`, `status`, `level` and `check` take one of their values
 (`superseded` for a rule only), and the status agrees with `index.toml` as
@@ -99,8 +93,7 @@ a rule's does; `superseded-by` is there exactly when the status is
 `authority` is a non-empty list of strings, `tools` a list of strings, and
 `requires` and `conflicts` lists of numbers and strings; the title and the three parts have a non-empty text
 in the original's language, and `[translations]` has no key for it. 2: a
-`slug` has the shape of an ID and is unique among the slugs and the IDs of
-the older rules, so a slug can carry on a word ID. 3: each `parent` and
+`slug` has the shape of an ID and is unique among the slugs. 3: each `parent` and
 `superseded-by` names a node, the latter a rule other than itself, and
 following the parents never leads back to a node. 4: each language of a
 text cites what the original cites, every translated language has the
@@ -109,8 +102,8 @@ the original's now; when one is not, the error prints the new hash. 5: a
 `{@rule:<id>}` with a number resolves to a node that is not repealed, and
 each `authority` entry, without a namespace, to a provision that is not
 repealed. 7: a node of the base still exists, and stays repealed or
-superseded once it was; a rule of the older format at the base also lives
-on as a node whose `slug` is its ID.
+superseded once it was; a rule of a base from before the rule tree,
+named by a word, lives on as the node whose `slug` is that word.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
@@ -237,7 +230,7 @@ fixtures/behavior/redline/<name>/   stage C
 ```
 
 Each fixture directory holds a `fixture.md` (front matter `binds:
-[constitution:asking, rule:credential-storage]`, `kind: happy` or
+[constitution:asking, rule:3]`, `kind: happy` or
 `redline`, and a short statement of what it shows),
 its inputs and its expected result.
 
@@ -253,7 +246,7 @@ its inputs and its expected result.
   with its namespace as a rule cites it, and the checker rejects a fixture
   whose IDs do not resolve.
 - Before a release, every fixture runs, all happy and all redline, as
-  the rule `fixture-outcomes` requires. Static fixtures run in this
+  rule 5 (`fixture-outcomes`) requires. Static fixtures run in this
   repo's CI. Behavior fixtures (once they exist) need installed harnesses and
   model credentials, which this repo's CI does not have; they run on the
   private side, and a release needs the record of that run at the commit being

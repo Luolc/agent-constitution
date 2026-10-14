@@ -39,14 +39,6 @@ ITEM_SCHEMA = {
   "audience?": str,
   "content": LANG,
 }
-RULE_SCHEMA = {
-  "id": str,
-  "status": str,
-  "scope": str,
-  "authority": list,
-  "title": LANG,
-  "content": LANG,
-}
 # The rule tree's nodes, by kind (docs/design/rule-system.md, Rule file
 # format). The keys every kind has, then those of each kind.
 NODE_SCHEMA = {

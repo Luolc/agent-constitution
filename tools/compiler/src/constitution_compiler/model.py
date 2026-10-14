@@ -2,7 +2,7 @@
 
 Where the sources are, the shapes of their names and IDs, and the records
 they are read into (docs/design/source-formats.md,
-constitution.md and rules.md).
+constitution.md and rule-system.md).
 """
 
 from collections.abc import Iterable, Iterator
@@ -16,7 +16,6 @@ CONSTITUTION = Path("constitution")
 INDEX_FILE = "index.toml"
 ARTICLE_FILE = "article.toml"
 RULES = Path("rules")
-RETIRED = RULES / "retired-ids.txt"
 
 ID = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 # A citation: `{@id}`, `{@section.item}`, each optionally after a namespace.
@@ -38,7 +37,7 @@ INDEX_STATUS = ("draft", "active")
 STATUS = ("draft", "active", "repealed")
 # A node of the rule tree: a rule, a one-of or a domain in the format of
 # docs/design/rule-system.md (Rule file format), named `rules/<id>.toml` by
-# its number. A rule file with a word for a name is in the older format.
+# its number. NODE_NAME is any name of digits, as in a base commit's listing.
 NODE_NAME = re.compile(r"[0-9]+")
 NODE_ID = re.compile(r"[1-9][0-9]*")
 KINDS = ("rule", "one-of", "domain")
@@ -291,27 +290,6 @@ class Section:
 
 
 @dataclass(frozen=True, slots=True)
-class Rule:
-  """One general rule.
-
-  Attributes:
-    doc: its file.
-    id: its ID.
-    status: draft, active or repealed.
-    authority: the constitution provisions it rests on.
-    title: its title, by language.
-    content: its text, by language.
-  """
-
-  doc: Doc
-  id: str
-  status: str
-  authority: list[str]
-  title: Texts
-  content: Texts
-
-
-@dataclass(frozen=True, slots=True)
 class Node:
   """One node of the rule tree: a rule, a one-of or a domain.
 
@@ -379,8 +357,6 @@ class Sources:
     languages: the languages of index.toml, in order.
     articles: the articles, in order.
     sections: the sections, in order.
-    rules: the general rules in the older format.
-    retired: rules/retired-ids.txt, in order.
     nodes: the rules, one-ofs and domains, by number.
   """
 
@@ -389,8 +365,6 @@ class Sources:
   languages: list[str]
   articles: list[Article]
   sections: list[Section]
-  rules: list[Rule]
-  retired: list[str]
   nodes: list[Node]
 
   @property
@@ -450,9 +424,6 @@ class Sources:
         yield Text(
           s.doc, f"{i.id}.content", i.content, False, i.status == "repealed"
         )
-    for r in self.rules:
-      yield Text(r.doc, "title", r.title, True, r.status == "repealed")
-      yield Text(r.doc, "content", r.content, True, r.status == "repealed")
     for n in self.nodes:
       repealed = n.status == "repealed"
       yield Text(n.doc, "title", n.title, True, repealed, n.lang)

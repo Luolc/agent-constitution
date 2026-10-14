@@ -12,8 +12,6 @@ from constitution_compiler.model import (
   ID,
   Node,
   number_key,
-  RETIRED,
-  Rule,
   Sources,
 )
 
@@ -24,8 +22,7 @@ def check_ids(src: Sources, errors: Errors) -> None:
   """Check 2: every ID has the format and is unique where it must be.
 
   Article and section IDs are unique in the constitution, item IDs in
-  their section, rule IDs among the rules and the retired rule IDs. The
-  rule tree's slugs share the scope of the rule IDs of the older format.
+  their section, the rule tree's slugs among the slugs.
 
   Args:
     src: the sources.
@@ -40,10 +37,8 @@ def check_ids(src: Sources, errors: Errors) -> None:
     unique_ids(errors, [(s.doc, i.id) for i in s.items])
   unique_ids(
     errors,
-    [(r.doc, r.id) for r in src.rules]
-    + [(n.doc, n.slug) for n in src.nodes if n.slug is not None],
+    [(n.doc, n.slug) for n in src.nodes if n.slug is not None],
   )
-  check_retired(src, errors)
 
 
 def unique_ids(errors: Errors, declared: list[tuple[Doc, str]]) -> None:
@@ -68,32 +63,6 @@ def unique_ids(errors: Errors, declared: list[tuple[Doc, str]]) -> None:
         doc.path, line, 2, f"{value} is already defined at {seen[value]}"
       )
     seen.setdefault(value, f"{doc.path}:{line}")
-
-
-def check_retired(src: Sources, errors: Errors) -> None:
-  """Check the retired rule IDs and that no rule uses one.
-
-  Args:
-    src: the sources.
-    errors: where errors go.
-  """
-  for n, value in enumerate(src.retired, start=1):
-    if value and not re.fullmatch(ID, value):
-      errors.add(
-        RETIRED,
-        n,
-        2,
-        f"`{value}` is not an ID: lowercase words joined by hyphens",
-      )
-  retired = set(src.retired)
-  for r in src.rules:
-    if r.id in retired:
-      errors.add(
-        r.doc.path,
-        r.doc.line("id ="),
-        2,
-        f"{r.id} is retired in {RETIRED}; choose another ID",
-      )
 
 
 # Check 3: structure.
@@ -268,9 +237,7 @@ def check_refs(src: Sources, errors: Errors) -> None:
     src: the sources.
     errors: where errors go.
   """
-  rules = {r.id: r.status for r in src.rules} | {
-    str(n.id): n.status for n in src.nodes
-  }
+  rules = {str(n.id): n.status for n in src.nodes}
   for t in src.texts():
     if t.repealed:
       continue
@@ -278,9 +245,6 @@ def check_refs(src: Sources, errors: Errors) -> None:
       for ref in citations(text):
         if found := problem(src, rules, ref, t.in_rule):
           errors.add(t.doc.path, t.doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
-  for r in src.rules:
-    if r.status != "repealed":
-      check_authority(src, rules, r, errors)
   for n in src.nodes:
     if n.status != "repealed":
       check_node_authority(src, rules, n, errors)
@@ -293,7 +257,7 @@ def problem(
 
   Args:
     src: the sources.
-    rules: the status of each rule and node, by ID.
+    rules: the status of each node, by ID.
     ref: the citation as written.
     in_rule: whether a rule cites it.
 
@@ -314,30 +278,6 @@ def problem(
   return f"repealed {ref}" if target in src.repealed else ""
 
 
-def check_authority(
-  src: Sources, rules: dict[str, str], rule: Rule, errors: Errors
-) -> None:
-  """Check that each authority of a rule is a resolving constitution citation.
-
-  Args:
-    src: the sources.
-    rules: the status of each rule and node, by ID.
-    rule: the rule.
-    errors: where errors go.
-  """
-  line = rule.doc.line("authority =")
-  for ref in rule.authority:
-    if not ref.startswith("constitution:"):
-      errors.add(
-        rule.doc.path,
-        line,
-        5,
-        f"authority {ref} is not a `constitution:` citation",
-      )
-    elif found := problem(src, rules, ref, True):
-      errors.add(rule.doc.path, line, 5, f"authority cites {found}")
-
-
 def check_node_authority(
   src: Sources, rules: dict[str, str], node: Node, errors: Errors
 ) -> None:
@@ -345,7 +285,7 @@ def check_node_authority(
 
   Args:
     src: the sources.
-    rules: the status of each rule and node, by ID.
+    rules: the status of each node, by ID.
     node: the node.
     errors: where errors go.
   """

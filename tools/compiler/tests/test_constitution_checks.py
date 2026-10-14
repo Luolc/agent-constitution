@@ -16,7 +16,6 @@ from test_constitution_fixture import (
   B,
   BETA,
   BETA_ONE,
-  RULE,
   Tree,
 )
 
@@ -212,7 +211,7 @@ class CheckTest(Tree):
   def test_1_draft_rule_under_active_index(self):
     """A rule may stay draft once the constitution is active; a section not."""
     self.activate()
-    self.edit("rules/rule.toml", 'status = "active"', 'status = "draft"')
+    self.edit("rules/10.toml", 'status = "active"', 'status = "draft"')
     self.assertEqual(self.errors(), [])
     self.edit(f"{B}/01-beta-one.toml", 'status = "active"', 'status = "draft"')
     self.assertFails(
@@ -319,32 +318,14 @@ class CheckTest(Tree):
       'id = "money"\nnumber = "2"',
       'id = "machines"\nnumber = "2"',
     )
-    # The same item ID in another section, and a rule named like a section, are
-    # fine.
+    # The same item ID in another section, and a slug like a section's ID,
+    # are fine.
     self.write(
       f"{B}/02-beta-three.toml",
       ALPHA_ONE.replace('"alpha-one"', '"beta-three"'),
     )
-    self.write("rules/beta-one.toml", RULE.replace('"rule"', '"beta-one"'))
+    self.edit("rules/10.toml", 'slug = "new-rule"', 'slug = "beta-one"')
     self.assertEqual(self.errors(), [])
-
-  def test_1_retired_ids_not_utf8(self):
-    (self.root / "rules/retired-ids.txt").write_bytes(b"old-\xff\n")
-    self.assertFails(1, "rules/retired-ids.txt:1", "not UTF-8")
-
-  def test_2_retired_rule_id(self):
-    self.write("rules/retired-ids.txt", "old-rule\nrule\n")
-    self.assertFails(
-      2,
-      "rules/rule.toml:1",
-      "rule is retired in rules/retired-ids.txt; choose another ID",
-    )
-    self.write("rules/retired-ids.txt", "old-rule\n\nOld_Rule\n")
-    self.assertFails(
-      2,
-      "rules/retired-ids.txt:3",
-      "`Old_Rule` is not an ID: lowercase words joined by hyphens",
-    )
 
   def test_3_duplicate_section_number(self):
     self.move(f"{B}/01a-beta-two.toml", f"{B}/01-beta-two.toml")
@@ -433,7 +414,7 @@ class CheckTest(Tree):
       f"{A}/01-alpha-one.toml:6: check 5: cites repealed beta-one", errors
     )
     self.assertIn(
-      "rules/rule.toml:12: check 5: cites repealed constitution:beta-one",
+      "rules/10.toml:19: check 5: cites repealed constitution:beta-one",
       errors,
     )
 
@@ -449,46 +430,23 @@ class CheckTest(Tree):
       f"{B}/01-beta-one.toml:6: check 5: cites repealed alpha-one.money", errors
     )
     self.assertIn(
-      "rules/rule.toml:4: check 5: authority cites repealed "
-      "constitution:alpha-one.money",
+      "rules/10.toml:8: check 5: authority cites repealed alpha-one.money",
       errors,
     )
 
   def test_5_constitution_cites_with_namespace(self):
-    self.edit(f"{B}/01-beta-one.toml", "{@alpha}", "{@rule:rule}", 2)
+    self.edit(f"{B}/01-beta-one.toml", "{@alpha}", "{@rule:10}", 2)
     self.assertFails(
       5,
       f"{B}/01-beta-one.toml:6",
-      "cites rule:rule; the constitution cites only itself, without a"
-      " namespace",
+      "cites rule:10; the constitution cites only itself, without a namespace",
     )
 
   def test_5_rule_cites_without_namespace(self):
-    self.edit("rules/rule.toml", "{@rule:rule}", "{@rule}", 2)
+    self.edit("rules/10.toml", "{@rule:3}", "{@3}", 2)
+    self.rehash("rules/10.toml")
     self.assertFails(
-      5, "rules/rule.toml:12", "cites rule without `constitution:` or `rule:`"
-    )
-
-  def test_5_rule_cites_undefined_rule(self):
-    self.edit("rules/rule.toml", "{@rule:rule}", "{@rule:alpha}", 2)
-    self.assertFails(5, "rules/rule.toml:12", "cites undefined rule:alpha")
-
-  def test_5_authority(self):
-    self.edit(
-      "rules/rule.toml", '"constitution:alpha-one.money"]', '"alpha-one.money"]'
-    )
-    self.assertFails(
-      5,
-      "rules/rule.toml:4",
-      "authority alpha-one.money is not a `constitution:` citation",
-    )
-    self.edit(
-      "rules/rule.toml", '"alpha-one.money"]', '"constitution:alpha-one.cash"]'
-    )
-    self.assertFails(
-      5,
-      "rules/rule.toml:4",
-      "authority cites undefined constitution:alpha-one.cash",
+      5, "rules/10.toml:19", "cites 3 without `constitution:` or `rule:`"
     )
 
   def test_1_no_edition_directory(self):
