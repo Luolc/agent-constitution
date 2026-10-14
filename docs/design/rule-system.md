@@ -106,17 +106,50 @@ chosen per repository or, as today, per jurisdiction
 
 ## Dependencies, capabilities and packs
 
-- `requires`: enabling rule A requires rule B. A rule that says how to run
-  checks through uv requires the rule that has uv manage the project's
-  dependencies. When a rule set enables A without B, the build either
-  fails or adds B; which of the two is an open question.
-- `provides`: a rule may provide a named capability, such as "Python
-  package manager". Within one rule set, each capability is provided by at
-  most one rule. That is how alternatives exclude each other: a uv rule, a
-  Poetry rule and a Bazel rule all provide the same capability, and a rule
-  set picks one. Rules never list conflicts with each other pairwise.
-- Packs: a named group of rules that is often used together (for example,
-  Python with uv) can be enabled in a rule set as a whole.
+Rules are related in two ways:
+
+- `parent`: every rule has exactly one parent, so the rules form a tree.
+  Below the root are the domains (Python, CI, Git, security and so on),
+  each refined level by level. The tree decides where a rule stands in
+  the compiled text and on the site, which block it is compiled in and
+  which pack it belongs to.
+- `requires`: enabling rule A requires rule B. A rule may require several
+  others, and the requirements form a directed acyclic graph. A rule that
+  says how to run checks through uv requires the rule that has uv manage
+  the project's dependencies.
+
+One parent is not enough on its own because many rules span domains: "in
+CI, run `uv sync --locked` first" depends both on uv and on GitHub
+Actions. It sits under one of them and requires the other.
+
+The build checks these constraints:
+
+- No cycle, in the tree or in the requirements.
+- A rule's parent counts as one of its requirements: enabling a rule
+  requires enabling its parent, and the parent is not written again under
+  `requires`.
+- No redundant requirement: if A requires B and B requires C, A does not
+  also list C.
+- A requirement that crosses to another subtree should name a capability
+  (below), not a particular rule. The number of such requirements has no
+  hard limit; the build warns about them.
+
+When a rule set enables a rule without one it requires, the build either
+fails or adds the missing rule; which of the two is an open question. It
+is a separate matter from the parent counting as a requirement: that only
+spares writing the parent under `requires`, and a missing parent is
+handled like any other missing requirement.
+
+`provides`: a rule may provide a named capability, such as "Python
+package manager". Within one rule set, each capability is provided by at
+most one rule. That is how alternatives exclude each other: a uv rule, a
+Poetry rule and a Bazel rule all provide the same capability, and a rule
+set picks one. Rules never list conflicts with each other pairwise.
+
+Packs: a pack is a subtree, named by its root, and a rule set can enable
+it as a whole. A subtree that holds alternatives, such as Python with both
+a uv rule and a Poetry rule, cannot be enabled whole; how a pack handles
+that is an open question.
 
 ## Tracing rules to the constitution
 
@@ -203,8 +236,10 @@ of this repo itself are meant to come about the same way.
 **Locally**, the compiler takes the constitution (the version for agents)
 and a rule set with its lock file, and writes:
 
-- an `AGENTS.md`, with the chosen rules in one flat file, a section per
-  pack; once its length passes a token threshold, measured with
+- an `AGENTS.md`, with the chosen rules in blocks along the parent tree,
+  one block per subtree; a subtree whose root is not enabled is left out
+  whole, and a requirement that crosses subtrees is rendered as a link.
+  Once the file's length passes a token threshold, measured with
   `count-tokens`, it is split into several files;
 - the skill directories the chosen rules need;
 - the version of the check binary to install, and the external commands
@@ -216,7 +251,8 @@ The constitution's compiler stays in Python for now
 ([Compilation](../design.md#compilation)) and moves into that tool later.
 
 **The public site** lists every rule that is not superseded, so that
-people can choose from the full list. A superseded rule keeps its page, so
+people can choose from the full list. The parent tree is its table of
+contents, and each rule's page shows its requirements. A superseded rule keeps its page, so
 links to it keep working, but it is left out of the lists by default.
 
 ## Why Rust
@@ -245,8 +281,8 @@ implements this design lands.
 - [Rules](../design.md#rules): no rule is deleted any more, so
   `rules/retired-ids.txt` is no longer needed; a rule is superseded or
   repealed instead. `status` gains `trial` and `superseded`, and the
-  fields `supersedes`, a per-rule revision, `requires` and `provides` are
-  added. The verification method is part of each
+  fields `supersedes`, a per-rule revision, `parent`, `requires` and
+  `provides` are added. The verification method is part of each
   rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](../design.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
@@ -262,19 +298,23 @@ implements this design lands.
 - [Skills](../design.md#skills): a skill declares the rules it implements
   and is installed only when one of them is chosen.
 - [Compilation](../design.md#compilation): the output gains skill
-  directories, checks and hook configuration, and the rules are grouped by
-  pack, not by the article of their first `authority`.
+  directories, checks and hook configuration, and the rules are grouped
+  along the parent tree, not by the article of their first `authority`.
 - [Checkers](../design.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of the
   repo's sources stay.
 
 ## Open questions
 
-- Flat or layered output: at what token count the compiled `AGENTS.md` is
-  split into several files, and how.
+- At what token count the compiled `AGENTS.md` is split into several
+  files, and along which subtrees.
 - How a rule's source is written in an ID, for example `ac:42` for a rule
   of this repo and `myteam:7` for one of a downstream team.
 - The format of the lock file.
+- Whether a domain at the top of the tree is a rule of its own or only a
+  heading.
+- How a pack whose subtree holds alternatives for one capability is
+  enabled: whether it names a default, or the rule set must pick one.
 - Whether a rule set is chosen per repository or per jurisdiction, and by
   whom.
 - When a rule set enables a rule without one it `requires`, whether the
