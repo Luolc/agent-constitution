@@ -43,8 +43,8 @@ status = "draft"
 
 [items.content]
 en = '''
-An agent's review verdict is not that approval; a relayed approval counts only as {@explicit-yes} says.
+An agent's review verdict is not that approval; a relayed approval counts only as {@explicit-yes.relayed} says.
 '''
 zh = '''
-agent 的审查结论不算这种批准；转告的批准，只在{@explicit-yes}规定的情形下才有效。
+agent 的审查结论不算这种批准；转告的批准，只在{@explicit-yes.relayed}规定的情形下才有效。
 '''

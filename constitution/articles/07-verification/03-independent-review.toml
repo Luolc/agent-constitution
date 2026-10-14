@@ -3,8 +3,34 @@ status = "draft"
 
 [content]
 en = '''
-Before an author puts a change into effect, another party must review it against this constitution, the lower-ranking provisions that apply and the rules. The other party may be an agent other than the author, or a competent principal. The author must not approve their own change. What takes effect must be exactly the version that was reviewed.
+Changes are reviewed and put into effect as follows:
 '''
 zh = '''
-作者要让一项变更生效，必须先由另一方对照本宪法、适用的下位法和规定加以审查。另一方可以是作者以外的 agent，也可以是有权委托人。作者不得自己批准自己的变更。生效的必须正是审查过的那个版本。
+变更依照下列规定审查和生效：
+'''
+
+[[items]]
+id = "another-party"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Before an author puts a change into effect, another party must review it against this constitution, the lower-ranking provisions that apply and the rules. The other party may be an agent other than the author, or a competent principal. The author must not approve their own change.
+'''
+zh = '''
+作者要让一项变更生效，必须先由另一方对照本宪法、适用的下位法和规定加以审查。另一方可以是作者以外的 agent，也可以是有权委托人。作者不得自己批准自己的变更。
+'''
+
+[[items]]
+id = "reviewed-version"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+What takes effect must be exactly the version that was reviewed.
+'''
+zh = '''
+生效的必须正是审查过的那个版本。
 '''
