@@ -61,6 +61,7 @@ PAGES = {
     "agent_file": "agent.md",
     "home": "/",
     "revision": "Revision",
+    "draft": "(draft)",
     "length": "{chars:,} characters · {words:,} words",
     "tokens": "{tokens:,} tokens",
     "no_tokens": "tokens not counted",
@@ -95,6 +96,7 @@ PAGES = {
     "agent_file": "agent.zh.md",
     "home": "/zh/",
     "revision": "修订号",
+    "draft": "(草案)",
     "length": "{chars:,} 字符",
     "tokens": "{tokens:,} token",
     "no_tokens": "token 数未计算",
@@ -310,6 +312,7 @@ def page(
   commit: str | None,
   tokens: int | None,
   agent_tokens: int | None,
+  draft: bool = False,
 ) -> str:
   """Return the Hugo page of one built constitution.
 
@@ -328,6 +331,7 @@ def page(
     commit: The abbreviated commit of the build, or None.
     tokens: The tokens of the full version, or None when not counted.
     agent_tokens: The tokens of the version for agents, or None.
+    draft: Whether the constitution is a draft, marked at the revision.
 
   Returns:
     The page, front matter included.
@@ -381,7 +385,7 @@ def page(
     f"{labels['agent_link']}</a>"
   )
   items = [
-    f'<li class="number">{labels["revision"]} {revision}</li>',
+    revision_item(labels, revision, draft),
     f'<li class="length">{agent_length}<span class="count-info">'
     '<button type="button" class="count-button" aria-expanded="false"'
     ' aria-controls="count-popup"'
@@ -412,8 +416,26 @@ def page(
   )
 
 
+def revision_item(labels: dict[str, str], revision: str, draft: bool) -> str:
+  """Return the list item of the revision, marked while a draft.
+
+  Args:
+    labels: The labels of the page's language.
+    revision: The revision of the constitution.
+    draft: Whether the constitution is a draft.
+
+  Returns:
+    The item.
+  """
+  mark = f" {labels['draft']}" if draft else ""
+  return f'<li class="number">{labels["revision"]} {revision}{mark}</li>'
+
+
 def agent_page(
-  agent_markdown: str, labels: dict[str, str], revision: str
+  agent_markdown: str,
+  labels: dict[str, str],
+  revision: str,
+  draft: bool = False,
 ) -> str:
   """Return the Hugo page of the version for agents.
 
@@ -426,6 +448,7 @@ def agent_page(
     agent_markdown: The version for agents.
     labels: The labels of the page's language.
     revision: The revision of the constitution.
+    draft: Whether the constitution is a draft, marked at the revision.
 
   Returns:
     The page, front matter included.
@@ -433,8 +456,8 @@ def agent_page(
   title, rest = split(agent_markdown)
   revision_list = (
     '<ul class="revision">'
-    f'<li class="number">{labels["revision"]} {revision}</li>'
-    f'<li class="back"><a href="{labels["home"]}">{labels["back"]}</a></li>'
+    + revision_item(labels, revision, draft)
+    + f'<li class="back"><a href="{labels["home"]}">{labels["back"]}</a></li>'
     "</ul>"
   )
   rest = [line + NO_ANCHOR if line.startswith("#") else line for line in rest]
@@ -495,9 +518,10 @@ def main(argv: list[str] | None = None) -> int:
     " (the token-count workflow)",
   )
   args = parser.parse_args(argv)
-  revision = tomllib.loads(
+  index = tomllib.loads(
     (ROOT / "constitution/index.toml").read_text(encoding="utf-8")
-  )["revision"]
+  )
+  revision, draft = index["revision"], index["status"] == "draft"
   auth = credential(os.environ)
   if not auth:
     print(
@@ -532,11 +556,18 @@ def main(argv: list[str] | None = None) -> int:
         pages[".agent"],
       )
       text = page(
-        markdown, agent_markdown, labels, revision, commit, tokens, agent_tokens
+        markdown,
+        agent_markdown,
+        labels,
+        revision,
+        commit,
+        tokens,
+        agent_tokens,
+        draft,
       )
       (Path(content) / labels["file"]).write_text(text, encoding="utf-8")
       (Path(content) / labels["agent_file"]).write_text(
-        agent_page(agent_markdown, labels, revision), encoding="utf-8"
+        agent_page(agent_markdown, labels, revision, draft), encoding="utf-8"
       )
     build = subprocess.run(
       [
