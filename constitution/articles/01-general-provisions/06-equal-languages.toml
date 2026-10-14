@@ -4,8 +4,47 @@ audience = "maintainers"
 
 [content]
 en = '''
-This constitution currently has English and Chinese texts, and the texts in all languages are equally authoritative. Adding or removing a language is an amendment to this constitution. Where the texts differ in meaning, the provision is undetermined ({@undetermined}) until they agree again; no text prevails. A note on how a word is translated or used in one language only, such as why a word is left untranslated, is written in that language's text alone and is no difference in meaning between the texts.
+This constitution currently has English and Chinese texts:
 '''
 zh = '''
-本宪法目前有中文本和英文本，各语言文本同等有效。增加或者删除一种语言，是对本宪法的修改。各语言文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为何不译，只写在该语言的文本里，不算各语言文本意思不一致。
+本宪法目前有中文本和英文本：
+'''
+
+[[items]]
+id = "standing"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+The texts in all languages are equally authoritative.
+'''
+zh = '''
+各语言文本同等有效。
+'''
+
+[[items]]
+id = "language-changes"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Adding or removing a language is an amendment to this constitution.
+'''
+zh = '''
+增加或者删除一种语言，是对本宪法的修改。
+'''
+
+[[items]]
+id = "differences"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+Where the texts differ in meaning, the provision is undetermined ({@undetermined}) until they agree again; no text prevails. A note on how a word is translated or used in one language only, such as why a word is left untranslated, is written in that language's text alone and is no difference in meaning between the texts.
+'''
+zh = '''
+各语言文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为何不译，只写在该语言的文本里，不算各语言文本意思不一致。
 '''

@@ -4,8 +4,73 @@ audience = "maintainers"
 
 [content]
 en = '''
-In the edition in force ({@editions.in-force}), the numbers of articles, sections and items never change and are never reused. A new provision goes at the end of its article or section; one inserted between two others takes a letter suffix (2a). An amended provision keeps its number. A repealed provision keeps its number, with a one-line note in place of its text. In the draft, a new provision takes the next number in order, and the provisions after it are renumbered.
+Numbering follows these rules:
 '''
 zh = '''
-现行版 ({@editions.in-force}) 中，条、款、项的编号永不更改，也不重复使用。新增的条文放在所在条或款的末尾；插入中间的，用「之一」这样的编号 (如第二款之一)。修改过的条文保留原来的编号。废止的条文保留编号，原文替换为一行说明。草案中新增的条文按顺序编号，其后的条文依次重新编号。
+编号依照下列规定：
+'''
+
+[[items]]
+id = "fixed"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+In the edition in force ({@editions.in-force}), the numbers of articles, sections and items never change and are never reused.
+'''
+zh = '''
+现行版 ({@editions.in-force}) 中，条、款、项的编号永不更改，也不重复使用。
+'''
+
+[[items]]
+id = "additions"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+A new provision goes at the end of its article or section; one inserted between two others takes a letter suffix (2a).
+'''
+zh = '''
+新增的条文放在所在条或款的末尾；插入中间的，用「之一」这样的编号 (如第二款之一)。
+'''
+
+[[items]]
+id = "amended"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+An amended provision keeps its number.
+'''
+zh = '''
+修改过的条文保留原来的编号。
+'''
+
+[[items]]
+id = "repealed"
+number = "4"
+status = "draft"
+
+[items.content]
+en = '''
+A repealed provision keeps its number, with a one-line note in place of its text.
+'''
+zh = '''
+废止的条文保留编号，原文替换为一行说明。
+'''
+
+[[items]]
+id = "draft"
+number = "5"
+status = "draft"
+
+[items.content]
+en = '''
+In the draft, a new provision takes the next number in order, and the provisions after it are renumbered.
+'''
+zh = '''
+草案中新增的条文按顺序编号，其后的条文依次重新编号。
 '''
