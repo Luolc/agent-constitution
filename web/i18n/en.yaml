@@ -4,6 +4,8 @@ theme-light: "Theme: light"
 theme-dark: "Theme: dark"
 source-link: "Source code"
 toc-heading: "On this page"
+# An edition in the sidebar, under the constitution (content/_content.gotmpl).
+edition: "{{ .edition }} Edition"
 # The lines under the title and the popup on the counts
 # (layouts/home.html, layouts/page.html).
 revision: "Revision"
