@@ -48,8 +48,12 @@ enum Command {
     },
     /// Write a new statute.toml (not implemented yet).
     Init,
-    /// Write the compiled output (not implemented yet).
-    Compile,
+    /// Write AGENTS.md from the constitution and the locked rule set.
+    Compile {
+        /// Write here instead of AGENTS.md next to statute.toml.
+        #[arg(long)]
+        output: Option<std::path::PathBuf>,
+    },
     /// Run the checks of the enabled rules (not implemented yet).
     Check,
     /// Move the sources and the constitution to newer versions (not
@@ -70,7 +74,8 @@ fn main() -> ExitCode {
         Command::Explain { rule } => explain(root, &rule),
         Command::Add { rule, pack } => edit(root, &rule, pack, true),
         Command::Remove { rule, pack } => edit(root, &rule, pack, false),
-        Command::Init | Command::Compile | Command::Check | Command::Upgrade => {
+        Command::Compile { output } => compile(root, output.as_deref()),
+        Command::Init | Command::Check | Command::Upgrade => {
             eprintln!("statute: this command is not implemented yet");
             return ExitCode::from(NOT_IMPLEMENTED);
         }
@@ -100,6 +105,28 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
         eprintln!("{}: error: cannot write: {e}", lock::FILE);
     })?;
     print_locked(project);
+    Ok(())
+}
+
+fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
+    let project = load(root)?;
+    let text = statute::compile::compile(&project).map_err(|e| {
+        eprintln!("statute: error: {e}");
+    })?;
+    let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
+    if let Ok(existing) = std::fs::read(&path)
+        && !existing.starts_with(format!("{}\n", statute::compile::GENERATED).as_bytes())
+    {
+        eprintln!(
+            "{}: error: not written by statute, so it is left as it is; write elsewhere with --output, or move the file away first",
+            path.display()
+        );
+        return Err(());
+    }
+    std::fs::write(&path, text).map_err(|e| {
+        eprintln!("{}: error: cannot write: {e}", path.display());
+    })?;
+    println!("wrote {}", path.display());
     Ok(())
 }
 

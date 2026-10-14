@@ -184,7 +184,7 @@ fn is_slug(s: &str) -> bool {
 }
 
 /// A language code such as `en`, `zh` or `zh-Hant`.
-fn is_lang(s: &str) -> bool {
+pub fn is_lang(s: &str) -> bool {
     let mut parts = s.split('-');
     let first = parts.next().unwrap_or("");
     (2..=3).contains(&first.len())
