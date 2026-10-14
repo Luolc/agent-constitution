@@ -40,8 +40,7 @@ authority an agent acts on, delegation, verification, how rules rank and
 change, and how the constitution itself is amended. It names no command
 or tool, so it stays stable while the rules below it change.
 
-It is written in English and Chinese, and each language comes in two
-versions: the full text, and a shorter one for agents that leaves out
+It comes as the full text and a shorter version for agents, without
 what only people need. Read it on the
 **[website](https://agent-constitution.luolc.com/)**, or in the repo
 under [`constitution/2026-10/generated/`](constitution/2026-10/generated/).
@@ -51,15 +50,14 @@ and amended is in [The constitution](docs/design/constitution.md).
 
 ## Rules
 
-Each rule is one file, [`rules/<id>.toml`](rules/), in English with a
-Chinese translation. Its ID is a number, never reused; its text is a
-statement, a reason and a verification, short enough to be checked. Rules
-hang under domains such as security, collaboration, verification and
-documentation, and each one cites the provisions of the constitution it
-refines. A rule starts as `trial`, and so does a
-convention that agents write down when they find a gap no rule covers;
-it becomes `active` once it has held up in real work. A rule is never
-deleted: it is superseded or repealed.
+Each rule is one file, [`rules/<id>.toml`](rules/). Its ID is a number,
+never reused; its text is a statement, a reason and a verification,
+short enough to be checked. Rules hang under domains such as security,
+collaboration, verification and documentation, and each one cites the
+provisions of the constitution it refines. A rule starts as `trial`, and
+so does a convention that agents write down when they find a gap no rule
+covers; it becomes `active` once it has held up in real work. A rule is
+never deleted: it is superseded or repealed.
 
 The format, the rule tree, packs and the review loop are in
 [Rule system](docs/design/rule-system.md).
@@ -87,14 +85,11 @@ statute check         # list the enabled rules for review
 ```
 
 Most rules cannot be decided by a script, so the work is reviewed rule
-by rule. The reviewer runs `statute check` to get the list, grouped by domain:
-one line per enabled rule, `review` for a rule no script can decide,
-which is most of them, and `pass`, `violation` or `inconclusive` for the
-few a script checks; each rule that is for review or inconclusive is
-followed by its reason and verification. The reviewer goes through the
-list domain by domain and rule by rule. `statute check` exits with
-status 1 on a violation. It may run in CI as well, but not as a commit
-hook: a check may be slow.
+by rule: the reviewer runs `statute check` to get the enabled rules by
+domain, marked `review` when no script can decide them, and goes through
+them one by one. A rule with a script check shows `pass`, `violation` or
+`inconclusive`, and `statute check` exits with status 1 on a violation. It
+may run in CI, but not as a commit hook: a check may be slow.
 `statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in
 [The command and the first version](docs/design/statute-command.md#the-command-and-the-first-version).
