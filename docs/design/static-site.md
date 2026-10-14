@@ -132,26 +132,39 @@ site-rules`, `uv run count-tokens` (the token count, below),
   section or article, a section and its article) counts only the
   narrower one, so a rule is listed under the most specific provisions it
   names, and its page lists only those; `constitution-build` warns of
-  such a pair ([Checkers](checkers.md#checkers), check 5). A superseded rule has a page but is in no
-  list, not under a provision either. The content adapter
+  such a pair ([Checkers](checkers.md#checkers), check 5). A
+  superseded rule has a page and is in the list, but not under a
+  provision. The content adapter
   `web/content/rules/_content.gotmpl` makes the list, `rules/`, and a
   page for each node, `rules/<id>/`: the ID, not the `slug`, since the ID
   never changes. The list (`web/layouts/rules/section.html`) shows the
-  rules along the tree, 100 a page unless the reader chooses 25, 50 or
-  all of them in the menu above it, each rule's statement only, as plain
-  text cut to three lines by the style sheet, after its label and linked
-  to its page; a rule under another rule is indented under it. Domains
-  and one-ofs are not listed but head the rules below them, and again at
-  the top of each page. Hugo builds pages of `params.rulesPerPage` rules
-  (`web/hugo.toml`), 100; each holds every rule, those of the other pages
-  hidden, and each rule after the first carries its groups' headings once
-  more, shown only when it starts a page. `web/assets/rules-list.js`,
-  inlined in `<head>`, takes the size and the page from the address
-  (`?per=50&page=2`), where the menu puts them, shows that page's rules
-  and headings, and makes the links to the pages and the table of
-  contents again; without scripts the menu is hidden and Hugo's pages
-  stay. The table of contents at the right lists the headings of the
-  domains and one-ofs on the page, a one-of's under its domain's. A
+  rules along the tree, each rule's statement only, as plain text cut to
+  three lines by the style sheet, after its label and linked to its
+  page, a superseded or repealed rule's status after it; a rule under
+  another rule is indented under it. Domains and one-ofs are not listed
+  but head the rules below them, a level deeper for each domain or
+  one-of above them (the templates allow a domain under another, which
+  the rule files do not yet), where the group
+  changes and again at the top of each page. Above the list, a filter
+  folds open a checkbox for each status and each domain, applied with its
+  button; a rule is shown when its status and its nearest domain are
+  checked, and checking or unchecking a domain does the same to the
+  domains under it. By default the filter checks the statuses of
+  `params.rulesStatuses` in `web/hugo.toml` and every domain; superseded
+  and repealed rules are in the list but not checked. While every rule is
+  a draft, the default checks draft too, besides active and trial; it
+  leaves once rules reach trial. Beside the filter, a menu sets the page
+  size: 100 by default, `params.rulesPerPage`, or 25, 50 or all; the
+  rules are filtered first and then split into pages. Hugo builds the
+  pages of the default filter; each holds every rule, each rule with all
+  its group headings, those not shown hidden.
+  `web/assets/rules-list.js`, inlined in `<head>`, takes the filter, the
+  size and the page from the address, where the form puts them
+  (`?filter=1&status=draft&domain=14&per=50&page=2`), shows that page's
+  rules and headings, and makes the links to the pages and the table of contents again; without
+  scripts the form is hidden and Hugo's pages stay. The table of
+  contents at the right lists the headings on the page, each indented by
+  its level. A
   rule's page (`web/layouts/rules/page.html`) gives its label and title,
   for a superseded rule the rules that supersede it, its statement,
   reason and verification, the provisions it cites (`authority`), linked

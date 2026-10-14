@@ -479,6 +479,17 @@ class AuthorityOverlapTest(Tree):
       ],
     )
 
+  def test_superseded_rule_does_not_warn(self):
+    """Rule 11 names the same pair as rule 10 but is superseded."""
+    self.write("rules/11.toml", SupersededTest.SUPERSEDED)
+    self.activate()
+    self.edit(
+      "rules/11.toml",
+      'status = "draft"',
+      'status = "superseded"\nsuperseded-by = 10',
+    )
+    self.assertEqual(self.run_main(), (0, [self.WARNING]))
+
   def test_provisions_apart_do_not_warn(self):
     self.edit("rules/10.toml", '"alpha",', '"beta",')
     self.assertEqual(self.run_main(), (0, []))

@@ -5,12 +5,13 @@ and the lists under the provisions of the constitution
 (docs/design/static-site.md, Rules). For each language of index.toml it
 holds every node of the rule tree in the order of the parent tree, each
 with its texts in that language where it has a translation that follows
-its original, else in the original; the citations in the texts as Markdown
+its original, else in the original, the domains and one-ofs above it
+with their kinds; the citations in the texts as Markdown
 links, relative to the rule's page; the other side of each conflict; and,
 for each provision of the constitution, the rules whose `authority` names
 it, and for each article, the rules that name it or a provision under it.
 An `authority` that names a provision and one above it counts only the
-narrower one. A superseded rule has a page but is in no list.
+narrower one. A superseded rule is not listed under the provisions.
 
 Errors print as `path:line: check 1: message`, as constitution-build
 prints them; the exit status is 1 when the sources cannot be read.
@@ -68,13 +69,16 @@ def specific(authority: list[str], src: Sources) -> list[str]:
 
 
 def listed(node: Node) -> bool:
-  """Tell whether the lists show the node: a rule that is not superseded.
+  """Tell whether the node is listed under the provisions it cites.
+
+  A rule that is not superseded is; the list of the rules shows every
+  rule, and its filter chooses the statuses.
 
   Args:
     node: the node.
 
   Returns:
-    True when the lists show it.
+    True when it is listed under them.
   """
   return node.kind == "rule" and node.status != "superseded"
 
@@ -208,7 +212,7 @@ class _Language:
     while ancestor is not None:
       parent = self.nodes[ancestor]
       if parent.kind != "rule":
-        groups.insert(0, self.ref(parent.id))
+        groups.insert(0, self.ref(parent.id) | {"kind": parent.kind})
       ancestor = parent.parent
     return {
       "id": node.id,
@@ -221,7 +225,6 @@ class _Language:
       "translations": sorted(
         lang for lang, sha in node.translations.items() if sha == node.original
       ),
-      "listed": listed(node),
       "depth": depth,
       "groups": groups,
       "title": node.title[shown],

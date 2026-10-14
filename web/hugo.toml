@@ -126,6 +126,10 @@ enableRobotsTXT = false
   # it starts at (layouts/rules/section.html), fixed in
   # docs/design/static-site.md.
   rulesPerPage = 100
+  # The statuses the filter of the list checks by default. Draft is in it
+  # for now, while every rule is a draft; it leaves once rules reach
+  # trial.
+  rulesStatuses = ["active", "trial", "draft"]
   # Linked in the sidebar, under the site's title.
   SourceRepo = "https://github.com/Luolc/agent-constitution"
   # The asterisk after a provision the version for agents leaves out, as

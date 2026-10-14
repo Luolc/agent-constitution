@@ -13,6 +13,7 @@ template tests need hugo-0.167.0 and are skipped without it, except in
 CI.
 """
 
+from collections.abc import Callable
 import hashlib
 import html
 import json
@@ -81,11 +82,26 @@ INDEX = (
 )
 
 
-# A group heading of the list of the rules: its level, whether it repeats
-# its group for a rule that may start a page, the group and its id.
+# A group heading of the list of the rules: its level, its group, and its
+# id when shown, else `hidden`.
 HEADING = re.compile(
-  r'<h(\d) class="rules-group( repeat)?" data-group="(\d+)"( id="[^"]*")?>'
+  r'<h(\d) class="rules-group" data-group="(\d+)"( id="[^"]*"| hidden)>'
 )
+
+
+def subdomain(data: dict) -> None:
+  """Make the one-of 2 of site_fixture a domain under the domain 1.
+
+  Args:
+    data: The data of the rules, as site-rules writes it.
+  """
+  for lang in data.values():
+    for node in lang["nodes"]:
+      if node["id"] == 2:
+        node["kind"] = "domain"
+      for group in node["groups"]:
+        if group["id"] == 2:
+          group["kind"] = "domain"
 
 
 def visible(page: str) -> str:
@@ -117,6 +133,7 @@ class SiteTest(unittest.TestCase):
     design: dict[str, str] = DESIGN,
     rules: bool = True,
     per_page: int | None = None,
+    edit_rules: Callable[[dict], None] | None = None,
   ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
@@ -128,6 +145,8 @@ class SiteTest(unittest.TestCase):
       rules: Whether to write web/data/rules.json, from the rules of
         site_fixture.
       per_page: The rules a page of their list shows, if not the site's.
+      edit_rules: Changes the data of the rules in place before Hugo
+        reads it, for a tree the sources cannot yet hold.
 
     Returns:
       The visible text of every page, or its HTML, by path.
@@ -161,6 +180,10 @@ class SiteTest(unittest.TestCase):
         out = root / "web/data/rules.json"
         args = ["--root", str(checkout), "--out", str(out)]
         self.assertEqual(site_rules.main(args), 0)
+        if edit_rules:
+          data = json.loads(out.read_text(encoding="utf-8"))
+          edit_rules(data)
+          out.write_text(json.dumps(data), encoding="utf-8")
       env = dict(os.environ)
       if per_page:
         env["HUGO_PARAMS_RULESPERPAGE"] = str(per_page)
@@ -328,41 +351,68 @@ class SiteTest(unittest.TestCase):
         )
 
   def test_rules_list(self):
-    """The list shows the rules not superseded, under their groups."""
+    """The list holds every rule and shows those of the default filter."""
     raw = self.build(raw=True)
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "Superseded rules are not listed. Rules per page 25 50 100 All Group 1"
-      " Group 2 R3 See Art. I §1 and rule 6.",
+      "The filter above the list chooses the statuses and domains shown."
+      " Filter Status Active Trial Draft Superseded Repealed Domains Group 1"
+      " Apply Rules per page 25 50 100 All Group 1 Group 2 R3 See Art. I §1"
+      " and rule 6.",
       pages["rules/index.html"],
     )
     entries = re.findall(r'class="rule-entry" href="([^"]+)"', page)
-    self.assertEqual(entries, ["../rules/3/", "../rules/5/", "../rules/6/"])
+    self.assertEqual(
+      entries, ["../rules/3/", "../rules/4/", "../rules/5/", "../rules/6/"]
+    )
+    # The superseded rule 4 is there, with its status, but filtered out.
+    self.assertIn(
+      '<div class="rule-item" data-status="superseded" data-domain="1" hidden>',
+      page,
+    )
+    self.assertIn('<span class="rule-status">Superseded</span>', page)
+    self.assertEqual(page.count('class="rule-item" data-status="active"'), 3)
+    self.assertEqual(page.count('data-status="active" data-domain="1">'), 3)
+    for status, checked in (
+      ("active", " checked"),
+      ("trial", " checked"),
+      ("draft", " checked"),
+      ("superseded", ""),
+      ("repealed", ""),
+    ):
+      self.assertIn(
+        f'<input type="checkbox" name="status" value="{status}"{checked}>',
+        page,
+      )
+    self.assertIn(
+      '<input type="checkbox" name="domain" value="1" checked>', page
+    )
     self.assertIn(
       "组 1 组 2 R3 见第一条第一款和规定 6。", pages["zh/rules/index.html"]
     )
     self.assertIn('style="--indent: 1"><span class="rule-id">R6', page)
-    # Each rule after the first repeats its group, hidden and without an id
-    # unless it starts a page; all three are on the one page.
+    # A heading shows where its group changes from the rule shown before.
     self.assertEqual(
       HEADING.findall(page),
       [
-        ("2", "", "1", ' id="group-1"'),
-        ("3", "", "2", ' id="group-2"'),
-        ("2", " repeat", "1", ""),
-        ("2", " repeat", "1", ""),
+        ("2", "1", ' id="group-1"'),
+        ("3", "2", ' id="group-2"'),
+        ("2", "1", " hidden"),
+        ("2", "1", " hidden"),
+        ("2", "1", " hidden"),
       ],
     )
-    self.assertEqual(page.count('<div class="rule-item">'), 2)
-    self.assertIn('<div class="rule-item first">', page)
     self.assertIn(
-      '<form class="rules-size" action="../rules/" method="get" hidden>', page
+      '<form class="rules-controls" action="../rules/" method="get" hidden>',
+      page,
     )
     self.assertIn('<option value="100" selected>', page)
+    self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
-      '<nav id="TableOfContents"><ul>\n<li><a href="#group-1">Group 1</a></li>'
-      '\n<li class="toc-sub"><a href="#group-2">Group 2</a></li>\n</ul></nav>',
+      '<nav id="TableOfContents"><ul>\n<li style="--level: 0"><a'
+      ' href="#group-1">Group 1</a></li>\n<li style="--level: 1"><a'
+      ' href="#group-2">Group 2</a></li>\n</ul></nav>',
       page,
     )
     self.assertIn(
@@ -373,35 +423,56 @@ class SiteTest(unittest.TestCase):
   def test_rules_list_pages(self):
     """Every page holds every rule, those of other pages hidden.
 
-    Each page of the list heads its first rule with the rule's groups, and
-    its table of contents lists those shown.
+    The pages split the rules of the default filter; each heads its first
+    rule with the rule's groups, and its table of contents lists those
+    shown.
     """
     raw = self.build(raw=True, per_page=2)
     one, two = raw["rules/index.html"], raw["rules/page/2/index.html"]
     for page in (one, two):
       self.assertEqual(
         re.findall(r'class="rule-entry" href="[^"]*/(\d)/"', page),
-        ["3", "5", "6"],
+        ["3", "4", "5", "6"],
       )
     self.assertIn('data-size="2" data-first="0"', one)
     self.assertIn('data-size="2" data-first="2"', two)
-    self.assertEqual(one.count('<div class="rule-item" hidden>'), 1)
-    self.assertEqual(two.count('<div class="rule-item" hidden>'), 2)
-    self.assertIn('<div class="rule-item first">', two)
-    # On page 2, rule 6's repeated group is the one shown, with the id.
+    self.assertEqual(
+      re.findall(r'data-domain="1"( hidden)?>', one),
+      ["", " hidden", "", " hidden"],
+    )
+    self.assertEqual(
+      re.findall(r'data-domain="1"( hidden)?>', two),
+      [" hidden", " hidden", " hidden", ""],
+    )
     self.assertEqual(
       HEADING.findall(two),
       [
-        ("2", "", "1", ""),
-        ("3", "", "2", ""),
-        ("2", " repeat", "1", ""),
-        ("2", " repeat", "1", ' id="group-1"'),
+        ("2", "1", " hidden"),
+        ("3", "2", " hidden"),
+        ("2", "1", " hidden"),
+        ("2", "1", " hidden"),
+        ("2", "1", ' id="group-1"'),
       ],
     )
-    self.assertIn('<li><a href="#group-1">Group 1</a></li>\n</ul>', two)
+    self.assertIn(
+      '<li style="--level: 0"><a href="#group-1">Group 1</a></li>\n</ul>', two
+    )
     self.assertNotIn("#group-2", two)
     self.assertIn('<a href="../rules/page/2/">2</a>', one)
     self.assertIn('<a aria-current="page">2</a>', two)
+
+  def test_rules_list_subdomain(self):
+    """A domain under a domain: a deeper heading and a nested checkbox."""
+    page = self.build(raw=True, edit_rules=subdomain)["rules/index.html"]
+    self.assertIn(
+      '<label style="--indent: 1"><input type="checkbox" name="domain"'
+      ' value="2" data-parent="1" checked> Group 2</label>',
+      page,
+    )
+    self.assertIn('data-status="active" data-domain="2">', page)
+    self.assertEqual(page.count('data-domain="1">'), 2)
+    self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
+    self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
 
   def test_rule_pages(self):
     """Every node has a page; a superseded rule's names its successors."""

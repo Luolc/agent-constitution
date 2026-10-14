@@ -304,7 +304,8 @@ def authority_overlaps(src: Sources) -> list[str]:
   """Warn of each node whose `authority` names a provision and one above it.
 
   The narrower provision says where the node belongs; the wider one adds
-  nothing. Not an error: the build goes on.
+  nothing. Not an error: the build goes on. A superseded or repealed
+  node is not in force and is left alone.
 
   Args:
     src: the sources.
@@ -314,7 +315,7 @@ def authority_overlaps(src: Sources) -> list[str]:
   """
   warnings = []
   for n in src.nodes:
-    if n.status == "repealed":
+    if n.status in ("superseded", "repealed"):
       continue
     for ref in n.authority:
       for above in src.ancestors.get(ref, ()):

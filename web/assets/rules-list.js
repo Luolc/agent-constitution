@@ -1,45 +1,75 @@
-// The list of the rules (layouts/rules/section.html) at the page size the
-// reader chose: 25, 50, 100 or all, from `?per=` in the address, and the
-// page from `?page=`; without them, the page Hugo built. Every page holds
-// every rule, so this only shows the rules of the page and hides the
-// others, gives the shown group headings their ids, and makes the table
-// of contents and the links to the other pages again. Choosing a size in
-// the form loads its first page. Inlined in <head>; it runs before
-// assets/toc-current.js, which then finds the headings shown.
+// The list of the rules (layouts/rules/section.html) with the filter and
+// the page size the reader chose, read from the address: `filter` once the
+// form was sent, with the checked `status` and `domain` values, `per` (25,
+// 50, 100 or all) and `page`. Without them, the default filter, as the
+// form's checkboxes were built, and the page Hugo built. Every page holds
+// every rule, so this only shows the rules of the filter and page, and
+// hides the others; shows the group headings where the group changes and
+// on top of the page, with their ids; and makes the table of contents and
+// the links to the other pages again. Sending the form loads the first
+// page of its choice: the page size sends it at once, the filter with its
+// button. Checking or unchecking a domain does the same to the domains
+// under it. Inlined in <head>; it runs before assets/toc-current.js, which
+// then finds the headings shown.
 (function () {
   var SIZES = ["25", "50", "100", "all"];
   document.addEventListener("DOMContentLoaded", function () {
     var list = document.querySelector(".rules-list");
-    var form = document.querySelector(".rules-size");
+    var form = document.querySelector(".rules-controls");
     if (!list || !form) return;
-    var items = list.querySelectorAll(".rule-item");
     var query = new URLSearchParams(location.search);
+    var boxes = function (name) {
+      return Array.prototype.slice.call(form.querySelectorAll("input[name='" + name + "']"));
+    };
+    if (query.has("filter")) {
+      ["status", "domain"].forEach(function (name) {
+        var checked = query.getAll(name);
+        boxes(name).forEach(function (box) { box.checked = checked.indexOf(box.value) >= 0; });
+      });
+    }
+    var checked = function (name) {
+      return boxes(name).filter(function (box) { return box.checked; }).map(function (box) { return box.value; });
+    };
+    var statuses = checked("status"), domains = checked("domain");
+    var matched = Array.prototype.filter.call(list.querySelectorAll(".rule-item"), function (item) {
+      return statuses.indexOf(item.dataset.status) >= 0 && domains.indexOf(item.dataset.domain) >= 0;
+    });
+
     var per = query.get("per");
     if (SIZES.indexOf(per) < 0) per = list.dataset.size;
-    var size = per === "all" ? Math.max(items.length, 1) : Number(per);
-    var pages = Math.max(1, Math.ceil(items.length / size));
+    var size = per === "all" ? Math.max(matched.length, 1) : Number(per);
+    var pages = Math.max(1, Math.ceil(matched.length / size));
     var page = query.has("page")
       ? Number(query.get("page"))
       : Math.floor(Number(list.dataset.first) / size) + 1;
     page = Math.min(Math.max(Math.floor(page) || 1, 1), pages);
-    var first = (page - 1) * size;
+    var shown = matched.slice((page - 1) * size, page * size);
 
-    items.forEach(function (item, i) {
-      item.hidden = i < first || i >= first + size;
-      item.classList.toggle("first", i === first);
-      item.querySelectorAll(".rules-group").forEach(function (heading) {
-        var shown = !item.hidden && (i === first || !heading.classList.contains("repeat"));
-        if (shown) heading.id = "group-" + heading.dataset.group;
-        else heading.removeAttribute("id");
-      });
+    list.querySelectorAll(".rule-item").forEach(function (item) { item.hidden = true; });
+    list.querySelectorAll(".rules-group").forEach(function (heading) {
+      heading.hidden = true;
+      heading.removeAttribute("id");
     });
+    var previous = [];
+    shown.forEach(function (item) {
+      item.hidden = false;
+      var groups = item.querySelectorAll(".rules-group"), changed = false;
+      groups.forEach(function (heading, j) {
+        changed = changed || previous[j] !== heading.dataset.group;
+        if (!changed) return;
+        heading.hidden = false;
+        heading.id = "group-" + heading.dataset.group;
+      });
+      previous = Array.prototype.map.call(groups, function (heading) { return heading.dataset.group; });
+    });
+    document.querySelector(".rules-none").hidden = shown.length > 0;
 
     var toc = document.querySelector("#TableOfContents ul");
     if (toc) {
       toc.textContent = "";
       list.querySelectorAll(".rules-group[id]").forEach(function (heading) {
         var li = document.createElement("li");
-        if (heading.tagName !== "H2") li.className = "toc-sub";
+        li.style.setProperty("--level", Number(heading.tagName.slice(1)) - 2);
         var a = document.createElement("a");
         a.href = "#" + heading.id;
         a.textContent = heading.textContent;
@@ -48,14 +78,21 @@
       });
     }
 
+    var select = form.querySelector("select");
+    select.value = per;
     var pager = document.querySelector(".rules-pager");
     if (pager) {
       pager.textContent = "";
       var link = function (n, text, label, rel) {
         var a = document.createElement("a");
         a.textContent = text;
-        if (n === page && !rel) a.setAttribute("aria-current", "page");
-        else a.href = form.action + "?per=" + per + "&page=" + n;
+        if (n === page && !rel) {
+          a.setAttribute("aria-current", "page");
+        } else {
+          var data = new URLSearchParams(new FormData(form));
+          data.set("page", n);
+          a.href = form.action + "?" + data;
+        }
         if (label) a.setAttribute("aria-label", label);
         if (rel) a.rel = rel;
         pager.append(a);
@@ -67,9 +104,20 @@
       }
     }
 
-    var select = form.querySelector("select");
-    select.value = per;
-    select.addEventListener("change", function () { form.submit(); });
+    form.addEventListener("change", function (event) {
+      var box = event.target;
+      if (box === select) {
+        form.submit();
+      } else if (box.name === "domain") {
+        var below = [box.value];
+        boxes("domain").forEach(function (other) {
+          if (below.indexOf(other.dataset.parent) >= 0) {
+            other.checked = box.checked;
+            below.push(other.value);
+          }
+        });
+      }
+    });
     form.hidden = false;
   });
 })();

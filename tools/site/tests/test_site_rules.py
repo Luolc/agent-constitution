@@ -38,15 +38,16 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (4, 1), (5, 1), (6, 2)])
     nodes = self.nodes("en")
     self.assertEqual([g["id"] for g in nodes[3]["groups"]], [1, 2])
+    self.assertEqual(
+      [g["kind"] for g in nodes[3]["groups"]], ["domain", "one-of"]
+    )
     self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
     self.assertEqual(
       nodes[5]["children"], [{"id": 6, "label": "R6", "title": "Rule 6"}]
     )
 
-  def test_superseded_has_a_page_but_is_not_listed(self):
+  def test_superseded_is_not_under_provisions(self):
     nodes = self.nodes("en")
-    listed = [i for i, n in nodes.items() if n["listed"]]
-    self.assertEqual(listed, [3, 5, 6])
     self.assertEqual(
       nodes[4]["supersededBy"],
       [

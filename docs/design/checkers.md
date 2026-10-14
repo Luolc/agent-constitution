@@ -45,8 +45,8 @@ first one that finds errors, printing all of that one's errors:
 5. References: each `{@...}` and each `authority` entry resolves; a
    repealed target (an item of a repealed section counts as repealed) is an
    error; the constitution cites only itself, without a namespace; a rule
-   cites with `constitution:` or `rule:`. A rule whose `authority` names a
-   provision and one above it (an item and its section or article, a
+   cites with `constitution:` or `rule:`. A rule, neither superseded nor
+   repealed, whose `authority` names a provision and one above it (an item and its section or article, a
    section and its article) is not an error: once the checks pass, the
    build, with or without `--check`, prints a warning for each such pair,
    `path:line: warning: rule <id>: authority names both <above> and
