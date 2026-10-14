@@ -1,0 +1,8 @@
+{{- /* The page's title as its heading, without the theme's `#` link. The
+  name and the edition in parentheses after it are each kept on one line,
+  so a narrow screen breaks the title only before the parenthesis. */ -}}
+{{- $title := .Title }}
+{{- with findRESubmatch `^(.*) (\([^()]*\))$` .Title 1 }}
+  {{- $title = printf `<span class="nobreak">%s</span> <span class="nobreak">%s</span>` (index . 0 1) (index . 0 2) }}
+{{- end }}
+{{- printf "# %s {anchor=false}" $title | .RenderString }}

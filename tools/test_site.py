@@ -70,14 +70,17 @@ def visible(page: str) -> str:
 class SiteTest(unittest.TestCase):
   """The site Hugo builds from web/ and the made-up constitution."""
 
-  def build(self, lengths: dict[str, object] | None = None) -> dict[str, str]:
+  def build(
+    self, lengths: dict[str, object] | None = None, raw: bool = False
+  ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
     Args:
       lengths: The content of web/data/lengths.json, or None for no file.
+      raw: Whether to return the pages' HTML instead of their text.
 
     Returns:
-      The visible text of the four pages, by path.
+      The visible text of the four pages, or their HTML, by path.
     """
     with tempfile.TemporaryDirectory() as tmp:
       root = Path(tmp)
@@ -108,8 +111,8 @@ class SiteTest(unittest.TestCase):
         check=True,
         timeout=HUGO_TIMEOUT,
       )
-      return {
-        page: visible((root / "site" / page).read_text(encoding="utf-8"))
+      pages = {
+        page: (root / "site" / page).read_text(encoding="utf-8")
         for page in (
           "index.html",
           "agent/index.html",
@@ -117,6 +120,7 @@ class SiteTest(unittest.TestCase):
           "zh/agent/index.html",
         )
       }
+      return pages if raw else {p: visible(t) for p, t in pages.items()}
 
   @staticmethod
   def length(name: str) -> tuple[int, int, str]:
@@ -169,6 +173,32 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       "修订号 0.6 (草案) 回到完整版 第一条 不言。", pages["zh/agent/index.html"]
     )
+
+  def test_title(self):
+    """The title breaks only before the parenthesis and has no `#` link."""
+    titles = {"en": "Title (2026-10 Edition)", "zh": "标题 (2026-10 版)"}
+    files = {
+      name: text.replace("\n# Title\n", f"\n# {titles['en']}\n").replace(
+        "\n# 标题\n", f"\n# {titles['zh']}\n"
+      )
+      for name, text in FILES.items()
+    }
+    with mock.patch.dict(FILES, files):
+      pages = self.build(raw=True)
+    for page, (name, edition) in {
+      "index.html": ("Title", "(2026-10 Edition)"),
+      "agent/index.html": ("Title", "(2026-10 Edition)"),
+      "zh/index.html": ("标题", "(2026-10 版)"),
+      "zh/agent/index.html": ("标题", "(2026-10 版)"),
+    }.items():
+      with self.subTest(page=page):
+        h1 = re.search(r"<h1\b[^>]*>(.*?)</h1>", pages[page], re.S)
+        assert h1 is not None
+        self.assertEqual(
+          h1.group(1).strip(),
+          f'<span class="nobreak">{name}</span>'
+          f' <span class="nobreak">{edition}</span>',
+        )
 
   def test_tokens_from_lengths_json(self):
     counts = {

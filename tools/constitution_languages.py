@@ -179,7 +179,7 @@ LANGUAGES = {
       "This is the version of this constitution for agents,"
       " and every agent must follow it"
     ),
-    edition="{edition} edition",
+    edition="{edition} Edition",
     draft_revision="{revision} (draft)",
     article_heading="## {anchor}Article {number}. {title}",
     repealed_article_heading="## {anchor}Article {number} ({note})",

@@ -250,7 +250,7 @@ class RenderTest(Tree):
     self.activate()
     errors, _, outputs = bc.build(self.root)
     self.assertEqual(errors, [])
-    self.assertIn("\n# Test Constitution (2026-10 edition)\n", outputs["en"])
+    self.assertIn("\n# Test Constitution (2026-10 Edition)\n", outputs["en"])
     self.assertIn("\n# 测试宪法 (2026-10 版)\n", outputs["zh"])
     self.assertIn(" Revision: 1. ", outputs["en.agent"])
     self.assertIn("修订号：1。", outputs["zh"])
@@ -260,8 +260,8 @@ class RenderTest(Tree):
     errors, _, outputs = bc.build(self.root)
     self.assertEqual(errors, [])
     for name, title, revision in [
-      ("en", "Test Constitution (2026-10 edition)", " Revision: 0.2 (draft). "),
-      ("en.agent", "Test Constitution (2026-10 edition)", " 0.2 (draft). "),
+      ("en", "Test Constitution (2026-10 Edition)", " Revision: 0.2 (draft). "),
+      ("en.agent", "Test Constitution (2026-10 Edition)", " 0.2 (draft). "),
       ("zh", "测试宪法 (2026-10 版)", "修订号：0.2 (草案)。"),
       ("zh.agent", "测试宪法 (2026-10 版)", "修订号：0.2 (草案)。"),
     ]:
