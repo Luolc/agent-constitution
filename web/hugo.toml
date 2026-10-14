@@ -1,6 +1,7 @@
 # The static site: two pages per language, the constitution and its version
 # for agents, made by content/_content.gotmpl from
-# constitution/constitution.<lang>.md and constitution.<lang>.agent.md.
+# constitution.<lang>.md and constitution.<lang>.agent.md, the files
+# constitution-build generates.
 # `hugo-0.167.0 -s web` builds it into site/, with the tokens that
 # `uv run count-tokens` counted, if any; `uv run check-site-anchors site`
 # checks the links (both in tools/site). See docs/design/static-site.md.
@@ -90,19 +91,23 @@ enableRobotsTXT = false
     model = "claude-opus-5-5"
     name = "Claude Opus 5.5"
 
-# The built constitution comes from constitution/: the two Markdown files
-# of each language as assets, which content/_content.gotmpl reads, and
-# index.toml as data, for the revision and the status. data/lengths.json,
-# written by count-tokens and not committed, holds the tokens.
+# The built constitution comes from constitution/: index.toml, for the
+# revision and the status, and the two Markdown files of each language,
+# all as assets, which layouts/_partials/constitution/source.html finds by
+# name in the edition directory (or in constitution/ itself in the older
+# layout). data/lengths.json, written by count-tokens and not committed,
+# holds the tokens.
 # A component with a mount of its own loses its default one, so data and
 # assets are mounted again.
 [[module.mounts]]
   source = "../constitution"
   target = "assets/constitution"
-  files = ["constitution.*.md"]
-[[module.mounts]]
-  source = "../constitution/index.toml"
-  target = "data/constitution.toml"
+  files = [
+    "index.toml",
+    "constitution.*.md",
+    "*/index.toml",
+    "*/generated/constitution.*.md",
+  ]
 [[module.mounts]]
   source = "data"
   target = "data"

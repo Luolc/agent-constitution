@@ -1,6 +1,7 @@
 {{- /* The pages of one language from the built constitution: its full
-  version, constitution/constitution.<lang>.md, as the home page, and its
-  version for agents, constitution.<lang>.agent.md, as agent/. Each file
+  version, constitution.<lang>.md, as the home page, and its version for
+  agents, constitution.<lang>.agent.md, as agent/ (both found by
+  layouts/_partials/constitution/source.html). Each file
   starts with the build's header line, a blank line and the `# ` title:
   the header line is dropped, the title becomes the page's, and the
   layouts set it above the text (layouts/home.html, layouts/page.html).
@@ -12,11 +13,11 @@
 {{- $lang := .Site.Language.Lang }}
 {{- $pages := dict }}
 {{- range $version := slice "" ".agent" }}
-  {{- $file := printf "constitution/constitution.%s%s.md" $lang $version }}
-  {{- $markdown := (resources.Get $file).Content }}
+  {{- $file := printf "constitution.%s%s.md" $lang $version }}
+  {{- $markdown := (partial "constitution/source.html" $file).Content }}
   {{- $lines := split $markdown "\n" }}
   {{- if or (lt (len $lines) 3) (not (strings.Contains (index $lines 0) "constitution-build")) (not (strings.HasPrefix (index $lines 2) "# ")) }}
-    {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" (path.Base $file) }}
+    {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" $file }}
   {{- end }}
   {{- $text := delimit (after 1 $lines) "\n" }}
   {{- $pages = merge $pages (dict (cond (eq $version "") "full" "agent") (dict
@@ -36,12 +37,13 @@
   anchors; `{anchor=false}` keeps the theme's `#` link off its headings. */ -}}
 {{- $full := $pages.full }}
 {{- /* In the sidebar, the full version is the edition it belongs to, under
-  the constitution, named and marked from constitution/index.toml. The
+  the constitution, named and marked from its index.toml. The
   editions are listed newest first: the weight is the edition's year and
   month, negated. */ -}}
-{{- $edition := hugo.Data.constitution.edition }}
+{{- $index := partial "constitution/index.html" . }}
+{{- $edition := $index.edition }}
 {{- $name := i18n "edition" (dict "edition" $edition) }}
-{{- if eq hugo.Data.constitution.status "draft" }}
+{{- if eq $index.status "draft" }}
   {{- $name = printf "%s %s" $name (i18n "draft") }}
 {{- end }}
 {{- .AddPage (dict

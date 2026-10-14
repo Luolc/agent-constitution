@@ -14,6 +14,7 @@ from test_constitution_fixture import (
   BETA_ONE,
   EN,
   EN_AGENT,
+  legend,
   plain,
   Tree,
   ZH,
@@ -63,7 +64,7 @@ class RenderTest(Tree):
     self.assertIn(f"\n## Preamble{star}\n\nThe preamble cites", outputs["en"])
     self.assertIn(f"\n## 序言{star}\n\n序言引用", outputs["zh"])
     for lang in ("en", "zh"):
-      self.assertIn(cl.LANGUAGES[lang].legend + "\n", outputs[lang])
+      self.assertIn(legend(lang) + "\n", outputs[lang])
       self.assertNotIn(star, outputs[lang + bc.AGENT])
 
   def test_provisions_for_maintainers(self):
@@ -113,10 +114,10 @@ class RenderTest(Tree):
       outputs["zh"],
     )
     self.assertEqual(
-      outputs["en"].replace(star, "").replace(cl.LANGUAGES["en"].legend, ""), EN
+      outputs["en"].replace(star, "").replace(legend("en"), ""), EN
     )
     self.assertEqual(
-      outputs["zh"].replace(star, "").replace(cl.LANGUAGES["zh"].legend, ""), ZH
+      outputs["zh"].replace(star, "").replace(legend("zh"), ""), ZH
     )
     self.assertEqual(
       outputs["en.agent"],
@@ -459,6 +460,33 @@ class RenderTest(Tree):
     self.assertEqual(en.item_ref(3, "b"), "(3b)")
     self.assertEqual(zh.item_ref(3, "b"), "第三项之二")
     self.assertEqual(zh.item_marker(12, ""), "(**十二**) ")
+
+  def test_edition_directory(self):
+    """In an edition directory only the paths the build writes change.
+
+    They are in the header line and, for agents, in the note in place of
+    the front text.
+    """
+    _, _, old = bc.build(self.root)
+    new = self.to_edition_dir()
+    self.assertEqual(bc.main(["--root", str(self.root)]), 0)
+    self.assertEqual(
+      sorted((self.root / "constitution").glob("constitution.*.md")), []
+    )
+    for name, text in old.items():
+      path = self.root / new / "generated" / f"constitution.{name}.md"
+      built = path.read_text(encoding="utf-8").split("\n")
+      lines = text.split("\n")
+      self.assertEqual(len(built), len(lines))
+      changed = [
+        i for i, (a, b) in enumerate(zip(lines, built, strict=True)) if a != b
+      ]
+      self.assertEqual(changed, [0, 4] if name.endswith(".agent") else [0])
+      self.assertIn(f"`{new}/index.toml`", built[0])
+      self.assertIn(f"`{new}/articles/`", built[0])
+      if name.endswith(".agent"):
+        lang = name.split(".")[0]
+        self.assertIn(f"`{new}/generated/constitution.{lang}.md`", built[4])
 
 
 if __name__ == "__main__":

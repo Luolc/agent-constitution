@@ -1,5 +1,5 @@
-{{- /* The first line under the title: the revision from
-  constitution/index.toml, marked while the constitution is a draft. */ -}}
-{{- with hugo.Data.constitution -}}
+{{- /* The first line under the title: the revision from the
+  constitution's index.toml, marked while the constitution is a draft. */ -}}
+{{- with partial "constitution/index.html" . -}}
 <li class="number">{{ i18n "revision" }} {{ .revision }}{{ if eq .status "draft" }} {{ i18n "draft" }}{{ end }}</li>
 {{- end -}}

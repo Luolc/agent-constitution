@@ -225,7 +225,12 @@ sources and rebuild. Revision: 0.2 (draft). Language: English.
 
 # Test Constitution (2026-10 Edition)
 
-{cl.LANGUAGES["en"].agent_front.format(opening=cl.LANGUAGES["en"].agent_draft)}
+{
+  cl.LANGUAGES["en"].agent_front.format(
+    opening=cl.LANGUAGES["en"].agent_draft,
+    full="constitution/constitution.en.md",
+  )
+}
 
 ## Article I. First
 
@@ -253,7 +258,12 @@ ZH_AGENT = f"""\
 
 # 测试宪法 (2026-10 版)
 
-{cl.LANGUAGES["zh"].agent_front.format(opening=cl.LANGUAGES["zh"].agent_draft)}
+{
+  cl.LANGUAGES["zh"].agent_front.format(
+    opening=cl.LANGUAGES["zh"].agent_draft,
+    full="constitution/constitution.zh.md",
+  )
+}
 
 ## 第一条 第一
 
@@ -290,6 +300,20 @@ SECTIONS = [
   f"{B}/01-beta-one.toml",
   f"{B}/01a-beta-two.toml",
 ]
+
+
+def legend(lang: str) -> str:
+  """Return the legend of a language, for the fixture's older layout.
+
+  Args:
+    lang: The language.
+
+  Returns:
+    The legend.
+  """
+  return cl.LANGUAGES[lang].legend.format(
+    agent=f"constitution/constitution.{lang}.agent.md"
+  )
 
 
 def plain(text: str) -> str:
@@ -329,6 +353,22 @@ class Tree(unittest.TestCase):
   def move(self, old, new):
     (self.root / new).parent.mkdir(parents=True, exist_ok=True)
     (self.root / old).rename(self.root / new)
+
+  def to_edition_dir(self, edition: str = "2026-10") -> str:
+    """Move the sources and the outputs into an edition directory.
+
+    Args:
+      edition: The directory's name.
+
+    Returns:
+      The directory, relative to the root.
+    """
+    new = f"constitution/{edition}"
+    self.move("constitution/index.toml", f"{new}/index.toml")
+    self.move("constitution/articles", f"{new}/articles")
+    for path in sorted((self.root / "constitution").glob("constitution.*.md")):
+      self.move(path.relative_to(self.root), f"{new}/generated/{path.name}")
+    return new
 
   def activate(self):
     """Make the tree active: index, sections, items and rules."""

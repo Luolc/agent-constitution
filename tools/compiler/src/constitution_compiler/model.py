@@ -5,17 +5,16 @@ they are read into (docs/design/source-formats.md,
 constitution.md and rules.md).
 """
 
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 import re
 from typing import Any, NamedTuple
 
-INDEX = Path("constitution/index.toml")
-ARTICLES = Path("constitution/articles")
+CONSTITUTION = Path("constitution")
+INDEX_FILE = "index.toml"
 ARTICLE_FILE = "article.toml"
-OLD_SECTIONS = Path("constitution/sections")
 RULES = Path("rules")
 RETIRED = RULES / "retired-ids.txt"
 
@@ -40,6 +39,96 @@ STATUS = ("draft", "active", "repealed")
 # The one value of `audience`: a provision on how this text itself is made
 # and amended, whose text the version for agents leaves out.
 MAINTAINERS = "maintainers"
+
+
+class LayoutError(Exception):
+  """The checkout has more than one edition directory."""
+
+
+@dataclass(frozen=True)
+class Layout:
+  """Where the constitution sources and the generated files are.
+
+  The sources are in an edition directory, `constitution/<YYYY-MM>/`, and
+  the generated files in its `generated/`. In the older layout both are
+  in `constitution/` itself.
+
+  Attributes:
+    dir: the directory holding index.toml and articles/.
+  """
+
+  dir: Path
+
+  @property
+  def index(self) -> Path:
+    """index.toml."""
+    return self.dir / INDEX_FILE
+
+  @property
+  def articles(self) -> Path:
+    """The directory of the article directories."""
+    return self.dir / "articles"
+
+  @property
+  def old_sections(self) -> Path:
+    """Where sections were before they moved into their articles."""
+    return self.dir / "sections"
+
+  def output(self, name: str) -> Path:
+    """Return where a generated file goes.
+
+    Args:
+      name: the language, with `.agent` after it for the version for
+        agents.
+
+    Returns:
+      The path, relative to the checkout.
+    """
+    generated = self.dir if self.dir == CONSTITUTION else self.dir / "generated"
+    return generated / f"constitution.{name}.md"
+
+  @classmethod
+  def find(cls, files: Iterable[Path]) -> Layout:
+    """Return the layout of a checkout or a commit from its files.
+
+    The edition directory is the one directory under `constitution/`
+    that holds an index.toml; with none, the older layout.
+
+    Args:
+      files: paths relative to the checkout.
+
+    Returns:
+      The layout.
+
+    Raises:
+      LayoutError: when more than one directory holds an index.toml.
+    """
+    dirs = sorted(
+      {
+        p.parent
+        for p in files
+        if p.name == INDEX_FILE and p.parent.parent == CONSTITUTION
+      }
+    )
+    if len(dirs) > 1:
+      raise LayoutError(
+        "more than one edition directory: " + ", ".join(map(str, dirs))
+      )
+    return cls(dirs[0] if dirs else CONSTITUTION)
+
+  @classmethod
+  def of(cls, root: Path) -> Layout:
+    """Return the layout of the working tree.
+
+    Args:
+      root: the checkout.
+
+    Returns:
+      The layout.
+    """
+    return cls.find(
+      p.relative_to(root) for p in root.glob(f"{CONSTITUTION}/*/{INDEX_FILE}")
+    )
 
 
 # A text in every language of index.toml: language -> text.
@@ -229,7 +318,8 @@ class Sources:
   """Everything read from the sources.
 
   Attributes:
-    index: constitution/index.toml.
+    layout: where the sources are.
+    index: index.toml.
     languages: the languages of index.toml, in order.
     articles: the articles, in order.
     sections: the sections, in order.
@@ -237,6 +327,7 @@ class Sources:
     retired: rules/retired-ids.txt, in order.
   """
 
+  layout: Layout
   index: Doc
   languages: list[str]
   articles: list[Article]
