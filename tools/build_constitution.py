@@ -832,14 +832,14 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
         try:
             committed = (root / path).read_bytes()
         except OSError:
-            errors.add(path, 1, 6, "missing; run tools/build_constitution.py")
+            errors.add(path, 1, 6, "missing; run `uv run tools/build_constitution.py`")
             continue
         built = text.encode("utf-8")
         if committed != built:
             old, new = committed.split(b"\n"), built.split(b"\n")
             pairs = enumerate(zip(old, new), start=1)
             line = next((i for i, (a, b) in pairs if a != b), min(len(old), len(new)))
-            errors.add(path, line, 6, "differs from a fresh build; run tools/build_constitution.py")
+            errors.add(path, line, 6, "differs from a fresh build; run `uv run tools/build_constitution.py`")
 
 
 # Check 7: numbering against a base commit.

@@ -138,7 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     limae = shutil.which("limae")
     if limae is None:
-        print("limae is not on PATH; the commit hook installs it, or see docs/design.md (Checkers)", file=sys.stderr)
+        print("limae is not on PATH; run this script with `uv run`, which installs it", file=sys.stderr)
         return 2
 
     all_texts, problems = [], []
