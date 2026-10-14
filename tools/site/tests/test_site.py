@@ -253,6 +253,21 @@ class SiteTest(unittest.TestCase):
         for href in (readme, "#part-a", github, home):
           self.assertIn(f'href="{href}"', raw[page])
 
+  def test_design_group_folds(self):
+    """The design group is closed except on the design's own pages."""
+    raw = self.build(raw=True)
+    closed = '<input type="checkbox" id="menu-design" class="toggle" />'
+    opened = '<input type="checkbox" id="menu-design" class="toggle" checked />'
+    for page, box in (
+      ("index.html", closed),
+      ("zh/index.html", closed),
+      ("design/index.html", opened),
+      ("design/one/index.html", opened),
+      ("zh/design/one/index.html", opened),
+    ):
+      with self.subTest(page=page):
+        self.assertIn(box, raw[page])
+
   def test_design_file_not_listed(self):
     """A file of the design that the README does not list fails the build."""
     with self.assertRaises(subprocess.CalledProcessError):

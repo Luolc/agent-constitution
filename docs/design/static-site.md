@@ -196,7 +196,12 @@ passes to Hugo as `--baseURL`.
   pages as children. There are two groups: the constitution, the home
   page, with the scales (`law`), and the design, its README's page, with
   an open book (`book`), its files below it as the content adapter lists
-  them (Design, above). Under the constitution are its editions, newest first:
+  them (Design, above). The design group folds (`collapse` in its menu
+  params): it is closed on every page but the design's own, where it is
+  open with the current page marked. It uses the theme's checkbox, label
+  and chevron from its file tree; the chevron points right when closed and
+  down when open, and the keyboard toggles it. The constitution group does
+  not fold. Under the constitution are its editions, newest first:
   the content adapter adds each page's entry to the menu, named from
   `index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
   by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
