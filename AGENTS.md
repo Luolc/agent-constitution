@@ -78,9 +78,9 @@ Checkers).
   `tools/compiler` (the constitution build and its checks,
   `constitution-build`), `tools/site` (the rules' data, the token count
   and the link check of the static site, `site-rules`, `count-tokens` and
-  `check-site-anchors`; it depends on the compiler) and `tools/checks` (this repo's own
-  checks, `check-instruction-changes` and `lint-zh-sources`; it depends
-  on neither). The root `pyproject.toml` declares the members and holds the
+  `check-site-anchors`; it depends on the compiler) and `tools/checks`
+  (this repo's own checks, `check-instruction-changes` and
+  `lint-zh-sources`; it depends on neither). The root `pyproject.toml` declares the members and holds the
   development tools and their configuration; `uv.lock` is one file at
   the root (`docs/design/file-structure.md`).
 - `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
