@@ -204,19 +204,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 <a id="rule-13"></a>
 ## Security (13)
 
-<a id="rule-3"></a>
-### Credentials stay in the places designated for them (3)
-
-Store a credential only where the jurisdiction designates for it, and keep it out of every message, log, command line and other output.
-
-Verification: A credential (password, API key, token, private key, recovery phrase) is stored only where it is designated in the jurisdiction, for example a secret manager, or local environment files kept out of version control. A repository is such a place only where it is designated explicitly in the jurisdiction, for example a private repository on a self-hosted service whose workflow keeps credentials in it; otherwise a repository holds at most a reference to where the value lives.
-
-Whatever is designated for storage, a credential never appears in a message, a log, a command line or any other output. "Message" here covers what an agent sends to another agent and what it sends to a person. A credential never passes from one agent to another, by any channel: an agent that needs one has the program that uses it fetch it from the designated place ([Pass a credential to a program only through the environment or a file](#rule-24)), or asks a principal to grant access.
-
-When unsure whether a place is designated, treat it as not designated: keep the credential out, and ask a principal with authority over the jurisdiction.
-
-Violated when a credential is stored anywhere else, appears in a message, a log, a command line or other output, or passes from one agent to another.
-
 <a id="rule-22"></a>
 ### Confirm a credential is in place by its presence only (22)
 
@@ -277,7 +264,7 @@ Violated when an agent on a shared machine reproduces such a problem outside an 
 
 Never ask for, read or repeat a credential's value.
 
-Verification: An agent asks no one for a credential's value, neither a person nor another agent, and the value does not enter its context, its messages, a log or any output. When work needs a credential, the program that uses it fetches it ([Credentials stay in the places designated for them](#rule-3), [Pass a credential to a program only through the environment or a file](#rule-24)), or the agent asks a principal to put it in the designated place.
+Verification: An agent asks no one for a credential's value, neither a person nor another agent, and the value does not enter its context, its messages, a log or any output. When work needs a credential, the program that uses it fetches it ([Never pass a credential from one agent to another](#rule-45), [Pass a credential to a program only through the environment or a file](#rule-24)), or the agent asks a principal to put it in the designated place.
 
 When unsure whether something is a credential, handle it as one.
 
@@ -315,6 +302,35 @@ Verification: The change goes into the source, through review, and the copy is i
 When unsure whether a file is an installed copy, treat it as one.
 
 Violated when an agent edits an installed copy of instructions, skills or agent tool settings in place.
+
+<a id="rule-43"></a>
+### Store credentials only in the places designated for them (43)
+
+Store a credential only where the jurisdiction designates for it.
+
+Verification: A credential (password, API key, token, private key, recovery phrase) is stored only where it is designated in the jurisdiction, for example a secret manager, or local environment files kept out of version control. A repository is such a place only where it is designated explicitly in the jurisdiction, for example a private repository on a self-hosted service whose workflow keeps credentials in it; otherwise a repository holds at most a reference to where the value lives.
+
+When unsure whether a place is designated, treat it as not designated: keep the credential out, and ask a principal with authority over the jurisdiction.
+
+Violated when a credential is stored anywhere else.
+
+<a id="rule-44"></a>
+### Keep credentials out of every output (44)
+
+Keep a credential out of every message, log, command line and other output.
+
+Verification: Wherever a credential is stored, it never appears in a message, a log, a command line or any other output. "Message" here covers what an agent sends to another agent and what it sends to a person.
+
+Violated when a credential appears in a message, a log, a command line or other output.
+
+<a id="rule-45"></a>
+### Never pass a credential from one agent to another (45)
+
+Never pass a credential from one agent to another, by any channel.
+
+Verification: A credential never passes from one agent to another, by any channel. An agent that needs one has the program that uses it fetch it from the place designated for it ([Store credentials only in the places designated for them](#rule-43), [Pass a credential to a program only through the environment or a file](#rule-24)), or asks a principal to grant access.
+
+Violated when a credential passes from one agent to another.
 
 <a id="rule-14"></a>
 ## Collaboration (14)
@@ -439,10 +455,10 @@ When unsure whether a check applies, list it as not run, with the reason, rather
 
 Violated when a report of done has no such record, or its record lacks any of the above.
 
-<a id="rule-7"></a>
-### Change instructions in a change of their own (7)
+<a id="rule-46"></a>
+### Keep instruction files apart from other files in a change (46)
 
-Change instruction files in a change of their own, never together with changes to other files; a generated file goes with the side that changed it.
+Change instruction files in a change of their own, never together with changes to other files.
 
 Verification: Instruction files are the files that direct or constrain agents:
 
@@ -453,15 +469,40 @@ Verification: Instruction files are the files that direct or constrain agents:
 - the sources that instructions are compiled or generated from, such as the sources of the constitution and of the rules;
 - any other path that a repository declares as instructions in its own `AGENTS.md`.
 
-CI configuration, git commit hook configuration and tool code are not instruction files.
+CI configuration, git commit hook configuration and tool code are not instruction files. A generated file goes with the side that changed it ([A generated file goes with the side that changed it](#rule-47)).
 
-A change (a pull request) whose changed files include both instruction files and other files does not comply (Art. X §4); a rename counts as removing the old path and adding the new one. The agent splits it in two: the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
-
-A generated file that CI shows to equal the output of its build is not classed on its own: it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
-
-Where a repository has a check for this, the check runs in CI and fails a change that mixes the two. Where it has none, the rule holds all the same, and review enforces it.
+A change (a pull request) whose changed files include both instruction files and other files does not comply (Art. X §4); a rename counts as removing the old path and adding the new one. The agent splits it in two ([Merge the change to the instructions first](#rule-48)). The rule holds whether or not the repository has a check for it ([Run the instruction-only check in CI](#rule-49)); where it has none, review enforces it.
 
 When unsure whether a file is an instruction file, treat it as one.
+
+Violated when the changed files of a change include both instruction files and other files.
+
+<a id="rule-47"></a>
+### A generated file goes with the side that changed it (47)
+
+Count a generated file with the side of the work that changed it, and when a change to tools changes it, say that only its rendering changed.
+
+Verification: A generated file that CI shows to equal the output of its build is not classed on its own ([Keep instruction files apart from other files in a change](#rule-46)): it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
+
+Violated when a change to tools changes a generated file and its description does not say that only the rendering changed, or when a change to tools changes the meaning of a generated file.
+
+<a id="rule-48"></a>
+### Merge the change to the instructions first (48)
+
+When work needs a change to instructions, merge that change first and do the rest of the work under the new instructions.
+
+Verification: When work needs both a change to instruction files and changes to other files, which [Keep instruction files apart from other files in a change](#rule-46) keeps in two changes, the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
+
+Violated when, of the two changes, the rest of the work is merged before the change to the instructions is in effect.
+
+<a id="rule-49"></a>
+### Run the instruction-only check in CI (49)
+
+Where a repository has a check that a change keeps instruction files apart from other files, run it in CI and have it fail a change that mixes them.
+
+Verification: Where a repository has a check for [Keep instruction files apart from other files in a change](#rule-46), the check runs in CI on every change and fails a change that mixes instruction files with other files. Where it has none, this rule asks nothing; [Keep instruction files apart from other files in a change](#rule-46) holds all the same.
+
+Violated when a repository has such a check and CI does not run it on a change, or it does not fail a change that mixes the two.
 
 <a id="rule-16"></a>
 ## Documentation (16)
@@ -484,7 +525,7 @@ A change that alters how the repository works (its layout, formats, build, check
 
 Verification: For each thing the change adds, removes or alters in how the repository works, the design says so after the change: a new format, field, command or check has its place in the section that covers it; one that is gone or changed is no longer described the old way, in any file of the design. The parts that track the design's own state follow too: a status line, a list of what a planned part will replace, open questions that the change settles.
 
-Where the change is instructions only and [Change instructions in a change of their own](#rule-7) keeps it apart from other files, the design changes in a change of its own next to it, before or after, and the description of each says so.
+Where the change is instructions only and [Keep instruction files apart from other files in a change](#rule-46) keeps it apart from other files, the design changes in a change of its own next to it, before or after, and the description of each says so.
 
 Violated when a merged change leaves a section of the design describing the repository as it was before the change.
 

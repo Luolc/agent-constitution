@@ -17,18 +17,6 @@ sha256 = "1f8c86e7836aa8d27e85519ad002edf352ab74cf88d817fcdcaf7b0d82659d13"
 
 [[rules]]
 source = "ac"
-id = 3
-revision = 3
-sha256 = "3aee4ae38b52b87e7820d78879d5aefb387dfbed8c5bfe5d1de1c947b2017cb6"
-
-[[rules]]
-source = "ac"
-id = 7
-revision = 2
-sha256 = "37b1ea6157196666f8ffd2ab1dd81489ef2572dff2407d8e6cf77f4677079d1a"
-
-[[rules]]
-source = "ac"
 id = 17
 revision = 1
 sha256 = "737bd8193a46d9ac5c14be152dfae0ef59c49f8b9bc0e38c6d8f4adc18a4bc82"
@@ -36,8 +24,8 @@ sha256 = "737bd8193a46d9ac5c14be152dfae0ef59c49f8b9bc0e38c6d8f4adc18a4bc82"
 [[rules]]
 source = "ac"
 id = 18
-revision = 1
-sha256 = "5fa8d1c8fbe988216ba69cd18ed6a5edad989b871d3374367b3f133021f21961"
+revision = 2
+sha256 = "92866ddf5bdecac64f4c69ddb80ee448ac109aa0e1ad4c4dbb87c7b3c10a72c3"
 
 [[rules]]
 source = "ac"
@@ -126,8 +114,8 @@ sha256 = "f9bcf94e9b2ffd0ed69a25831227c27602fe572f08aad1a59c7c8721eb5bea7d"
 [[rules]]
 source = "ac"
 id = 36
-revision = 1
-sha256 = "84967c66cf6e428f3d18466447b7d69585aef15f154a35be9264ac8629d25210"
+revision = 2
+sha256 = "77d38887a729916fbcc76078258c683952c143b7fd6b41ee04b5c4a2907651c3"
 
 [[rules]]
 source = "ac"
@@ -164,3 +152,45 @@ source = "ac"
 id = 42
 revision = 1
 sha256 = "7b566cc68c43228fbb78db908fd5586e05650c7fb5b38a2e216942ce676b3cd7"
+
+[[rules]]
+source = "ac"
+id = 43
+revision = 1
+sha256 = "2b5abe60ef3a299b052168df1cd89907e63d501148e51e759ab552abd6dd9534"
+
+[[rules]]
+source = "ac"
+id = 44
+revision = 1
+sha256 = "8e735ba1c1e3d2332e1af7f68bdfdf4b9d0eee3aa2293a7bb2d424c689db5d43"
+
+[[rules]]
+source = "ac"
+id = 45
+revision = 1
+sha256 = "8a46dd3e014f8b16c2d1827f745db73b52e858a901932c76f56e83ad88c10d77"
+
+[[rules]]
+source = "ac"
+id = 46
+revision = 1
+sha256 = "c832713bd79796e819a8321c295ed3e8db8b1d47cac782eefeb5d3c346dac97c"
+
+[[rules]]
+source = "ac"
+id = 47
+revision = 1
+sha256 = "b3e15f6f15ee38fe2a948b321f7f9d46bc60ac74de56d180034a46a4bd9231d2"
+
+[[rules]]
+source = "ac"
+id = 48
+revision = 1
+sha256 = "3640bf412ff442473a242cf532fd71082334bcb7408f0e02a9f6e28711742e6a"
+
+[[rules]]
+source = "ac"
+id = 49
+revision = 1
+sha256 = "5951a080b4a835d1d717c134b9f60a70937b8bc7455265a3ee6e1d747a0b3fa6"
