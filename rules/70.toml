@@ -32,15 +32,15 @@ The main branch is the branch a repository's work is merged into, often `main`. 
 
 When the local main branch is ahead of the remote one or has diverged from it, the agent stops and reports it to whoever delegated the work instead of pushing or merging it.
 
-Violated when an agent's local main branch holds a commit that the remote main branch does not.
+Violated when an agent commits on its local main branch or merges into it other than by a fast-forward.
 '''
 zh = '''
 主分支是仓库的工作合入的分支，通常是 `main`。本规定适用于所有变更，不分琐碎与否：法域允许不经 pull request 进入主分支的变更，同样在别的分支上 commit。
 
 本地主分支领先于远端的主分支，或者与它分叉的，agent 停下来，向委派这项工作的一方报告，不推送、也不合并。
 
-agent 本地的主分支上有远端主分支没有的 commit 的，即为违反本规定。
+agent 在本地的主分支上 commit，或者以快进以外的方式合并进本地主分支的，即为违反本规定。
 '''
 
 [translations]
-zh = "5ce341723d31d45293aada9143442d93d168a9219c8177a541c488584e1c2844"
+zh = "3cd47c76a3ca543719e083dbc5484592739a62494cd930b6886d7d64857d1d29"
