@@ -145,10 +145,14 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
     path: The file, relative to the checkout.
 
   Returns:
-    The texts, and an error when one of them is in a form this script
-    cannot write back, else None.
+    The texts, and an error when the file is not valid TOML or one of
+    them is in a form this script cannot write back, else None.
   """
   source = (root / path).read_text(encoding="utf-8")
+  try:
+    data = tomllib.loads(source)
+  except tomllib.TOMLDecodeError as e:
+    return [], f"{path}:1: not valid TOML: {e}"
   found = []
   for m in BASIC.finditer(source):
     value = tomllib.loads(f"v = {m.group(0)[5:]}")["v"]
@@ -176,7 +180,7 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
       )
     )
   found.sort(key=lambda t: t.start)
-  parsed = sorted(value for _, value in zh_leaves(tomllib.loads(source)))
+  parsed = sorted(value for _, value in zh_leaves(data))
   if parsed != sorted(t.value for t in found):
     return (
       found,

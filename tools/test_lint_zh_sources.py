@@ -107,6 +107,12 @@ class Sources(unittest.TestCase):
       self.assertIn("limae is not installed in this Python environment", out)
       self.assertFalse(ran.exists())
 
+  def test_invalid_toml(self):
+    self.edit(S, 'id = "one"', "id = one")
+    code, out = self.run_lint()
+    self.assertEqual(code, 2)
+    self.assertTrue(out.startswith(f"{S}:1: not valid TOML: "), out)
+
   def test_clean_tree_passes(self):
     self.assertEqual(self.run_lint(), (0, "limae: 6 zh texts clean\n"))
 
