@@ -22,9 +22,11 @@ from constitution_compiler.model import (
   CONSTITUTION,
   Doc,
   Errors,
+  FOREIGN_REF,
   INDEX_STATUS,
   Item,
   KINDS,
+  LANG_CODE,
   Layout,
   LayoutError,
   LEVELS,
@@ -38,6 +40,7 @@ from constitution_compiler.model import (
   NUMBER,
   NUMBER_SHAPE,
   PARTS,
+  REVISION_CLAUSE,
   RULES,
   Section,
   SECTION_NAME,
@@ -506,6 +509,13 @@ class _Reader:
       self.errors.add(
         path, doc.line("revision ="), 1, "`revision` must be 1 or more"
       )
+    if not LANG_CODE.fullmatch(d["lang"]):
+      self.errors.add(
+        path,
+        doc.line("lang ="),
+        1,
+        f'`lang = "{d["lang"]}"` is not a language code such as `en`',
+      )
     # Only a rule is superseded, by another rule.
     allowed = tuple(
       s for s in NODE_STATUS if kind == "rule" or s != "superseded"
@@ -536,6 +546,18 @@ class _Reader:
           1,
           f"`{name}` lacks its text in `{lang}`, the original's language",
         )
+      for key, text in table.items():
+        if not LANG_CODE.fullmatch(key):
+          self.errors.add(
+            doc.path,
+            doc.line(f"[{name}]"),
+            1,
+            f"`{name}` key `{key}` is not a language code",
+          )
+        elif key != lang and not text.strip():
+          self.errors.add(
+            doc.path, doc.line(f"[{name}]"), 1, f"`{name}` `{key}` is empty"
+          )
     translations = doc.data.get("translations", {})
     if lang in translations or not all(
       isinstance(v, str) for v in translations.values()
@@ -568,17 +590,17 @@ class _Reader:
           1,
           f"`{key}` is there exactly when `check` is command",
         )
-    for key in ("requires", "conflicts"):
-      if not all(
-        isinstance(v, str) or (isinstance(v, int) and not isinstance(v, bool))
-        for v in d.get(key, [])
-      ):
-        self.errors.add(
-          path,
-          doc.line(f"{key} ="),
-          1,
-          f"`{key}` must list IDs, a number or `<source>:<id>`",
-        )
+    spec = d["constitution"]
+    if not all(REVISION_CLAUSE.fullmatch(c) for c in spec.split(",")):
+      self.errors.add(
+        path,
+        doc.line("constitution ="),
+        1,
+        f'`constitution = "{spec}"` is not a specifier of whole revisions:'
+        " clauses such as `>=1` joined by commas, each with"
+        " >=, <=, >, <, == or !=",
+      )
+    self.references(doc)
     if not all(isinstance(t, str) for t in d.get("tools", [])):
       self.errors.add(
         path, doc.line("tools ="), 1, "`tools` must be a list of names"
@@ -592,6 +614,34 @@ class _Reader:
         1,
         "`authority` must be a non-empty list of provision IDs",
       )
+
+  def references(self, doc: Doc) -> None:
+    """Check each entry of a rule's `requires` and `conflicts`.
+
+    Args:
+      doc: the rule's file.
+    """
+    d, path = doc.data, doc.path
+    for key in ("requires", "conflicts"):
+      seen = []
+      for v in d.get(key, []):
+        # TOML's booleans are Python ints too.
+        if not (
+          (isinstance(v, int) and not isinstance(v, bool) and v >= 1)
+          or (isinstance(v, str) and FOREIGN_REF.fullmatch(v))
+        ):
+          problem = (
+            f"entry `{v}` is not a reference: a number from 1 for a node"
+            ' of this source, or "<source>:<id>" for one of another'
+          )
+        elif v == d["id"]:
+          problem = "names the rule itself"
+        elif v in seen:
+          problem = f"lists {v} twice"
+        else:
+          seen.append(v)
+          continue
+        self.errors.add(path, doc.line(f"{key} ="), 1, f"`{key}` {problem}")
 
 
 def by_number(path: Path) -> tuple[int, str]:
