@@ -1,6 +1,6 @@
 # Rule sources
 
-Status: draft, not built. This part of the design says which kinds of
+Status: decided, not built. This part of the design says which kinds of
 source a rule set draws on, which may cite which, how a rule set
 replaces one rule with its own (an override), how domains nest, and how
 the hand-written guide is moved into rules and retired. It builds on
@@ -8,10 +8,11 @@ the hand-written guide is moved into rules and retired. It builds on
 `team:7`) are those of [Sources and references](rule-sets.md#sources-and-references),
 and the tree, one-ofs and packs those of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
-Each point marked "default, to be decided" is a recommendation that
-stands until a person decides otherwise. Where this part differs from
-what [Rule system](rule-system.md) says today, the section
-[What this changes](#what-this-changes) lists the difference.
+The other parts of the design that this one changes already describe it,
+each marking it as not built; [What this changes](#what-this-changes)
+lists them, and what the tools do today that building it replaces. The
+form of the private output of a public repository is provisional
+([Private rules in a public repository](#private-rules-in-a-public-repository)).
 
 ## Contents
 
@@ -60,8 +61,8 @@ rule that has to point to the hand-written guide, or to any text that is
 not a rule or the constitution, has not been migrated yet
 ([Cutover](#cutover-from-the-hand-written-guide)).
 
-In `statute.toml`, a source's entry gains two fields (default, to be
-decided):
+In `statute.toml`, the rule set gains one field and a source's entry
+two:
 
 ```toml
 public = true
@@ -83,8 +84,7 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 ## Public or not
 
 Visibility is declared, not looked up: the rule set says `public = true`
-or `public = false`, for itself and for each source (default, to be
-decided). Reading it from the host at build time (GitHub's visibility of
+or `public = false`, for itself and for each source. Reading it from the host at build time (GitHub's visibility of
 the repository) would make the build need the network and an account,
 and give two machines different results for the same inputs; guessing
 from where a source lives (`R` public, everything else private) would
@@ -99,7 +99,7 @@ So a built-in check of `statute check` compares the declaration with the
 host where it can, through `gh` as the built-in checks of
 [Checks](rule-checks.md#checks) do: it fails when the rule set says
 `public = false` and the repository's visibility is `PUBLIC`, and says it
-could not tell when `gh` cannot answer (default, to be decided).
+could not tell when `gh` cannot answer.
 
 ## Which rules may cite which
 
@@ -134,17 +134,18 @@ A public repository's committed files are public, and they include the
 rule set, the lock file and the compiled `AGENTS.md`. A private source
 named in `statute.toml` would publish its address there, and its rules
 compiled into `AGENTS.md` would publish their text. So, in a rule set
-with `public = true` (default, to be decided):
+with `public = true`:
 
 - `statute.toml` names only public sources; a source with
   `public = false` fails, with a note to name it in
   `statute.private.toml`.
+- A private source holds only what is private. It copies no public rule:
+  it cites one, as any rule cites another.
 - Private sources go in `statute.private.toml`, next to `statute.toml`,
   which git ignores. It names `statute.toml` as its base with
   `base = "statute.toml"`, a new field for the inheritance that
   [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)
-  describes, and adds sources, rules and overrides; `output` in
-  `[compile]`, also new, names the file it compiles to:
+  describes, and adds sources and rules:
 
   ```toml
   base = "statute.toml"
@@ -158,35 +159,62 @@ with `public = true` (default, to be decided):
   output = "AGENTS.private.md"
   ```
 
-- It has its own lock file, `statute.private.lock`, and its own output,
-  a whole instruction file with the public rules and the private ones,
-  overrides applied. Before writing any of them, `statute compile` checks
-  with `git check-ignore` that git ignores each of these files, and
-  writes nothing when one is not ignored.
+- This private layer only adds to the public one. It may not override a
+  rule of `statute.toml`, nor leave one out
+  ([Overrides](#overrides)): the committed `AGENTS.md` holds that rule
+  whatever the private layer does, and an agent that read both files
+  would find two rules that disagree.
+- It has its own lock file, `statute.private.lock`, and its own output.
+  Before writing either, `statute compile` checks with `git check-ignore`
+  that git ignores `statute.private.toml` and each file it would write,
+  and writes nothing when one is not ignored or when it cannot tell, as
+  outside a git repository.
+
+**The private output is provisional.** It takes form A below until the
+agents are measured, to learn whether each reads a local instruction
+file in addition to the committed one or in place of it. They are
+measured as for the instruction files of subdirectories
+([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
+Monorepos), and B is the alternative the measurement may lead to.
+
+- A: `AGENTS.private.md`, which `output` in `[compile]` names as in the
+  example above, holds only the rules the private layer adds. The
+  committed `AGENTS.md` ends with one fixed line, the same in every
+  public repository, that tells an agent to read `AGENTS.private.md`
+  next when it exists, with a link to it.
+- B: statute compiles a private version for the local instruction file
+  that each agent reads (`CLAUDE.local.md`, `AGENTS.override.md` and the
+  like), and links each such name to it.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
-they are. How an agent in a public repository is brought to read the
-private output in place of the committed `AGENTS.md` is open: it is
-measured on the agents first, as the instruction files of subdirectories
-were ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
-Monorepos). Global private rules belong at the user level once it is
+they are. Global private rules belong at the user level once it is
 built (same section, Where it lives); until then they reach a repository
 this way.
 
 ## Overrides
 
 A rule set may put a rule of its own in place of a rule of another
-source. A public rule says the main checkout of a repository goes in
-`~/dev` and its worktrees in `~/wt`; a repository whose machines keep
-them elsewhere writes a local rule with the other paths, which overrides
-the public one. The compiled file then has only the local rule, at the
-place of the one it overrides, with a line that says which one:
-"Overrides R200". The public rule is not superseded: it stays in force in
-every other rule set.
+source. Most departures need none. A public rule states the principle
+and leaves the concrete values to the layers below, which add them as
+rules of their own: a public rule says that worktrees live outside the
+main checkout, in a directory of their own, and a global private rule
+names the directories, `~/dev` for main checkouts and `~/wt` for
+worktrees. The two rules hold together, so the second adds to the first
+and overrides nothing. A public rule is written so that it can be added
+to this way.
+
+An override is for a rule that cannot hold together with what a rule set
+needs. A public rule says that pull request descriptions are written in
+English; a repository whose readers all read Chinese writes a local rule
+that its descriptions are in Chinese, which overrides the public one.
+The compiled file then has only the local rule, at the place of the one
+it overrides, with a line that says which one: "Overrides R200". The
+public rule is not superseded: it stays in force in every other rule
+set.
 
 **Declaring it.** The overriding rule names the rule it replaces, in one
-field (default, to be decided):
+field:
 
 ```toml
 id = 3
@@ -203,12 +231,13 @@ source ([Conflicting practices as one-ofs](#conflicting-practices-as-one-ofs)). 
 overrides; the build fails when it has one.
 
 **Who may override whom.** A source has one of three ranks, and a rule
-may override only a rule of a lower rank (default, to be decided):
+may override only a rule of a lower rank:
 
 1. the first-party source, `R`, which overrides nothing;
 2. every other global source, public or private: a team's or a person's
    own rules may replace a first-party rule for all of their
-   repositories;
+   repositories (a private source's rules only in a private repository,
+   below);
 3. local rules: the repository's `rules/` and any source with
    `scope = "local"`.
 
@@ -219,6 +248,23 @@ chain is allowed: a local rule may override `team:7`, which overrides
 "Overrides team:7, which overrides R200". The reference direction
 ([Which rules may cite which](#which-rules-may-cite-which)) applies as well: a public rule
 cannot override a private one.
+
+**Only within one output.** An override is made only between rules
+compiled into the same output. In a private repository every layer is
+compiled into one file, so any rule may override one of a lower rank:
+the overridden rule does not appear, and the overriding rule says which
+one it overrides. In a public repository, the private layer only adds
+rules ([Private rules in a public repository](#private-rules-in-a-public-repository)):
+a rule it enables fails when it overrides a rule of the public layer,
+one that `statute.toml` enables, directly or through a requirement:
+
+```text
+error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `statute.private.toml` may only add rules
+```
+
+Within the private layer, a private rule may override another private
+rule of a lower rank, and within the public layer a local rule may
+override a public rule of a lower rank, as in a private repository.
 
 **What the build does.** An override takes effect when the overriding
 rule is enabled:
@@ -282,7 +328,7 @@ check that the override still holds.
 
 A domain may sit under another domain, as a subdomain: Git under
 Workflow, say, or Rust under Languages. It is a domain with a `parent`
-that names a domain (default, to be decided):
+that names a domain:
 
 ```toml
 id = 105
@@ -290,7 +336,8 @@ kind = "domain"
 parent = 104
 ```
 
-- A domain's `parent`, when present, names a domain with no parent. So
+- A domain's `parent`, when present, is the number of a domain of the
+  same source that has no parent. So
   there are at most two levels; a subdomain under a subdomain fails the
   build, as does a domain whose parent is a rule or a one-of.
 - A rule or a one-of may have a subdomain as its parent, as it may a
@@ -298,7 +345,7 @@ parent = 104
   one-ofs never interleave: the tree goes domain, subdomain, then rules
   and one-ofs.
 - A rule's `parent` may also name a domain or a subdomain of another
-  source (default, to be decided), never a rule or a one-of of another source, so that the local
+  source, never a rule or a one-of of another source, so that the local
   rules of a repository about Git appear under the general Git heading
   rather than under one of their own. The reference direction applies:
   a public rule's parent is a public domain.
@@ -350,8 +397,9 @@ conditions inside either child.
 ## Cutover from the hand-written guide
 
 The hand-written guide is replaced by rules of the four kinds as a
-whole, in one step, once every part of it has one (default, to be
-decided, with the four conditions below). There is no
+whole, in one step, once every part of it has one and the four
+conditions below hold; every repository the guide governs switches
+then. There is no
 transition clause: no text that keeps part of the guide in force after
 the switch, and no switch of one topic (credentials, say) before the
 others. What is specific to one environment was never a candidate for
@@ -396,30 +444,26 @@ place of the guide and retires the guide.
 
 ## What this changes
 
-Once built, this part replaces these statements in
-[Rule system](rule-system.md), which stay as they are until the work
-that implements it changes them:
+The parts of the design this one changes describe it already, each
+marking what is not built:
 
-- [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs),
-  Domains: "Domains do not nest" becomes the two levels of
-  [Subdomains](#subdomains).
-- [Rule file format](rule-format.md#rule-file-format): `parent` may name
-  a domain of another source, a domain may have a `parent`, and a rule
-  may have `overrides` in place of `parent`.
+- [Rule file format](rule-format.md#rule-file-format): a rule's `parent`
+  may name a domain of another source, a domain may have a `parent`, and
+  a rule may have `overrides` in place of `parent`.
 - [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file):
-  the rule set gains `public`, a source gains `public` and `scope`, a
-  public repository gains `statute.private.toml` with its lock file and
-  output, a rule set gains `base` and `output` in `[compile]`, and a rule
-  of the lock file may have `overridden-by`.
+  `public`, `scope`, `statute.private.toml`, `base`, `output` in
+  `[compile]` and `overridden-by` in the lock file.
+- [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
+  two levels of domains.
 - [Compilation and the site](statute-command.md#compilation-and-the-site):
-  "a requirement that crosses subtrees is rendered as a link" becomes one
-  that leads out of the requiring rule's nearest domain, subdomain
-  included.
-- [The command and the first version](statute-command.md#the-command-and-the-first-version),
-  Moving over: the switch is the one of
-  [Cutover](#cutover-from-the-hand-written-guide), whole, not one topic
-  first.
+  subdomain headings, and which requirements are links.
+- [The command and the first version](statute-command.md#the-command-and-the-first-version):
+  what is built so far, and moving over by the cutover above.
+- [Checkers](checkers.md#checkers): what `constitution-build` checks of
+  the new fields and what statute does.
+- [Choosing rules](rules.md#choosing-rules): a rule is changed by an
+  override.
 
-And in the rest of the design: [Choosing rules](rules.md#choosing-rules),
-"to change a rule, the overlay leaves it out and adds a private rule in
-its place", becomes an override.
+Building it replaces what the tools do today: `constitution-build` fails
+a domain with a `parent` and a rule with `overrides`, and statute fails a
+domain with a `parent` and reads one source on disk only.

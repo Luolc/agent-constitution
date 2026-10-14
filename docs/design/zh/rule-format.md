@@ -1,4 +1,4 @@
-<!-- en-sha256: 2023e4bc379f0395068104d0609dc4eae2685101cf563e98dba9739c0c72a02d -->
+<!-- en-sha256: c8d3b2036a00c881cfca360e866942777efabc945c53b5c12ca16275f8aed6c2 -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -106,7 +106,8 @@ en = "Python"
 - `status`：`draft`、`trial`、`active`、`superseded` 或 `repealed`。
 - `superseded-by`：取代这条规定的、同一规定源里的规定的 ID；几条规定一起取代它时写成 ID 的列表，`superseded-by = [22, 23]`。只在 `status` 为 `superseded` 时出现。每一项都是另一条规定，不重复；列表不能为空。
 - `lang`：这条规定写成时用的语言，即原文的语言，写成语言代码，如 `"en"` 或 `"zh"`。
-- `parent`：父节点的 ID，是同一规定源里的一条规定、一个 one-of 或一个领域。每条规定和每个 one-of 都有 parent；领域没有。
+- `parent`：父节点的 ID，是同一规定源里的一条规定、一个 one-of 或一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是同一规定源里一个没有 parent 的领域 (见[子领域](rule-sources.md#subdomains))。另一个规定源里的 `parent` 和领域的 `parent` 尚未实现。
+- `overrides` (可选，只有规定有)：这条规定在启用它的规定清单里所顶替的另一个规定源的规定，写法与 `requires` 相同 (`"R200"`)；带它的规定没有 `parent` (见[覆盖](rule-sources.md#overrides)；尚未实现)。
 - `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
 - `conflicts` (可选)：不能与这条规定一起用的规定，写法同 `requires`，只写在一边 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))。
 - `authority`：这条规定所细化的宪法条文的 ID，写法与宪法引用自身时相同，不带命名空间 (`"simplicity"`、`"must-ask.capital"`)。这是字段的值，不是正文里的 `{@...}` 引用，所以 [ID](source-formats.md#ids) 要求规定的引用带命名空间，这一条不适用于它；规定正文里的引用照旧带命名空间 (`{@constitution:simplicity}`)。
@@ -117,7 +118,7 @@ en = "Python"
 - `[text.statement]`、`[text.reason]` 和 `[text.verification]`：正文的三部分 ([一条规定包含什么](#what-one-rule-holds))。
 - `[translations]` (可选)：每种译文语言一个键，原文语言不在其中；值是这份译文所依据的原文的 SHA-256。
 
-领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (只有 one-of 有)、`[title]`，以及标题有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
+领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (one-of 都有，领域只在作为子领域时有)、`[title]`，以及标题有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
 
 **语言。** 每段文字，即 `[title]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这种语言的标题和全部三部分，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把文件里的每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同；转义写出的 `\r\n` 不是行尾，原样保留)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
 

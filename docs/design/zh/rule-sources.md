@@ -1,7 +1,7 @@
-<!-- en-sha256: fcab03f75c695d57d58852fafd8176e366cfa86c73f2d5c469d543fdaa792698 -->
+<!-- en-sha256: 69d6e1e835b8d2aa270145e65c1b5f78522504ac16d99708518bd7fd3ce624ec -->
 # 规定源
 
-状态：草案，尚未实现。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。标着「默认，待定」的各点是推荐做法，人另有决定之前照它办。这一部分与[规定体系](rule-system.md) 现在的写法不一致的地方，列在[它改变什么](#what-this-changes) 一节。
+状态：已定，尚未实现。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现它会替换掉工具现在的哪些行为。公开仓库的私有输出用什么形式，目前是暂定的 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))。
 
 ## <a id="contents"></a>目录
 
@@ -31,7 +31,7 @@
 
 不论哪一类，每条规定都自成一体 (self-contained)：引用别的规定只通过 `parent`、`requires`、`conflicts`、`overrides` 和 `{@rule:...}`，引用宪法只通过 `authority` 和 `{@constitution:...}`。一条规定还要指向手写的指南，或者指向任何既不是规定也不是宪法的文字，就说明它还没迁完 (见[切换](#cutover-from-the-hand-written-guide))。
 
-`statute.toml` 里，规定源的条目多两个字段 (默认，待定)：
+`statute.toml` 里，规定清单多一个字段，规定源的条目多两个：
 
 ```toml
 public = true
@@ -47,9 +47,9 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 
 ## <a id="public-or-not"></a>公开与否
 
-可见性靠声明，不靠查询：规定清单为自己、为每个规定源写明 `public = true` 或 `public = false` (默认，待定)。要是构建时去托管平台查 (GitHub 上仓库的 visibility)，构建就离不开网络和账号，同样的输入在两台机器上也可能得出不同结果；要是按规定源放在哪来猜 (`R` 公开，其余都私有)，一个团队公开的规定源就成了私有的，公开规定也就不能引用它的规定了。
+可见性靠声明，不靠查询：规定清单为自己、为每个规定源写明 `public = true` 或 `public = false`。要是构建时去托管平台查 (GitHub 上仓库的 visibility)，构建就离不开网络和账号，同样的输入在两台机器上也可能得出不同结果；要是按规定源放在哪来猜 (`R` 公开，其余都私有)，一个团队公开的规定源就成了私有的，公开规定也就不能引用它的规定了。
 
-声明错了，只有一个方向危险。私有仓库声明了 `public = true`，检查比需要的严，但什么也不会泄漏。公开仓库声明了 `public = false`，就可能把私有规定写进谁都能读的文件。所以 `statute check` 有一项内置检查，在能查的时候把声明和托管平台对一对，像[检查](rule-checks.md#checks) 里的内置检查那样通过 `gh` 查：规定清单写的是 `public = false`，而仓库的 visibility 是 `PUBLIC`，就失败；`gh` 答不上来时，报告说无法判断 (默认，待定)。
+声明错了，只有一个方向危险。私有仓库声明了 `public = true`，检查比需要的严，但什么也不会泄漏。公开仓库声明了 `public = false`，就可能把私有规定写进谁都能读的文件。所以 `statute check` 有一项内置检查，在能查的时候把声明和托管平台对一对，像[检查](rule-checks.md#checks) 里的内置检查那样通过 `gh` 查：规定清单写的是 `public = false`，而仓库的 visibility 是 `PUBLIC`，就失败；`gh` 答不上来时，报告说无法判断。
 
 ## <a id="which-rules-may-cite-which"></a>哪些规定可以引用哪些
 
@@ -72,10 +72,11 @@ rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`
 
 ## <a id="private-rules-in-a-public-repository"></a>公开仓库里的私有规定
 
-公开仓库提交的文件都是公开的，其中包括规定清单、锁文件和编译出的 `AGENTS.md`。在 `statute.toml` 里写一个私有规定源，就会把它的地址公开出去；把它的规定编译进 `AGENTS.md`，就会把规定的正文公开出去。所以在 `public = true` 的规定清单里 (默认，待定)：
+公开仓库提交的文件都是公开的，其中包括规定清单、锁文件和编译出的 `AGENTS.md`。在 `statute.toml` 里写一个私有规定源，就会把它的地址公开出去；把它的规定编译进 `AGENTS.md`，就会把规定的正文公开出去。所以在 `public = true` 的规定清单里：
 
 - `statute.toml` 只写公开的规定源；写了 `public = false` 的规定源就报错，并提示把它写进 `statute.private.toml`。
-- 私有规定源写在 `statute.private.toml` 里。它和 `statute.toml` 放在同一目录，被 git 忽略；它用 `base = "statute.toml"` 指明以 `statute.toml` 为基础，这是为[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的继承新加的字段；它再加上规定源、规定和覆盖；`[compile]` 里的 `output` 也是新字段，写明它编译到哪个文件：
+- 私有规定源里只放私有的东西。它不抄公开规定，要用就像别的规定那样引用。
+- 私有规定源写在 `statute.private.toml` 里。它和 `statute.toml` 放在同一目录，被 git 忽略；它用 `base = "statute.toml"` 指明以 `statute.toml` 为基础，这是为[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的继承新加的字段；它再加上规定源和规定：
 
   ```toml
   base = "statute.toml"
@@ -89,15 +90,23 @@ rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`
   output = "AGENTS.private.md"
   ```
 
-- 它有自己的锁文件 `statute.private.lock` 和自己的输出。输出是一份完整的指令文件，公开规定和私有规定都在里面，覆盖也已生效。`statute compile` 在写这些文件之前，先用 `git check-ignore` 确认 git 忽略了每一个，有一个没被忽略就什么都不写。
+- 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
+- 它有自己的锁文件 `statute.private.lock` 和自己的输出。`statute compile` 在写这两样之前，先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml` 和它要写的每个文件；有一个没被忽略，或者确认不了 (比如不在 git 仓库里)，就什么都不写。
 
-私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。公开仓库里的 agent 怎样改读这份私有输出、不读提交进仓库的 `AGENTS.md`，还没有定：先在各家 agent 上实测，就像测子目录里的指令文件那样 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)。全局私有规定等用户级做出来以后归用户级 (同一节，放在哪里一段)；在那之前，它们这样进入一个仓库。
+**私有输出暂定如此。** 在各家 agent 测量出结果之前，先按下面的 A 做：要测的是每家 agent 读本地指令文件时，是在提交进仓库的那份之外追加读，还是用它代替那份。测法与测子目录里的指令文件相同 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，B 是测量结果可能指向的另一种做法。
+
+- A：`AGENTS.private.md` (即上面例子里 `[compile]` 的 `output`) 只含私有层新加的规定。提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `AGENTS.private.md` 时接着读它，并附上链接。
+- B：statute 为每家 agent 读的本地指令文件 (`CLAUDE.local.md`、`AGENTS.override.md` 之类) 编译出一份私有版，再把这些文件名分别软链到它。
+
+私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 (同一节，放在哪里一段)；在那之前，它们这样进入一个仓库。
 
 ## <a id="overrides"></a>覆盖
 
-规定清单可以用自己的一条规定顶替另一个规定源的一条规定。比如一条公开规定写主检出放在 `~/dev`、worktree 放在 `~/wt`；某个仓库的机器上放在别处，它就写一条本地规定，写明另外的路径，覆盖那条公开规定。编译出的文件里只有这条本地规定，放在被覆盖的那条原来的位置，另起一行写明覆盖了哪条：「Overrides R200」。那条公开规定并没有被取代，在其他规定清单里照样有效。
+规定清单可以用自己的一条规定顶替另一个规定源的一条规定。多数偏离用不着这样做。公开规定只写原则，具体的值留给下面的层，由它们写成自己的规定来补充：比如一条公开规定写 worktree 放在主检出之外、单独的目录里，一条全局私有规定再写明具体目录，主检出放在 `~/dev`，worktree 放在 `~/wt`。这两条规定同时成立，后一条是对前一条的补充，不覆盖什么。公开规定要写成能这样补充的样子。
 
-**怎样声明。** 覆盖方用一个字段写明它顶替哪条规定 (默认，待定)：
+覆盖用在一条规定与规定清单的需要无法同时成立的时候。比如一条公开规定写 pull request 的描述用英文；某个仓库的读者都读中文，它就写一条本地规定，规定描述用中文，覆盖那条公开规定。编译出的文件里只有这条本地规定，放在被覆盖的那条原来的位置，另起一行写明覆盖了哪条：「Overrides R200」。那条公开规定并没有被取代，在其他规定清单里照样有效。
+
+**怎样声明。** 覆盖方用一个字段写明它顶替哪条规定：
 
 ```toml
 id = 3
@@ -107,13 +116,21 @@ overrides = "R200"
 
 `overrides` 只写一条规定，写法与 `requires` 相同。一条规定要顶替两条，就是两项要求，应该写成两条规定。领域和 one-of 不能被覆盖：规定清单改选 one-of 的另一个子节点；规定源里没有想要的子节点，就向那个规定源提议加一个 (见[用 one-of 表达相互冲突的做法](#conflicting-practices-as-one-ofs))。带 `overrides` 的规定没有 `parent`，它的位置就是被覆盖那条的位置；写了 `parent` 构建就失败。
 
-**谁能覆盖谁。** 规定源分三级，一条规定只能覆盖级别更低的规定源里的规定 (默认，待定)：
+**谁能覆盖谁。** 规定源分三级，一条规定只能覆盖级别更低的规定源里的规定：
 
 1. 第一方规定源 `R`，什么也不能覆盖；
-2. 其余的全局规定源，公开私有都算：一个团队或一个人自己的规定，可以在他们所有的仓库里顶替一条第一方规定；
+2. 其余的全局规定源，公开私有都算：一个团队或一个人自己的规定，可以在他们所有的仓库里顶替一条第一方规定 (私有规定源的规定只在私有仓库里，见下文)；
 3. 本地规定：仓库自己的 `rules/`，以及任何 `scope = "local"` 的规定源。
 
 同一级的两条规定不能相互覆盖；同一个规定源里的规定只能原地修改或者被取代，不能被覆盖。允许一层套一层：本地规定可以覆盖 `team:7`，而 `team:7` 覆盖 `R200`；编译出的文件里只出现这条本地规定，那一行写「Overrides team:7, which overrides R200」。引用方向 (见[哪些规定可以引用哪些](#which-rules-may-cite-which)) 同样适用：公开规定不能覆盖私有规定。
+
+**只在同一份输出里覆盖。** 覆盖只发生在编译进同一份输出的规定之间。私有仓库把所有层编译进一个文件，所以任何规定都可以覆盖级别更低的规定：被覆盖的规定不出现，覆盖方写明它覆盖了哪条。公开仓库里，私有层只增加规定 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))：它启用的规定覆盖了公开层的规定，即 `statute.toml` 直接启用或经依赖带进来的规定，就报错：
+
+```text
+error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `statute.private.toml` may only add rules
+```
+
+在私有层内部，私有规定可以覆盖级别更低的另一条私有规定；在公开层内部，本地规定可以覆盖级别更低的公开规定，与私有仓库一样。
 
 **构建怎样处理。** 覆盖方启用了，覆盖才生效：
 
@@ -147,7 +164,7 @@ overridden-by = "L3"
 
 ## <a id="subdomains"></a>子领域
 
-一个领域可以挂在另一个领域下面，成为子领域，比如 Git 挂在工作流下面，Rust 挂在编程语言下面。子领域就是一个 `parent` 指向某个领域的领域 (默认，待定)：
+一个领域可以挂在另一个领域下面，成为子领域，比如 Git 挂在工作流下面，Rust 挂在编程语言下面。子领域就是一个 `parent` 指向某个领域的领域：
 
 ```toml
 id = 105
@@ -155,9 +172,9 @@ kind = "domain"
 parent = 104
 ```
 
-- 领域的 `parent` 如果有，只能指向一个自己没有 `parent` 的领域。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或 one-of，构建也失败。
+- 领域的 `parent` 如果有，只能是同一规定源里一个自己没有 `parent` 的领域的编号。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或 one-of，构建也失败。
 - 规定和 one-of 可以把子领域当作 `parent`，就像把领域当作 `parent` 一样。one-of 下面不能有领域，所以子领域和 one-of 不会交错：树的顺序是领域、子领域，然后是规定和 one-of。
-- 规定的 `parent` 也可以指向另一个规定源的领域或子领域 (默认，待定)，但不能指向另一个规定源的规定或 one-of。这样，一个仓库关于 Git 的本地规定会出现在通用的 Git 标题下面，而不是另起一个标题。引用方向同样适用：公开规定的 `parent` 必须是公开的领域。
+- 规定的 `parent` 也可以指向另一个规定源的领域或子领域，但不能指向另一个规定源的规定或 one-of。这样，一个仓库关于 Git 的本地规定会出现在通用的 Git 标题下面，而不是另起一个标题。引用方向同样适用：公开规定的 `parent` 必须是公开的领域。
 - 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定，不在规定包里，要由规定清单在 `rules` 里列出来启用。
 
 **怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](statute-command.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
@@ -175,7 +192,7 @@ parent = 104
 
 ## <a id="cutover-from-the-hand-written-guide"></a>从手写的指南切换过来
 
-手写的指南等到每一部分都有了去处，再一步整体换成四类规定 (默认，待定，连同下面的四个条件)。没有过渡条款：切换之后，没有哪段文字让指南的一部分继续有效；也不先切某一个主题 (比如凭证)，再切其他的。只适用于某个环境的内容本来就不会进第一方规定源，也不必留在指南里等：它从一开始就是全局私有规定或本地规定。
+手写的指南等到每一部分都有了去处，并且下面四个条件都成立时，再一步整体换成四类规定，指南管着的所有仓库同时切换。没有过渡条款：切换之后，没有哪段文字让指南的一部分继续有效；也不先切某一个主题 (比如凭证)，再切其他的。只适用于某个环境的内容本来就不会进第一方规定源，也不必留在指南里等：它从一开始就是全局私有规定或本地规定。
 
 **清点。** 指南的每一项都有且只有一个去处，记在私有一侧的对照表里，做法同[从现有的手写的指南迁移](fleet-and-migration.md#migrating-from-the-current-hand-written-guide) 第 3 步，只是其中的「私有规定」分成三种：
 
@@ -198,12 +215,14 @@ parent = 104
 
 ## <a id="what-this-changes"></a>它改变什么
 
-这一部分实现以后，会替换[规定体系](rule-system.md) 里的下列说法；在实现它的工作改动这些说法之前，它们保持原样：
+设计里受这一部分影响的地方已经按它写好，并各自标明尚未实现的内容：
 
-- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)，领域一段：「领域不嵌套」改为[子领域](#subdomains) 的两级。
-- [规定文件格式](rule-format.md#rule-file-format)：`parent` 可以指向另一个规定源的领域，领域可以有 `parent`，规定可以用 `overrides` 代替 `parent`。
-- [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：规定清单多了 `public`，规定源多了 `public` 和 `scope`，公开仓库多了 `statute.private.toml` 及其锁文件和输出，规定清单多了 `base` 和 `[compile]` 里的 `output`，锁文件里的规定可以有 `overridden-by`。
-- [编译与网站](statute-command.md#compilation-and-the-site)：「跨子树的依赖渲染成一个链接」改为：要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为链接。
-- [命令与第一版](statute-command.md#the-command-and-the-first-version)，切换一段：切换改为[切换](#cutover-from-the-hand-written-guide) 一节说的那种，整体切换，不先切某一个主题。
+- [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，规定可以用 `overrides` 代替 `parent`。
+- [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、`statute.private.toml`、`base`、`[compile]` 里的 `output`，以及锁文件里的 `overridden-by`。
+- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：两级领域。
+- [编译与网站](statute-command.md#compilation-and-the-site)：子领域的标题，以及哪些依赖显示为链接。
+- [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
+- [检查程序](checkers.md#checkers)：`constitution-build` 对新字段查什么，哪些归 statute 查。
+- [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
 
-设计的其他部分里：[选用规定](rules.md#choosing-rules) 中「要修改一条规定，overlay 先去掉它，再加一条私有规定替代」改为覆盖。
+实现它会替换掉工具现在的行为：`constitution-build` 遇到带 `parent` 的领域和带 `overrides` 的规定会失败；statute 遇到带 `parent` 的领域会失败，而且只读一个磁盘上的规定源。
