@@ -4,8 +4,86 @@ audience = "maintainers"
 
 [content]
 en = '''
-This text is kept as sources, by default in the `constitution/` directory: one directory per article, one file per section with its items. Every article, section and item has a permanent ID, and the texts in all languages stand side by side in the same source. The versions an agent reads, one per language, are compiled from the sources; a change is made in the sources and never in a compiled version. Within an edition ({@editions.edition}), numbers are only ever added and a repealed provision keeps its place ({@stable-numbers}). This text explains itself: reading it alone tells how it was produced and where a change goes ({@amending}).
+How this text is kept and produced is settled as follows:
 '''
 zh = '''
-本宪法以源文本保存，默认放在 `constitution/` 目录下：一条一个目录，一款一个文件，款下的项写在该文件里。每条、每款、每项都有永久的 ID，各语言的正文并列写在同一份源文本里。agent 读到的版本，一种语言一份，由源文本编译而来；修改只改源文本，不改编译产物。同一版内 ({@editions.edition})，编号只增不删，废止的条文保留原位 ({@stable-numbers})。本宪法自我说明：只读本宪法，就能知道它怎样产生、日后应当修改哪里 ({@amending})。
+本宪法怎样保存、怎样产生，规定如下：
+'''
+
+[[items]]
+id = "sources"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+This text is kept as sources, by default in the `constitution/` directory: one directory per article, one file per section with its items.
+'''
+zh = '''
+本宪法以源文本保存，默认放在 `constitution/` 目录下：一条一个目录，一款一个文件，款下的项写在该文件里。
+'''
+
+[[items]]
+id = "ids"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Every article, section and item has a permanent ID.
+'''
+zh = '''
+每条、每款、每项都有永久的 ID。
+'''
+
+[[items]]
+id = "languages"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+The texts in all languages stand side by side in the same source.
+'''
+zh = '''
+各语言的正文并列写在同一份源文本里。
+'''
+
+[[items]]
+id = "compiled"
+number = "4"
+status = "draft"
+
+[items.content]
+en = '''
+The versions an agent reads, one per language, are compiled from the sources; a change is made in the sources and never in a compiled version.
+'''
+zh = '''
+agent 读到的版本，一种语言一份，由源文本编译而来；修改只改源文本，不改编译产物。
+'''
+
+[[items]]
+id = "numbers"
+number = "5"
+status = "draft"
+
+[items.content]
+en = '''
+Within an edition ({@editions.edition}), numbers are only ever added and a repealed provision keeps its place ({@stable-numbers}).
+'''
+zh = '''
+同一版内 ({@editions.edition})，编号只增不删，废止的条文保留原位 ({@stable-numbers})。
+'''
+
+[[items]]
+id = "self-explaining"
+number = "6"
+status = "draft"
+
+[items.content]
+en = '''
+This text explains itself: reading it alone tells how it was produced and where a change goes ({@amending}).
+'''
+zh = '''
+本宪法自我说明：只读本宪法，就能知道它怎样产生、日后应当修改哪里 ({@amending})。
 '''

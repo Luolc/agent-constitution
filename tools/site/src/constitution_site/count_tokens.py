@@ -155,7 +155,7 @@ def main(argv: list[str] | None = None) -> int:
   parser.add_argument(
     "--require-tokens",
     action="store_true",
-    help="fail when a text's tokens are not counted (the token-count workflow)",
+    help="fail when a text's tokens are not counted (the Pages workflow)",
   )
   args = parser.parse_args(argv)
   with (ROOT / "constitution/index.toml").open("rb") as f:

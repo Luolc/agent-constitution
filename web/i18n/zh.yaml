@@ -1,7 +1,6 @@
-theme-switch: "切换配色"
-theme-auto: "配色：跟随系统"
-theme-light: "配色：浅色"
-theme-dark: "配色：深色"
+theme-auto: "配色：跟随系统 (切换到浅色)"
+theme-light: "配色：浅色 (切换到深色)"
+theme-dark: "配色：深色 (切换到跟随系统)"
 source-link: "源代码"
 toc-heading: "本页目录"
 # 左栏「宪法」下的一版 (content/_content.gotmpl)。
