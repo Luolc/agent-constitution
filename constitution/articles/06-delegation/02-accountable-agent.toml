@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Each task must have one agent clearly responsible for it. That agent judges the result of the task and answers for it to whoever handed it the task.
+Each task must have exactly one responsible agent. The responsible agent may delegate parts of the task to other agents, but remains responsible for the whole task: it accepts the results the delegated agents hand back against the acceptance criteria ({@acceptance-criteria}), and answers for the whole task to whoever delegated the task to it. The responsible agent's own work is accepted by whoever delegated the task to it, not by the agent itself.
 '''
 zh = '''
-每项任务都必须有一个明确负责的 agent。这个 agent 评判任务的结果，并向把任务交给它的一方交代。
+每一项任务都必须有且只有一个负责的 agent。负责的 agent 可以把任务的一部分再委派给其他 agent，但仍对整项任务负责：它依照验收标准 ({@acceptance-criteria}) 验收受委派的 agent 交回的结果，并就整项任务向委派它的一方交代。负责的 agent 自己的工作，由委派它的一方验收，不由它自己验收。
 '''
