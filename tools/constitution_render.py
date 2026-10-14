@@ -6,6 +6,8 @@ from constitution_languages import (
   LANGUAGES,
 )
 from constitution_sources import (
+  Article,
+  Item,
   MARK,
   MONTH,
   number_key,
@@ -28,7 +30,7 @@ OMITTED_MARK = '<sup class="omitted">*</sup>'
 FRONT_HEADING = re.compile(r"^#{2,6} .+$", re.M)
 
 
-def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
+def render(lang: str, src: Sources, agent: bool = False) -> str:
   """Return the constitution in one language.
 
   The full version, or with `agent` the version for agents, without
@@ -44,37 +46,77 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
   Returns:
     The Markdown text.
   """
-  lng = LANGUAGES[lang]
-  # short: a section's or an item's citation without its article or
-  # section; parent: the article or section that short leaves out.
-  labels, numbers, short, parent = {}, {}, {}, {}
-  for a in src.articles:
-    numbers[a.id] = lng.article_number(*number_key(a.number))
-    labels[a.id] = lng.article_ref.format(number=numbers[a.id])
-  for s in src.sections:
-    numbers[s.id] = short[s.id] = lng.section_number(*number_key(s.number))
-    labels[s.id] = lng.section_ref.format(
-      article=labels[s.article], section=numbers[s.id]
+  return _Renderer(lang, src, agent).text()
+
+
+class _Renderer:
+  """The rendering of one language and version, with its number tables."""
+
+  def __init__(self, lang: str, src: Sources, agent: bool) -> None:
+    """Compute the number and the citation label of every provision.
+
+    Args:
+      lang: the language.
+      src: the sources.
+      agent: whether to render the version for agents.
+    """
+    self.lang, self.src, self.agent = lang, src, agent
+    self.lng = lng = LANGUAGES[lang]
+    # short: a section's or an item's citation without its article or
+    # section; parent: the article or section that short leaves out.
+    labels: dict[str, str] = {}
+    numbers: dict[str, str] = {}
+    short: dict[str, str] = {}
+    parent: dict[str, str] = {}
+    for a in src.articles:
+      numbers[a.id] = lng.article_number(*number_key(a.number))
+      labels[a.id] = lng.article_ref.format(number=numbers[a.id])
+    for s in src.sections:
+      numbers[s.id] = short[s.id] = lng.section_number(*number_key(s.number))
+      labels[s.id] = lng.section_ref.format(
+        article=labels[s.article], section=numbers[s.id]
+      )
+      parent[s.id] = s.article
+      for i in s.items:
+        short[i.ref] = lng.item_ref(*number_key(i.number))
+        labels[i.ref] = labels[s.id] + short[i.ref]
+        parent[i.ref] = s.id
+    self.labels, self.numbers, self.short, self.parent = (
+      labels,
+      numbers,
+      short,
+      parent,
     )
-    parent[s.id] = s.article
-    for i in s.items:
-      short[i.ref] = lng.item_ref(*number_key(i.number))
-      labels[i.ref] = labels[s.id] + short[i.ref]
-      parent[i.ref] = s.id
+    # citation -> None, in order of first use: the link definitions
+    self.cited: dict[str, None] = {}
 
-  cited = {}  # citation -> None, in order of first use: the link definitions
+  def anchor(self, ref: str) -> str:
+    """Return the anchor of a provision, none in the version for agents.
 
-  def anchor(ref: str) -> str:
-    return "" if agent else f'<a id="{ref}"></a>'
+    Args:
+      ref: the provision's citation.
 
-  def note(month: str | None) -> str:
+    Returns:
+      The anchor, or "".
+    """
+    return "" if self.agent else f'<a id="{ref}"></a>'
+
+  def note(self, month: str | None) -> str:
+    """Return the note that a provision was repealed in a month.
+
+    Args:
+      month: the month, `YYYY-MM`.
+
+    Returns:
+      The note.
+    """
     # Called only on a repealed provision, which check 1 gave a month.
     assert month is not None
     m = MONTH.fullmatch(month)
     assert m is not None
-    return lng.repealed_note(int(m.group(1)), int(m.group(2)))
+    return self.lng.repealed_note(int(m.group(1)), int(m.group(2)))
 
-  def refs(text: str) -> str:
+  def refs(self, text: str) -> str:
     """Return the text with each citation rendered.
 
     Each citation becomes a link to its provision's anchor, its label as
@@ -95,17 +137,19 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
     for m in MARK.finditer(text):
       ref, between = m.group(2), text[end : m.start()]
       joined = (
-        ref in parent and parent[ref] == previous and between in lng.connectors
+        ref in self.parent
+        and self.parent[ref] == previous
+        and between in self.lng.connectors
       )
-      label = short[ref] if joined else labels[ref]
-      if not agent:
-        cited[ref] = None
+      label = self.short[ref] if joined else self.labels[ref]
+      if not self.agent:
+        self.cited[ref] = None
         label = f"[{label}][{ref}]"
       out += [between, label]
-      previous, end = parent.get(ref), m.end()
+      previous, end = self.parent.get(ref), m.end()
     return "".join(out) + text[end:]
 
-  def indented(first: str, text: str, indent: str) -> list[str]:
+  def indented(self, first: str, text: str, indent: str) -> list[str]:
     """Return a list line `first` + the text's first line, then the rest.
 
     The other lines are indented under it.
@@ -118,81 +162,80 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
     Returns:
       The lines.
     """
-    head, *tail = refs(text).split("\n")
+    head, *tail = self.refs(text).split("\n")
     return [first + head, *(indent + t if t else t for t in tail)]
 
-  def section_entries(s: Section) -> list[list[str]]:
-    number = f"{SECTION}{anchor(s.id)}**{numbers[s.id]}**"
-    if s.omitted and agent:
-      return [[f"{number} {lng.omitted}"]]
+  def item_entry(self, i: Item) -> list[str]:
+    """Return the lines of one list item.
+
+    Args:
+      i: the item.
+
+    Returns:
+      The lines.
+    """
+    lng = self.lng
+    marker = self.anchor(i.ref) + lng.item_marker(*number_key(i.number))
+    if i.status == "repealed":
+      return [f"{ITEM}{marker.rstrip()} ({self.note(i.repealed)})"]
+    if i.omitted and self.agent:
+      return [f"{ITEM}{marker}{lng.omitted}"]
+    if i.omitted:
+      return self.indented(
+        f"{ITEM}{marker.rstrip()}{OMITTED_MARK} ",
+        i.content[self.lang],
+        2 * INDENT,
+      )
+    return self.indented(f"{ITEM}{marker}", i.content[self.lang], 2 * INDENT)
+
+  def section_entries(self, s: Section) -> list[list[str]]:
+    """Return the entries of one section: the section, then its items.
+
+    Args:
+      s: the section.
+
+    Returns:
+      The lines of each entry.
+    """
+    number = f"{SECTION}{self.anchor(s.id)}**{self.numbers[s.id]}**"
+    if s.status == "repealed":
+      return [[f"{number} ({self.note(s.repealed)})"]]
+    if s.omitted and self.agent:
+      return [[f"{number} {self.lng.omitted}"]]
     mark = OMITTED_MARK if s.omitted else ""
-    entries = [indented(f"{number}{mark} ", s.content[lang], INDENT)]
+    entries = [self.indented(f"{number}{mark} ", s.content[self.lang], INDENT)]
     for i in sorted(s.items, key=lambda i: number_key(i.number)):
-      marker = anchor(i.ref) + lng.item_marker(*number_key(i.number))
-      if i.status == "repealed":
-        entries.append([f"{ITEM}{marker.rstrip()} ({note(i.repealed)})"])
-      elif i.omitted and agent:
-        entries.append([f"{ITEM}{marker}{lng.omitted}"])
-      elif i.omitted:
-        entries.append(
-          indented(
-            f"{ITEM}{marker.rstrip()}{OMITTED_MARK} ",
-            i.content[lang],
-            2 * INDENT,
-          )
-        )
-      else:
-        entries.append(indented(f"{ITEM}{marker}", i.content[lang], 2 * INDENT))
+      entries.append(self.item_entry(i))
     return entries
 
-  index = src.index.data
-  edition = lng.edition.format(edition=index["edition"])
-  revision = index["revision"]
-  if index["status"] == "draft":
-    revision = lng.draft_revision.format(revision=revision)
-  header = (lng.agent_header if agent else lng.header).format(revision=revision)
-  opening = lng.agent_active if index["status"] == "active" else lng.agent_draft
-  front = (
-    lng.agent_front.format(opening=opening)
-    if agent
-    else FRONT_HEADING.sub(
-      lambda m: m.group() + OMITTED_MARK, refs(index["front"][lang])
-    )
-  )
-  if not agent and (
-    OMITTED_MARK in front
-    or any(s.omitted or any(i.omitted for i in s.items) for s in src.sections)
-  ):
-    header += lng.legend
-  parts = [header, f"# {refs(index['title'][lang])} ({edition})\n\n{front}"]
-  for a in sorted(src.articles, key=lambda a: number_key(a.number)):
+  def article(self, a: Article) -> str:
+    """Return one article: its heading, intro and sections.
+
+    Args:
+      a: the article.
+
+    Returns:
+      The Markdown text.
+    """
+    lng, anchor, number = self.lng, self.anchor(a.id), self.numbers[a.id]
     if a.repealed:
-      parts.append(
-        lng.repealed_article_heading.format(
-          anchor=anchor(a.id), number=numbers[a.id], note=note(a.repealed)
-        )
+      return lng.repealed_article_heading.format(
+        anchor=anchor, number=number, note=self.note(a.repealed)
       )
-      continue
     block = [
       lng.article_heading.format(
-        anchor=anchor(a.id), number=numbers[a.id], title=refs(a.title[lang])
+        anchor=anchor, number=number, title=self.refs(a.title[self.lang])
       )
     ]
     if a.intro is not None:
-      block.append(refs(a.intro[lang]))
+      block.append(self.refs(a.intro[self.lang]))
     own = sorted(
-      (s for s in src.sections if s.article == a.id),
+      (s for s in self.src.sections if s.article == a.id),
       key=lambda s: number_key(s.number),
     )
     body = []
     for s in own:
-      if s.status == "repealed":
-        entries = [
-          [f"{SECTION}{anchor(s.id)}**{numbers[s.id]}** ({note(s.repealed)})"]
-        ]
-      else:
-        entries = section_entries(s)
-      for e in entries:
+      for e in self.section_entries(s):
         # An entry of several paragraphs ends with a blank line, or a
         # list line right after it would join its last paragraph.
         body += e + [""] if "" in e else e
@@ -200,7 +243,59 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
       body.pop()
     if body:
       block.append("\n".join(body))
-    parts.append("\n\n".join(block))
-  if cited:
-    parts.append("\n".join(f"[{ref}]: #{ref}" for ref in cited))
-  return "\n\n".join(parts) + "\n"
+    return "\n\n".join(block)
+
+  def front(self) -> str:
+    """Return the front text, or the note in its place for agents.
+
+    Returns:
+      The Markdown text.
+    """
+    index, lng = self.src.index.data, self.lng
+    if self.agent:
+      active = index["status"] == "active"
+      opening = lng.agent_active if active else lng.agent_draft
+      return lng.agent_front.format(opening=opening)
+    return FRONT_HEADING.sub(
+      lambda m: m.group() + OMITTED_MARK, self.refs(index["front"][self.lang])
+    )
+
+  def header(self, front: str) -> str:
+    """Return the header line, with the legend when a text is marked.
+
+    Args:
+      front: the rendered front text.
+
+    Returns:
+      The header.
+    """
+    index, lng = self.src.index.data, self.lng
+    revision = index["revision"]
+    if index["status"] == "draft":
+      revision = lng.draft_revision.format(revision=revision)
+    header = (lng.agent_header if self.agent else lng.header).format(
+      revision=revision
+    )
+    marked = any(
+      s.omitted or any(i.omitted for i in s.items) for s in self.src.sections
+    )
+    if not self.agent and (OMITTED_MARK in front or marked):
+      header += lng.legend
+    return header
+
+  def text(self) -> str:
+    """Return the whole text.
+
+    Returns:
+      The Markdown text.
+    """
+    index = self.src.index.data
+    edition = self.lng.edition.format(edition=index["edition"])
+    front = self.front()
+    title = self.refs(index["title"][self.lang])
+    parts = [self.header(front), f"# {title} ({edition})\n\n{front}"]
+    for a in sorted(self.src.articles, key=lambda a: number_key(a.number)):
+      parts.append(self.article(a))
+    if self.cited:
+      parts.append("\n".join(f"[{ref}]: #{ref}" for ref in self.cited))
+    return "\n\n".join(parts) + "\n"

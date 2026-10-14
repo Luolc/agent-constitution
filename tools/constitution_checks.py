@@ -8,17 +8,19 @@ import re
 
 from constitution_sources import (
   citations,
+  Doc,
   Errors,
   ID,
   number_key,
   RETIRED,
+  Rule,
   Sources,
 )
 
 # Check 2: IDs.
 
 
-def check_ids(src: Sources, errors: Errors) -> None:  # noqa: C901
+def check_ids(src: Sources, errors: Errors) -> None:
   """Check 2: every ID has the format and is unique where it must be.
 
   Article and section IDs are unique in the constitution, item IDs in
@@ -28,31 +30,48 @@ def check_ids(src: Sources, errors: Errors) -> None:  # noqa: C901
     src: the sources.
     errors: where errors go.
   """
-
-  def unique_ids(declared: list) -> None:
-    seen = {}
-    for doc, value in declared:
-      line = doc.line(f'id = "{value}"')
-      if not re.fullmatch(ID, value):
-        errors.add(
-          doc.path,
-          line,
-          2,
-          f"`{value}` is not an ID: lowercase words joined by hyphens",
-        )
-      if value in seen:
-        errors.add(
-          doc.path, line, 2, f"{value} is already defined at {seen[value]}"
-        )
-      seen.setdefault(value, f"{doc.path}:{line}")
-
   unique_ids(
+    errors,
     [(a.doc, a.id) for a in src.articles]
-    + [(s.doc, s.id) for s in src.sections]
+    + [(s.doc, s.id) for s in src.sections],
   )
   for s in src.sections:
-    unique_ids([(s.doc, i.id) for i in s.items])
-  unique_ids([(r.doc, r.id) for r in src.rules])
+    unique_ids(errors, [(s.doc, i.id) for i in s.items])
+  unique_ids(errors, [(r.doc, r.id) for r in src.rules])
+  check_retired(src, errors)
+
+
+def unique_ids(errors: Errors, declared: list[tuple[Doc, str]]) -> None:
+  """Check that each ID has the format and none repeats in one scope.
+
+  Args:
+    errors: where errors go.
+    declared: (doc, ID) for each ID of the scope.
+  """
+  seen = {}
+  for doc, value in declared:
+    line = doc.line(f'id = "{value}"')
+    if not re.fullmatch(ID, value):
+      errors.add(
+        doc.path,
+        line,
+        2,
+        f"`{value}` is not an ID: lowercase words joined by hyphens",
+      )
+    if value in seen:
+      errors.add(
+        doc.path, line, 2, f"{value} is already defined at {seen[value]}"
+      )
+    seen.setdefault(value, f"{doc.path}:{line}")
+
+
+def check_retired(src: Sources, errors: Errors) -> None:
+  """Check the retired rule IDs and that no rule uses one.
+
+  Args:
+    src: the sources.
+    errors: where errors go.
+  """
   for n, value in enumerate(src.retired, start=1):
     if value and not re.fullmatch(ID, value):
       errors.add(
@@ -149,7 +168,7 @@ def check_languages(src: Sources, errors: Errors) -> None:
 # Check 5: references.
 
 
-def check_refs(src: Sources, errors: Errors) -> None:  # noqa: C901
+def check_refs(src: Sources, errors: Errors) -> None:
   """Check 5: every citation and authority resolves to an unrepealed target.
 
   The constitution cites itself without a namespace; a rule cites with
@@ -161,48 +180,65 @@ def check_refs(src: Sources, errors: Errors) -> None:  # noqa: C901
     errors: where errors go.
   """
   rules = {r.id: r for r in src.rules}
-
-  def problem(ref: str, in_rule: bool) -> str:
-    """Return what is wrong with the citation, or "" when nothing is.
-
-    Args:
-      ref: the citation as written.
-      in_rule: whether a rule cites it.
-
-    Returns:
-      The problem, or "".
-    """
-    namespace, _, target = ref.rpartition(":")
-    if not in_rule and namespace:
-      return f"{ref}; the constitution cites only itself, without a namespace"
-    if in_rule and not namespace:
-      return f"{ref} without `constitution:` or `rule:`"
-    if namespace == "rule":
-      if target not in rules:
-        return f"undefined {ref}"
-      return f"repealed {ref}" if rules[target].status == "repealed" else ""
-    if target not in src.provisions:
-      return f"undefined {ref}"
-    return f"repealed {ref}" if target in src.repealed else ""
-
   for t in src.texts():
     if t.repealed:
       continue
     for text in t.texts.values():
       for ref in citations(text):
-        if found := problem(ref, t.in_rule):
+        if found := problem(src, rules, ref, t.in_rule):
           errors.add(t.doc.path, t.doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
   for r in src.rules:
-    if r.status == "repealed":
-      continue
-    line = r.doc.line("authority =")
-    for ref in r.authority:
-      if not ref.startswith("constitution:"):
-        errors.add(
-          r.doc.path,
-          line,
-          5,
-          f"authority {ref} is not a `constitution:` citation",
-        )
-      elif found := problem(ref, True):
-        errors.add(r.doc.path, line, 5, f"authority cites {found}")
+    if r.status != "repealed":
+      check_authority(src, rules, r, errors)
+
+
+def problem(
+  src: Sources, rules: dict[str, Rule], ref: str, in_rule: bool
+) -> str:
+  """Return what is wrong with the citation, or "" when nothing is.
+
+  Args:
+    src: the sources.
+    rules: the rules, by ID.
+    ref: the citation as written.
+    in_rule: whether a rule cites it.
+
+  Returns:
+    The problem, or "".
+  """
+  namespace, _, target = ref.rpartition(":")
+  if not in_rule and namespace:
+    return f"{ref}; the constitution cites only itself, without a namespace"
+  if in_rule and not namespace:
+    return f"{ref} without `constitution:` or `rule:`"
+  if namespace == "rule":
+    if target not in rules:
+      return f"undefined {ref}"
+    return f"repealed {ref}" if rules[target].status == "repealed" else ""
+  if target not in src.provisions:
+    return f"undefined {ref}"
+  return f"repealed {ref}" if target in src.repealed else ""
+
+
+def check_authority(
+  src: Sources, rules: dict[str, Rule], rule: Rule, errors: Errors
+) -> None:
+  """Check that each authority of a rule is a resolving constitution citation.
+
+  Args:
+    src: the sources.
+    rules: the rules, by ID.
+    rule: the rule.
+    errors: where errors go.
+  """
+  line = rule.doc.line("authority =")
+  for ref in rule.authority:
+    if not ref.startswith("constitution:"):
+      errors.add(
+        rule.doc.path,
+        line,
+        5,
+        f"authority {ref} is not a `constitution:` citation",
+      )
+    elif found := problem(src, rules, ref, True):
+      errors.add(rule.doc.path, line, 5, f"authority cites {found}")
