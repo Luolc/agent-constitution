@@ -15,8 +15,8 @@ en = "After three review rounds without approval, let the responsible agent deci
 zh = "审查三轮仍未批准，交负责的 agent 决定"
 
 [text.statement]
-en = "After three review rounds without approval, start no further round unless the agent responsible for the work decides there is one; otherwise it puts the matter to a principal."
-zh = "审查三轮仍未批准的，除非负责这项工作的 agent 决定再给一轮，否则不再开始新的一轮，由它把问题交给委托人。"
+en = "After three review rounds without approval, start no further round unless the agent responsible for the work decides to give one; when it does not, that agent puts the matter to a principal."
+zh = "审查三轮仍未批准的，只有负责这项工作的 agent 决定再给一轮，才开始新的一轮；它不再给的，由它把问题交给委托人。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "240c8f39c71e1f334ff166daaab83cd0e2becbd954854ee5f927fdf839e549e9"
+zh = "0a8c2577d8a31560451bc5bb2bb5417b3208dff4bee1d2937c340ddeea730f29"
