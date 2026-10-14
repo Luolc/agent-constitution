@@ -120,6 +120,10 @@ jobs:
           export CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
           uv run --frozen count-tokens --require-tokens
 
+      # As in ci.yml: the rules' data for Hugo, web/data/rules.json.
+      - name: Rule data
+        run: uv run --frozen site-rules
+
       # As in ci.yml: Hugo reads the counts from web/data/lengths.json.
       # The site's domain only here: web/hugo.toml keeps "/", as with an
       # absolute baseURL the theme puts integrity and crossorigin on the
