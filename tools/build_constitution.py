@@ -124,10 +124,9 @@ LANGUAGES = {
             " Status: {status}. Revision: {revision}. Language: English."
         ),
         legend=(
-            " Sections and items marked \\* are written for human readers: how this constitution"
-            " is organized and amended. The version compiled for agents,"
-            " `constitution/constitution.en.agent.md`, leaves out their text and keeps only a"
-            " pointer to this full version."
+            " Parts marked \\* are about how this constitution came about, is organized and is"
+            " amended, and are shown to people by default; the version compiled for agents,"
+            " `constitution/constitution.en.agent.md`, leaves out their text by default."
         ),
         agent_header=(
             "Generated from `constitution/index.toml` and `constitution/articles/`"
@@ -165,8 +164,8 @@ LANGUAGES = {
             "改源文件后重新生成。状态：{status}。修订号：{revision}。语言：中文。"
         ),
         legend=(
-            "标 \\* 的条款写给人读，讲本宪法怎样编排、怎样修改。给 agent 编译的版本"
-            " `constitution/constitution.zh.agent.md` 不收这些条款的正文，只留一句「见完整版」。"
+            "标 \\* 的部分讲本宪法的由来、编排和修改，默认只对人可见；给 agent 编译的版本"
+            " `constitution/constitution.zh.agent.md` 默认不收录它们的正文。"
         ),
         agent_header=(
             "本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和"
@@ -682,6 +681,9 @@ SECTION = "-   "
 ITEM = INDENT + SECTION
 
 OMITTED_MARK = '<sup class="omitted">*</sup>'
+# A heading of the front text (the preamble's): the version for agents
+# leaves the front text out, so in the full version it is marked as well.
+FRONT_HEADING = re.compile(r"^#{2,6} .+$", re.M)
 
 
 def render(lang: str, src: Sources, agent: bool = False) -> str:
@@ -761,10 +763,12 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:
     index = src.index.data
     edition = L.edition.format(edition=index["edition"]) if "edition" in index else L.draft
     header = (L.agent_header if agent else L.header).format(status=index["status"], revision=index["revision"])
-    if not agent and any(s.omitted or any(i.omitted for i in s.items) for s in src.sections):
-        header += L.legend
     opening = L.agent_active if index["status"] == "active" else L.agent_draft
-    front = L.agent_front.format(opening=opening) if agent else refs(index["front"][lang])
+    front = L.agent_front.format(opening=opening) if agent else FRONT_HEADING.sub(
+        lambda m: m.group() + OMITTED_MARK, refs(index["front"][lang]))
+    if not agent and (OMITTED_MARK in front
+                      or any(s.omitted or any(i.omitted for i in s.items) for s in src.sections)):
+        header += L.legend
     parts = [header, f"# {refs(index['title'][lang])} ({edition})\n\n{front}"]
     for a in sorted(src.articles, key=lambda a: number_key(a.number)):
         if a.repealed:

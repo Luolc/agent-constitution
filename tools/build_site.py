@@ -3,12 +3,12 @@
 
 Each constitution/constitution.<lang>.md becomes the home page of its
 language: the header line that says the file is generated is dropped, the
-title goes into the front matter, the revision and the length of the
-version for agents are set under the title, with a line on the asterisk
-when the text marks provisions left out of that version, and the text is
+title goes into the front matter, a list under the title gives the
+revision, the length of the version for agents and, when the text marks
+parts left out of that version, what the asterisk means, and the text is
 wrapped in `<div class="constitution">` for the style sheet. An info button
-after the length opens a popup that says what was counted, gives the
-length of the full version and links to the version for agents, which
+after the length opens a popup that gives the lengths of both versions,
+says how they were counted and links to the version for agents, which
 constitution/constitution.<lang>.agent.md makes into a page of its own,
 agent/ under the home page of its language. The token counts come from
 Anthropic's count_tokens API when CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN or
@@ -49,40 +49,38 @@ TOKEN_VARIABLE = "CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN"
 COUNT_URL = "https://api.anthropic.com/v1/messages/count_tokens"
 COUNT_MODEL = "claude-opus-5-5"
 COUNT_TIMEOUT = 10  # seconds per connect or read; a stalled API must not hold up the build
-# Language: the content files, the labels under the title and the text of
+# Language: the content files, the lines under the title and the text of
 # the popup on the counts.
 PAGES = {
     "en": {"file": "_index.md", "agent_file": "agent.md", "home": "/", "revision": "Revision",
            "length": "{chars:,} characters · {words:,} words",
-           "tokens": "{tokens:,} tokens (counted for {model})", "no_tokens": "tokens not counted",
-           "agent_length": "Version for agents: {length}",
-           "omitted": ("Sections and items marked {mark} are written for human readers: how this constitution is"
-                       " organized and amended. {agent} leaves out their text and keeps only a pointer to this"
-                       " full version."),
-           "omitted_agent": "The version compiled for agents",
+           "tokens": "{tokens:,} tokens", "no_tokens": "tokens not counted",
+           "legend": ("Parts marked {mark} are about how this constitution came about, is organized and is"
+                      " amended, and are shown to people by default; {agent} leaves out their text by default."),
+           "legend_agent": "the version compiled for agents",
            "info": "About these numbers",
-           "counted": "Tokens are counted by Anthropic's token counting API (count_tokens) for {model}.",
+           "summary": "The length under the title is that of the version for agents.",
+           "columns": ("characters", "words", "tokens"), "agent_row": "For agents", "full_row": "Full, this page",
+           "counted": "Tokens counted by Anthropic's token counting API (count_tokens) for {model}.",
            "not_counted": ("Tokens are counted by Anthropic's token counting API (count_tokens) for {model};"
                            " this build had no credential for it, or the call failed, so they were not counted."),
-           "agent_note": ("The numbers are those of the version agents read, which leaves out the text of the"
-                          " sections and items written for human readers, keeping only a pointer to the full"
-                          " version, and has no anchors or links."),
-           "full": "The full version on this page: {length}.",
+           "agent_note": ("The version for agents leaves out the preamble, keeps only a pointer to the full"
+                          " version for the other parts marked *, and has no anchors or links."),
            "source": "Counted at revision {revision}{commit}.",
            "commit": ", commit {commit}",
            "agent_link": "See the version agents read",
            "back": "Back to the full version"},
     "zh": {"file": "_index.zh.md", "agent_file": "agent.zh.md", "home": "/zh/", "revision": "修订号",
            "length": "{chars:,} 字符",
-           "tokens": "{tokens:,} token (按 {model} 计数)", "no_tokens": "token 数未计算",
-           "agent_length": "agent 版：{length}",
-           "omitted": "标 {mark} 的条款写给人读，讲本宪法怎样编排、怎样修改。{agent}不收这些条款的正文，只留一句「见完整版」。",
-           "omitted_agent": "给 agent 编译的版本",
+           "tokens": "{tokens:,} token", "no_tokens": "token 数未计算",
+           "legend": "标 {mark} 的部分讲本宪法的由来、编排和修改，默认只对人可见；{agent}默认不收录它们的正文。",
+           "legend_agent": "给 agent 编译的版本",
            "info": "关于这些数字",
+           "summary": "标题下的数字是 agent 版的长度。",
+           "columns": ("字符", "token"), "agent_row": "agent 版", "full_row": "完整版 (本页)",
            "counted": "token 数由 Anthropic 的 token 计数接口 (count_tokens) 按 {model} 计算。",
            "not_counted": "token 数按 Anthropic 的 token 计数接口 (count_tokens) 以 {model} 计数；这次构建没有凭证，或者调用失败，未计算。",
-           "agent_note": "这里的数字是 agent 读的精简版：写给人读的条款不收正文，只留一句「见完整版」，也不含锚点和链接。",
-           "full": "本页完整版：{length}。",
+           "agent_note": "agent 版不含序言，其余标 * 的部分只留一句「见完整版」，也不含锚点和链接。",
            "source": "按修订号 {revision}{commit} 计算。",
            "commit": "、commit {commit}",
            "agent_link": "查看 agent 读到的版本",
@@ -128,9 +126,9 @@ def count_tokens(text: str, auth: dict[str, str] | None) -> int | None:
 
 
 INFO_ICON = ('<svg viewBox="0 0 16 16" width="1em" height="1em" aria-hidden="true">'
-             '<circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>'
-             '<circle cx="8" cy="4.75" r="1" fill="currentColor"/>'
-             '<path d="M8 7v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>')
+             '<circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/>'
+             '<circle cx="8" cy="5" r=".9" fill="currentColor"/>'
+             '<path d="M8 7.25v4.25" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>')
 
 # A heading attribute that tells hugo-book's heading render hook to leave
 # out its `#` link.
@@ -152,36 +150,55 @@ def front(title: str, *extra: str) -> str:
 def length(text: str, labels: dict[str, str], tokens: int | None) -> str:
     """The length of text: characters, in English words, and tokens."""
     line = labels["length"].format(chars=len(text), words=len(text.split()))
-    if tokens is None:
-        return line + " · " + labels["no_tokens"]
-    return line + " · " + labels["tokens"].format(tokens=tokens, model=COUNT_MODEL)
+    return line + " · " + (labels["no_tokens"] if tokens is None else labels["tokens"].format(tokens=tokens))
+
+
+def numbers(text: str, labels: dict[str, str], tokens: int | None) -> list[str]:
+    """The cells of the popup's table for text, one per column; a dash for
+    tokens not counted, which the note under the table explains."""
+    cells = [f"{len(text):,}", f"{len(text.split()):,}"][:len(labels["columns"]) - 1]
+    return cells + ["—" if tokens is None else f"{tokens:,}"]
 
 
 def page(markdown: str, agent_markdown: str, labels: dict[str, str], revision: str, commit: str | None,
          tokens: int | None, agent_tokens: int | None) -> str:
     """The Hugo page of one built constitution, given the version for agents
-    whose length it shows and the counts of both."""
+    whose length it shows and the counts of both. Under the title, a list:
+    the revision, the length of the version for agents with the info
+    button, and the legend of the asterisk when the text has one. The
+    popup puts the lengths of both versions in a table, the notes on how
+    they were counted under it, and the link to the version for agents
+    last."""
     title, rest = split(markdown)
     text = counted(markdown)
-    counts = labels["counted"].format(model=COUNT_MODEL)
-    if tokens is None or agent_tokens is None:
-        counts = labels["not_counted"].format(model=COUNT_MODEL)
+    agent_length = length(counted(agent_markdown), labels, agent_tokens)
+    counts = labels["counted" if tokens is not None and agent_tokens is not None else "not_counted"]
     source = labels["source"].format(revision=revision, commit=labels["commit"].format(commit=commit) if commit else "")
-    agent_length = labels["agent_length"].format(length=length(counted(agent_markdown), labels, agent_tokens))
-    popup = "".join(f'<span class="count-line">{line}</span>' for line in [
-        counts, labels["agent_note"], labels["full"].format(length=length(text, labels, tokens)), source,
-        f'<a href="{labels["home"]}agent/">{labels["agent_link"]}</a>'])
-    revision_line = (f'<p class="revision">{labels["revision"]} {revision}<br><span class="length">{agent_length}</span>'
-                     f'<span class="count-info"><button type="button" class="count-button" aria-expanded="false"'
-                     f' aria-controls="count-popup" aria-label="{labels["info"]}">{INFO_ICON}</button>'
-                     f'<span class="count-popup" id="count-popup">{popup}</span></span>')
+    # Spans with ARIA table roles, since a <table> cannot sit in the <span>
+    # the popup is; a screen reader then names each number's column.
+    rows = "".join(
+        f'<span class="count-row" role="row"><span class="count-label" role="{head}">{label}</span>'
+        + "".join(f'<span class="count-cell" role="{role}">{cell}</span>' for cell in cells) + "</span>"
+        for head, role, label, cells in (
+            ("columnheader", "columnheader", "", labels["columns"]),
+            ("rowheader", "cell", labels["agent_row"], numbers(counted(agent_markdown), labels, agent_tokens)),
+            ("rowheader", "cell", labels["full_row"], numbers(text, labels, tokens))))
+    notes = "".join(f'<span class="count-note">{note}</span>'
+                    for note in (counts.format(model=COUNT_MODEL), labels["agent_note"], source))
+    popup = (f'<span class="count-summary">{labels["summary"]}</span><span class="count-table" role="table">{rows}</span>'
+             f'{notes}<a class="count-link" href="{labels["home"]}agent/">{labels["agent_link"]}</a>')
+    items = [f'<li class="number">{labels["revision"]} {revision}</li>',
+             f'<li class="length">{agent_length}<span class="count-info"><button type="button"'
+             f' class="count-button" aria-expanded="false" aria-controls="count-popup"'
+             f' aria-label="{labels["info"]}">{INFO_ICON}</button>'
+             f'<span class="count-popup" id="count-popup">{popup}</span></span></li>']
     if OMITTED_MARK in text:
-        legend = labels["omitted"].format(mark='<span class="mark">*</span>',
-                                          agent=f'<a href="{labels["home"]}agent/">{labels["omitted_agent"]}</a>')
-        revision_line += f'<br><span class="legend">{legend}</span>'
-    revision_line += "</p>"
+        legend = labels["legend"].format(mark='<span class="mark">*</span>',
+                                         agent=f'<a href="{labels["home"]}agent/">{labels["legend_agent"]}</a>')
+        items.append(f'<li class="legend">{legend}</li>')
+    revision_list = f'<ul class="revision">{"".join(items)}</ul>'
     body = HEADING_ANCHOR.sub(r"\1 \3 {#\2}", "\n".join(rest))
-    return "\n".join([front(title), '<div class="constitution">', "", title, "", revision_line,
+    return "\n".join([front(title), '<div class="constitution">', "", title, "", revision_list,
                       body, "", "</div>", ""])
 
 

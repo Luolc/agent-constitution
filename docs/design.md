@@ -447,10 +447,11 @@ between `**` and a parenthesis.
 
 Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
-`revision` and language; in the full version, when a provision is marked
-for maintainers, also what the asterisk means: the provision is written
-for human readers, and the version for agents keeps only a pointer to the
-full version in its place. Output is UTF-8 with LF
+`revision` and language; in the full version, when a part has the
+asterisk (a provision marked for maintainers, or the preamble's heading),
+also what the asterisk means: the part is about how the constitution came
+about, is organized and is amended, is shown to people by default, and the
+version compiled for agents leaves out its text by default. Output is UTF-8 with LF
 line endings and a final newline, with no timestamp; the same sources give
 byte-identical output.
 
@@ -465,7 +466,9 @@ which differs from the full version in this:
 
 - The header line says it is the version for agents, without the text of
   the provisions written for human readers.
-- `[front]` (the draft notice and the preamble) is left out. In its place
+- `[front]` (the draft notice and the preamble) is left out, so in the
+  full version each heading in it, `## Preamble`, has the asterisk after
+  it. In its place
   is a note of the build script's own, one sentence per language in
   `LANGUAGES`: that this is the version for agents, while `index.toml` is
   `draft` that the constitution is a draft not in force, once `active`
@@ -680,14 +683,17 @@ is a release (rule `must-ask-items`) and not set up.
   its language in a temporary content directory: the header line is
   dropped, the title goes into the front matter, the revision from
   `index.toml` is set under the title, and the text is wrapped in
-  `<div class="constitution">`, the root the style sheet hangs on. When
-  the text marks a provision for maintainers, a third line under the title
-  says in words what the asterisk marks (provisions written for human
-  readers, on how the constitution is organized and amended) and that the
-  version compiled for agents, linked, keeps only a pointer to the full
-  version in their place. The asterisk is set small and bold in the accent
-  color, its top level with the top of the number, not a superscript and
-  without opening up the line; in the legend it sits on the line.
+  `<div class="constitution">`, the root the style sheet hangs on. Under
+  the title is a bulleted list: the revision, the length (below), and,
+  when the text has an asterisk, its legend: the parts marked are about
+  how the constitution came about, is organized and is amended, are shown
+  to people by default, and the version compiled for agents, linked,
+  leaves out their text by default. The asterisk is set small and bold in
+  the accent color, not a superscript and without opening up the line,
+  lowered until its middle sits a little above the middle of an item
+  number's parentheses and its top well under the top of the number; in
+  the legend it sits on the line. The sidebar's list of articles shows the
+  preamble's asterisk the same way.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, built the
   same way but with its text as is: no anchors, no links, the provisions
@@ -698,8 +704,8 @@ is a release (rule `must-ask-items`) and not set up.
   language switch (to the other language's version for agents) and the
   color switch are as on the home page, the list of articles linking to
   the IDs Hugo gives the headings.
-- Length: a second line under the revision gives the length of the
-  version for agents, which is what takes room in an agent's context: the
+- Length: the second item of the list gives the length of the version
+  for agents, bare, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
   languages, words split on white space in English, and tokens as counted
   for `claude-opus-5-5` by Anthropic's count_tokens API
@@ -709,13 +715,16 @@ is a release (rule `must-ask-items`) and not set up.
   Escape closes it (`web/assets/count-info.js`, inlined in `<head>`). The
   popup hangs from the button with no gap and the button inside its width,
   so the pointer reaches its link without leaving it. The
-  popup says which API counted the tokens for which model (the model is
-  `COUNT_MODEL` in `build_site.py`) or why they were not counted, that the
-  numbers are those of the version for agents and what it leaves out,
-  gives the length of the full version (the generated file without its
-  header line, anchors and link definitions included), the revision and
-  the abbreviated commit of the build (left out outside git), and links to
-  the page of the version for agents. Each page's two versions are counted
+  popup first says that the length under the title is that of the version
+  for agents and gives the lengths of both versions in a small table
+  (spans with ARIA table roles, so a screen reader names the columns; the
+  full version is the generated file without its header line, anchors and
+  link definitions included; a token count not made is a dash); under it,
+  smaller and fainter, which API counted the tokens for which model (the
+  model is `COUNT_MODEL` in `build_site.py`) or why they were not counted,
+  what the version for agents leaves out, and the revision and the
+  abbreviated commit of the build (left out outside git); last, on a line
+  of its own, the link to the page of the version for agents. Each page's two versions are counted
   separately, so a build with a credential makes four calls.
 - Credential: only from the environment, never from a file in this repo,
   in one of two variables. `CONSTITUTION_TOKEN_COUNT_API_KEY` holds an API

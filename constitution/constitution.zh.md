@@ -1,10 +1,10 @@
-本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。修订号：0.30。语言：中文。标 \* 的条款写给人读，讲本宪法怎样编排、怎样修改。给 agent 编译的版本 `constitution/constitution.zh.agent.md` 不收这些条款的正文，只留一句「见完整版」。
+本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。修订号：0.30。语言：中文。标 \* 的部分讲本宪法的由来、编排和修改，默认只对人可见；给 agent 编译的版本 `constitution/constitution.zh.agent.md` 默认不收录它们的正文。
 
 # Agent 宪法 (草案)
 
 **本文本是草案，未经任何人批准，尚未生效；** 依照[第十一条][amendment-procedure]批准之前，对任何人都没有约束力。
 
-## 序言
+## 序言<sup class="omitted">*</sup>
 
 AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长、越来越难读，自相矛盾，与代码逐渐脱节，原则、做法和流程混杂在一起。这是当前用 AI agent 编程时非常常见、根深蒂固的问题，社区也还没有公认的好机制来解决它。它关系到 agent 的自我进化与 AI 编程的发展，是一个重要而严肃、必须解决的问题。为此，本宪法及其下各位阶的文件借鉴人类法律体系中适合 agent 的内容，尤其是法条的写法与修订惯例、上位法与下位法的关系，以及执行、司法与修订的流程。它们在术语、文件结构和编排上尽量贴近人类法律，以最大限度利用 agent 在预训练中获得的法律语境与先验，使 agent 更新和遵守这些条文时尽可能高效、严谨。
 

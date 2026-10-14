@@ -109,7 +109,7 @@ jobs:
             echo "## Constitution length"
             echo
             for page in site/index.html site/zh/index.html; do
-              line="$(grep -o '<span class="length">[^<]*</span>' "$page" | sed 's/<[^>]*>//g')"
-              echo "- \`${page}\`: ${line}"
+              line="$(grep -o '<li class="length">[^<]*' "$page" | sed 's/<[^>]*>//g')"
+              echo "- \`${page}\`, version for agents: ${line}"
             done
           } | tee -a "$GITHUB_STEP_SUMMARY"
