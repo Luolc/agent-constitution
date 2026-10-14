@@ -593,6 +593,25 @@ fn check_languages(
     }
 }
 
+/// The reference a citation `{@rule:<text>}` makes: `12` a node of the
+/// same source, `R12` or `team:7` one of another, as `requires` writes it.
+pub fn cited_ref(text: &str) -> Option<Ref> {
+    if text.bytes().all(|b| b.is_ascii_digit()) {
+        return id_from_file_name(&format!("{text}.toml")).map(Ref::Local);
+    }
+    parse_ref(RawRef::Name(text.to_owned())).ok()
+}
+
+impl Ref {
+    /// The node it names, written in a node of source `from`.
+    pub fn key(&self, from: &str) -> crate::manifest::Key {
+        match self {
+            Ref::Local(id) => crate::manifest::Key::new(from, *id),
+            Ref::Foreign { source, id } => crate::manifest::Key::new(source, *id),
+        }
+    }
+}
+
 pub fn show_ref(r: &Ref) -> String {
     match r {
         Ref::Local(id) => id.to_string(),

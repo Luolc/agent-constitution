@@ -5,8 +5,9 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
+use crate::cite::{self, Citation};
 use crate::diag::Diagnostics;
-use crate::manifest::FIRST_PARTY;
+use crate::manifest::{FIRST_PARTY, Key, LOCAL};
 use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
 
 #[derive(Debug, Default)]
@@ -15,6 +16,14 @@ pub struct Source {
     /// The source's name in the rule set, which its rules are shown with
     /// (`manifest::show`); empty when the directory is read alone.
     pub name: String,
+    /// How its `rules/` directory is named in messages: `rules`,
+    /// `../team/rules`.
+    pub dir: String,
+    /// The directory that holds its `rules/` and `skills/`, relative to
+    /// that of `statute.toml`: `.`, `../team`.
+    pub path: String,
+    /// Whether anyone may read it, as the rule set declares it.
+    pub public: bool,
 }
 
 impl Source {
@@ -52,7 +61,8 @@ impl Source {
                 Err(e) => diags.error(file, format!("cannot read: {e}")),
             }
         }
-        let (source, more) = Source::from_files(files);
+        let (mut source, more) = Source::from_files(files);
+        source.dir = label.to_owned();
         diags.0.extend(more.0);
         (source, diags)
     }
@@ -100,6 +110,7 @@ impl Source {
             .first()
             .and_then(|(f, _)| f.rsplit_once('/'))
             .map_or(String::new(), |(d, _)| format!("{d}/"));
+        source.dir = dir.trim_end_matches('/').to_owned();
         Checker {
             source: &source,
             dir,
@@ -112,6 +123,20 @@ impl Source {
     /// How rule `id` of this source is shown: `R42`, `team:7`, or `42`.
     pub fn show(&self, id: Id) -> String {
         crate::manifest::show(&self.name, id)
+    }
+
+    /// The file of node `id`, as messages name it: `rules/42.toml`.
+    pub fn file(&self, id: Id) -> String {
+        match self.dir.as_str() {
+            "" => node::file_name(id),
+            dir => format!("{dir}/{}", node::file_name(id)),
+        }
+    }
+
+    /// The source in a sentence: `source `team``, or this repository's
+    /// own rules.
+    pub fn described(&self) -> String {
+        describe(&self.name)
     }
 
     pub fn get(&self, id: Id) -> Option<&Node> {
@@ -165,6 +190,253 @@ impl Source {
 
     pub fn children(&self, id: Id) -> impl Iterator<Item = &Node> {
         self.nodes.values().filter(move |n| n.parent == Some(id))
+    }
+}
+
+/// A source named `name` in a sentence: `source `team``, or this
+/// repository's own rules for `L`.
+pub fn describe(name: &str) -> String {
+    match name {
+        LOCAL => format!("this repository's own rules (`{LOCAL}`)"),
+        _ => format!("source `{name}`"),
+    }
+}
+
+/// The sources of a rule set, read together: a node is found by its
+/// source's name and its ID (`Key`). Kept in the order of their keys.
+#[derive(Debug, Default)]
+pub struct Sources(Vec<Source>);
+
+impl Sources {
+    pub fn new(mut list: Vec<Source>) -> Sources {
+        list.sort_by_key(|s| Key::new(&s.name, 0));
+        Sources(list)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Source> {
+        self.0.iter()
+    }
+
+    pub fn source(&self, name: &str) -> Option<&Source> {
+        self.0.iter().find(|s| s.name == name)
+    }
+
+    pub fn get(&self, key: &Key) -> Option<&Node> {
+        self.source(&key.source)?.get(key.id)
+    }
+
+    /// Every node, in order of key.
+    pub fn nodes(&self) -> impl Iterator<Item = (Key, &Node)> {
+        self.0
+            .iter()
+            .flat_map(|s| s.nodes.values().map(|n| (Key::new(&s.name, n.id), n)))
+    }
+
+    /// The file of a node, as messages name it.
+    pub fn file(&self, key: &Key) -> String {
+        match self.source(&key.source) {
+            Some(s) => s.file(key.id),
+            None => key.to_string(),
+        }
+    }
+
+    pub fn parent(&self, key: &Key) -> Option<Key> {
+        let parent = self.get(key)?.parent?;
+        Some(Key::new(&key.source, parent))
+    }
+
+    /// The children of a node, in order of key.
+    pub fn children(&self, key: &Key) -> Vec<Key> {
+        self.source(&key.source)
+            .into_iter()
+            .flat_map(|s| s.children(key.id).map(|c| Key::new(&s.name, c.id)))
+            .collect()
+    }
+
+    /// The nodes a rule lists in `requires`.
+    pub fn requires(&self, key: &Key) -> Vec<Key> {
+        self.refs(key, |r| &r.requires)
+    }
+
+    /// The nodes a rule lists in `conflicts`.
+    pub fn conflicts(&self, key: &Key) -> Vec<Key> {
+        self.refs(key, |r| &r.conflicts)
+    }
+
+    fn refs(&self, key: &Key, list: impl Fn(&node::RuleFields) -> &Vec<Ref>) -> Vec<Key> {
+        self.get(key)
+            .and_then(|n| n.rule.as_ref())
+            .map(|r| list(r).iter().map(|r| r.key(&key.source)).collect())
+            .unwrap_or_default()
+    }
+
+    /// The top of the tree above a node: its domain, or the highest node
+    /// above it that its source has.
+    pub fn root(&self, key: &Key) -> Key {
+        match self.source(&key.source) {
+            Some(s) => Key::new(&s.name, s.root(key.id)),
+            None => key.clone(),
+        }
+    }
+
+    /// Checks what each source could not check alone: the references to
+    /// other sources in `requires`, `conflicts` and `{@rule:...}`, which
+    /// must name a node the rule set has, and from a public source a
+    /// node of a public one (`docs/design/rule-sources.md`, Which rules
+    /// may cite which).
+    pub fn check(&self, diags: &mut Diagnostics) {
+        for source in &self.0 {
+            for node in source.nodes.values() {
+                let file = source.file(node.id);
+                if let Some(rule) = &node.rule {
+                    for (field, list) in
+                        [("requires", &rule.requires), ("conflicts", &rule.conflicts)]
+                    {
+                        for r in list {
+                            self.check_ref(
+                                source,
+                                r,
+                                &format!("`{field}` names {}", show_ref(r)),
+                                &file,
+                                diags,
+                                |target, file, diags| {
+                                    judge(target.0, field, target.1, true, file, diags)
+                                },
+                            );
+                        }
+                    }
+                }
+                let mut texts: Vec<&node::Text> = vec![&node.title];
+                texts.extend(&node.applicability);
+                if let Some(rule) = &node.rule {
+                    texts.extend([&rule.statement, &rule.reason, &rule.verification]);
+                }
+                let mut cited = BTreeSet::new();
+                for text in texts.iter().flat_map(|t| t.values()) {
+                    let _ = cite::replace(text, |c| {
+                        if let Citation::Rule(r) = c
+                            && let Some(r) = node::cited_ref(r)
+                        {
+                            cited.insert(r);
+                        }
+                        Ok(String::new())
+                    });
+                }
+                for r in &cited {
+                    let what = format!("cites `{{@rule:{}}}`", show_ref(r).trim_matches('"'));
+                    self.check_ref(source, r, &what, &file, diags, |_, _, _| {});
+                }
+            }
+        }
+        self.check_cycles(diags);
+    }
+
+    /// Fails a cycle of requirements that goes through more than one
+    /// source, a parent counting as a requirement; each source has found
+    /// those within it already.
+    fn check_cycles(&self, diags: &mut Diagnostics) {
+        let edges = |key: &Key| -> Vec<Key> {
+            self.parent(key)
+                .into_iter()
+                .chain(self.requires(key))
+                .filter(|k| self.get(k).is_some())
+                .collect()
+        };
+        // 0: not visited, 1: on the path, 2: done.
+        let mut state: HashMap<Key, u8> = HashMap::new();
+        let mut reported = BTreeSet::new();
+        for (start, _) in self.nodes() {
+            if state.contains_key(&start) {
+                continue;
+            }
+            let mut stack: Vec<Vec<Key>> = vec![edges(&start)];
+            let mut path = vec![start.clone()];
+            state.insert(start, 1);
+            while let Some(next) = stack.last_mut() {
+                let Some(key) = next.pop() else {
+                    stack.pop();
+                    if let Some(done) = path.pop() {
+                        state.insert(done, 2);
+                    }
+                    continue;
+                };
+                match state.get(&key) {
+                    Some(1) => {
+                        let pos = path.iter().position(|p| *p == key).unwrap_or(0);
+                        let cycle = &path[pos..];
+                        let first = cycle.iter().min().unwrap_or(&key);
+                        if cycle.iter().any(|k| k.source != key.source)
+                            && reported.insert(first.clone())
+                        {
+                            let shown: Vec<String> =
+                                cycle.iter().chain([&key]).map(Key::to_string).collect();
+                            diags.error(
+                                self.file(first),
+                                format!(
+                                    "the requirements form a cycle across sources (a parent counts as a requirement): {}",
+                                    shown.join(" -> ")
+                                ),
+                            );
+                        }
+                    }
+                    Some(_) => {}
+                    None => {
+                        state.insert(key.clone(), 1);
+                        stack.push(edges(&key));
+                        path.push(key);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Checks one reference `r` of a node of `source` to another source;
+    /// `what` says where it stands, and `more` checks the node it names.
+    fn check_ref(
+        &self,
+        source: &Source,
+        r: &Ref,
+        what: &str,
+        file: &str,
+        diags: &mut Diagnostics,
+        more: impl FnOnce((&Source, &Node), &str, &mut Diagnostics),
+    ) {
+        let Ref::Foreign { source: name, id } = r else {
+            return;
+        };
+        if source.name == FIRST_PARTY && name == FIRST_PARTY {
+            diags.error(
+                file,
+                format!(
+                    "{what}; in a rule of the first-party source itself, write the number, {id}"
+                ),
+            );
+            return;
+        }
+        let Some(target_source) = self.source(name) else {
+            diags.error(
+                file,
+                format!("{what}, a rule of source `{name}`, which the rule set does not name in [sources]"),
+            );
+            return;
+        };
+        let Some(target) = target_source.get(*id) else {
+            diags.error(
+                file,
+                format!(
+                    "{what}, which does not exist in {}",
+                    target_source.described()
+                ),
+            );
+            return;
+        };
+        if source.public && !target_source.public {
+            diags.error(
+                file,
+                format!("{what}, a rule of the private {}; a public rule may name only rules of public sources", target_source.described()),
+            );
+        }
+        more((target_source, target), file, diags);
     }
 }
 
@@ -228,66 +500,18 @@ impl Checker<'_> {
             }
             let Some(rule) = &node.rule else { continue };
             for (field, list) in [("requires", &rule.requires), ("conflicts", &rule.conflicts)] {
-                for r in list {
-                    let id = match r {
-                        Ref::Foreign { .. } => {
-                            self.diags.error(
-                                &file,
-                                format!(
-                                    "`{field}` names {}, a rule of another source; references to other sources are not supported yet{}",
-                                    show_ref(r),
-                                    match r {
-                                        Ref::Foreign { source, id } if source == FIRST_PARTY => format!(
-                                            "; in a rule of the first-party source itself, write the number, {id}"
-                                        ),
-                                        _ => String::new(),
-                                    }
-                                ),
-                            );
-                            continue;
-                        }
-                        Ref::Local(id) => *id,
-                    };
-                    match (field, source.get(id).map(|n| n.kind)) {
-                        (_, None) => self.diags.error(
+                // A reference to another source is checked with the rule
+                // set that names it (`Sources::check`).
+                for &id in list.iter().filter_map(|r| match r {
+                    Ref::Local(id) => Some(id),
+                    Ref::Foreign { .. } => None,
+                }) {
+                    match source.get(id) {
+                        None => self.diags.error(
                             &file,
                             format!("`{field}` names {id}, which does not exist in this source"),
                         ),
-                        ("requires", Some(Kind::OneOf)) if source.children(id).next().is_none() => {
-                            self.diags.error(
-                                &file,
-                                format!("`requires` names one-of {id}, which has no children yet, so the rule can never be enabled; require a rule, or add a child to the one-of first"),
-                            )
-                        }
-                        ("requires", Some(Kind::Rule))
-                            if matches!(
-                                source.get(id).map(|n| n.status),
-                                Some(Status::Superseded | Status::Repealed)
-                            ) =>
-                        {
-                            let target = &source.nodes[&id];
-                            let what = match target.superseded_by.as_slice() {
-                                [] => "is repealed, with nothing in its place".to_owned(),
-                                [next] => format!("is superseded by {next}; require {next} instead"),
-                                many => {
-                                    let many: Vec<String> = many.iter().map(Id::to_string).collect();
-                                    format!(
-                                        "is superseded by {}; require those of them that apply instead",
-                                        many.join(", ")
-                                    )
-                                }
-                            };
-                            self.diags.warning(&file, format!("`requires` names rule {id}, which {what}"));
-                        }
-                        ("requires", Some(Kind::Domain)) => self.diags.error(
-                            &file,
-                            format!("`requires` names domain {id}; a domain cannot be required, require a rule or a one-of"),
-                        ),
-                        ("conflicts", Some(kind)) if kind != Kind::Rule => self.diags.error(
-                            &file,
-                            format!("`conflicts` names {} {id}; a rule can conflict only with a rule", kind.name()),
-                        ),
-                        _ => {}
+                        Some(target) => judge(source, field, target, false, &file, self.diags),
                     }
                 }
             }
@@ -528,6 +752,62 @@ impl Checker<'_> {
                 }
             }
         }
+    }
+}
+
+/// The findings on `field` of a rule naming `target`, a node of `source`,
+/// against `file`: what can be named there, and a requirement of a rule
+/// that is no longer in force. A node of another source than the rule's
+/// (`foreign`) is shown as the rule writes it, `"team:7"`.
+fn judge(
+    source: &Source,
+    field: &str,
+    target: &Node,
+    foreign: bool,
+    file: &str,
+    diags: &mut Diagnostics,
+) {
+    let show = |id: Id| {
+        if foreign {
+            format!("\"{}\"", source.show(id))
+        } else {
+            id.to_string()
+        }
+    };
+    let shown = show(target.id);
+    match (field, target.kind) {
+        ("requires", Kind::OneOf) if source.children(target.id).next().is_none() => diags.error(
+            file,
+            format!("`requires` names one-of {shown}, which has no children yet, so the rule can never be enabled; require a rule, or add a child to the one-of first"),
+        ),
+        ("requires", Kind::Rule)
+            if matches!(target.status, Status::Superseded | Status::Repealed) =>
+        {
+            let what = match target.superseded_by.as_slice() {
+                [] => "is repealed, with nothing in its place".to_owned(),
+                [next] => {
+                    let next = show(*next);
+                    format!("is superseded by {next}; require {next} instead")
+                }
+                many => {
+                    let many: Vec<String> = many.iter().map(|id| show(*id)).collect();
+                    format!(
+                        "is superseded by {}; require those of them that apply instead",
+                        many.join(", ")
+                    )
+                }
+            };
+            diags.warning(file, format!("`requires` names rule {shown}, which {what}"));
+        }
+        ("requires", Kind::Domain) => diags.error(
+            file,
+            format!("`requires` names domain {shown}; a domain cannot be required, require a rule or a one-of"),
+        ),
+        ("conflicts", kind) if kind != Kind::Rule => diags.error(
+            file,
+            format!("`conflicts` names {} {shown}; a rule can conflict only with a rule", kind.name()),
+        ),
+        _ => {}
     }
 }
 

@@ -1,21 +1,24 @@
-//! A repository that uses statute: its rule set, the source the rule set
-//! names, and the constitution it rests on, read from disk together.
+//! A repository that uses statute: its rule set, the sources the rule set
+//! names with its own rules, and the constitution it rests on, read from
+//! disk together.
 
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
 use crate::diag::Diagnostics;
-use crate::manifest::{self, Manifest};
+use crate::manifest::{self, LOCAL, Manifest};
 use crate::resolve::{self, Resolution};
-use crate::source::Source;
+use crate::source::{Source, Sources};
 
 #[derive(Debug)]
 pub struct Project {
     /// The directory of `statute.toml`.
     pub root: PathBuf,
     pub manifest: Manifest,
-    pub source: Source,
+    /// The sources of `[sources]`, and the repository's own rules, `L`,
+    /// when it has a `rules/` and no source is at `.`.
+    pub sources: Sources,
     /// The constitution's revision as `index.toml` writes it.
     pub revision: String,
     pub resolution: Resolution,
@@ -67,16 +70,33 @@ impl Project {
             }
         };
 
-        let source_root = root.join(&manifest.source.path);
-        let (mut source, more) = Source::load(
-            &source_root.join("rules"),
-            &shown(&manifest.source.path, "rules"),
-        );
-        diags.0.extend(more.0);
-        source.name = manifest.source.name.clone();
+        let mut list = Vec::new();
+        for spec in &manifest.sources {
+            let (mut source, more) = Source::load(
+                &root.join(&spec.path).join("rules"),
+                &shown(&spec.path, "rules"),
+            );
+            diags.0.extend(more.0);
+            source.name = spec.name.clone();
+            source.path = spec.path.clone();
+            source.public = spec.public;
+            list.push(source);
+        }
+        if !manifest.sources.iter().any(|s| s.is_here()) && root.join("rules").is_dir() {
+            let (mut source, more) = Source::load(&root.join("rules"), "rules");
+            diags.0.extend(more.0);
+            source.name = LOCAL.to_owned();
+            source.path = ".".to_owned();
+            source.public = manifest.public;
+            list.push(source);
+        }
+        let sources = Sources::new(list);
+        sources.check(&mut diags);
 
+        let spec = manifest.constitution_spec();
+        let source_root = root.join(&spec.path);
         let index_name = shown(
-            &manifest.source.path,
+            &spec.path,
             &format!("constitution/{}/index.toml", manifest.edition),
         );
         let index = std::fs::read_to_string(
@@ -118,14 +138,14 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
-        let resolution = resolve::resolve(&source, &manifest, number, &mut diags);
+        let resolution = resolve::resolve(&sources, &manifest, number, &mut diags);
         if diags.has_errors() {
             return (None, diags);
         }
         let project = Project {
             root: root.to_owned(),
             manifest,
-            source,
+            sources,
             revision,
             resolution,
         };

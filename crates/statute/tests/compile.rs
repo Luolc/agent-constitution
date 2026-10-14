@@ -47,7 +47,7 @@ fn nodes() -> Vec<(u64, String)> {
 
 fn manifest(compile: &str) -> String {
     format!(
-        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [\"R3\", \"R5\", \"R10\"]\n\n[sources]\nR = {{ path = \".\" }}\n{compile}"
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\nrules = [\"R3\", \"R5\", \"R10\"]\n\n[sources]\nR = {{ path = \".\" }}\n{compile}"
     )
 }
 
@@ -272,7 +272,7 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
         std::fs::write(
             dir.join("statute.toml"),
             format!(
-                "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nR = {{ path = {:?} }}\n\n[compile]\nlang = \"{lang}\"\nagents-md = [\"statement\", \"reason\", \"verification\"]\n",
+                "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\npacks = [{}]\n\n[sources]\nR = {{ path = {:?} }}\n\n[compile]\nlang = \"{lang}\"\nagents-md = [\"statement\", \"reason\", \"verification\"]\n",
                 domains.join(", "),
                 repo_root.to_str().unwrap()
             ),

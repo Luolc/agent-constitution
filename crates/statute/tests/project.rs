@@ -9,6 +9,7 @@ mod common;
 use common::{domain, edit, rule};
 
 const MANIFEST: &str = r#"constitution = { source = "R", edition = "2026-10" }
+public = false
 rules = ["R3"]
 
 [sources]
@@ -61,9 +62,9 @@ fn loads_and_resolves() {
             .resolution
             .enabled
             .keys()
-            .copied()
+            .map(ToString::to_string)
             .collect::<Vec<_>>(),
-        [2, 3]
+        ["R2", "R3"]
     );
 }
 
