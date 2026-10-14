@@ -136,13 +136,17 @@ source that has no parent (check 3); a rule has `parent` or
 `overrides`, one of them and never both; `overrides` is one rule of
 another source, `"team:7"`, never a list nor a number, which would name
 a node of the same source; and a `parent` in another source is a rule's
-only, written `"team:3"`, checked for its form alone. Since this repo is
+only, written `"team:3"`, checked for its form alone, since the
+first-party source's domains are the roots
+([Subdomains](rule-sources.md#subdomains)); statute accepts one on a
+domain of any other source. Since this repo is
 the first-party source, `"R200"` in `overrides` or `parent` names a rule
 of the same source here and fails, with a note to write the number for a
 `parent`. What needs another source is statute's: the reference
 direction, the ranks of an override, an override by the private layer
 of a public repository, and whether a `parent` in another source exists.
-All of these are built.
+All of these are built, except for a domain's `parent` in another
+source.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository

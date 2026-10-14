@@ -20,7 +20,7 @@ rules = ["R42", "R51", "12"]
 packs = ["R3"]
 
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 
 [compile]
 agents-md = ["statement"]
@@ -56,7 +56,9 @@ public and private rules in one file
 
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
-each source (its short name, address and commit), and each enabled rule,
+each source (its short name, address, the branch or tag it follows,
+commit and, but for `R`, `public`, which is not written yet;
+[Git sources](global-configuration.md#git-sources)), and each enabled rule,
 whether chosen directly or brought in by a requirement (its reference,
 written as the rule set writes it, `R42` or `team:7`, and `L12` for a
 local rule; its revision; the SHA-256 of its file; and the SHA-256 of
@@ -65,14 +67,15 @@ it was):
 
 ```toml
 [constitution]
-repository = "github.com/Luolc/agent-constitution"
+git = "https://github.com/Luolc/agent-constitution"
 edition = "2026-10"
 revision = "<revision>"
 commit = "<commit>"
 
 [[sources]]
 name = "R"
-address = "github.com/Luolc/agent-constitution"
+git = "https://github.com/Luolc/agent-constitution"
+tag = "<tag>"
 commit = "<commit>"
 
 [[rules]]
@@ -145,7 +148,7 @@ whose original changed while its revision did not draws a warning from
 revision goes up by one ([IDs and revisions](rule-format.md#ids-and-revisions)).
 They compare the rule without its translations: the rule as TOML, less
 `[translations]` and the text in every language but the original,
-written as JSON with its keys in order and hashed with SHA-256, so
+written as JSON with its keys sorted and hashed with SHA-256, so
 that a change to the original or to any other field counts, and a change
 to a translation or to the file's layout alone does not. A rule whose
 translations changed and nothing else draws no warning, and `upgrade`
@@ -223,6 +226,10 @@ that a person who clones the repository, CI and a cloud agent cannot read
 user-level files, and each repository pins its own versions and upgrades
 on its own schedule. The first version builds the repository level only
 ([The command and the first version](statute-command.md#the-command-and-the-first-version)).
+The cache of the sources and a global configuration that names
+sources for every repository are designed in
+[Global configuration and git sources](global-configuration.md); the
+personal layer of rules is not.
 
 ## Sources and references
 
@@ -234,15 +241,16 @@ table, with its address and the tag or branch to follow:
 
 ```toml
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
 The key `R` is reserved for the first-party source: this repo, which
 publishes the constitution and the general rules. A rule set declares
-it as it declares any other source, with the tag or the path to read,
-since a source the command knew by itself would need a built-in address
-and version. Every other source has a short name of lowercase words
+it as it declares any other source, with the tag, branch or path to
+read, or leaves it to the global configuration and the built-in
+default, the first-party repository's `main` branch
+([Global configuration and git sources](global-configuration.md#the-global-configuration)). Every other source has a short name of lowercase words
 joined by hyphens, which the rule set chooses. `L` and `local` are
 reserved for the repository's own rules (below), and `ac`, the
 first-party source's earlier name, fails with a note to name it `R`.
@@ -250,8 +258,15 @@ A source may also be a directory on disk, `R = { path = "." }`,
 relative to the rule set's directory: a repository that holds its own
 rules, as this one does, names itself this way. Its rules are in
 `rules/` below that directory and its constitution in
-`constitution/<edition>/`. statute reads sources on disk only so far,
-and reports a `git` source as not supported yet.
+`constitution/<edition>/`. A source may be a git repository as well,
+cloned into the user's statute directory and read at the commit the
+lock file pins ([Git sources](global-configuration.md#git-sources));
+statute reads sources on disk only so far, and reports a `git` source
+as not supported yet. Sources every rule set of a user may use, and the
+first-party source's default address, come from the global
+configuration, which a rule set's own `[sources]` overrides by name
+([Which source a name means](global-configuration.md#which-source-a-name-means));
+a rule set that uses only those may leave `[sources]` out.
 
 **Three kinds of reference.** Each kind has a form of its own, so no
 reference can be read as another kind:
