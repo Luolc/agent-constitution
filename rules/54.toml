@@ -1,0 +1,42 @@
+id = 54
+slug = "check-exit-status"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Judge a check by its exit status, never through a pipe"
+zh = "按退出码判断检查结果，不接管道"
+
+[text.statement]
+en = "Run a check command on its own and judge it by its exit status, never piping its output into another command."
+zh = "检查命令单独运行，按它的退出码判断结果，不把它的输出接管道交给另一个命令。"
+
+[text.reason]
+en = '''
+In a pipeline the shell reports the exit status of the last command, so a check that fails and is piped into a pager or a filter reads as passed; and an output that was cut or filtered can hide the line that shows the failure. A check read that way still passes when the error occurs, and is no evidence that the error is ruled out ({@constitution:discriminating-checks}).
+'''
+zh = '''
+在管道里，shell 报告的是最后一个命令的退出码，所以一项失败的检查接上分页或过滤命令后，看起来是通过的；输出被截断或过滤后，显示失败的那一行也可能看不到。这样读出来的检查在错误出现时仍然通过，不能当作已经排除错误的证据 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
+en = '''
+A check command is a command run to find out whether something passes or fails: a test run, a linter, a build, a run of the commit hooks, or a dry run. It runs as a command of its own, not as part of a pipeline, and its result is its exit status: 0 passes, anything else fails. When its output is too long to read, the whole command's output is redirected to a file (`<command> > <file> 2>&1`), and the exit status is read on its own afterwards.
+
+Violated when the result of a check is stated or acted on from a run in which its output was piped into another command, or from its output without its exit status.
+'''
+zh = '''
+检查命令是指为了弄清某件事通过还是失败而运行的命令：测试、linter、构建、commit hook 的运行，以及 dry run。它作为一个独立的命令运行，不放在管道里，结果就是它的退出码：0 为通过，其他值为失败。输出太长读不完的，把整个命令的输出重定向到文件 (`<command> > <file> 2>&1`)，之后再单独读退出码。
+
+检查的结果来自一次把输出接管道交给另一个命令的运行，或者只看了输出、没看退出码，却据此下结论或采取行动的，即为违反本规定。
+'''
+
+[translations]
+zh = "fdc6122bea706125c95b93528d184dde0aea3f3e98931b7abb859da4c21f1b81"
