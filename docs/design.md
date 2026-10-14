@@ -448,7 +448,9 @@ between `**` and a parenthesis.
 Each output starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `status`,
 `revision` and language; in the full version, when a provision is marked
-for maintainers, also what the asterisk means. Output is UTF-8 with LF
+for maintainers, also what the asterisk means: the provision is written
+for human readers, and the version for agents keeps only a pointer to the
+full version in its place. Output is UTF-8 with LF
 line endings and a final newline, with no timestamp; the same sources give
 byte-identical output.
 
@@ -461,15 +463,18 @@ it and to an agent drafting an amendment, who reads the full version. So
 the build writes a second file per language, `constitution.<lang>.agent.md`,
 which differs from the full version in this:
 
-- The header line says it is the version for agents.
+- The header line says it is the version for agents, without the text of
+  the provisions written for human readers.
 - `[front]` (the draft notice and the preamble) is left out. In its place
   is a note of the build script's own, one sentence per language in
   `LANGUAGES`: that this is the version for agents, while `index.toml` is
   `draft` that the constitution is a draft not in force, once `active`
-  that every agent must follow it; that the preamble is left out and the
-  provisions for maintainers keep only their numbers; and that before
-  changing the constitution or the tools that build it, an agent reads the
-  full text, named by its path. It is not the text of the constitution (see File structure).
+  that every agent must follow it; that the preamble and the text of the
+  provisions written for human readers, on how the constitution is
+  organized and amended, are left out, with only a pointer to the full
+  version in their place; and that before changing the constitution or the
+  tools that build it, an agent reads the full version, named by its path.
+  It is not the text of the constitution (see File structure).
 - A section or item with `audience = "maintainers"` keeps its number and
   shows a note in place of its text: `-   **§2** (see the full text)`,
   `-   **第二款** (见完整版)`; a repealed one shows its repealed note as
@@ -686,12 +691,13 @@ is a release (rule `must-ask-items`) and not set up.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, built the
   same way but with its text as is: no anchors, no links, the provisions
-  for maintainers only their numbers. Its headings carry
-  `{anchor=false}`, so the theme adds no `#` link to them. Under the revision, a link leads
-  back to the full version. The page is hidden from hugo-book's list of
-  pages; the sidebar, the language switch (to the other language's version
-  for agents) and the color switch are as on the home page, the list of
-  articles linking to the IDs Hugo gives the headings.
+  written for human readers only their numbers and a pointer to the full
+  version. Its headings carry `{anchor=false}`, so the theme adds no `#`
+  link to them. Under the revision, a link leads back to the full version.
+  The page is hidden from hugo-book's list of pages; the sidebar, the
+  language switch (to the other language's version for agents) and the
+  color switch are as on the home page, the list of articles linking to
+  the IDs Hugo gives the headings.
 - Length: a second line under the revision gives the length of the
   version for agents, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
