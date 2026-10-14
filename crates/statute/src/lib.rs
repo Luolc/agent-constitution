@@ -2,6 +2,9 @@
 //! and resolves them into a lock file (`docs/design/rule-system.md`).
 
 pub mod diag;
+pub mod manifest;
 pub mod node;
+pub mod project;
+pub mod resolve;
 pub mod source;
 pub mod specifier;

@@ -6,59 +6,8 @@ use statute::diag::{Diagnostics, Severity};
 use statute::node::original_hash;
 use statute::source::Source;
 
-fn domain(id: u64) -> (u64, String) {
-    (
-        id,
-        format!(
-            "id = {id}\nslug = \"domain-{id}\"\nrevision = 1\nkind = \"domain\"\nstatus = \"active\"\nlang = \"en\"\n\n[title]\nen = \"Domain {id}\"\n"
-        ),
-    )
-}
-
-fn one_of(id: u64, parent: u64) -> (u64, String) {
-    (
-        id,
-        format!(
-            "id = {id}\nrevision = 1\nkind = \"one-of\"\nstatus = \"active\"\nlang = \"en\"\nparent = {parent}\n\n[title]\nen = \"One-of {id}\"\n"
-        ),
-    )
-}
-
-/// A rule under `parent`; `extra` is more top-level lines, such as
-/// `requires = [3]`.
-fn rule(id: u64, parent: u64, extra: &str) -> (u64, String) {
-    (
-        id,
-        format!(
-            r#"id = {id}
-revision = 1
-kind = "rule"
-status = "draft"
-lang = "en"
-parent = {parent}
-authority = ["simplicity"]
-constitution = ">=1"
-level = "project"
-check = "review"
-{extra}
-
-[title]
-en = "Rule {id}"
-
-[text.statement]
-en = "Do the thing {id}."
-
-[text.reason]
-en = '''
-Because.
-'''
-
-[text.verification]
-en = "Violated when the thing is not done."
-"#
-        ),
-    )
-}
+mod common;
+use common::{domain, edit, one_of, rule};
 
 fn load(nodes: &[(u64, String)]) -> Diagnostics {
     let files = nodes
@@ -116,11 +65,6 @@ fn assert_warning(diags: &Diagnostics, file: &str, needle: &str) {
             && warnings[0].contains(needle),
         "expected one warning in rules/{file} containing {needle:?}, got {warnings:#?}"
     );
-}
-
-fn edit(node: (u64, String), from: &str, to: &str) -> (u64, String) {
-    assert!(node.1.contains(from), "{from:?} is not in the fixture");
-    (node.0, node.1.replacen(from, to, 1))
 }
 
 // Fields and types of one file.
@@ -488,6 +432,7 @@ fn references_must_exist_and_have_the_right_kind() {
         one_of(2, 1),
         rule(3, 1, "requires = [2]"),
         rule(4, 1, "conflicts = [3]"),
+        rule(5, 2, ""),
     ]));
     assert_error(
         &load(&[domain(1), rule(3, 9, "")]),
@@ -726,4 +671,57 @@ fn files_other_than_toml_are_ignored_when_loading_a_directory() {
     let (source, diags) = Source::load(&dir, "rules");
     assert_clean(&diags);
     assert_eq!(source.nodes.keys().copied().collect::<Vec<_>>(), [1, 2]);
+}
+
+#[test]
+fn a_required_one_of_has_children() {
+    assert_clean(&load(&[
+        domain(1),
+        one_of(2, 1),
+        rule(3, 2, ""),
+        rule(4, 1, "requires = [2]"),
+    ]));
+    assert_error(
+        &load(&[domain(1), one_of(2, 1), rule(4, 1, "requires = [2]")]),
+        "4.toml",
+        "names one-of 2, which has no children yet",
+    );
+}
+
+#[test]
+fn only_a_rule_is_superseded() {
+    let superseded = edit(
+        one_of(2, 1),
+        "status = \"active\"",
+        "status = \"superseded\"",
+    );
+    assert_error(
+        &load(&[domain(1), superseded]),
+        "2.toml",
+        "only a rule can be superseded; a one-of cannot",
+    );
+}
+
+#[test]
+fn a_conflict_on_both_sides_with_a_rule_brought_in_is_reported_once() {
+    let diags = load(&[
+        domain(1),
+        rule(11, 1, "conflicts = [12]"),
+        rule(12, 11, "conflicts = [11]"),
+    ]);
+    assert_eq!(lines(&diags, Severity::Error).len(), 1, "{:#?}", diags.0);
+}
+
+#[test]
+fn a_one_of_clash_is_reported_on_the_rule_that_makes_it() {
+    // 5 brings in both children; 6 requires 5 and inherits the clash.
+    let diags = load(&[
+        domain(1),
+        one_of(2, 1),
+        rule(3, 2, ""),
+        rule(4, 2, ""),
+        rule(5, 1, "requires = [3, 4]"),
+        rule(6, 1, "requires = [5]"),
+    ]);
+    assert_error(&diags, "5.toml", "rule 5 can never be enabled");
 }
