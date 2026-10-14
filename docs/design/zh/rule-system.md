@@ -1,4 +1,4 @@
-<!-- en-sha256: 28838a2d57a632682a9ffc1056af835081299487a1d8a5da76bcffa1d7393032 -->
+<!-- en-sha256: 1625a02cbde9b481b71c09ec50cef7d5717107f2593855505e921af111952e2e -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -334,7 +334,7 @@ metadata:
 
 - 规定 46 (instruction-files-apart) 用与 `check-instruction-changes` 相同的路径表区分指令文件、生成文件和其他文件，变更里既有指令文件又有其他文件的即为违反；路径表没有列出的 agent 工具的文件、路径表以外的指令源文件，以及仓库在自己的 `AGENTS.md` 里声明的路径，交给审查方；没有 `--base` 就没有可检查的变更。
 - 规定 43 (credential-designated-place) 带 `--redact` 运行机器上的 gitleaks，扫描变更里的提交或全部历史，有命中即为违反，命中只显示位置和 gitleaks 的规则名；gitleaks 识别不出的凭证，以及仓库以外的地方，交给审查方；没有 gitleaks 时算无法判定；
-- 规定 50 (commit-hook-credential-scan) 读 `.pre-commit-config.yaml`，有 hook 在 commit 阶段对每次提交、带 `--redact` 用 gitleaks 扫描暂存的改动，即为通过。配置里没有这样的 hook，或者根本没有 hook 配置，即为违反；别的扫描器、运行仓库内脚本的 hook、只扫部分文件的扫描、不带 `--redact` 的 gitleaks，以及别的 hook 框架的配置，算无法判定；
+- 规定 50 (commit-hook-credential-scan) 读 `.pre-commit-config.yaml`，有 hook 在 commit 阶段对每次提交、不带文件过滤、带 `--staged` 和 `--redact` 运行 gitleaks，即为通过；gitleaks 自己发布的 hook，无论用它现在的还是以前的仓库名，`rev` 为 v8.1.1 或更新时按它自己的 entry 计。statute 看不到命令的 hook (`rev` 更旧或读不出的 gitleaks 自带 hook、别的仓库的 hook、运行脚本的本地 hook)、不带 `--redact` 或带文件过滤的 gitleaks hook、别的扫描器、别的 hook 框架的配置，以及 statute 读不了的 YAML，算无法判定。根本没有 hook 配置，或者配置里 commit 阶段的 hook 都看得到命令、却没有一个扫描暂存的改动，即为违反；
 - 规定 58 (release-first-green-commit) 把 `HEAD` 上的 tag 当作发布，把默认分支当作主分支，把包含默认分支所要求检查 (分支保护或 ruleset 要求的) 的 workflow 当作 CI；这个 workflow 为 `HEAD` 推送到默认分支而跑的 run 在第 1 次 attempt 就以成功结束的，即为通过，否则即为违反。`HEAD` 上没有 tag、没有要求的检查、没有这样的 run (推送不触发 CI，或者 commit 不在该分支上)，以及 run 还没跑完时，算无法判定；
 - 规定 61 (verdict-names-version) 读 `HEAD` 所属 pull request 上的 verdict：正文以 `Verdict:` 开头的评论或 review，以及批准或要求修改的 review。verdict 里没有其 pull request 中某个 commit 的完整 SHA，即为违反；在别处给出的 verdict，以及写明的 SHA 是不是审查过的版本，交给审查方；
 - 规定 71 (no-automatic-merge) 读 `HEAD` 所属 pull request 的时间线，只要某个 pull request 开过 auto-merge 就是违反，之后关掉了或已经由它合并了也一样；其他自动合并的方式，以及是谁开的，交给审查方。

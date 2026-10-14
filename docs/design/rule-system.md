@@ -767,12 +767,17 @@ the rule is still for the reviewer. The built-in checks:
   repository, are left to the reviewer, and without gitleaks it is
   inconclusive;
 - rule 50 (commit-hook-credential-scan) reads `.pre-commit-config.yaml`,
-  and passes when a hook runs gitleaks on the staged changes, with
-  `--redact`, at the commit stage and for every commit. A configuration
-  without such a hook, or no hook configuration at all, is a violation;
-  another scanner, a hook that runs a script of the repository, a scan
-  limited to some files, a gitleaks without `--redact` and the
-  configuration of another hook framework are inconclusive;
+  and passes when a hook runs gitleaks with `--staged` and `--redact`,
+  at the commit stage and for every commit, with no file filter; the
+  hooks gitleaks publishes, under its present or its former repository
+  name, count by their own entry when their `rev` is v8.1.1 or later.
+  A hook whose command statute cannot see (gitleaks' own at an older or
+  unreadable `rev`, a hook of another repository, a local hook that runs
+  a script), a gitleaks hook without `--redact` or with a file filter,
+  another scanner, another hook framework's configuration and YAML
+  statute does not read are inconclusive. No hook configuration at all,
+  or one whose hooks at the commit stage all show their command and none
+  scans the staged changes, is a violation;
 - rule 58 (release-first-green-commit) takes a tag on `HEAD` as the
   release, the default branch as the main branch, and as CI the workflow
   holding a check the default branch requires, by branch protection or a
