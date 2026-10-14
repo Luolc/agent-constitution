@@ -3,7 +3,7 @@
 # constitution/constitution.<lang>.md and constitution.<lang>.agent.md.
 # `hugo-0.167.0 -s web` builds it into site/, with the tokens that
 # `uv run count-tokens` counted, if any; `uv run check-site-anchors site`
-# checks the links (both in tools/site). See docs/design.md (Static site).
+# checks the links (both in tools/site). See docs/design/static-site.md.
 baseURL = "/"
 publishDir = "../site"
 # Relative links, so that site/index.html also opens as a file.

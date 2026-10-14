@@ -2,7 +2,7 @@
 # short-lived Anthropic access token through Workload Identity Federation,
 # counts the tokens with it, builds and checks the site, writes the length
 # line of both pages into the job summary and the log, and publishes the
-# site to GitHub Pages (docs/design.md, Static site). The federation rule
+# site to GitHub Pages (docs/design/static-site.md). The federation rule
 # accepts a run on any branch of this repository, not only main; this
 # repository publishes only main, so the job runs only on a push to main or
 # a manual run on main. A failed exchange, count, build or link check fails

@@ -1,13 +1,13 @@
 """Count the tokens of the built constitution for the static site.
 
-Writes web/data/lengths.json, which Hugo reads (docs/design.md, Static
-site): for each language and each version, the full one and the one for
-agents, the SHA-256 of the text whose length the site gives (the generated
-file without its header line) and its tokens, as counted by Anthropic's
-count_tokens API for the model `params.tokenCount.model` in web/hugo.toml,
-and the full SHA of the commit the count ran on, which the site links. The
-site shows a count only when its SHA-256 matches the text it builds, so a
-file left from another commit does not show stale numbers.
+Writes web/data/lengths.json, which Hugo reads (docs/design/static-site.md):
+for each language and each version, the full one and the one for agents, the
+SHA-256 of the text whose length the site gives (the generated file without
+its header line) and its tokens, as counted by Anthropic's count_tokens API
+for the model `params.tokenCount.model` in web/hugo.toml, and the full SHA
+of the commit the count ran on, which the site links. The site shows a count
+only when its SHA-256 matches the text it builds, so a file left from
+another commit does not show stale numbers.
 
 The credential comes from CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN or
 CONSTITUTION_TOKEN_COUNT_API_KEY. Without either, or when a call fails, the
