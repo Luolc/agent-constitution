@@ -76,13 +76,14 @@ Checkers).
 - `tools/`: a uv workspace of three Python projects, each with its own
   `pyproject.toml`, source under `src/` and tests under `tests/`:
   `tools/compiler` (the constitution build and its checks,
-  `constitution-build`), `tools/site` (the token count and the link
-  check of the static site, `count-tokens` and `check-site-anchors`; it
-  depends on the compiler) and `tools/checks` (this repo's own checks,
-  `check-instruction-changes` and `lint-zh-sources`; it depends on
-  neither). The root `pyproject.toml` declares the members and holds the
-  development tools and their configuration; `uv.lock` is one file at
-  the root (`docs/design/file-structure.md`).
+  `constitution-build`), `tools/site` (the rules' data, the token count
+  and the link check of the static site, `site-rules`, `count-tokens` and
+  `check-site-anchors`; it depends on the compiler) and `tools/checks`
+  (this repo's own checks, `check-instruction-changes` and
+  `lint-zh-sources`; it depends on neither). The root `pyproject.toml`
+  declares the members and holds the development tools and their
+  configuration; `uv.lock` is one file at the root
+  (`docs/design/file-structure.md`).
 - `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
   `Cargo.lock`; `rust-toolchain.toml` pins the toolchain). `crates/statute`
   reads a rule set and writes `statute.lock` with the commands `lock`,
@@ -94,8 +95,9 @@ Checkers).
 - `web/`: the Hugo project of the static site (config, layouts, style
   sheet), with the theme hugo-book as a submodule at
   `web/themes/hugo-book`; run `git submodule update --init` once after
-  cloning. `hugo-0.167.0 -s web` builds the constitution's pages and the
-  design's, in both languages, into `site/`, which is never committed
+  cloning. After `uv run site-rules`, `hugo-0.167.0 -s web` builds the
+  pages of the constitution, the design and the rules, in both languages,
+  into `site/`, which is never committed
   (`docs/design/static-site.md`).
 - `docs/design/`: the one design, one file per part, indexed by
   `docs/design/README.md`, with its Chinese translation in
@@ -205,7 +207,11 @@ when the two disagree.
   differs from the English one's, or a relative link of the design leads
   to no file of the repo; it prints the new hash. Run it after any change
   to `docs/design/`.
-- `hugo-0.167.0 -s web`: builds the static site into `site/`, English at
+- `uv run site-rules`: reads `rules/*.toml` and writes `web/data/rules.json`
+  (not committed), which Hugo reads; run it before every Hugo build, which
+  fails without it (`docs/design/static-site.md`, Rules).
+- `hugo-0.167.0 -s web`: after `uv run site-rules`, builds the static site
+  into `site/`, English at
   `site/index.html` and Chinese at `site/zh/index.html`, each with the
   version for agents at `agent/` and the design at `design/` below it;
   `hugo-0.167.0` is the version CI pins, and the build is not a commit
@@ -239,7 +245,8 @@ of `rust-toolchain.toml` (`rustup toolchain install --no-self-update`), runs
 `uv run pre-commit run --all-files` with the gitleaks hook skipped, so
 `uv-lock`, the Python checkers, `cargo-fmt`, the constitution build check,
 the tests and both limae checks run there too, then runs clippy, the tests
-and the publish dry run of the Rust workspace, counts the tokens (without a
+and the publish dry run of the Rust workspace, writes the rules' data with
+`site-rules`, counts the tokens (without a
 credential, so they stay uncounted), builds the static site with the pinned
 Hugo and checks its links, and then runs the build check with `--base` and
 the instruction-only check, both against the first parent of the checked-out
@@ -253,9 +260,10 @@ pinned to `ubuntu-24.04`, and actions by commit SHA.
 `.github/workflows/pages.yml` ("Pages") runs on pushes to `main` and on a
 manual run on `main`. Its job `build` gets an access token through Workload
 Identity Federation, counts the tokens with `count-tokens --require-tokens`,
-builds the site with the site's domain as `--baseURL`, checks its links,
-writes the length lines of the two pages to the job summary and the log, and
-uploads the site. Its job `deploy` publishes the site to GitHub Pages only
+writes the rules' data with `site-rules`, builds the site with the site's
+domain as `--baseURL`, checks its links, writes the length lines of the two
+pages to the job summary and the log, and uploads the site. Its job
+`deploy` publishes the site to GitHub Pages only
 when the repository is public and the repository variable `PAGES_DEPLOY` is
 `true`, and is skipped otherwise; publishing is a release, and setting the
 variable is a person's decision (`docs/design/static-site.md`). It is not a
