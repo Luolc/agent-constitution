@@ -106,8 +106,9 @@ The repo's layout, source formats, checks and releases are in the
   checks this repo runs on its own changes).
 - `crates/` is a Rust workspace, with `Cargo.toml` and
   `rust-toolchain.toml` at the root. Its one crate, `crates/statute`, is
-  for now a placeholder published to hold the name `statute` on crates.io;
-  the binary that compiles and checks the rules will grow there.
+  the rule system's tool, under development: so far it reads a rule set
+  and writes its lock file. Its release on crates.io is a placeholder
+  that holds the name `statute`.
 
 Install the commit hooks once with `uv run pre-commit install`;
 `uv run pre-commit run --all-files` runs them all.

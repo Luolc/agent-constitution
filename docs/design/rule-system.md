@@ -1,8 +1,10 @@
 # Rule system
 
 Status: draft. The rules of this repo are written in the
-[Rule file format](#rule-file-format), which `constitution-build` checks;
-the rest is not built yet. This document describes how rules are written,
+[Rule file format](#rule-file-format), which `constitution-build` checks,
+and the tool reads them and a rule set and writes the lock file
+([The tool and the first version](#the-tool-and-the-first-version)); the
+rest is not built yet. This document describes how rules are written,
 numbered, chosen, checked and compiled once the rule system is built. Where it differs from what the rest of the design says
 today, the section [What this replaces](#what-this-replaces) lists the
 difference; those sections stay as they are until the work that implements
@@ -313,6 +315,24 @@ source = "ac"
 id = 7
 revision = 2
 sha256 = "<SHA-256 of rules/7.toml>"
+```
+
+A source on disk (`path`, see
+[Sources and references](#sources-and-references)) has no commit to
+record: the commit that records the lock file would change it, so the
+lock file could never be current. The constitution and the source are
+then recorded by their `path` in place of their address and commit, and
+each rule's `sha256` alone pins its content:
+
+```toml
+[constitution]
+path = "."
+edition = "2026-10"
+revision = "1"
+
+[[sources]]
+name = "ac"
+path = "."
 ```
 
 Upgrading is an explicit step that rewrites the lock file and shows the
@@ -724,8 +744,7 @@ default.
 ## The tool and the first version
 
 **The tool.** The rule system's tool is written in Rust (see
-[Why Rust](#why-rust)) and grows in the crate `crates/statute`, which today
-is a placeholder that only prints a notice
+[Why Rust](#why-rust)) and grows in the crate `crates/statute`
 ([File structure](file-structure.md)). The first version is that one
 crate. Its name, `statute`, is held on crates.io by a placeholder release
 ([Releases and versions](amendments-and-releases.md#releases-and-versions));
@@ -751,6 +770,12 @@ installs today, is the second step. The rules of this repo have moved to
 the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
+
+**Built so far**: the commands `lock`, `explain`, `add` and `remove`,
+for one source on disk; the other commands exit with status 2 and say
+they are not implemented yet. Inherited rule sets and path segments are
+not built; a git source, more than one source and a reference to
+another source are reported as not supported yet.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that
