@@ -1,4 +1,4 @@
-<!-- en-sha256: 4d06e975a7c9672b33597fdab87e7b4b0bfc48cec5bcad569ac015860619e5f9 -->
+<!-- en-sha256: 1ee0083ecb0ce23369f41c5fe73402def9ade4676fce1784ae85757c303c9fb1 -->
 # agent-constitution 设计
 
 状态：草案。这是本仓唯一的一份设计，由下面列出的几个文件组成。宪法本身从它的版目录 `constitution/2026-10/` 下的 `index.toml` 和 `articles/` 构建成两个版本：[英文版](../../../constitution/2026-10/generated/constitution.en.md)、[中文版](../../../constitution/2026-10/generated/constitution.zh.md)；本设计只按 ID 引用宪法 (见[源文件格式的 ID 一节](source-formats.md#ids))，从不复述它的内容。
@@ -20,5 +20,9 @@
 - [检查程序、fixture 与反馈](checkers.md)：检查程序、fixture、加载验证，以及预留的反馈回路。
 - [修正案与发布](amendments-and-releases.md)：批准修正案、发布与版本号。
 - [fleet 与迁移](fleet-and-migration.md)：与 fleet 的关系，以及怎样从手写的指南迁移过来。
-- [规定体系](rule-system.md)：计划中的规定体系 (规定编号、规定源与引用、规定清单与锁文件、依赖、检查与审查回路)，尚未实现，以及它将取代上面哪些部分。
+- [规定体系](rule-system.md)：计划中的规定体系 (规定编号、规定源与引用、规定清单与锁文件、依赖、检查与审查回路)，尚未实现，以及它将取代上面哪些部分；各个主题在下面四个文件里。
+- [规定格式](rule-format.md)：一条规定包含什么、ID 与修订号、规定文件格式、规定与 skill、从规定追溯到宪法。
+- [规定清单、引用与依赖](rule-sets.md)：规定清单与锁文件、规定源与引用、依赖、one-of 与规定包。
+- [规定检查与审查](rule-checks.md)：检查、结果与审查回路、试行规定。
+- [statute 命令](statute-command.md)：编译与网站、命令与第一版、为什么用 Rust。
 - [规定源](rule-sources.md)：四类规定源 (全局或本仓、公开或私有)、哪些规定可以引用哪些、覆盖、子领域，以及从手写的指南切换过来；尚未实现。

@@ -1,5 +1,5 @@
 //! One node of the parent tree, `rules/<id>.toml`: a rule, a one-of or a
-//! domain (`docs/design/rule-system.md`, Rule file format). This module
+//! domain (`docs/design/rule-format.md`, Rule file format). This module
 //! reads one file and checks what can be checked within it; the relations
 //! between files are checked in `source`.
 

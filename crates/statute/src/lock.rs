@@ -1,5 +1,5 @@
 //! The lock file, `statute.lock`: the constitution, the source and every
-//! enabled rule, pinned (`docs/design/rule-system.md`, Rule sets and the
+//! enabled rule, pinned (`docs/design/rule-sets.md`, Rule sets and the
 //! lock file). Written by statute, never by hand; the same rule set and
 //! source always give the same bytes.
 

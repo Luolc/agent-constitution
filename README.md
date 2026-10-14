@@ -97,7 +97,7 @@ status 1 on a violation. It may run in CI as well, but not as a commit
 hook: a check may be slow.
 `statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in
-[The command and the first version](docs/design/rule-system.md#the-command-and-the-first-version).
+[The command and the first version](docs/design/statute-command.md#the-command-and-the-first-version).
 
 ## Development
 

@@ -5,9 +5,9 @@ source a rule set draws on, which may cite which, how a rule set
 replaces one rule with its own (an override), how domains nest, and how
 the hand-written guide is moved into rules and retired. It builds on
 [Rule system](rule-system.md): the reference forms (`R42`, `L12`,
-`team:7`) are those of [Sources and references](rule-system.md#sources-and-references),
+`team:7`) are those of [Sources and references](rule-sets.md#sources-and-references),
 and the tree, one-ofs and packs those of
-[Dependencies, one-ofs and packs](rule-system.md#dependencies-one-ofs-and-packs).
+[Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 Each point marked "default, to be decided" is a recommendation that
 stands until a person decides otherwise. Where this part differs from
 what [Rule system](rule-system.md) says today, the section
@@ -46,7 +46,7 @@ give four kinds:
   is public. The exception is a repository that is itself the
   first-party source, `R = { path = "." }` as this one: its `rules/` are
   first-party, `R12`
-  ([Sources and references](rule-system.md#sources-and-references)).
+  ([Sources and references](rule-sets.md#sources-and-references)).
 - **Local private** is the repository's own `rules/` when the repository
   is private. A public repository keeps its private rules in a source
   outside it, named with `scope = "local"`, as in
@@ -97,7 +97,7 @@ needs, and nothing leaks. A public repository that declares
 `public = false` could write private rules into files anyone can read.
 So a built-in check of `statute check` compares the declaration with the
 host where it can, through `gh` as the built-in checks of
-[Checks](rule-system.md#checks) do: it fails when the rule set says
+[Checks](rule-checks.md#checks) do: it fails when the rule set says
 `public = false` and the repository's visibility is `PUBLIC`, and says it
 could not tell when `gh` cannot answer (default, to be decided).
 
@@ -142,7 +142,7 @@ with `public = true` (default, to be decided):
 - Private sources go in `statute.private.toml`, next to `statute.toml`,
   which git ignores. It names `statute.toml` as its base with
   `base = "statute.toml"`, a new field for the inheritance that
-  [Rule sets and the lock file](rule-system.md#rule-sets-and-the-lock-file)
+  [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)
   describes, and adds sources, rules and overrides; `output` in
   `[compile]`, also new, names the file it compiles to:
 
@@ -169,7 +169,7 @@ one `statute.toml` names every source, and its outputs are committed as
 they are. How an agent in a public repository is brought to read the
 private output in place of the committed `AGENTS.md` is open: it is
 measured on the agents first, as the instruction files of subdirectories
-were ([Rule sets and the lock file](rule-system.md#rule-sets-and-the-lock-file),
+were ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
 Monorepos). Global private rules belong at the user level once it is
 built (same section, Where it lives); until then they reach a repository
 this way.
@@ -261,10 +261,10 @@ check that the override still holds.
 **Not the same as.**
 
 - Superseding: a source replaces its own rule for every rule set, for
-  good ([IDs and revisions](rule-system.md#ids-and-revisions)); an
+  good ([IDs and revisions](rule-format.md#ids-and-revisions)); an
   override replaces another source's rule in one rule set.
 - `conflicts`: two rules that cannot both be enabled, with nothing taking
-  either's place ([Dependencies, one-ofs and packs](rule-system.md#dependencies-one-ofs-and-packs));
+  either's place ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));
   an override puts one rule in the other's place.
 - A one-of: alternatives the source foresaw, each a rule of its own, of
   which each rule set picks one; an override is a departure the source
@@ -310,7 +310,7 @@ parent = 104
 **Rendering.** In the compiled `AGENTS.md`, a domain is a heading of
 level two and a subdomain one of level three; each level of the tree
 below is one level deeper, down to level six, as in
-[Compilation and the site](rule-system.md#compilation-and-the-site). A
+[Compilation and the site](statute-command.md#compilation-and-the-site). A
 subdomain with no enabled rule below it does not appear, nor does a
 domain all of whose subdomains and rules are absent. A requirement is
 rendered as a link when it leads out of the requiring rule's nearest

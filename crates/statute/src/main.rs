@@ -332,7 +332,7 @@ fn lock_command(root: &Path) -> Result<(), ()> {
 }
 
 /// What to do about a rule edited without a new revision
-/// (`docs/design/rule-system.md`, IDs and revisions).
+/// (`docs/design/rule-format.md`, IDs and revisions).
 const RAISE_REVISION: &str = "an edited rule's revision goes up by one";
 
 /// The enabled rules whose file differs from the one `old` locked while

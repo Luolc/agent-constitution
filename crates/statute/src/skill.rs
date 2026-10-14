@@ -1,5 +1,5 @@
 //! The skills of a source, `skills/<name>/SKILL.md`, and the rules each
-//! declares it implements (`docs/design/rule-system.md`, Rules and
+//! declares it implements (`docs/design/rule-format.md`, Rules and
 //! skills): in the front matter, `metadata`, the key `statute-rules`, the
 //! IDs separated by spaces, as in `statute-rules: "42 51"`.
 

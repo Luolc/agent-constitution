@@ -1,16 +1,16 @@
-<!-- en-sha256: e4a8215dcefa7685b8889e16245beffbc99651c15c548ad53211faf5c61afd4b -->
+<!-- en-sha256: 49429017920c3d650393b39f623c55afccd69d5b1b274fe880697232015e4b7c -->
 # 规定与放宽
 
 ## <a id="rules"></a>规定
 
-parent 树上的一个节点一个文件，`rules/<id>.toml`，这样一份提案就是一个文件，diff 里也正好只有一条规定在变。格式、ID 和状态见[规定文件格式](rule-system.md#rule-file-format) 与 [ID 与修订号](rule-system.md#ids-and-revisions)。
+parent 树上的一个节点一个文件，`rules/<id>.toml`，这样一份提案就是一个文件，diff 里也正好只有一条规定在变。格式、ID 和状态见[规定文件格式](rule-format.md#rule-file-format) 与 [ID 与修订号](rule-format.md#ids-and-revisions)。
 
 - 正文用 `{@constitution:<id>}` 引用宪法，用 `{@rule:<编号>}` 引用另一条规定 (见 [ID](source-formats.md#ids))；在编译出的指令文件里，对规定的引用显示为那条规定的标题，其余的显示方式在阶段 B 确定。
 - 关于消息或通知的规定，要写明它管哪一种：agent 对 agent、agent 对人，或者两者都管。
-- 宪法还是草案时，所有规定也都是 `draft`；宪法现行之后，新规定从 `trial` 开始 ([试行规定](rule-system.md#trial-rules))。
+- 宪法还是草案时，所有规定也都是 `draft`；宪法现行之后，新规定从 `trial` 开始 ([试行规定](rule-checks.md#trial-rules))。
 - `adjustable` (可选)：这条规定里允许下位法依照 `relaxations.adjustable-rules` 修改的值，每个值附带默认值，例如 `adjustable = ["wait_hours=24"]`。没有这个字段的规定不能这样放宽。可调值与本地参数 (见下文) 不是一回事：本地参数是私有 overlay 填入的值，可调值是仓库或任务可以修改的值。
 
-overlay 里的私有规定格式相同，放在它自己的规定源里 ([规定源与引用](rule-system.md#sources-and-references))。
+overlay 里的私有规定格式相同，放在它自己的规定源里 ([规定源与引用](rule-sets.md#sources-and-references))。
 
 ## <a id="choosing-rules"></a>选用规定
 

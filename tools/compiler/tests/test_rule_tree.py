@@ -1,6 +1,6 @@
 """Tests for the nodes of the rule tree, `rules/<id>.toml`.
 
-The format of docs/design/rule-system.md (Rule file format). Each check
+The format of docs/design/rule-format.md (Rule file format). Each check
 fails on a broken node and passes on its control, the tree as set up.
 """
 
