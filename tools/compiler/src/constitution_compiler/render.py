@@ -5,7 +5,7 @@ import re
 from constitution_compiler.languages import (
   LANGUAGES,
 )
-from constitution_compiler.sources import (
+from constitution_compiler.model import (
   Article,
   Item,
   MARK,

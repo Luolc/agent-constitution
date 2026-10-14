@@ -22,7 +22,8 @@ from test_constitution_fixture import (
 
 from constitution_compiler import build as bc
 from constitution_compiler import checks as cc
-from constitution_compiler import sources as cs
+from constitution_compiler import model as cm
+from constitution_compiler import read as cr
 
 
 class CheckTest(Tree):
@@ -388,8 +389,8 @@ class CheckTest(Tree):
 
   def test_5_on_its_own(self):
     """Check 5 needs no other check to have run before it."""
-    errors = cs.Errors()
-    src = cs.load(self.root, errors)
+    errors = cm.Errors()
+    src = cr.load(self.root, errors)
     assert src is not None
     cc.check_refs(src, errors)
     self.assertEqual(errors, [])
@@ -474,7 +475,7 @@ class CheckTest(Tree):
 
   def test_6_outputs_match(self):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
-    errors = cs.Errors()
+    errors = cm.Errors()
     bc.check_outputs(self.root, bc.build(self.root)[2], errors)
     self.assertEqual(errors, [])
 
@@ -482,7 +483,7 @@ class CheckTest(Tree):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
     path = self.root / "constitution/constitution.en.md"
     path.write_bytes(path.read_bytes().replace(b"Money.", b"Money!"))
-    errors = cs.Errors()
+    errors = cm.Errors()
     bc.check_outputs(self.root, bc.build(self.root)[2], errors)
     self.assertEqual(
       errors,
