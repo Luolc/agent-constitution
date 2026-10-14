@@ -98,24 +98,36 @@ it out.
 
 ## Which source a name means
 
-For each name, the first of these that names it gives the source:
+For each name in `statute.toml`, the first of these that names it gives
+the source:
 
-1. the rule set: `statute.private.toml`, then `statute.toml`;
+1. `statute.toml`;
 2. the global configuration;
-3. the lock file, for `compile`, `check` and `explain` (below);
+3. the lock file, for `compile`, `check`, `explain` and `site` (below);
 4. the built-in default, for `R`.
 
-A rule set that names a source replaces the whole entry: fields are not
-merged across layers. `name = false` in a rule set's `[sources]` takes a
-source of the global configuration out of that rule set, as if it were
-not there; the built-in `R` is taken out only by naming another `R`.
-`[sources]` is optional in `statute.toml` now: a rule set that uses
-only the first-party source at its default names none.
+Resolving `statute.toml`, its lock file and its `AGENTS.md` never reads
+`statute.private.toml`. The private layer only adds names, as
+[Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)
+says: `statute.private.toml` may not name a source the public layer
+has, whichever of the four gave it, and a name it gives is otherwise
+looked up in it first, then in the global configuration's private
+sources the layer holds, then in `statute.private.lock`.
+
+A rule set that names a source replaces the global configuration's
+entry whole: fields are not merged across layers. `name = false` in a
+rule set's `[sources]` takes a source of the global configuration out
+of that rule set, as if it were not there; the built-in `R` is taken out
+only by naming another `R`. Once this is built, `[sources]` is optional
+in `statute.toml`: a rule set that uses only the first-party source at
+its default names none.
 
 The lock file comes third so that a machine without the user's global
 configuration, CI or another person's, still builds what the lock file
 pins: it records each git source's address, the branch or tag it
-follows and the commit ([Git sources](#git-sources)). `lock` and
+follows, the commit and, for every source but `R`, `public`
+([Git sources](#git-sources)), so that the checks of which rules may
+cite which run there as well. `lock` and
 `upgrade` do not read it as a source: they resolve the rule set from
 the configuration as it is now, so a source taken out of the global
 configuration drops out at the next `lock`.
@@ -155,7 +167,16 @@ name = "R"
 git = "https://github.com/Luolc/agent-constitution"
 branch = "main"
 commit = "<commit>"
+
+[[sources]]
+name = "team"
+git = "https://example.test/our-team/rules.git"
+branch = "main"
+commit = "<commit>"
+public = true
 ```
+
+Every source but `R` has its `public` there, a source on disk as well.
 
 - `lock` keeps the commit the lock file records when the source's
   address and branch or tag are those recorded, so that nothing changes
@@ -168,9 +189,13 @@ commit = "<commit>"
   is not built yet.
 - `compile`, `check`, `explain` and `site` read each git source at the
   commit the lock file records; without a lock file or a line for the
-  source there, they take the head as `lock` would. They fetch only when
-  the commit is missing from the clone, and fail when it is missing
-  after the fetch, naming the source, the commit and the address.
+  source there, they take the head as `lock` would. A source whose
+  address or branch or tag is not the one the lock file records makes
+  the lock file stale: they fail, with a note to run `statute lock`, and
+  read no commit. They fetch only when the commit is missing from the
+  clone, and fail when it is missing after the fetch, naming the
+  source, the commit and the address; with `clone`, they fetch nothing
+  and fail at once, asking the user to fetch in that clone.
 
 **Reading.** statute clones a source once, `git clone --bare`, into
 `repos/` ([The statute directory](#the-statute-directory)), and fetches
@@ -228,7 +253,10 @@ rather than stopping the command: nothing in that layer reaches a
 committed file, and a private overlay is the usual reason to add a
 private source. The note says where it went and that `--public` writes
 it to `statute.toml`. A name the file being written already holds fails
-the command; one that another layer holds is replaced in this one, as
+the command, and so does a name the public layer holds when the source
+goes to `statute.private.toml`, since the private layer only adds. A
+name that only the global configuration holds is replaced in
+`statute.toml` or `statute.private.toml`, as
 [Which source a name means](#which-source-a-name-means) says, and the
 note says so. When a lock file is there, it is written again, as `add`
 writes it.

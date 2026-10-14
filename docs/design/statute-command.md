@@ -201,8 +201,9 @@ and the ranks, and so are subdomains, a rule's `parent` in another
 source, and `statute.private.toml` with its lock file and output.
 Inherited rule sets, path segments and git sources are not built, nor
 are the global configuration, `init --global`, `source add`, a domain's
-`parent` in another source ([Subdomains](rule-sources.md#subdomains))
-and `site`.
+`parent` in another source ([Subdomains](rule-sources.md#subdomains)).
+`site` is built ([The local site](#the-local-site)), for sources on
+disk.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,
@@ -249,6 +250,8 @@ and compared, but not read in their place.
 
 ## The local site
 
+Built, except for git sources, which are not built yet.
+
 `statute site` writes a site of the rules a rule set can draw on into
 `.statute/site/` next to `statute.toml`, to be opened in a browser from
 disk; it is never published, and it is not
@@ -274,8 +277,9 @@ file. It prints the path of `index.html`.
   private. Each lists its sources, and each source its tree of domains
   with every node, enabled or not: its reference, title and status, and
   whether this rule set enables it, overrides it or leaves it out. A
-  filter by kind of source, and one that hides superseded and repealed
-  rules, work through check boxes and the style sheet alone.
+  filter by kind of source, one that hides the rules the rule set does
+  not enable, and one that shows superseded and repealed nodes, hidden
+  by default, work through check boxes and the style sheet alone.
 - **The kind of a source** follows its two properties: local for the
   repository's own `rules/` (`L`) and a source with `scope = "local"`,
   global for any other, the global configuration's included; public as
@@ -289,7 +293,8 @@ file. It prints the path of `index.html`.
   and the successors; the path of parents and the children. A domain's
   page is the list of its nodes. A citation of a rule is a link to its
   page, and one of the constitution the provision's label, as in the
-  compiled `AGENTS.md`.
+  compiled `AGENTS.md`. The pages are in the language of
+  `[compile] lang`.
 
 ## Why Rust
 

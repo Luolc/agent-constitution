@@ -1,4 +1,4 @@
-<!-- en-sha256: f12f612f378e37649566da887ebd64ffac23bf66b5de23973a2baefbc7b3bf06 -->
+<!-- en-sha256: 8ca0541049fc414b5a770a1155234722a4c60f762a678dcd512b7182794ff0a1 -->
 # 全局配置与 git 规定源
 
 状态：已定；还没有实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -50,16 +50,18 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 
 ## <a id="which-source-a-name-means"></a>一个名字指哪个规定源
 
-对每个名字，按下面的顺序，第一个写了它的地方决定是哪个规定源：
+对 `statute.toml` 里的每个名字，按下面的顺序，第一个写了它的地方决定是哪个规定源：
 
-1. 规定清单：先 `statute.private.toml`，再 `statute.toml`；
+1. `statute.toml`；
 2. 全局配置；
-3. 锁文件，只对 `compile`、`check` 和 `explain` (见下)；
+3. 锁文件，只对 `compile`、`check`、`explain` 和 `site` (见下)；
 4. 内置默认，只对 `R`。
 
-规定清单写了一个规定源，就替换掉整个条目：各层的字段不合并。在规定清单的 `[sources]` 里写 `name = false`，就把全局配置里的这个规定源从这份规定清单里拿掉，就像它不存在；内置的 `R` 只能靠另写一个 `R` 来替换。`statute.toml` 里的 `[sources]` 现在可以不写：只用默认的第一方规定源的规定清单，一个都不用写。
+解析 `statute.toml`、它的锁文件和它的 `AGENTS.md` 时，从不读 `statute.private.toml`。私有层只增加名字，见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)：公开层已有的规定源，不管来自上面四处中的哪一处，`statute.private.toml` 都不能再写；除此之外，私有层的名字先在 `statute.private.toml` 里找，再在私有层带上的全局配置私有规定源里找，最后在 `statute.private.lock` 里找。
 
-锁文件排第三，是为了让没有用户全局配置的机器，比如 CI 或另一个人的机器，照样能构建出锁文件固定的内容：它记下每个 git 规定源的地址、跟踪的分支或 tag，以及提交 ([git 规定源](#git-sources))。`lock` 和 `upgrade` 不把它当作规定源来读：它们按配置现在的样子解析规定清单，所以从全局配置里拿掉的规定源，下一次 `lock` 时就去掉了。
+规定清单写了一个规定源，就整个替换掉全局配置里的那个条目：各层的字段不合并。在规定清单的 `[sources]` 里写 `name = false`，就把全局配置里的这个规定源从这份规定清单里拿掉，就像它不存在；内置的 `R` 只能靠另写一个 `R` 来替换。这些实现以后，`statute.toml` 里的 `[sources]` 可以不写：只用默认的第一方规定源的规定清单，一个都不用写。
+
+锁文件排第三，是为了让没有用户全局配置的机器，比如 CI 或另一个人的机器，照样能构建出锁文件固定的内容：它记下每个 git 规定源的地址、跟踪的分支或 tag、提交，以及除 `R` 以外每个规定源的 `public` ([git 规定源](#git-sources))，这样哪些规定可以引用哪些的检查在那里也能跑。`lock` 和 `upgrade` 不把它当作规定源来读：它们按配置现在的样子解析规定清单，所以从全局配置里拿掉的规定源，下一次 `lock` 时就去掉了。
 
 ## <a id="git-sources"></a>git 规定源
 
@@ -88,11 +90,20 @@ name = "R"
 git = "https://github.com/Luolc/agent-constitution"
 branch = "main"
 commit = "<commit>"
+
+[[sources]]
+name = "team"
+git = "https://example.test/our-team/rules.git"
+branch = "main"
+commit = "<commit>"
+public = true
 ```
+
+除 `R` 以外，每个规定源在那里都记有 `public`，磁盘上的规定源也一样。
 
 - 规定源的地址和分支或 tag 与锁文件记的相同时，`lock` 保留锁文件记的提交，这样规定清单不升级就什么都不变。新的规定源，或者地址、分支变了的，`lock` 会拉取，取分支的最新提交或 tag 指向的提交。
 - `upgrade` 拉取每个 git 规定源，取各自最新的提交，再像现在一样显示变了什么。因为旧提交读得到了，现在可以显示一条规定改动的文字；这一点还没有实现。
-- `compile`、`check`、`explain` 和 `site` 按锁文件记的提交读每个 git 规定源；没有锁文件，或锁文件里没有这个规定源的那一行时，像 `lock` 一样取最新提交。它们只在克隆里缺这个提交时才拉取；拉取之后还缺，就报错，写明规定源、提交和地址。
+- `compile`、`check`、`explain` 和 `site` 按锁文件记的提交读每个 git 规定源；没有锁文件，或锁文件里没有这个规定源的那一行时，像 `lock` 一样取最新提交。规定源的地址、分支或 tag 与锁文件记的不同，锁文件就过时了：它们报错，提示运行 `statute lock`，不读任何提交。它们只在克隆里缺这个提交时才拉取；拉取之后还缺，就报错，写明规定源、提交和地址；用 `clone` 时不拉取，直接报错，请用户在那份克隆里拉取。
 
 **读取。** statute 把一个规定源克隆一次，`git clone --bare`，放进 `repos/` ([statute 目录](#the-statute-directory))；上面的命令需要一个克隆里没有的提交，或者需要最新的提交时，就往这份克隆里拉取，`git fetch` 远端的分支和 tag。读一个提交时读它的快照：用 git 自己的命令，借一个临时的索引，把这个提交的文件写进 `snapshots/<commit>/`，所以任何克隆的工作区、`HEAD` 和索引都不会变。同一个提交因此总是得到同样的文件，编译出的内容只在锁文件变了时才变。
 
@@ -124,4 +135,4 @@ commit = "<commit>"
 | 公开的规定源，或私有仓库的任何规定源 | `statute.toml` |
 | 公开仓库的私有规定源 | `statute.private.toml`；还没有这个文件时，先确认 git 忽略它，再创建它，写上 `base = "statute.toml"` |
 
-公开仓库的私有规定源写进私有层，命令不停下：私有层里的东西不会进入任何提交的文件，而添加私有规定源，通常就是为了私有 overlay。提示会说明它写到了哪里，以及加 `--public` 就写进 `statute.toml`。要写入的文件里已经有这个名字，命令报错；名字在另一层里，就在这一层替换它，见[一个名字指哪个规定源](#which-source-a-name-means)，提示也会说明这一点。有锁文件时，像 `add` 那样重写它。
+公开仓库的私有规定源写进私有层，命令不停下：私有层里的东西不会进入任何提交的文件，而添加私有规定源，通常就是为了私有 overlay。提示会说明它写到了哪里，以及加 `--public` 就写进 `statute.toml`。要写入的文件里已经有这个名字，命令报错；规定源要写进 `statute.private.toml` 而公开层已有这个名字时，也报错，因为私有层只增加。只有全局配置里有的名字，在 `statute.toml` 或 `statute.private.toml` 里替换它，见[一个名字指哪个规定源](#which-source-a-name-means)，提示也会说明这一点。有锁文件时，像 `add` 那样重写它。
