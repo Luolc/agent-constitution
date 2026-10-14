@@ -92,15 +92,26 @@ search reads content: run the same search on a file where it must match.
 
 ## Checks
 
-- `uvx pre-commit run --all-files`: the commit hooks, which are gitleaks on
-  the staged diff, `python3 tools/build_constitution.py --check`,
-  `python3 -m unittest discover -s tools`, `tools/lint_zh_sources.py` and
-  limae on `constitution/constitution.zh.md` and
+The Python tools run with uv: `pyproject.toml` pins limae, pre-commit and
+the Python checkers, `.python-version` the interpreter, and `uv run`
+creates `.venv` from `uv.lock` on first use. The commit hooks and the
+Python tools need only uv on the machine; the site build needs Hugo and
+the full-history scan gitleaks, both below. After changing a pin, run
+`uv lock` and commit `uv.lock`; `uv lock --check` fails when the two
+disagree.
+
+- `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
+  on the staged diff, the Python checkers below, the constitution build
+  check, the tests, `tools/lint_zh_sources.py` and limae on
+  `constitution/constitution.zh.md` and
   `constitution/constitution.zh.agent.md`. Install the hooks once after
-  cloning with `uvx pre-commit install`. The hooks install `limae` for
-  themselves; the tests and `tools/lint_zh_sources.py` run by hand need it
-  on PATH.
-- `python3 tools/build_constitution.py`: rebuilds the generated files
+  cloning with `uv run pre-commit install`.
+- The Python checkers, configured in `pyproject.toml`, each a commit hook:
+  `uv run ruff check .`, `uv run ruff format --check .` (`uv run ruff
+  format .` to apply), `uv run pydoclint --config pyproject.toml --quiet
+  tools` and `uv run basedpyright`.
+- `uv run python -m unittest discover -s tools`: the tests.
+- `uv run tools/build_constitution.py`: rebuilds the generated files
   after a change to the constitution sources. With `--check` it writes
   nothing and fails on an error in the constitution or rule sources or a
   stale generated file; `--check --base <git-ref>` also fails when a
@@ -111,23 +122,24 @@ search reads content: run the same search on a file where it must match.
   than the base's although the constitution text changed, or differs from
   it although the text did not; `--root <dir>` runs it on another
   checkout.
-- `python3 tools/check_instruction_changes.py --base origin/main`: fails
+- `uv run tools/check_instruction_changes.py --base origin/main`: fails
   when the branch changes instruction files (the path table at the top of
   the script) together with other files; generated files do not count.
   Run it before a push; CI runs it on every pull request.
-- `python3 tools/lint_zh_sources.py`: runs limae on the `zh` text of the
+- `uv run tools/lint_zh_sources.py`: runs limae on the `zh` text of the
   constitution and rule sources and prints `file:line: field: finding`;
   `--fix` writes limae's fixes back into the sources. A limae finding in
   either built Chinese file is fixed in the sources or the build script,
   never in that file.
-- `python3 tools/build_site.py`: builds the static site into `site/`,
+- `uv run tools/build_site.py`: builds the static site into `site/`,
   English at `site/index.html` and Chinese at `site/zh/index.html`, each
   with the version for agents at `agent/` below it, then
   runs `tools/check_site_anchors.py` on it (every in-page link has its
   target, every link to another page leads to a file of the site, no id
   repeats, no list marker leaked into the text). It calls
   the binary `hugo-0.167.0`, the version CI pins; it is not a commit hook.
-  To look at the pages, serve them: `python3 -m http.server -d site`.
+  To look at the pages, serve them: `uv run python -m http.server -d
+  site`.
 - `gitleaks git --redact --no-banner --verbose .`: the full-history scan
   that CI runs. Keep `--redact`; without it a hit prints the secret.
 
@@ -135,18 +147,18 @@ search reads content: run the same search on a file where it must match.
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`. Its
 one job, `check`, scans the full history with gitleaks (pinned by version and
-SHA-256), runs `pre-commit run --all-files` with the gitleaks hook skipped,
-so the constitution build check, the tests and both limae checks run there
-too, builds the static site with the pinned Hugo and checks its links, and
-then runs the build check with `--base` and the instruction-only check,
-both against the first parent of the checked-out merge commit on a pull
-request (`docs/design.md`, Checkers), or against the commit before the push
-on a push to `main`. `check` is the required status check on `main`: a merge
-waits for it to pass, and the PR must be up to date with `main`. A PR that
-is behind `main`: run `gh pr update-branch <N>` or merge the latest `main`,
-rerun the checks, let the reviewer recheck the increment, then merge.
-Runners are pinned to `ubuntu-24.04`, and actions by
-commit SHA.
+SHA-256), sets up uv (`uv sync --locked`, which fails on a stale lock), runs
+`uv run pre-commit run --all-files` with the gitleaks hook skipped, so the
+Python checkers, the constitution build check, the tests and both limae checks
+run there too, builds the static site with the pinned Hugo and checks its
+links, and then runs the build check with `--base` and the instruction-only
+check, both against the first parent of the checked-out merge commit on a pull
+request (`docs/design.md`, Checkers), or against the commit before the push on
+a push to `main`. `check` is the required status check on `main`: a merge
+waits for it to pass, and the PR must be up to date with `main`. A PR that is
+behind `main`: run `gh pr update-branch <N>` or merge the latest `main`, rerun
+the checks, let the reviewer recheck the increment, then merge. Runners are
+pinned to `ubuntu-24.04`, and actions by commit SHA.
 
 `.github/workflows/token-count.yml` ("Token count") runs only on pushes to
 `main`. It gets an access token through Workload Identity Federation, builds
