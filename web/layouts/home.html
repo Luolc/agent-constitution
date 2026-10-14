@@ -1,0 +1,70 @@
+{{- /* The full version of the constitution in the page's language. Under
+  the title, a list without bullets: the revision, the length of the
+  version for agents with a button that opens a popup on the counts, and
+  the legend of the asterisk when the text has one. The popup gives the
+  lengths of both versions in a table, under it a list of notes (what the
+  version for agents leaves out, how the tokens were counted, at which
+  revision), and the link to the version for agents last. Its table and
+  list are spans with ARIA roles, since a <table> or a <ul> cannot sit in
+  the <span> the popup is; a screen reader then names each number's
+  column. */ -}}
+{{ define "main" }}
+{{- $length := .Params.length }}
+{{- $agentLength := .Params.agentLength }}
+{{- $tokens := partial "constitution/tokens.html" (dict "version" "full" "length" $length) }}
+{{- $agentTokens := partial "constitution/tokens.html" (dict "version" "agent" "length" $agentLength) }}
+{{- $agentURL := (site.GetPage "/agent").RelPermalink }}
+{{- $commit := "" }}
+{{- with hugo.Data.lengths }}
+  {{- with index . site.Language.Lang }}
+    {{- if and (eq .full.sha256 $length.sha256) (eq .agent.sha256 $agentLength.sha256) }}
+      {{- $commit = hugo.Data.lengths.commit }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $model := site.Params.tokenCount.name }}
+<article class="markdown book-article"><div class="constitution">
+{{ partial "constitution/title.html" . }}
+<ul class="revision">{{ partial "constitution/revision.html" . -}}
+<li class="length">
+  {{- i18n "length" (dict "characters" (lang.FormatNumberCustom 0 $agentLength.characters) "words" (lang.FormatNumberCustom 0 $agentLength.words)) }} · {{ with $agentTokens }}{{ i18n "tokens" (dict "tokens" (lang.FormatNumberCustom 0 .)) }}{{ else }}{{ i18n "no-tokens" }}{{ end -}}
+<span class="count-info"><button type="button" class="count-button" aria-expanded="false" aria-controls="count-popup" aria-label="{{ i18n "count-info" }}">
+  {{- /* An info icon: a thin ring around an `i`. */ -}}
+  <svg viewBox="0 0 16 16" width="1em" height="1em" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="5" r=".9" fill="currentColor"/><path d="M8 7.25v4.25" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+<span class="count-popup" id="count-popup">
+  {{- /**/ -}}
+  <span class="count-summary">{{ i18n "count-summary" }}</span>
+  {{- /**/ -}}
+  <span class="count-table" role="table">
+    {{- /**/ -}}
+    <span class="count-row" role="row"><span class="count-label" role="columnheader"></span>
+      {{- range slice "count-characters" (cond site.Params.countWords "count-words" "") "count-tokens" }}{{ with . }}<span class="count-cell" role="columnheader">{{ i18n . }}</span>{{ end }}{{ end -}}
+    </span>
+    {{- /**/ -}}
+    <span class="count-row" role="row"><span class="count-label" role="rowheader">{{ i18n "count-agent" }}</span>{{ partial "constitution/cells.html" (dict "length" $agentLength "tokens" $agentTokens) }}</span>
+    {{- /**/ -}}
+    <span class="count-row" role="row"><span class="count-label" role="rowheader">{{ i18n "count-full" }}</span>{{ partial "constitution/cells.html" (dict "length" $length "tokens" $tokens) }}</span>
+    {{- /**/ -}}
+  </span>
+  {{- /**/ -}}
+  <span class="count-notes" role="list">
+    {{- /**/ -}}
+    <span class="count-note" role="listitem">{{ i18n "count-agent-note" }}</span>
+    {{- /**/ -}}
+    <span class="count-note" role="listitem">{{ i18n (cond (and $tokens $agentTokens) "counted" "not-counted") (dict "model" $model) }}</span>
+    {{- /**/ -}}
+    <span class="count-note" role="listitem">{{ i18n "count-source" (dict "revision" hugo.Data.constitution.revision "commit" $commit) }}</span>
+    {{- /**/ -}}
+  </span>
+  {{- /**/ -}}
+  <a class="count-link" href="{{ $agentURL }}">{{ i18n "agent-link" }}</a>
+  {{- /**/ -}}
+</span></span></li>
+{{- if $length.omitted -}}
+<li class="legend">{{ i18n "legend" (dict "mark" site.Params.omittedMark "agent" (printf `<a href="%s">%s</a>` $agentURL (i18n "legend-agent"))) | safeHTML }}</li>
+{{- end -}}
+</ul>
+{{ .Content }}
+</div>
+</article>
+{{ end }}
