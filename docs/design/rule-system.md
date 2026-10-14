@@ -101,8 +101,9 @@ base, leaves rules out, and picks among the alternatives of a choice. The
 jurisdiction of the current design (`division-of-instructions.rules`) is
 then the owner of a base rule set that its repositories inherit; the
 rule set and compiled output of each repository replace the one rule
-choice and compiled file per jurisdiction. Exclusion is checked per rule set, so one repository can
-use uv for its Python packages and another Bazel.
+choice and compiled file per jurisdiction. Exclusion is checked per rule
+set, so one repository can use uv for its Python packages and another
+Bazel.
 
 **Monorepos.** A rule set may be split by path into segments, each
 naming a directory and the rules for it. Exclusion is checked within each
@@ -123,7 +124,8 @@ and shows up as a pull request. The user level holds only the tool, a
 cache of the sources, and a thin personal layer for what concerns the
 person, not the project: the language of replies, reading messages as
 speech-to-text, where credentials are kept, how directories are laid out
-on the machine. That layer takes over the personal part of the private overlay already in the design.
+on the machine. That layer takes over the personal part of the private
+overlay already in the design.
 Each rule declares a default level (project rules at the repository level,
 rules about the person or the machine at the user level), and the user can
 change it. The reason is that a person who clones the repository, CI and a
@@ -299,8 +301,8 @@ and a rule set with its lock file, and writes:
 
 - an `AGENTS.md`, with the chosen rules in nested blocks along the parent
   tree, one heading level per level of the tree; a subtree whose root is
-  not enabled (for a choice: none of its children is) contributes nothing, since none of its rules can be enabled
-  without it, and a requirement that crosses subtrees is rendered as a
+  not enabled (for a choice: none of its children is) contributes
+  nothing, since none of its rules can be enabled without it, and a requirement that crosses subtrees is rendered as a
   link.
   Once the file's length passes a token threshold, measured with
   `count-tokens`, it is split into several files;
