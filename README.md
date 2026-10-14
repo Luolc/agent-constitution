@@ -89,9 +89,9 @@ statute check         # run the checks of the enabled rules
 `statute check` prints one line per rule: `pass`, `violation`,
 `inconclusive`, or `review` for a rule no script can decide, and then,
 for the reviewer, the reason and the verification of each rule that is
-inconclusive or for review. It exits with
-status 1 on a violation. Run it in CI and before each push, not as a
-commit hook: a check may be slow. `statute explain <id>` says why a rule is enabled, and `statute
+inconclusive or for review. It exits with status 1 on a violation. Run
+it in CI and before each push, not as a commit hook: a check may be
+slow. `statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in
 [The command and the first version](docs/design/rule-system.md#the-command-and-the-first-version).
 

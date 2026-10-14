@@ -647,7 +647,7 @@ cannot be used together, one of them gets `conflicts = [ID]`. The relation
 is symmetric and written on one side only: on the rule that came later,
 the one being added or changed when the conflict was found, and never on
 the one that was already there. Across sources it can only be written on
-one's own side anyway. statute derives the other side, and both the
+one's own side anyway. The command derives the other side, and both the
 build check and the site show the conflict on both rules. A conflict
 written on both sides draws a warning, not an error. The reasons: a fact
 is written in one place (`no-restating`), and another source's files
