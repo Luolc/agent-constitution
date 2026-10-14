@@ -76,19 +76,20 @@ git clone https://github.com/Luolc/agent-constitution.git
 cargo install --path agent-constitution/crates/statute
 ```
 
-Then, in the repository the agents work in:
+Then, in the repository the agents work in, with the clone next to it:
 
 ```sh
 statute init --source ../agent-constitution  # write statute.toml
 statute add 43        # enable rule 43, and write statute.lock
 statute lock          # resolve statute.toml again after editing it by hand
-statute compile       # write AGENTS.md, the checks and statute-hooks.yaml
+statute compile       # write AGENTS.md, the skills, the checks and statute-hooks.yaml
 statute check         # run the checks of the enabled rules
 ```
 
 `statute check` prints one line per rule: `pass`, `violation`,
-`inconclusive`, or `review` for a rule no script can decide, followed by
-each rule's reason and verification for the reviewer. It exits with
+`inconclusive`, or `review` for a rule no script can decide, and then,
+for the reviewer, the reason and the verification of each rule that is
+inconclusive or for review. It exits with
 status 1 on a violation. `statute-hooks.yaml` runs it as a pre-commit
 hook. `statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in

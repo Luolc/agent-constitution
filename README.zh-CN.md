@@ -46,17 +46,17 @@ git clone https://github.com/Luolc/agent-constitution.git
 cargo install --path agent-constitution/crates/statute
 ```
 
-然后在 agent 工作的那个仓库里：
+然后在 agent 工作的那个仓库里 (这里假定克隆的目录就在它旁边)：
 
 ```sh
 statute init --source ../agent-constitution  # 写出 statute.toml
 statute add 43        # 启用规定 43，并写出 statute.lock
 statute lock          # 手改 statute.toml 之后重新解析
-statute compile       # 写出 AGENTS.md、检查和 statute-hooks.yaml
+statute compile       # 写出 AGENTS.md、skill、检查和 statute-hooks.yaml
 statute check         # 运行已启用规定的检查
 ```
 
-`statute check` 每条规定打一行结果：`pass`、`violation`、`inconclusive`，没有脚本能判定的规定是 `review`；后面附上每条规定的理由和判定方法，给审查方看。有规定被违反时退出码为 1。`statute-hooks.yaml` 把它作为 pre-commit 钩子运行。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [工具与第一版](docs/design/zh/rule-system.md#the-tool-and-the-first-version)。
+`statute check` 每条规定输出一行结果：`pass`、`violation`、`inconclusive`，没有脚本能判定的规定是 `review`；对结果为 `inconclusive` 或 `review` 的规定，后面再附上它的理由和判定方法，给审查方看。有规定被违反时退出码为 1。`statute-hooks.yaml` 把它作为 pre-commit 钩子运行。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [工具与第一版](docs/design/zh/rule-system.md#the-tool-and-the-first-version)。
 
 ## 开发
 
