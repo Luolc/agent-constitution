@@ -4,10 +4,10 @@ audience = "maintainers"
 
 [content]
 en = '''
-This constitution is kept in editions and amended within each edition. Naming an edition by its year and month follows the practice of calling a constitution by the year of its adoption, as China does with its constitutions of 1954 and 1982 and France with that of 1958. The distinction between an edition and the amendments within it resembles that between total and partial revision of the Federal Constitution of Switzerland.
+Naming an edition by its year and month follows the practice of calling a constitution by the year of its adoption, as China does with its constitutions of 1954 and 1982 and France with that of 1958. The distinction between an edition and the amendments within it resembles that between total and partial revision of the Federal Constitution of Switzerland.
 '''
 zh = '''
-本宪法分版制定，在同一版内修正。每一版以年月命名，沿用按通过年份称呼宪法的做法，如中国的 1954 年宪法、1982 年宪法和法国的 1958 年宪法。版与版内修正案之分，类似瑞士联邦宪法的全面修订与部分修订。
+每一版以年月命名，沿用按通过年份称呼宪法的做法，如中国的 1954 年宪法、1982 年宪法和法国的 1958 年宪法。版与版内修正案之分，类似瑞士联邦宪法的全面修订与部分修订。
 '''
 
 [[items]]
@@ -63,7 +63,7 @@ zh = '''
 '''
 
 [[items]]
-id = "renumbering"
+id = "new-edition"
 number = "5"
 status = "draft"
 
