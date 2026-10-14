@@ -1,0 +1,46 @@
+id = 59
+slug = "ci-after-merge"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["evidence.facts", "accountable-agent.whole-task", "decide-yourself.own-mistakes"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "After a merge, read CI on the merge commit"
+zh = "合并之后查看 merge commit 的 CI"
+
+[text.statement]
+en = "After you merge a pull request, read the result of CI on the merge commit on the main branch within a bounded wait and give it in your report, or that none arrived within the wait; when it fails, fix it, revert it or report it."
+zh = "合并 pull request 之后，在有上限的等待时间内查看主分支上 merge commit 的 CI 结果，并在回报里给出这个结果，或者写明等待时间内没有结果；失败了就修复、revert 或者上报。"
+
+[text.reason]
+en = '''
+A merge can fail on the main branch although the pull request passed, for example when other changes were merged in between. The agent that merged answers for the merge ({@constitution:accountable-agent.whole-task}) and diagnoses and fixes its own failures ({@constitution:decide-yourself.own-mistakes}); what it reports about the result is as actually looked up ({@constitution:evidence.facts}).
+'''
+zh = '''
+pull request 通过了，合并后在主分支上仍可能失败，例如期间合入了别的变更。合并的 agent 要为这次合并负责 ({@constitution:accountable-agent.whole-task})，诊断并修正自己造成的故障 ({@constitution:decide-yourself.own-mistakes})；它回报的结果以实际查到的为准 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+The result is the conclusion of the CI run that the push of the merge commit to the main branch started. The wait has an upper limit: the one the jurisdiction sets, or else one the agent chooses and names in its report. Whether a merge itself waits for CI on the pull request is for each repository's own instructions to say; this rule applies either way.
+
+When the result is a failure, the agent fixes it or reverts the merge, each through a change of its own ({@rule:57}), or, when it cannot fix it, is unsure, or the fix needs a decision it may not take, reports it to whoever delegated the work. Where the repository has no CI on pushes to the main branch, this rule asks nothing.
+
+Violated when the report of the agent that merged gives neither the result of that run nor that none arrived within the wait, or, where the agent chose the wait itself, does not name it, or when the result was a failure and the agent neither fixed it, reverted the merge nor reported it.
+'''
+zh = '''
+这里的结果，是 merge commit 推送到主分支时启动的那次 CI run 的结论。等待时间有上限：用法域规定的上限，法域没有规定的，由 agent 自己定，并在回报里写明。合并本身要不要等 pull request 上的 CI，由各仓库自己的指令规定；无论哪种，本规定都适用。
+
+结果是失败的，agent 修复它或者 revert 这次合并，两者都通过单独的变更进行 ({@rule:57})；修不了、拿不准，或者修复需要它无权作出的决定的，向委派这项工作的一方上报。仓库在主分支的推送上不运行 CI 的，本规定不作要求。
+
+合并的 agent 在回报里既没有给出这次 run 的结果，也没有写明等待时间内没有结果的，或者等待上限由 agent 自己定而回报里没有写明这个上限的，或者结果是失败而 agent 既没有修复、没有 revert 这次合并、也没有上报的，即为违反本规定。
+'''
+
+[translations]
+zh = "bee9bcdf649bac5f748572d525a024dbdd40c1f7a96e04752ad738f8e7ce4296"
