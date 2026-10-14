@@ -5,7 +5,7 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
-authority = ["asking-principals", "asking", "accountable-agent", "decide-yourself"]
+authority = ["asking-principals", "asking"]
 constitution = ">=1"
 level = "project"
 check = "review"

@@ -99,9 +99,10 @@ Checkers).
   pages of the constitution, the design and the rules, in both languages,
   into `site/`, which is never committed
   (`docs/design/static-site.md`).
-- `docs/design/`: the one design, one file per topic (`rules/82.toml`),
-  indexed by `docs/design/README.md`, with its Chinese translation in
-  `docs/design/zh/` (Language, above); a new file is listed in the README
+- `docs/design/`: the one design (`rules/112.toml`), one file per topic
+  (`rules/113.toml`), indexed by `docs/design/README.md`
+  (`rules/114.toml`), with its Chinese translation in `docs/design/zh/`
+  (Language, above); a new file is listed in the README
   and translated in the same PR. The code and the design may change in
   either order, and each place where they differ is marked
   (`rules/81.toml`): the design marks what is not built yet, and a PR
