@@ -1,0 +1,46 @@
+id = 19
+slug = "built-planned-open"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Say what is built, what is planned and what is open"
+zh = "写明哪些已经构建、哪些还在计划、哪些尚未决定"
+
+[text.statement]
+en = "The design states what is built in the present tense, marks a part that is planned but not built and lists what it will replace, and keeps each point not yet decided under open questions instead of stating it as settled."
+zh = "设计用现在时陈述已经构建的部分，标明计划中尚未构建的部分并列出它将取代什么，尚未决定的每一点都放在待定问题下，不当作已定的事来写。"
+
+[text.reason]
+en = '''
+A reader who acts on the design acts on what it states as fact, so a plan written as if built, or an open point written as if decided, is a wrong fact ({@constitution:evidence.facts}).
+'''
+zh = '''
+读者按设计行事，就是按它陈述的事实行事；把计划写得像已经构建，或者把未定的点写得像已经决定，都是错误的事实 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+- A file, or a part of one, that describes something not built says so where it starts, for example in a status line; the status changes in the change that builds it.
+- A planned part that will change what another section describes lists each such change, with a link to that section, in one list (for example "What this replaces"); an item leaves the list in the change that carries it out.
+- A point not yet decided is one item of an open questions list, never also given an answer in the body. Two items on the same point are one item. A point that is decided leaves the list, and the body states the decision.
+
+Violated when the design states a planned part as built, a built part as planned, a pending change to another section that its list leaves out, or an open point as decided.
+'''
+zh = '''
+- 描述尚未构建内容的文件或文件的一部分，在开头写明这一点，例如用一行状态说明；构建它的那个变更同时改掉这个状态。
+- 计划中的部分如果会改变另一节所描述的内容，就把每一处这样的改变列进一份清单 (例如「What this replaces」)，并链接到那一节；某一项由哪个变更落实，就在那个变更里移出清单。
+- 尚未决定的一点，是待定问题清单里的一项，正文里不再给它答案。讲同一点的两项合成一项。已经决定的点移出清单，由正文陈述这个决定。
+
+设计把计划中的部分写成已经构建、把已经构建的写成计划中，清单漏了某一项尚待落实的对另一节的改变，或者把未定的点写成已定的，即为违反本规定。
+'''
+
+[translations]
+zh = "0e8cb3b46bcc8a99bf71918bb1dcff41fc5a96b253b606d25f358fa6c991d8ad"
