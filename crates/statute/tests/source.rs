@@ -725,3 +725,62 @@ fn a_one_of_clash_is_reported_on_the_rule_that_makes_it() {
     ]);
     assert_error(&diags, "5.toml", "rule 5 can never be enabled");
 }
+
+#[test]
+fn crlf_line_ends_hash_as_lf() {
+    let lf = translated(&current_hash());
+    assert_clean(&load(&[domain(1), lf.clone()]));
+    let crlf = (lf.0, lf.1.replace('\n', "\r\n"));
+    assert!(crlf.1.contains("Because.\r\n'''"));
+    assert_clean(&load(&[domain(1), crlf]));
+}
+
+#[test]
+fn a_title_is_one_line() {
+    // A multi-line string whose one line ends in a newline is still one
+    // line.
+    let r = edit(rule(2, 1, ""), "en = \"Rule 2\"", "en = '''\nRule 2\n'''");
+    assert_clean(&load(&[domain(1), r]));
+    let r = edit(
+        rule(2, 1, ""),
+        "en = \"Rule 2\"",
+        "en = \"Rule 2\\nand more\"",
+    );
+    assert_error(
+        &load(&[domain(1), r]),
+        "2.toml",
+        "[title] `en` must be one line",
+    );
+}
+
+#[test]
+fn requiring_a_superseded_or_repealed_rule_is_a_warning() {
+    let superseded = edit(
+        rule(2, 1, "superseded-by = 3"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    );
+    let repealed = edit(
+        rule(4, 1, ""),
+        "status = \"draft\"",
+        "status = \"repealed\"",
+    );
+    let base = [domain(1), superseded, rule(3, 1, ""), repealed];
+    let mut ok = base.to_vec();
+    ok.push(rule(5, 1, "requires = [3]"));
+    assert_clean(&load(&ok));
+    let mut to_superseded = base.to_vec();
+    to_superseded.push(rule(5, 1, "requires = [2]"));
+    assert_warning(
+        &load(&to_superseded),
+        "5.toml",
+        "`requires` names rule 2, which is superseded by 3; require 3 instead",
+    );
+    let mut to_repealed = base.to_vec();
+    to_repealed.push(rule(5, 1, "requires = [4]"));
+    assert_warning(
+        &load(&to_repealed),
+        "5.toml",
+        "`requires` names rule 4, which is repealed, with nothing in its place",
+    );
+}

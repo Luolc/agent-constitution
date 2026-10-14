@@ -471,6 +471,9 @@ fn check_languages(
             if value.trim().is_empty() {
                 err(format!("[{name}] `{key}` is empty"));
             }
+            if *name == "title" && value.trim_matches(['\r', '\n']).contains('\n') {
+                err(format!("[title] `{key}` must be one line"));
+            }
         }
     }
 
@@ -510,7 +513,10 @@ fn check_languages(
     }
 
     // The hash can be checked only when every original text is there.
-    let original = |t: &Text| t.get(lang).cloned();
+    // Line ends count as `\n` whatever the file uses, as some TOML
+    // parsers already return them, so a checkout with CRLF line ends
+    // hashes the same.
+    let original = |t: &Text| t.get(lang).map(|s| s.replace("\r\n", "\n"));
     let mut parts = vec![original(&raw.title)];
     match (&raw.text, raw.kind) {
         (Some(t), Kind::Rule) => parts.extend([

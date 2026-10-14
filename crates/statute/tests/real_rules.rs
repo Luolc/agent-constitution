@@ -47,6 +47,7 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
         .filter(|n| n.kind == Kind::Rule)
         .filter(|n| !matches!(n.status, Status::Superseded | Status::Repealed))
         .count();
+    assert!(in_force > 0, "no rule in force to check");
     let project = project.unwrap();
     assert_eq!(project.resolution.enabled.len(), in_force);
     assert!(project.revision.parse::<u64>().is_ok());
