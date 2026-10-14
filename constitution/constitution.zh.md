@@ -1,4 +1,4 @@
-本文件由 `uv run constitution-build` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。修订号：0.48 (草案)。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/constitution.zh.agent.md` 不收录这些部分。
+本文件由 `uv run constitution-build` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。修订号：0.49 (草案)。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/constitution.zh.agent.md` 不收录这些部分。
 
 # Agent 宪法 (2026-10 版)
 
@@ -34,12 +34,17 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="editions.draft"></a>(**三**) **草案**是为下一版准备的文本，标题写它准备成为的那一版的名字，修订号旁注明「草案」。那一版如果在其他月份批准，就以批准的月份命名：提请批准的文本写这个名字，改名属于制定新的一版 ([第十一条第九款][new-editions])，不另算一次修正案。第一版批准之前，只有草案。草案可以试行：项目的有权委托人可以决定在该项目中采用草案，采用期间，草案在该项目中适用；已有现行版的，由草案代替现行版。试行不等于批准，草案仍可随时修改。
     -   <a id="editions.revision"></a>(**四**) 同一版内，**修订号** (revision) 从一起算，每有一次修正案生效就加一 ([第十一条第六款][revision-count])，编号永不更改 ([第十一条第八款][stable-numbers])。草案的修订号写作 0.*n*；每份草案的 *n* 都从一起算，同样逐次加一。
     -   <a id="editions.new-edition"></a>(**五**) 新的一版可以对全文大范围重排、重新编号；制定新的一版，本身就是一次修宪 ([第十一条第九款][new-editions])。延续到新一版的条文保留原来的 ID，旧记录按 ID 的引用仍然有效；按编号引用时要写明是哪一版。
--   <a id="hard-rules"></a>**第四款** 表达「必须」「不得」或「只能」之意的句子是**硬性规定**，其余是原则，凭判断适用。条文的字面可以有不止一种理解时，取最符合其目的的那一种；不得把条文解释成授予的权限比其目的允许的更多，或者约束比其目的要求的更少。
+-   <a id="hard-rules"></a>**第四款** 条文按下面的方式理解：
+    -   <a id="hard-rules.definition"></a>(**一**) 表达「必须」「不得」或「只能」之意的句子是**硬性规定**，其余是原则，凭判断适用。
+    -   <a id="hard-rules.reading"></a>(**二**) 条文的字面可以有不止一种理解时，取最符合其目的的那一种；不得把条文解释成授予的权限比其目的允许的更多，或者约束比其目的要求的更少。
 -   <a id="legal-form"></a>**第五款** 人类法律的写法、结构与程序惯例，是理解和维护本宪法的默认背景。本宪法对某事有明文规定的，以明文为准。对文本之间的冲突，本宪法规定如下：
     -   <a id="legal-form.later-law"></a>(**一**) 同一位阶内适用「新法优于旧法」(*lex posterior derogat legi priori*)：两段经过合法采纳的文本相互冲突的，以后采纳的为准。文本的先后以采纳完成的时间为准 (例如修正案生效的时间)，不以起草的时间或 agent 读到的时间为准。
     -   <a id="legal-form.across-ranks"></a>(**二**) 「新法优于旧法」不跨位阶适用：新的下位法不能推翻旧的上位法，位阶之间的冲突只能通过明文修改来解决 ([第八条第四款][layer-conflicts])。
     -   <a id="legal-form.special-law"></a>(**三**) 本宪法明确排除「特别法优于一般法」(*lex specialis derogat legi generali*)，因为更具体的文本可能是越权的下位法；合法的细化已由[第八条第三款][lower-layers]规定。
--   <a id="equal-languages"></a>**第六款**<sup class="omitted">*</sup> 本宪法目前有中文本和英文本，各语言文本同等有效。增加或者删除一种语言，是对本宪法的修改。各语言文本的意思不一致时，该条文按「未定」处理 ([第八条第六款][undetermined])，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为何不译，只写在该语言的文本里，不算各语言文本意思不一致。
+-   <a id="equal-languages"></a>**第六款**<sup class="omitted">*</sup> 本宪法目前有中文本和英文本：
+    -   <a id="equal-languages.standing"></a>(**一**) 各语言文本同等有效。
+    -   <a id="equal-languages.adding"></a>(**二**) 增加或者删除一种语言，是对本宪法的修改。
+    -   <a id="equal-languages.differences"></a>(**三**) 各语言文本的意思不一致时，该条文按「未定」处理 ([第八条第六款][undetermined])，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为何不译，只写在该语言的文本里，不算各语言文本意思不一致。
 -   <a id="inapplicable-provisions"></a>**第七款** 某一条文在个案中无法适用时，例如运行环境禁止 ([第八条第一款][highest-layer])，本宪法的其余部分照常适用，该条文也在仍能适用的范围内继续适用。
 -   <a id="amending"></a>**第八款**<sup class="omitted">*</sup> 本宪法只能以修正案修改 ([第十一条][amendment-procedure])。
 -   <a id="content-scope"></a>**第九款**<sup class="omitted">*</sup> 哪些内容写入本宪法，规定如下：
