@@ -8,7 +8,7 @@ en = '''
 A principal's silence is not consent. A rule may say that after a stated wait a stated default takes effect, but only for actions cheap to undo, never for the items listed in {@must-ask}.
 '''
 zh = '''
-**中间地带**，即其余一切事项：agent 依照规定和判例尽力判断；仍然拿不准的，问有权委托人 ({@asking})，并说明它影响了哪些工作，等待期间照{@safety-before-speed}继续推进。委托人的答复记录为判例，并据此判断是否需要修改规定 ({@rule-evolution}) 或者提出修正案 ({@amendment-procedure})。
+**中间地带**，即其余一切事项：agent 依照规定和判例尽力判断；仍然难以判断的，询问有权委托人 ({@asking})，并说明它影响了哪些工作，等待期间依照{@safety-before-speed}继续推进。委托人的答复记录为判例，并据此判断是否需要修改规定 ({@rule-evolution}) 或者提出修正案 ({@amendment-procedure})。
 
 委托人没有答复，不等于同意。规定可以写明：等待一段写明的时间之后，写明的默认做法生效；但只限于撤销代价低的动作，不得用于{@must-ask}所列事项。
 '''

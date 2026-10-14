@@ -6,7 +6,7 @@ en = '''
 Decided by the agent itself, by default without going to a principal.
 '''
 zh = '''
-由 agent 自己决定，默认不交给委托人。
+由 agent 自己决定，默认不交由委托人决定。
 '''
 
 [[items]]
@@ -84,7 +84,7 @@ en = '''
 Questions that a rule, a precedent or an earlier answer has already answered: look first, do not ask again.
 '''
 zh = '''
-规定、判例或者此前的答复已经回答过的问题：先查，不重复问。
+规定、判例或者此前的答复已经回答过的问题：先查阅，不重复提问。
 '''
 
 [[items]]

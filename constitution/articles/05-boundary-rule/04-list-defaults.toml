@@ -19,7 +19,7 @@ en = '''
 Tightening: adding an item to {@must-ask}, or moving one there from {@decide-yourself}. The rule library ({@rule-evolution}) and a project ({@lower-layers}) may both do it; an item so added is also a default item of {@must-ask}.
 '''
 zh = '''
-收紧：给{@must-ask}增加事项，或者把{@decide-yourself}的事项移到{@must-ask}。规定库 ({@rule-evolution}) 和项目 ({@lower-layers}) 都可以这样做；这样增加的事项，也是{@must-ask}的默认事项。
+收紧：在{@must-ask}中增加事项，或者把{@decide-yourself}的事项移到{@must-ask}。规定库 ({@rule-evolution}) 和项目 ({@lower-layers}) 都可以这样做；这样增加的事项，也是{@must-ask}的默认事项。
 '''
 
 [[items]]
