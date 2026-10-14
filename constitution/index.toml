@@ -1,5 +1,5 @@
 status = "draft"
-revision = "0.30"
+revision = "0.31"
 languages = ["en", "zh"]
 
 [title]
@@ -12,12 +12,12 @@ en = '''
 
 ## Preamble
 
-As they evolve, instruction files for agents, such as AGENTS.md, tend to grow longer and harder to read, contradict themselves, drift out of step with the code, and mix principles, practices and procedures together. This is a very common and deep-rooted problem in coding with AI agents today, and the community does not yet have an accepted good mechanism for solving it. It bears on the self-evolution of agents and the development of AI coding, and is an important and serious problem that must be solved. To this end, this constitution and the texts of lower rank borrow from human legal systems what suits agents, above all the conventions for drafting and amending statutes, the relation of higher law to lower law, and the processes of enforcement, adjudication and amendment. In terms, file structure and arrangement they follow human law as closely as they can, to make the most of the legal context and priors that agents acquire in pretraining, so that agents update and obey these provisions as efficiently and as rigorously as possible.
+As they evolve, instruction files for agents, such as AGENTS.md, tend to grow longer and harder to read, contradict themselves, drift out of step with the code, and mix principles, practices and procedures together. This is a very common and deep-rooted problem in coding with AI agents today, and the community does not yet have an accepted good mechanism for solving it. It bears on the self-evolution of agents and the development of AI coding, and is an important and serious problem that needs to be solved. To this end, this constitution and the texts of lower rank borrow from human legal systems what suits agents, above all the conventions for drafting and amending statutes, the relation of higher law to lower law, and the processes of enforcement, adjudication and amendment. In terms, file structure and arrangement they follow human law as closely as they can, to make the most of the legal context and priors that agents acquire in pretraining, so that agents update and obey these provisions as efficiently and as rigorously as possible.
 '''
 zh = '''
 **本文本是草案，未经任何人批准，尚未生效；** 依照{@amendment-procedure}批准之前，对任何人都没有约束力。
 
 ## 序言
 
-AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长、越来越难读，自相矛盾，与代码逐渐脱节，原则、做法和流程混杂在一起。这是当前用 AI agent 编程时非常常见、根深蒂固的问题，社区也还没有公认的好机制来解决它。它关系到 agent 的自我进化与 AI 编程的发展，是一个重要而严肃、必须解决的问题。为此，本宪法及其下各位阶的文件借鉴人类法律体系中适合 agent 的内容，尤其是法条的写法与修订惯例、上位法与下位法的关系，以及执行、司法与修订的流程。它们在术语、文件结构和编排上尽量贴近人类法律，以最大限度利用 agent 在预训练中获得的法律语境与先验，使 agent 更新和遵守这些条文时尽可能高效、严谨。
+AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长、越来越难读，自相矛盾，与代码逐渐脱节，原则、做法和流程混杂在一起。这是当前用 AI agent 编程时非常常见、根深蒂固的问题，社区也还没有公认的好机制来解决它。它关系到 agent 的自我进化与 AI 编程的发展，是一个重要而严肃、亟待解决的问题。为此，本宪法及其下各位阶的文件借鉴人类法律体系中适合 agent 的内容，尤其是法条的写法与修订惯例、上位法与下位法的关系，以及执行、司法与修订的流程。它们在术语、文件结构和编排上尽量贴近人类法律，以最大限度利用 agent 在预训练中获得的法律语境与先验，使 agent 更新和遵守这些条文时尽可能高效、严谨。
 '''
