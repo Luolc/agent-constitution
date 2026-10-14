@@ -330,6 +330,9 @@ sha256 = "<SHA-256 of rules/42.toml>"
 One field, `rule`, names the rule in the same form everywhere else, in
 place of a source and an ID in two fields, so that a line of the lock
 file can be searched for as the rule set and the messages write it.
+A lock file of the earlier format, which named a rule by `source` and
+`id`, fails `upgrade` with a note to run `statute lock`, which writes it
+anew.
 
 A source on disk (`path`, see
 [Sources and references](#sources-and-references)) has no commit to
@@ -515,7 +518,9 @@ same address.
 or `conflicts` and a citation `{@rule:<id>}` in its text name a rule
 of the same source. A rule names a rule of another source in
 `requires` or `conflicts` as `"R12"` or `"team:7"`, with the names of
-its own source's `[sources]` table. When compiled, a rule of the same
+its own source's `[sources]` table. A rule of the first-party source
+names another first-party rule by its number alone; for `"R12"` there,
+statute says to write `12`. When compiled, a rule of the same
 source is shown with that source's prefix: `{@rule:12}` in a
 first-party rule is `R12`, in a local rule `L12`.
 
