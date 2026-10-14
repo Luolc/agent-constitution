@@ -710,7 +710,8 @@ is a release (rule `must-ask-items`) and not set up.
   same way but with its text as is: no anchors, no links, the provisions
   written for human readers only their numbers and a pointer to the full
   version. Its headings carry `{anchor=false}`, so the theme adds no `#`
-  link to them. Under the revision, a link leads back to the full version.
+  link to them. Under the title is a list like the home page's, its left
+  edge at the column's: the revision, and a link back to the full version.
   The page is hidden from hugo-book's list of pages; the sidebar, the
   language switch (to the other language's version for agents) and the
   color switch are as on the home page, the list of articles linking to
@@ -732,7 +733,8 @@ is a release (rule `must-ask-items`) and not set up.
   (spans with ARIA table roles, so a screen reader names the columns; the
   full version is the generated file without its header line, anchors and
   link definitions included; a token count not made is a dash), the table
-  as wide as the popup; under it, smaller and fainter, a bulleted list
+  as wide as the popup; under it, smaller and fainter than the table but
+  no smaller than the items of the list under the title, a bulleted list
   (spans with ARIA list roles): what the version for agents omits, which
   API counted the tokens for which model or why they were not counted (the
   model is `COUNT_MODEL` in `build_site.py`, named in words by
@@ -789,10 +791,14 @@ is a release (rule `must-ask-items`) and not set up.
   generator as is; the last part maps it onto hugo-book's variables.
   Centered article headings, bold section and item numbers (bold in the
   Markdown), English text ragged right and Chinese justified, a print
-  style without link decoration. Every link on the page and in the
-  sidebar is underlined, in the text color like the citations, so that it
-  is told apart without its color; the underline has a contrast of at
-  least 3:1 against the page and the sidebar in both color themes. The
+  style without link decoration. Every link in the text, under the title
+  and in the popup is underlined, in the text color like the citations,
+  so that it is told apart without its color; the underline has a
+  contrast of at least 3:1 against the page and the sidebar in both color
+  themes. The navigation (the sidebar and the top bar of a narrow screen)
+  is not underlined, but is under the pointer or the keyboard's focus.
+  The sidebar marks no current item: the theme marks one only in its own
+  list of pages, which is empty here. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
   so a line keeps about 90 characters in English and 40 in Chinese; the

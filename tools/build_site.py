@@ -209,15 +209,16 @@ def page(markdown: str, agent_markdown: str, labels: dict[str, str], revision: s
 
 def agent_page(agent_markdown: str, labels: dict[str, str], revision: str) -> str:
     """The Hugo page of the version for agents: its text as agents read it,
-    under the revision and a link back to the full version. Hidden from
+    under a list like the home page's: the revision and a link back to the
+    full version. Hidden from
     the sidebar's list of pages; its headings get no anchor link from the
     theme."""
     title, rest = split(agent_markdown)
-    revision_line = (f'<p class="revision">{labels["revision"]} {revision}<br>'
-                     f'<span class="back"><a href="{labels["home"]}">{labels["back"]}</a></span></p>')
+    revision_list = (f'<ul class="revision"><li class="number">{labels["revision"]} {revision}</li>'
+                     f'<li class="back"><a href="{labels["home"]}">{labels["back"]}</a></li></ul>')
     rest = [line + NO_ANCHOR if line.startswith("#") else line for line in rest]
     return "\n".join([front(title, "bookHidden = true"), '<div class="constitution">', "", title + NO_ANCHOR, "",
-                      revision_line, *rest, "", "</div>", ""])
+                      revision_list, *rest, "", "</div>", ""])
 
 
 def short_commit() -> str | None:
