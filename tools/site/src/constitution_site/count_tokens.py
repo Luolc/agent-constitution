@@ -5,9 +5,9 @@ site): for each language and each version, the full one and the one for
 agents, the SHA-256 of the text whose length the site gives (the generated
 file without its header line) and its tokens, as counted by Anthropic's
 count_tokens API for the model `params.tokenCount.model` in web/hugo.toml,
-and the abbreviated commit the count ran on. The site shows a count only
-when its SHA-256 matches the text it builds, so a file left from another
-commit does not show stale numbers.
+and the full SHA of the commit the count ran on, which the site links. The
+site shows a count only when its SHA-256 matches the text it builds, so a
+file left from another commit does not show stale numbers.
 
 The credential comes from CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN or
 CONSTITUTION_TOKEN_COUNT_API_KEY. Without either, or when a call fails, the
@@ -117,15 +117,15 @@ def count_tokens(text: str, model: str, auth: dict[str, str]) -> int | None:
   return None
 
 
-def short_commit() -> str | None:
-  """Return the abbreviated commit the count runs on.
+def commit_sha() -> str | None:
+  """Return the full SHA of the commit the count runs on.
 
   Returns:
     The commit, or None outside git.
   """
   try:
     result = subprocess.run(
-      ["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
+      ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
       capture_output=True,
       text=True,
       env=git_env.clean(),
@@ -170,7 +170,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     if args.require_tokens:
       return 1
-  lengths: dict[str, object] = {"commit": short_commit()}
+  lengths: dict[str, object] = {"commit": commit_sha()}
   for lang in languages:
     versions = lengths[lang] = {}
     for version, suffix in VERSIONS.items():

@@ -419,3 +419,30 @@ body { font-family: var(--c-font-en); }
 /* Block, so that the asterisk sits in the line; closer than the theme
    sets its lists, as one list of a dozen short lines. */
 .book-toc nav a { display: block; padding: .3em 0; }
+/* Between the theme's breakpoint (56rem) and 70rem the table of contents
+   would leave the text under about 65 characters a line in English: it
+   goes behind the theme's button, which floats at the top right, the
+   sidebar staying, and opens over the text at the right edge. Below 56rem
+   the theme hides the sidebar too. */
+@media screen and (56rem < width <= 70rem) {
+  .book-header {
+    display: block;
+    position: fixed;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: 2;
+    padding: .5rem;
+    background: var(--c-paper);
+    border-end-start-radius: .5rem;
+  }
+  .book-header :is(label[for="menu-control"], .book-brand) { display: none; }
+  .book-toc { display: none; flex: none; }
+  body:has(#toc-control:checked) .book-toc { display: block; }
+  .book-toc .book-toc-content {
+    inset-inline-end: 0;
+    padding-top: 3.5rem;
+    background: var(--c-paper);
+    border-inline-start: 1px solid var(--c-rule);
+    box-shadow: 0 0 1rem color-mix(in srgb, var(--c-ink) 15%, transparent);
+  }
+}

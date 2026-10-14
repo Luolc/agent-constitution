@@ -797,8 +797,8 @@ link check. Only the build exists here; publishing it is a release (rule
   API (`POST /v1/messages/count_tokens`, standard library only). The
   content adapter counts the characters and words; `count-tokens`
   counts the tokens and writes them to `web/data/lengths.json` (not
-  committed), with the SHA-256 of each text it counted and the abbreviated
-  commit it ran on. The site shows a token count, and the commit, only
+  committed), with the SHA-256 of each text it counted and the full SHA
+  of the commit it ran on. The site shows a token count, and the commit, only
   when the SHA-256 is that of the text it builds, so a file left from
   another commit shows no stale number; without the file it says the
   tokens were not counted. An info
@@ -817,8 +817,10 @@ link check. Only the build exists here; publishing it is a release (rule
   (spans with ARIA list roles): what the version for agents omits, which
   API counted the tokens for which model or why they were not counted (the
   model named in words by `params.tokenCount.name` next to its ID), and
-  the revision and the abbreviated commit of the count (left out without
-  a count of this text, or outside git); last, on a line
+  the revision and the commit of the count, abbreviated to seven
+  characters and linked to that commit in the source repository, opened
+  in a new tab (left out without a count of this text, or outside git);
+  last, on a line
   of its own, the link to the page of the version for agents. The text of
   the popup is the size of the legend under the title, the numbers of the
   table a little larger. Each page's two versions are counted
@@ -912,9 +914,13 @@ link check. Only the build exists here; publishing it is a release (rule
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
   so a line keeps about 90 characters in English and 40 in Chinese where
-  the window has room for it; between hugo-book's breakpoint (56rem) and
-  about 1100px, where both side columns are shown, the column is
-  narrower. It is centered between the sidebar and the table of contents. Fonts: EB Garamond and Noto
+  the window has room for it. Three columns would leave the text under
+  about 65 characters a line in English below 70rem (1120px), so there
+  the table of contents goes behind the theme's top-bar button, floating
+  at the top right, which opens it over the text at the right edge; the
+  sidebar stays down to hugo-book's breakpoint (56rem), below which the
+  theme hides it too. The column is centered between the sidebar and the
+  table of contents. Fonts: EB Garamond and Noto
   Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
   fonts, falling back to local serif fonts. The colors are one palette
   block, light and dark; contrast of text on the page and the sidebar is
