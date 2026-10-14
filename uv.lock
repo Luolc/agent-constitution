@@ -39,7 +39,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "basedpyright", specifier = "==1.40.1" },
-    { name = "limae", specifier = "==0.13.3" },
+    { name = "limae", specifier = "==0.13.4" },
     { name = "pre-commit", specifier = "==4.6.2" },
     { name = "pydoclint", specifier = "==0.11.0" },
     { name = "ruff", specifier = "==0.16.10" },
@@ -129,15 +129,15 @@ wheels = [
 
 [[package]]
 name = "limae"
-version = "0.13.3"
+version = "0.13.4"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/e1/254b658326e992c262a222e4c07d1175a8f7c9c7dc32abd015c77409f1af/limae-0.13.3-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:27ed9d69e5c88050a36aa9feab02f9cab69099434fa9291df59f8c7e682fb79d", size = 1592695, upload-time = "2026-09-12T08:35:58.252Z" },
-    { url = "https://files.pythonhosted.org/packages/ee/76/2bb0c706a208e12be72375071320b930fa22800b89a1af44e009b6a853e0/limae-0.13.3-py3-none-macosx_11_0_arm64.whl", hash = "sha256:0d45d7fbce8a6cf277c3992212ee2c78f51f76f85dcd55fe46f92abbe096020f", size = 1504566, upload-time = "2026-09-12T08:36:00.125Z" },
-    { url = "https://files.pythonhosted.org/packages/35/2f/815f2b7b1170bc29eb83ff143ae063935d9d74fdb224a96aa9ce54fd9466/limae-0.13.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:82bf7c147a9e08eea6f9f54f9065e2ef22cd420be4340c9786bbbe34741a74ae", size = 1675938, upload-time = "2026-09-12T08:36:01.73Z" },
-    { url = "https://files.pythonhosted.org/packages/4e/83/761b29b4b7f51904af86b4610f9c00e94114b4122c10db59e3c39192ab15/limae-0.13.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:855e35de203eb0cb4e905a947c8dcb5a6fb0ab8ef23f63811cf4032668e93338", size = 1793904, upload-time = "2026-09-12T08:36:03.427Z" },
-    { url = "https://files.pythonhosted.org/packages/d3/08/fd46a0f9224859bb0be7beb2efa6eeae2f3e75aa62b613e47442b6f36ee9/limae-0.13.3-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:3521488ddf0e30b75e811dfc7f5f9d572ebcc7086b28d552b0161d790ba6a790", size = 1675928, upload-time = "2026-09-12T08:36:05.141Z" },
-    { url = "https://files.pythonhosted.org/packages/e3/2e/0395124f957aa8f2d93b2b2c28e492b5c960c9a8a2695db2f6dac5ec3acc/limae-0.13.3-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:d8f845469f38421045e03060be3a21214afbcdcddcf4995126fd9280f495927e", size = 1793892, upload-time = "2026-09-12T08:36:06.733Z" },
+    { url = "https://files.pythonhosted.org/packages/93/fc/1ae7d642ecb2b367989a96073b37e2c2bce14e06b289aed449cf50561958/limae-0.13.4-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:70ca80742877d8bc9015b3377aec1d3d60784acf41d56f0d5eb46d0d8e983e54", size = 1689422, upload-time = "2026-10-14T09:51:13.813Z" },
+    { url = "https://files.pythonhosted.org/packages/52/d1/a450ae4c26641260ff1ad71a60e50890f4a66643c141d6d17b0b52fac40c/limae-0.13.4-py3-none-macosx_11_0_arm64.whl", hash = "sha256:628baa958075aae2ea81fa9aa6a40af49a086c52f189a86af76674c4386c49ca", size = 1590284, upload-time = "2026-10-14T09:51:15.697Z" },
+    { url = "https://files.pythonhosted.org/packages/87/86/e18337a8a96bf3e42edfbd3f1d8d70a190fd03301a357fa9ef1cbeecd128/limae-0.13.4-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:206dfbf7cdcc4389fbc1082d3b076e270bf34eefa616e6c7faa5da57e0a9bdb9", size = 1763665, upload-time = "2026-10-14T09:51:17.829Z" },
+    { url = "https://files.pythonhosted.org/packages/21/07/13aac1c2fe48a94cadc74ee2483ec91c123a13d957c811d6cee4e2326ec4/limae-0.13.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:cf38690cd3d36438fb66bb6ea8cc4f4402857b13520210c03679ea5eb5463c79", size = 1892745, upload-time = "2026-10-14T09:51:19.49Z" },
+    { url = "https://files.pythonhosted.org/packages/23/55/b14fa4bc1224d30b926f0c00b939935dfd358b8d9977d62d875dae77cb40/limae-0.13.4-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:6933e011bb0dcc2927c221a4c691f4c382880d32b818774a214f6e563af29776", size = 1763656, upload-time = "2026-10-14T09:51:21.111Z" },
+    { url = "https://files.pythonhosted.org/packages/84/6b/df26411eccd596087f5e514d3443b695c8d724f0a005d29f9563da822070/limae-0.13.4-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:f2fa25a82411050e8ee48e0dfc98b16b20ead4160133522f8b3684634d2502f4", size = 1892735, upload-time = "2026-10-14T09:51:22.769Z" },
 ]
 
 [[package]]
