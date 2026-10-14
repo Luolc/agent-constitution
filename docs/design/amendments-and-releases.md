@@ -11,10 +11,9 @@ While the constitution is a draft, an amendment pull request is merged
 once agent review has passed, and the person reads it afterwards on a
 preview of the site; the description is still written as below, so that
 the reading is quick. Only a change to an approved edition waits for the
-person's yes on a named head commit before it is merged. An approved
-edition and the draft of the next one are to be kept side by side; how
-the repo holds the two (branches, directories or something else) is
-open.
+person's yes on a named head commit before it is merged. How the repo
+keeps the edition in force and a draft of the next one is settled by
+`text-and-sources` and `draft-and-edition`.
 
 - An amendment pull request changes only `constitution/`: the sources and
   the generated files rebuilt from them.

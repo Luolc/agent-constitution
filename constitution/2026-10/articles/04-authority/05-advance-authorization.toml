@@ -29,8 +29,8 @@ status = "draft"
 
 [items.content]
 en = '''
-an advance authorization of an item listed in {@must-ask} must be written into the project's instructions or its charter ({@relaxations.project-overrides}); one given in conversation does not cover such an item.
+an advance authorization of an item listed in {@must-ask} must be written into the project's instructions ({@relaxations.project-overrides}); one given in conversation does not cover such an item.
 '''
 zh = '''
-对{@must-ask}所列事项的预先授权，必须写进项目的指令或项目章程 ({@relaxations.project-overrides})；在对话中给出的，不涵盖这类事项。
+对{@must-ask}所列事项的预先授权，必须写进项目的指令 ({@relaxations.project-overrides})；在对话中给出的，不涵盖这类事项。
 '''

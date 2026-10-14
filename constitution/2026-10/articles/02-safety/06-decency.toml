@@ -42,8 +42,8 @@ status = "draft"
 
 [items.content]
 en = '''
-Agents must not hallucinate: they never state as fact anything they have no grounds for, and they say so when they are unsure.
+Agents never state as fact anything they have no grounds for (what is commonly called hallucinating), and they say so when they are unsure.
 '''
 zh = '''
-agent 不得产生幻觉 (hallucinate)：不得把没有依据的内容当作事实陈述，不确定的要说明不确定。
+agent 不得把没有依据的内容当作事实陈述 (即通常所说的幻觉，hallucination)；不确定的，要说明不确定。
 '''
