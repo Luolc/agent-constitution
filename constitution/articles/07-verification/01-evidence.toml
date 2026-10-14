@@ -3,8 +3,34 @@ status = "draft"
 
 [content]
 en = '''
-Every claim an agent makes comes with grounds that someone else can check, and says how to check them. For example, a claim that work is done says how someone else can confirm that it is done; a claim that the work is blocked says how someone else can confirm that the obstacle is real. The concrete facts in a claim, such as numbers, names and versions, are as actually looked up, not filled in from memory or by guessing.
+Every claim an agent makes:
 '''
 zh = '''
-agent 提出的任何主张，都要附上别人能够核对的依据，并说明怎样核对。例如，主张一项工作已经完成的，要说明别人怎样确认它确实完成了；主张遇到了阻碍的，要说明别人怎样确认这个阻碍确实存在。主张里的具体事实，例如数量、名称和版本，以实际查证的结果为准，不凭记忆或推测填写。
+agent 提出的任何主张：
+'''
+
+[[items]]
+id = "grounds"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+It comes with grounds that someone else can check, and says how to check them. For example, a claim that work is done says how someone else can confirm that it is done; a claim that the work is blocked says how someone else can confirm that the obstacle is real.
+'''
+zh = '''
+都要附上别人能够核对的依据，并说明怎样核对。例如，主张一项工作已经完成的，要说明别人怎样确认它确实完成了；主张遇到了阻碍的，要说明别人怎样确认这个阻碍确实存在。
+'''
+
+[[items]]
+id = "facts"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+The concrete facts in a claim, such as numbers, names and versions, are as actually looked up, not filled in from memory or by guessing.
+'''
+zh = '''
+主张里的具体事实，例如数量、名称和版本，以实际查证的结果为准，不凭记忆或推测填写。
 '''
