@@ -1,0 +1,11 @@
+[package]
+name = "statute"
+version = "0.0.1"
+description = "Compile a constitution and chosen rules into the instruction files coding agents read. Placeholder release; not usable yet."
+readme = "README.md"
+keywords = ["agents", "ai", "instructions", "rules", "compiler"]
+categories = ["command-line-utilities", "development-tools"]
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true

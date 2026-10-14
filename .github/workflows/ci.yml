@@ -1,9 +1,10 @@
 # PR gate: secret scan of the PR's or push's commits, then pre-commit on
-# all files, which includes the constitution build check and the tests
-# (local hooks; the tests of the site's templates need Hugo, installed
-# before them), then the static site build with its link check, then the
-# constitution numbering check and the instruction-only check, both
-# against the base commit.
+# all files, which includes the constitution build check, the tests and
+# cargo fmt (local hooks; the tests of the site's templates need Hugo and
+# cargo fmt the Rust toolchain, both installed before them), then the Rust
+# lint, tests and package check, then the static site build with its link
+# check, then the constitution numbering check and the instruction-only
+# check, both against the base commit.
 # The job name `check` is the required status check.
 
 name: CI
@@ -85,12 +86,27 @@ jobs:
           mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
           echo "$bindir" >> "$GITHUB_PATH"
 
+      # The Rust toolchain of rust-toolchain.toml, the one place its version
+      # is written, installed with the runner's rustup.
+      - name: Install the Rust toolchain
+        run: rustup toolchain install --no-self-update
+
       # The gitleaks hook scans only the staged diff, so CI skips it; the
       # scan of the commits above is the step that counts. The local hooks
       # run with --no-sync in the environment synced above.
       - run: uv run --frozen pre-commit run --all-files
         env:
           SKIP: gitleaks
+
+      # The Rust workspace under crates/; its formatting is checked by the
+      # cargo-fmt hook above. The dry run packages and builds the crate as
+      # crates.io would receive it, without uploading.
+      - name: Rust lint
+        run: cargo clippy --all-targets --locked -- -D warnings
+      - name: Rust tests
+        run: cargo test --locked
+      - name: Rust package check
+        run: cargo publish --dry-run --locked -p statute
 
       # The static site (docs/design/static-site.md) in three steps. The
       # token count gets no credential here, so the pages say the tokens

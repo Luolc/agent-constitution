@@ -1,4 +1,4 @@
-<!-- en-sha256: b330c1e1b7c281fed1f1697201450d28480f0c67263a2f41ff2771af3cd180b6 -->
+<!-- en-sha256: c20c43469aea896ee3f778f3b84ca80ec800aed51c3bc5c127bb6026d46b5bb5 -->
 # 修正案与发布
 
 ## <a id="approving-an-amendment"></a>批准修正案
@@ -19,4 +19,5 @@
 - 版本是 `main` 上的 tag `v<major>.<minor>.<patch>`。改变行为的宪法修正案或规定变更，至少升一个 minor 版本；改变输出的工具变更，至少升一个 minor 版本；其余的升 patch 版本。
 - 发布 tag 只打在这样的 `main` 提交上：它的 push 触发的那次 `check` 运行第一次就成功了。重跑之后才变绿的不算；改为给之后一个第一次就通过的提交打 tag。
 - 推送发布 tag 就使一个版本可以获取。默认情况下，发布是 `must-ask` 的一个事项，由规定 `must-ask-items` 加入，需要人同意；项目可以依照 `relaxations.project-overrides` 另行规定。
+- `crates/` 下的 crate 发布到 crates.io，各自的版本写在自己的 `Cargo.toml` 里；发布一个 crate 也是一次发布。`statute` 0.0.1 是占住这个名字的占位版本。
 - overlay 固定一个 tag 及其提交 SHA，两者对不上就拒绝构建。它换用新版本，要在 overlay 里提一次变更，在那里审查。

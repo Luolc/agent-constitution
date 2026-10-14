@@ -104,6 +104,10 @@ The repo's layout, source formats, checks and releases are in the
   (the constitution build), `tools/site` (the checks of the static site,
   see [Static site](docs/design/static-site.md)) and `tools/checks` (the
   checks this repo runs on its own changes).
+- `crates/` is a Rust workspace, with `Cargo.toml` and
+  `rust-toolchain.toml` at the root. Its one crate, `crates/statute`, is
+  for now a placeholder published to hold the name `statute` on crates.io;
+  the binary that compiles and checks the rules will grow there.
 
 Install the commit hooks once with `uv run pre-commit install`;
 `uv run pre-commit run --all-files` runs them all.
