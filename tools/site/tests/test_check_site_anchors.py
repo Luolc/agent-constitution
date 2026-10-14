@@ -1,8 +1,9 @@
 """Tests for check_site_anchors.
 
 The site check passes a page whose links all have targets and fails a
-broken link, a link to a missing page, a link that starts with `/` and
-leaves the site, a repeated id or a leaked list marker.
+broken link, a link to a missing page or to a missing id on another page,
+a link that starts with `/` and leaves the site, a repeated id or a
+leaked list marker.
 """
 
 from pathlib import Path
@@ -38,7 +39,7 @@ class CheckTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as site:
       site = Path(site)
       (site / "agent").mkdir()
-      (site / "agent/index.html").write_text("")
+      (site / "agent/index.html").write_text('<h2 id="x">X</h2>')
       (site / "index.html").write_text("")
       links = '<a href="./agent/">a</a><a href="agent/index.html#x">b</a><a href="https://example.test/">c</a>'
       self.assertEqual(
@@ -58,6 +59,12 @@ class CheckTest(unittest.TestCase):
           '<a href="./zh/agent/">x</a>', site / "index.html"
         ),
         ["link ./zh/agent/ leads to no file of the site"],
+      )
+      self.assertEqual(
+        check_site_anchors.check(
+          '<a href="agent/#y">y</a>', site / "index.html"
+        ),
+        ["link agent/#y has no target on that page"],
       )
 
   def test_links_from_the_root(self):

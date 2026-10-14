@@ -1,0 +1,41 @@
+{{- /* A link in the text. On a design page (content/design/_content.gotmpl)
+  a relative link is resolved against the directory of the file the page
+  read, docs/design/ or docs/design/zh/, and becomes: to a file of the
+  design, its page in the page's language; to a generated constitution,
+  constitution/<edition>/generated/constitution.<lang>.md, the home page
+  of that language; to any other file of the repo, the file on GitHub
+  (params.SourceRepo). The fragment is kept. A link to a design file with
+  no page, or out of the repo, fails the build. Every other link, and
+  every link on other pages, is left as written, as the theme does
+  without its portable links. */ -}}
+{{- $destination := .Destination }}
+{{- $url := urls.Parse .Destination }}
+{{- with .Page.Params.designDir }}
+  {{- if not (or $url.IsAbs (eq $url.Path "")) }}
+    {{- $path := path.Join . $url.Path }}
+    {{- $fragment := cond (eq $url.Fragment "") "" (printf "#%s" $url.Fragment) }}
+    {{- $design := findRESubmatch `^docs/design/(?:[a-z]+/)?([\w-]+)\.md$` $path 1 }}
+    {{- $constitution := findRESubmatch `^constitution/[^/]+/generated/constitution\.([a-z]+)\.md$` $path 1 }}
+    {{- if $design }}
+      {{- $name := index $design 0 1 }}
+      {{- with site.GetPage (cond (eq $name "README") "/design" (printf "/design/%s" $name)) }}
+        {{- $destination = printf "%s%s" .RelPermalink $fragment }}
+      {{- else }}
+        {{- errorf "%s: link %q: no page for %s" $.Page.Params.designDir $.Destination $path }}
+      {{- end }}
+    {{- else if $constitution }}
+      {{- $lang := index $constitution 0 1 }}
+      {{- range hugo.Sites }}
+        {{- if eq .Language.Lang $lang }}
+          {{- $destination = printf "%s%s" .Home.RelPermalink $fragment }}
+        {{- end }}
+      {{- end }}
+    {{- else if strings.HasPrefix $path "../" }}
+      {{- errorf "%s: link %q leads out of the repo" $.Page.Params.designDir $.Destination }}
+    {{- else }}
+      {{- $destination = printf "%s/blob/main/%s%s" site.Params.SourceRepo $path $fragment }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+<a href="{{ $destination | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text | safeHTML }}</a>
+{{- /**/ -}}

@@ -12,7 +12,7 @@ so that AGENTS.md stays short, consistent and checked.
 
 [![Website](https://img.shields.io/badge/read-online-7d3a1e)](https://agent-constitution.luolc.com/) [![CI](https://github.com/Luolc/agent-constitution/actions/workflows/ci.yml/badge.svg)](https://github.com/Luolc/agent-constitution/actions/workflows/ci.yml) [![Revision](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FLuolc%2Fagent-constitution%2Fmain%2Fconstitution%2F2026-10%2Findex.toml&query=%24.revision&label=revision&color=4b5946)](constitution/2026-10/index.toml) [![Code: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-23301f)](LICENSE) [![Text: CC BY 4.0](https://img.shields.io/badge/text-CC%20BY%204.0-23301f)](LICENSE-CC-BY-4.0)
 
-**[Read online](https://agent-constitution.luolc.com/)** &nbsp;·&nbsp; **[Design](docs/design/README.md)** &nbsp;·&nbsp; **[Rules](rules/)** &nbsp;·&nbsp; **[Skills](skills/)** &nbsp;·&nbsp; **English** · [简体中文](README.zh-CN.md)
+**[Read online](https://agent-constitution.luolc.com/)** &nbsp;·&nbsp; **[Design](https://agent-constitution.luolc.com/design/)** &nbsp;·&nbsp; **[Rules](rules/)** &nbsp;·&nbsp; **[Skills](skills/)** &nbsp;·&nbsp; **English** · [简体中文](README.zh-CN.md)
 
 <br>
 

@@ -92,7 +92,7 @@
 :root[data-theme="light"] .theme-toggle .light,
 :root[data-theme="dark"] .theme-toggle .dark { display: block; }
 
-.constitution {
+.constitution, .design {
   font-family: var(--c-font-en);
   font-size: var(--c-size-en);
   font-weight: var(--c-weight);
@@ -101,7 +101,7 @@
   max-width: var(--c-measure-en);
   margin-inline: auto;
 }
-:lang(zh) .constitution {
+:lang(zh) :is(.constitution, .design) {
   font-family: var(--c-font-zh);
   font-size: var(--c-size-zh);
   max-width: var(--c-measure-zh);
@@ -151,7 +151,7 @@
    the sidebar, in the table of contents and in the top bar of a narrow
    screen, is known by where it stands and is not underlined; under the
    pointer or the keyboard's focus it is. */
-.constitution a[href]:not(.anchor),
+:is(.constitution, .design) a[href]:not(.anchor),
 :is(.book-menu, .book-toc, .book-header) a[href] {
   color: inherit;
   text-decoration: underline;
@@ -159,7 +159,7 @@
   text-underline-offset: .18em;
 }
 :is(.book-menu, .book-toc, .book-header) a[href]:not(:hover, :focus-visible) { text-decoration-line: none; }
-.constitution a[href]:not(.anchor):hover,
+:is(.constitution, .design) a[href]:not(.anchor):hover,
 :is(.book-menu, .book-toc, .book-header) a[href]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
 /* The info button after the length and its popup. The popup hangs from
    the bottom of the button's box with no gap, centered under the length
@@ -297,6 +297,33 @@
 .constitution ol { margin: .4em 0 .4em 1.6em; padding-left: 1em; }
 
 .constitution code { font-size: .85em; }
+
+/* The design: a document in the constitution's fonts, size and column,
+   with the theme's bullets, tables and code blocks and its headings at
+   the left. The title is the constitution's size; a Chinese page without
+   a translation yet says so under it, muted between rules. Table cells
+   start at the top, as the rows are paragraphs side by side, and the
+   tables are set a little smaller than the text. */
+.design h1 {
+  font-size: 1.75em;
+  font-weight: var(--c-weight-bold);
+  margin: 1.2em 0 .6em;
+}
+.design :is(h2, h3) { font-weight: var(--c-weight-bold); margin-top: 2em; }
+.design h2 { font-size: 1.3em; }
+.design h3 { font-size: 1.1em; }
+.design :is(h1, h2, h3) { text-wrap: balance; }
+.design :is(p, li) { text-wrap: pretty; }
+.design strong { font-weight: var(--c-weight-bold); }
+.design code { font-size: .85em; }
+.design table { font-size: .9em; line-height: 1.5; }
+.design td { vertical-align: top; }
+.design .untranslated {
+  border-block: 1px solid var(--c-rule);
+  padding: .6em 1em;
+  color: var(--c-muted);
+}
+.design [id] { scroll-margin-top: 1rem; }
 
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text
