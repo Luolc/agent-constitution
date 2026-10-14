@@ -10,6 +10,8 @@ use crate::project::Project;
 
 mod command;
 mod r3;
+mod r43;
+mod r46;
 mod r7;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -79,6 +81,8 @@ pub fn run(project: &Project, ctx: &Context) -> Vec<(Id, Report)> {
                 Check::Builtin => match id {
                     3 => r3::check(ctx),
                     7 => r7::check(ctx),
+                    43 => r43::check(ctx),
+                    46 => r46::check(ctx),
                     _ => Report::new(
                         Outcome::Inconclusive,
                         format!("no built-in check for rule {id} in this version of statute"),
