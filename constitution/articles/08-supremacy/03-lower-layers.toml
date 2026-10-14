@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A lower-ranking provision may refine and tighten a higher-ranking one. It may relax one only under an item of {@relaxations}, and only by declaring so explicitly; any other relaxation is void.
+A lower-ranking provision may refine and tighten a higher-ranking one; it may relax one only as {@departures} provides.
 '''
 zh = '''
-下位法可以细化、收紧上位法。要放宽上位法，只能依照{@relaxations}所列的某一项，并且明确声明；其他放宽无效。
+下位法可以细化、收紧上位法；要放宽上位法，只能依照{@departures}。
 '''

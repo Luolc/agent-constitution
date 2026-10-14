@@ -1,0 +1,13 @@
+id = "departures"
+
+[title]
+en = "Relaxations and exceptions"
+zh = "例外"
+
+[intro]
+en = '''
+A lower-ranking provision or a principal may depart from a higher-ranking provision only under this article: a lower-ranking provision by a relaxation it declares under {@relaxations}, a principal by an exception for one action under {@exceptions}. Any other departure is void.
+'''
+zh = '''
+下位法或者委托人偏离上位法，只能依照本条：下位法依照{@relaxations}声明放宽，委托人依照{@exceptions}就一个动作准予破例。其他偏离一律无效。
+'''
