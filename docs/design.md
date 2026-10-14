@@ -907,11 +907,16 @@ passes to Hugo as `--baseURL`.
   site overrides the theme's sidebar (`layouts/_partials/docs/menu.html`)
   to put a link to the source repository, with GitHub's mark from
   Octicons (MIT license), between the site's title and the language
-  switch, and adds, through the theme's inject partials, a
-  switch for the color theme (follow the system, light, dark; the choice
-  kept in `localStorage`, set in `<head>` before the page is drawn), and
-  the fonts. A submodule keeps the theme's files out of this repo's
-  diffs; a Hugo module would need Go on every machine that builds.
+  switch, and adds, through the theme's inject partials, a switch for the
+  color theme at the right end of the language switch's row, and the
+  fonts. The color switch is one button that cycles through following the
+  system, light and dark, as Docusaurus's does; it shows the current
+  setting by an Octicons icon (`device-desktop`, `sun`, `moon`), and its
+  title and accessible name give the setting and the next one, from
+  `web/i18n`. The choice is kept in `localStorage` and set in `<head>`
+  before the page is drawn. A submodule keeps the theme's files out of
+  this repo's diffs; a Hugo module would need Go on every machine that
+  builds.
 - Raw HTML: Goldmark's `unsafe` renderer is on, since the anchors
   (`<a id="...">`) and the asterisks are raw HTML. The content is only this
   repo's own built constitution, never outside input.
@@ -936,8 +941,10 @@ passes to Hugo as `--baseURL`.
   color alone. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
-  so a line keeps about 90 characters in English and 40 in Chinese where
-  the window has room for it. Three columns would leave the text under
+  so a line keeps about 75 characters in English, the usual measure
+  (30em, measured on the text's full lines: EB Garamond's letters are
+  narrower than `ch`), and 40 in Chinese where the window has room for
+  it. Three columns would leave the text under
   about 65 characters a line in English below 70rem (1120px), so there
   the table of contents goes behind the theme's top-bar button, floating
   at the top right, which opens it over the text at the right edge; the
