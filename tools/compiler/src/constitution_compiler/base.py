@@ -18,6 +18,7 @@ from constitution_compiler.model import (
   INDEX_FILE,
   Layout,
   name_number,
+  NODE_NAME,
   RETIRED,
   RULES,
   SECTION_NAME,
@@ -232,6 +233,8 @@ class BaseComparison:
     self.articles = {a.id: a for a in src.articles}
     self.sections = {s.id: s for s in src.sections}
     self.rules = {r.id: r for r in src.rules}
+    self.nodes = {n.id: n for n in src.nodes}
+    self.slugs = {n.slug: n for n in src.nodes if n.slug is not None}
     self.retired = set(src.retired)
 
   def compare(self, layout: Layout, listing: set[Path]) -> None:
@@ -330,13 +333,31 @@ class BaseComparison:
   def rule(self, path: Path) -> None:
     """Compare one rule file of the base.
 
+    A rule of the older format, named by a word, may live on as a node of
+    the rule tree whose slug is that word. A node of the base is never
+    deleted, and stays superseded once superseded.
+
     Args:
       path: the file.
     """
     old = self.toml(path)
-    now = self.rules.get(path.stem)
     if old is None:
       return
+    if NODE_NAME.fullmatch(path.stem):
+      node = self.nodes.get(int(path.stem))
+      if node is None:
+        self.gone(path, f"{old.get('kind', 'rule')} {path.stem}")
+        return
+      for status in ("repealed", "superseded"):
+        if old.get("status") == status and node.status != status:
+          self.errors.add(
+            node.doc.path,
+            node.doc.line("status ="),
+            7,
+            f"rule {node.id} was {status} at base {self.ref} and is no longer",
+          )
+      return
+    now = self.rules.get(path.stem) or self.slugs.get(path.stem)
     if now is None:
       if path.stem not in self.retired:
         self.errors.add(
@@ -349,7 +370,7 @@ class BaseComparison:
       return
     self.still_repealed(
       now.doc,
-      f"rule {now.id}",
+      f"rule {path.stem}",
       old.get("status") == "repealed",
       now.status == "repealed",
     )

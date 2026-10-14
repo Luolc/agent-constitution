@@ -1,7 +1,8 @@
 """Run limae on the Chinese text of the constitution and rule sources.
 
 Every `zh` text in index.toml and articles/ of the constitution's
-edition directory, constitution/<YYYY-MM>/, and in rules/ goes to limae
+edition directory, constitution/<YYYY-MM>/, and in rules/ (a rule's
+`[translations]` holds hashes, not texts) goes to limae
 (Chinese Markdown typography) as a Markdown file of its own, with its
 default configuration. Each citation `{@...}` is first replaced by
 PLACEHOLDER, Chinese text shaped like the rendering of a constitution
@@ -34,6 +35,8 @@ SOURCES = [
   "constitution/*/articles/*/*.toml",
   "rules/*.toml",
 ]
+# A rule's `[translations]` maps `zh` to a hash, not to a text.
+HASHES = "translations"
 CITATION = re.compile(r"\{@[^}]*\}")
 PLACEHOLDER = "第某条"
 # The two forms the sources use: a one-line basic string, for titles, and a
@@ -127,7 +130,12 @@ def zh_leaves(data: object, keys: Keys = ()) -> list[tuple[Keys, str]]:
     Every (key path, value) under a `zh` key.
   """
   if isinstance(data, dict):
-    return [leaf for k, v in data.items() for leaf in zh_leaves(v, keys + (k,))]
+    return [
+      leaf
+      for k, v in data.items()
+      if keys or k != HASHES
+      for leaf in zh_leaves(v, keys + (k,))
+    ]
   if isinstance(data, list):
     return [
       leaf for i, v in enumerate(data) for leaf in zh_leaves(v, keys + (i,))
@@ -179,7 +187,7 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
         m.group(1),
       )
     )
-  found.sort(key=lambda t: t.start)
+  found = sorted((t for t in found if t.field != HASHES), key=lambda t: t.start)
   parsed = sorted(value for _, value in zh_leaves(data))
   if parsed != sorted(t.value for t in found):
     return (

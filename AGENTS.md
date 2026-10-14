@@ -6,8 +6,9 @@ This repo holds the constitution for coding agents, the general rule
 library and skills, and (later) the toolchain that compiles them, together
 with a private overlay, into the one instruction file the agents read. The
 2026-10 edition of the constitution is in force. Today the repo has the
-constitution and the general rules as TOML sources, the design and the script
-that builds the constitution; the rule compiler is not written yet.
+constitution and the general rules as TOML sources, the design, the script
+that builds the constitution and a placeholder Rust crate; the rule compiler
+is not written yet.
 
 ## Language
 
@@ -82,6 +83,11 @@ Checkers).
   neither). The root `pyproject.toml` declares the members and holds the
   development tools and their configuration; `uv.lock` is one file at
   the root (`docs/design/file-structure.md`).
+- `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
+  `Cargo.lock`; `rust-toolchain.toml` pins the toolchain). `crates/statute`
+  is for now a placeholder, published early to hold its name on crates.io
+  (`docs/design/file-structure.md`). Publishing a crate is a release
+  (`docs/design/amendments-and-releases.md`).
 - `web/`: the Hugo project of the static site (config, layouts, style
   sheet), with the theme hugo-book as a submodule at
   `web/themes/hugo-book`; run `git submodule update --init` once after
@@ -138,15 +144,18 @@ install the hooks with `uv run pre-commit install`. The hooks run the
 tools with `uv run --frozen --no-sync`: they never install into `.venv`
 nor change `uv.lock`. A tool missing from `.venv` fails its hook; a stale
 `.venv` runs the versions it has, so run `uv sync` whenever `uv.lock`
-changes. The commit hooks and the Python tools need only
-uv on the machine; the site build needs Hugo and the full-history scan
-gitleaks, both below. After changing a pin, run `uv sync`, which updates
-`uv.lock` and `.venv`, and commit `uv.lock`; the `uv-lock` hook fails
+changes. The Python tools need only uv on the machine; the commit
+hooks also need the Rust toolchain, for `cargo-fmt`: install rustup, and
+`rustup toolchain install` installs the toolchain `rust-toolchain.toml`
+names. The site build needs Hugo and the full-history scan gitleaks, both
+below. After changing a pin, run `uv sync`, which updates `uv.lock` and
+`.venv`, and commit `uv.lock`; the `uv-lock` hook fails
 when the two disagree.
 
 - `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
   on the staged diff, `uv-lock` (`uv.lock` matches `pyproject.toml`), the
-  Python checkers below, the constitution build check, the tests of each
+  Python checkers below, `cargo-fmt` (`cargo fmt --check`, when a Rust
+  file or manifest changes), the constitution build check, the tests of each
   member, `check-design-translation`, `lint-zh-sources` and limae on
   every Markdown file of the repo except `web/themes/`. A limae false
   positive on a line is passed over with a `<!-- limae-disable-next-line
@@ -155,6 +164,13 @@ when the two disagree.
   `uv run ruff check .`, `uv run ruff format --check .` (`uv run ruff
   format .` to apply), `uv run pydoclint --config pyproject.toml --quiet
   tools` and `uv run basedpyright`, each on all three members.
+- The Rust checks, run from the repo root with the toolchain of
+  `rust-toolchain.toml`: `cargo fmt --check` (the `cargo-fmt` hook; `cargo
+  fmt` to apply), `cargo clippy --all-targets --locked -- -D warnings`,
+  `cargo test --locked` and `cargo publish --dry-run --locked -p statute`
+  (packages and builds the crate as crates.io would receive it, without
+  uploading). `cargo package --list -p statute` lists the files the
+  package holds.
 - `uv run python -m unittest discover -s tools/<member>/tests`, with
   `<member>` `compiler`, `site` or `checks`: the tests of one member; the
   hooks run each member's tests when it or a member it depends on
@@ -214,15 +230,17 @@ one job, `check`, scans the commits of the pull request or push with the
 official gitleaks action (gitleaks at the version of the `gitleaks` hook's
 rev; the full history is left to `gitleaks.yml`, below), sets up uv at the
 version of the `uv-lock` hook's rev and syncs (`uv sync --locked
---all-packages`, which fails on a stale lock), runs `uv run pre-commit run
---all-files` with the gitleaks hook skipped, so `uv-lock`, the Python
-checkers, the constitution build check, the tests and both limae checks run
-there too, counts the tokens (without a credential, so they stay
-uncounted), builds the static site with the pinned Hugo and checks its links,
-and then runs the build check with `--base` and the instruction-only check,
-both against the first parent of the checked-out merge commit on a pull
-request (`docs/design/checkers.md`), or against the commit before the push on
-a push to `main`. `check` is the required status check on `main`: a merge
+--all-packages`, which fails on a stale lock), installs the Rust toolchain
+of `rust-toolchain.toml` (`rustup toolchain install --no-self-update`), runs
+`uv run pre-commit run --all-files` with the gitleaks hook skipped, so
+`uv-lock`, the Python checkers, `cargo-fmt`, the constitution build check,
+the tests and both limae checks run there too, then runs clippy, the tests
+and the publish dry run of the Rust workspace, counts the tokens (without a
+credential, so they stay uncounted), builds the static site with the pinned
+Hugo and checks its links, and then runs the build check with `--base` and
+the instruction-only check, both against the first parent of the checked-out
+merge commit on a pull request (`docs/design/checkers.md`), or against the
+commit before the push on a push to `main`. `check` is the required status check on `main`: a merge
 waits for it to pass, and the PR must be up to date with `main`. A PR that is
 behind `main`: run `gh pr update-branch <N>` or merge the latest `main`, rerun
 the checks, let the reviewer recheck the increment, then merge. Runners are
