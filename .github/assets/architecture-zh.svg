@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" width="1160" height="440" role="img" aria-label="Agent 宪法的各部分怎样连起来：宪法目前已能构建成 Markdown 与网站；规定树、skill、每个仓库的规定清单、编译器、检查与审查回路已设计，尚未实现。">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8a9a82"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d3a1e"/></marker></defs>
+<g font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;PingFang SC&quot;, &quot;Hiragino Sans GB&quot;, &quot;Microsoft YaHei&quot;, &quot;Noto Sans CJK SC&quot;, Helvetica, Arial, sans-serif">
+<rect x="1" y="1" width="1158" height="438" rx="18" fill="#dde6d5" stroke="#b5c4aa"/>
+<rect x="920" y="48" width="28" height="16" rx="4" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="958" y="61" font-size="12.5" fill="#4b5946">已实现</text>
+<rect x="920" y="76" width="28" height="16" rx="4" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="958" y="89" font-size="12.5" fill="#4b5946">已设计，尚未实现</text>
+<path d="M258 69.0 C288.0 69.0 288.0 69.0 317 69.0" fill="none" stroke="#7d3a1e" stroke-width="1.5" marker-end="url(#b)"/>
+<path d="M554 69.0 C584.0 69.0 584.0 69.0 613 69.0" fill="none" stroke="#7d3a1e" stroke-width="1.5" marker-end="url(#b)"/>
+<path d="M436.0 98 C436.0 156 656 130 656 177" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M258 167.0 C288.0 167.0 288.0 207.0 317 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M258 247.0 C288.0 247.0 288.0 207.0 317 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M554 207.0 C584.0 207.0 584.0 207.0 613 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M850 207.0 C880.0 207.0 880.0 147.0 909 147.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M850 207.0 C880.0 207.0 880.0 207.0 909 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M850 207.0 C880.0 207.0 880.0 267.0 909 267.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M1024.0 296 L1024.0 351" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M910 381.0 L851 381.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M614 381.0 C456 381.0 140.0 381.0 140.0 277" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="200.0" y="403.0" font-size="12.5" font-style="italic" fill="#4b5946">检查判错了：改检查或改规定</text>
+<rect x="24" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="40" y="65" font-size="15" font-weight="600" fill="#23301f">宪法</text>
+<text x="40" y="84" font-size="12.5" fill="#4b5946">TOML 源文件，中英两种语言</text>
+
+<rect x="320" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="336" y="65" font-size="15" font-weight="600" fill="#23301f">constitution-build</text>
+<text x="336" y="84" font-size="12.5" fill="#4b5946">构建并检查</text>
+
+<rect x="616" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="632" y="65" font-size="15" font-weight="600" fill="#23301f">Markdown 与网站</text>
+<text x="632" y="84" font-size="12.5" fill="#4b5946">全文与 agent 版</text>
+
+<rect x="24" y="140" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="40" y="163" font-size="15" font-weight="600" fill="#23301f">skill</text>
+<text x="40" y="182" font-size="12.5" fill="#4b5946">怎样做到一条规定</text>
+
+<rect x="24" y="220" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="40" y="243" font-size="15" font-weight="600" fill="#23301f">规定树</text>
+<text x="40" y="262" font-size="12.5" fill="#4b5946">带编号的规定，各有一个 parent</text>
+
+<rect x="320" y="180" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="336" y="203" font-size="15" font-weight="600" fill="#23301f">规定清单与锁文件</text>
+<text x="336" y="222" font-size="12.5" fill="#4b5946">仓库选用的规定，锁定版本</text>
+
+<rect x="616" y="180" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="632" y="203" font-size="15" font-weight="600" fill="#23301f">编译器</text>
+<text x="632" y="222" font-size="12.5" fill="#4b5946">一条命令</text>
+
+<rect x="912" y="120" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="143" font-size="15" font-weight="600" fill="#23301f">AGENTS.md</text>
+<text x="928" y="162" font-size="12.5" fill="#4b5946">选用的规定</text>
+
+<rect x="912" y="180" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="203" font-size="15" font-weight="600" fill="#23301f">skill</text>
+<text x="928" y="222" font-size="12.5" fill="#4b5946">这些规定需要的</text>
+
+<rect x="912" y="240" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="263" font-size="15" font-weight="600" fill="#23301f">检查程序与 hook</text>
+<text x="928" y="282" font-size="12.5" fill="#4b5946">一个二进制，外部命令</text>
+
+<rect x="912" y="354" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="377" font-size="15" font-weight="600" fill="#23301f">检查结果</text>
+<text x="928" y="396" font-size="12.5" fill="#4b5946">通过 · 违反 · 无法判定</text>
+
+<rect x="616" y="354" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="632" y="377" font-size="15" font-weight="600" fill="#23301f">审查方</text>
+<text x="632" y="396" font-size="12.5" fill="#4b5946">agent 判定检查定不了的</text>
+
+</g>
+</svg>
