@@ -1,0 +1,46 @@
+id = 18
+slug = "design-with-the-change"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["independent-review.another-party", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Change the design in the change that makes it true"
+zh = "设计随使它成立的那个变更一起改"
+
+[text.statement]
+en = "A change that alters how the repository works (its layout, formats, build, checks or releases) updates the sections of the design it touches in the same change."
+zh = "改变仓库运作方式 (目录布局、格式、构建、检查或发布) 的变更，在同一个变更里更新它涉及的设计章节。"
+
+[text.reason]
+en = '''
+The reviewer then checks the change against the design it claims to follow, in one review ({@constitution:independent-review.another-party}), and the design never states as fact what the repository no longer does ({@constitution:evidence.facts}).
+'''
+zh = '''
+这样审查方在一次审查里就能对照变更所依据的设计来核对它 ({@constitution:independent-review.another-party})，设计也不会把仓库已经不再做的事当作事实陈述 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+For each thing the change adds, removes or alters in how the repository works, the design says so after the change: a new format, field, command or check has its place in the section that covers it; one that is gone or changed is no longer described the old way, in any file of the design. The parts that track the design's own state follow too: a status line, a list of what a planned part will replace, open questions that the change settles.
+
+Where the change is instructions only and {@rule:7} keeps it apart from other files, the design follows in the next change, and the description of the first one says so.
+
+Violated when a merged change leaves a section of the design describing the repository as it was before the change.
+'''
+zh = '''
+变更在仓库运作方式上增加、删除或改动的每一项，变更之后的设计都写到了：新的格式、字段、命令或检查，在讲它的那一节里有它的位置；已经去掉或改掉的，设计的任何文件都不再按旧的样子描述。记录设计自身状态的部分也一并更新：状态行、计划中的部分将取代什么的清单、这个变更已经解决的待定问题。
+
+变更只涉及指令、按 {@rule:7} 与其他文件分开的，设计在下一个变更里跟上，第一个变更的说明里写明这一点。
+
+已合入的变更留下某一节设计仍按变更之前的样子描述仓库的，即为违反本规定。
+'''
+
+[translations]
+zh = "a74f4d6674e7406b8c42b34d27500813c1cb6709bbef3569e21b053884e4d8df"
