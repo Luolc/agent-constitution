@@ -1,0 +1,46 @@
+id = 61
+slug = "verdict-names-version"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["independent-review.reviewed-version"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Name the reviewed version in the verdict, and merge only that version"
+zh = "verdict 写明审查过的版本，合并时只合并这个版本"
+
+[text.statement]
+en = "Name in a review verdict the exact version reviewed, and merge a change on that verdict only at that version."
+zh = "审查的 verdict 写明所审查的确切版本；依据这份 verdict 合并变更时，只合并这个版本。"
+
+[text.reason]
+en = '''
+What takes effect must be exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}). A change can move on after a review; only a verdict that names its version lets whoever merges tell whether the version in front of them is the one that was approved.
+'''
+zh = '''
+生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})。审查之后变更还可能继续改动；只有 verdict 写明了版本，合并的一方才能分辨眼前的版本是不是批准过的那个。
+'''
+
+[text.verification]
+en = '''
+A version is named exactly when the name cannot stand for two different contents: a commit SHA can serve, a branch name, a pull request number or "the latest" cannot. Every verdict names the version it was written on, for example the head commit SHA of the pull request.
+
+Whoever merges on a verdict merges the version it names and no other, for example with a merge that fails when the head has moved. Once a new commit is added, the change needs a new verdict on the new version before it is merged.
+
+Violated when a verdict names no exact version, or a change is merged on a verdict at a version other than the one the verdict names.
+'''
+zh = '''
+一个名字不可能对应两份不同的内容，才算写明了确切版本：commit SHA 可以，分支名、pull request 编号或者「最新的那个」都不行。每份 verdict 都写明它针对的版本，例如 pull request 的 head commit SHA。
+
+依据 verdict 合并的一方，只合并 verdict 写明的版本，不合并别的版本，例如使用 head 一变就失败的合并方式。变更添加了新的 commit 之后，合并之前要有一份针对新版本的新 verdict。
+
+verdict 没有写明确切版本，或者依据某份 verdict 合并的版本不是它写明的版本的，即为违反本规定。
+'''
+
+[translations]
+zh = "a8531ac4d4ed7ffb3719839865f0a94d539d0c39af3682406507aeda6af64bee"

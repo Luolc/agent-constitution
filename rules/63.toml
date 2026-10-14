@@ -1,0 +1,42 @@
+id = 63
+slug = "review-in-change-comments"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["evidence.grounds", "independent-review.another-party"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Hold a review in the comments of the change"
+zh = "审查的讨论放在变更的评论里"
+
+[text.statement]
+en = "Write a review's findings, the answers to them and its verdicts as comments on the change under review."
+zh = "审查意见、对审查意见的答复和 verdict，都写成所审查变更上的评论。"
+
+[text.reason]
+en = '''
+A claim comes with grounds that someone else can check ({@constitution:evidence.grounds}). A review held in the comments of the change stays with it, where the author, whoever merges and a principal can read later what was found, how it was answered and on what the change was approved ({@constitution:independent-review.another-party}).
+'''
+zh = '''
+主张要附上别人能核查的依据 ({@constitution:evidence.grounds})。审查的讨论放在变更的评论里，就和变更留在一起：作者、合并的一方和委托人事后都能读到发现了什么、怎么答复的，以及变更是凭什么批准的 ({@constitution:independent-review.another-party})。
+'''
+
+[text.verification]
+en = '''
+The comments are those of the change itself, such as the comments of a pull request. The reviewer writes there each finding and each verdict; the author writes there its answer to each finding, a fix or a reason not to fix. What is said elsewhere, for example in a message between agents, counts for the review only once it is written there too.
+
+Violated when a finding, an answer to it or a verdict of a review exists only outside the comments of the change.
+'''
+zh = '''
+这里的评论是变更自身的评论，例如 pull request 的评论。审查方在那里写下每条审查意见和每份 verdict；作者在那里逐条答复审查意见，说明怎么修的，或者为什么不修。在别处说的话，例如 agent 之间的消息，要在那里也写下来，才算进审查。
+
+审查意见、对它的答复或者 verdict 只存在于变更的评论之外的，即为违反本规定。
+'''
+
+[translations]
+zh = "ea5967ff3193ec64f5f03f7dfb568f60e2ea2962709a4972d85d4f648f61fa9d"

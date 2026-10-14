@@ -1,0 +1,46 @@
+id = 60
+slug = "reviewer-changes-nothing"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["independent-review.another-party"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "As a reviewer, change nothing in the change you review"
+zh = "审查方不改动所审查的变更"
+
+[text.statement]
+en = "As the reviewer of a change, never edit, commit to, push to or merge it; tell its author what needs changing."
+zh = "作为一项变更的审查方，不修改它，不向它提交或推送，也不合并它；需要修改的地方告诉作者。"
+
+[text.reason]
+en = '''
+A review is worth something because a party other than the author judges the author's change ({@constitution:independent-review.another-party}). A reviewer that edits the change becomes an author of what it approves, and its edits take effect without anyone else having reviewed them.
+'''
+zh = '''
+审查之所以有用，是因为由作者以外的一方来评判作者的变更 ({@constitution:independent-review.another-party})。审查方一旦修改这项变更，就成了它所批准内容的作者，它改的部分没有经过任何其他人审查就生效了。
+'''
+
+[text.verification]
+en = '''
+The reviewer judges the change and reports what it finds to the author, who makes the changes. To check the change, the reviewer may check out the version under review in a checkout of its own, detached from the change's branch, and there run tests and checks and edit files, for example to revert the change and see whether a test fails without it; it may also write scratch files outside the repository. None of this becomes part of the change.
+
+A fix the reviewer finds needed, however small, goes to the author as a finding, never into the change.
+
+Violated when the reviewer of a change adds a commit to it, pushes to its branch, merges it or otherwise alters what it contains.
+'''
+zh = '''
+审查方评判这项变更，把发现的问题告诉作者，由作者修改。为了核查这项变更，审查方可以在自己的、与变更分支分离的 checkout 里检出所审查的版本，在里面运行测试和检查、修改文件，例如撤回这项变更，看测试在没有它时会不会失败；也可以在仓库之外写临时文件。这些都不进入变更。
+
+审查方认为需要的修正，无论多小，都作为审查意见交给作者，不直接放进变更。
+
+一项变更的审查方向它添加了 commit、推送到它的分支、合并了它，或者以其他方式改动了它的内容的，即为违反本规定。
+'''
+
+[translations]
+zh = "5327cf4377ad84b2d3113cc2079b468cdee37b99fc38c331ce850e13e30346b1"

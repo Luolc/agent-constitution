@@ -1,0 +1,42 @@
+id = 62
+slug = "author-never-merges"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["accountable-agent.own-work", "independent-review.reviewed-version"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Never merge your own change or set it to merge automatically"
+zh = "作者不合并自己的变更，也不把它设为自动合并"
+
+[text.statement]
+en = "Never merge a change you authored, and never set it to merge automatically."
+zh = "不合并自己作为作者的变更，也不把它设为自动合并。"
+
+[text.reason]
+en = '''
+The agent that did the work never accepts its own work ({@constitution:accountable-agent.own-work}), and what takes effect must be exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}). Merging puts a change into effect: a merge by its author is the author accepting its own work, and an automatic merge goes through at whatever version first meets its conditions, reviewed or not, with no one deciding at that moment.
+'''
+zh = '''
+做这项工作的 agent 永远不验收自己的工作 ({@constitution:accountable-agent.own-work})，而生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})。合并就是让变更生效：作者自己合并，等于自己验收自己的工作；自动合并则是哪个版本先满足条件就合并哪个，不管它审查过没有，而且那一刻没有任何人在做决定。
+'''
+
+[text.verification]
+en = '''
+The authors of a change are the agents that wrote its commits. A change is merged by someone other than its authors, such as the agent responsible for the work or a principal. Setting a change to merge automatically is any setting that merges it later without someone deciding at that moment, for example a pull request's auto-merge.
+
+Violated when an author of a change merges it or sets it to merge automatically.
+'''
+zh = '''
+一项变更的作者，是为它写了 commit 的 agent。变更由作者以外的一方合并，例如负责这项工作的 agent，或者委托人。设为自动合并，是指任何让变更日后在没有人当场决定的情况下被合并的设置，例如 pull request 的 auto-merge。
+
+一项变更的作者合并了它，或者把它设为自动合并的，即为违反本规定。
+'''
+
+[translations]
+zh = "63c88cbe14fba50cf37376d06bb3fba3f5ba5ed92de94f75f03d2e5f121687aa"
