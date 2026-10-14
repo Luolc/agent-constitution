@@ -377,7 +377,7 @@ class SiteTest(unittest.TestCase):
     for status, checked in (
       ("active", " checked"),
       ("trial", " checked"),
-      ("draft", " checked"),
+      ("draft", ""),
       ("superseded", ""),
       ("repealed", ""),
     ):
