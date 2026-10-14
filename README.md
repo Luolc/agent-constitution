@@ -46,7 +46,7 @@ and Grok read.
 It is for you if you run coding agents across several repositories and
 want one set of principles they all follow, with rules you can choose and
 check. The repo is a draft: today the constitution is written and builds
-into Markdown and the website; the rule system and its compiler are
+into Markdown; the rule system and its compiler are
 designed but not written yet.
 
 ## Quick start
@@ -59,32 +59,25 @@ repo, the built text is under
 [English](constitution/2026-10/generated/constitution.en.md),
 [中文](constitution/2026-10/generated/constitution.zh.md).
 
-**Build it.** You need [uv](https://docs.astral.sh/uv/), and Hugo 0.167.0
-for the website:
+**Build it.** You need [uv](https://docs.astral.sh/uv/):
 
 ```sh
 git clone https://github.com/Luolc/agent-constitution.git
 cd agent-constitution
-git submodule update --init      # the website's theme
 uv sync                          # the tools and their checkers, into .venv
 uv run constitution-build        # the sources into the generated Markdown
-hugo-0.167.0 -s web              # the website, into site/
-uv run python -m http.server -d site
 ```
-
-Then open `http://localhost:8000/`. Without a token-count credential, the
-pages say the tokens were not counted.
 
 ## How it fits together
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/architecture-dark.svg">
-  <img src=".github/assets/architecture.svg" alt="How Agent Constitution fits together. Built today: the constitution's TOML sources are built by constitution-build into Markdown and the website. Designed, not built yet: the rule tree and the skills feed a per-repository rule set and lock file; the compiler turns them, with the constitution's version for agents, into AGENTS.md, skills, and checks with hooks; the check results go to a reviewer, and a wrong check leads back to a fix of the check or the rule.">
+  <img src=".github/assets/architecture.svg" alt="How Agent Constitution fits together. Built today: the constitution's TOML sources are built by constitution-build into Markdown. Designed, not built yet: the rule tree and the skills feed a per-repository rule set and lock file; the compiler turns them, with the constitution's version for agents, into AGENTS.md, skills, and checks with hooks; the check results go to a reviewer, and a wrong check leads back to a fix of the check or the rule.">
 </picture>
 
 - **Built today:** the constitution's sources, one TOML file per section in
   both languages, are checked and built by `constitution-build` into
-  Markdown, and Hugo builds that into the website.
+  Markdown.
 - **Designed, not built yet:** rules form a tree, each with one parent,
   and a repository picks the ones it uses in a rule set, pinned by a lock
   file. The compiler turns the rule set and the constitution into
@@ -109,11 +102,9 @@ The repo's layout, source formats, checks and releases are in the
   languages; `skills/` the general skills, one directory per skill with
   its `SKILL.md`, in English.
 - `tools/` is a uv workspace of three Python projects: `tools/compiler`
-  (the constitution build), `tools/site` (the token count and the link
-  check of the website) and `tools/checks` (the checks this repo runs on
-  its own changes).
-- `web/` is the website's Hugo project
-  ([Static site](docs/design/static-site.md)).
+  (the constitution build), `tools/site` (the checks of the static site,
+  see [Static site](docs/design/static-site.md)) and `tools/checks` (the
+  checks this repo runs on its own changes).
 
 Install the commit hooks once with `uv run pre-commit install`;
 `uv run pre-commit run --all-files` runs them all.
