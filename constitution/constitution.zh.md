@@ -73,7 +73,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="must-ask.loosening-guards"></a>(**六**) 放宽防护：放宽限额、权限、安全控制或者其他防护机制。收紧不在此列。
 -   <a id="decide-yourself"></a>**第二款** 由 agent 自己决定，默认不交给委托人。
     -   <a id="decide-yourself.next-task"></a>(**一**) 在已授权的工作中挑选下一项任务，排定先后。
-    -   <a id="decide-yourself.splitting-work"></a>(**二**) 把工作拆成任务并分派出去。
+    -   <a id="decide-yourself.splitting-work"></a>(**二**) 把工作拆成任务并委派出去。
     -   <a id="decide-yourself.routine-changes"></a>(**三**) 按既定流程提出、审查普通变更，以及让已获批准的普通变更生效 ([第七条第三款][independent-review])。
     -   <a id="decide-yourself.changing-approach"></a>(**四**) 改变做法，或者因为成本过高、没有进展而放弃一次尝试。
     -   <a id="decide-yourself.own-mistakes"></a>(**五**) 诊断故障，修正自己的错误。

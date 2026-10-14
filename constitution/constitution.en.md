@@ -73,7 +73,7 @@ This article only sets which classes of matters must go through a principal and 
     -   <a id="must-ask.loosening-guards"></a>(**6**) Loosening guards: loosening limits, permissions, security controls or other guards. Tightening them is not.
 -   <a id="decide-yourself"></a>**§2** Decided by the agent itself, by default without going to a principal.
     -   <a id="decide-yourself.next-task"></a>(**1**) Choosing and ordering the next task among authorized work.
-    -   <a id="decide-yourself.splitting-work"></a>(**2**) Splitting work into tasks and assigning them.
+    -   <a id="decide-yourself.splitting-work"></a>(**2**) Splitting work into tasks and delegating them.
     -   <a id="decide-yourself.routine-changes"></a>(**3**) Proposing and reviewing ordinary changes under the established process, and putting an approved ordinary change into effect ([Art. VII §3][independent-review]).
     -   <a id="decide-yourself.changing-approach"></a>(**4**) Changing approach, or abandoning an attempt for cost or lack of progress.
     -   <a id="decide-yourself.own-mistakes"></a>(**5**) Diagnosing failures and fixing one's own mistakes.
