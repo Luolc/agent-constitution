@@ -12,6 +12,7 @@ from unittest import mock
 
 import check_instruction_changes as cic
 import git_env
+import test_build_constitution
 
 BASE = {
     "AGENTS.md": "agents\n",
@@ -117,9 +118,10 @@ class Change(unittest.TestCase):
 
 
 class HookEnvironment(unittest.TestCase):
-    """The tests and the check run from a git hook, which in a worktree sets
+    """The tests and the scripts run from a git hook, which in a worktree sets
     GIT_DIR and GIT_INDEX_FILE to the worktree's; they must leave its
-    repository alone."""
+    repository alone. One test of each script that runs git covers its
+    calls and its test helper's."""
 
     def test_repository_of_the_hook_untouched(self):
         tmp = tempfile.TemporaryDirectory()
@@ -134,9 +136,12 @@ class HookEnvironment(unittest.TestCase):
         result = unittest.TestResult()
         with mock.patch.dict(os.environ, {"GIT_DIR": str(gitdir), "GIT_INDEX_FILE": str(gitdir / "index")}):
             Change("test_instructions_only_pass").run(result)
+            test_build_constitution.BaseTest("test_main_runs_check_with_base").run(result)
         self.assertEqual((outer / "main/.git/config").read_bytes(), config)
         self.assertEqual((gitdir / "index").read_bytes(), index)
         self.assertTrue(result.wasSuccessful(), result.errors + result.failures)
+        self.assertEqual(result.testsRun, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
