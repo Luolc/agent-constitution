@@ -462,8 +462,8 @@ implements this design lands.
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". The rule set belongs to a
   repository and may inherit a base rule set, which takes over the part
-  of the jurisdiction. It also names the constitution it rests on (see
-  [Rule sets and the lock file](#rule-sets-and-the-lock-file)).
+  of the jurisdiction. Each rule set also names the constitution it rests
+  on (see [Rule sets and the lock file](#rule-sets-and-the-lock-file)).
 - [Relaxation declarations](rules.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another alternative of a
   choice, needs no relaxation. Whether `adjustable` values and the
@@ -478,8 +478,9 @@ implements this design lands.
   and is installed only when one of them is chosen.
 - [Compilation](compilation.md): the output gains skill
   directories, checks and hook configuration, and the compiled file opens
-  with the repository, edition and revision of the constitution it rests on, and the rules are grouped
-  along the parent tree, not by the article of their first `authority`.
+  with the repository, edition and revision of the constitution it rests
+  on, and the rules are grouped along the parent tree, not by the article
+  of their first `authority`.
 - [Checkers](checkers.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of
   the repo's sources stay.
