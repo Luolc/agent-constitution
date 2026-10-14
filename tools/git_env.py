@@ -14,11 +14,17 @@ import subprocess
 
 @functools.cache
 def local_vars() -> frozenset[str]:
-    """The variables `git rev-parse --local-env-vars` lists."""
-    return frozenset(subprocess.run(["git", "rev-parse", "--local-env-vars"],
-                                    capture_output=True, text=True, check=True).stdout.split())
+  """The variables `git rev-parse --local-env-vars` lists."""
+  return frozenset(
+    subprocess.run(
+      ["git", "rev-parse", "--local-env-vars"],
+      capture_output=True,
+      text=True,
+      check=True,
+    ).stdout.split()
+  )
 
 
 def clean() -> dict[str, str]:
-    """os.environ, read at each call, without the local variables of git."""
-    return {k: v for k, v in os.environ.items() if k not in local_vars()}
+  """os.environ, read at each call, without the local variables of git."""
+  return {k: v for k, v in os.environ.items() if k not in local_vars()}
