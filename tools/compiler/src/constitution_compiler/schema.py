@@ -10,8 +10,10 @@ from constitution_compiler.model import (
 )
 
 # Schemas: key -> type; a trailing `?` marks an optional key; LANG is a table
-# whose keys are exactly the languages of index.toml and whose values are text.
+# whose keys are exactly the languages of index.toml and whose values are text;
+# TEXT is a table of language to text in any languages.
 LANG = "lang"
+TEXT = "text"
 INDEX_SCHEMA = {
   "status": str,
   "edition": str,
@@ -45,6 +47,37 @@ RULE_SCHEMA = {
   "title": LANG,
   "content": LANG,
 }
+# The rule tree's nodes, by kind (docs/design/rule-system.md, Rule file
+# format). The keys every kind has, then those of each kind.
+NODE_SCHEMA = {
+  "id": int,
+  "slug?": str,
+  "revision": int,
+  "kind": str,
+  "status": str,
+  "lang": str,
+  "title": TEXT,
+  "translations?": dict,
+}
+NODE_SCHEMAS = {
+  "domain": NODE_SCHEMA,
+  "one-of": NODE_SCHEMA | {"parent": int},
+  "rule": NODE_SCHEMA
+  | {
+    "parent": int,
+    "superseded-by?": int,
+    "requires?": list,
+    "conflicts?": list,
+    "authority": list,
+    "constitution": str,
+    "level": str,
+    "check": str,
+    "run?": str,
+    "tools?": list,
+    "text": dict,
+  },
+}
+PARTS_SCHEMA = {"statement": TEXT, "reason": TEXT, "verification": TEXT}
 
 # Check 1: format.
 
@@ -112,7 +145,7 @@ def check_keys(
       continue
     value = table[name]
     line = doc.line(f"[{name}]", f"{name} =", start=start)
-    if kind == LANG:
+    if kind in (LANG, TEXT):
       if not isinstance(value, dict) or not all(
         isinstance(v, str) for v in value.values()
       ):
@@ -122,7 +155,9 @@ def check_keys(
           1,
           f"{label}`{name}` must be a table of language to text",
         )
-      elif languages is not None and set(value) != set(languages):
+      elif (
+        kind == LANG and languages is not None and set(value) != set(languages)
+      ):
         errors.add(
           doc.path,
           line,
@@ -134,9 +169,16 @@ def check_keys(
         "\n" in text.strip("\n") for text in value.values()
       ):
         errors.add(doc.path, line, 1, f"{label}`title` must be one line")
-    elif not isinstance(value, kind):
+    # TOML's booleans are Python ints too.
+    elif not isinstance(value, kind) or (
+      kind is int and isinstance(value, bool)
+    ):
       errors.add(
-        doc.path, line, 1, f"{label}`{name}` must be a {kind.__name__}"
+        doc.path,
+        line,
+        1,
+        f"{label}`{name}` must be "
+        + ("an integer" if kind is int else f"a {kind.__name__}"),
       )
   for name in sorted(table.keys() - {k.rstrip("?") for k in schema}):
     errors.add(
@@ -159,7 +201,7 @@ def strip_texts(table: dict, schema: dict) -> None:
   """
   for key, kind in schema.items():
     name = key.rstrip("?")
-    if kind == LANG and name in table:
+    if kind in (LANG, TEXT) and name in table:
       for lang, text in table[name].items():
         table[name][lang] = text.strip("\n")
 

@@ -54,6 +54,34 @@ zh = '''
 
 ARTICLE = 'id = "a"\n\n[title]\nen = "A"\nzh = "边界"\n'
 RULE = "id = \"r\"\n\n[content]\nen = '''\nRule.\n'''\nzh = '''\n规则。\n'''\n"
+DOMAIN = """\
+id = 2
+kind = "domain"
+
+[title]
+en = "D"
+zh = "领域"
+
+[translations]
+zh = "00ff"
+"""
+NODE = """\
+id = 10
+kind = "rule"
+
+[title]
+zh = "标题"
+
+[text.statement]
+zh = '''
+见{@rule:2}。
+'''
+
+[text.reason]
+zh = '''
+因为agent。
+'''
+"""
 
 FILES = {
   "constitution/2026-10/index.toml": INDEX,
@@ -234,6 +262,20 @@ class Sources(unittest.TestCase):
         " or `zh = '''` on its own line\n",
       ),
     )
+
+  def test_rule_tree_nodes(self):
+    """The texts of a node of the rule tree; its hashes are no text."""
+    self.write("rules/2.toml", DOMAIN)
+    self.write("rules/10.toml", NODE)
+    code, out = self.run_lint()
+    self.assertEqual(code, 1)
+    self.assertEqual(len(out.splitlines()), 1, out)
+    self.assertTrue(
+      out.startswith("rules/10.toml:14: text.reason: error: [zh-typography-4"),
+      out,
+    )
+    self.edit("rules/10.toml", "因为agent。", "因为。")
+    self.assertEqual(self.run_lint(), (0, "limae: 10 zh texts clean\n"))
 
 
 if __name__ == "__main__":
