@@ -1,0 +1,46 @@
+id = 55
+slug = "ci-run-attempt"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "evidence.facts", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Read a CI run's attempt number before saying it passed"
+zh = "说 CI 通过之前先读那次运行的 attempt 号"
+
+[text.statement]
+en = "Before you state that a CI run passed, read its attempt number, and when it is above 1, read the logs of the earlier attempts and say in your statement what they showed."
+zh = "说某次 CI 运行通过之前，先读它的 attempt 号；大于 1 的，读之前几次 attempt 的日志，并在说法里写明它们的情况。"
+
+[text.reason]
+en = '''
+The result a CI service lists for a run is that of its latest attempt. A rerun that passed hides an earlier attempt that failed, and a failure that goes away on a rerun may be a real fault that shows only sometimes. Read from the latest attempt alone, CI passes whether or not that fault exists ({@constitution:discriminating-checks}); what is stated about the run is what was looked up ({@constitution:evidence.facts}).
+'''
+zh = '''
+CI 服务为一次运行列出的结果，是它最近一次 attempt 的结果。重跑通过会掩盖之前失败过的 attempt，而重跑后消失的失败，可能是一个只偶尔出现的真实问题。只看最近一次 attempt，无论这个问题存不存在，CI 都显示通过 ({@constitution:discriminating-checks})；关于这次运行的说法，要以实际查到的为准 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+Before the agent states that CI passed on a change or a commit, in a report, a review verdict or a pull request description, or as the grounds for a merge or a release, it reads that run's attempt number from the CI service (on GitHub Actions, the run's `run_attempt`). A list or summary that shows only the latest attempt is not that reading.
+
+When the number is 1, the run's result stands. When it is above 1, the agent reads the logs of each earlier attempt, and its statement gives the attempt number and what the earlier attempts showed, or says that the cause of their failure is unknown. A failure that did not come back on a rerun is not thereby closed.
+
+Violated when an agent states that CI passed without having read that run's attempt number, or, with a number above 1, without having read the earlier attempts' logs or without saying what they showed.
+'''
+zh = '''
+agent 要说 CI 在某个变更或 commit 上通过了，无论是在报告、审查结论或 pull request 描述里，还是把它当作合并或发版的依据，都先从 CI 服务读出那次运行的 attempt 号 (在 GitHub Actions 上是该次运行的 `run_attempt`)。只显示最近一次 attempt 的列表或摘要，不算读过这个号。
+
+attempt 号为 1 的，这次运行的结果成立。大于 1 的，agent 读之前每一次 attempt 的日志，并在说法里写明 attempt 号和之前几次的情况，或者写明它们失败的原因不明。重跑后没有再出现的失败，并不因此就算解决了。
+
+agent 说 CI 通过了，却没有读过那次运行的 attempt 号，或者号大于 1 时没有读过之前几次的日志、没有写明它们的情况的，即为违反本规定。
+'''
+
+[translations]
+zh = "736f8d8422a030027910e1894f144c12b38252fdfc1095027cb6f7c96eaf0eb3"
