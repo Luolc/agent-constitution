@@ -14,7 +14,7 @@ from unittest import mock
 
 import check_instruction_changes as cic
 import git_env
-import test_build_constitution
+import test_constitution_base
 
 BASE = {
   "AGENTS.md": "agents\n",
@@ -222,7 +222,7 @@ class HookEnvironment(unittest.TestCase):
       {"GIT_DIR": str(gitdir), "GIT_INDEX_FILE": str(gitdir / "index")},
     ):
       Change("test_instructions_only_pass").run(result)
-      test_build_constitution.BaseTest("test_main_runs_check_with_base").run(
+      test_constitution_base.BaseTest("test_main_runs_check_with_base").run(
         result
       )
     self.assertEqual((outer / "main/.git/config").read_bytes(), config)
