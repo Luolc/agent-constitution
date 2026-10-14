@@ -72,6 +72,15 @@ fn sha256(dir: &Path, file: &str) -> String {
     statute::node::sha256_hex(&std::fs::read(dir.join(file)).unwrap())
 }
 
+/// The hash of `file` without its translations, as statute reads it.
+fn original_sha256(dir: &Path, file: &str) -> String {
+    let mut diags = statute::diag::Diagnostics::default();
+    let bytes = std::fs::read(dir.join(file)).unwrap();
+    statute::node::parse(file, &bytes, &mut diags)
+        .unwrap()
+        .original_sha256
+}
+
 #[track_caller]
 fn ok(run: &Run) {
     assert_eq!(
@@ -103,14 +112,18 @@ path = "."
 rule = "R2"
 revision = 1
 sha256 = "{}"
+original-sha256 = "{}"
 
 [[rules]]
 rule = "R3"
 revision = 1
 sha256 = "{}"
+original-sha256 = "{}"
 "#,
         sha256(&dir, "rules/2.toml"),
-        sha256(&dir, "rules/3.toml")
+        original_sha256(&dir, "rules/2.toml"),
+        sha256(&dir, "rules/3.toml"),
+        original_sha256(&dir, "rules/3.toml")
     );
     assert_eq!(read(&dir, "statute.lock"), expected);
 }
@@ -459,6 +472,96 @@ fn lock_warns_of_a_rule_changed_without_a_new_revision() {
         &edit(rule(5, 4, ""), "Do the thing 5.", "Do it again 5."),
     );
     std::fs::remove_file(dir.join("statute.lock")).unwrap();
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(run.stderr, "");
+}
+
+/// Rule 5 of `upgrade_nodes()` with the statement `en` and a translation
+/// into `zh` whose statement is `zh`.
+fn translated_rule_5(en: &str, zh: &str) -> (u64, String) {
+    let hash = statute::node::original_hash(&[
+        "Rule 5",
+        en,
+        "Because.\n",
+        "Violated when the thing is not done.",
+    ]);
+    let (id, text) = rule(5, 4, "");
+    let text = text
+        .replace("en = \"Rule 5\"\n", "en = \"Rule 5\"\nzh = \"规定 5\"\n")
+        .replace(
+            "en = \"Do the thing 5.\"\n",
+            &format!("en = \"{en}\"\nzh = \"{zh}\"\n"),
+        )
+        .replace("Because.\n'''\n", "Because.\n'''\nzh = \"因为。\"\n")
+        .replace("not done.\"\n", "not done.\"\nzh = \"没做就算违反。\"\n");
+    (id, format!("{text}\n[translations]\nzh = \"{hash}\"\n"))
+}
+
+#[test]
+fn a_changed_translation_needs_no_new_revision() {
+    let mut nodes = upgrade_nodes();
+    nodes[4] = translated_rule_5("Do the thing 5.", "做这件事 5。");
+    let dir = repo("lock-translation", &manifest("\"R7\", \"R5\""), &nodes);
+    ok(&statute(&dir, &["lock"]));
+    put(
+        &dir,
+        &translated_rule_5("Do the thing 5.", "把这件事做了 5。"),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(run.stderr, "");
+    put(&dir, &translated_rule_5("Do the thing 5.", "做这件事 5。"));
+    let run = statute(&dir, &["upgrade"]);
+    ok(&run);
+    assert_eq!(
+        run.stdout,
+        "changed: rule R5 (Rule 5): only the translations or the layout changed, still revision 1\n\
+         wrote statute.lock: 3 rules enabled\n"
+    );
+    // A changed original still draws the warning.
+    put(&dir, &translated_rule_5("Do it 5.", "做这件事 5。"));
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(
+        run.stderr,
+        "rules/5.toml: warning: rule R5 (Rule 5) changed since statute.lock and is still at revision 1; an edited rule's revision goes up by one\n"
+    );
+}
+
+#[test]
+fn a_lock_file_without_the_original_hash_compares_the_file() {
+    let mut nodes = upgrade_nodes();
+    nodes[4] = translated_rule_5("Do the thing 5.", "做这件事 5。");
+    let dir = repo("lock-no-original", &manifest("\"R7\", \"R5\""), &nodes);
+    ok(&statute(&dir, &["lock"]));
+    let lock = read(&dir, "statute.lock");
+    let old: String = lock
+        .lines()
+        .filter(|l| !l.starts_with("original-sha256 = "))
+        .map(|l| format!("{l}\n"))
+        .collect();
+    assert_ne!(old, lock);
+    std::fs::write(dir.join("statute.lock"), &old).unwrap();
+    put(
+        &dir,
+        &translated_rule_5("Do the thing 5.", "把这件事做了 5。"),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(
+        run.stderr,
+        "rules/5.toml: warning: rule R5 (Rule 5) changed since statute.lock and is still at revision 1; an edited rule's revision goes up by one\n"
+    );
+    // Written anew, the lock file has the hash, and a changed translation
+    // no longer draws the warning.
+    assert_eq!(
+        read(&dir, "statute.lock")
+            .matches("original-sha256 = ")
+            .count(),
+        3
+    );
+    put(&dir, &translated_rule_5("Do the thing 5.", "做这件事 5。"));
     let run = statute(&dir, &["lock"]);
     ok(&run);
     assert_eq!(run.stderr, "");
