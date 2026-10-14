@@ -1,6 +1,6 @@
 id = 18
 slug = "design-with-the-change"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = [80, 81]
