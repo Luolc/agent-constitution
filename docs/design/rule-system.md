@@ -288,6 +288,8 @@ which says to enable the domain as a pack and the one-of through one of
 its children. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
 by default only `statement`; adding `reason` or `verification` puts those
 parts in as well ([Compilation and the site](#compilation-and-the-site)).
+`lang` in `[compile]` names the language it is written in, `en` by
+default.
 
 The lock file is TOML, written by the tool and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
@@ -734,6 +736,24 @@ and a rule set with its lock file, and writes:
   of the enabled rules;
 - the hook configuration that runs the checks.
 
+The first version writes the `AGENTS.md` only: `statute compile` writes
+it next to `statute.toml`, or to another file with `--output`, and only
+when the lock file is what `statute lock` would write now. It holds, in
+this order: a comment that the file is generated; a line with the
+constitution's edition, revision and source; the constitution's version
+for agents in the rule set's language, the file
+`constitution/<edition>/generated/constitution.<lang>.agent.md` that the
+constitution's build writes, unchanged; and a heading "Rules" with the
+enabled rules. Each domain is a heading of level two, and each level of
+the tree one level deeper, down to level six, where deeper levels stay;
+a one-of none of whose children is enabled does not appear. A node's
+heading is its title and ID, after an anchor `rule-<id>`, which is unique
+within one source only. A requirement of a node under another domain is
+a line "Requires:" with a link to that anchor; one within the domain is
+not rendered. A rule uses its translation into the language when it has
+one, and its original otherwise. The skill directories, the check
+binary's version and the hook configuration are not written yet.
+
 Compiling, checking and upgrading a rule set are one command-line tool
 ([The tool and the first version](#the-tool-and-the-first-version)).
 The constitution's compiler stays in Python for now
@@ -779,8 +799,8 @@ the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
-**Built so far**: the commands `lock`, `explain`, `add` and `remove`,
-for one source on disk; the other commands exit with status 2 and say
+**Built so far**: the commands `lock`, `explain`, `add`, `remove` and
+`compile` (the `AGENTS.md` only), for one source on disk; the other commands exit with status 2 and say
 they are not implemented yet. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
 another source, in `requires` or `conflicts` (`"team:7"`), are reported

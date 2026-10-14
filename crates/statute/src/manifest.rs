@@ -38,6 +38,8 @@ pub struct Manifest {
     /// The roots of the packs enabled, in the order written.
     pub packs: Vec<Id>,
     pub agents_md: Vec<Part>,
+    /// The language `compile` writes in.
+    pub lang: String,
 }
 
 #[derive(Deserialize)]
@@ -72,6 +74,7 @@ struct RawSource {
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct RawCompile {
     agents_md: Option<Vec<Part>>,
+    lang: Option<String>,
 }
 
 impl Manifest {
@@ -153,10 +156,14 @@ impl Manifest {
         let rules = refs("rules", &raw.rules);
         let packs = refs("packs", &raw.packs);
 
-        let agents_md = raw
-            .compile
-            .and_then(|c| c.agents_md)
-            .unwrap_or_else(|| vec![Part::Statement]);
+        let (agents_md, lang) = raw.compile.map_or((None, None), |c| (c.agents_md, c.lang));
+        let agents_md = agents_md.unwrap_or_else(|| vec![Part::Statement]);
+        let lang = lang.unwrap_or_else(|| "en".to_owned());
+        if !crate::node::is_lang(&lang) {
+            errors.push(format!(
+                "[compile] `lang = \"{lang}\"` is not a language code such as \"en\" or \"zh\""
+            ));
+        }
         let mut seen = Vec::new();
         for part in &agents_md {
             if seen.contains(part) {
@@ -173,6 +180,7 @@ impl Manifest {
                 rules,
                 packs,
                 agents_md,
+                lang,
             }),
             _ => Err(errors),
         }
@@ -216,6 +224,7 @@ agents-md = ["statement", "reason"]
         let m =
             Manifest::parse(&GOOD.replace("agents-md = [\"statement\", \"reason\"]", "")).unwrap();
         assert_eq!(m.agents_md, [Part::Statement]);
+        assert_eq!(m.lang, "en");
     }
 
     #[track_caller]
