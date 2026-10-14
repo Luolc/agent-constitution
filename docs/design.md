@@ -6,6 +6,12 @@ into [English](../constitution/constitution.en.md)
 and [Chinese](../constitution/constitution.zh.md); this document cites it
 only by ID (see Source formats, IDs) and never restates it.
 
+The repo provides three kinds of installable content: the constitution,
+the general rules and the general skills. A user picks which of them to
+install through configuration. How they are installed, and what metadata
+that needs, is not decided yet; it will be settled as the toolchain is
+built.
+
 ## Goals and non-goals
 
 Goals:
@@ -122,7 +128,8 @@ rules/
                           language                                     A
   retired-ids.txt         IDs of deleted rules, one per line           A
 skills/
-  <name>/SKILL.md         general skills, installed as is              B
+  <name>/SKILL.md         one general skill per directory, with any
+                          template files beside it, installed as is    A
 schema/                   schemas for the rules, fixtures and the
                           overlay manifest                             B
 tools/
@@ -159,11 +166,14 @@ uv.lock                   its lock file, written by uv                 A
                           toolchain never reads it                     A
 ```
 
-Two stage B pieces start early. `tools/` starts in stage A with the
+Three stage B pieces start early. `tools/` starts in stage A with the
 constitution build: the constitution is itself compiled from one directory
 per article and one file per section (see Source formats). `rules/` starts in stage A too,
 holding the
-concrete practices taken out of the constitution. Compiling and checking the
+concrete practices taken out of the constitution. `skills/` starts in
+stage A as plain directories, each holding a `SKILL.md` with the usual
+skill front matter (`name`, `description`) and no metadata of this
+repo's own. Compiling and checking the
 rules, and building the instruction file, stay in stage B.
 
 Stage B, in the order to build it: `schema/` and the schema checker,
@@ -629,9 +639,13 @@ unresolved or unused parameter fails the build.
 ### Skills
 
 `skills/<name>/SKILL.md` in the usual skill layout. Skills are not compiled
-into the instruction file; the overlay's apply step installs them where the
-harnesses look for skills. A skill says how to do something; what must be
-done stays in a rule, and the skill cites the rule ID.
+into the instruction file; they are installed as they are where the
+harnesses look for skills. How they are installed is not decided yet (see
+the opening of this document); the overlay's apply step under Compilation
+is the current plan. A skill says how to do something; what must be
+done stays in a rule, and the skill cites the rule ID. The instruction-only
+check counts everything under `skills/` as instruction files, since a
+skill directs the agents that read it.
 
 ## Compilation
 
@@ -684,7 +698,8 @@ overlay contributes, as a private rule, the one or two sentences that tell
 an agent how to tell whether it runs under fleet or as an orchestra, and
 which skill an orchestra reads.
 
-Wiring on the private side: the overlay's apply step fetches the pinned core
+Wiring on the private side, as currently planned (how the content is
+installed is not decided yet): the overlay's apply step fetches the pinned core
 version, verifies tag and commit, runs the compiler, runs the checkers that
 need private input (the private-term scan), installs the output and the
 skills, then runs load verification. The real output is never committed to
@@ -965,7 +980,8 @@ the changes that an agent reads as instructions apart from all others, so
 each can be reviewed and reverted on its own. Which paths are instruction
 files, which are generated and which are other files is one table at the
 top of the script: a generic part that holds in any repo, this repo's own
-part (the constitution and rule sources) and this repo's generated files.
+part (the constitution, rule and skill sources) and this repo's generated
+files.
 A generated file goes with whichever side changed it: with the
 constitution sources it is an amendment, alone with the tools it is a
 tools change. The script compares `HEAD` with `--base` (`git diff
