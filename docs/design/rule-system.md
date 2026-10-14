@@ -315,7 +315,7 @@ written. The highest is written only when the rule is known not to work
 with a later revision, for example because the constitution has dropped
 what the rule relied on; an upper bound is never written as a precaution,
 as Python packaging has found with upper bounds on dependencies. When a
-provision is amended, the rules that cite it are judged one by one: one
+provision is amended, the rules listed above are judged one by one: one
 that still fits is left alone, and one that does not gets an upper bound,
 or is rewritten under a new ID if the change alters what counts as
 compliant ([IDs and revisions](#ids-and-revisions)). At compile time the
@@ -454,14 +454,15 @@ implements this design lands.
   `rules/retired-ids.txt` is no longer needed; a rule is superseded or
   repealed instead. `status` gains `trial` and `superseded`, and the
   fields `supersedes`, a per-rule revision, `parent`, `requires`,
-  `conflicts` and a default level (repository or user) are added; choices
+  `conflicts`, a default level (repository or user) and the range of
+  constitution revisions the rule is compatible with are added; choices
   become a kind of node in the parent tree. The verification method is part
   of each rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". The rule set belongs to a
   repository and may inherit a base rule set, which takes over the part
-  of the jurisdiction (see
+  of the jurisdiction. It also names the constitution it rests on (see
   [Rule sets and the lock file](#rule-sets-and-the-lock-file)).
 - [Relaxation declarations](rules.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another alternative of a
@@ -476,7 +477,8 @@ implements this design lands.
 - [Skills](skills.md): a skill declares the rules it implements
   and is installed only when one of them is chosen.
 - [Compilation](compilation.md): the output gains skill
-  directories, checks and hook configuration, and the rules are grouped
+  directories, checks and hook configuration, and the compiled file opens
+  with the repository, edition and revision of the constitution it rests on, and the rules are grouped
   along the parent tree, not by the article of their first `authority`.
 - [Checkers](checkers.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of
@@ -487,9 +489,6 @@ implements this design lands.
 - At what token count the compiled `AGENTS.md` is split into several
   files, and along which subtrees.
 - The format of the lock file.
-- How the constitution a rule set rests on, and a rule's range of
-  compatible revisions, are written, including the syntax of the range
-  ([Tracing rules to the constitution](#tracing-rules-to-the-constitution)).
 - The index of public sources: its format, who may add to it, and when
   it is built.
 - Whether a domain at the top of the tree is a rule of its own or only a
@@ -498,7 +497,8 @@ implements this design lands.
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
   when it is implemented; this includes how a tag or branch and a version
   range are written in a rule set and in a source's declaration of the
-  versions it needs.
+  versions it needs, how a rule set names its constitution, and how a
+  rule's range of compatible constitution revisions is written.
 - Where a rule whose default level is the user level is chosen, where it
   is locked and where it is compiled to.
 - When a rule set enables a rule without one it `requires`, whether the
