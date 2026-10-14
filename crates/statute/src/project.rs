@@ -80,6 +80,7 @@ impl Project {
             source.name = spec.name.clone();
             source.path = spec.path.clone();
             source.public = spec.public;
+            source.local = spec.local;
             list.push(source);
         }
         if !manifest.sources.iter().any(|s| s.is_here()) && root.join("rules").is_dir() {
@@ -88,6 +89,7 @@ impl Project {
             source.name = LOCAL.to_owned();
             source.path = ".".to_owned();
             source.public = manifest.public;
+            source.local = true;
             list.push(source);
         }
         let sources = Sources::new(list);

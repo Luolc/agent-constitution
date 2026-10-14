@@ -75,6 +75,11 @@ struct Words {
     requires: &'static str,
     /// Follows the title of a cited rule that is not in the file.
     rule: &'static str,
+    /// Before the rule an overriding rule overrides, and between the
+    /// rules of a chain of overrides.
+    overrides: &'static str,
+    which_overrides: &'static str,
+    end: &'static str,
 }
 
 fn words(lang: &str) -> Words {
@@ -85,6 +90,9 @@ fn words(lang: &str) -> Words {
             verification: "判定：",
             requires: "依赖：",
             rule: "规定",
+            overrides: "覆盖 ",
+            which_overrides: "，后者覆盖 ",
+            end: "。",
         },
         _ => Words {
             rules: "Rules",
@@ -92,6 +100,9 @@ fn words(lang: &str) -> Words {
             verification: "Verification: ",
             requires: "Requires: ",
             rule: "rule",
+            overrides: "Overrides ",
+            which_overrides: ", which overrides ",
+            end: ".",
         },
     }
 }
@@ -469,6 +480,14 @@ pub fn cited(
                     "cites `{{@rule:{text}}}`, which is not a reference"
                 ));
             };
+            if project.sources.get(&cited).is_none() {
+                return fail(&format!(
+                    "cites `{{@rule:{text}}}`, which is not in {}",
+                    describe(&cited.source)
+                ));
+            }
+            // An overridden rule is shown as the rule in its place.
+            let cited = project.resolution.standing(&cited);
             match project.sources.get(&cited) {
                 Some(n) if links && shown(project, &cited) => Ok(format!(
                     "[{}](#{})",
@@ -503,23 +522,41 @@ fn render(
     level: usize,
     out: &mut String,
 ) -> Result<(), String> {
-    let Some(node) = project.sources.get(key) else {
-        return Ok(());
-    };
-    if !shown(project, key) {
+    if project.sources.get(key).is_none() || !shown(project, key) {
         return Ok(());
     }
+    // An overridden rule's place holds the rule that stands in it, with
+    // the anchors of every rule of the chain, so links to them land here.
+    let res = &project.resolution;
+    let standing = res.standing(key);
+    let mut chain = res.chain(&standing);
+    let Some(node) = project.sources.get(&standing) else {
+        return Ok(());
+    };
     let lang = project.manifest.lang.as_str();
-    let _ = writeln!(out, "\n<a id=\"{}\"></a>", anchor(key));
+    out.push('\n');
+    for k in chain.iter().rev().chain([&standing]) {
+        let _ = writeln!(out, "<a id=\"{}\"></a>", anchor(k));
+    }
     let _ = writeln!(
         out,
-        "{} {} ({key})",
+        "{} {} ({standing})",
         "#".repeat(level.min(DEEPEST)),
         pick(&node.title, node, lang),
     );
+    if !chain.is_empty() {
+        let names: Vec<String> = chain.iter().map(Key::to_string).collect();
+        let _ = writeln!(
+            out,
+            "\n{}{}{}",
+            w.overrides,
+            names.join(w.which_overrides),
+            w.end
+        );
+    }
     if let Some(applicability) = &node.applicability {
         let text = pick(applicability, node, lang);
-        let text = cited(project, labels, key, "applicability", text, true)?;
+        let text = cited(project, labels, &standing, "applicability", text, true)?;
         let _ = writeln!(out, "\n{text}");
     }
     if let Some(rule) = &node.rule {
@@ -529,20 +566,28 @@ fn render(
                 Part::Reason => ("reason", w.reason, &rule.reason),
                 Part::Verification => ("verification", w.verification, &rule.verification),
             };
-            let text = cited(project, labels, key, name, pick(text, node, lang), true)?;
+            let text = cited(
+                project,
+                labels,
+                &standing,
+                name,
+                pick(text, node, lang),
+                true,
+            )?;
             if label.is_empty() {
                 let _ = writeln!(out, "\n{text}");
             } else {
                 let _ = writeln!(out, "\n{label}{text}");
             }
         }
-        let root = project.sources.root(key);
+        let root = project.sources.root(&standing);
         let crossing: Vec<String> = project
             .sources
-            .requires(key)
+            .requires(&standing)
             .into_iter()
             .filter(|target| project.sources.root(target) != root)
             .filter_map(|target| {
+                let target = res.standing(&target);
                 let n = project.sources.get(&target)?;
                 Some(format!(
                     "[{}](#{})",
@@ -555,7 +600,14 @@ fn render(
             let _ = writeln!(out, "\n{}{}", w.requires, crossing.join(", "));
         }
     }
-    for child in project.sources.children(key) {
+    // The children of every rule of the chain stay, under this heading.
+    chain.push(standing);
+    let mut children: Vec<Key> = chain
+        .iter()
+        .flat_map(|k| project.sources.children(k))
+        .collect();
+    children.sort();
+    for child in children {
         render(project, w, labels, &child, level + 1, out)?;
     }
     Ok(())

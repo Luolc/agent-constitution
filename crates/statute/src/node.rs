@@ -91,6 +91,10 @@ pub struct Node {
     pub superseded_by: Vec<Id>,
     pub lang: String,
     pub parent: Option<Id>,
+    /// The rule of another source this rule takes the place of
+    /// (`docs/design/rule-sources.md`, Overrides); only a rule has it, and
+    /// then no `parent`.
+    pub overrides: Option<Ref>,
     pub title: Text,
     /// Which repositories a domain is for; only a domain has it.
     pub applicability: Option<Text>,
@@ -112,6 +116,7 @@ struct RawNode {
     superseded_by: Option<RawSuccessors>,
     lang: String,
     parent: Option<Id>,
+    overrides: Option<RawRef>,
     requires: Option<Vec<RawRef>>,
     conflicts: Option<Vec<RawRef>>,
     authority: Option<Vec<String>>,
@@ -284,14 +289,35 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
     }
 
     let kind = raw.kind;
-    match (kind, raw.parent) {
-        (Kind::Domain, Some(_)) => {
+    let overrides = match raw.overrides.clone().map(parse_ref) {
+        None => None,
+        Some(Ok(Ref::Local(id))) => {
+            err(format!(
+                "`overrides` names {id}, a node of this source; a rule overrides a rule of another source, written \"R200\" or \"team:7\", and within one source a rule is changed in place or superseded"
+            ));
+            None
+        }
+        Some(Ok(r)) => Some(r),
+        Some(Err(e)) => {
+            err(format!("`overrides`: {e}"));
+            None
+        }
+    };
+    match (kind, raw.parent, raw.overrides.is_some()) {
+        (Kind::Domain, Some(_), _) => {
             err("a domain has no parent; domains do not nest, so a finer grouping is a rule or a one-of under the domain".to_owned())
         }
-        (Kind::Rule | Kind::OneOf, None) => err(format!(
-            "a {} needs a `parent`: the ID of a rule, one-of or domain",
-            kind.name()
-        )),
+        (Kind::Rule, Some(_), true) => err(
+            "a rule with `overrides` has no `parent`: it stands where the rule it overrides stands"
+                .to_owned(),
+        ),
+        (Kind::Rule, None, false) => err(
+            "a rule needs a `parent`, the ID of a rule, one-of or domain, or `overrides`, the rule of another source it takes the place of"
+                .to_owned(),
+        ),
+        (Kind::OneOf, None, _) => err(
+            "a one-of needs a `parent`: the ID of a rule, one-of or domain".to_owned(),
+        ),
         _ => {}
     }
     if raw.parent == Some(raw.id) {
@@ -341,6 +367,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
     } else {
         let present: Vec<&str> = [
             ("superseded-by", raw.superseded_by.is_some()),
+            ("overrides", raw.overrides.is_some()),
             ("requires", raw.requires.is_some()),
             ("conflicts", raw.conflicts.is_some()),
             ("authority", raw.authority.is_some()),
@@ -381,6 +408,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         superseded_by,
         lang: raw.lang,
         parent: raw.parent,
+        overrides,
         title: raw.title,
         applicability: raw.applicability,
         translations,

@@ -20,19 +20,61 @@ pub enum Reason {
     ParentOf(Key),
     /// Listed under `requires` of this enabled rule.
     RequiredBy(Key),
+    /// Overridden by this enabled rule, which stands in its place.
+    OverriddenBy(Key),
 }
 
 #[derive(Debug, Default)]
 pub struct Resolution {
-    /// Every enabled rule, by key, with the reasons it is enabled.
+    /// Every enabled rule, by key, with the reasons it is enabled. An
+    /// overridden rule counts as enabled.
     pub enabled: BTreeMap<Key, BTreeSet<Reason>>,
+    /// Each overridden rule and the enabled rule that overrides it.
+    pub overridden: BTreeMap<Key, Key>,
+}
+
+impl Resolution {
+    /// The rule that stands in the place of `key`, following a chain of
+    /// overrides: `key` itself when nothing overrides it.
+    pub fn standing(&self, key: &Key) -> Key {
+        let mut at = key.clone();
+        for _ in 0..3 {
+            match self.overridden.get(&at) {
+                Some(by) => at = by.clone(),
+                None => break,
+            }
+        }
+        at
+    }
+
+    /// The rules a rule overrides, down a chain: for `L3` that overrides
+    /// `team:7`, which overrides `R200`, those two.
+    pub fn chain(&self, key: &Key) -> Vec<Key> {
+        let mut out = Vec::new();
+        let mut at = key.clone();
+        while let Some((target, _)) = self.overridden.iter().find(|(_, by)| **by == at) {
+            if out.contains(target) {
+                break;
+            }
+            out.push(target.clone());
+            at = target.clone();
+        }
+        out
+    }
+
+    /// Whether a rule is enabled and not overridden: its text is compiled
+    /// and its check runs.
+    pub fn in_force(&self, key: &Key) -> bool {
+        self.enabled.contains_key(key) && !self.overridden.contains_key(key)
+    }
 }
 
 /// The rule a node's parent requirement lands on: the parent when it is a
 /// rule, through any one-of to the rule above it, and nothing when the
 /// chain ends at a domain.
 pub fn parent_rule(sources: &Sources, key: &Key) -> Option<Key> {
-    let mut parent = sources.parent(key)?;
+    // A rule that overrides another has that one's parent.
+    let mut parent = sources.parent(&sources.place(key))?;
     let mut steps = 0;
     while sources.get(&parent)?.kind == Kind::OneOf && steps <= sources.nodes().count() {
         parent = sources.parent(&parent)?;
@@ -80,7 +122,9 @@ pub fn successors(key: &Key, node: &Node) -> Vec<Key> {
 
 /// Resolves `manifest` against `sources`, which have passed their own
 /// checks, for the constitution `revision`. Problems go to `diags`,
-/// against `statute.toml`.
+/// against `statute.toml`. An overridden rule counts as enabled, and the
+/// rule that overrides it brings in what it would have
+/// (`docs/design/rule-sources.md`, Overrides).
 pub fn resolve(
     sources: &Sources,
     manifest: &Manifest,
@@ -168,40 +212,134 @@ pub fn resolve(
                     .or_default()
                     .insert(Reason::Pack(root.clone()));
             }
-            // Into a one-of, only through the child the rule set chose.
-            stack.extend(
-                sources
-                    .children(&key)
-                    .into_iter()
-                    .filter(|c| node.kind != Kind::OneOf || manifest.rules.contains(c)),
-            );
+            // Into a one-of, only through the child the rule set chose, or
+            // the child a rule it chose overrides.
+            stack.extend(sources.children(&key).into_iter().filter(|c| {
+                node.kind != Kind::OneOf
+                    || manifest
+                        .rules
+                        .iter()
+                        .any(|r| r == c || sources.place(r) == *c)
+            }));
         }
     }
 
-    // Add what the enabled rules require, until nothing more is added.
-    let mut one_of_requirements: Vec<(Key, Key)> = Vec::new();
-    let mut queue: Vec<Key> = res.enabled.keys().cloned().collect();
-    let mut done = BTreeSet::new();
-    while let Some(key) = queue.pop() {
-        if !done.insert(key.clone()) {
-            continue;
-        }
-        let mut add = |target: Key, reason: Reason, queue: &mut Vec<Key>| {
-            res.enabled
-                .entry(target.clone())
-                .or_default()
-                .insert(reason);
-            queue.push(target);
-        };
-        if let Some(parent) = parent_rule(sources, &key) {
-            add(parent, Reason::ParentOf(key.clone()), &mut queue);
-        }
-        for target in sources.requires(&key) {
-            match sources.get(&target).map(|n| n.kind) {
-                Some(Kind::Rule) => add(target, Reason::RequiredBy(key.clone()), &mut queue),
-                Some(Kind::OneOf) => one_of_requirements.push((key.clone(), target)),
-                _ => {}
+    // Add what the enabled rules require, until nothing more is added. An
+    // overridden rule brings in nothing but the rule it overrides in its
+    // turn; which rules are overridden is known only once the rules that
+    // override them are in, so the closure runs again until that settles.
+    let chosen = res.enabled.clone();
+    let mut one_of_requirements: Vec<(Key, Key)>;
+    let mut overridden: BTreeMap<Key, Key> = BTreeMap::new();
+    // The sets of overridden rules of the rounds before, to tell a closure
+    // that goes round from one still settling.
+    let mut seen: Vec<BTreeMap<Key, Key>> = Vec::new();
+    loop {
+        res.enabled = chosen.clone();
+        one_of_requirements = Vec::new();
+        let mut queue: Vec<Key> = res.enabled.keys().cloned().collect();
+        let mut done = BTreeSet::new();
+        while let Some(key) = queue.pop() {
+            if !done.insert(key.clone()) {
+                continue;
             }
+            let mut add = |target: Key, reason: Reason, queue: &mut Vec<Key>| {
+                res.enabled
+                    .entry(target.clone())
+                    .or_default()
+                    .insert(reason);
+                queue.push(target);
+            };
+            if let Some(target) = sources.overrides(&key)
+                && sources.get(&target).is_some_and(|n| n.kind == Kind::Rule)
+            {
+                add(target, Reason::OverriddenBy(key.clone()), &mut queue);
+            }
+            if overridden.contains_key(&key) {
+                continue;
+            }
+            if let Some(parent) = parent_rule(sources, &key) {
+                add(parent, Reason::ParentOf(key.clone()), &mut queue);
+            }
+            for target in sources.requires(&key) {
+                match sources.get(&target).map(|n| n.kind) {
+                    Some(Kind::Rule) => add(target, Reason::RequiredBy(key.clone()), &mut queue),
+                    Some(Kind::OneOf) => one_of_requirements.push((key.clone(), target)),
+                    _ => {}
+                }
+            }
+        }
+        let now: BTreeMap<Key, Key> = res
+            .enabled
+            .iter()
+            .flat_map(|(key, reasons)| {
+                reasons.iter().filter_map(move |r| match r {
+                    Reason::OverriddenBy(by) => Some((key.clone(), by.clone())),
+                    _ => None,
+                })
+            })
+            .collect();
+        if now == overridden {
+            break;
+        }
+        if seen.contains(&now) {
+            // The closure goes round: a rule that overrides is brought in
+            // only through a rule that is overridden while it is in.
+            let unsettled: BTreeSet<&Key> = now
+                .values()
+                .chain(overridden.values())
+                .filter(|by| {
+                    now.values().any(|b| b == *by) != overridden.values().any(|b| b == *by)
+                })
+                .collect();
+            diags.error(
+                file,
+                format!(
+                    "the overrides do not settle: {} come in only through rules that are overridden once they are in; list them in `rules`",
+                    unsettled
+                        .iter()
+                        .map(|k| label(sources, k))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+            );
+            break;
+        }
+        seen.push(overridden);
+        overridden = now;
+    }
+    res.overridden = overridden;
+
+    for (target, reasons) in &res.enabled {
+        let by: Vec<&Key> = reasons
+            .iter()
+            .filter_map(|r| match r {
+                Reason::OverriddenBy(by) => Some(by),
+                _ => None,
+            })
+            .collect();
+        match by.as_slice() {
+            [] => {}
+            [by] if reasons.len() == 1 => diags.warning(
+                file,
+                format!(
+                    "rule {} overrides {}, which nothing else in the rule set enables; {by} is compiled where {target} would stand",
+                    label(sources, by),
+                    label(sources, target)
+                ),
+            ),
+            [_] => {}
+            many => diags.error(
+                file,
+                format!(
+                    "rule {} is overridden by {}; one rule at most may override it, so keep one",
+                    label(sources, target),
+                    many.iter()
+                        .map(|k| format!("{} ({})", label(sources, k), how(&res, k)))
+                        .collect::<Vec<_>>()
+                        .join(" and ")
+                ),
+            ),
         }
     }
 
@@ -242,13 +380,15 @@ pub fn resolve(
         }
     }
 
+    // An overridden rule's conflicts, and those on it, do not apply, and
+    // its compatibility does not matter: it is not compiled.
     let mut conflicting = BTreeSet::new();
-    for key in res.enabled.keys() {
+    for key in res.enabled.keys().filter(|k| res.in_force(k)) {
         let Some(rule) = sources.get(key).and_then(|n| n.rule.as_ref()) else {
             continue;
         };
         for other in sources.conflicts(key) {
-            if res.enabled.contains_key(&other) {
+            if res.in_force(&other) {
                 let pair = if *key < other {
                     (key.clone(), other.clone())
                 } else {
@@ -316,7 +456,9 @@ pub fn resolve(
             ),
             (false, _) => {
                 let by = reasons.iter().find_map(|r| match r {
-                    Reason::ParentOf(b) | Reason::RequiredBy(b) => Some(b),
+                    Reason::ParentOf(b) | Reason::RequiredBy(b) | Reason::OverriddenBy(b) => {
+                        Some(b)
+                    }
                     _ => None,
                 });
                 match by {
@@ -383,6 +525,7 @@ pub fn how(res: &Resolution, key: &Key) -> String {
             Reason::Pack(root) => format!("in pack {root}"),
             Reason::ParentOf(child) => format!("parent of {child}"),
             Reason::RequiredBy(by) => format!("required by {by}"),
+            Reason::OverriddenBy(by) => format!("overridden by {by}"),
         })
         .collect::<Vec<_>>()
         .join(", ")
