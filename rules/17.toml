@@ -1,0 +1,46 @@
+id = 17
+slug = "one-design"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["no-restating", "simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep the design in one directory, one file per part, with an index"
+zh = "设计放在一个目录里，每部分一个文件，配一份索引"
+
+[text.statement]
+en = "Keep a repository's design in one directory, one file for each part, every file listed in the directory's index; write no design or decision document anywhere else."
+zh = "仓库的设计放在一个目录里，每部分一个文件，每个文件都列在该目录的索引里；别处不写设计文档或决策文档。"
+
+[text.reason]
+en = '''
+A reader finds every design decision in one place, and a fact about the design is written once and linked to from elsewhere ({@constitution:no-restating}); a second kind of design document, such as a separate decision record, would hold the same decisions twice ({@constitution:simplicity}).
+'''
+zh = '''
+读者在一个地方就能找到所有设计决定，关于设计的一个事实只写一次，别处链接过去 ({@constitution:no-restating})；再加一类设计文档，例如单独的决策记录，同样的决定就会写两遍 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The design lives in one directory, for example `docs/design/`. Each file covers one part, reads on its own and has one `# ` title. The directory's index, for example its `README.md`, links to every other file of the directory except the translations ({@rule:21}), in reading order, with a line on what each covers. A change that adds a design file adds it to the index in the same change.
+
+A decision is written into the part of the design it concerns, with its reasons; a decision that replaces another changes that part. No separate decision record, design note or second design is kept elsewhere in the repository.
+
+Violated when a design or decision document lives outside that directory, or a file of the directory other than a translation is missing from the index.
+'''
+zh = '''
+设计放在一个目录里，例如 `docs/design/`。每个文件讲一部分，可以单独阅读，有且只有一个 `# ` 标题。目录的索引 (例如它的 `README.md`) 按阅读顺序链接到目录里除译文 ({@rule:21}) 以外的其他每个文件，每个配一行说明讲的是什么。新增设计文件的变更，在同一个变更里把它加进索引。
+
+一个决定连同理由写进它所涉及的那部分设计；取代旧决定的新决定，直接改那部分。仓库里别处不另设决策记录、设计笔记或第二份设计。
+
+设计文档或决策文档放在这个目录之外，或者目录里译文以外的文件没有列进索引的，即为违反本规定。
+'''
+
+[translations]
+zh = "1ff91513d18cee9ab6858c7d9bc5ef62cb36af62913b432331df702f890ee690"
