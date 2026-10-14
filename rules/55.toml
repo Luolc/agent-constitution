@@ -15,8 +15,8 @@ en = "Read a CI run's attempt number before saying it passed"
 zh = "说 CI 通过之前先读那次运行的 attempt 号"
 
 [text.statement]
-en = "Before you state that a CI run passed, read its attempt number, and when it is above 1, read the logs of the earlier attempts before you conclude."
-zh = "说某次 CI 运行通过之前，先读它的 attempt 号；大于 1 的，先读之前几次 attempt 的日志，再下结论。"
+en = "Before you state that a CI run passed, read its attempt number, and when it is above 1, read the logs of the earlier attempts and say in your statement what they showed."
+zh = "说某次 CI 运行通过之前，先读它的 attempt 号；大于 1 的，读之前几次 attempt 的日志，并在说法里写明它们的情况。"
 
 [text.reason]
 en = '''
@@ -37,10 +37,10 @@ Violated when an agent states that CI passed without having read that run's atte
 zh = '''
 agent 要说 CI 在某个变更或 commit 上通过了，无论是在报告、审查结论或 pull request 描述里，还是把它当作合并或发版的依据，都先从 CI 服务读出那次运行的 attempt 号 (在 GitHub Actions 上是该次运行的 `run_attempt`)。只显示最近一次 attempt 的列表或摘要，不算读过这个号。
 
-号为 1 的，这次运行的结果成立。大于 1 的，agent 读之前每一次 attempt 的日志，并在说法里写明 attempt 号和之前几次的情况，或者写明它们失败的原因不明。重跑后没有再出现的失败，并不因此就算解决了。
+attempt 号为 1 的，这次运行的结果成立。大于 1 的，agent 读之前每一次 attempt 的日志，并在说法里写明 attempt 号和之前几次的情况，或者写明它们失败的原因不明。重跑后没有再出现的失败，并不因此就算解决了。
 
 agent 说 CI 通过了，却没有读过那次运行的 attempt 号，或者号大于 1 时没有读过之前几次的日志、没有写明它们的情况的，即为违反本规定。
 '''
 
 [translations]
-zh = "987cebb038b47fd90f25ebfda23f4c64bcdb1e75721288a249cc8e56022b5de5"
+zh = "736f8d8422a030027910e1894f144c12b38252fdfc1095027cb6f7c96eaf0eb3"

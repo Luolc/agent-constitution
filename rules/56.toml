@@ -15,15 +15,15 @@ en = "Read a pull request description back against the current head"
 zh = "对着当前 head 回读 pull request 描述"
 
 [text.statement]
-en = "Before you ask for a review of a pull request and before you merge it, read its description back against the current head, and append each correction to the description itself."
-zh = "请求审查一个 pull request 之前、合并它之前，对着当前 head 回读它的描述，每处更正都追加到描述本身。"
+en = "Before you ask for a review of a pull request and before you merge it, read its description back against the current head, and append to the description a line that names that head and gives each correction, or none."
+zh = "请求审查一个 pull request 之前、合并它之前，对着当前 head 回读它的描述，并在描述末尾追加一行，写明这个 head 和每处更正，没有更正就写没有。"
 
 [text.reason]
 en = '''
-A description is written over several rounds while the head moves, so a SHA, a number or a conclusion in it can describe an earlier version than the one under review or about to take effect. The facts it states are as actually looked up ({@constitution:evidence.facts}), and what takes effect is exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}); a reviewer and a merger who rely on the description need it to describe that version. A correction appended to the description keeps both what was claimed and what holds where the next reader looks.
+A description is written over several rounds while the head moves, so a SHA, a number or a conclusion in it can describe an earlier version than the one under review or about to take effect. The facts it states are as actually looked up ({@constitution:evidence.facts}), and what takes effect is exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}); a reviewer and a merger who rely on the description need it to describe that version. The appended line shows which head the description was last checked against, and keeps both what was claimed and what holds where the next reader looks.
 '''
 zh = '''
-描述是在几轮里陆续写成的，head 也随之变化，所以其中的 SHA、数字或结论，描述的可能是比正在审查或即将生效的版本更早的版本。描述里的事实要以实际查到的为准 ({@constitution:evidence.facts})，生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})；依靠描述的审查方和合并方，需要它描述的正是这个版本。更正追加在描述里，原来的说法和现在成立的情况都留在下一位读者会看的地方。
+描述是在几轮里陆续写成的，head 也随之变化，所以其中的 SHA、数字或结论，描述的可能是比正在审查或即将生效的版本更早的版本。描述里的事实要以实际查到的为准 ({@constitution:evidence.facts})，生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})；依靠描述的审查方和合并方，需要它描述的正是这个版本。追加的那一行说明描述最近一次是对着哪个 head 核对的，原来的说法和现在成立的情况也都留在下一位读者会看的地方。
 '''
 
 [text.verification]
@@ -34,12 +34,13 @@ Each read-back compares with that head every value the description states, and e
 
 - each commit SHA;
 - each number, such as a count, a test total or a size;
-- each conclusion, such as that a check passed or a claim holds;
-- each narrowing accepted during the review rounds of the pull request, whoever proposed it.
+- each conclusion, such as that a check passed or a claim holds.
 
-A value that does not match is corrected in the description itself, by appending the correction with the head it was checked against; the old text stays. A correction made only in a comment does not count.
+It also checks that each narrowing accepted during the review rounds of the pull request, whoever proposed it, is stated in the description.
 
-Violated when a review is requested or a pull request merged without that read-back, or when a value found wrong is corrected only in a comment or by overwriting the old text.
+Each read-back appends one line to the description itself, such as `Read back against <head>: <corrections, or none>`; the old text stays. A correction made only in a comment, or by overwriting the old text, does not count.
+
+Violated when a review is requested or a pull request merged and the description has no such line for the head under review or being merged, or when a value found wrong is corrected only in a comment or by overwriting the old text.
 '''
 zh = '''
 回读有两次：作者在每次请求审查或复审之前，对着请求审查的那个 head 回读；合并方在合并之前，对着批准结论写明的那个 head 回读。
@@ -48,13 +49,14 @@ zh = '''
 
 - 每个 commit SHA；
 - 每个数字，例如数量、测试总数或大小；
-- 每个结论，例如某项检查通过了、某个说法成立；
-- 在这个 pull request 的各轮审查中接受了的每一处收窄，不论是谁提出的。
+- 每个结论，例如某项检查通过了、某个说法成立。
 
-对不上的值在描述本身里更正：追加更正，并写明核对所依据的 head，原来的文字保留。只在评论里更正的，不算更正。
+还要核对：这个 pull request 的各轮审查中接受了的每一处收窄，不论是谁提出的，都已写进描述。
 
-请求审查或合并 pull request 之前没有做这次回读，或者发现有误的值只在评论里更正、或者覆盖了原来的文字的，即为违反本规定。
+每次回读都在描述本身里追加一行，例如 `Read back against <head>: <corrections, or none>`，原来的文字保留。只在评论里更正、或者覆盖原来的文字的，不算更正。
+
+请求审查或合并 pull request 时，描述里没有针对正在审查或要合并的那个 head 的这样一行，或者发现有误的值只在评论里更正、或者覆盖了原来的文字的，即为违反本规定。
 '''
 
 [translations]
-zh = "185a1a0d158d4794f26084f10805feaef66ccab9fc148202512b920fa7a32e18"
+zh = "af465e40e9de45c712e44b0be625742e1627147ea68065330e1a02c8c464d360"

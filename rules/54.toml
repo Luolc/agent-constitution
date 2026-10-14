@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A check command is any command whose result decides something: a test run, a linter, a build, a run of the commit hooks, or a dry run. It runs as a command of its own, not as part of a pipeline, and its result is its exit status: 0 passes, anything else fails. When its output is too long to read, the whole command's output is redirected to a file (`<command> > <file> 2>&1`), and the exit status is read on its own afterwards.
+A check command is a command run to find out whether something passes or fails: a test run, a linter, a build, a run of the commit hooks, or a dry run. It runs as a command of its own, not as part of a pipeline, and its result is its exit status: 0 passes, anything else fails. When its output is too long to read, the whole command's output is redirected to a file (`<command> > <file> 2>&1`), and the exit status is read on its own afterwards.
 
 Violated when the result of a check is stated or acted on from a run in which its output was piped into another command, or from its output without its exit status.
 '''
 zh = '''
-检查命令是指结果会用来作判断的任何命令：测试、linter、构建、commit hook 的运行，以及 dry run。它作为一个独立的命令运行，不放在管道里，结果就是它的退出码：0 为通过，其他值为失败。输出太长读不完的，把整个命令的输出重定向到文件 (`<command> > <file> 2>&1`)，之后再单独读退出码。
+检查命令是指为了弄清某件事通过还是失败而运行的命令：测试、linter、构建、commit hook 的运行，以及 dry run。它作为一个独立的命令运行，不放在管道里，结果就是它的退出码：0 为通过，其他值为失败。输出太长读不完的，把整个命令的输出重定向到文件 (`<command> > <file> 2>&1`)，之后再单独读退出码。
 
 检查的结果来自一次把输出接管道交给另一个命令的运行，或者只看了输出、没看退出码，却据此下结论或采取行动的，即为违反本规定。
 '''
 
 [translations]
-zh = "a4d1bbd7ed229df8230bd233062ce9b78feeeaf799b28ac50948b0b0e1471657"
+zh = "fdc6122bea706125c95b93528d184dde0aea3f3e98931b7abb859da4c21f1b81"
