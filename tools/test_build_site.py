@@ -118,6 +118,22 @@ class PageTest(unittest.TestCase):
           out,
         )
 
+  def test_draft_marks_the_revision(self):
+    """While a draft, both pages mark the revision; once active, neither."""
+    cases = [("en", "Revision 0.6 (draft)"), ("zh", "修订号 0.6 (草案)")]
+    for lang, line in cases:
+      labels = build_site.PAGES[lang]
+      for draft in (True, False):
+        with self.subTest(lang=lang, draft=draft):
+          item = line if draft else f"{labels['revision']} 0.6"
+          for out in (
+            build_site.page(
+              SHORT[lang], AGENT[lang], labels, "0.6", None, None, None, draft
+            ),
+            build_site.agent_page(AGENT[lang], labels, "0.6", draft),
+          ):
+            self.assertIn(f'<li class="number">{item}</li>', out)
+
   def test_popup(self):
     """The popup: a table of lengths, a list of notes, then a link.
 
