@@ -12,15 +12,17 @@ this design changes them.
 - [Terms](#terms)
 - [What one rule holds](#what-one-rule-holds)
 - [IDs and revisions](#ids-and-revisions)
+- [Rule file format](#rule-file-format)
 - [Rule sets and the lock file](#rule-sets-and-the-lock-file)
 - [Sources and references](#sources-and-references)
 - [Rules and skills](#rules-and-skills)
-- [Dependencies, choices and packs](#dependencies-choices-and-packs)
+- [Dependencies, one-ofs and packs](#dependencies-one-ofs-and-packs)
 - [Tracing rules to the constitution](#tracing-rules-to-the-constitution)
 - [Checks](#checks)
 - [Outcomes and the review loop](#outcomes-and-the-review-loop)
 - [Trial rules](#trial-rules)
 - [Compilation and the site](#compilation-and-the-site)
+- [The tool and the first version](#the-tool-and-the-first-version)
 - [Why Rust](#why-rust)
 - [What this replaces](#what-this-replaces)
 - [Open questions](#open-questions)
@@ -36,11 +38,14 @@ this design changes them.
 - **Rule set**: the rules one repository has chosen, written as a
   configuration file that lists rule IDs and packs; it may inherit another
   rule set.
-- **Choice**: a node of the parent tree whose children are mutually
-  exclusive alternatives (see
-  [Dependencies, choices and packs](#dependencies-choices-and-packs)).
+- **Domain**: a node at the top of the parent tree (Python, CI, Git,
+  security and so on) that only gives a heading (see
+  [Dependencies, one-ofs and packs](#dependencies-one-ofs-and-packs)).
+- **One-of**: a node of the parent tree of which at most one child is
+  enabled; enabling none is allowed too (see
+  [Dependencies, one-ofs and packs](#dependencies-one-ofs-and-packs)).
 - **Lock file**: written next to the rule set; it pins the revision of
-  every chosen rule and resolves every source to an exact commit.
+  every enabled rule and resolves every source to an exact commit.
 - **Check**: the code that decides, for one rule, whether a repository, a
   change or a record complies.
 - **Reviewer**: an agent that judges what the checks could not settle.
@@ -53,16 +58,19 @@ decided: given a repository, a change or a record, someone can answer
 narrowly enough to be checked, which is what `decidable-provisions` asks
 of every lower-ranking provision.
 
-The text is three to five sentences: the requirement, the reason, and how
-compliance is checked. A rule that needs more is usually several rules
-written as one, and is split.
+Its text has three parts: the statement, one sentence in the imperative
+that says what to do; the reason; and the verification, how to decide
+whether the rule was broken. Each part is short. A rule that needs more is
+usually several rules written as one, and is split.
 
 ## IDs and revisions
 
 A rule's ID is a number, assigned in sequence and never reused. Rules are
 expected to grow fast and to be written and checked mostly by agents, so a
 person does not read each one closely; a number avoids debating names, and
-it never has to change when the wording does.
+it never has to change when the wording does. Domains and one-ofs take
+their IDs from the same sequence, so a number names exactly one node of
+its source.
 
 No rule is ever deleted. Whether a change keeps the ID depends on one
 question: does it change what counts as compliant?
@@ -84,18 +92,228 @@ real work before it settles (see [Trial rules](#trial-rules)). A rule
 withdrawn with nothing in its place is repealed and, like a superseded
 one, keeps its ID and its file.
 
+## Rule file format
+
+Each node of the parent tree (a rule, a one-of or a domain) is one TOML
+file, `rules/<id>.toml`, flat in one directory: `rules/42.toml`, with no
+zero padding, since the IDs keep growing and any fixed width would one
+day be too short. The tree is recorded only in the `parent` field, never
+in directories, so moving a rule under another parent changes one line
+and moves no file. Tools always sort the files by number, not by name.
+
+A rule, here one that a translation into Chinese accompanies:
+
+```toml
+id = 42
+slug = "uv-sync-locked-in-ci"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 7
+requires = [12]
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "builtin"
+
+[title]
+en = "Sync from the lock file first in CI"
+zh = "CI 里先按锁文件同步依赖"
+
+[text.statement]
+en = "In CI, run `uv sync --locked` before any step that runs Python."
+zh = "在 CI 里，先运行 `uv sync --locked`，再运行任何执行 Python 的步骤。"
+
+[text.reason]
+en = '''
+A job that resolves its dependencies anew can test other versions than the
+ones the lock file records, and a stale lock file goes unnoticed.
+'''
+zh = '''
+重新解析依赖的 job 测到的版本可能与锁文件记录的不同，锁文件过期了也发现不了。
+'''
+
+[text.verification]
+en = '''
+Violated when a CI job runs Python before a `uv sync --locked` step, or
+runs `uv sync` without `--locked`.
+'''
+zh = '''
+CI 的 job 在 `uv sync --locked` 这一步之前运行了 Python，或者运行 `uv sync` 时没带 `--locked`，即为违反。
+'''
+
+[translations]
+zh = "<SHA-256 of the original text>"
+```
+
+A one-of and a domain, in the same format:
+
+```toml
+id = 5
+slug = "python-package-manager"
+revision = 1
+kind = "one-of"
+status = "active"
+lang = "en"
+parent = 3
+
+[title]
+en = "Python package manager"
+```
+
+```toml
+id = 3
+slug = "python"
+revision = 1
+kind = "domain"
+status = "active"
+lang = "en"
+
+[title]
+en = "Python"
+```
+
+The fields:
+
+- `id`: an integer from 1, unique within the source across rules,
+  one-ofs and domains, and never reused. The file name is the ID.
+- `slug` (optional): a short readable name, lowercase words joined by
+  hyphens, unique within the source. It is used only in web addresses and
+  to make the file easier to recognize; no reference ever uses it. The
+  rules of this repo keep their current word IDs here when they move to
+  this format.
+- `revision`: an integer from 1, raised by one at each change in place
+  ([IDs and revisions](#ids-and-revisions)).
+- `kind`: `rule`, `one-of` or `domain`.
+- `status`: `draft`, `trial`, `active`, `superseded` or `repealed`.
+- `superseded-by`: the ID of the rule of the same source that supersedes
+  this one; present only when `status` is `superseded`.
+- `lang`: the language the rule was written in, its original, as a
+  language code such as `"en"` or `"zh"`.
+- `parent`: the ID of the parent node, a rule, a one-of or a domain of the
+  same source. Every rule and one-of has one; a domain has none.
+- `requires` (optional): the rules or one-ofs that enabling this rule
+  requires. A node of the same source is written as a number, one of
+  another source as a string of the source's short name, a colon and the
+  ID (`"team:7"`), the name coming from the source's `[sources]` table
+  ([Sources and references](#sources-and-references)).
+- `conflicts` (optional): the rules this rule cannot be used with,
+  written like `requires` and on one side only
+  ([Dependencies, one-ofs and packs](#dependencies-one-ofs-and-packs)).
+- `authority`: the IDs of the provisions of the constitution the rule
+  refines, written as the constitution writes its own citations, without a
+  namespace (`"simplicity"`, `"must-ask.capital"`). This is the value of a
+  field, not a `{@...}` citation in a text, so the namespace that
+  [IDs](source-formats.md#ids) asks of a rule's citations does not apply;
+  a citation in a rule's text still names it (`{@constitution:simplicity}`).
+- `constitution`: the revisions of the constitution the rule is
+  compatible with, written as a Python version specifier (`">=1"`,
+  `">=1,<4"`; see
+  [Tracing rules to the constitution](#tracing-rules-to-the-constitution)).
+- `level`: the default level, `project` or `user`
+  ([Rule sets and the lock file](#rule-sets-and-the-lock-file)).
+- `check`: how compliance is checked ([Checks](#checks)). `builtin`: the
+  rule has a module in this repo's crate. `command`: an external command,
+  given by two more fields, `run`, the command line, and `tools`, the list
+  of tools it needs (`["uv"]`). `review`: there is no automatic check, and
+  the rule goes straight to the reviewer.
+- `[title]`: a short title.
+- `[text.statement]`, `[text.reason]` and `[text.verification]`: the three
+  parts of the text ([What one rule holds](#what-one-rule-holds)).
+- `[translations]` (optional): one key per translated language, never the
+  original's, whose value is the SHA-256 of the original text the
+  translation was made from.
+
+A domain and a one-of have only `id`, `slug`, `revision`, `kind`,
+`status`, `lang`, `parent` (a one-of only), `[title]` and, when the title
+is translated, `[translations]`. They have no text, check or other
+metadata.
+
+**Languages.** Each text, `[title]` and the three parts, is a table whose
+keys are language codes, as in [Source formats](source-formats.md). The
+key `lang` names is required; every other language is an optional
+translation. A rule may therefore be written in one language only, by an
+author of any language. A translation gives the title and all three parts
+in its language, and its key in `[translations]` records which original it
+follows. That hash is the SHA-256 of the original-language values of
+`title`, `text.statement`, `text.reason` and `text.verification`, in this
+order, as the TOML parser returns them (before the build drops the
+newlines next to the quotes of a multi-line string, see
+[Source formats](source-formats.md)), encoded in UTF-8 and joined with
+one NUL byte (0x00) between each two; for a domain or a one-of it is the
+hash of the title alone. When the original changes and a translation's
+hash no longer matches, the check fails and prints the new hash, as
+`check-design-translation` does for the design. Compiled into a language,
+a rule uses its translation into that language when it has one, and its
+original otherwise.
+
 ## Rule sets and the lock file
 
 A rule set lists rule IDs (and packs, below). Its lock file records, for
-each chosen rule, the revision in use and the commit of the source it came
+each enabled rule, the revision in use and the commit of the source it came
 from, so the same rule set and lock file always build the same output.
 
+The rule set is `statute.toml` and the lock file `statute.lock`, at the
+root of the repository (named for the tool,
+[The tool and the first version](#the-tool-and-the-first-version)). The
+rule set lists only the rules chosen directly:
+
+```toml
+constitution = { source = "ac", edition = "2026-10" }
+rules = ["ac:42"]
+
+[sources]
+ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+
+[compile]
+agents-md = ["statement"]
+```
+
+The rule set names the constitution's source and edition; the revision
+is the one at the commit of that source the lock file pins, and the lock
+file records it. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
+by default only `statement`; adding `reason` or `verification` puts those
+parts in as well ([Compilation and the site](#compilation-and-the-site)).
+
+The lock file is TOML, written by the tool and never edited by hand. It
+records the constitution (its repository, edition, revision and commit),
+each source (its short name, address and commit), and each enabled rule,
+whether chosen directly or brought in by a requirement (its source, ID,
+revision and the SHA-256 of its file):
+
+```toml
+[constitution]
+repository = "github.com/Luolc/agent-constitution"
+edition = "2026-10"
+revision = "<revision>"
+commit = "<commit>"
+
+[[sources]]
+name = "ac"
+address = "github.com/Luolc/agent-constitution"
+commit = "<commit>"
+
+[[rules]]
+source = "ac"
+id = 42
+revision = 1
+sha256 = "<SHA-256 of rules/42.toml>"
+
+[[rules]]
+source = "ac"
+id = 7
+revision = 2
+sha256 = "<SHA-256 of rules/7.toml>"
+```
+
 Upgrading is an explicit step that rewrites the lock file and shows the
-diff of every rule whose revision moved. When the rule set names a
-superseded rule, the build says so and names its successor, and one
-command replaces the old ID with the new one in the rule set. Downstream
-users do not have to follow the supersession chain by hand, and nothing
-changes under them until they upgrade.
+diff of every rule whose revision moved, and of every rule a requirement
+brought in or dropped. When the rule set names a superseded rule, the
+build says so and names its successor, and one command replaces the old
+ID with the new one in the rule set. Downstream users do not have to
+follow the supersession chain by hand, and nothing changes under them
+until they upgrade.
 
 **Bound to one constitution.** A rule set names the constitution it
 rests on: the repository it comes from, the edition and the revision.
@@ -114,11 +332,11 @@ the two, and fails if some enabled rule's range cannot hold it.
 **Per repository, with inheritance.** A rule set belongs to a repository,
 and it may inherit a shared base rule set, so the rules every repository
 of a user or team agrees on are written once. A repository adds to the
-base, leaves rules out, and picks among the alternatives of a choice. The
+base, leaves rules out, and picks among the children of a one-of. The
 jurisdiction of the current design (`division-of-instructions.rules`) is
 then the owner of a base rule set that its repositories inherit; the
-rule set and compiled output of each repository replace the one rule
-choice and compiled file per jurisdiction. Exclusion is checked per rule
+rule set and compiled output of each repository replace the one selection
+of rules and compiled file per jurisdiction. Exclusion is checked per rule
 set, so one repository can use uv for its Python packages and another
 Bazel.
 
@@ -147,7 +365,8 @@ overlay already in the design. Each rule declares a default level
 machine at the user level), and the user can change it. The reason is
 that a person who clones the repository, CI and a cloud agent cannot read
 user-level files, and each repository pins its own versions and upgrades
-on its own schedule.
+on its own schedule. The first version builds the repository level only
+([The tool and the first version](#the-tool-and-the-first-version)).
 
 ## Sources and references
 
@@ -155,12 +374,12 @@ A rule is found by its source and its ID. The commit is not part of
 that identity.
 
 **Naming a source.** A rule set gives each source a short local name, in
-a `[sources]` table:
+a `[sources]` table, with its address and the tag or branch to follow:
 
 ```toml
 [sources]
-ac = "github.com/Luolc/agent-constitution"
-team = "example.test/their-team/rules"
+ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
 A reference is the name, a colon and the rule's ID: `ac:42`, `team:7`.
@@ -184,13 +403,13 @@ differs from the one that was chosen. So a rule set takes one version of
 each source.
 
 **Dependencies across sources.** A rule of one source may list a rule of
-another under `requires`, such as `ac:12`. The source of the requiring
+another under `requires`, such as `"ac:12"`. The source of the requiring
 rule then declares, in its `[sources]` table, which versions of that
-other source it works with, as a range. At compile time the build looks
-for one version of each source that every declaration accepts. The tag
-or branch the rule set itself follows counts as one of the declarations.
-If there is no such version, the build fails and names the declarations
-that disagree.
+other source it works with, as a range written as a Python version
+specifier. At compile time the build looks for one version of each source
+that every declaration accepts. The tag or branch the rule set itself
+follows counts as one of the declarations. If there is no such version,
+the build fails and names the declarations that disagree.
 
 **Supersession stays inside a source.** Only a source can supersede its
 own rules. Another source cannot declare that its rule replaces ours. It
@@ -226,17 +445,17 @@ layout, its check commands) and names the rule set it uses
 (`division-of-instructions.project-instructions`). A rule set is chosen
 per repository ([Rule sets and the lock file](#rule-sets-and-the-lock-file)).
 
-## Dependencies, choices and packs
+## Dependencies, one-ofs and packs
 
-Rules are related in two ways, and the tree has a second kind of node:
+Rules are related in two ways, and the tree has two more kinds of node,
+domains and one-ofs:
 
 - `parent`: every rule has exactly one parent, either another rule, a
-  choice (below) or one of the domains at the top of the tree (Python, CI,
-  Git, security and so on), so the rules form a tree, each domain refined
-  level by level. The tree decides where a rule stands in the compiled text
-  and on the site, which block it is compiled in and which pack it belongs
-  to.
-- `requires`: enabling rule A requires another rule B, or a choice
+  one-of or a domain (below), so the rules form a tree, each domain
+  refined level by level. The tree decides where a rule stands in the
+  compiled text and on the site, which block it is compiled in and which
+  pack it belongs to.
+- `requires`: enabling rule A requires another rule B, or a one-of
   (below). A rule may require several, and the requirements form a
   directed acyclic graph. A rule that says how to run checks through uv
   requires the rule that has uv manage the project's dependencies. A
@@ -245,15 +464,24 @@ Rules are related in two ways, and the tree has a second kind of node:
 
 One parent is not enough on its own because many rules span domains: "in
 CI, run `uv sync --locked` first" depends both on uv and on the CI
-service. It sits under the uv rule and requires the choice "CI service",
-satisfied by any of its alternatives, such as a GitHub Actions rule.
+service. It sits under the uv rule and requires the one-of "CI service",
+satisfied by any of its children, such as a GitHub Actions rule.
 
-**Choices.** A choice is a node of the parent tree whose children are
-alternatives that exclude each other: within one rule set (or one path
-segment of it), at most one child is enabled. The choice "Python package
-manager" under Python has the children uv, Poetry and Bazel. A choice has
-an ID, and adding one goes through review like adding a rule. A rule that
-requires a choice is satisfied when any one of its children is enabled.
+**Domains.** A domain is a node at the top of the tree, such as Python,
+CI, Git or security. Besides its ID and title it has only the few fields
+every node has ([Rule file format](#rule-file-format)), and no text or
+check; it has no parent and cannot be enabled on its own. When any rule
+below it is enabled, the domain appears in the compiled output as a heading. Domains
+do not nest: a finer grouping is a rule or a one-of under the domain.
+
+**One-ofs.** A one-of is a node of the parent tree of which at most one
+child is enabled within one rule set (or one path segment of it).
+Enabling none of its children is allowed, as in a repository with no
+Python at all; "one of" here never means "exactly one". The one-of
+"Python package manager" under Python has the children uv, Poetry and
+Bazel. A one-of has an ID, and adding one goes through review like adding
+a rule. A rule that requires a one-of is satisfied when any one of its
+children is enabled.
 
 **Conflicts found later.** Two rules that nobody saw as alternatives may
 turn out not to work together. An agent that suspects this reports it, and
@@ -261,46 +489,58 @@ a reviewer judges it. Usually the fix is to change a rule: split it,
 narrow it or reword it, and whether it keeps its ID follows the rule in
 [IDs and revisions](#ids-and-revisions). When both rules are sound and
 cannot be used together, one of them gets `conflicts = [ID]`. The relation
-is symmetric and written on one side only; the build checks it both ways.
-Three or more rules at one place that conflict with each other are
-alternatives, and are collected under a choice instead. A rule may not
-be declared in conflict with one that enabling it brings in along `parent`
-or `requires`, directly or through other rules, since enabling the one
-would enable the other; the build fails on it. Sibling rules under one
-parent may conflict.
+is symmetric and written on one side only: on the rule that came later,
+the one being added or changed when the conflict was found, and never on
+the one that was already there. Across sources it can only be written on
+one's own side anyway. The tool derives the other side, and both the
+build check and the site show the conflict on both rules. A conflict
+written on both sides draws a warning, not an error. The reasons: a fact
+is written in one place (`no-restating`), and another source's files
+cannot be changed. Three or more rules at one place that conflict with
+each other are alternatives, and are collected under a one-of instead. A
+rule may not be declared in conflict with one that enabling it brings in
+along `parent` or `requires`, directly or through other rules, since
+enabling the one would enable the other; the build fails on it. Sibling
+rules under one parent may conflict.
 
 The build checks these constraints:
 
 - No cycle, in the tree or in the requirements.
+- A domain has no parent; every rule and one-of has one.
 - A rule's parent, when it is a rule, counts as one of its requirements:
   enabling a rule requires enabling its parent, and the parent is not
-  written again under `requires`. When the parent is a choice, the
-  requirement passes through it to the choice's own parent: enabling uv
+  written again under `requires`. When the parent is a one-of, the
+  requirement passes through it to the one-of's own parent: enabling uv
   under "Python package manager" still requires the rule above that
-  choice. A choice counts as enabled when one of its children is.
+  one-of. A parent that is a domain requires nothing. A one-of counts as
+  enabled when one of its children is.
 - No redundant requirement: if A requires B and B requires C, A does not
   also list C.
-- A requirement that crosses to another subtree should name a choice, not
+- A requirement that crosses to another subtree should name a one-of, not
   a particular rule. The number of such requirements has no hard limit;
   the build warns about them.
-- At most one child of a choice is enabled in a rule set or path segment,
+- At most one child of a one-of is enabled in a rule set or path segment,
   and no two enabled rules conflict.
 
-When a rule set enables a rule without one it requires, the build either
-fails or adds the missing rule; which of the two is an open question. It
-is a separate matter from the parent counting as a requirement: that only
-spares writing the parent under `requires`, and a missing parent is
-handled like any other missing requirement.
+**Missing requirements are added.** When a rule set enables a rule
+without one it requires, the tool adds the missing rule, as a package
+manager adds a dependency: the rule set lists only the rules chosen
+directly, the lock file records the ones brought in, and an upgrade's
+diff shows them. This applies equally to a parent that counts as a
+requirement. Among missing requirements, the one case that fails is a
+requirement of a one-of when the rule set has enabled none of its
+children: the tool cannot choose for
+the user, so it fails and lists the children to choose from.
 
 Packs: a pack is a subtree, named by its root, and a rule set can enable
-it as a whole. When the subtree holds a choice, enabling the pack requires
-the rule set to name one alternative for each choice in it; the build
-fails otherwise.
+it as a whole. A one-of in the pack of which the rule set names no child
+contributes nothing, like any one-of with no child enabled; the build
+fails only when an enabled rule requires that one-of, as above.
 
 ## Tracing rules to the constitution
 
 Every rule cites the provisions of the constitution it refines, in the
-`authority` field it has today ([Rules](rules.md#rules)). That link is
+`authority` field ([Rule file format](#rule-file-format)). That link is
 used in both directions:
 
 - When a provision of the constitution is amended, the rules that cite it
@@ -310,17 +550,19 @@ used in both directions:
   practice.
 
 **Compatible revisions.** Each rule declares the range of constitution
-revisions it is compatible with. The lowest revision is nearly always
-written. The highest is written only when the rule is known not to work
-with a later revision, for example because the constitution has dropped
-what the rule relied on; an upper bound is never written as a precaution,
-as Python packaging has found with upper bounds on dependencies. When a
-provision is amended, the rules listed above are judged one by one: one
-that still fits is left alone, and one that does not gets an upper bound,
-or is rewritten under a new ID if the change alters what counts as
-compliant ([IDs and revisions](#ids-and-revisions)). At compile time the
-revision the rule set pins must lie inside the range of every enabled
-rule; otherwise the build fails and names the rule and its range.
+revisions it is compatible with, in its `constitution` field, as a Python
+version specifier such as `">=1"` or `">=1,<4"`. The lowest revision is
+nearly always written. The highest is written only when the rule is known
+not to work with a later revision, for example because the constitution
+has dropped what the rule relied on; an upper bound is never written as a
+precaution, as Python packaging has found with upper bounds on
+dependencies. When a provision is amended, the rules listed above are
+judged one by one: one that still fits is left alone, and one that does
+not gets an upper bound, or is rewritten under a new ID if the change
+alters what counts as compliant ([IDs and revisions](#ids-and-revisions)).
+At compile time the revision the rule set pins must lie inside the range
+of every enabled rule; otherwise the build fails and names the rule and
+its range.
 
 ## Checks
 
@@ -330,31 +572,36 @@ TOML file has this value") would keep needing one more case, "or", and
 "unless", until it became a language of its own that nobody reads well. A
 check is code, of one of two kinds, and there is no third.
 
-**Our rules: Rust.** The checks of the rules in this repo are one Rust
-crate, with one module per rule that points at the rule's file, the
-way ruff and clippy implement each lint as a function. Common operations,
-such as reading a key from a TOML file, are ordinary helper functions in
-the same crate; an operation becomes a helper on its third repetition, not
-before (`simplicity`). The crate builds into one binary, released with the
-rules, so a downstream user installs one binary and has every check, with
-no scripts to deploy.
+**Our rules: Rust.** The checks of the rules in this repo are in the
+tool's crate ([The tool and the first version](#the-tool-and-the-first-version)),
+with one module per rule, named for the rule's ID (`r42.rs` for
+rule 42), the way ruff and clippy implement each lint as a function. The
+rule's text and metadata stay in `rules/42.toml`, so the person writing a
+rule and the one writing its check each change their own file; the
+module's test cases sit next to the check, in the crate. Common
+operations, such as reading a key from a TOML file, are ordinary helper
+functions in the same crate; an operation becomes a helper on its third
+repetition, not before (`simplicity`). The crate builds into one binary,
+released with the rules, so a downstream user installs one binary and has
+every check, with no scripts to deploy.
 
-When a rule is superseded, its successor gets a new function, copied from
-the old one and changed as needed. The old function stays in the code,
+When a rule is superseded, its successor gets a new module, copied from
+the old one and changed as needed. The old module stays in the code,
 marked superseded, and does not run unless asked to.
 
 **Rules written downstream: external commands.** A rule kept in another
-source declares its check as a command, in any language. The script lives
-in that source's own repository and runs with its own toolchain; the rule
-names the tools it needs (for example, uv or Go). The contract:
+source declares its check as a command (`check = "command"`, with `run`
+and `tools`), in any language. The script lives in that source's own
+repository and runs with its own toolchain; the rule names the tools it
+needs (for example, uv or Go). The contract:
 
 - exit code 0: the rule is met; 1: it is violated; anything else: the
   check could not decide;
 - standard output: JSON giving, for each finding, the location and the
   reason.
 
-A rule without an automatic check is allowed; it goes straight to the
-reviewer (below).
+A rule without an automatic check (`check = "review"`) is allowed; it
+goes straight to the reviewer (below).
 
 ## Outcomes and the review loop
 
@@ -364,8 +611,11 @@ violation, so a missing toolchain does not turn the checks red.
 
 The automatic checks run first, because they cost least. Then the reviewer
 looks at the violations, the inconclusive results and the rules that have
-no automatic check. Whether one reviewer takes all of them or several take
-a group each, and how the groups are formed, is set in the rule set.
+no automatic check. The material the reviewer is given holds each rule's
+reason and verification, which the compiled `AGENTS.md` leaves out by
+default ([Compilation and the site](#compilation-and-the-site)). Whether
+one reviewer takes all of them or several take a group each, and how the
+groups are formed, is set in the rule set.
 
 For each rule it is handed, the reviewer decides whether the rule is met
 or violated. A violation is fixed. Where the reviewer's decision differs
@@ -394,9 +644,17 @@ person's approval. This follows `automation-first.decide-and-do`.
 
 When agents doing a piece of work find that no rule, skill or convention
 covers it, they start writing the convention down. The first version is a
-trial rule: it is used on real work, changed freely while it is tried, and
-made a regular rule once it has settled. The rules, skills and conventions
-of this repo itself are meant to come about the same way.
+trial rule (`status = "trial"`): it is used on real work, changed freely
+while it is tried, and made a regular rule once it has settled. The rules,
+skills and conventions of this repo itself are meant to come about the
+same way.
+
+**Becoming active.** Agents decide this, not a person. Once a trial rule
+has been used in real work a number of times (5 in the first version)
+with no false positive left unresolved in that time, the reviewing agent
+sets its `status` to `active`. That changes only the status, not what
+counts as compliant, so the rule is edited in place and its revision goes
+up by one ([IDs and revisions](#ids-and-revisions)).
 
 ## Compilation and the site
 
@@ -404,28 +662,78 @@ of this repo itself are meant to come about the same way.
 and a rule set with its lock file, and writes:
 
 - an `AGENTS.md`, which opens with the repository, the edition and the
-  revision of the constitution it rests on, and then has the chosen rules
-  in nested blocks along the parent
-  tree, one heading level per level of the tree; a subtree whose root is
-  not enabled (for a choice: none of its children is) contributes
-  nothing, since none of its rules can be enabled without it, and a
-  requirement that crosses subtrees is rendered as a link.
-  Once the file's length passes a token threshold, measured with
-  `count-tokens`, it is split into several files;
-- the skill directories the chosen rules need;
+  revision of the constitution it rests on, and then has the enabled rules
+  in nested blocks along the parent tree, one heading level per level of
+  the tree, each domain with an enabled rule below it as a top heading; a
+  subtree whose root is not enabled (for a one-of: none of its children
+  is) contributes nothing, since none of its rules can be enabled without
+  it, and a requirement that crosses subtrees is rendered as a link. By
+  default each rule contributes only its statement, to keep the file
+  small; the rule set can add the reason or the verification
+  ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), and the
+  reviewer gets them either way. The file is not split for now. Once the
+  compiled file of a repository using it has been measured with
+  `count-tokens`, a length threshold is set from that measurement, and a
+  file over it is split along domains;
+- the skill directories the enabled rules need;
 - the version of the check binary to install, and the external commands
-  of the chosen rules;
+  of the enabled rules;
 - the hook configuration that runs the checks.
 
-Compiling, checking and upgrading a rule set are one command-line tool.
+Compiling, checking and upgrading a rule set are one command-line tool
+([The tool and the first version](#the-tool-and-the-first-version)).
 The constitution's compiler stays in Python for now
 ([Compilation](compilation.md)) and moves into that tool later.
 
 **The public site** lists every rule that is not superseded, so that
-people can choose from the full list. The parent tree is its table of
-contents, and each rule's page shows its requirements. A superseded rule
-keeps its page, so links to it keep working, but it is left out of the
-lists by default.
+people can choose from the full list. Its "Rules" section is a list,
+ordered along the parent tree, of 10 to 20 rules a page, each showing
+only its statement, cut short when it is long. Each rule has a page of
+its own with its reason and verification, its check, its requirements and
+conflicts (both sides of each conflict), the provisions of the
+constitution it cites, and all its metadata. A superseded rule keeps its
+page, so links to it keep working, but it is left out of the lists by
+default.
+
+## The tool and the first version
+
+**The tool.** The rule system's tool is written in Rust (see
+[Why Rust](#why-rust)) and grows in the crate `crates/statute`, which today
+is a placeholder that only prints a notice
+([File structure](file-structure.md)). The first version is that one
+crate. Its name, `statute`, is held on crates.io by a placeholder release
+([Releases and versions](amendments-and-releases.md#releases-and-versions));
+it may still change before the first real release, and another name would
+be published anew. The rule set is `statute.toml`, the lock file
+`statute.lock`, and the commands are:
+
+- `init`: write a new rule set;
+- `add` and `remove`: enable a rule or take it out of the rule set, and
+  update the lock file;
+- `lock`: resolve the rule set into the lock file;
+- `compile`: write the compiled output
+  ([Compilation and the site](#compilation-and-the-site));
+- `check`: run the checks of the enabled rules
+  ([Checks](#checks));
+- `upgrade`: move the sources and the constitution to newer versions
+  ([Rule sets and the lock file](#rule-sets-and-the-lock-file));
+- `explain`: say why a rule is enabled and which rules require it.
+
+**The first version** builds the repository level only. The user level,
+whose instruction files in the user's home directory the private overlay
+installs today, is the second step. The rules of this repo move to the
+new format first, each keeping its word ID as its `slug`. Among the first
+rules written in the new format are those for writing a design document,
+which try the whole process on real work.
+
+**Moving over.** Today agents read the user-level instruction files of
+the private overlay. These will gain a provision: in a repository that
+has a `statute.lock`, the repository's compiled output governs, and the
+user-level instruction files are set aside. This repo tries it first. It
+switches only once the compiled output covers what those files govern
+today that matters most: credentials, the git workflow and review. Until
+then the compiled output is built and compared, but not read in their
+place.
 
 ## Why Rust
 
@@ -444,20 +752,28 @@ money is the reviewer's model calls. Rust is chosen because:
 
 Once this design is implemented, it replaces parts of the current design.
 Those sections are not changed now; they will be when the work that
-implements this design lands.
+implements this design lands. Until then, for the files of the rule
+system, [Rule file format](#rule-file-format) is the format the
+implementation follows.
 
 - [IDs](source-formats.md#ids): rule IDs become numbers, assigned in
   sequence, in place of words. The rules in `rules/*.toml` get numbers
-  when they are moved to the new format, and a citation `{@rule:<id>}`
-  then names a number.
+  when they are moved to the new format, keep their word IDs as `slug`,
+  and a citation `{@rule:<id>}` then names a number.
+- [Source formats](source-formats.md): a text of a rule needs only the
+  language its `lang` names, and translations are tracked by hash; the
+  constitution's texts keep one key per language of `index.toml`.
 - [Rules](rules.md#rules): no rule is deleted any more, so
   `rules/retired-ids.txt` is no longer needed; a rule is superseded or
-  repealed instead. `status` gains `trial` and `superseded`, and the
-  fields `supersedes`, a per-rule revision, `parent`, `requires`,
-  `conflicts`, a default level (repository or user) and the range of
-  constitution revisions the rule is compatible with are added; choices
-  become a kind of node in the parent tree. The verification method is part
-  of each rule's text, and its check is code (see [Checks](#checks)).
+  repealed instead. The format of [Rule file format](#rule-file-format)
+  replaces the current one: `content` becomes the three parts of
+  `text`, `authority` lists IDs without the `constitution:` namespace,
+  `status` gains `trial` and `superseded`, and the fields `kind`,
+  `superseded-by`, `revision`, `slug`, `lang`, `parent`, `requires`,
+  `conflicts`, `level`, `constitution`, `check` and `translations` are
+  added. The new format has no `scope`. One-ofs and domains become kinds
+  of node in the parent tree. The verification method is part of each
+  rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". The rule set belongs to a
@@ -465,9 +781,9 @@ implements this design lands.
   of the jurisdiction. Each rule set also names the constitution it rests
   on (see [Rule sets and the lock file](#rule-sets-and-the-lock-file)).
 - [Relaxation declarations](rules.md#relaxation-declarations): a
-  rule set that leaves a rule out, or picks another alternative of a
-  choice, needs no relaxation. Whether `adjustable` values and the
-  `relaxes:` declarations stay as they are is decided when this design is
+  rule set that leaves a rule out, or picks another child of a one-of,
+  needs no relaxation. Whether `adjustable` values and the `relaxes:`
+  declarations stay as they are is decided when this design is
   implemented.
 - [Overview](overview.md): the goal "each jurisdiction chooses which
   general rules it uses" and the private overlay's job of choosing them
@@ -475,7 +791,7 @@ implements this design lands.
   overlay's apply step becomes the compile command; the overlay keeps the
   personal part and its own rules.
 - [Skills](skills.md): a skill declares the rules it implements
-  and is installed only when one of them is chosen.
+  and is installed only when one of them is enabled.
 - [Compilation](compilation.md): the output gains skill
   directories, checks and hook configuration, and the compiled file opens
   with the repository, edition and revision of the constitution it rests
@@ -487,26 +803,16 @@ implements this design lands.
 
 ## Open questions
 
-- At what token count the compiled `AGENTS.md` is split into several
-  files, and along which subtrees.
-- The format of the lock file.
 - The index of public sources: its format, who may add to it, and when
   it is built.
-- Whether a domain at the top of the tree is a rule of its own or only a
-  heading.
-- The concrete fields and commands of the package-manager model
-  ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
-  when it is implemented; this includes how a tag or branch and a version
-  range are written in a rule set and in a source's declaration of the
-  versions it needs, how a rule set names its constitution, and how a
-  rule's range of compatible constitution revisions is written.
-- Where a rule whose default level is the user level is chosen, where it
-  is locked and where it is compiled to.
-- When a rule set enables a rule without one it `requires`, whether the
-  build fails or adds the missing rule.
-- The directory layout of the rules and their checks: whether a rule's
-  text and metadata stay in their own file under `rules/`, with the
-  crate's module pointing at it, or move next to the check.
-- How a trial rule becomes a regular rule, and who decides.
-- The rules and the skill for writing a design document itself, to be
-  written as rules and skills later.
+- How versions are resolved across sources in detail: how the ranges
+  that sources declare for each other are matched against tags and
+  branches, and what the build reports when they disagree.
+- Path segments for monorepos, settled once it has been measured whether
+  each supported agent reads the instruction file of a subdirectory it
+  works in.
+- Rules at the user level: where a rule whose default level is the user
+  level is chosen, where it is locked and where it is compiled to.
+- The tool's final name, chosen before its first real release. `statute`
+  is held by a placeholder release; another name would be published
+  anew.
