@@ -111,7 +111,9 @@ struct RawConstitution {
 
 #[derive(Deserialize)]
 struct RawRule {
-    rule: String,
+    /// Missing in a lock file of the earlier format, which named a rule
+    /// by `source` and `id`.
+    rule: Option<String>,
     revision: u64,
     sha256: String,
 }
@@ -125,7 +127,12 @@ pub fn read(text: &str) -> Result<Locked, String> {
         rules: raw
             .rules
             .into_iter()
-            .map(|r| Ok((RuleRef::parse(&r.rule)?.id, (r.revision, r.sha256))))
+            .map(|r| {
+                let rule = r.rule.ok_or(
+                    "a rule without `rule`, as in a lock file of an earlier format; run `statute lock` to write it anew",
+                )?;
+                Ok((RuleRef::parse(&rule)?.id, (r.revision, r.sha256)))
+            })
             .collect::<Result<_, String>>()?,
     })
 }

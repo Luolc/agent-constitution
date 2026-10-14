@@ -348,6 +348,31 @@ fn upgrade_without_a_lock_file_fails() {
 }
 
 #[test]
+fn upgrade_of_a_lock_file_of_the_earlier_format_fails() {
+    let dir = repo("upgrade-old-lock", &manifest("\"R3\""), &nodes());
+    ok(&statute(&dir, &["lock"]));
+    // The earlier format named a rule by `source` and `id`.
+    let lock = read(&dir, "statute.lock");
+    let old: String = lock
+        .lines()
+        .map(|l| match l.strip_prefix("rule = \"R") {
+            Some(id) => format!("source = \"ac\"\nid = {}\n", id.trim_end_matches('"')),
+            None => format!("{l}\n"),
+        })
+        .collect();
+    assert_ne!(old, lock);
+    std::fs::write(dir.join("statute.lock"), &old).unwrap();
+    let run = statute(&dir, &["upgrade"]);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(
+        run.stderr.contains("statute.lock: error: a rule without `rule`, as in a lock file of an earlier format; run `statute lock` to write it anew"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(read(&dir, "statute.lock"), old);
+}
+
+#[test]
 fn upgrade_reports_what_changed() {
     let dir = repo("upgrade", &manifest("\"R7\", \"R5\""), &upgrade_nodes());
     ok(&statute(&dir, &["lock"]));

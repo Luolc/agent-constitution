@@ -502,7 +502,7 @@ fn references_to_other_sources_are_not_supported_yet() {
     assert_error(
         &load(&[domain(1), rule(3, 1, "requires = [\"R7\"]")]),
         "3.toml",
-        "\"R7\", a rule of another source; references to other sources are not supported yet",
+        "\"R7\", a rule of another source; references to other sources are not supported yet; in a rule of the first-party source itself, write the number, 7",
     );
     assert_error(
         &load(&[domain(1), rule(3, 1, "requires = [\"ac:7\"]")]),

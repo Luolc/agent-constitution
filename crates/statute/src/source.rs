@@ -6,6 +6,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
 use crate::diag::Diagnostics;
+use crate::manifest::FIRST_PARTY;
 use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
 
 #[derive(Debug, Default)]
@@ -233,8 +234,14 @@ impl Checker<'_> {
                             self.diags.error(
                                 &file,
                                 format!(
-                                    "`{field}` names {}, a rule of another source; references to other sources are not supported yet",
-                                    show_ref(r)
+                                    "`{field}` names {}, a rule of another source; references to other sources are not supported yet{}",
+                                    show_ref(r),
+                                    match r {
+                                        Ref::Foreign { source, id } if source == FIRST_PARTY => format!(
+                                            "; in a rule of the first-party source itself, write the number, {id}"
+                                        ),
+                                        _ => String::new(),
+                                    }
                                 ),
                             );
                             continue;
