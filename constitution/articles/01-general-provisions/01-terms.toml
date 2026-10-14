@@ -42,10 +42,10 @@ status = "draft"
 
 [items.content]
 en = '''
-**Rule**: an ordinary provision that refines this constitution ({@rules-refine}) and evolves under {@rule-evolution}; the rules together are the rule library.
+**Rule**: an ordinary provision that refines this constitution ({@division-of-instructions.rules}) and evolves under {@rule-evolution}; the rules together are the rule library.
 '''
 zh = '''
-**规定** (rule)：细化本宪法的普通条文 ({@rules-refine})，依照{@rule-evolution}演进；全部规定合称规定库。
+**规定** (rule)：细化本宪法的普通条文 ({@division-of-instructions.rules})，依照{@rule-evolution}演进；全部规定合称规定库。
 '''
 
 [[items]]
@@ -68,10 +68,10 @@ status = "draft"
 
 [items.content]
 en = '''
-**Jurisdiction**: the scope within which a set of agents and the rules it adopts apply ({@rules-refine}).
+**Jurisdiction**: the scope within which a set of agents and the rules it adopts apply ({@division-of-instructions.rules}).
 '''
 zh = '''
-**法域** (jurisdiction)：一组 agent 连同它所采用的规定所适用的范围 ({@rules-refine})。
+**法域** (jurisdiction)：一组 agent 连同它所采用的规定所适用的范围 ({@division-of-instructions.rules})。
 '''
 
 [[items]]
