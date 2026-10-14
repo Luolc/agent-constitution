@@ -18,7 +18,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/site-zh-dark.png">
-  <img src=".github/assets/site-zh-light.png" width="900" alt="网站上的中文宪法：标题、修订号、序言，左侧是设计各篇，右侧是各条的目录">
+  <img src=".github/assets/site-zh-light.png" width="900" alt="网站上的中文宪法：标题、修订号、序言，左侧是侧栏，右侧是各条的目录">
 </picture>
 
 </div>
