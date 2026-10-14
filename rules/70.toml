@@ -1,0 +1,46 @@
+id = 70
+slug = "local-main-fast-forward-only"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["independent-review.another-party", "independent-review.reviewed-version"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Change the local main branch only by fast-forwarding it"
+zh = "本地主分支只做快进"
+
+[text.statement]
+en = "Change your local main branch only by fast-forwarding it to the remote main branch; never commit on it."
+zh = "本地的主分支只快进到远端的主分支，不在上面 commit。"
+
+[text.reason]
+en = '''
+New branches start from the local main branch, and a push from it reaches the main branch. A commit of its own there, whether made directly or by a merge that is not a fast-forward, is a change no other party has reviewed ({@constitution:independent-review.another-party}): one push puts it into effect, and every branch started from it carries it into a pull request whose base is not the reviewed version ({@constitution:independent-review.reviewed-version}).
+'''
+zh = '''
+新的分支从本地主分支开出，从它推送就会进入主分支。本地主分支上自己的 commit，不论是直接提交的，还是非快进的合并产生的，都是没有经过另一方审查的变更 ({@constitution:independent-review.another-party})：推送一次就会生效，从它开出的每个分支也会把它带进 pull request，而这些 pull request 的基础不是审查过的版本 ({@constitution:independent-review.reviewed-version})。
+'''
+
+[text.verification]
+en = '''
+The main branch is the branch a repository's work is merged into, often `main`. This rule holds for every change, trivial or not: a change the jurisdiction lets into the main branch without a pull request is still committed on another branch.
+
+When the local main branch is ahead of the remote one or has diverged from it, the agent stops and reports it to whoever delegated the work instead of pushing or merging it.
+
+Violated when an agent's local main branch holds a commit that the remote main branch does not.
+'''
+zh = '''
+主分支是仓库的工作合入的分支，通常是 `main`。本规定适用于所有变更，不分琐碎与否：法域允许不经 pull request 进入主分支的变更，同样在别的分支上 commit。
+
+本地主分支领先于远端的主分支，或者与它分叉的，agent 停下来，向委派这项工作的一方报告，不推送、也不合并。
+
+agent 本地的主分支上有远端主分支没有的 commit 的，即为违反本规定。
+'''
+
+[translations]
+zh = "5ce341723d31d45293aada9143442d93d168a9219c8177a541c488584e1c2844"
