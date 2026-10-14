@@ -35,14 +35,18 @@
 
 /* Palette (sage): light, and dark by choice or, with the theme set to
    follow the system, by the system's setting. WCAG contrast on the page
-   of text (and the links, which take its color), muted text and accent:
-   light 10.80, 5.81, 6.55; dark 11.12, 6.48, 7.13. On the sidebar, text
+   of text (and the links, which take its color), muted text, faint text
+   and accent: light 10.80, 5.81, 4.67, 6.55; dark 11.12, 6.48, 4.67, 7.13.
+   The underline of links, on the page and the sidebar: light 3.35, 3.03;
+   dark 3.36, 3.04, so a link is told apart without its color. On the sidebar, text
    and muted text: light 9.76, 5.25; dark 10.05, 5.86. */
 :root {
   --c-paper: #dde6d5;
   --c-sidebar: #d1dcc8;
   --c-ink: #23301f;
   --c-muted: #4b5946;
+  --c-faint: #5a6754;
+  --c-underline: #707e69;
   --c-accent: #7d3a1e;
   --c-rule: #b5c4aa;
   --c-target: #e3d79c;
@@ -52,6 +56,8 @@
   --c-sidebar: #252d27;
   --c-ink: #d3dccf;
   --c-muted: #9cab98;
+  --c-faint: #839080;
+  --c-underline: #6a7869;
   --c-accent: #dba37f;
   --c-rule: #38453a;
   --c-target: #4a4a2a;
@@ -62,6 +68,8 @@
     --c-sidebar: #252d27;
     --c-ink: #d3dccf;
     --c-muted: #9cab98;
+    --c-faint: #839080;
+    --c-underline: #6a7869;
     --c-accent: #dba37f;
     --c-rule: #38453a;
     --c-target: #4a4a2a;
@@ -110,8 +118,9 @@
 /* Under the title: on the home pages a list (the revision, the length of
    the version for agents, the legend of the asterisk), on the page of the
    version for agents the revision and a link back. Muted and smaller than
-   the text; the revision in small caps. The list is centered as a block,
-   its lines start at its left edge. */
+   the text; the revision in small caps. The list starts at the column's
+   left edge, as the text does; the legend, a note on the text rather than
+   a fact about it, is smaller and fainter than the two items above it. */
 .constitution .revision {
   text-align: center;
   font-variant: small-caps;
@@ -120,24 +129,38 @@
   margin-top: 0;
 }
 .constitution ul.revision {
-  width: fit-content;
-  max-width: 32em;
-  margin: .6em auto 1.4em;
+  margin: .6em 0 1.4em;
   padding-inline-start: 1.1em;
   list-style: disc;
   text-align: start;
   font-variant: normal;
   letter-spacing: normal;
-  font-size: .85em;
+  font-size: .9em;
   line-height: 1.5;
 }
 .constitution ul.revision > li { margin: .2em 0; }
 .constitution ul.revision > li::marker { color: var(--c-rule); }
 .constitution ul.revision .number { font-variant: small-caps; letter-spacing: .08em; }
-.constitution .revision .legend .mark {
-  color: var(--c-accent);
-  font-weight: var(--c-weight-bold);
+.constitution ul.revision .legend {
+  margin-top: .5em;
+  font-size: .85em;
+  color: var(--c-faint);
 }
+/* Every link, in the text, under the title, in the popup and in the
+   sidebar, is underlined, so that it is told apart without its color: in
+   the text color with a quiet underline, like the citations, unless a rule
+   below gives it the accent. The theme's heading self-links are left
+   out. */
+.constitution a[href]:not(.anchor),
+.book-menu a[href] {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--c-underline);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .18em;
+}
+.constitution a[href]:not(.anchor):hover,
+.book-menu a[href]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
 /* The link back to the full version, on the page of the version for
    agents. */
 .constitution .revision .back {
@@ -146,16 +169,18 @@
   font-size: .85em;
 }
 /* The info button after the length and its popup. The popup hangs from
-   the bottom of the button's box with no gap, its right edge just past the
-   button, so the pointer goes straight from the button into it. On a
-   narrow screen it spans the list instead, which holds the button, and
-   starts right under the button. A bridge above the popup covers the
+   the bottom of the button's box with no gap, its left edge at the
+   column's, as wide as the length with its button at least, so the
+   pointer goes straight from the button into it. On a narrow screen it
+   spans the list instead, which holds the button, and starts right under
+   the button. A bridge above the popup covers the
    space between the button and the popup's border and the line beside the
    button, so a pointer that leaves the button sideways on its way down
    stays inside; the button sits above the bridge. The icon is a thin
    ring, faint, sitting on the baseline like a letter. */
 .constitution .revision { position: relative; }
-.constitution .count-info { position: relative; display: inline-block; }
+.constitution ul.revision > .length { position: relative; width: fit-content; }
+.constitution .count-info { display: inline-block; }
 .constitution .count-button {
   font: inherit;
   font-size: .9em;
@@ -174,21 +199,23 @@
 .constitution .count-button:hover,
 .constitution .count-info.open .count-button { opacity: 1; color: var(--c-ink); }
 .constitution .count-button:focus-visible { outline: 2px solid var(--c-accent); border-radius: 50%; }
-/* The popup: the two lengths first, as a table, then how they were
-   counted, smaller and fainter, then the link on a line of its own. */
+/* The popup: the two lengths first, as a table across its width, then
+   a list of notes, smaller and fainter, then the link on a line of its
+   own. */
 .constitution .count-popup {
   display: none;
   position: absolute;
   z-index: 2;
   top: 100%;
-  right: -.5em;
+  left: 0;
+  min-width: 100%;
   width: 22em;
   margin-top: .4em;
-  padding: .75em 1em .8em;
+  padding: .8em 1.1em .9em;
   font-variant: normal;
   letter-spacing: normal;
-  font-size: .9em;
-  line-height: 1.4;
+  font-size: 1em;
+  line-height: 1.45;
   text-align: start;
   color: var(--c-ink);
   background: var(--c-sidebar);
@@ -205,30 +232,38 @@
   height: calc(.4em + 1px + 1.6em);
 }
 @media (max-width: 48rem) {
-  .constitution .count-info { position: static; }
+  .constitution ul.revision > .length { position: static; }
   .constitution .count-popup { top: auto; left: 0; right: 0; width: auto; }
 }
 .constitution .count-info:hover .count-popup,
 .constitution .count-info.open .count-popup { display: block; }
 .constitution .count-info.dismissed .count-popup { display: none; }
 .constitution .count-summary { display: block; margin-bottom: .35em; }
-.constitution .count-table { display: table; border-collapse: collapse; margin-bottom: .6em; }
+.constitution .count-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: .7em;
+}
 .constitution .count-row { display: table-row; }
 .constitution .count-row:first-child > span {
-  font-size: .88em;
+  font-size: .9em;
   color: var(--c-muted);
   border-bottom: 1px solid var(--c-rule);
 }
 .constitution :is(.count-label, .count-cell) { display: table-cell; padding: .2em 0; white-space: nowrap; }
 .constitution .count-label { font-weight: var(--c-weight-bold); padding-inline-end: 1em; }
 .constitution .count-cell { text-align: end; padding-inline-start: 1.2em; font-variant-numeric: tabular-nums; }
-.constitution .count-note {
+.constitution .count-notes {
   display: block;
-  font-size: .88em;
+  padding-inline-start: 1.1em;
+  font-size: .9em;
   color: var(--c-muted);
 }
-.constitution .count-note + .count-note { margin-top: .25em; }
-.constitution .count-link { display: block; margin-top: .6em; color: var(--c-accent); }
+.constitution .count-note { display: list-item; list-style: disc; }
+.constitution .count-note::marker { color: var(--c-rule); }
+.constitution .count-note + .count-note { margin-top: .3em; }
+.constitution .count-info .count-link { display: block; margin-top: .7em; color: var(--c-accent); }
 
 /* The draft notice under the title. */
 .constitution .revision + p {
@@ -267,13 +302,6 @@
 .constitution ul ul > li { margin-bottom: .3em; }
 .constitution ol { margin: .4em 0 .4em 1.6em; padding-left: 1em; }
 
-.constitution a[href^="#"] {
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--c-rule);
-  text-underline-offset: .18em;
-}
-.constitution a[href^="#"]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
 .constitution code { font-size: .85em; }
 
 /* The asterisk after the number of a section or an item, or the heading
@@ -308,8 +336,7 @@
 .constitution-nav ul { list-style: none; padding-left: 0; }
 .constitution-nav li { margin: .35em 0; }
 /* Block, not the theme's flex, so that the asterisk sits in the line. */
-.constitution-nav a { display: block; color: var(--c-ink); text-decoration: none; }
-.constitution-nav a:hover { color: var(--c-accent); }
+.constitution-nav a { display: block; }
 
 @media print {
   :root, body { background: #fff; }
