@@ -370,10 +370,8 @@ class SiteTest(unittest.TestCase):
       "Rule 3 See Art. I §1 and rule 6 . Reason Why. Verification Violated when"
       " not. Provisions of the constitution it cites Art. I one Art. I §1 one-a"
       " Relations Parent 2. Group 2 Requires none Conflicts with 5. Rule 5"
-      " Metadata ID 3 Revision 2 Kind rule Status active Level project".replace(
-        "Level", "Default level"
-      )
-      + " Constitution revisions >=1 Check review Original language English en"
+      " Metadata ID 3 Revision 2 Kind rule Status active Default level project"
+      " Constitution revisions >=1 Check review Original language English en"
       " Translations Chinese zh",
       pages["rules/3/index.html"],
     )
