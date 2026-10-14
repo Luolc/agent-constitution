@@ -185,7 +185,9 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 
 - Claude Code reads `CLAUDE.local.md`, and where it exists no longer
   reads `AGENTS.md`, so it reads the full text alone. Nor does it read
-  the `AGENTS.md` of a subdirectory, below.
+  the `AGENTS.md` of a subdirectory, below. This holds with its default
+  setting; with the setting that reads `AGENTS.md` beside `CLAUDE.md`,
+  it reads both.
 - Codex and Pi read `AGENTS.override.md` in place of the `AGENTS.md` of
   the same directory, so they read the full text alone.
 - Grok reads both `AGENTS.md` and `CLAUDE.local.md`, so it reads the
@@ -199,11 +201,11 @@ AGENTS.override.md -> .statute/AGENTS.full.md
   it reads the public rules twice with such a link as without it.
   `statute compile` warns of a `CLAUDE.md`
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
-- OpenCode has no local file name of a repository. It reads the full
-  text when its global configuration lists `.statute/AGENTS.full.md`
-  under `instructions`, in addition to `AGENTS.md`, so it too reads the
-  public rules twice; that is the machine's configuration, not
-  statute's.
+- OpenCode reads `AGENTS.md`, or `CLAUDE.md` when there is no
+  `AGENTS.md`, and neither link name. It reads the full text when its
+  global configuration lists `.statute/AGENTS.full.md` under
+  `instructions`, after `AGENTS.md`, so it too reads the public rules
+  twice; that is the machine's configuration, not statute's.
 - The committed `AGENTS.md` ends with one fixed line, the same in every
   public repository, that tells an agent to read `.statute/AGENTS.full.md`
   when it exists. The path is in backticks, so that Claude Code does not
@@ -251,12 +253,16 @@ in addition gave no reliable priority to either when they disagreed.
 The agents' behavior was measured on 2026-10-14 in non-interactive mode
 on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
 folder-trust check turned off for each run (without it, Grok loads no
-project instructions in non-interactive mode); OpenCode 1.19.0 and Pi
-1.2.0 are from their documentation and source only, and the 32 KiB of
-Codex from its documentation and source. In runs of one small task,
-Codex and Grok read the file the fallback line names, two runs each, and
-Claude Code loaded it in one run because the line wrote the path as an
-`@` path. The layout itself, with a stand-in for the full text:
+project instructions in non-interactive mode), and on Pi 1.2.0 and
+OpenCode 1.19.0 in one run per case; the 32 KiB of Codex is from its
+documentation and source. In runs of one small task, Codex and Grok
+read the file a fallback line with an `@` path names, two runs each,
+and Claude Code loaded it as an import; with the path in backticks,
+Claude Code (two runs) and OpenCode (two runs) read the full text when
+nothing else loaded it, each time the model's own read. Every run had
+the user's own instruction files and skills in place, which also urge
+an agent to find its instructions. The layout itself, with a stand-in
+for the full text:
 
 - Grok loaded the link `CLAUDE.local.md` ignored through
   `.git/info/exclude` in 2 runs of 2, and skipped it ignored through a
@@ -271,9 +277,21 @@ Claude Code loaded it in one run because the line wrote the path as an
   the public rules twice in one run, against once with
   `CLAUDE.md -> AGENTS.md` alone. That Grok counts the two as one comes
   from the files `grok inspect` lists, with no model run.
+- Pi loaded the full text alone through `AGENTS.override.md`, the link
+  ignored through `.git/info/exclude` or through a `.gitignore`, and not
+  `AGENTS.md`.
+- OpenCode loaded `AGENTS.md` and not the two links. With
+  `instructions` naming `.statute/AGENTS.full.md` in its configuration,
+  set for the run through its environment, it loaded the full text as
+  well, ignored either way; without it, it did not.
+- Claude Code, in the full layout with its default setting, loaded the
+  full text alone, and neither the root's nor a subdirectory's
+  `AGENTS.md`.
 
-Not measured: interactive mode; the fallback line with its path in
-backticks; a `CLAUDE.md -> AGENTS.md` in a subdirectory, and whether it
+Not measured: interactive mode; the fallback line where no user-level
+instructions or skills are present; OpenCode's `instructions` written in
+its global configuration file, or naming a link; a
+`CLAUDE.md -> AGENTS.md` in a subdirectory, and whether it
 brings that subdirectory's rules back to Claude Code; Claude Code's
 setting that reads `AGENTS.md` beside `CLAUDE.md`, for subdirectories;
 and Grok's reading of a subdirectory's `AGENTS.md` under this layout.

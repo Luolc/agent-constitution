@@ -1,4 +1,4 @@
-<!-- en-sha256: ea0f1e5653ef4b067f4cabc847d4f31608110294f9a31916a5230a0c78db489f -->
+<!-- en-sha256: 48341117f0db3f13d2262994c7d443134fb1f1e311b6f4cf59ab54442b09748f -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -100,11 +100,11 @@ CLAUDE.local.md -> .statute/AGENTS.full.md
 AGENTS.override.md -> .statute/AGENTS.full.md
 ```
 
-- Claude Code 读 `CLAUDE.local.md`，而且只要有这个文件就不再读 `AGENTS.md`，所以它只读全文。子目录里的 `AGENTS.md` 它也不读，见下文。
+- Claude Code 读 `CLAUDE.local.md`，而且只要有这个文件就不再读 `AGENTS.md`，所以它只读全文。子目录里的 `AGENTS.md` 它也不读，见下文。这是在默认设置下；改成在 `CLAUDE.md` 之外也读 `AGENTS.md` 的设置时，两份它都读。
 - Codex 和 Pi 读 `AGENTS.override.md`，用它代替同一目录下的 `AGENTS.md`，所以它们只读全文。
 - Grok 既读 `AGENTS.md` 也读 `CLAUDE.local.md`，所以公开规定它会读两遍。两遍是同样的规定，互不矛盾；这样的重复可以接受。
 - 仓库里有 `CLAUDE.md` 时，Claude Code 除了 `CLAUDE.local.md` 也会读它，于是它的内容叠在全文之上：它是指向 `AGENTS.md` 的软链或 `AGENTS.md` 的副本时，公开规定读两遍；否则多出来的文字可能与规定不一致。Grok 把指向同一个文件的 `CLAUDE.md` 和 `AGENTS.md` 算作一份，所以有没有这个软链，公开规定它都读两遍。`statute compile` 遇到 `CLAUDE.md` 会给出 warning ([编译与网站](statute-command.md#compilation-and-the-site))。
-- OpenCode 没有仓库层的本地文件名。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.full.md` 时，它在 `AGENTS.md` 之外还读全文，所以公开规定它也读两遍；那是机器的配置，不归 statute 管。
+- OpenCode 读 `AGENTS.md`，没有 `AGENTS.md` 时读 `CLAUDE.md`，两个软链的文件名它都不认。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.full.md` 时，它在 `AGENTS.md` 之后还读全文，所以公开规定它也读两遍；那是机器的配置，不归 statute 管。
 - 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.full.md` 时读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。全文里不写这一行。
 
 两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则什么都不写，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
@@ -117,13 +117,16 @@ git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都�
 
 私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
 
-各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；OpenCode 1.19.0 与 Pi 1.2.0 只依据它们的文档和源码，Codex 的 32 KiB 也依据文档和源码。在一个小任务的几次运行里，Codex 和 Grok 各两次都读了兜底那一行指向的文件；Claude Code 的一次运行读到了它，是因为那一行把路径写成了 `@` 路径。布局本身用一份代替全文的文件测过：
+各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；Pi 1.2.0 与 OpenCode 1.19.0 每种情况各跑了一次；Codex 的 32 KiB 依据它的文档和源码。在一个小任务的几次运行里，兜底那一行写成 `@` 路径时，Codex 和 Grok 各两次都读了它指向的文件，Claude Code 则当作导入加载了它；路径写在反引号里时，在别的都没加载全文的情况下，Claude Code (两次) 和 OpenCode (两次) 都读了全文，每次都是模型自己去读的。每次运行时用户自己的指令文件和 skill 都在，它们本身也催 agent 去找指令。布局本身用一份代替全文的文件测过：
 
 - 软链 `CLAUDE.local.md` 经 `.git/info/exclude` 忽略时，Grok 2 次运行 2 次都加载了；经 `.gitignore` 忽略时，2 次运行 2 次都跳过。
 - 仓库根目录有 `CLAUDE.local.md` 时，Claude Code 4 次运行 4 次都没有加载 `sub/AGENTS.md`，其中两次工作目录在 `sub/`，两次工作目录在根目录、改 `sub/` 里的一个文件；没有它时，两次对照运行都加载了，一次在启动时，一次在读了 `sub/` 里的文件之后。四次里有一次是模型自己去读了那个文件。
 - 同时有 `CLAUDE.md -> AGENTS.md` 和 `CLAUDE.local.md` 时，Claude Code 在一次运行里把公开规定加载了两遍，只有 `CLAUDE.md -> AGENTS.md` 时一遍。Grok 把两者算作一份，依据是 `grok inspect` 列出的文件，没有跑模型。
+- Pi 经 `AGENTS.override.md` 只加载了全文，不加载 `AGENTS.md`；软链经 `.git/info/exclude` 或 `.gitignore` 忽略都一样。
+- OpenCode 加载了 `AGENTS.md`，没有加载两个软链。配置里的 `instructions` 列出 `.statute/AGENTS.full.md` 时 (这次运行经环境变量设置)，它还加载了全文，无论怎样忽略都一样；没有这项配置时不加载。
+- 全文布局下，Claude Code 在默认设置时只加载了全文，根目录和子目录的 `AGENTS.md` 都不加载。
 
-没有测的：交互模式；路径写在反引号里的兜底那一行；子目录里的 `CLAUDE.md -> AGENTS.md`，以及它能不能让 Claude Code 重新读到那个子目录的规定；Claude Code 在 `CLAUDE.md` 之外也读 `AGENTS.md` 的那个设置，对子目录的效果；以及这个布局下 Grok 读不读子目录的 `AGENTS.md`。每个否定结论只对所数的那几次运行成立；其余的各只跑了一次。
+没有测的：交互模式；没有用户级指令和 skill 时的兜底那一行；写在 OpenCode 全局配置文件里的 `instructions`，以及它指向软链的情况；子目录里的 `CLAUDE.md -> AGENTS.md`，以及它能不能让 Claude Code 重新读到那个子目录的规定；Claude Code 在 `CLAUDE.md` 之外也读 `AGENTS.md` 的那个设置，对子目录的效果；以及这个布局下 Grok 读不读子目录的 `AGENTS.md`。每个否定结论只对所数的那几次运行成立；其余的各只跑了一次。
 
 私有层还完全没有实现。
 
