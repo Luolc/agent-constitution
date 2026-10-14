@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-The bodies of instructions below this constitution divide the work by how far they reach. What holds for one project only is not written into a rule, and what holds for one task only is not written into a project's instructions. They are:
+Rules, the instructions of a project and those of a task divide the work by how far they reach. What holds for one project only is not written into a rule, and what holds for one task only is not written into a project's instructions. They are:
 '''
 zh = '''
-本宪法之下的各类指令，按管多大范围分工。一项内容只对一个项目成立的，不写进规定；只对一次任务成立的，不写进项目的指令。各类指令分别是：
+规定、项目的指令和任务的指令，按管多大范围分工。一项内容只对一个项目成立的，不写进规定；只对一次任务成立的，不写进项目的指令。三者分别是：
 '''
 
 [[items]]
