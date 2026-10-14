@@ -521,7 +521,11 @@ The [Agent Skills specification](https://agentskills.io/specification)
 allows only `name`, `description`, `license`, `compatibility`,
 `metadata` and `allowed-tools` in the front matter, and only strings as
 the values of `metadata` (read 2026-10-14); hence a string under
-`metadata` and not a key of its own. A skill that declares no rules is
+`metadata` and not a key of its own. statute reads the declaration only
+from a block mapping, as above, the key on its own line below
+`metadata:`; a `metadata` in flow style (`metadata: {statute-rules:
+"42"}`) that names the key fails the compile, naming the skill and the
+line. A skill that declares no rules is
 never installed, and one that names a rule its source does not have
 fails the compile. A repository's `AGENTS.md` keeps
 only what is specific to that repository (what it is, its language, its

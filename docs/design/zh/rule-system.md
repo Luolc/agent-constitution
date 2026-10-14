@@ -1,4 +1,4 @@
-<!-- en-sha256: 8ac0e06383fb0e4cc085bdf14b08c4504358f448ece2ef5e3373708ebfa9f80c -->
+<!-- en-sha256: 72bdf5985ac24b52bb972c217d7488707d21af93ce4616b445afddcce949f830 -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -265,7 +265,7 @@ metadata:
 ---
 ```
 
-[Agent Skills 规范](https://agentskills.io/specification) 规定 front matter 里只能有 `name`、`description`、`license`、`compatibility`、`metadata` 和 `allowed-tools`，`metadata` 的值只能是字符串 (2026-10-14 读取)；所以声明写成 `metadata` 下的一个字符串，不另设一个键。没有声明规定的 skill 永远不装；声明了规定源里没有的规定，编译失败。仓库的 `AGENTS.md` 只保留这个仓库特有的内容 (它是什么、用什么语言、目录结构、检查命令)，并指明它使用的规定清单 (`division-of-instructions.project-instructions`)。规定清单按仓库选定 ([规定清单与锁文件](#rule-sets-and-the-lock-file))。
+[Agent Skills 规范](https://agentskills.io/specification) 规定 front matter 里只能有 `name`、`description`、`license`、`compatibility`、`metadata` 和 `allowed-tools`，`metadata` 的值只能是字符串 (2026-10-14 读取)；所以声明写成 `metadata` 下的一个字符串，不另设一个键。statute 只从块映射 (block mapping) 里读声明，即上例的写法，键单独占 `metadata:` 下面的一行；`metadata` 写成流式映射 (flow mapping，如 `metadata: {statute-rules: "42"}`) 而其中有这个键的，编译失败，报错指出是哪个 skill、哪一行。没有声明规定的 skill 永远不装；声明了规定源里没有的规定，编译失败。仓库的 `AGENTS.md` 只保留这个仓库特有的内容 (它是什么、用什么语言、目录结构、检查命令)，并指明它使用的规定清单 (`division-of-instructions.project-instructions`)。规定清单按仓库选定 ([规定清单与锁文件](#rule-sets-and-the-lock-file))。
 
 ## <a id="dependencies-one-ofs-and-packs"></a>依赖、one-of 与规定包
 
