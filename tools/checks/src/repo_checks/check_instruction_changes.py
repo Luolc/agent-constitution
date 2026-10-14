@@ -34,17 +34,18 @@ GENERIC = [
   r"(.*/)?\.codex/.+",
 ]
 # This repo's own instruction files: the constitution, rule and skill
-# sources.
+# sources. The constitution's are in its edition directory,
+# constitution/<YYYY-MM>/, or in constitution/ itself in the older layout.
 REPO = [
-  r"constitution/index\.toml",
-  r"constitution/articles/.+",
+  r"constitution/([^/]+/)?index\.toml",
+  r"constitution/([^/]+/)?articles/.+",
   r"rules/.+",
   r"skills/.+",
 ]
 # Generated files: CI proves they equal a build of the sources with the
 # tools, so they go with whichever side changed them.
 GENERATED = [
-  r"constitution/constitution\.[^/]+\.md",
+  r"constitution/([^/]+/generated/)?constitution\.[^/]+\.md",
 ]
 
 

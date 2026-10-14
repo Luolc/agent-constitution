@@ -116,6 +116,24 @@ class Sources(unittest.TestCase):
   def test_clean_tree_passes(self):
     self.assertEqual(self.run_lint(), (0, "limae: 6 zh texts clean\n"))
 
+  def test_edition_directory(self):
+    """The sources in an edition directory are read as before."""
+    edition = self.root / "constitution/2026-10"
+    edition.mkdir()
+    for name in ("index.toml", "articles"):
+      (self.root / "constitution" / name).rename(edition / name)
+    self.assertEqual(self.run_lint(), (0, "limae: 6 zh texts clean\n"))
+    self.edit(
+      "constitution/2026-10/articles/01-a/article.toml",
+      'zh = "边界"',
+      'zh = "边界abc"',
+    )
+    code, out = self.run_lint()
+    self.assertEqual(code, 1)
+    self.assertIn(
+      "constitution/2026-10/articles/01-a/article.toml:5: title: error:", out
+    )
+
   def test_findings_name_file_line_and_field(self):
     self.edit(S, "钱。", "钱agent。")
     self.edit(

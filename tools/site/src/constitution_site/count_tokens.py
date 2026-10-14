@@ -29,6 +29,7 @@ import urllib.error
 import urllib.request
 
 from constitution_compiler import git_env
+from constitution_compiler.model import Layout
 
 ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "web/data/lengths.json"
@@ -158,7 +159,8 @@ def main(argv: list[str] | None = None) -> int:
     help="fail when a text's tokens are not counted (the Pages workflow)",
   )
   args = parser.parse_args(argv)
-  with (ROOT / "constitution/index.toml").open("rb") as f:
+  layout = Layout.of(ROOT)
+  with (ROOT / layout.index).open("rb") as f:
     languages = tomllib.load(f)["languages"]
   with (ROOT / "web/hugo.toml").open("rb") as f:
     model = tomllib.load(f)["params"]["tokenCount"]["model"]
@@ -174,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
   for lang in languages:
     versions = lengths[lang] = {}
     for version, suffix in VERSIONS.items():
-      source = f"constitution/constitution.{lang}{suffix}.md"
+      source = layout.output(f"{lang}{suffix}")
       text = counted((ROOT / source).read_text(encoding="utf-8"))
       tokens = count_tokens(text, model, auth) if auth else None
       if tokens is None and args.require_tokens:

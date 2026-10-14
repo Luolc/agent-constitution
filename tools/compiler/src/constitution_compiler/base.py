@@ -12,10 +12,10 @@ from constitution_compiler import git_env
 from constitution_compiler.model import (
   ARTICLE_FILE,
   ARTICLE_NAME,
-  ARTICLES,
+  CONSTITUTION,
   Doc,
   Errors,
-  INDEX,
+  Layout,
   name_number,
   RETIRED,
   RULES,
@@ -79,6 +79,19 @@ def base_paths(root: Path, ref: str, *paths: Path) -> set[Path]:
   return {Path(p) for p in listing.split("\n") if p}
 
 
+def base_layout(root: Path, ref: str) -> Layout:
+  """Return the layout of the base commit, which may differ from the tree's.
+
+  Args:
+    root: the checkout.
+    ref: the base commit.
+
+  Returns:
+    The layout.
+  """
+  return Layout.find(base_paths(root, ref, CONSTITUTION))
+
+
 def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
   """Check 7: compare the numbering with a base commit.
 
@@ -98,24 +111,32 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
   Returns:
     A note when the step is skipped, else "".
   """
-  base, listing, note = open_base(root, ref, errors)
+  commit = f"{ref}^{{commit}}"
+  try:
+    git(root, "rev-parse", "--verify", "--quiet", commit)
+  except GitError:
+    errors.add(src.layout.index, 1, 7, f"base `{ref}` is not a commit")
+    return ""
+  layout = base_layout(root, ref)
+  base, listing, note = open_base(root, ref, layout, errors)
   if base is None:
     return note
   stop = check_edition(ref, src, base, errors)
   if stop is not None:
     return stop
-  BaseComparison(root, ref, src, errors).compare(listing)
+  BaseComparison(root, ref, src, errors).compare(layout, listing)
   return ""
 
 
 def open_base(
-  root: Path, ref: str, errors: Errors
+  root: Path, ref: str, layout: Layout, errors: Errors
 ) -> tuple[dict | None, set[Path], str]:
   """Read the base's index.toml and listing, if the base is to be compared.
 
   Args:
     root: the checkout.
     ref: the base commit.
+    layout: the base's layout.
     errors: where errors go.
 
   Returns:
@@ -123,19 +144,14 @@ def open_base(
     files of the base under the source paths; and a note when the step is
     skipped, else "".
   """
-  commit = f"{ref}^{{commit}}"
+  index, articles = layout.index, layout.articles
+  listing = base_paths(root, ref, index, articles, RULES, RETIRED)
+  if index not in listing:
+    return None, listing, f"base {ref} has no {index}; numbering not compared"
   try:
-    git(root, "rev-parse", "--verify", "--quiet", commit)
-  except GitError:
-    errors.add(INDEX, 1, 7, f"base `{ref}` is not a commit")
-    return None, set(), ""
-  listing = base_paths(root, ref, INDEX, ARTICLES, RULES, RETIRED)
-  if INDEX not in listing:
-    return None, listing, f"base {ref} has no {INDEX}; numbering not compared"
-  try:
-    base = tomllib.loads(git(root, "show", f"{ref}:{INDEX}"))
+    base = tomllib.loads(git(root, "show", f"{ref}:{index}"))
   except tomllib.TOMLDecodeError as e:
-    errors.add(INDEX, 1, 7, f"{INDEX} at base {ref} is not valid TOML: {e}")
+    errors.add(index, 1, 7, f"{index} at base {ref} is not valid TOML: {e}")
     return None, listing, ""
   if base.get("status") != "active":
     return (
@@ -144,12 +160,12 @@ def open_base(
       f"base {ref} is {base.get('status')}; numbering not compared",
     )
   if not any(
-    p.name == ARTICLE_FILE and p.parent.parent == ARTICLES for p in listing
+    p.name == ARTICLE_FILE and p.parent.parent == articles for p in listing
   ):
     return (
       None,
       listing,
-      f"base {ref} has no {ARTICLES}/<NN>-<id>/{ARTICLE_FILE};"
+      f"base {ref} has no {articles}/<NN>-<id>/{ARTICLE_FILE};"
       " numbering not compared",
     )
   return base, listing, ""
@@ -172,7 +188,7 @@ def check_edition(
   """
   if src.index.data["status"] != "active":
     errors.add(
-      INDEX,
+      src.layout.index,
       src.index.line("status ="),
       7,
       f"status went back to draft from active at base {ref}",
@@ -188,7 +204,7 @@ def check_edition(
       " numbering not compared"
     )
   errors.add(
-    INDEX,
+    src.layout.index,
     src.index.line("edition ="),
     7,
     f"edition {edition} is not later than edition {base_edition} at base {ref}",
@@ -214,17 +230,18 @@ class BaseComparison:
     self.rules = {r.id: r for r in src.rules}
     self.retired = set(src.retired)
 
-  def compare(self, listing: set[Path]) -> None:
+  def compare(self, layout: Layout, listing: set[Path]) -> None:
     """Compare every rule, article and section file of the base.
 
     Args:
+      layout: the base's layout.
       listing: the files of the base under the source paths.
     """
     for path in sorted(listing):
       if path.parent == RULES and path.suffix == ".toml":
         self.rule(path)
         continue
-      if path.parent.parent != ARTICLES or path.suffix != ".toml":
+      if path.parent.parent != layout.articles or path.suffix != ".toml":
         continue
       article = ARTICLE_NAME.fullmatch(path.parent.name)
       section = SECTION_NAME.fullmatch(path.stem)

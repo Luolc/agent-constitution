@@ -79,13 +79,16 @@ class SiteTest(unittest.TestCase):
     lengths: dict[str, object] | None = None,
     raw: bool = False,
     index: str = INDEX,
+    edition: str = "",
   ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
     Args:
       lengths: The content of web/data/lengths.json, or None for no file.
       raw: Whether to return the pages' HTML instead of their text.
-      index: The content of constitution/index.toml.
+      index: The content of index.toml.
+      edition: The edition directory under constitution/, "" for the
+        older layout without one.
 
     Returns:
       The visible text of the four pages, or their HTML, by path.
@@ -99,10 +102,12 @@ class SiteTest(unittest.TestCase):
       )
       (root / "web/themes").mkdir()
       (root / "web/themes/hugo-book").symlink_to(ROOT / "web/themes/hugo-book")
-      (root / "constitution").mkdir()
-      (root / "constitution/index.toml").write_text(index)
+      sources = root / "constitution" / edition
+      generated = sources / "generated" if edition else sources
+      generated.mkdir(parents=True)
+      (sources / "index.toml").write_text(index)
       for name, text in FILES.items():
-        (root / f"constitution/constitution.{name}.md").write_text(text)
+        (generated / f"constitution.{name}.md").write_text(text)
       if lengths is not None:
         (root / "web/data").mkdir()
         (root / "web/data/lengths.json").write_text(json.dumps(lengths))
@@ -166,6 +171,12 @@ class SiteTest(unittest.TestCase):
       pages["zh/index.html"],
     )
     self.assertIn("字符 token agent 版", pages["zh/index.html"])
+
+  def test_edition_directory(self):
+    """The sources in an edition directory give the same pages."""
+    self.assertEqual(
+      self.build(raw=True, edition="2026-10"), self.build(raw=True)
+    )
 
   def test_legend_only_when_marked(self):
     pages = self.build()
