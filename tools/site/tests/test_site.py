@@ -212,21 +212,27 @@ class SiteTest(unittest.TestCase):
     }
     # A count of another text than the one built is not shown.
     counts["zh", "agent"]["sha256"] = "0" * 64
-    pages = self.build(
+    commit = "0123456789abcdef0123456789abcdef01234567"
+    raw = self.build(
       {
-        "commit": "abc1234",
+        "commit": commit,
         **{
           lang: {v: counts[lang, v] for v in ("full", "agent")}
           for lang in ("en", "zh")
         },
-      }
+      },
+      raw=True,
     )
+    pages = {p: visible(t) for p, t in raw.items()}
     self.assertIn("words · 1,201 tokens", pages["index.html"])
     chars, words, _ = self.length("en")
     self.assertIn(f"this page {chars} {words} 1,200", pages["index.html"])
     self.assertIn("Tokens counted by Anthropic", pages["index.html"])
     self.assertIn(
-      "Counted at revision 0.6, commit abc1234.", pages["index.html"]
+      "Counted at revision 0.6, commit"
+      ' <a href="https://github.com/Luolc/agent-constitution/commit/'
+      f'{commit}" target="_blank" rel="noopener">0123456</a>.',
+      raw["index.html"],
     )
     self.assertIn("token 数未计算", pages["zh/index.html"])
     self.assertIn("所以没有算。", pages["zh/index.html"])

@@ -23,6 +23,7 @@ from constitution_site import count_tokens
 ROOT = Path(__file__).resolve().parents[3]
 KEY = "test-key-not-real"
 TOKEN = "test-token-not-real"
+COMMIT = "0123456789abcdef0123456789abcdef01234567"
 UNAUTHORIZED = urllib.error.HTTPError(
   "https://api.anthropic.com/",
   401,
@@ -30,6 +31,10 @@ UNAUTHORIZED = urllib.error.HTTPError(
   http.client.HTTPMessage(),
   None,
 )
+
+
+def tearDownModule():
+  UNAUTHORIZED.close()
 
 
 class CountTokensTest(unittest.TestCase):
@@ -96,6 +101,13 @@ class CountTokensTest(unittest.TestCase):
         self.assertEqual(stderr, f"token count: {shown}; tokens not counted\n")
 
 
+class CommitShaTest(unittest.TestCase):
+  """commit_sha in this repo's checkout."""
+
+  def test_full_sha(self):
+    self.assertRegex(count_tokens.commit_sha() or "", r"^[0-9a-f]{40}$")
+
+
 class MainTest(unittest.TestCase):
   """main on this repo's built constitution, the API mocked."""
 
@@ -106,7 +118,7 @@ class MainTest(unittest.TestCase):
       mock.patch.dict(count_tokens.os.environ, environ, clear=True),
       mock.patch("urllib.request.urlopen", **urlopen) as opened,
       mock.patch(
-        "constitution_site.count_tokens.short_commit", return_value="abc1234"
+        "constitution_site.count_tokens.commit_sha", return_value=COMMIT
       ),
       contextlib.redirect_stderr(stderr),
     ):
@@ -139,7 +151,7 @@ class MainTest(unittest.TestCase):
         )
         self.assertEqual(code, 0)
         assert written
-        self.assertEqual(written["commit"], "abc1234")
+        self.assertEqual(written["commit"], COMMIT)
         for lang, version, text in self.texts():
           self.assertEqual(
             written[lang][version],
