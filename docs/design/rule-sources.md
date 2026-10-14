@@ -102,6 +102,30 @@ host where it can, through `gh` as the built-in checks of
 `public = false` and the repository's visibility is `PUBLIC`, and says it
 could not tell when `gh` cannot answer.
 
+The declaration is filled in once, when it is written, and then read
+only from `statute.toml`. `statute init` asks `gh` for the visibility of
+the repository it writes the rule set in, unless `--public` or
+`--private` decides, and takes the side that cannot leak where GitHub
+gives no clear answer:
+
+| GitHub shows | `public` written |
+| --- | --- |
+| `PUBLIC` | `true` |
+| `PRIVATE` | `false` |
+| `INTERNAL`, which everyone in the enterprise can read | `true`, with a warning that says how to make it private |
+| no answer (no `gh`, no login, no GitHub remote) | `true`, with a warning that names why and says how to make it private |
+
+How a source's `public` is found when a source is added is open:
+statute has no command that adds a source yet (`init` writes only `R`,
+which is always public), and it is to be settled when the way sources
+are declared is next redesigned. The default proposed for then: a
+source on disk is asked about through the repository that holds its
+directory; `INTERNAL`, no answer, and a directory in no GitHub
+repository count as private; and in a public rule set, the command
+stops without writing and names two ways, to run it again with
+`--public`, or to add the source to `statute.private.toml` with
+`--private`.
+
 ## Which rules may cite which
 
 A private rule may cite a public one; a public rule may not cite a
