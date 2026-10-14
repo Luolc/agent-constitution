@@ -91,11 +91,13 @@ both formats: a file named by a number, `rules/<id>.toml`, is a node of the
 rule tree, and one named by a word is a rule of the older format. The
 nodes are read in the order of their numbers and get the same checks,
 with what the new format adds. 1: the keys of the node's `kind`, with
-their types; `id` is the file name, which has no leading zeros; `kind`,
-`status`, `level` and `check` take one of their values, and the status
-agrees with `index.toml` as a rule's does; `superseded-by` is there
-exactly when the status is `superseded`, `run` and `tools` exactly when
-`check` is `command`; the title and the three parts have a non-empty text
+their types; `id` is the file name, which has no leading zeros; `revision` is
+1 or more; `kind`, `status`, `level` and `check` take one of their values
+(`superseded` for a rule only), and the status agrees with `index.toml` as
+a rule's does; `superseded-by` is there exactly when the status is
+`superseded`, `run` and `tools` exactly when `check` is `command`;
+`authority` is a non-empty list of strings, `tools` a list of strings, and
+`requires` and `conflicts` lists of numbers and strings; the title and the three parts have a non-empty text
 in the original's language, and `[translations]` has no key for it. 2: a
 `slug` has the shape of an ID and is unique among the slugs and the IDs of
 the older rules, so a slug can carry on a word ID. 3: each `parent` and

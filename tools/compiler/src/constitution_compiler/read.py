@@ -541,8 +541,12 @@ class _Reader:
       self.errors.add(
         path, doc.line("revision ="), 1, "`revision` must be 1 or more"
       )
-    status = self.status_of(doc, d, f"a {kind}", allowed=NODE_STATUS)
-    if (status == "superseded") != ("superseded-by" in d):
+    # Only a rule is superseded, by another rule.
+    allowed = tuple(
+      s for s in NODE_STATUS if kind == "rule" or s != "superseded"
+    )
+    status = self.status_of(doc, d, f"a {kind}", allowed=allowed)
+    if kind == "rule" and (status == "superseded") != ("superseded-by" in d):
       self.errors.add(
         path,
         doc.line("superseded-by =", "status ="),

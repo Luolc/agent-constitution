@@ -209,6 +209,50 @@ class FormatTest(NodeTree):
         )
         self.edit("rules/10.toml", new, old)
 
+  def test_list_fields(self):
+    self.edit(
+      "rules/10.toml",
+      'check = "review"',
+      'check = "command"\nrun = "x"\ntools = ["uv"]\nrequires = [3, "team:7"]'
+      "\nconflicts = [2]",
+    )
+    self.assertEqual(self.errors(), [])
+    for old, new, message in (
+      (
+        '["alpha", "alpha-one.money"]',
+        "[]",
+        "`authority` must be a non-empty list of provision IDs",
+      ),
+      (
+        '["alpha", "alpha-one.money"]',
+        '["alpha", 1]',
+        "`authority` must be a non-empty list of provision IDs",
+      ),
+      (
+        'requires = [3, "team:7"]',
+        "requires = [true]",
+        "`requires` must list IDs, a number or `<source>:<id>`",
+      ),
+      (
+        "conflicts = [2]",
+        "conflicts = [2.5]",
+        "`conflicts` must list IDs, a number or `<source>:<id>`",
+      ),
+      ('tools = ["uv"]', "tools = [1]", "`tools` must be a list of names"),
+    ):
+      with self.subTest(new):
+        self.edit("rules/10.toml", old, new)
+        self.assertError(1, "rules/10.toml", message)
+        self.edit("rules/10.toml", new, old)
+
+  def test_only_a_rule_is_superseded(self):
+    self.activate()
+    self.edit("rules/2.toml", 'status = "active"', 'status = "superseded"')
+    errors = self.errors()
+    self.assertEqual(len(errors), 1, errors)
+    self.assertIn("a domain `status` must be one of", errors[0])
+    self.assertNotIn("superseded'", errors[0])
+
   def test_status_under_a_draft_index(self):
     self.edit("rules/2.toml", 'status = "draft"', 'status = "trial"')
     self.assertError(
