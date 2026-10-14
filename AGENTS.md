@@ -12,7 +12,7 @@ compiler is not written yet.
 ## Language
 
 Everything in this repo is English: code, comments, docs, commit messages,
-PR titles and bodies. The one exception is the `zh` text of a bilingual
+PR titles and bodies. One exception is the `zh` text of a bilingual
 source: the constitution and rule sources are TOML files whose text tables
 have one key per language, `en` and `zh` (format in
 `docs/design/source-formats.md`). Write the `zh` text in plain, natural
