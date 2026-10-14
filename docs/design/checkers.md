@@ -85,10 +85,35 @@ first one that finds errors, printing all of that one's errors:
    an active base of another edition, the revisions are not compared. Its
    purpose is that one revision names one text.
 
+While the rules move to the format of
+[Rule file format](rule-system.md#rule-file-format), `rules/` may hold
+both formats: a file named by a number, `rules/<id>.toml`, is a node of the
+rule tree, and one named by a word is a rule of the older format. The
+nodes are read in the order of their numbers and get the same checks,
+with what the new format adds. 1: the keys of the node's `kind`, with
+their types; `id` is the file name, which has no leading zeros; `kind`,
+`status`, `level` and `check` take one of their values, and the status
+agrees with `index.toml` as a rule's does; `superseded-by` is there
+exactly when the status is `superseded`, `run` and `tools` exactly when
+`check` is `command`; the title and the three parts have a non-empty text
+in the original's language, and `[translations]` has no key for it. 2: a
+`slug` has the shape of an ID and is unique among the slugs and the IDs of
+the older rules, so a slug can carry on a word ID. 3: each `parent` and
+`superseded-by` names a node, the latter a rule other than itself, and
+following the parents never leads back to a node. 4: each language of a
+text cites what the original cites, every translated language has the
+title and the three parts and a hash in `[translations]`, and each hash is
+the original's now; when one is not, the error prints the new hash. 5: a
+`{@rule:<id>}` with a number resolves to a node that is not repealed, and
+each `authority` entry, without a namespace, to a provision that is not
+repealed. 7: a node of the base still exists, and stays repealed or
+superseded once it was; a rule of the older format at the base also lives
+on as a node whose `slug` is its ID.
+
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
 (`tests/test_constitution_checks.py`, `tests/test_constitution_base.py`
-of `tools/compiler`).
+and, for the rule tree, `tests/test_rule_tree.py` of `tools/compiler`).
 Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
 CI only, on a pull request against the tip of the base branch the
 checked-out merge commit was made on (its first parent), on a push to
