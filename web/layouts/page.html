@@ -1,10 +1,10 @@
 {{- /* The version for agents in the page's language, its text as agents
   read it, under a list like the home page's: the revision and a link
-  back to the full version. Neither its title nor its headings get the
-  theme's `#` link. */ -}}
+  back to the full version. Its headings get no `#` link from the
+  theme, nor does its title (constitution/title.html). */ -}}
 {{ define "main" }}
 <article class="markdown book-article"><div class="constitution">
-{{ printf "# %s {anchor=false}" .Title | .RenderString }}
+{{ partial "constitution/title.html" . }}
 <ul class="revision">{{ partial "constitution/revision.html" . -}}
 <li class="back"><a href="{{ site.Home.RelPermalink }}">{{ i18n "back" }}</a></li></ul>
 {{ .Content }}
