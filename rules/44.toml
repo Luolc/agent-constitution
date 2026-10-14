@@ -1,0 +1,42 @@
+id = 44
+slug = "credential-out-of-output"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["safety", "sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep credentials out of every output"
+zh = "凭证不出现在任何输出中"
+
+[text.statement]
+en = "Keep a credential out of every message, log, command line and other output."
+zh = "不让凭证出现在任何消息、日志、命令行或其他输出中。"
+
+[text.reason]
+en = '''
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}).
+'''
+zh = '''
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})。
+'''
+
+[text.verification]
+en = '''
+Wherever a credential is stored, it never appears in a message, a log, a command line or any other output. "Message" here covers what an agent sends to another agent and what it sends to a person.
+
+Violated when a credential appears in a message, a log, a command line or other output.
+'''
+zh = '''
+无论凭证存放在哪里，都不得出现在消息、日志、命令行或任何其他输出中。本条所说的消息，既包括 agent 发给其他 agent 的，也包括 agent 发给人的。
+
+凭证出现在消息、日志、命令行或其他输出中的，即为违反本规定。
+'''
+
+[translations]
+zh = "299798b67758f9f899b8ceac768f4795647ae7b28ba1d7784b0cdafdbfb058f6"

@@ -1,0 +1,42 @@
+id = 48
+slug = "instructions-take-effect-first"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["separate-instruction-changes"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Merge the change to the instructions first"
+zh = "修改指令的变更先合入"
+
+[text.statement]
+en = "When work needs a change to instructions, merge that change first and do the rest of the work under the new instructions."
+zh = "工作需要修改指令的，先合入修改指令的变更，其余的工作再按新指令进行。"
+
+[text.reason]
+en = '''
+Work proceeds under new instructions only once the change to them is in effect ({@constitution:separate-instruction-changes}).
+'''
+zh = '''
+修改指令的变更生效之后，工作才能按新的指令进行 ({@constitution:separate-instruction-changes})。
+'''
+
+[text.verification]
+en = '''
+When work needs both a change to instruction files and changes to other files, which {@rule:46} keeps in two changes, the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
+
+Violated when, of the two changes, the rest of the work is merged before the change to the instructions is in effect.
+'''
+zh = '''
+工作既要修改指令文件、又要修改其他文件，按 {@rule:46} 分成两个变更的，修改指令的变更先合入并生效，其余的工作再按新指令进行。
+
+两个变更中，其余的工作在修改指令的变更生效之前合入的，即为违反本规定。
+'''
+
+[translations]
+zh = "bfc53bb8a2f0688329114c0d749b042f0d104d1a7955113b238ee4556f7c3876"

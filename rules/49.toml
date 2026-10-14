@@ -1,0 +1,42 @@
+id = 49
+slug = "instruction-check-in-ci"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["separate-instruction-changes", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Run the instruction-only check in CI"
+zh = "指令单独修改的检查在 CI 里运行"
+
+[text.statement]
+en = "Where a repository has a check that a change keeps instruction files apart from other files, run it in CI and have it fail a change that mixes them."
+zh = "仓库有检查变更是否把指令文件与其他文件分开的，让它在 CI 里运行，混合了两类文件的变更判为不通过。"
+
+[text.reason]
+en = '''
+Instruction files are changed in a change of their own ({@constitution:separate-instruction-changes}). A check that does not run on a change, or passes one that mixes the two, lets that change through and is no evidence that they were kept apart ({@constitution:discriminating-checks}).
+'''
+zh = '''
+指令文件要单独成一个变更修改 ({@constitution:separate-instruction-changes})。检查不在变更上运行，或者让混合了两类文件的变更通过，就会放过这样的变更，不能当作两类文件已经分开的证据 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
+en = '''
+Where a repository has a check for {@rule:46}, the check runs in CI on every change and fails a change that mixes instruction files with other files. Where it has none, this rule asks nothing; {@rule:46} holds all the same.
+
+Violated when a repository has such a check and CI does not run it on a change, or it does not fail a change that mixes the two.
+'''
+zh = '''
+仓库有 {@rule:46} 的检查的，检查在 CI 里对每个变更运行，混合了指令文件与其他文件的变更判为不通过。仓库没有这项检查的，本规定不作要求，{@rule:46} 照样适用。
+
+仓库有这项检查，而 CI 没有在某个变更上运行它，或者它没有让混合了两类文件的变更不通过的，即为违反本规定。
+'''
+
+[translations]
+zh = "285b8d7922cb33bbad0cc63c0e4bc52f1860f9b22305f4a117f471b0ff283008"

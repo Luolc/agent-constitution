@@ -1,8 +1,9 @@
 id = 3
 slug = "credential-storage"
-revision = 3
+revision = 4
 kind = "rule"
-status = "draft"
+status = "superseded"
+superseded-by = 43
 lang = "en"
 parent = 13
 authority = ["safety", "sensitive-info"]
