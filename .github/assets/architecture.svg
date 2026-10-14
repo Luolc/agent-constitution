@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" width="1160" height="440" role="img" aria-label="How Agent Constitution fits together: the constitution is built into Markdown and the website today; the rule tree, skills, per-repository rule sets, the compiler, checks and the reviewer loop are designed, not built yet.">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8a9a82"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d3a1e"/></marker></defs>
+<g font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;PingFang SC&quot;, &quot;Hiragino Sans GB&quot;, &quot;Microsoft YaHei&quot;, &quot;Noto Sans CJK SC&quot;, Helvetica, Arial, sans-serif">
+<rect x="1" y="1" width="1158" height="438" rx="18" fill="#dde6d5" stroke="#b5c4aa"/>
+<rect x="920" y="48" width="28" height="16" rx="4" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="958" y="61" font-size="12.5" fill="#4b5946">Built</text>
+<rect x="920" y="76" width="28" height="16" rx="4" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="958" y="89" font-size="12.5" fill="#4b5946">Designed, not built yet</text>
+<path d="M258 69.0 C288.0 69.0 288.0 69.0 317 69.0" fill="none" stroke="#7d3a1e" stroke-width="1.5" marker-end="url(#b)"/>
+<path d="M554 69.0 C584.0 69.0 584.0 69.0 613 69.0" fill="none" stroke="#7d3a1e" stroke-width="1.5" marker-end="url(#b)"/>
+<path d="M436.0 98 C436.0 156 656 130 656 177" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M258 167.0 C288.0 167.0 288.0 207.0 317 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M258 247.0 C288.0 247.0 288.0 207.0 317 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M554 207.0 C584.0 207.0 584.0 207.0 613 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M850 207.0 C880.0 207.0 880.0 147.0 909 147.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M850 207.0 C880.0 207.0 880.0 207.0 909 207.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M850 207.0 C880.0 207.0 880.0 267.0 909 267.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M1024.0 296 L1024.0 351" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M910 381.0 L851 381.0" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<path d="M614 381.0 C456 381.0 140.0 381.0 140.0 277" fill="none" stroke="#8a9a82" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="200.0" y="403.0" font-size="12.5" font-style="italic" fill="#4b5946">a wrong check: fix the check or the rule</text>
+<rect x="24" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="40" y="65" font-size="15" font-weight="600" fill="#23301f">Constitution</text>
+<text x="40" y="84" font-size="12.5" fill="#4b5946">TOML sources, two languages</text>
+
+<rect x="320" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="336" y="65" font-size="15" font-weight="600" fill="#23301f">constitution-build</text>
+<text x="336" y="84" font-size="12.5" fill="#4b5946">builds and checks</text>
+
+<rect x="616" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
+<text x="632" y="65" font-size="15" font-weight="600" fill="#23301f">Markdown and website</text>
+<text x="632" y="84" font-size="12.5" fill="#4b5946">full text and agent version</text>
+
+<rect x="24" y="140" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="40" y="163" font-size="15" font-weight="600" fill="#23301f">Skills</text>
+<text x="40" y="182" font-size="12.5" fill="#4b5946">how to meet a rule</text>
+
+<rect x="24" y="220" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="40" y="243" font-size="15" font-weight="600" fill="#23301f">Rule tree</text>
+<text x="40" y="262" font-size="12.5" fill="#4b5946">numbered rules, one parent each</text>
+
+<rect x="320" y="180" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="336" y="203" font-size="15" font-weight="600" fill="#23301f">Rule set + lock file</text>
+<text x="336" y="222" font-size="12.5" fill="#4b5946">the rules a repo chose, pinned</text>
+
+<rect x="616" y="180" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="632" y="203" font-size="15" font-weight="600" fill="#23301f">Compiler</text>
+<text x="632" y="222" font-size="12.5" fill="#4b5946">one command</text>
+
+<rect x="912" y="120" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="143" font-size="15" font-weight="600" fill="#23301f">AGENTS.md</text>
+<text x="928" y="162" font-size="12.5" fill="#4b5946">the chosen rules</text>
+
+<rect x="912" y="180" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="203" font-size="15" font-weight="600" fill="#23301f">Skills</text>
+<text x="928" y="222" font-size="12.5" fill="#4b5946">the ones those rules need</text>
+
+<rect x="912" y="240" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="263" font-size="15" font-weight="600" fill="#23301f">Checks and hooks</text>
+<text x="928" y="282" font-size="12.5" fill="#4b5946">one binary, external commands</text>
+
+<rect x="912" y="354" width="224" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="928" y="377" font-size="15" font-weight="600" fill="#23301f">Check results</text>
+<text x="928" y="396" font-size="12.5" fill="#4b5946">pass · violation · inconclusive</text>
+
+<rect x="616" y="354" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="632" y="377" font-size="15" font-weight="600" fill="#23301f">Reviewer</text>
+<text x="632" y="396" font-size="12.5" fill="#4b5946">an agent judges the rest</text>
+
+</g>
+</svg>

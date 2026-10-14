@@ -6,7 +6,12 @@ feedback and proposals (observation only), D is scoped automatic adoption.
 Directories for C and D are reserved, not created.
 
 ```text
-README.md
+README.md                 the repo's front page, in English            A
+README.zh-CN.md           the same page in Chinese                     A
+LICENSE                   Apache-2.0, for everything but the text
+                          below                                        A
+LICENSE-CC-BY-4.0         CC BY 4.0, for the text of constitution/,
+                          rules/ and skills/                           A
 AGENTS.md                 repo rules for agents working here           A
 constitution/
   <YYYY-MM>/              the edition directory, today 2026-10
@@ -86,6 +91,8 @@ web/                      the static site's Hugo project: hugo.toml,
                           commit                                       A
 site/                     built static site, not committed             A
 .github/workflows/        CI                                           A
+.github/assets/           the README's icon, diagrams and screenshots,
+                          light and dark                               A
 .pre-commit-config.yaml   commit hooks                                 A
 pyproject.toml            the workspace root: its members, Python
                           version, pins of limae, pre-commit and the
