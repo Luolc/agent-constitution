@@ -1,0 +1,10 @@
+{{- /* The cells of a row of the popup's table: characters, words where
+  the language counts them, and tokens or a dash when they were not
+  counted. Takes (dict "length" the version's length "tokens" its
+  tokens or nil). */ -}}
+<span class="count-cell" role="cell">{{ lang.FormatNumberCustom 0 .length.characters }}</span>
+{{- if site.Params.countWords -}}
+<span class="count-cell" role="cell">{{ lang.FormatNumberCustom 0 .length.words }}</span>
+{{- end -}}
+<span class="count-cell" role="cell">{{ with .tokens }}{{ lang.FormatNumberCustom 0 . }}{{ else }}—{{ end }}</span>
+{{- /**/ -}}
