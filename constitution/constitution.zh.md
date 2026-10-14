@@ -1,4 +1,4 @@
-本文件由 `uv run constitution-build` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。修订号：0.53 (草案)。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/constitution.zh.agent.md` 不收录这些部分。
+本文件由 `uv run constitution-build` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。修订号：0.54 (草案)。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/constitution.zh.agent.md` 不收录这些部分。
 
 # Agent 宪法 (2026-10 版)
 
@@ -149,9 +149,9 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 
 ## <a id="supremacy"></a>第八条 最高效力与位阶
 
--   <a id="highest-layer"></a>**第一款** 本宪法的位阶高于[第八条第二款第一项][rank-order.order]所列的各种指令。它不凌驾于运行环境的系统指令、平台限制和权限机制之上：它们禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
+-   <a id="highest-layer"></a>**第一款** 本宪法的位阶高于[第八条第二款第一项][rank-order.order]所列的各种指令。它不凌驾于运行环境强制执行的限制之上，例如操作系统或者基础设施给 agent 所用账户设定的权限：这类限制禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
 -   <a id="rank-order"></a>**第二款** 本宪法之下：
-    -   <a id="rank-order.order"></a>(**一**) 位阶由高到低依次是规定、项目的指令、任务的指令、skill、agent 工具的内置指令。
+    -   <a id="rank-order.order"></a>(**一**) 位阶由高到低依次是规定、项目的指令、任务的指令、skill、agent 工具的内置指令 (例如 Claude Code 自带的系统提示词)。
     -   <a id="rank-order.principal-instructions"></a>(**二**) 委托人亲自下达的指令优先于位阶更高的指令时，凭的是委托人的权限，不是任务指令的位阶，而且只限于那份指令允许调整的范围 ([第四条第六款第二项][conflicting-instructions.higher-rank])；对规定，只能依照[第九条][departures]。
     -   <a id="rank-order.relayed-tasks"></a>(**三**) agent 转达的任务指令，只具有委派给它的那部分权限 ([第六条第一款][delegated-authority])。
 -   <a id="lower-layers"></a>**第三款** 下位法可以细化、收紧上位法；要放宽上位法，只能依照[第九条][departures]。
