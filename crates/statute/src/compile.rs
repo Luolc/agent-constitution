@@ -414,11 +414,12 @@ fn agents_md(project: &Project) -> Result<String, String> {
     let _ = writeln!(out, "# {}", w.rules);
 
     // The domains of the first-party source, then those of the other
-    // sources by name, then those of the repository's own rules.
+    // sources by name, then those of the repository's own rules; each
+    // with its subdomains below it.
     let domains: Vec<Key> = project
         .sources
         .nodes()
-        .filter(|(_, n)| n.kind == Kind::Domain)
+        .filter(|(_, n)| n.kind == Kind::Domain && n.parent.is_none())
         .map(|(key, _)| key)
         .collect();
     for domain in &domains {
@@ -580,12 +581,14 @@ fn render(
                 let _ = writeln!(out, "\n{label}{text}");
             }
         }
-        let root = project.sources.root(&standing);
+        // A requirement that leads out of the nearest domain, a subdomain
+        // included, is a link.
+        let domain = project.sources.domain(&standing);
         let crossing: Vec<String> = project
             .sources
             .requires(&standing)
             .into_iter()
-            .filter(|target| project.sources.root(target) != root)
+            .filter(|target| project.sources.domain(target) != domain)
             .filter_map(|target| {
                 let target = res.standing(&target);
                 let n = project.sources.get(&target)?;
