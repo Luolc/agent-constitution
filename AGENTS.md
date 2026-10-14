@@ -78,9 +78,9 @@ Checkers).
   `tools/compiler` (the constitution build and its checks,
   `constitution-build`), `tools/site` (the rules' data, the token count
   and the link check of the static site, `site-rules`, `count-tokens` and
-  `check-site-anchors`; it depends on the compiler) and `tools/checks` (this repo's own checks,
-  `check-instruction-changes` and `lint-zh-sources`; it depends on
-  neither). The root `pyproject.toml` declares the members and holds the
+  `check-site-anchors`; it depends on the compiler) and `tools/checks` (this repo's own
+  checks, `check-instruction-changes` and `lint-zh-sources`; it depends
+  on neither). The root `pyproject.toml` declares the members and holds the
   development tools and their configuration; `uv.lock` is one file at
   the root (`docs/design/file-structure.md`).
 - `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
@@ -261,7 +261,8 @@ manual run on `main`. Its job `build` gets an access token through Workload
 Identity Federation, counts the tokens with `count-tokens --require-tokens`,
 writes the rules' data with `site-rules`, builds the site with the site's
 domain as `--baseURL`, checks its links, writes the length lines of the two
-pages to the job summary and the log, and uploads the site. Its job `deploy` publishes the site to GitHub Pages only
+pages to the job summary and the log, and uploads the site. Its job
+`deploy` publishes the site to GitHub Pages only
 when the repository is public and the repository variable `PAGES_DEPLOY` is
 `true`, and is skipped otherwise; publishing is a release, and setting the
 variable is a person's decision (`docs/design/static-site.md`). It is not a
