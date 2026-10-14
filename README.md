@@ -17,9 +17,15 @@ generated files. The general rules under `rules/` are TOML files of the
 same kind, one per rule. The format, the IDs and the numbering are in the
 design.
 
-`python3 tools/build_site.py` builds the constitution into two static web
+The scripts under `tools/` run with [uv](https://docs.astral.sh/uv/):
+`pyproject.toml` sets the Python version and pins limae, which they
+call, and pre-commit; `uv run` creates the environment from `uv.lock` the
+first time. Install the commit hooks once with `uv run pre-commit
+install`.
+
+`uv run tools/build_site.py` builds the constitution into two static web
 pages, English and Chinese, under `site/` (not committed). It needs Hugo
 at the version the script names and the theme submodule
 (`git submodule update --init`); the setup is in the design (Static site).
-Look at the pages served, for example with `python3 -m http.server -d
+Look at the pages served, for example with `uv run python -m http.server -d
 site`: opened as files, the language switch leads to a directory listing.

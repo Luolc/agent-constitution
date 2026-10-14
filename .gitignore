@@ -1,3 +1,4 @@
 /site/
 /web/.hugo_build.lock
 /web/resources/
+/.venv/

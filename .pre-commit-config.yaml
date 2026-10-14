@@ -11,6 +11,9 @@ repos:
       - id: gitleaks
         args: ["--redact", "--no-banner", "."]
 
+  # The local hooks run in the environment of pyproject.toml, which pins
+  # limae; `uv run --frozen` creates or syncs it from uv.lock and never
+  # changes the lock.
   # The constitution build: --check validates the sources (the constitution
   # and the rules) and requires the committed outputs to match a fresh
   # build; the tests cover the script. The numbering check against a base
@@ -19,37 +22,32 @@ repos:
     hooks:
       - id: constitution
         name: constitution build check
-        entry: python3 tools/build_constitution.py --check
+        entry: uv run --frozen tools/build_constitution.py --check
         language: system
         files: ^(constitution|rules|tools)/
         pass_filenames: false
-      # Python, not system, so that limae is installed for the tests of
-      # lint_zh_sources.py, which run it.
+      # The tests of lint_zh_sources.py run limae.
       - id: constitution-tests
         name: tools tests
-        entry: python -m unittest discover -s tools
-        language: python
-        additional_dependencies: ["limae==0.13.3"]
-        files: ^tools/
+        entry: uv run --frozen python -m unittest discover -s tools
+        language: system
+        files: ^(tools/|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
       # The `zh` text of each source, citations replaced by Chinese text
       # shaped like their rendering. Checks only; fix locally with
-      # `python3 tools/lint_zh_sources.py --fix`.
+      # `uv run tools/lint_zh_sources.py --fix`.
       - id: zh-sources
         name: limae on the zh text of the sources
-        entry: python tools/lint_zh_sources.py
-        language: python
-        additional_dependencies: ["limae==0.13.3"]
-        files: ^(constitution/(index\.toml|articles/)|rules/|tools/lint_zh_sources\.py$)
+        entry: uv run --frozen tools/lint_zh_sources.py
+        language: system
+        files: ^(constitution/(index\.toml|articles/)|rules/|tools/lint_zh_sources\.py$|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
-
-  # The built Chinese constitution, both versions, with limae's default
-  # configuration.
-  # Rule switches go in a limae.toml, never in args: --disable and --enable
-  # make limae skip its configuration file. The rev and the limae pins of
-  # the local hooks above name the same version; bump them together.
-  - repo: https://github.com/Luolc/limae-pre-commit
-    rev: v0.13.3
-    hooks:
+      # The built Chinese constitution, both versions, with limae's default
+      # configuration.
+      # Rule switches go in a limae.toml, never in args: --disable and
+      # --enable make limae skip its configuration file.
       - id: limae
+        name: limae on the built Chinese constitution
+        entry: uv run --frozen limae
+        language: system
         files: ^constitution/constitution\.zh(\.agent)?\.md$

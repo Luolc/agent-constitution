@@ -49,24 +49,16 @@ jobs:
           # Keep --redact: without it a hit prints the secret into the log.
           "${bindir}/gitleaks" git --redact --no-banner --verbose .
 
-      - id: py
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.14"
-
-      # The key carries the full Python version (patch included): pre-commit
-      # discards virtualenvs built on a different base interpreter.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - run: pip install --user pre-commit==4.6.2
+      # uv sets up the Python of pyproject.toml and, from uv.lock, the
+      # environment with limae and pre-commit; --locked fails when the lock
+      # no longer matches pyproject.toml.
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv sync --locked
 
       # The gitleaks hook scans only the staged diff, so CI skips it; the
       # full-history scan above is the step that counts. The local hooks run
-      # on the Python set up above.
-      - run: pre-commit run --all-files
+      # in the environment synced above.
+      - run: uv run --frozen pre-commit run --all-files
         env:
           SKIP: gitleaks
 
@@ -87,7 +79,7 @@ jobs:
           echo "${HUGO_SHA256}  ${tarball}" | sha256sum -c -
           tar -xzf "$tarball" -C "$bindir" hugo
           mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
-          PATH="${bindir}:${PATH}" python3 tools/build_site.py
+          PATH="${bindir}:${PATH}" uv run --frozen tools/build_site.py
 
       # Numbering against the base: on a pull request the first parent of
       # the checked-out merge commit, which is the tip of the base branch
@@ -108,7 +100,7 @@ jobs:
           fi
           base="$(git rev-parse --verify "${BASE}^{commit}")"
           echo "base: ${base}"
-          python3 tools/build_constitution.py --check --base "$base"
+          uv run --frozen tools/build_constitution.py --check --base "$base"
 
       # Instruction files and other files never change together (see
       # docs/design.md, Checkers). Same base as the step above, skipped the
@@ -124,4 +116,4 @@ jobs:
           fi
           base="$(git rev-parse --verify "${BASE}^{commit}")"
           echo "base: ${base}"
-          python3 tools/check_instruction_changes.py --base "$base"
+          uv run --frozen tools/check_instruction_changes.py --base "$base"
