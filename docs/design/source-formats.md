@@ -3,23 +3,26 @@
 All sources are TOML, read with the standard library's `tomllib`. Every
 text a reader sees is a table whose keys are the language codes listed in
 the constitution's `index.toml` and whose values are the text in that language,
-so one file holds all languages of one provision side by side. Multi-line
+so one file holds all languages of one provision side by side. A rule's
+text needs only the language of its original, and its translations are
+tracked by hash ([Rule file format](rule-system.md#rule-file-format)). Multi-line
 text is a literal string (`'''...'''`); the build drops the newline after
 the opening quotes and before the closing ones.
 
 ## IDs
 
-Every provision of the constitution (article, section, list item) and
-every rule has an ID: one or more lowercase words joined by hyphens,
-`^[a-z0-9]+(-[a-z0-9]+)*$`, for example `leaks` or `credential-storage`.
+Every provision of the constitution (article, section, list item) has an
+ID: one or more lowercase words joined by hyphens,
+`^[a-z0-9]+(-[a-z0-9]+)*$`, for example `leaks` or `must-ask`.
 The ID is a key, like a BibTeX key, chosen by a person once and never
 changed; it says what the provision is about, not where it stands.
 
 There are two namespaces. In the constitution, article and section IDs
 are unique across the whole constitution, and a list item's ID only
 within its section, so items can have short names (`capital`). In the
-rules, a rule ID is unique among the rules, the private overlay's rules
-included. The same word may be used once in each namespace. An ID is
+rules, the ID is a number that names one node of the rule tree of its
+source, a rule, a one-of or a domain
+([IDs and revisions](rule-system.md#ids-and-revisions)). An ID is
 never reused. From the first approved revision on, a provision of the
 constitution is only ever repealed, never deleted, so the sources hold
 every ID used since then and the build rejects a second one. While the
@@ -54,8 +57,8 @@ revision that deletes another adds it:
 - revision 0.36: the section `compliance`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
-retired as well. A rule may be deleted, and its ID then goes into
-`rules/retired-ids.txt` (see [Rules](rules.md#rules)).
+retired as well. A rule is never deleted: it is superseded or repealed
+instead ([IDs and revisions](rule-system.md#ids-and-revisions)).
 
 Text cites with `{@...}`; nothing else in the text is markup, and any
 other braces are output as is. The constitution cites only itself,
@@ -63,7 +66,7 @@ without a namespace: an article or section by its ID (`{@safety}`,
 `{@leaks}`), a list item by its section's ID, a dot and the item's ID
 (`{@must-ask.capital}`), always this full path, even inside the same
 section. A rule always names the namespace: `{@constitution:leaks}`,
-`{@constitution:must-ask.capital}`, `{@rule:credential-storage}`; the colon
+`{@constitution:must-ask.capital}`, `{@rule:3}`; the colon
 says which body of text, the dot where in it. The build renders a
 citation of the constitution as the number the provision has in that
 language (see [Numbering](constitution.md#numbering)); the generated text shows numbers only, never IDs. A

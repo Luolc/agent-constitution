@@ -1,7 +1,7 @@
-<!-- en-sha256: ded7039c4b152e7262dd1f0cbc75c2b863e32de5a76a7fc900ff192002563740 -->
+<!-- en-sha256: 123ae6fc5d7b86d3d539799d46161731c73b2a083d3c91c30638cc4b5efe21e3 -->
 # 规定体系
 
-状态：草案。目前只实现了第一部分：读取规定和规定清单，写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
+状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
 
 ## <a id="contents"></a>目录
 
@@ -131,7 +131,7 @@ en = "Python"
 各字段：
 
 - `id`：从 1 起的整数，在本规定源的规定、one-of 和领域之间唯一，永不重复使用。文件名就是 ID。
-- `slug` (可选)：一个可读的短名，由小写单词以连字符连接，在本规定源内唯一。它只用于网址，以及让人更容易认出这个文件；任何引用都不用它。本仓的规定迁到这个格式时，把现在的文字 ID 放在这里。
+- `slug` (可选)：一个可读的短名，由小写单词以连字符连接，在本规定源内唯一。它只用于网址，以及让人更容易认出这个文件；任何引用都不用它。本仓的规定迁到这个格式时，把原来的文字 ID 放在了这里。
 - `revision`：从 1 起的整数，每次原地修改加一 ([ID 与修订号](#ids-and-revisions))。
 - `kind`：`rule`、`one-of` 或 `domain`。
 - `status`：`draft`、`trial`、`active`、`superseded` 或 `repealed`。
@@ -352,7 +352,7 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 - `upgrade`：把规定源和宪法移到更新的版本 ([规定清单与锁文件](#rule-sets-and-the-lock-file))；
 - `explain`：说明一条规定为什么被启用、哪些规定依赖它。
 
-**第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定先迁到新格式，每条把它的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
+**第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
 **目前已实现**：`lock`、`explain`、`add` 和 `remove` 四个命令，只支持一个磁盘上的规定源；其余命令以退出码 2 退出，并说明尚未实现。继承规定清单和按路径分段都还没有实现；git 规定源、多个规定源和对别的规定源的引用，会报告为暂不支持。
 
@@ -368,11 +368,8 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 
 ## <a id="what-this-replaces"></a>它将取代什么
 
-本设计实现之后，会取代当前设计的一些部分。那些部分现在不改；等实现本设计的工作合入时再改。在那之前，规定体系的文件以[规定文件格式](#rule-file-format) 为准来实现。
+[规定文件格式](#rule-file-format) 已经实现，[ID](source-formats.md#ids)、[源文件格式](source-formats.md) 和[规定](rules.md#rules) 现在描述的就是这种格式的规定。本设计的其余部分实现之后，会取代当前设计的另一些部分。那些部分现在不改；等实现本设计的工作合入时再改。
 
-- [ID](source-formats.md#ids)：规定 ID 改为按顺序分配的数字，不再用单词。`rules/*.toml` 里的规定迁移到新格式时获得编号，原来的文字 ID 留作 `slug`，届时引用 `{@rule:<id>}` 写的就是数字。
-- [源文件格式](source-formats.md)：规定的每段文字只需要 `lang` 指明的那种语言，译文靠哈希跟踪；宪法的文字仍是 `index.toml` 里每种语言一个键。
-- [规定](rules.md#rules)：规定不再删除，所以不再需要 `rules/retired-ids.txt`；规定改为被取代或废止。[规定文件格式](#rule-file-format) 取代现在的格式：`content` 变为 `text` 的三部分，`authority` 列出的 ID 不带 `constitution:` 命名空间，`status` 增加 `trial` 和 `superseded`，并增加字段 `kind`、`superseded-by`、`revision`、`slug`、`lang`、`parent`、`requires`、`conflicts`、`level`、`constitution`、`check` 和 `translations`。新格式没有 `scope`。one-of 和领域成为 parent 树上的节点种类。核验方法是每条规定正文的一部分，它的检查是代码 (见[检查](#checks))。
 - [选用规定](rules.md#choosing-rules)：带锁文件、在其中列出规定 (按 ID 或规定包) 的规定清单，取代「默认使用全部通用规定，再点名排除」。规定清单属于一个仓库，可以继承一份基础规定清单，由后者接管法域的那部分职能。每份规定清单还写明它依据的宪法 (见[规定清单与锁文件](#rule-sets-and-the-lock-file))。
 - [放宽声明](rules.md#relaxation-declarations)：规定清单不用某条规定，或者在 one-of 里选了另一个子节点，都不需要放宽。`adjustable` 的值和 `relaxes:` 声明是否保持原样，在实现本设计时决定。
 - [概览](overview.md)：「每个法域自己选用哪些通用规定」这项目标和私有 overlay 选用规定的职责，移到每个仓库的规定清单 (连同继承的基础清单)，overlay 的 apply 步骤变成编译命令；overlay 保留与个人相关的部分和它自己的规定。

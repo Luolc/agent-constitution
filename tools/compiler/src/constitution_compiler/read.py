@@ -1,11 +1,9 @@
 """Read the constitution and rule sources into Sources, running check 1.
 
 Reads index.toml and the article directories under articles/ in the
-edition directory (model.Layout), rules/<id>.toml and rules/retired-ids.txt
-(docs/design/source-formats.md, constitution.md, rules.md and
-checkers.md). A rule file named by a number is a node of the rule tree in
-the format of docs/design/rule-system.md (Rule file format); one named by a
-word is in the older format of rules.md.
+edition directory (model.Layout) and rules/<id>.toml, the nodes of the rule
+tree (docs/design/source-formats.md, constitution.md, rule-system.md and
+checkers.md).
 """
 
 from dataclasses import dataclass, field
@@ -40,8 +38,6 @@ from constitution_compiler.model import (
   NUMBER,
   NUMBER_SHAPE,
   PARTS,
-  RETIRED,
-  Rule,
   RULES,
   Section,
   SECTION_NAME,
@@ -58,7 +54,6 @@ from constitution_compiler.schema import (
   NODE_SCHEMAS,
   PARTS_SCHEMA,
   read_toml,
-  RULE_SCHEMA,
   SECTION_SCHEMA,
   strip_texts,
 )
@@ -135,7 +130,6 @@ class _Reader:
     index_status: the status of index.toml.
     articles: the articles read so far.
     sections: the sections read so far.
-    rules: the rules of the older format read so far.
     nodes: the nodes of the rule tree read so far.
   """
 
@@ -146,7 +140,6 @@ class _Reader:
   index_status: str
   articles: list[Article] = field(default_factory=list)
   sections: list[Section] = field(default_factory=list)
-  rules: list[Rule] = field(default_factory=list)
   nodes: list[Node] = field(default_factory=list)
 
   def own_id(self, doc: Doc, expected: str, name: str) -> None:
@@ -202,10 +195,7 @@ class _Reader:
         f"{what} is {status} while index.toml is draft",
       )
     elif (
-      self.index_status == "active"
-      and allowed == STATUS
-      and what != "a rule"
-      and status == "draft"
+      self.index_status == "active" and allowed == STATUS and status == "draft"
     ):
       self.errors.add(
         doc.path,
@@ -426,31 +416,6 @@ class _Reader:
       self.omitted(doc, item, f"`{where}`", start),
     )
 
-  def rule(self, path: Path) -> None:
-    """Read one rule.
-
-    Args:
-      path: the file, relative to root.
-    """
-    doc = self.read(path, RULE_SCHEMA)
-    if not doc:
-      return
-    self.own_id(doc, path.stem, path.name)
-    status = self.status_of(doc, doc.data, "a rule")
-    d = doc.data
-    if not d["authority"] or not all(
-      isinstance(a, str) for a in d["authority"]
-    ):
-      self.errors.add(
-        path,
-        doc.line("authority ="),
-        1,
-        "`authority` must be a non-empty list of citations",
-      )
-    self.rules.append(
-      Rule(doc, d["id"], status, d["authority"], d["title"], d["content"])
-    )
-
   def node(self, path: Path) -> None:
     """Read one node of the rule tree, `rules/<id>.toml`.
 
@@ -629,25 +594,18 @@ class _Reader:
       )
 
 
-def read_retired(root: Path, errors: Errors) -> list[str]:
-  """Read rules/retired-ids.txt.
+def by_number(path: Path) -> tuple[int, str]:
+  """Return the sort key of a rule file: its number, else its name.
 
   Args:
-    root: the checkout.
-    errors: where errors go.
+    path: the file.
 
   Returns:
-    Its lines, or none when it is missing or cannot be read.
+    The key.
   """
-  if not (root / RETIRED).exists():
-    return []
-  try:
-    return (root / RETIRED).read_text(encoding="utf-8").splitlines()
-  except OSError as e:
-    errors.add(RETIRED, 1, 1, f"cannot read: {e.strerror}")
-  except UnicodeDecodeError:
-    errors.add(RETIRED, 1, 1, "not UTF-8")
-  return []
+  if NODE_NAME.fullmatch(path.stem):
+    return (int(path.stem), "")
+  return (0, path.stem)
 
 
 def load(root: Path, errors: Errors) -> Sources | None:
@@ -680,15 +638,11 @@ def load(root: Path, errors: Errors) -> Sources | None:
     )
   for directory in reader.entries(layout.articles):
     reader.article_directory(directory)
-  rules = [p.relative_to(root) for p in (root / RULES).glob("*.toml")]
-  for path in sorted(rules):
-    if not NODE_NAME.fullmatch(path.stem):
-      reader.rule(path)
   for path in sorted(
-    (p for p in rules if NODE_NAME.fullmatch(p.stem)), key=lambda p: int(p.stem)
+    (p.relative_to(root) for p in (root / RULES).glob("*.toml")),
+    key=by_number,
   ):
     reader.node(path)
-  retired = read_retired(root, errors)
   if errors:
     return None
   return Sources(
@@ -697,7 +651,5 @@ def load(root: Path, errors: Errors) -> Sources | None:
     languages,
     reader.articles,
     reader.sections,
-    reader.rules,
-    retired,
     reader.nodes,
   )

@@ -2,51 +2,19 @@
 
 ## Rules
 
-One rule per file, `rules/<id>.toml`, so that one proposal is one file and
-a diff shows exactly one rule changing.
+One node of the rule tree per file, `rules/<id>.toml`, so that one
+proposal is one file and a diff shows exactly one rule changing. The
+format, the IDs and the statuses are in
+[Rule file format](rule-system.md#rule-file-format) and
+[IDs and revisions](rule-system.md#ids-and-revisions).
 
-```toml
-id = "credential-storage"
-status = "draft"
-scope = "all"
-authority = ["constitution:safety", "constitution:sensitive-info"]
-
-[title]
-en = "<Title>"
-zh = "<标题>"
-
-[content]
-en = '''
-<statement: condition, action, exception, what to do when unsure>
-'''
-zh = '''
-<正文>
-'''
-```
-
-- `[title]` and `[content]` have one key per language of `index.toml`.
 - The text cites the constitution with `{@constitution:<id>}` and another
-  rule with `{@rule:<id>}` (see [IDs](source-formats.md#ids)); in the compiled instruction file a
-  citation of a rule renders as that rule's title, and the rest of the
-  rendering is set in stage B. A rule has no number.
+  rule with `{@rule:<number>}` (see [IDs](source-formats.md#ids)); in the
+  compiled instruction file a citation of a rule renders as that rule's
+  title, and the rest of the rendering is set in stage B.
 - A rule about messages or notices says whom it covers: agent to agent,
   agent to person, or both.
-- `id`: stable, also the file name. Renaming the title never changes it.
-- `status`: `draft`, `active` or `repealed`. Only `active` is compiled. A
-  repealed rule keeps its file and its ID. While the constitution is a
-  draft, every rule is `draft` too.
-- Unlike the constitution, a rule may be deleted. Its ID then goes on a line
-  of its own in `rules/retired-ids.txt` and is never used again; the build
-  rejects a rule whose ID is listed there. A missing file is an empty
-  list.
-- `scope`: who it addresses: `all`, or one of a short list defined in
-  `schema/` (for example `implementer`, `reviewer`, `merger`). The compiler
-  renders it as a one-line prefix; it does not filter by it. There is one
-  compiled file for every role.
-- `authority`: the constitution articles, sections or list items the rule
-  rests on, cited as in the text (`constitution:<id>`); none of them
-  repealed. A rule with no authority does
-  not compile.
+- While the constitution is a draft, every rule is `draft` too.
 - `adjustable` (optional): the values in this rule that a lower-ranking text may
   change under `relaxations.adjustable-rules`, each with its default, for
   example `adjustable = ["wait_hours=24"]`. A rule without it cannot be
@@ -54,12 +22,8 @@ zh = '''
   local parameter is a value the private overlay fills in; an adjustable
   value is one a repo or a task may change.
 
-More fields (`supersedes`, `verification`, `expires`) are added when a real
-rule needs them, not before.
-
-Private rules in the overlay have the same format and share the rules'
-namespace. The compiler checks that the union of core and overlay rule IDs
-is unique and that none of them is retired in either.
+Private rules in the overlay have the same format, in a source of their
+own ([Sources and references](rule-system.md#sources-and-references)).
 
 ## Choosing rules
 
@@ -70,7 +34,7 @@ keep credentials in it on purpose). Open, for the person to decide. Recommended:
 
 - A jurisdiction uses every general rule by default. Its overlay leaves a rule
   out only by naming it, with a one-line reason, in `overlay.toml`
-  (`exclude = ["credential-storage"]`). The build manifest lists
+  (`exclude = [3]`). The build manifest lists
   what was left out.
 - A repo inside a jurisdiction departs from a rule only by a relaxation
   declaration (below), where the constitution permits it. It does not leave
@@ -96,7 +60,7 @@ naming the constitution's permission for it:
 ## Relaxations
 
 - relaxes: constitution:relaxations.adjustable-rules
-  target: rule:example-rule/wait_hours=4
+  target: rule:42/wait_hours=4
   scope: <this repo, or this task>
   condition: <how this text meets the condition that item states>
 ```

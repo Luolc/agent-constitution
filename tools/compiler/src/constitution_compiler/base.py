@@ -19,7 +19,6 @@ from constitution_compiler.model import (
   Layout,
   name_number,
   NODE_NAME,
-  RETIRED,
   RULES,
   SECTION_NAME,
   Sources,
@@ -101,8 +100,9 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
   While it is the base's: every article,
   section and item of the base still exists, by ID, with the same number,
   a section in the same article; what was repealed is still repealed;
-  every rule of the base still exists or is retired, and every retired ID
-  stays retired.
+  every node of the rule tree of the base still exists, a rule of the
+  older format as the node whose slug is its ID, and what was repealed or
+  superseded still is.
 
   Args:
     root: the checkout.
@@ -152,7 +152,7 @@ def open_base(
     skipped, else "".
   """
   index, articles = layout.index, layout.articles
-  listing = base_paths(root, ref, index, articles, RULES, RETIRED)
+  listing = base_paths(root, ref, index, articles, RULES)
   try:
     base = tomllib.loads(git(root, "show", f"{ref}:{index}"))
   except tomllib.TOMLDecodeError as e:
@@ -232,10 +232,8 @@ class BaseComparison:
     self.root, self.ref, self.errors = root, ref, errors
     self.articles = {a.id: a for a in src.articles}
     self.sections = {s.id: s for s in src.sections}
-    self.rules = {r.id: r for r in src.rules}
     self.nodes = {n.id: n for n in src.nodes}
     self.slugs = {n.slug: n for n in src.nodes if n.slug is not None}
-    self.retired = set(src.retired)
 
   def compare(self, layout: Layout, listing: set[Path]) -> None:
     """Compare every rule, article and section file of the base.
@@ -262,8 +260,6 @@ class BaseComparison:
         continue
       assert section is not None
       self.section(path, article, section, old)
-    if RETIRED in listing:
-      self.retired_ids()
 
   def toml(self, path: Path) -> dict | None:
     """Return a file of the base, parsed.
@@ -357,16 +353,15 @@ class BaseComparison:
             f"rule {node.id} was {status} at base {self.ref} and is no longer",
           )
       return
-    now = self.rules.get(path.stem) or self.slugs.get(path.stem)
+    now = self.slugs.get(path.stem)
     if now is None:
-      if path.stem not in self.retired:
-        self.errors.add(
-          path,
-          1,
-          7,
-          f"rule {path.stem} existed at base {self.ref} and is gone"
-          f" without being listed in {RETIRED}",
-        )
+      self.errors.add(
+        path,
+        1,
+        7,
+        f"rule {path.stem} existed at base {self.ref} and no node has it as"
+        " its slug",
+      )
       return
     self.still_repealed(
       now.doc,
@@ -451,14 +446,3 @@ class BaseComparison:
         item.get("status") == "repealed",
         items[iid].status == "repealed",
       )
-
-  def retired_ids(self) -> None:
-    """Check that every ID retired at the base is still retired."""
-    for value in git(self.root, "show", f"{self.ref}:{RETIRED}").splitlines():
-      if value and value not in self.retired:
-        self.errors.add(
-          RETIRED,
-          1,
-          7,
-          f"{value} was retired at base {self.ref} and is no longer listed",
-        )
