@@ -220,7 +220,12 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         diags.error(file, "not valid UTF-8");
         return None;
     };
-    let raw: RawNode = match toml::from_str(content) {
+    // A file's line ends are read as LF whatever it uses, as the TOML
+    // parsers of other tools return them, so a checkout with CRLF line ends
+    // reads, and hashes, the same. A `\r\n` written as an escape is not a
+    // line end and stays.
+    let content = content.replace("\r\n", "\n");
+    let raw: RawNode = match toml::from_str(&content) {
         Ok(raw) => raw,
         Err(e) => {
             diags.error(file, e.to_string().trim_end().to_owned());
@@ -470,6 +475,9 @@ fn check_languages(
             }
             if value.trim().is_empty() {
                 err(format!("[{name}] `{key}` is empty"));
+            }
+            if *name == "title" && value.trim_matches(['\r', '\n']).contains('\n') {
+                err(format!("[title] `{key}` must be one line"));
             }
         }
     }
