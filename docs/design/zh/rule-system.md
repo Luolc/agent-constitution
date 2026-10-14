@@ -1,4 +1,4 @@
-<!-- en-sha256: e2b9547a1ef318d9f674eba389ef7af3013ba8ce0d20f14d5102ea0bd8dbccf3 -->
+<!-- en-sha256: b09079daee60f4b181f591f0a5bc91134fea6b2fe6bc0a766901924283fd4a34 -->
 # 规定体系
 
 状态：草案。这里的内容都还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -187,7 +187,7 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 
 - [ID](source-formats.md#ids)：规定 ID 改为按顺序分配的数字，不再用单词。`rules/*.toml` 里的规定迁移到新格式时获得编号，届时引用 `{@rule:<id>}` 写的就是数字。
 - [规定](rules.md#rules)：规定不再删除，所以不再需要 `rules/retired-ids.txt`；规定改为被取代或废止。`status` 增加 `trial` 和 `superseded`，并增加字段 `supersedes`、每条规定的修订号、`parent`、`requires`、`conflicts`、默认层级 (仓库或用户) 和规定兼容的宪法修订号范围；择一组成为 parent 树上的一种节点。验证方法是每条规定正文的一部分，它的检查是代码 (见[检查](#checks))。
-- [选用规定](rules.md#choosing-rules)：带锁文件、在其中列出规定 (按 ID 或规定包) 的规定清单，取代「默认使用全部通用规定，再点名排除」。规定清单属于一个仓库，可以继承一份基础规定清单，由后者接管法域的那部分职能，并写明它依据的宪法 (见[规定清单与锁文件](#rule-sets-and-the-lock-file))。
+- [选用规定](rules.md#choosing-rules)：带锁文件、在其中列出规定 (按 ID 或规定包) 的规定清单，取代「默认使用全部通用规定，再点名排除」。规定清单属于一个仓库，可以继承一份基础规定清单，由后者接管法域的那部分职能。每份规定清单还写明它依据的宪法 (见[规定清单与锁文件](#rule-sets-and-the-lock-file))。
 - [放宽声明](rules.md#relaxation-declarations)：规定清单不用某条规定，或者在择一组里选了另一个备选项，都不需要放宽。`adjustable` 的值和 `relaxes:` 声明是否保持原样，在实现本设计时决定。
 - [概览](overview.md)：「每个法域自己选用哪些通用规定」这项目标和私有 overlay 选用规定的职责，移到每个仓库的规定清单 (连同继承的基础清单)，overlay 的 apply 步骤变成编译命令；overlay 保留与个人相关的部分和它自己的规定。
 - [Skill](skills.md)：skill 声明自己落实的规定，只有其中某条被选用时才安装。
