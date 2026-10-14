@@ -57,9 +57,11 @@ enum Command {
         #[arg(long)]
         edition: Option<String>,
     },
-    /// Write AGENTS.md from the constitution and the locked rule set.
+    /// Write AGENTS.md from the constitution and the locked rule set, and
+    /// next to it the skills, the checks and the hook configuration.
     Compile {
-        /// Write here instead of AGENTS.md next to statute.toml.
+        /// Write here instead of AGENTS.md next to statute.toml; the other
+        /// files go next to it.
         #[arg(long)]
         output: Option<std::path::PathBuf>,
     },
@@ -125,23 +127,15 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
 
 fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let project = load(root)?;
-    let text = statute::compile::compile(&project).map_err(|e| {
-        eprintln!("statute: error: {e}");
-    })?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
-    if let Ok(existing) = std::fs::read(&path)
-        && !existing.starts_with(format!("{}\n", statute::compile::GENERATED).as_bytes())
-    {
-        eprintln!(
-            "{}: error: not written by statute, so it is left as it is; write elsewhere with --output, or move the file away first",
-            path.display()
-        );
-        return Err(());
+    let written = statute::compile::compile(&project)
+        .and_then(|out| statute::compile::write(&out, &path))
+        .map_err(|e| {
+            eprintln!("statute: error: {e}");
+        })?;
+    for path in written {
+        println!("wrote {}", path.display());
     }
-    std::fs::write(&path, text).map_err(|e| {
-        eprintln!("{}: error: cannot write: {e}", path.display());
-    })?;
-    println!("wrote {}", path.display());
     Ok(())
 }
 
