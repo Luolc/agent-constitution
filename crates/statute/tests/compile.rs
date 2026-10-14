@@ -486,6 +486,7 @@ fn skill(dir: &Path, name: &str, rules: &str) {
     .unwrap();
 }
 
+#[cfg(unix)]
 /// A repository whose rule 3 is enabled and has the skill `three`, rule 6
 /// is not and has the skill `six`, and the skill `none` declares nothing.
 fn skills_repo(name: &str) -> PathBuf {
@@ -496,6 +497,7 @@ fn skills_repo(name: &str) -> PathBuf {
     dir
 }
 
+#[cfg(unix)]
 #[test]
 fn the_skills_of_enabled_rules_are_copied_and_linked() {
     let dir = skills_repo("skills");
@@ -599,6 +601,7 @@ fn the_checks_and_the_hooks_are_written_next_to_agents_md() {
     assert!(checks.ends_with("\ncommands = []\n"), "{checks}");
 }
 
+#[cfg(unix)]
 /// Every file and link below `dir`, with its content or target, sorted.
 fn tree(dir: &Path) -> Vec<(PathBuf, String)> {
     let mut out = Vec::new();
@@ -622,6 +625,7 @@ fn tree(dir: &Path) -> Vec<(PathBuf, String)> {
     out
 }
 
+#[cfg(unix)]
 #[test]
 fn the_whole_output_compiles_to_the_same_bytes() {
     let dir = skills_repo("skills-same");
@@ -634,6 +638,7 @@ fn the_whole_output_compiles_to_the_same_bytes() {
     assert_eq!(tree(&dir), first);
 }
 
+#[cfg(unix)]
 #[test]
 fn a_skill_no_longer_enabled_goes_with_its_link_and_nothing_else() {
     let dir = skills_repo("skills-stale");
@@ -656,46 +661,110 @@ fn a_skill_no_longer_enabled_goes_with_its_link_and_nothing_else() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn compile_writes_nothing_where_something_is_not_its_own() {
     // Each case puts one thing statute did not write where it would
     // write, and leaves the rest empty.
+    const NOT_OURS: &str = "not written by statute, so it is left as it is and nothing is written";
+    const NOT_A_DIRECTORY: &str = "not a directory but a link or a file, so nothing is written; statute writes one link per skill in .claude/skills";
     type Place = fn(&Path);
-    let cases: [(&str, Place); 5] = [
-        ("checks-file", |d| {
-            std::fs::write(d.join("statute-checks.toml"), "mine\n").unwrap();
-        }),
-        ("hooks-file", |d| {
-            std::fs::write(d.join("statute-hooks.yaml"), "mine\n").unwrap();
-        }),
-        ("skill-directory", |d| {
-            std::fs::create_dir_all(d.join(".agents/skills/three")).unwrap();
-            std::fs::write(d.join(".agents/skills/three/SKILL.md"), "mine\n").unwrap();
-        }),
-        ("link-directory", |d| {
-            std::fs::create_dir_all(d.join(".claude/skills/three")).unwrap();
-            std::fs::write(d.join(".claude/skills/three/SKILL.md"), "mine\n").unwrap();
-        }),
-        ("link-elsewhere", |d| {
-            std::fs::create_dir_all(d.join(".claude/skills")).unwrap();
-            std::os::unix::fs::symlink("../../skills/three", d.join(".claude/skills/three"))
-                .unwrap();
-        }),
+    let cases: [(&str, Place, &str); 7] = [
+        (
+            "checks-file",
+            |d| std::fs::write(d.join("statute-checks.toml"), "mine\n").unwrap(),
+            NOT_OURS,
+        ),
+        (
+            "hooks-file",
+            |d| std::fs::write(d.join("statute-hooks.yaml"), "mine\n").unwrap(),
+            NOT_OURS,
+        ),
+        (
+            "skill-directory",
+            |d| {
+                std::fs::create_dir_all(d.join(".agents/skills/three")).unwrap();
+                std::fs::write(d.join(".agents/skills/three/SKILL.md"), "mine\n").unwrap();
+            },
+            NOT_OURS,
+        ),
+        (
+            "link-directory",
+            |d| {
+                std::fs::create_dir_all(d.join(".claude/skills/three")).unwrap();
+                std::fs::write(d.join(".claude/skills/three/SKILL.md"), "mine\n").unwrap();
+            },
+            NOT_OURS,
+        ),
+        (
+            "link-elsewhere",
+            |d| {
+                std::fs::create_dir_all(d.join(".claude/skills")).unwrap();
+                std::os::unix::fs::symlink("../../skills/three", d.join(".claude/skills/three"))
+                    .unwrap();
+            },
+            NOT_OURS,
+        ),
+        // The layout of a repository that links the whole directory.
+        (
+            "links-directory-a-link",
+            |d| {
+                std::fs::create_dir_all(d.join(".agents/skills")).unwrap();
+                std::fs::create_dir_all(d.join(".claude")).unwrap();
+                std::os::unix::fs::symlink("../.agents/skills", d.join(".claude/skills")).unwrap();
+            },
+            NOT_A_DIRECTORY,
+        ),
+        (
+            "skills-directory-a-link",
+            |d| {
+                std::fs::create_dir_all(d.join("elsewhere")).unwrap();
+                std::fs::create_dir_all(d.join(".agents")).unwrap();
+                std::os::unix::fs::symlink("../elsewhere", d.join(".agents/skills")).unwrap();
+            },
+            NOT_A_DIRECTORY,
+        ),
     ];
-    for (name, place) in cases {
+    for (name, place, message) in cases {
         let dir = skills_repo(&format!("refuse-{name}"));
         ok(&statute(&dir, &["lock"]));
         place(&dir);
         let before = tree(&dir);
-        let run = statute(&dir, &["compile"]);
-        assert_eq!(run.code, 1, "{name}");
-        assert!(
-            run.stderr
-                .contains("not written by statute, so it is left as it is and nothing is written"),
-            "{name}: {}",
-            run.stderr
-        );
-        assert_eq!(tree(&dir), before, "{name}");
-        assert!(!dir.join("AGENTS.md").exists(), "{name}");
+        // A second run finds the same and does the same.
+        for round in [1, 2] {
+            let run = statute(&dir, &["compile"]);
+            assert_eq!(run.code, 1, "{name} {round}");
+            assert!(
+                run.stderr.contains(message),
+                "{name} {round}: {}",
+                run.stderr
+            );
+            assert_eq!(tree(&dir), before, "{name} {round}");
+            assert!(!dir.join("AGENTS.md").exists(), "{name} {round}");
+        }
     }
+}
+
+#[cfg(unix)]
+#[test]
+fn a_run_stopped_halfway_is_finished_by_the_next() {
+    use std::os::unix::fs::PermissionsExt as _;
+    let whole = {
+        let dir = skills_repo("halfway-whole");
+        compiled(&dir);
+        tree(&dir)
+    };
+    let dir = skills_repo("halfway");
+    ok(&statute(&dir, &["lock"]));
+    // A file of the skill that cannot be read stops the copy halfway.
+    let more = dir.join("skills/three/references/more.md");
+    std::fs::set_permissions(&more, std::fs::Permissions::from_mode(0o000)).unwrap();
+    let run = statute(&dir, &["compile", "--output", "out.md"]);
+    std::fs::set_permissions(&more, std::fs::Permissions::from_mode(0o644)).unwrap();
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(dir.join(".agents/skills/three/SKILL.md").is_file());
+    assert!(!dir.join("out.md").exists());
+    // The next run takes the half-written skill for its own and finishes.
+    compiled(&dir);
+    assert_eq!(tree(&dir), whole);
 }

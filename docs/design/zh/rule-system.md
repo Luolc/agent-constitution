@@ -1,4 +1,4 @@
-<!-- en-sha256: f14828f66c1e68faae2ceafa0a5ba12a4aeab767505d4d8011236b8e3b260c94 -->
+<!-- en-sha256: 8ac0e06383fb0e4cc085bdf14b08c4504358f448ece2ef5e3373708ebfa9f80c -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -367,7 +367,7 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 - `statute-checks.toml`：编译它的 statute 的版本，写成 `statute = "<version>"`，规定用到的内置检查就在这个二进制里；然后每条 `check = "command"` 的启用规定一张 `[[commands]]` 表，按 ID 排序，写明它的 `rule`、`run` 和 `tools`。这个文件随 statute 的版本变化；
 - `statute-hooks.yaml`：一份 pre-commit 配置，只有一个运行 `statute check` 的本地 hook (`language: system`，所以 `statute` 要在 `PATH` 上)。它不改仓库已有的 `.pre-commit-config.yaml`：用 `pre-commit run --config statute-hooks.yaml` 运行它，或者把它的 hook 抄进仓库自己的配置。
 
-每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，另外两个是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。
+每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，另外两个是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
 
 编译、检查和升级规定清单由同一个命令行工具完成 ([工具与第一版](#the-tool-and-the-first-version))。宪法的编译器暂时仍用 Python ([编译](compilation.md))，以后再并入那个工具。
 

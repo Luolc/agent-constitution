@@ -875,10 +875,19 @@ in the `AGENTS.md`, `# ...` in the other two). Before writing anything,
 the command checks every place it would write, and when one holds
 something it did not write (a file without that first line, a skill
 directory without `.statute-generated`, a `.claude/skills/<name>` that
-is not its link), it writes nothing at all and fails. A skill directory
+is not its link), it writes nothing at all and fails. When a skill is to
+be written, `.agents/skills` and `.claude/skills` must be plain
+directories, or absent: a repository that links the whole of
+`.claude/skills` to `../.agents/skills` fails the command, which names
+the link, since statute writes a link per skill. A skill directory
 with `.statute-generated` that the rule set no longer needs is removed,
 with its link; nothing else in `.agents/skills/` or `.claude/skills/` is
 touched. The same input compiles to the same bytes, links included.
+The files are not written all at once: an error midway, such as a full
+disk, can leave part of the output, and running the command again
+finishes it. The order makes that work: a skill's
+`.statute-generated` is written before its files, a link is removed
+before its directory, and the `AGENTS.md` is written last.
 
 Compiling, checking and upgrading a rule set are one command-line tool
 ([The tool and the first version](#the-tool-and-the-first-version)).

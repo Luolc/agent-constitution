@@ -173,9 +173,12 @@ pub fn compile(project: &Project) -> Result<Output, String> {
 /// each skill as a copy in `.agents/skills/<name>` with a link to it,
 /// `.claude/skills/<name>`, since Claude Code reads only that directory.
 /// Checks every place first, and writes nothing when one holds something
-/// statute did not write. A skill directory statute wrote that is no
-/// longer needed is removed, with its link. Links need a Unix system;
-/// elsewhere a rule set with a skill fails. Returns what was written.
+/// statute did not write, or when `.agents/skills` or `.claude/skills` is
+/// not a plain directory while a skill is to be written. A skill directory
+/// statute wrote that is no longer needed is removed, with its link. An
+/// error midway can leave part of the output; the next run finishes it.
+/// Links need a Unix system; elsewhere a rule set with a skill fails.
+/// Returns what was written.
 pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> {
     let dir = agents_md.parent().unwrap_or(Path::new(""));
     let files = [
@@ -200,6 +203,19 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
         }
     }
     let (skills, links) = (dir.join(SKILLS), dir.join(LINKS));
+    // A link in place of either directory, such as `.claude/skills` to
+    // `../.agents/skills`, would put the copies and the links somewhere
+    // else, or make each skill's link its own copy.
+    if !output.skills.is_empty() {
+        for d in [&skills, &links] {
+            if d.symlink_metadata().is_ok_and(|m| !m.is_dir()) {
+                return Err(format!(
+                    "{}: not a directory but a link or a file, so nothing is written; statute writes one link per skill in {LINKS}, so make it a plain directory, or move it away first",
+                    d.display()
+                ));
+            }
+        }
+    }
     for (name, _) in &output.skills {
         let target = skills.join(name);
         if target.symlink_metadata().is_ok() && !generated_skill(&target) {
@@ -222,13 +238,15 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
 
     let fail = |path: &Path, e: std::io::Error| format!("{}: cannot write: {e}", path.display());
     let mut written = Vec::new();
-    for (path, text, _) in files {
-        std::fs::write(&path, text).map_err(|e| fail(&path, e))?;
-        written.push(path);
-    }
+    // In an order that a run stopped by an error can be repeated from:
+    // each skill's marker before its files, a link removed before its
+    // directory, and the `AGENTS.md` last.
+    //
     // Every skill directory statute wrote goes, the ones still needed
     // included, so that a file taken out of a skill goes too.
-    if let Ok(entries) = std::fs::read_dir(&skills) {
+    if skills.symlink_metadata().is_ok_and(|m| m.is_dir())
+        && let Ok(entries) = std::fs::read_dir(&skills)
+    {
         let mut stale: Vec<PathBuf> = entries
             .filter_map(Result::ok)
             .map(|e| e.path())
@@ -236,17 +254,20 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
             .collect();
         stale.sort();
         for path in stale {
-            std::fs::remove_dir_all(&path).map_err(|e| fail(&path, e))?;
             if let Some(name) = path.file_name() {
                 let link = links.join(name);
                 if links_to(&link, &name.to_string_lossy()) {
                     std::fs::remove_file(&link).map_err(|e| fail(&link, e))?;
                 }
             }
+            std::fs::remove_dir_all(&path).map_err(|e| fail(&path, e))?;
         }
     }
     for (name, from, relative) in sources {
         let target = skills.join(name);
+        std::fs::create_dir_all(&target).map_err(|e| fail(&target, e))?;
+        let marker = target.join(MARKER);
+        std::fs::write(&marker, format!("{GENERATED_HASH}\n")).map_err(|e| fail(&marker, e))?;
         for file in relative {
             let to = target.join(&file);
             if let Some(parent) = to.parent() {
@@ -254,8 +275,6 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
             }
             std::fs::copy(from.join(&file), &to).map_err(|e| fail(&to, e))?;
         }
-        let marker = target.join(MARKER);
-        std::fs::write(&marker, format!("{GENERATED_HASH}\n")).map_err(|e| fail(&marker, e))?;
         written.push(target);
         let link = links.join(name);
         if link.symlink_metadata().is_err() {
@@ -263,6 +282,10 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
             symlink(&link_target(name), &link).map_err(|e| fail(&link, e))?;
         }
         written.push(link);
+    }
+    for (path, text, _) in files.into_iter().rev() {
+        std::fs::write(&path, text).map_err(|e| fail(&path, e))?;
+        written.push(path);
     }
     Ok(written)
 }
