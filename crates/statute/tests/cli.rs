@@ -295,7 +295,7 @@ fn remove_that_would_break_the_rule_set_changes_nothing() {
 #[test]
 fn commands_not_written_yet_exit_2() {
     let dir = repo("later", &manifest("\"ac:3\""), &nodes());
-    for command in ["init", "check", "upgrade"] {
+    for command in ["init", "upgrade"] {
         let run = statute(&dir, &[command]);
         assert_eq!(run.code, 2, "{command}");
         assert_eq!(run.stderr, "statute: this command is not implemented yet\n");

@@ -41,7 +41,7 @@ fn words(lang: &str) -> Words {
 }
 
 /// A text in the language compiled to, or in its original.
-fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
+pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
     text.get(lang)
         .or_else(|| text.get(&node.lang))
         .map_or("", |s| s.trim_matches('\n'))
