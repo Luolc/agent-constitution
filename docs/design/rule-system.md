@@ -125,12 +125,12 @@ cache of the sources, and a thin personal layer for what concerns the
 person, not the project: the language of replies, reading messages as
 speech-to-text, where credentials are kept, how directories are laid out
 on the machine. That layer takes over the personal part of the private
-overlay already in the design.
-Each rule declares a default level (project rules at the repository level,
-rules about the person or the machine at the user level), and the user can
-change it. The reason is that a person who clones the repository, CI and a
-cloud agent cannot read user-level files, and each repository pins its own
-versions and upgrades on its own schedule.
+overlay already in the design. Each rule declares a default level
+(project rules at the repository level, rules about the person or the
+machine at the user level), and the user can change it. The reason is
+that a person who clones the repository, CI and a cloud agent cannot read
+user-level files, and each repository pins its own versions and upgrades
+on its own schedule.
 
 ## Rules and skills
 
@@ -181,9 +181,11 @@ narrow it or reword it, and whether it keeps its ID follows the rule in
 cannot be used together, one of them gets `conflicts = [ID]`. The relation
 is symmetric and written on one side only; the build checks it both ways.
 Three or more rules at one place that conflict with each other are
-alternatives, and are collected under a choice instead. Two rules joined by
-`parent` or `requires`, directly or through other rules, may not be
-declared conflicting; the build fails on it.
+alternatives, and are collected under a choice instead. A rule may not
+be declared in conflict with one that enabling it brings in along `parent`
+or `requires`, directly or through other rules, since enabling the one
+would enable the other; the build fails on it. Sibling rules under one
+parent may conflict.
 
 The build checks these constraints:
 
@@ -302,8 +304,8 @@ and a rule set with its lock file, and writes:
 - an `AGENTS.md`, with the chosen rules in nested blocks along the parent
   tree, one heading level per level of the tree; a subtree whose root is
   not enabled (for a choice: none of its children is) contributes
-  nothing, since none of its rules can be enabled without it, and a requirement that crosses subtrees is rendered as a
-  link.
+  nothing, since none of its rules can be enabled without it, and a
+  requirement that crosses subtrees is rendered as a link.
   Once the file's length passes a token threshold, measured with
   `count-tokens`, it is split into several files;
 - the skill directories the chosen rules need;
@@ -388,6 +390,8 @@ implements this design lands.
 - The concrete fields and commands of the package-manager model
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
   when it is implemented.
+- Where a rule whose default level is the user level is chosen, where it
+  is locked and where it is compiled to.
 - When a rule set enables a rule without one it `requires`, whether the
   build fails or adds the missing rule.
 - The directory layout of the rules and their checks: whether a rule's
