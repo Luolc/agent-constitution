@@ -276,3 +276,18 @@ fn site_rebuilds_its_own_directory_and_leaves_another() {
     assert_eq!(read(&dir, ".statute/site/notes.txt"), "mine\n");
     assert!(!dir.join(".statute/site/index.html").exists());
 }
+
+#[test]
+fn site_writes_nothing_where_git_tracks_a_file() {
+    let dir = four("tracked");
+    // A page of an earlier run, added to git by hand.
+    assert_eq!(statute(&dir, &["site"]).code, 0);
+    git(&dir, &["add", "-f", ".statute/site/index.html"]);
+    let before = read(&dir, ".statute/site/index.html");
+    write(&dir, "rules/7.toml", &rule(7, 1, "").1);
+    let r = statute(&dir, &["site"]);
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    assert!(r.stderr.contains("git tracks it"), "{}", r.stderr);
+    assert_eq!(read(&dir, ".statute/site/index.html"), before);
+    assert!(!dir.join(".statute/site/L/7.html").exists());
+}

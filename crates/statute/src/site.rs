@@ -4,6 +4,7 @@
 
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use crate::cite::{self, Citation, Labels};
 use crate::compile::{labels, pick};
@@ -63,7 +64,13 @@ impl Quadrant {
     }
 
     fn name(self, w: &Words) -> &'static str {
-        w.quadrants[QUADRANTS.iter().position(|q| *q == self).unwrap_or(0)]
+        let [global_public, global_private, local_public, local_private] = w.quadrants;
+        match self {
+            Quadrant::GlobalPublic => global_public,
+            Quadrant::GlobalPrivate => global_private,
+            Quadrant::LocalPublic => local_public,
+            Quadrant::LocalPrivate => local_private,
+        }
     }
 }
 
@@ -89,6 +96,9 @@ struct Words {
     superseded_by: &'static str,
     children: &'static str,
     index: &'static str,
+    /// A one-of and a domain; a status is shown as the rule file
+    /// writes it.
+    kinds: [&'static str; 2],
 }
 
 fn words(lang: &str) -> Words {
@@ -112,6 +122,7 @@ fn words(lang: &str) -> Words {
             superseded_by: "取代它的是",
             children: "下级",
             index: "全部规定",
+            kinds: ["one-of", "领域"],
         },
         _ => Words {
             title: "Rules of this repository",
@@ -137,6 +148,7 @@ fn words(lang: &str) -> Words {
             superseded_by: "Superseded by",
             children: "Below it",
             index: "All rules",
+            kinds: ["one-of", "domain"],
         },
     }
 }
@@ -317,7 +329,7 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
 fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> String {
     let mut out = String::new();
     if node.kind != Kind::Rule {
-        let _ = write!(out, "<span class=\"tag\">{}</span>", node.kind.name());
+        let _ = write!(out, "<span class=\"tag\">{}</span>", kind(w, node.kind));
     }
     let _ = write!(out, "<span class=\"tag\">{}</span>", status(node.status));
     if node.kind == Kind::Rule {
@@ -331,6 +343,14 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> Strin
         let _ = write!(out, "<span class=\"{class}\">{what}</span>");
     }
     out
+}
+
+fn kind(w: &Words, kind: Kind) -> &'static str {
+    match kind {
+        Kind::OneOf => w.kinds[0],
+        Kind::Domain => w.kinds[1],
+        Kind::Rule => "",
+    }
 }
 
 fn status(status: Status) -> &'static str {
@@ -486,15 +506,31 @@ fn escape(text: &str) -> String {
 }
 
 /// Writes the pages to the site's directory below `root`, the directory
-/// of `statute.toml`, in place of what was there. First writes the
-/// directory's `.gitignore` and, in a git repository, checks that git
-/// ignores the pages; writes no page when it does not, or when the
-/// directory is there without statute's `.gitignore`. Returns the
-/// index's path.
+/// of `statute.toml`, in place of what was there, after the
+/// directory's `.gitignore`. Writes nothing when git tracks a file in
+/// the directory, or when the directory is there without statute's
+/// `.gitignore`. Returns the index's path.
 pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
     let site = root.join(dir());
     let fail = |path: &Path, e: std::io::Error| format!("{}: cannot write: {e}", path.display());
     let gitignore = site.join(".gitignore");
+    // The `.gitignore` keeps git from adding a page, but not from
+    // tracking a file someone added already; outside a git repository,
+    // where git cannot tell, nothing can be committed either.
+    let tracked = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["ls-files", "--"])
+        .arg(dir())
+        .output()
+        .map(|out| String::from_utf8_lossy(&out.stdout).into_owned())
+        .unwrap_or_default();
+    if let Some(file) = tracked.lines().next() {
+        return Err(format!(
+            "{file}: git tracks it, so it would commit the pages, private rules included, and no page is written; take the directory out of git with `git rm -r --cached {}`",
+            dir().display()
+        ));
+    }
     if site.symlink_metadata().is_ok() {
         let ours = site.symlink_metadata().is_ok_and(|m| m.is_dir())
             && std::fs::read_to_string(&gitignore).is_ok_and(|t| t == GITIGNORE);
@@ -508,14 +544,6 @@ pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
     }
     std::fs::create_dir_all(&site).map_err(|e| fail(&site, e))?;
     std::fs::write(&gitignore, GITIGNORE).map_err(|e| fail(&gitignore, e))?;
-    // Outside a git repository, where git cannot tell, nothing can be
-    // committed either.
-    if let Ok(private::Ignored::No) = private::ignored(root, &dir().join("index.html")) {
-        return Err(format!(
-            "{}: git does not ignore it, so no page is written",
-            dir().display()
-        ));
-    }
     for p in pages {
         let path = site.join(&p.path);
         if let Some(parent) = path.parent() {
