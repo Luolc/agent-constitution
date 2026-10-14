@@ -1,6 +1,6 @@
 id = 78
 slug = "fleet"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -9,5 +9,13 @@ lang = "en"
 en = "Fleet"
 zh = "Fleet"
 
+[applicability]
+en = '''
+For work divided among agents the way fleet does: one agent talks with the principals, one is responsible for each job, and workers do its tasks, whether fleet or another tool starts them. Not needed when a single agent works with the principals directly.
+'''
+zh = '''
+适用于像 fleet 那样在 agent 之间分工的工作：一个 agent 与委托人对话，每个 job 有一个负责的 agent，worker 做 job 里的任务；agent 由 fleet 起还是由别的工具起都算。只有一个 agent 直接与委托人打交道时不必启用。
+'''
+
 [translations]
-zh = "2bb4f92ced331c66b26c0388e4cf20e4ee5965cf24f3283f1c3633befbf0c4a1"
+zh = "93ecc6d614c66ef3aa6a31bed8f57f4854b3b39d6a6fab050ed6a1cb595bf808"
