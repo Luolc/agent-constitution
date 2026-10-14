@@ -11,12 +11,12 @@ level = "project"
 check = "review"
 
 [title]
-en = "Make each link between design files lead to a heading that exists"
-zh = "设计文件之间的链接要指向实有的标题"
+en = "Make every link of the design lead somewhere"
+zh = "设计里的每个链接都要指向实有之处"
 
 [text.statement]
-en = "In the design, link to another design file by a relative link to a heading that exists."
-zh = "设计里链接另一份设计文件，用相对路径链接到确实存在的标题。"
+en = "Make every link of the design lead somewhere, and link to another design file by a relative link to a heading that exists."
+zh = "设计里的每个链接都要指向实有之处；链接另一份设计文件，用相对路径链接到确实存在的标题。"
 
 [text.reason]
 en = '''
@@ -30,13 +30,13 @@ zh = '''
 en = '''
 A link to another design file is relative, and its anchor names a heading that exists. Where the repository has a check that every relative link of the design leads to a file, it runs in CI; whether an anchor exists is judged in review.
 
-Violated when the design has a link to another design file that leads nowhere.
+Violated when the design has a link that leads nowhere.
 '''
 zh = '''
 指向另一份设计文件的链接用相对路径，锚点指向确实存在的标题。仓库如果有检查设计里每个相对链接都指向某个文件，这项检查在 CI 里运行；锚点是否存在，由审查判断。
 
-设计里有指向另一份设计文件、却指向不存在之处的链接，即为违反本规定。
+设计里有指向不存在之处的链接，即为违反本规定。
 '''
 
 [translations]
-zh = "1200fb52a815204755f56a5424eaa1b627c754760a57529cd55804fc21d97b73"
+zh = "7c8db34f132862914669ce070d4d49de9d5a8bc1c5d23fd89ac69a1c430d2897"
