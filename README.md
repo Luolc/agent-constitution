@@ -64,7 +64,7 @@ deleted: it is superseded or repealed.
 The format, the rule tree, packs and the review loop are in
 [Rule system](docs/design/rule-system.md).
 
-## command: statute
+## Command: `statute`
 
 `statute` is the rule system's command, in Rust, in
 [`crates/statute`](crates/statute/). It is under development: it reads
