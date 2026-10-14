@@ -529,7 +529,8 @@ which differs from the full version in this:
   it. In its place
   is a note of the build script's own, one sentence per language in
   `LANGUAGES`: that this is the version for agents, while `index.toml` is
-  `draft` that the constitution is a draft not in force, once `active`
+  `draft` that the constitution is a draft that may be used on a trial
+  basis but is not final, once `active`
   that every agent must follow it; that the preamble and the text of the
   provisions written for human readers, on how the constitution is
   organized and amended, are left out, with only a pointer to the full
