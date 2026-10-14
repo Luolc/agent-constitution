@@ -124,9 +124,9 @@ LANGUAGES = {
             " Status: {status}. Revision: {revision}. Language: English."
         ),
         legend=(
-            " Parts marked \\* are about how this constitution came about, is organized and is"
-            " amended, and are shown to people by default; the version compiled for agents,"
-            " `constitution/constitution.en.agent.md`, leaves out their text by default."
+            " \\* Background for people: where this constitution comes from, how it is organized"
+            " and how it is amended. The agent version, `constitution/constitution.en.agent.md`,"
+            " omits these parts."
         ),
         agent_header=(
             "Generated from `constitution/index.toml` and `constitution/articles/`"
@@ -164,8 +164,8 @@ LANGUAGES = {
             "改源文件后重新生成。状态：{status}。修订号：{revision}。语言：中文。"
         ),
         legend=(
-            "标 \\* 的部分讲本宪法的由来、编排和修改，默认只对人可见；给 agent 编译的版本"
-            " `constitution/constitution.zh.agent.md` 默认不收录它们的正文。"
+            "\\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版"
+            " `constitution/constitution.zh.agent.md` 不收录这些部分。"
         ),
         agent_header=(
             "本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和"

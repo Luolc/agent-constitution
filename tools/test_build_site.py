@@ -85,31 +85,36 @@ class PageTest(unittest.TestCase):
                               f'<li class="length">{line}<span class="count-info">', out)
 
     def test_popup(self):
-        """The lengths of both versions in a table first, then how they were
-        counted, then the link to the version for agents."""
+        """The lengths of both versions in a table first, then a list of notes:
+        what the version for agents leaves out, how the tokens were counted
+        and at which revision; then the link to the version for agents."""
         cases = [
             ("en", 12345, 345, "abc1234",
-             ["", "characters", "words", "tokens", "For agents", "15", "3", "345", "Full, this page", "25", "5", "12,345"],
-             ["Tokens counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5.",
-              "The version for agents leaves out the preamble, keeps only a pointer to the full version for the"
-              " other parts marked *, and has no anchors or links.",
+             ["", "characters", "words", "tokens", "Agent version", "15", "3", "345", "Full version, this page", "25", "5", "12,345"],
+             [
+              "The agent version omits the background for people, the parts marked *: the preamble entirely, the"
+              " others but for a pointer to the full version. It has no anchors or links either.",
+              "Tokens counted by Anthropic's token counting API for Claude Opus 5.5.",
               "Counted at revision 0.6, commit abc1234."]),
             ("en", None, None, None,
-             ["", "characters", "words", "tokens", "For agents", "15", "3", "—", "Full, this page", "25", "5", "—"],
-             ["Tokens are counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5; this build"
-              " had no credential for it, or the call failed, so they were not counted.",
-              "The version for agents leaves out the preamble, keeps only a pointer to the full version for the"
-              " other parts marked *, and has no anchors or links.",
+             ["", "characters", "words", "tokens", "Agent version", "15", "3", "—", "Full version, this page", "25", "5", "—"],
+             [
+              "The agent version omits the background for people, the parts marked *: the preamble entirely, the"
+              " others but for a pointer to the full version. It has no anchors or links either.",
+              "Tokens are counted by Anthropic's token counting API for Claude Opus 5.5; this build had no"
+              " credential for it, or the call failed, so they were not counted.",
               "Counted at revision 0.6."]),
             ("zh", 12345, 345, "abc1234",
              ["", "字符", "token", "agent 版", "11", "345", "完整版 (本页)", "15", "12,345"],
-             ["token 数由 Anthropic 的 token 计数接口 (count_tokens) 按 claude-opus-5-5 计算。",
-              "agent 版不含序言，其余标 * 的部分只留一句「见完整版」，也不含锚点和链接。",
+             [
+              "agent 版不收录写给人看的背景，即标 * 的部分：序言整段不收录，其余只留一句「见完整版」。agent 版也不含锚点和链接。",
+              "token 数由 Anthropic 的 token 计数接口按 Claude Opus 5.5 计算。",
               "按修订号 0.6、commit abc1234 计算。"]),
             ("zh", None, None, None,
              ["", "字符", "token", "agent 版", "11", "—", "完整版 (本页)", "15", "—"],
-             ["token 数按 Anthropic 的 token 计数接口 (count_tokens) 以 claude-opus-5-5 计数；这次构建没有凭证，或者调用失败，未计算。",
-              "agent 版不含序言，其余标 * 的部分只留一句「见完整版」，也不含锚点和链接。",
+             [
+              "agent 版不收录写给人看的背景，即标 * 的部分：序言整段不收录，其余只留一句「见完整版」。agent 版也不含锚点和链接。",
+              "token 数由 Anthropic 的 token 计数接口按 Claude Opus 5.5 计算；这次构建没有凭证，或者调用失败，所以没有算。",
               "按修订号 0.6 计算。"]),
         ]
         for lang, tokens, agent_tokens, commit, table, notes in cases:
@@ -127,8 +132,9 @@ class PageTest(unittest.TestCase):
                 self.assertEqual(re.findall(r'role="(rowheader|columnheader|cell)"', popup),
                                  ["columnheader"] * (len(labels["columns"]) + 1)
                                  + (["rowheader"] + ["cell"] * len(labels["columns"])) * 2)
-                self.assertEqual(re.findall(r'<span class="count-note">([^<]*)</span>', popup), notes)
-                self.assertTrue(popup.endswith(f'</span><a class="count-link" href="{labels["home"]}agent/">'
+                self.assertEqual(re.findall(r'<span class="count-note" role="listitem">([^<]*)</span>', popup), notes)
+                self.assertIn('</span></span><span class="count-notes" role="list"><span class="count-note"', popup)
+                self.assertTrue(popup.endswith(f'</span></span><a class="count-link" href="{labels["home"]}agent/">'
                                                f'{labels["agent_link"]}</a>'))
 
     def test_agent_page(self):
@@ -152,14 +158,14 @@ class PageTest(unittest.TestCase):
                     self.assertNotIn(anchor_or_link, text)
 
     def test_legend_when_a_provision_is_marked(self):
-        """The legend says in words what the asterisk marks and links to the
-        version for agents; the asterisk in it is not a superscript."""
+        """The legend starts with the asterisk, marked up as in the text, says
+        in words what it marks and links to the version for agents."""
         legends = {
-            "en": ('<li class="legend">Parts marked <span class="mark">*</span> are about how this constitution came'
-                   ' about, is organized and is amended, and are shown to people by default; <a href="/agent/">the'
-                   ' version compiled for agents</a> leaves out their text by default.</li></ul>\n'),
-            "zh": ('<li class="legend">标 <span class="mark">*</span> 的部分讲本宪法的由来、编排和修改，默认只对人可见；'
-                   '<a href="/zh/agent/">给 agent 编译的版本</a>默认不收录它们的正文。</li></ul>\n'),
+            "en": ('<li class="legend"><sup class="omitted">*</sup> Background for people: where this constitution'
+                   ' comes from, how it is organized and how it is amended. <a href="/agent/">The agent version</a>'
+                   ' omits these parts.</li></ul>\n'),
+            "zh": ('<li class="legend"><sup class="omitted">*</sup> 写给人看的背景：本宪法的由来、结构和修改方式。'
+                   '<a href="/zh/agent/">agent 版</a>不收录这些部分。</li></ul>\n'),
         }
         for lang, legend in legends.items():
             with self.subTest(lang=lang):
