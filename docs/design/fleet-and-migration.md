@@ -30,3 +30,8 @@ Method and order only; the per-rule mapping is its own piece of work.
 7. Cutover: the overlay's apply step installs the compiled file in place of
    the hand-written one; load verification passes; the hand-written source
    is retired.
+
+[Rule sources](rule-sources.md#cutover-from-the-hand-written-guide)
+splits the destination "private rule" of step 3 by scope and
+visibility, turns step 6 into overrides and one-ofs, and says when step
+7 may happen.
