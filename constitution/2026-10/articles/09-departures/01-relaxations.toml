@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Project overrides of the default items of {@must-ask} ({@list-defaults}). For its own project, the project's instructions or its charter may move any of those items to {@decide-yourself} or to the middle ground ({@middle-ground}), wholly or under written conditions. {@must-ask.amendments} and {@must-ask.reversing-decisions} may not be moved.
+Project overrides of the default items of {@must-ask} ({@list-defaults}). For its own project, the project's instructions may move any of those items to {@decide-yourself} or to the middle ground ({@middle-ground}), wholly or under written conditions. {@must-ask.amendments} and {@must-ask.reversing-decisions} may not be moved.
 '''
 zh = '''
-项目对{@must-ask}默认事项的另行规定 ({@list-defaults})。项目的指令或项目章程可以为本项目把其中任何一项移到{@decide-yourself}或中间地带 ({@middle-ground})，可以整项移动，也可以附书面条件。{@must-ask.amendments}和{@must-ask.reversing-decisions}不得移动。
+项目对{@must-ask}默认事项的另行规定 ({@list-defaults})。项目的指令可以为本项目把其中任何一项移到{@decide-yourself}或中间地带 ({@middle-ground})，可以整项移动，也可以附书面条件。{@must-ask.amendments}和{@must-ask.reversing-decisions}不得移动。
 '''
 
 [[items]]
@@ -42,8 +42,8 @@ status = "draft"
 
 [items.content]
 en = '''
-Personal information. Where a project's work needs it, the project's instructions or its charter may set which personal information may be kept as it is and where it may be made public, in place of the default anonymization or de-identification of {@personal-info}. Personal information made public as so declared needs no consent each time under {@must-ask.irreversible-effects}.
+Personal information. Where a project's work needs it, the project's instructions may set which personal information may be kept as it is and where it may be made public, in place of the default anonymization or de-identification of {@personal-info}. Personal information made public as so declared needs no consent each time under {@must-ask.irreversible-effects}.
 '''
 zh = '''
-个人信息。项目的工作需要时，项目的指令或项目章程可以规定哪些个人信息可以保留原样、可以在哪里公开，代替{@personal-info}默认的匿名化或者脱敏。按这样的声明公开个人信息，不必再依照{@must-ask.irreversible-effects}逐次征得同意。
+个人信息。项目的工作需要时，项目的指令可以规定哪些个人信息可以保留原样、可以在哪里公开，代替{@personal-info}默认的匿名化或者脱敏。按这样的声明公开个人信息，不必再依照{@must-ask.irreversible-effects}逐次征得同意。
 '''

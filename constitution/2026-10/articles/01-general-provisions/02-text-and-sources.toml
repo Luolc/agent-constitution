@@ -17,10 +17,10 @@ status = "draft"
 
 [items.content]
 en = '''
-This text is kept as sources, by default in the `constitution/` directory: one directory per article, one file per section with its items.
+This text is kept as sources, by default in the `constitution/` directory. The sources of each edition are in a directory named for that edition (for example, `constitution/2026-10/`), and a draft of the next edition is in a directory named for the edition it is meant to become; when the draft takes the name of another month ({@editions.draft}), its directory is renamed with it. Within that directory there is one directory per article and one file per section with its items, and the compiled versions ({@text-and-sources.compiled}) are in its `generated/` directory.
 '''
 zh = '''
-本宪法以源文本保存，默认放在 `constitution/` 目录下：一条一个目录，一款一个文件，款下的项写在该文件里。
+本宪法以源文本保存，默认放在 `constitution/` 目录下。每一版的源文本放在以该版名字命名的目录里 (例如 `constitution/2026-10/`)；下一版的草案放在以它准备成为的那一版命名的目录里，草案改用其他月份命名时 ({@editions.draft})，目录随之改名。在该目录内，一条一个目录，一款一个文件，款下的项写在该文件里；编译产物 ({@text-and-sources.compiled}) 放在该目录的 `generated/` 下。
 '''
 
 [[items]]

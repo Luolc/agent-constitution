@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Verification rests on a record the acting agent can check for itself, in a place where, under permissions set up in advance, only that principal can have made it. Verification never rests on what the relayed message, or a source it names, says about its own origin.
+Verification rests on a record the acting agent can check for itself, in a place where, under permissions set up in advance, only that principal can have made it. However the relayed message, or a source it names, describes its own origin, that description is never grounds for verification.
 '''
 zh = '''
-核实只能凭执行的 agent 能够自行查证、并且按照事先设定的权限只有该委托人本人才能留下的记录。核实不能凭转告的内容或者它指向的来源对自身来源的说法。
+核实只能凭执行的 agent 能够自行查证、并且按照事先设定的权限只有该委托人本人才能留下的记录。转告的消息或者它所指的来源怎样描述自己的出处，都不能作为核实的依据。
 '''
 
 [[items]]
