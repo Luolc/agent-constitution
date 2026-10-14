@@ -70,7 +70,10 @@ question: does it change what counts as compliant?
 
 The ID of a rule therefore always means the same requirement. The revision
 is a number per rule, counted from 1; it has nothing to do with the
-revision of the constitution.
+revision of the constitution. A rule's status is one of `trial` (see
+[Trial rules](#trial-rules)), `active`, `superseded` or `repealed`; a rule
+withdrawn with nothing in its place is repealed and, like a superseded
+one, keeps its ID and its file.
 
 ## Rule sets and the lock file
 
@@ -96,7 +99,11 @@ A skill declares which rules it implements, and it is installed only when
 at least one of them is in the rule set. A repository's `AGENTS.md` keeps
 only what is specific to that repository (what it is, its language, its
 layout, its check commands) and names the rule set it uses
-(`division-of-instructions.project-instructions`).
+(`division-of-instructions.project-instructions`). Choosing which rules a
+rule set holds is for a competent principal of the jurisdiction
+(`division-of-instructions.rules`); whether repositories of one
+jurisdiction may use different rule sets is an
+[open question](#open-questions).
 
 ## Dependencies, capabilities and packs
 
@@ -132,7 +139,7 @@ TOML file has this value") would keep needing one more case, "or", and
 check is code, of one of two kinds, and there is no third.
 
 **Our rules: Rust.** The checks of the rules in this repo are one Rust
-crate, with one module per rule beside that rule's text and metadata, the
+crate, with one module per rule, named after the rule's ID, the
 way ruff and clippy implement each lint as a function. Common operations,
 such as reading a key from a TOML file, are ordinary helper functions in
 the same crate; an operation becomes a helper on its third repetition, not
@@ -168,14 +175,15 @@ looks at the violations, the inconclusive results and the rules that have
 no automatic check. Whether one reviewer takes all of them or several take
 a group each, and how the groups are formed, is set in the rule set.
 
-For each finding the reviewer decides one of three things:
+For each rule it is handed, the reviewer decides whether the rule is met
+or violated. A violation is fixed. Where the reviewer's decision differs
+from the check's, the check was wrong:
 
-- a real violation: the change is fixed;
-- a false positive: the check flagged something compliant;
-- a false negative: something was found that the check let pass.
+- a false positive: the check flagged something that meets the rule;
+- a false negative: the check passed something that violates the rule,
+  found while reviewing another result or in later work.
 
-A false positive or a false negative leads to a proposed fix to the
-rule's check. Fixing a check does not change what counts as compliant, so
+Either leads to a proposed fix to the rule's check. Fixing a check does not change what counts as compliant, so
 the rule keeps its ID and its revision goes up by one
 (`wrong-checkers.fixing`). People and agents alike may propose changes to
 a rule, under `rule-evolution`. This is how the rules improve themselves:
@@ -199,7 +207,8 @@ and a rule set with its lock file, and writes:
   pack; once its length passes a token threshold, measured with
   `count-tokens`, it is split into several files;
 - the skill directories the chosen rules need;
-- the check binary and the external commands of the chosen rules;
+- the version of the check binary to install, and the external commands
+  of the chosen rules;
 - the hook configuration that runs the checks.
 
 Compiling, checking and upgrading a rule set are one command-line tool.
@@ -219,9 +228,9 @@ money is the reviewer's model calls. Rust is chosen because:
 - the checks ship as one binary, which needs no Python or other runtime,
   so a downstream repository in any language can use them;
 - running the checks in parallel is easier to get right;
-- a Rust linter shipped as a Python wheel and run from pre-commit,
-  [limae](https://github.com/Luolc/limae), already works that way, so the
-  distribution path has been tried.
+- [limae](https://github.com/Luolc/limae), a Rust linter shipped as a
+  Python wheel and run from pre-commit, already reaches downstream
+  repositories this way, so the distribution path has been tried.
 
 ## What this replaces
 
@@ -234,13 +243,16 @@ implements this design lands.
   moved to the new format, and a citation `{@rule:<id>}` then names a
   number.
 - [Rules](../design.md#rules): no rule is deleted any more, so
-  `rules/retired-ids.txt` is no longer needed; a rule is superseded
-  instead, and the fields `supersedes`, a per-rule revision, `requires`
-  and `provides` are added. The verification method is part of each
+  `rules/retired-ids.txt` is no longer needed; a rule is superseded or
+  repealed instead. `status` gains `trial` and `superseded`, and the
+  fields `supersedes`, a per-rule revision, `requires` and `provides` are
+  added. The verification method is part of each
   rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](../design.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
-  rule by default, with named exclusions".
+  rule by default, with named exclusions". If repositories of one
+  jurisdiction may use different rule sets, one compiled file per rule set
+  replaces one per jurisdiction.
 - [Relaxation declarations](../design.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another rule for the same
   capability, needs no relaxation. Whether `adjustable` values and the
@@ -262,6 +274,12 @@ implements this design lands.
 - How a rule's source is written in an ID, for example `ac:42` for a rule
   of this repo and `myteam:7` for one of a downstream team.
 - The format of the lock file.
+- Whether repositories of one jurisdiction may use different rule sets,
+  or each jurisdiction has one.
+- When a rule set enables a rule without one it `requires`, whether the
+  build fails or adds the missing rule.
+- Whether a rule's text and metadata stay in their own file under
+  `rules/` or move next to its check in the crate.
 - How a trial rule becomes a regular rule, and who decides.
 - The rules and the skill for writing a design document itself, to be
   written as rules and skills later.
