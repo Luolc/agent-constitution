@@ -29,8 +29,8 @@ status = "draft"
 
 [items.content]
 en = '''
-Relaxing: removing or narrowing a default item of {@must-ask}, or moving it to {@decide-yourself}. For all projects, by amendment ({@amendment-procedure}); for an item the rule library added, by a change to that rule that a principal whose authority covers the item approves on that change; for one project, under {@relaxations.project-overrides}.
+Relaxing: removing or narrowing a default item of {@must-ask}, or moving it to {@decide-yourself}. For all projects, by amendment ({@amendment-procedure}); for an item the rule library added, by a change to that rule that the competent principal approves on that change; for one project, under {@relaxations.project-overrides}.
 '''
 zh = '''
-放宽：删除或者缩小{@must-ask}的默认事项，或者把它移到{@decide-yourself}。对所有项目放宽，要修宪 ({@amendment-procedure})；规定库增加的事项，修改那条规定，并由权限覆盖该事项的委托人在这次变更上批准；只对一个项目放宽，依照{@relaxations.project-overrides}。
+放宽：删除或者缩小{@must-ask}的默认事项，或者把它移到{@decide-yourself}。对所有项目放宽，要修宪 ({@amendment-procedure})；规定库增加的事项，修改那条规定，并由有权委托人在这次变更上批准；只对一个项目放宽，依照{@relaxations.project-overrides}。
 '''

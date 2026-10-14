@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-A lower-ranking provision relaxes a higher-ranking one only by declaring so explicitly, under one of the items below. The declaration names the item it relies on, what it relaxes, and its scope and conditions. A declaration under {@relaxations.project-overrides} or {@relaxations.project-personal-info} needs the approval of a principal with authority over that project, given on the change that adds it.
+A lower-ranking provision relaxes a higher-ranking one only by declaring so explicitly, under one of the items below. The declaration names the item it relies on, what it relaxes, and its scope and conditions. A declaration under {@relaxations.project-overrides} or {@relaxations.project-personal-info} needs the approval of the competent principal for that project, given on the change that adds it.
 '''
 zh = '''
-下位法放宽上位法，只能依照下列某一项明确声明。声明要写明依据的是哪一项、放宽什么，以及适用范围和条件。依照{@relaxations.project-overrides}或{@relaxations.project-personal-info}作出的声明，须由对该项目有权限的委托人在加入这项声明的那次变更上批准。
+下位法放宽上位法，只能依照下列某一项明确声明。声明要写明依据的是哪一项、放宽什么，以及适用范围和条件。依照{@relaxations.project-overrides}或{@relaxations.project-personal-info}作出的声明，须由该项目的有权委托人在加入这项声明的那次变更上批准。
 '''
 
 [[items]]
