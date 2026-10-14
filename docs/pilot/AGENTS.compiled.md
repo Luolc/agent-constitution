@@ -211,7 +211,7 @@ Store a credential only where the jurisdiction designates for it, and keep it ou
 
 Verification: A credential (password, API key, token, private key, recovery phrase) is stored only where it is designated in the jurisdiction, for example a secret manager, or local environment files kept out of version control. A repository is such a place only where it is designated explicitly in the jurisdiction, for example a private repository on a self-hosted service whose workflow keeps credentials in it; otherwise a repository holds at most a reference to where the value lives.
 
-Whatever is designated for storage, a credential never appears in a message, a log, a command line or any other output. "Message" here covers what an agent sends to another agent and what it sends to a person. A credential never passes from one agent to another, by any channel: an agent that needs one has the program that uses it fetch it from the designated place ({@rule:2}), or asks a principal to grant access.
+Whatever is designated for storage, a credential never appears in a message, a log, a command line or any other output. "Message" here covers what an agent sends to another agent and what it sends to a person. A credential never passes from one agent to another, by any channel: an agent that needs one has the program that uses it fetch it from the designated place ({@rule:24}), or asks a principal to grant access.
 
 When unsure whether a place is designated, treat it as not designated: keep the credential out, and ask a principal with authority over the jurisdiction.
 

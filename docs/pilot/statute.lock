@@ -18,8 +18,8 @@ sha256 = "1f8c86e7836aa8d27e85519ad002edf352ab74cf88d817fcdcaf7b0d82659d13"
 [[rules]]
 source = "ac"
 id = 3
-revision = 1
-sha256 = "8c3872671024a5dee84d42ae4a077e4138c5ceaa697f6322b79c36504d3ee02a"
+revision = 2
+sha256 = "0742c6de2206612a4ca4d75443e54ba6ee8039c5581fc4cc07a70e63d6bed08f"
 
 [[rules]]
 source = "ac"
