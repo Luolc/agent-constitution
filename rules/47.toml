@@ -1,0 +1,42 @@
+id = 47
+slug = "generated-file-side"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["separate-instruction-changes"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "A generated file goes with the side that changed it"
+zh = "生成文件归入使它发生变化的那一方"
+
+[text.statement]
+en = "Count a generated file with the side of the work that changed it, and when a change to tools changes it, say that only its rendering changed."
+zh = "生成文件归入使它发生变化的那一方；工具的修改使它发生变化的，说明变化只在渲染。"
+
+[text.reason]
+en = '''
+A generated file of instructions binds agents as its sources do. A change to tools that changed its meaning would alter the instructions binding agents in a change that does other work, and so get around their being changed on their own ({@constitution:separate-instruction-changes}).
+'''
+zh = '''
+由指令生成的文件和它的源文件一样约束 agent。工具的修改如果改变了它的含义，就是在做其他工作的变更里改动了约束 agent 的指令，绕开了指令单独修改的要求 ({@constitution:separate-instruction-changes})。
+'''
+
+[text.verification]
+en = '''
+A generated file that CI shows to equal the output of its build is not classed on its own ({@rule:46}): it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
+
+Violated when a change to tools changes a generated file and its description does not say that only the rendering changed, or when a change to tools changes the meaning of a generated file.
+'''
+zh = '''
+CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:46})，归入使它发生变化的那一方。工具的修改使这类文件发生变化的，变更说明里写明变化只在渲染、不改变含义，由审查核对这一点。含义变了的，按修改指令处理。
+
+工具的修改使生成文件发生变化，而变更说明没有写明变化只在渲染的，或者工具的修改改变了生成文件的含义的，即为违反本规定。
+'''
+
+[translations]
+zh = "36dafd5e09cccef25e784362eaf8a3cba24dc305c3a80ff2abb6fe27e752d371"

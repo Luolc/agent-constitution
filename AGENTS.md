@@ -284,7 +284,7 @@ For leads and workers that `fleet` starts in this repo.
   --detach <head-sha>`, never a bare `git worktree add`: fleet removes what
   it recorded at `fleet job end`.
 - Instruction files change in a task and a PR of their own
-  (`rules/7.toml`); CI fails a PR that mixes them
+  (`rules/46.toml`); CI fails a PR that mixes them
   with other files. The constitution sources (`constitution/2026-10/index.toml`,
   `constitution/2026-10/articles/`) change in a PR of their own, with no other
   file but the regenerated `constitution/2026-10/generated/constitution.*.md`.
