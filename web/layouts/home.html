@@ -24,7 +24,7 @@
 {{- end }}
 {{- $model := site.Params.tokenCount.name }}
 <article class="markdown book-article"><div class="constitution">
-{{ printf "# %s" .Title | .RenderString }}
+{{ partial "constitution/title.html" . }}
 <ul class="revision">{{ partial "constitution/revision.html" . -}}
 <li class="length">
   {{- i18n "length" (dict "characters" (lang.FormatNumberCustom 0 $agentLength.characters) "words" (lang.FormatNumberCustom 0 $agentLength.words)) }} · {{ with $agentTokens }}{{ i18n "tokens" (dict "tokens" (lang.FormatNumberCustom 0 .)) }}{{ else }}{{ i18n "no-tokens" }}{{ end -}}

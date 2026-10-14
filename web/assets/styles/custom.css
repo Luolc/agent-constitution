@@ -106,10 +106,16 @@
 
 .constitution h1 {
   text-align: center;
-  font-size: 2em;
+  font-size: 1.75em;
   font-weight: var(--c-weight-bold);
   letter-spacing: .04em;
   margin: 1.2em 0 .2em;
+}
+/* A narrow screen breaks the title only before the parenthesis. */
+.constitution h1 .nobreak { white-space: nowrap; }
+/* The narrowest phones: the name still fits on its line. */
+@media (max-width: 22.5rem) {
+  .constitution h1 { font-size: 1.5em; }
 }
 /* Under the title, a list without bullets: on the home pages the
    revision, the length of the version for agents and the legend of the

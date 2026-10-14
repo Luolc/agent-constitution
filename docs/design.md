@@ -294,12 +294,13 @@ content carries over.
 
 The constitution is compiled by `tools/build_constitution.py` and the
 `tools/constitution_*.py` modules it calls (Python standard library only,
-run with `uv run` in the environment of `pyproject.toml`) from `constitution/index.toml` and one directory per
-article under `constitution/articles/`. It writes two files for each
-language in `index.toml`, `constitution/constitution.<lang>.md` (the full
-version) and `constitution/constitution.<lang>.agent.md` (the version for
-agents, see The version for agents), committed and never edited by hand;
-`--check` writes nothing and runs the checks under Checkers.
+run with `uv run` in the environment of `pyproject.toml`) from
+`constitution/index.toml` and one directory per article under
+`constitution/articles/`. It writes two files for each language in
+`index.toml`, `constitution/constitution.<lang>.md` (the full version) and
+`constitution/constitution.<lang>.agent.md` (the version for agents, see
+The version for agents), committed and never edited by hand; `--check`
+writes nothing and runs the checks under Checkers.
 
 ```text
 constitution/articles/
@@ -428,7 +429,7 @@ is written `⟨must-ask⟩` in the table:
 
 | Item | en | zh |
 | --- | --- | --- |
-| Title | `# Agent Constitution (2026-10 edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
+| Title | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
 | Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
 | List item | `    -   ⟨must-ask.capital⟩(**3**) <content>` | `    -   ⟨must-ask.capital⟩(**三**) <content>` |
@@ -735,8 +736,13 @@ it is a release (rule `must-ask-items`) and not set up.
   the header line, a blank line and the `# ` title. The layout
   (`web/layouts/home.html`) sets the title, the list under it and the
   text in `<div class="constitution">`, the root the style sheet hangs
-  on; the revision from `index.toml` is followed by `(draft)` (`(草案)`)
-  while its `status` is `draft`. Its words, in both languages, are in
+  on. The title (`web/layouts/_partials/constitution/title.html`) has no
+  `#` link from the theme and keeps its name and its parenthesis each on
+  one line, so a narrow screen breaks it only before the parenthesis; its
+  size is chosen so that it fits on one line in a desktop window 1400
+  pixels wide. The revision from `index.toml` is followed by `(draft)`
+  (`(草案)`) while its `status` is `draft`. Its words, in both languages,
+  are in
   `web/i18n/`. Under
   the title is a list without bullets: the revision and the length
   (below), each centered under the title, and, when the text has an
@@ -982,11 +988,11 @@ first one that finds errors, printing all of that one's errors:
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
-(`tools/test_constitution_checks.py`, `tools/test_constitution_base.py`). Checks 1 to 6 and the tests run as
-commit hooks and in CI; check 7 runs in CI only, on a pull request
-against the tip of the base branch the checked-out merge commit was made
-on (its first parent), on a push to `main` against the commit before the
-push.
+(`tools/test_constitution_checks.py`, `tools/test_constitution_base.py`).
+Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
+CI only, on a pull request against the tip of the base branch the
+checked-out merge commit was made on (its first parent), on a push to
+`main` against the commit before the push.
 
 The revision part is only as good as that base. The required check `check`
 is strict: a pull request must be up to date with `main` before it merges,
