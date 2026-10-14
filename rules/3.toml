@@ -1,6 +1,6 @@
 id = 3
 slug = "credential-storage"
-revision = 3
+revision = 4
 kind = "rule"
 status = "superseded"
 superseded-by = 43
