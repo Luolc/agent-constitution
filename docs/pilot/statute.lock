@@ -1,0 +1,300 @@
+# Written by statute from statute.toml; do not edit by hand.
+
+[constitution]
+path = "../.."
+edition = "2026-10"
+revision = "1"
+
+[[sources]]
+name = "R"
+path = "../.."
+
+[[rules]]
+rule = "R1"
+revision = 3
+sha256 = "31c47a57c91a40392fdcc0a82bd02ea4e8a93c6dbb587f7607c093c51fc7af5c"
+
+[[rules]]
+rule = "R17"
+revision = 1
+sha256 = "eda3ade4e99c563a528671001b2b1cc0ed71bc52843438faaa99997f7df50256"
+
+[[rules]]
+rule = "R18"
+revision = 2
+sha256 = "26a7e82d5b3837d9e7cfe00f972039a9c52374f8e49e5232c818d1467bcf3ca8"
+
+[[rules]]
+rule = "R19"
+revision = 2
+sha256 = "623e6b10f894bc887453ac7af3e5ab80fc8e1c7064f58ef64a70963794e65267"
+
+[[rules]]
+rule = "R20"
+revision = 2
+sha256 = "64e41b5fb27c835e5fe6b7e46bf866ae577cf4e503e9d0232846efb161a75976"
+
+[[rules]]
+rule = "R21"
+revision = 3
+sha256 = "619c1264cc79874e364093ce87c02018c73c0cbaf07a45a4072a9e86dae4523b"
+
+[[rules]]
+rule = "R22"
+revision = 3
+sha256 = "50601c6fd2300ce752b9aca55e82694dd723da6323ce7352d50fcd9ab1b2d761"
+
+[[rules]]
+rule = "R23"
+revision = 3
+sha256 = "cc67784400c0aab4f1451b73406fe759afc72b66945f76a3376929e1f42de186"
+
+[[rules]]
+rule = "R24"
+revision = 3
+sha256 = "17dc0f6139cc187f46737f6c8cffd74b05f57a3b1cb7cdb5560cf6ffa4475f84"
+
+[[rules]]
+rule = "R28"
+revision = 3
+sha256 = "236dda446062ebfeb81c1c839bf587ce68a85c19efd68f324624f1b360371b06"
+
+[[rules]]
+rule = "R29"
+revision = 3
+sha256 = "5c569f33e2db01719a61ce513a7e4417fb4d46420102567543ff87e7f01814b2"
+
+[[rules]]
+rule = "R30"
+revision = 3
+sha256 = "0912c9ff091ff4a6ccef0362387862f1b56539813dd3fe1cff17dbcf84172608"
+
+[[rules]]
+rule = "R31"
+revision = 3
+sha256 = "060961d313e3759b7f5d09985decd1f0e94a2e111fd06e9dff31635f4638890e"
+
+[[rules]]
+rule = "R32"
+revision = 3
+sha256 = "14ba65451272e21fc7cdd2a08426f5971902341b95d766173adeec1f537aa249"
+
+[[rules]]
+rule = "R33"
+revision = 3
+sha256 = "249d21bd04ce3b3683aa6385e361e3c241529070dd50cfa2570400ffa8162278"
+
+[[rules]]
+rule = "R34"
+revision = 3
+sha256 = "e0e5195ddc9cf4e966168d687c946aeb3b5e6fda75f23efd34bc1356987e2a73"
+
+[[rules]]
+rule = "R35"
+revision = 3
+sha256 = "1d272b4c096103b87315c23937109743691edc8dc923eaef1bea14ee4d27d2ac"
+
+[[rules]]
+rule = "R36"
+revision = 4
+sha256 = "32b80a1b463a08b3660a3a596ce9af09c1354725a2a9fcb641f89cb500add7f4"
+
+[[rules]]
+rule = "R37"
+revision = 3
+sha256 = "f0739348f9b43cc8f2144770686036853cf248c28fcc64fc3913e16676455f0c"
+
+[[rules]]
+rule = "R38"
+revision = 2
+sha256 = "2e3383756ee812873aa1a450bf930cda5135c19907d259ccb197c73477036266"
+
+[[rules]]
+rule = "R39"
+revision = 2
+sha256 = "2164700dd1b3776241cbcdff588e9fe93258a109b032dedacd1e66e6d311e619"
+
+[[rules]]
+rule = "R40"
+revision = 2
+sha256 = "a9f1676795eb89bb5b26b903383be4aa6360c0d8543ad5c3d8c7f33c175b900b"
+
+[[rules]]
+rule = "R41"
+revision = 3
+sha256 = "aa3e11f1b650b2facc18d5e00472d5a5803a3185f277193cc0cec2377e6aa932"
+
+[[rules]]
+rule = "R42"
+revision = 2
+sha256 = "481284af76c434a9b8cab21463b3728f4ed25aeecad77b64512362d320661fbb"
+
+[[rules]]
+rule = "R43"
+revision = 4
+sha256 = "3bc9d2d422ae7ad0a8c73cdf7c3bb81b064c72a0cef34caec83635714c9a53df"
+
+[[rules]]
+rule = "R44"
+revision = 3
+sha256 = "54d34f61123babd6e9c3e7f654c8e89a59563d476cf196c953351a9b0b3c1919"
+
+[[rules]]
+rule = "R45"
+revision = 3
+sha256 = "f44543aa4395cbb090ee31538619e756df9ed549afe21b76dce6cb12fa28bbf3"
+
+[[rules]]
+rule = "R46"
+revision = 2
+sha256 = "c6037704162170b4caa331dac1d81c734af713cd124a52e91c101eb2d99f97f7"
+
+[[rules]]
+rule = "R47"
+revision = 2
+sha256 = "d5cd0a90a2bfb44a075838560ffc4e220c23a532354ddfe4bec8b858d3ff74cc"
+
+[[rules]]
+rule = "R48"
+revision = 4
+sha256 = "03bcfd36aa59ff9aa478c3d5972f2f39bfc39e8d870d9a5fd1a455ca491b2b07"
+
+[[rules]]
+rule = "R49"
+revision = 2
+sha256 = "56455e0c7d18bd8bdb24ec43ac7583b51dac6e2202b9e0b55ad444076b3057d9"
+
+[[rules]]
+rule = "R50"
+revision = 4
+sha256 = "a419bd3e317bb7c23f9a082d1139627a4221317113125f5e5184ac78c6441430"
+
+[[rules]]
+rule = "R51"
+revision = 3
+sha256 = "f15433824311f3c08358502b2b4a9da4af50954bf443a20f7b28c6080006577f"
+
+[[rules]]
+rule = "R52"
+revision = 3
+sha256 = "a22abfad0148e1700c07a579a52523228f313a43511ef6e8a4616a446a578b6e"
+
+[[rules]]
+rule = "R53"
+revision = 4
+sha256 = "c27ba76eae6f71f3d0c5d66e45ff9b1d218a0a7b0a53e57b7183629daa18ac07"
+
+[[rules]]
+rule = "R54"
+revision = 3
+sha256 = "90519c569d7e439b7402147a871d038d3b818843905b33c7f44e12893881e6d7"
+
+[[rules]]
+rule = "R55"
+revision = 3
+sha256 = "a5bd2315973310498dfc1ecf53c47b8d872adede57e8dcd7faa59d6744c6f72f"
+
+[[rules]]
+rule = "R56"
+revision = 3
+sha256 = "bcdaad2a58ce10e9f3168dc33a6ee0d49295a8b50dd56caa8f774ef9c740f2c9"
+
+[[rules]]
+rule = "R57"
+revision = 2
+sha256 = "8b3d5d0a6e2641414d31df098af1b08e92b486b1d936bbb1164cdcce3ccc5e9d"
+
+[[rules]]
+rule = "R58"
+revision = 3
+sha256 = "03f48ee2861f1a911f9c3acf89d918c27a58315b6c17a1ab194314c230bd8725"
+
+[[rules]]
+rule = "R59"
+revision = 2
+sha256 = "8b1a95af18a3456d6a85da2205a5abf42c6c8682af692de293e65c272ed4fc59"
+
+[[rules]]
+rule = "R60"
+revision = 2
+sha256 = "7117425e2e3327fabfd0bb064ddbc79587295dcfdd1d29f08683486fa0e10951"
+
+[[rules]]
+rule = "R61"
+revision = 3
+sha256 = "61a3af11e37a8ad54cf3c5b80d4fef72a4bb35f3de04aefe7a5d1e16ac1f9e90"
+
+[[rules]]
+rule = "R62"
+revision = 2
+sha256 = "4a36f5ba5af262f699fa0dcb24335699bf3436474ed22621ef78aad39a0ff378"
+
+[[rules]]
+rule = "R63"
+revision = 2
+sha256 = "742bafe294c0218fa43108fb07fa5b23d147aecb4eaf5db915cc3d68f91e6aa8"
+
+[[rules]]
+rule = "R64"
+revision = 2
+sha256 = "604540a0d1b5b7f4fe9a1d189b096cca1f58be6dcf921dd430807abc17aafd97"
+
+[[rules]]
+rule = "R65"
+revision = 2
+sha256 = "e799a7e580ee8add4acded01df9f872955342feaad1267f9fd4371c52f991a73"
+
+[[rules]]
+rule = "R66"
+revision = 3
+sha256 = "0534c3d4b6d9a989accb866339d73f1ff4526d9bffce6d1932e2c2f93ad00d96"
+
+[[rules]]
+rule = "R67"
+revision = 2
+sha256 = "c1b1924ec08963941e4984df365e5a5c3fd44db98e2cd379c2c7b657f8b312be"
+
+[[rules]]
+rule = "R68"
+revision = 3
+sha256 = "5b29aea38b703b6ed71d6ea5e773127bef08ad673de97aa64f09c9421d49807d"
+
+[[rules]]
+rule = "R69"
+revision = 2
+sha256 = "b085130aecc97447588154d0aee1702bca81936803607dbcf9887dcffe87c34d"
+
+[[rules]]
+rule = "R70"
+revision = 3
+sha256 = "cd97af62a0ca8cea49d9564785342fd9a43f7b244a1436cd0e16dac658229330"
+
+[[rules]]
+rule = "R71"
+revision = 4
+sha256 = "dd860dce83166f395fe7ee345e7f12af7d40a3e35f54903c2c3123cd574eb90f"
+
+[[rules]]
+rule = "R72"
+revision = 3
+sha256 = "b5f0c1afbedee5ce556a6bad838b8ab1da848ac21144a950976f910385b790be"
+
+[[rules]]
+rule = "R73"
+revision = 3
+sha256 = "453b03b0aa6202043aeafe38f56f6701c3a81189395cc6f106e6fba0f49d1a6e"
+
+[[rules]]
+rule = "R74"
+revision = 2
+sha256 = "bbe03aa0828c7593ed4f5b108b08633da570e2a30e5cb0d63e2195950a9f97e5"
+
+[[rules]]
+rule = "R75"
+revision = 2
+sha256 = "ec5f0cff307b818225a3651361dc50a7412da881e41cf522ff4b86cf1fe4379f"
+
+[[rules]]
+rule = "R76"
+revision = 2
+sha256 = "f304badc62a067b5db1c40c18f8e0d6a0b7c6fb2ad37ffeb972adc4c899d1210"

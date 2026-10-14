@@ -1,4 +1,4 @@
-<!-- en-sha256: b7b01be681ab2db851381d8252290de681fbf63485c08fdb4d39744fab6556c7 -->
+<!-- en-sha256: c4fad55c9c81a81e4db71c05b39094af7ffca6620b3daa686e6e20221e58d0ce -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -29,6 +29,8 @@ docs/
   design/                 本设计，一个主题一个文件，
                           由 README.md 索引                            A
     zh/                   本设计的中文译文，每个文件一份同名译文       A
+  pilot/                  本仓试用 statute：规定集、锁文件和编译输出，
+                          没有 agent 读它 (rule-system.md，Moving over) A
 rules/
   <id>.toml               parent 树上的一个节点一个文件，以编号命名    A
 skills/

@@ -1,0 +1,24 @@
+constitution = { source = "R", edition = "2026-10" }
+rules = [
+  # Security
+  "R43", "R44", "R45", "R22", "R23", "R24", "R36", "R37",
+  "R30", "R31", "R41", "R42", "R50", "R51", "R52",
+  # Collaboration
+  "R28", "R29", "R32", "R33", "R34", "R35",
+  "R38", "R39", "R40", "R57", "R58", "R59", "R60", "R61",
+  "R62", "R63", "R64", "R70", "R71",
+  # Verification
+  "R1", "R46", "R47", "R48", "R49",
+  "R53", "R54", "R55", "R56", "R72",
+  # Documentation
+  "R17", "R18", "R19", "R20", "R21",
+  # Agent conduct
+  "R65", "R66", "R67", "R68", "R69", "R73", "R74", "R75",
+  "R76",
+]
+
+[sources]
+R = { path = "../.." }
+
+[compile]
+agents-md = ["statement", "verification"]
