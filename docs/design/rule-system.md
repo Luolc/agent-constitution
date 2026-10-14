@@ -577,7 +577,12 @@ used in both directions:
 
 **Compatible revisions.** Each rule declares the range of constitution
 revisions it is compatible with, in its `constitution` field, as a Python
-version specifier such as `">=1"` or `">=1,<4"`. The lowest revision is
+version specifier such as `">=1"` or `">=1,<4"`. Revisions are whole
+numbers, so only the part of the specifier syntax that compares whole
+numbers is accepted: one or more clauses joined by commas, each one of
+`>=`, `<=`, `>`, `<`, `==` or `!=` followed by a revision, with spaces
+allowed around them. `~=1`, `===1`, `==1.*`, `>=1.0`, a bare `1`, an empty
+string and a trailing comma are errors. The lowest revision is
 nearly always written. The highest is written only when the rule is known
 not to work with a later revision, for example because the constitution
 has dropped what the rule relied on; an upper bound is never written as a

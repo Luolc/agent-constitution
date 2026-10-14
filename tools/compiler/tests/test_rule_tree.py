@@ -106,22 +106,81 @@ class FormatTest(Tree):
         '["alpha", 1]',
         "`authority` must be a non-empty list of provision IDs",
       ),
-      (
-        'requires = [3, "team:7"]',
-        "requires = [true]",
-        "`requires` must list IDs, a number or `<source>:<id>`",
-      ),
-      (
-        "conflicts = [2]",
-        "conflicts = [2.5]",
-        "`conflicts` must list IDs, a number or `<source>:<id>`",
-      ),
       ('tools = ["uv"]', "tools = [1]", "`tools` must be a list of names"),
     ):
       with self.subTest(new):
         self.edit("rules/10.toml", old, new)
         self.assertError(1, "rules/10.toml", message)
         self.edit("rules/10.toml", new, old)
+
+  def test_references(self):
+    self.edit(
+      "rules/10.toml",
+      'check = "review"',
+      'check = "review"\nrequires = [3, "team:7"]\nconflicts = [2, "team:8"]',
+    )
+    self.assertEqual(self.errors(), [])
+    bad = " is not a reference: a number from 1 for a node of this source,"
+    bad += ' or "<source>:<id>" for one of another'
+    for key, old in (
+      ("requires", '[3, "team:7"]'),
+      ("conflicts", '[2, "team:8"]'),
+    ):
+      for new, message in (
+        ('["seven"]', f"`{key}` entry `seven`{bad}"),
+        ("[0]", f"`{key}` entry `0`{bad}"),
+        ("[-3]", f"`{key}` entry `-3`{bad}"),
+        ("[true]", f"`{key}` entry `True`{bad}"),
+        ("[2.5]", f"`{key}` entry `2.5`{bad}"),
+        ('["team:07"]', f"`{key}` entry `team:07`{bad}"),
+        ('["Team:7"]', f"`{key}` entry `Team:7`{bad}"),
+        ("[10]", f"`{key}` names the rule itself"),
+        ("[3, 3]", f"`{key}` lists 3 twice"),
+        ('["team:7", "team:7"]', f"`{key}` lists team:7 twice"),
+      ):
+        with self.subTest(key=key, new=new):
+          self.edit("rules/10.toml", f"{key} = {old}", f"{key} = {new}")
+          self.assertError(1, "rules/10.toml", message)
+          self.edit("rules/10.toml", f"{key} = {new}", f"{key} = {old}")
+
+  def test_constitution_compares_whole_revisions(self):
+    old = 'constitution = ">=1"'
+    for good in (">=1", "==1", ">= 1, <4", " > 0 ,!=3", "<=2"):
+      with self.subTest(good):
+        self.edit("rules/10.toml", old, f'constitution = "{good}"')
+        self.assertEqual(self.errors(), [])
+        self.edit("rules/10.toml", f'constitution = "{good}"', old)
+    for bad in ("~=1", "1", "any", ">=1.0", "==1.*", "===1", "", ">=1,"):
+      with self.subTest(bad):
+        self.edit("rules/10.toml", old, f'constitution = "{bad}"')
+        self.assertError(
+          1,
+          "rules/10.toml",
+          f'`constitution = "{bad}"` is not a specifier of whole revisions:'
+          " clauses such as `>=1` joined by commas, each with"
+          " >=, <=, >, <, == or !=",
+        )
+        self.edit("rules/10.toml", f'constitution = "{bad}"', old)
+
+  def test_language_codes(self):
+    self.write("rules/2.toml", DOMAIN.replace("zh =", "zh-Hant ="))
+    self.assertEqual(self.errors(), [])
+    self.edit("rules/2.toml", 'lang = "en"', 'lang = "English"')
+    self.assertError(
+      1,
+      "rules/2.toml",
+      '`lang = "English"` is not a language code such as `en`',
+    )
+    self.write("rules/2.toml", DOMAIN.replace("zh =", "Chinese =", 1))
+    self.assertError(
+      1, "rules/2.toml", "`title` key `Chinese` is not a language code"
+    )
+
+  def test_translation_is_not_empty(self):
+    self.edit("rules/2.toml", 'zh = "流程"', 'zh = " "')
+    self.assertError(1, "rules/2.toml", "`title` `zh` is empty")
+    self.edit("rules/10.toml", "因为。\n", "\n")
+    self.assertError(1, "rules/10.toml", "`text.reason` `zh` is empty")
 
   def test_only_a_rule_is_superseded(self):
     self.activate()
