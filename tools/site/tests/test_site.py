@@ -89,19 +89,15 @@ HEADING = re.compile(
 )
 
 
-def subdomain(data: dict) -> None:
+def subdomain(checkout: Path) -> None:
   """Make the one-of 2 of site_fixture a domain under the domain 1.
 
   Args:
-    data: The data of the rules, as site-rules writes it.
+    checkout: The rules' checkout.
   """
-  for lang in data.values():
-    for node in lang["nodes"]:
-      if node["id"] == 2:
-        node["kind"] = "domain"
-      for group in node["groups"]:
-        if group["id"] == 2:
-          group["kind"] = "domain"
+  (checkout / "rules/2.toml").write_text(
+    site_fixture.group(2, "domain", 1), encoding="utf-8"
+  )
 
 
 def visible(page: str) -> str:
@@ -133,7 +129,7 @@ class SiteTest(unittest.TestCase):
     design: dict[str, str] = DESIGN,
     rules: bool = True,
     per_page: int | None = None,
-    edit_rules: Callable[[dict], None] | None = None,
+    edit_rules: Callable[[Path], None] | None = None,
   ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
@@ -145,8 +141,7 @@ class SiteTest(unittest.TestCase):
       rules: Whether to write web/data/rules.json, from the rules of
         site_fixture.
       per_page: The rules a page of their list shows, if not the site's.
-      edit_rules: Changes the data of the rules in place before Hugo
-        reads it, for a tree the sources cannot yet hold.
+      edit_rules: Changes the rules' checkout before site-rules reads it.
 
     Returns:
       The visible text of every page, or its HTML, by path.
@@ -177,13 +172,11 @@ class SiteTest(unittest.TestCase):
         # index above need not be.
         checkout = root / "rules-checkout"
         site_fixture.write(checkout)
+        if edit_rules:
+          edit_rules(checkout)
         out = root / "web/data/rules.json"
         args = ["--root", str(checkout), "--out", str(out)]
         self.assertEqual(site_rules.main(args), 0)
-        if edit_rules:
-          data = json.loads(out.read_text(encoding="utf-8"))
-          edit_rules(data)
-          out.write_text(json.dumps(data), encoding="utf-8")
       env = dict(os.environ)
       if per_page:
         env["HUGO_PARAMS_RULESPERPAGE"] = str(per_page)
@@ -463,7 +456,19 @@ class SiteTest(unittest.TestCase):
 
   def test_rules_list_subdomain(self):
     """A domain under a domain: a deeper heading and a nested checkbox."""
-    page = self.build(raw=True, edit_rules=subdomain)["rules/index.html"]
+    raw = self.build(raw=True, edit_rules=subdomain)
+    page = raw["rules/index.html"]
+    # The domain's page lists the subdomain, the subdomain's its rule, in
+    # both languages.
+    for lang, below, two, three in (
+      ("", "Below it", "R2 Group 2", "R3 Rule 3"),
+      ("zh/", "下级", "R2 组 2", "R3 规定 3"),
+    ):
+      with self.subTest(lang):
+        one = visible(raw[f"{lang}rules/1/index.html"])
+        self.assertIn(f"{below} {two} R4", one)
+        sub = visible(raw[f"{lang}rules/2/index.html"])
+        self.assertIn(f"{below} {three}", sub)
     self.assertIn(
       '<label style="--indent: 1"><input type="checkbox" name="domain"'
       ' value="2" data-parent="1" checked> Group 2</label>',
@@ -473,6 +478,24 @@ class SiteTest(unittest.TestCase):
     self.assertEqual(page.count('data-domain="1">'), 2)
     self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
     self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
+
+  def test_rule_page_of_an_override(self):
+    """An overriding rule names the rule it overrides in place of a parent."""
+
+    def override(checkout: Path) -> None:
+      path = checkout / "rules/6.toml"
+      text = path.read_text(encoding="utf-8")
+      path.write_text(
+        text.replace("parent = 5", 'overrides = "team:8"'), encoding="utf-8"
+      )
+
+    raw = self.build(raw=True, edit_rules=override)
+    for lang, relations in (
+      ("", "Relations Overrides team:8 Requires none"),
+      ("zh/", "关系 覆盖 team:8 依赖 无"),
+    ):
+      with self.subTest(lang):
+        self.assertIn(relations, visible(raw[f"{lang}rules/6/index.html"]))
 
   def test_rule_pages(self):
     """Every node has a page; a superseded rule's names its successors."""

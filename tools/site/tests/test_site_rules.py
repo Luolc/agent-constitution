@@ -47,6 +47,45 @@ class SiteRulesTest(unittest.TestCase):
       nodes[5]["children"], [{"id": 6, "label": "R6", "title": "Rule 6"}]
     )
 
+  def test_subdomain(self):
+    """A domain under a domain heads the rules below it, under its own."""
+    (self.root / "rules/2.toml").write_text(
+      site_fixture.group(2, "domain", 1), encoding="utf-8"
+    )
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual((nodes[2]["kind"], nodes[2]["depth"]), ("domain", 1))
+    self.assertEqual(
+      [(g["id"], g["kind"]) for g in nodes[3]["groups"]],
+      [(1, "domain"), (2, "domain")],
+    )
+    self.assertEqual([c["id"] for c in nodes[1]["children"]], [2, 4, 5])
+    self.assertEqual([c["id"] for c in nodes[2]["children"]], [3])
+
+  def test_other_sources(self):
+    """A rule under another source's domain, or overriding its rule."""
+    for name, old, new in (
+      ("rules/6.toml", "parent = 5", 'parent = "team:7"'),
+      ("rules/4.toml", "parent = 1", 'overrides = "team:8"'),
+    ):
+      path = self.root / name
+      path.write_text(path.read_text().replace(old, new), encoding="utf-8")
+    data = self.load()["en"]["nodes"]
+    order = [(n["id"], n["depth"]) for n in data]
+    self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (5, 1), (4, 0), (6, 0)])
+    nodes = {n["id"]: n for n in data}
+    self.assertEqual(nodes[6]["parent"], {"ref": "team:7"})
+    self.assertEqual(nodes[6]["groups"], [])
+    self.assertEqual(
+      (nodes[4]["parent"], nodes[4]["overrides"]), (None, {"ref": "team:8"})
+    )
+    self.assertIsNone(nodes[5]["overrides"])
+
+  def load(self):
+    errors = Errors()
+    src = load(self.root, errors)
+    assert src is not None, errors
+    return site_rules.site_data(src)
+
   def test_superseded_is_not_under_provisions(self):
     nodes = self.nodes("en")
     self.assertEqual(
