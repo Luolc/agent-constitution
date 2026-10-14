@@ -739,6 +739,11 @@ its range.
 
 ## Checks
 
+Most rules cannot be decided by a script: a rule a script could decide is
+usually a CI check or a lint already. So a rule is kept mainly through
+review, and a check serves the review: it settles the few rules a script
+can, and hands the reviewer the rest.
+
 There is no language for writing checks, declarative or otherwise. A small
 set of built-in check primitives ("this file exists", "this key in this
 TOML file has this value") would keep needing one more case, "or", and
@@ -806,16 +811,18 @@ A check has three outcomes: pass, violation, and inconclusive. A missing
 tool, a timeout and a script that crashes are inconclusive, never a
 violation, so a missing toolchain does not turn the checks red.
 
-The automatic checks run first, because they cost least. Then the reviewer
-looks at the violations, the inconclusive results and the rules that have
-no automatic check. The material the reviewer is given holds each rule's
-reason and verification, which the compiled `AGENTS.md` leaves out by
-default ([Compilation and the site](#compilation-and-the-site)). Whether
+The review starts from `statute check`: the reviewer runs it and gets a
+list of the enabled rules, the few a script settled with their outcome
+and the rest for review, each with its reason and verification, which
+the compiled `AGENTS.md` leaves out by default
+([Compilation and the site](#compilation-and-the-site)). The reviewer
+goes through the list domain by domain and rule by rule: the rules for
+review, the inconclusive results and the violations. Whether
 one reviewer takes all of them or several take a group each, and how the
 groups are formed, is set in the rule set.
 
-In the first version, `statute check` runs the checks of the enabled
-rules of the repository; with `--base <ref>` it checks the change
+In the first version, `statute check` lists the enabled rules of the
+repository for review and runs the checks of those that have one; with `--base <ref>` it checks the change
 `git diff <ref>...HEAD`. It prints one line per rule, its outcome
 (`pass`, `violation`, `inconclusive`, or `review` for a rule without an
 automatic check) and a note, with the findings below, and then, for the
@@ -876,8 +883,8 @@ the rule is still for the reviewer. The built-in checks:
 The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
 only for a rule set that still enables them.
 
-`statute check` runs in CI and, before each push, by the agent that
-pushes. It is not a commit hook: some checks scan the whole history or
+The reviewer runs `statute check`, and CI may run it too. It is not a
+commit hook: some checks scan the whole history or
 ask the forge over the network and can be slow, and a commit hook holds
 only checks that take seconds.
 
@@ -893,9 +900,9 @@ Either leads to a proposed fix to the rule's check. Fixing a check does
 not change what counts as compliant, so the rule keeps its ID and its
 revision goes up by one (`wrong-checkers.fixing`). People and agents alike
 may propose changes to a rule, under `rule-evolution`. This is how the
-rules improve themselves: the cheap checks run first, agents look only at
-what the checks could not settle, and what the agents conclude goes back
-into the checks.
+rules improve themselves: the few checks a script can run settle what
+they can, agents review the rest rule by rule, and what the agents
+conclude goes back into the checks.
 
 **Who decides.** Compiling, upgrading, finding conflicts and judging the
 compatible range are done by deterministic scripts wherever a script can
@@ -1040,7 +1047,8 @@ be published anew. The rule set is `statute.toml`, the lock file
 - `lock`: resolve the rule set into the lock file;
 - `compile`: write the compiled output
   ([Compilation and the site](#compilation-and-the-site));
-- `check`: run the checks of the enabled rules
+- `check`: list the enabled rules for review, with the outcome of those a
+  script checks
   ([Checks](#checks));
 - `upgrade`: move the sources and the constitution to newer versions
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file));

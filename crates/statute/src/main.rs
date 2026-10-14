@@ -65,7 +65,8 @@ enum Command {
         #[arg(long)]
         output: Option<std::path::PathBuf>,
     },
-    /// Run the checks of the enabled rules; exits 1 on a violation.
+    /// List the enabled rules for review, with the outcome of those a
+    /// script checks; exits 1 on a violation.
     Check {
         /// Check the change since this git ref (`git diff <base>...HEAD`).
         #[arg(long)]

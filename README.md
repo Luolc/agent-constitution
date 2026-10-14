@@ -25,11 +25,12 @@ procedures together. This repo writes them the way laws are written. A
 short constitution holds the principles and says who may decide what;
 numbered rules refine it, one requirement each, with a way to tell
 whether it was broken; and a command, `statute`, compiles the rules a
-repository chooses into its AGENTS.md and runs their checks.
+repository chooses into its AGENTS.md and, at review, lists the rules
+the reviewer goes through.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/architecture-dark.svg">
-  <img src=".github/assets/architecture.svg" alt="How Agent Constitution fits together: the constitution is refined by rules; a repository chooses rules in statute.toml, pinned in statute.lock; statute compiles them into AGENTS.md and writes the checks; agents work and review under them; a gap no rule covers becomes a trial rule.">
+  <img src=".github/assets/architecture.svg" alt="How Agent Constitution fits together: the constitution is refined by rules; a repository chooses rules in statute.toml, pinned in statute.lock; statute compiles them into AGENTS.md and gives, with statute check, the list of rules to review; agents work under them, and a reviewer goes through the list by domain and rule; a gap no rule covers becomes a trial rule.">
 </picture>
 
 ## The constitution
@@ -83,15 +84,18 @@ statute init --source ../agent-constitution  # write statute.toml
 statute add 43        # enable rule 43, and write statute.lock
 statute lock          # resolve statute.toml again after editing it by hand
 statute compile       # write AGENTS.md, the skills and the checks
-statute check         # run the checks of the enabled rules
+statute check         # list the enabled rules for review
 ```
 
-`statute check` prints one line per rule: `pass`, `violation`,
-`inconclusive`, or `review` for a rule no script can decide, and then,
-for the reviewer, the reason and the verification of each rule that is
-inconclusive or for review. It exits with status 1 on a violation. Run
-it in CI and before each push, not as a commit hook: a check may be
-slow. `statute explain <id>` says why a rule is enabled, and `statute
+Most rules cannot be decided by a script, so the work is reviewed rule
+by rule. The reviewer runs `statute check` to get the list: one line per
+enabled rule, `review` for a rule no script can decide, which is most of
+them, and `pass`, `violation` or `inconclusive` for the few a script
+checks; then the reason and the verification of each rule that is for
+review or inconclusive. The reviewer goes through the list domain by
+domain and rule by rule. It exits with status 1 on a violation. It may
+run in CI as well, but not as a commit hook: a check may be slow.
+`statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in
 [The command and the first version](docs/design/rule-system.md#the-command-and-the-first-version).
 

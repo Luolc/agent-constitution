@@ -18,11 +18,11 @@
 
 <br>
 
-AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难读：前后矛盾，与代码脱节，原则、做法和流程混在一起。本仓照法律的写法来写它们：一部简短的宪法写原则，规定谁能决定什么；带编号的规定细化宪法，每条只提一项要求，并写明怎样判断它有没有被违反；命令 `statute` 把一个仓库选中的规定编译进它的 AGENTS.md，并运行这些规定的检查。
+AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难读：前后矛盾，与代码脱节，原则、做法和流程混在一起。本仓照法律的写法来写它们：一部简短的宪法写原则，规定谁能决定什么；带编号的规定细化宪法，每条只提一项要求，并写明怎样判断它有没有被违反；命令 `statute` 把一个仓库选中的规定编译进它的 AGENTS.md，并在审查时列出审查方要逐条过的规定。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/architecture-zh-dark.svg">
-  <img src=".github/assets/architecture-zh.svg" alt="Agent 宪法的结构：宪法由规定细化；仓库在 statute.toml 里选规定，由 statute.lock 锁定；statute 把它们编译成 AGENTS.md，并写出检查；agent 依此工作、审查；遇到没有规定覆盖的缺口，就写一条试行规定。">
+  <img src=".github/assets/architecture-zh.svg" alt="Agent 宪法的结构：宪法由规定细化；仓库在 statute.toml 里选规定，由 statute.lock 锁定；statute 把它们编译成 AGENTS.md，并用 statute check 给出要审的规定清单；agent 依此工作，审查 agent 按 domain、按规定逐项审；遇到没有规定覆盖的缺口，就写一条试行规定。">
 </picture>
 
 ## 宪法
@@ -53,10 +53,10 @@ statute init --source ../agent-constitution  # 写出 statute.toml
 statute add 43        # 启用规定 43，并写出 statute.lock
 statute lock          # 手改 statute.toml 之后重新解析
 statute compile       # 写出 AGENTS.md、skill 和检查
-statute check         # 运行已启用规定的检查
+statute check         # 列出已启用的规定，供审查
 ```
 
-`statute check` 每条规定输出一行结果：`pass`、`violation`、`inconclusive`，没有脚本能判定的规定是 `review`；对结果为 `inconclusive` 或 `review` 的规定，后面再附上它的理由和判定方法，给审查方看。有规定被违反时退出码为 1。它在 CI 里和每次 push 之前运行，不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/rule-system.md#the-command-and-the-first-version)。
+大多数规定没法用脚本判定，所以工作要逐条规定地审。审查方运行 `statute check` 拿到清单：每条启用的规定一行，脚本判定不了的是 `review`，这占大多数；少数有脚本检查的，结果是 `pass`、`violation` 或 `inconclusive`；然后对结果为 `review` 或 `inconclusive` 的规定，附上它的理由和判定方法。审查方按 domain、按规定逐项过这份清单。有规定被违反时退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/rule-system.md#the-command-and-the-first-version)。
 
 ## 开发
 
