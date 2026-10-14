@@ -6,7 +6,7 @@ en = '''
 This text defines only words whose meaning in it differs from their everyday meaning or is narrower than it; every other word has its ordinary meaning, and a word is added to or removed from the list below by this standard. A word defined on the spot, in one place of the text only, is not listed below but set in bold where it is defined. In this text:
 '''
 zh = '''
-本宪法只为这样的词下定义：它在本宪法中的意思与日常用法不同，或者比日常用法窄。其余的词按通常的意思理解；下列词语的增删也以此为准。只在正文某一处当场定义的词不列入下表，在定义它的那一处加粗。本宪法中：
+本宪法只为这样的词下定义：它在本宪法中的含义与日常用法不同，或者比日常用法窄。其余的词按通常含义理解；下列词语的增删也以此为准。只在正文某一处随文定义的词不列入下表，在定义它的那一处加粗。本宪法中：
 '''
 
 [[items]]
@@ -19,7 +19,7 @@ en = '''
 **Principal**: a person with authority over the work at hand, for whom agents act ({@principals}).
 '''
 zh = '''
-**委托人** (principal)：对手头这项工作握有授权、agent 代其行事的人 ({@principals})。译名取自「委托—代理」(principal-agent) 关系的说法：替人办事的是 agent，授权的是人；不是日常所说的律师的客户。其中的「代理」只是这一说法的通行译名，本宪法不用它指 agent。
+**委托人** (principal)：对当前这项工作享有授权、agent 代其行事的人 ({@principals})。译名取自「委托—代理」(principal-agent) 关系的说法：代人行事的是 agent，授权的是人；不是日常所说的律师的客户。其中的「代理」只是这一说法的通行译名，本宪法不用它指 agent。
 '''
 
 [[items]]

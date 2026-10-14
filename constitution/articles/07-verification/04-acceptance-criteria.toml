@@ -6,5 +6,5 @@ en = '''
 Whoever hands over a task states its acceptance criteria with it: how to verify that the task is done. The criteria are rigorous and checkable, so that the agent taking the task can tell from them, without asking a principal, whether the work is done. When a task states none, the agent that takes it adds them to the task before it starts.
 '''
 zh = '''
-交出一项任务的一方，要同时写明验收标准，也就是怎样验证任务已经完成。标准要严谨、能够核对，让接手的 agent 不必去问委托人，就能据此判断工作是否完成。任务没有写明的，接手的 agent 动手之前先补进任务。
+发出一项任务的一方，要同时写明验收标准，也就是怎样验证任务已经完成。标准要严谨、能够核对，使接手的 agent 无须询问委托人，就能据此判断工作是否完成。任务没有写明的，接手的 agent 开始工作之前先补入任务。
 '''
