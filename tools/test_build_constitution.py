@@ -14,6 +14,10 @@ import tempfile
 import unittest
 
 import build_constitution as bc
+import constitution_base as cb
+import constitution_checks as cc
+import constitution_languages as cl
+import constitution_sources as cs
 import git_env
 
 INDEX = """\
@@ -229,7 +233,7 @@ sources and rebuild. Revision: 0.2 (draft). Language: English.
 
 # Test Constitution (2026-10 edition)
 
-{bc.LANGUAGES["en"].agent_front.format(opening=bc.LANGUAGES["en"].agent_draft)}
+{cl.LANGUAGES["en"].agent_front.format(opening=cl.LANGUAGES["en"].agent_draft)}
 
 ## Article I. First
 
@@ -257,7 +261,7 @@ ZH_AGENT = f"""\
 
 # 测试宪法 (2026-10 版)
 
-{bc.LANGUAGES["zh"].agent_front.format(opening=bc.LANGUAGES["zh"].agent_draft)}
+{cl.LANGUAGES["zh"].agent_front.format(opening=cl.LANGUAGES["zh"].agent_draft)}
 
 ## 第一条 第一
 
@@ -393,7 +397,7 @@ class RenderTest(Tree):
     self.assertIn(f"\n## Preamble{star}\n\nThe preamble cites", outputs["en"])
     self.assertIn(f"\n## 序言{star}\n\n序言引用", outputs["zh"])
     for lang in ("en", "zh"):
-      self.assertIn(bc.LANGUAGES[lang].legend + "\n", outputs[lang])
+      self.assertIn(cl.LANGUAGES[lang].legend + "\n", outputs[lang])
       self.assertNotIn(star, outputs[lang + bc.AGENT])
 
   def test_provisions_for_maintainers(self):
@@ -443,10 +447,10 @@ class RenderTest(Tree):
       outputs["zh"],
     )
     self.assertEqual(
-      outputs["en"].replace(star, "").replace(bc.LANGUAGES["en"].legend, ""), EN
+      outputs["en"].replace(star, "").replace(cl.LANGUAGES["en"].legend, ""), EN
     )
     self.assertEqual(
-      outputs["zh"].replace(star, "").replace(bc.LANGUAGES["zh"].legend, ""), ZH
+      outputs["zh"].replace(star, "").replace(cl.LANGUAGES["zh"].legend, ""), ZH
     )
     self.assertEqual(
       outputs["en.agent"],
@@ -772,13 +776,13 @@ class RenderTest(Tree):
 
   def test_numerals(self):
     self.assertEqual(
-      [bc.roman(n) for n in (1, 4, 9, 14, 40)], ["I", "IV", "IX", "XIV", "XL"]
+      [cl.roman(n) for n in (1, 4, 9, 14, 40)], ["I", "IV", "IX", "XIV", "XL"]
     )
     self.assertEqual(
-      [bc.zh_number(n) for n in (1, 10, 11, 20, 23)],
+      [cl.zh_number(n) for n in (1, 10, 11, 20, 23)],
       ["一", "十", "十一", "二十", "二十三"],
     )
-    en, zh = bc.LANGUAGES["en"], bc.LANGUAGES["zh"]
+    en, zh = cl.LANGUAGES["en"], cl.LANGUAGES["zh"]
     self.assertEqual(en.section_number(12, ""), "§12")
     self.assertEqual(zh.section_number(12, "a"), "第十二款之一")
     self.assertEqual(en.item_ref(3, "b"), "(3b)")
@@ -1119,10 +1123,10 @@ class CheckTest(Tree):
 
   def test_5_on_its_own(self):
     """Check 5 needs no other check to have run before it."""
-    errors = bc.Errors()
-    src = bc.load(self.root, errors)
+    errors = cs.Errors()
+    src = cs.load(self.root, errors)
     assert src is not None
-    bc.check_refs(src, errors)
+    cc.check_refs(src, errors)
     self.assertEqual(errors, [])
 
   def test_5_undefined(self):
@@ -1205,7 +1209,7 @@ class CheckTest(Tree):
 
   def test_6_outputs_match(self):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
-    errors = bc.Errors()
+    errors = cs.Errors()
     bc.check_outputs(self.root, bc.build(self.root)[2], errors)
     self.assertEqual(errors, [])
 
@@ -1213,7 +1217,7 @@ class CheckTest(Tree):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
     path = self.root / "constitution/constitution.en.md"
     path.write_bytes(path.read_bytes().replace(b"Money.", b"Money!"))
-    errors = bc.Errors()
+    errors = cs.Errors()
     bc.check_outputs(self.root, bc.build(self.root)[2], errors)
     self.assertEqual(
       errors,
@@ -1258,7 +1262,7 @@ class BaseTest(Tree):
     errors, src, _ = bc.build(self.root)
     self.assertEqual(errors, [])
     assert src is not None
-    note = bc.check_base(self.root, "HEAD", src, errors)
+    note = cb.check_base(self.root, "HEAD", src, errors)
     return errors, note
 
   def revision_check(self):
@@ -1270,7 +1274,7 @@ class BaseTest(Tree):
     errors, src, _ = bc.build(self.root)
     self.assertEqual(errors, [])
     assert src is not None
-    bc.check_revision(self.root, "HEAD", src, errors)
+    cb.check_revision(self.root, "HEAD", src, errors)
     return errors
 
   def test_control_passes(self):
@@ -1620,7 +1624,7 @@ class BaseTest(Tree):
 
   def test_draft_revisions_sort_below_whole_numbers(self):
     revisions = ("0.2", "0.9", "0.10", "1", "2", "10")
-    keys = [k for r in revisions if (k := bc.revision_key(r)) is not None]
+    keys = [k for r in revisions if (k := cb.revision_key(r)) is not None]
     self.assertEqual(keys, sorted(keys))
     self.assertEqual(len(set(keys)), 6)
 
@@ -1756,7 +1760,7 @@ class BaseTest(Tree):
     """A file the base lists but git cannot read fails check 7."""
     self.commit_base()
     blob = subprocess.run(
-      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{bc.INDEX}"],
+      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{cs.INDEX}"],
       check=True,
       capture_output=True,
       text=True,
@@ -1768,14 +1772,14 @@ class BaseTest(Tree):
         bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1
       )
     self.assertIn(
-      f"check 7: `git show HEAD:{bc.INDEX}` failed:", err.getvalue()
+      f"check 7: `git show HEAD:{cs.INDEX}` failed:", err.getvalue()
     )
 
   def test_unknown_base(self):
     self.commit_base()
     errors, src, _ = bc.build(self.root)
     assert src is not None
-    bc.check_base(self.root, "no-such-ref", src, errors)
+    cb.check_base(self.root, "no-such-ref", src, errors)
     self.assertEqual(
       errors,
       [
