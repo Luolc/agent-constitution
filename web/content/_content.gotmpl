@@ -35,10 +35,24 @@
   so the table of contents links to it. The version for agents has no
   anchors; `{anchor=false}` keeps the theme's `#` link off its headings. */ -}}
 {{- $full := $pages.full }}
+{{- /* In the sidebar, the full version is the edition it belongs to, under
+  the constitution, named and marked from constitution/index.toml. The
+  editions are listed newest first: the weight is the edition's year and
+  month, negated. */ -}}
+{{- $edition := hugo.Data.constitution.edition }}
+{{- $name := i18n "edition" (dict "edition" $edition) }}
+{{- if eq hugo.Data.constitution.status "draft" }}
+  {{- $name = printf "%s %s" $name (i18n "draft") }}
+{{- end }}
 {{- .AddPage (dict
   "kind" "home"
   "path" "/"
   "title" $full.title
+  "menus" (dict "before" (dict
+    "parent" "constitution"
+    "name" $name
+    "weight" (sub 0 (int (replace $edition "-" "")))
+  ))
   "params" (dict "length" $full.length "agentLength" $pages.agent.length)
   "content" (dict
     "mediaType" "text/markdown"

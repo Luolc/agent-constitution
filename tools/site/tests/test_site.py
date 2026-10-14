@@ -47,7 +47,10 @@ FILES = {
     "由 `uv run constitution-build` 生成。\n\n# 标题\n\n## 第一条\n\n不言。\n"
   ),
 }
-INDEX = 'status = "draft"\nrevision = "0.6"\nlanguages = ["en", "zh"]\n'
+INDEX = (
+  'status = "draft"\nedition = "2026-10"\nrevision = "0.6"\n'
+  'languages = ["en", "zh"]\n'
+)
 
 
 def visible(page: str) -> str:
@@ -72,13 +75,17 @@ class SiteTest(unittest.TestCase):
   """The site Hugo builds from web/ and the made-up constitution."""
 
   def build(
-    self, lengths: dict[str, object] | None = None, raw: bool = False
+    self,
+    lengths: dict[str, object] | None = None,
+    raw: bool = False,
+    index: str = INDEX,
   ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
     Args:
       lengths: The content of web/data/lengths.json, or None for no file.
       raw: Whether to return the pages' HTML instead of their text.
+      index: The content of constitution/index.toml.
 
     Returns:
       The visible text of the four pages, or their HTML, by path.
@@ -93,7 +100,7 @@ class SiteTest(unittest.TestCase):
       (root / "web/themes").mkdir()
       (root / "web/themes/hugo-book").symlink_to(ROOT / "web/themes/hugo-book")
       (root / "constitution").mkdir()
-      (root / "constitution/index.toml").write_text(INDEX)
+      (root / "constitution/index.toml").write_text(index)
       for name, text in FILES.items():
         (root / f"constitution/constitution.{name}.md").write_text(text)
       if lengths is not None:
@@ -174,6 +181,21 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       "修订号 0.6 (草案) 回到完整版 第一条 不言。", pages["zh/agent/index.html"]
     )
+
+  def test_editions_in_sidebar(self):
+    """The constitution lists its edition, marked while a draft."""
+    for status, en, zh in (
+      ("draft", "2026-10 Edition (draft)", "2026-10 版 (草案)"),
+      ("active", "2026-10 Edition", "2026-10 版"),
+    ):
+      with self.subTest(status):
+        pages = self.build(index=INDEX.replace("draft", status))
+        for page, text in (
+          ("index.html", f"Constitution {en} Agent Constitution"),
+          ("agent/index.html", f"Constitution {en} Agent Constitution"),
+          ("zh/index.html", f"宪法 {zh} Agent 宪法"),
+        ):
+          self.assertIn(text, pages[page])
 
   def test_title(self):
     """The title breaks only before the parenthesis and has no `#` link."""
