@@ -468,7 +468,8 @@ which differs from the full version in this:
   provisions written for human readers, on how the constitution is
   organized and amended, are left out, with only a pointer to the full
   version in their place; and that before changing the constitution or the
-  tools that build it, an agent reads the full version, named by its path. It is not the text of the constitution (see File structure).
+  tools that build it, an agent reads the full version, named by its path.
+  It is not the text of the constitution (see File structure).
 - A section or item with `audience = "maintainers"` keeps its number and
   shows a note in place of its text: `-   **§2** (see the full text)`,
   `-   **第二款** (见完整版)`; a repealed one shows its repealed note as
@@ -687,10 +688,11 @@ is a release (rule `must-ask-items`) and not set up.
   same way but with its text as is: no anchors, no links, the provisions
   written for human readers only their numbers and a pointer to the full
   version. Its headings carry `{anchor=false}`, so the theme adds no `#`
-  link to them. Under the revision, a link leads back to the full version. The page is hidden from hugo-book's list of
-  pages; the sidebar, the language switch (to the other language's version
-  for agents) and the color switch are as on the home page, the list of
-  articles linking to the IDs Hugo gives the headings.
+  link to them. Under the revision, a link leads back to the full version.
+  The page is hidden from hugo-book's list of pages; the sidebar, the
+  language switch (to the other language's version for agents) and the
+  color switch are as on the home page, the list of articles linking to
+  the IDs Hugo gives the headings.
 - Length: a second line under the revision gives the length of the
   version for agents, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
