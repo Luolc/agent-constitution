@@ -9,7 +9,7 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
-/// Domain 1 with rules 43 and 46 (built-in checks), rules 3 and 7 (the
+/// Domain 1 with rules 43, 46, 58, 61 and 71 (built-in checks), rules 3 and 7 (the
 /// rules they supersede, whose checks stay), rule 20 (a command) and
 /// rule 21 (review only).
 fn nodes(command: &str) -> Vec<(u64, String)> {
@@ -20,6 +20,9 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
         builtin(7),
         builtin(43),
         builtin(46),
+        builtin(58),
+        builtin(61),
+        builtin(71),
         edit(
             rule(20, 1, ""),
             "check = \"review\"",
@@ -411,6 +414,285 @@ fn r43_with_the_real_gitleaks() {
     );
     assert!(run.stdout.contains("cfg.txt:1"), "{}", run.stdout);
     assert!(!run.stdout.contains(&token) && !run.stderr.contains(&token));
+}
+
+// Rules 58, 61 and 71 read GitHub through gh; a fake gh on PATH answers
+// each call from a file of its own directory, and a call it has no file
+// for fails as gh does.
+
+/// A fake gh answering with `answers`, keyed by the file each kind of
+/// call reads; the PATH to run statute with.
+fn fake_gh(name: &str, answers: &[(&str, &str)]) -> String {
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("check")
+        .join(format!("fake-gh-{name}"));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    for (file, text) in answers {
+        std::fs::write(dir.join(file), text).unwrap();
+    }
+    let script = dir.join("gh");
+    std::fs::write(
+        &script,
+        format!(
+            r#"#!/bin/sh
+d='{}'
+case "$*" in
+  "api repos/{{owner}}/{{repo}}") f=repo ;;
+  *"/rules/branches/main") f=rules ;;
+  *"/branches/main") f=branch ;;
+  *"/check-runs"*) f=check-runs ;;
+  *"/actions/runs"*) f=runs ;;
+  *"/commits/"*"/pulls") f=pulls ;;
+  "api graphql"*) f=graphql ;;
+  "pr view"*) f=pr ;;
+  *) f=none ;;
+esac
+[ -f "$d/$f" ] || {{ echo "HTTP 404: Not Found ($f)" >&2; exit 1; }}
+cat "$d/$f"
+"#,
+            dir.display()
+        ),
+    )
+    .unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    format!("{}:{}", dir.display(), std::env::var("PATH").unwrap())
+}
+
+fn head(dir: &Path) -> String {
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(dir)
+        .args(["rev-parse", "HEAD"])
+        .output()
+        .unwrap();
+    String::from_utf8(out.stdout).unwrap().trim().to_owned()
+}
+
+/// The answers of a repository whose main requires the check `check`, of
+/// the workflow run in check suite 5, with that run's attempt and
+/// conclusion; check suite 6 is another workflow, which failed.
+fn ci(attempt: u64, conclusion: &str) -> Vec<(&'static str, String)> {
+    let run = |suite, conclusion: &str, attempt| {
+        format!(
+            r#"{{"name":"W{suite}","html_url":"https://example.test/runs/{suite}","check_suite_id":{suite},"run_attempt":{attempt},"status":"completed","conclusion":"{conclusion}"}}"#
+        )
+    };
+    vec![
+        ("repo", r#"{"default_branch":"main"}"#.to_owned()),
+        (
+            "branch",
+            r#"{"protection":{"required_status_checks":{"contexts":["check"]}}}"#.to_owned(),
+        ),
+        ("rules", "[]".to_owned()),
+        (
+            "check-runs",
+            r#"{"check_runs":[{"name":"check","check_suite":{"id":5}},{"name":"deploy","check_suite":{"id":6}}]}"#
+                .to_owned(),
+        ),
+        (
+            "runs",
+            format!(
+                r#"{{"workflow_runs":[{},{}]}}"#,
+                run(5, conclusion, attempt),
+                run(6, "failure", 1)
+            ),
+        ),
+    ]
+}
+
+fn answers<'a>(owned: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a str)> {
+    owned.iter().map(|(f, t)| (*f, t.as_str())).collect()
+}
+
+#[test]
+fn r58_a_tagged_commit_green_on_its_first_attempt_passes() {
+    let dir = repo("r58-pass", "\"ac:58\"", "true");
+    git(&dir, &["tag", "v1"]);
+    let path = fake_gh("r58-pass", &answers(&ci(1, "success")));
+    let run = statute(&dir, &["check"], Some(&path));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 58);
+    assert!(l.starts_with("pass "), "{l}");
+    assert!(l.contains("tagged base, v1"), "{l}");
+    assert!(
+        l.contains("succeeded on attempt 1 (https://example.test/runs/5)"),
+        "{l}"
+    );
+}
+
+#[test]
+fn r58_a_tagged_commit_green_only_on_a_rerun_is_a_violation() {
+    let dir = repo("r58-rerun", "\"ac:58\"", "true");
+    let path = fake_gh("r58-rerun", &answers(&ci(2, "success")));
+    let run = statute(&dir, &["check"], Some(&path));
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 58).starts_with("violation "), "{}", run.stdout);
+    assert!(
+        run.stdout
+            .contains("https://example.test/runs/5: W5 concluded success on attempt 2"),
+        "{}",
+        run.stdout
+    );
+    assert!(!run.stdout.contains("runs/6"), "{}", run.stdout);
+}
+
+#[test]
+fn r71_a_pull_request_never_set_to_merge_automatically_goes_to_the_reviewer() {
+    let dir = repo("r71-clean", "\"ac:71\"", "true");
+    let path = fake_gh(
+        "r71-clean",
+        &[
+            ("pulls", r#"[{"number":7}]"#),
+            (
+                "graphql",
+                r#"{"data":{"repository":{"pullRequest":{"timelineItems":{"nodes":[]}}}}}"#,
+            ),
+        ],
+    );
+    let run = statute(&dir, &["check"], Some(&path));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 71);
+    assert!(l.starts_with("inconclusive "), "{l}");
+    assert!(
+        l.contains("auto-merge was never enabled on pull request #7"),
+        "{l}"
+    );
+}
+
+#[test]
+fn r71_auto_merge_is_a_violation() {
+    let dir = repo("r71-auto", "\"ac:71\"", "true");
+    let path = fake_gh(
+        "r71-auto",
+        &[
+            ("pulls", r#"[{"number":7}]"#),
+            (
+                "graphql",
+                r#"{"data":{"repository":{"pullRequest":{"timelineItems":{"nodes":[{"createdAt":"2026-10-01T00:00:00Z"}]}}}}}"#,
+            ),
+        ],
+    );
+    let run = statute(&dir, &["check"], Some(&path));
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 71).starts_with("violation "), "{}", run.stdout);
+    assert!(
+        run.stdout
+            .contains("pull request #7: auto-merge enabled at 2026-10-01T00:00:00Z"),
+        "{}",
+        run.stdout
+    );
+}
+
+/// A pull request #7 holding HEAD, with the given comment bodies and an
+/// approval naming HEAD.
+fn r61_answers(dir: &Path, comments: &[&str]) -> Vec<(&'static str, String)> {
+    let sha = head(dir);
+    let comments: Vec<String> = comments
+        .iter()
+        .enumerate()
+        .map(|(i, body)| {
+            format!(
+                r#"{{"body":{},"url":"https://example.test/pull/7#c{i}"}}"#,
+                serde_json::to_string(body).unwrap()
+            )
+        })
+        .collect();
+    vec![
+        ("pulls", r#"[{"number":7}]"#.to_owned()),
+        (
+            "pr",
+            format!(
+                r#"{{"commits":[{{"oid":"{sha}"}}],"comments":[{}],"reviews":[{{"body":"Approved at {sha}.","state":"APPROVED","submittedAt":"2026-10-01T00:00:00Z"}}]}}"#,
+                comments.join(",")
+            ),
+        ),
+    ]
+}
+
+#[test]
+fn r61_verdicts_naming_a_commit_go_to_the_reviewer() {
+    let dir = repo("r61-named", "\"ac:61\"", "true");
+    let sha = head(&dir);
+    let owned = r61_answers(
+        &dir,
+        &[
+            &format!("Verdict: LGTM\nReviewed head: `{sha}`\n"),
+            "Thanks, fixed.",
+        ],
+    );
+    let run = statute(
+        &dir,
+        &["check"],
+        Some(&fake_gh("r61-named", &answers(&owned))),
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 61);
+    assert!(l.starts_with("inconclusive "), "{l}");
+    assert!(
+        l.contains(
+            "each of the 2 verdict(s) on pull request #7 names a commit of its pull request"
+        ),
+        "{l}"
+    );
+}
+
+#[test]
+fn r61_a_verdict_without_a_full_sha_is_a_violation() {
+    let dir = repo("r61-unnamed", "\"ac:61\"", "true");
+    let short = &head(&dir)[..7];
+    let owned = r61_answers(&dir, &[&format!("Verdict: LGTM\nReviewed head: {short}\n")]);
+    let run = statute(
+        &dir,
+        &["check"],
+        Some(&fake_gh("r61-unnamed", &answers(&owned))),
+    );
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 61).starts_with("violation "), "{}", run.stdout);
+    assert!(
+        run.stdout.contains(
+            "https://example.test/pull/7#c0: the verdict names no commit of the pull request by its full SHA"
+        ),
+        "{}",
+        run.stdout
+    );
+}
+
+#[test]
+fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
+    let dir = repo("gh-missing", "\"ac:58\", \"ac:61\", \"ac:71\"", "true");
+    // git on PATH, gh not.
+    let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("check")
+        .join("git-without-gh");
+    let _ = std::fs::remove_dir_all(&git_only);
+    std::fs::create_dir_all(&git_only).unwrap();
+    let git_bin = std::env::split_paths(&std::env::var_os("PATH").unwrap())
+        .map(|d| d.join("git"))
+        .find(|p| p.is_file())
+        .unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(git_bin, git_only.join("git")).unwrap();
+    let run = statute(&dir, &["check"], Some(git_only.to_str().unwrap()));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    for id in [58, 61, 71] {
+        let l = line(&run, id);
+        assert!(l.contains("gh is not installed"), "{l}");
+    }
+    // A gh that answers nothing, as without a login.
+    let run = statute(&dir, &["check"], Some(&fake_gh("gh-error", &[])));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    for id in [58, 61, 71] {
+        let l = line(&run, id);
+        assert!(
+            l.starts_with("inconclusive ") && l.contains("failed"),
+            "{l}"
+        );
+    }
 }
 
 // The rules 43 and 46 supersede keep their checks.
