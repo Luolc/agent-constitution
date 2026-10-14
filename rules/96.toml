@@ -1,0 +1,21 @@
+id = 96
+slug = "rule-writing"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Writing rules"
+zh = "写规定"
+
+[applicability]
+en = '''
+Covers how rules are written and changed: what one rule requires and how it is worded, where it sits in the tree, what it cites, and when a change to it keeps its ID. Enable it in a repository where agents write or change rules; a repository that only uses rules does not need it.
+'''
+zh = '''
+管规定怎么写、怎么改：一条规定要求什么、怎么措辞，挂在规定树的哪里，引用什么，以及改动什么时候保留它的 ID。agent 在仓库里写规定或改规定，就要启用；只使用规定的仓库不需要。
+'''
+
+[translations]
+zh = "e61988d869a9d7c05f1bdd6ea520994e8d35385857460e74b4c60d6d1a00ca6a"

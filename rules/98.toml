@@ -1,0 +1,42 @@
+id = 98
+slug = "decidable-wording"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["decidable-provisions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Word a rule so that a reviewer can decide it"
+zh = "规定的措辞要让审查方能够判定"
+
+[text.statement]
+en = "Word a rule so that a reviewer who reads it can tell whether a given piece of work complies."
+zh = "规定要写得让读过它的审查方能判断某一项具体的工作是否合规。"
+
+[text.reason]
+en = '''
+A provision whose violation cannot be told is no provision: each reader fills it in differently, and review cannot hold anyone to it ({@constitution:decidable-provisions}).
+'''
+zh = '''
+判断不出是否违反的条文，等于没有这条条文：每个读者各按自己的理解去补，审查也没法据此要求任何人 ({@constitution:decidable-provisions})。
+'''
+
+[text.verification]
+en = '''
+The verification says when the rule is violated, in terms a reviewer can check against the work: what to look at, and what there makes a violation. A word that leaves the measure to the reader, such as "appropriate", "reasonable", "as far as possible", "where needed" or "if relevant", is used only where the rule's own text gives the measure.
+
+Violated when a change adds or rewrites a rule whose verification does not say when it is violated, or that leaves a measure to the reader with no measure given in its text.
+'''
+zh = '''
+验证一节写明什么时候算违反，用审查方能拿来对照工作去核的说法：看什么，看到什么算违反。「适当」「合理」「尽量」「必要时」「相关时」这类把尺度留给读者的词，只在规定本身给出了尺度的地方使用。
+
+变更新增或改写的规定，验证一节没写明什么时候算违反，或者把尺度留给读者、正文里又没给出尺度的，即为违反本规定。
+'''
+
+[translations]
+zh = "83943f9326868d56487f4cf5dac800267eca851c7b320db3b5a55aa618041c87"

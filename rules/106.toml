@@ -1,0 +1,42 @@
+id = 106
+slug = "new-rule-starts-as-trial"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["ordinary-rule-adoption.conditions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Start a new rule as a trial rule"
+zh = "新规定从试用开始"
+
+[text.statement]
+en = "While the constitution is active, add a new rule meant for real work with `status = \"trial\"`."
+zh = "宪法生效期间，新增用于实际工作的规定时，写 `status = \"trial\"`。"
+
+[text.reason]
+en = '''
+A rule is tried on real work before it settles: while it is a trial rule, its wording and its check change freely, and its use gathers the evidence that it holds up ({@constitution:ordinary-rule-adoption.conditions}).
+'''
+zh = '''
+规定要先在实际工作中试用，再定下来：试用期间它的措辞和检查可以随时改，试用本身也在积累它站得住的证据 ({@constitution:ordinary-rule-adoption.conditions})。
+'''
+
+[text.verification]
+en = '''
+A new rule is one with an ID its source has not had before, a successor of a superseded rule included. While the constitution is a draft, every rule is `draft` instead; so is a rule not meant for real work yet, such as a canary rule for testing a checker.
+
+Violated when, while the constitution is active, a change adds a rule meant for real work with a status other than `trial`.
+'''
+zh = '''
+新规定，指来源里此前没有过的 ID 的规定，接替被取代规定的那些也算。宪法还是草案时，所有规定都是 `draft`；还不打算用于实际工作的规定 (比如用来测试检查器的 canary 规定) 也是 `draft`。
+
+宪法生效期间，变更新增的、用于实际工作的规定，status 不是 `trial` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "f475b281eaf85c04aa168061593d30e2f13e4cfb9dee69836f6490d5fe5aaa06"

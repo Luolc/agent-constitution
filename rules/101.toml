@@ -1,0 +1,42 @@
+id = 101
+slug = "public-rule-states-the-principle"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "In a public rule, state the principle and leave the values to the layers below"
+zh = "公开规定写原则，具体取值留给下层"
+
+[text.statement]
+en = "In a rule of a public source, state the principle, and leave to the layers below the concrete values that its users may choose differently."
+zh = "公开来源的规定写明原则，使用者可能各自选得不同的具体取值留给下层。"
+
+[text.reason]
+en = '''
+A value one user chose, written into a public rule, leaves every other user to override the rule to set their own, and so to lose its later changes; a principle lets them add their values as rules of their own beside it. What holds for one project only is not written into a rule ({@constitution:division-of-instructions}).
+'''
+zh = '''
+把某个使用者选定的取值写进公开规定，其他使用者要设自己的值就只能覆盖这条规定，也就跟不上它以后的改动；只写原则，他们就能把自己的取值写成另外的规定，与它并存。只对一个项目成立的东西不写进规定 ({@constitution:division-of-instructions})。
+'''
+
+[text.verification]
+en = '''
+A concrete value here is one tied to one user's environment or choice, which another user could set otherwise and still meet the principle: where directories go on a machine, say, or the language pull request descriptions are written in. Such a value appears in a public rule only as an example, marked as one, so that the rule still holds with the example removed. A count or a threshold that the rule needs in order to be decided (a number of uses, a number of review rounds) belongs to its principle and is not such a value.
+
+Violated when a change adds or rewrites a public rule whose requirement rests on a value tied to one user's environment or choice.
+'''
+zh = '''
+这里的具体取值，指与某个使用者的环境或选择绑在一起、别的使用者换一个值照样符合原则的那种值：比如机器上的目录放在哪里，PR 描述用什么语言写。这样的值在公开规定里只能作为例子出现，并注明是例子，去掉例子规定照样成立。规定为了能够判定而需要的次数或阈值 (比如使用次数、审查轮数) 属于它的原则，不是这种值。
+
+变更新增或改写的公开规定，其要求依赖于与某个使用者的环境或选择绑在一起的取值的，即为违反本规定。
+'''
+
+[translations]
+zh = "77151f791a792d003ad236f7849917e1810bf783b952044a5c5836824b689d7e"

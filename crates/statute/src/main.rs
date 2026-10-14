@@ -88,6 +88,10 @@ enum Command {
         #[arg(long)]
         base: Option<String>,
     },
+    /// Write a local site of every rule of the sources, the private ones
+    /// included, to .statute/site, which git ignores; open its
+    /// index.html in a browser.
+    Site,
     /// Resolve statute.toml again, say how the result differs from
     /// statute.lock, and write statute.lock.
     Upgrade {
@@ -131,6 +135,7 @@ fn main() -> ExitCode {
             (public || private).then_some(public),
         ),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
+        Command::Site => site(root),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -227,6 +232,22 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
             eprintln!("{}: warning: {}", nested.display(), private::NESTED);
         }
     }
+    Ok(())
+}
+
+fn site(root: &Path) -> Result<(), ()> {
+    let (public, both) = load_layers(root)?;
+    let project = both.unwrap_or(public);
+    let fail = |e: String| eprintln!("statute: error: {e}");
+    let pages = statute::site::pages(&project).map_err(fail)?;
+    let index = statute::site::write(root, &pages).map_err(fail)?;
+    let index = index.canonicalize().unwrap_or(index);
+    println!(
+        "wrote {} pages to {}; open file://{}",
+        pages.len(),
+        statute::site::dir().display(),
+        index.display()
+    );
     Ok(())
 }
 

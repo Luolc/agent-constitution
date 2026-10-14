@@ -1,0 +1,42 @@
+id = 111
+slug = "split-keeps-requirements"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["ordinary-rule-adoption.conditions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Split a rule without narrowing or widening it"
+zh = "拆分规定不收窄也不放宽要求"
+
+[text.statement]
+en = "When splitting a rule into several, make the new rules together require exactly what the old one did."
+zh = "把一条规定拆成几条时，新规定合起来的要求要与旧规定完全相同。"
+
+[text.reason]
+en = '''
+A split presents itself as a change of form; a requirement narrowed or widened inside it passes review as form, without the problem and the evidence that a change to a requirement must state ({@constitution:ordinary-rule-adoption.conditions}).
+'''
+zh = '''
+拆分看上去只是改形式；在拆分里收窄或放宽了要求，就会被当成形式上的改动通过审查，而改要求本该写明的问题和证据都没有写 ({@constitution:ordinary-rule-adoption.conditions})。
+'''
+
+[text.verification]
+en = '''
+Each part of the old rule's statement and verification is carried into one of the new rules. Work that violated the old rule violates at least one new rule, and work that complied with it complies with all of them.
+
+Violated when, after a split, some work that violated the old rule complies with every new rule, or some work that complied with it violates a new rule.
+'''
+zh = '''
+旧规定的陈述和验证，每一部分都落到某一条新规定里。违反旧规定的工作至少违反一条新规定，符合旧规定的工作符合全部新规定。
+
+拆分之后，有违反旧规定的工作符合全部新规定，或者有符合旧规定的工作违反了某条新规定的，即为违反本规定。
+'''
+
+[translations]
+zh = "b4c4a2acb6e11345d685c328a26ce52ea06c6a72eb2fd32b1dae3d4da4365237"
