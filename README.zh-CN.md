@@ -54,6 +54,7 @@ statute add R43       # 启用规定 43，并写出 statute.lock
 statute lock          # 手改 statute.toml 之后重新解析
 statute compile       # 写出 AGENTS.md、skill 和检查
 statute check         # 列出已启用的规定，供审查
+statute site          # 在 .statute/site 生成本地的规定网站，私有规定也在内
 ```
 
 大多数规定没法用脚本判定，所以工作要逐条规定地审：审查方运行 `statute check`，拿到按 domain 分组的已启用规定，脚本判定不了的标 `review`，再逐条过。有脚本检查的规定结果是 `pass`、`violation` 或 `inconclusive`，有规定被违反时 `statute check` 的退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/statute-command.md#the-command-and-the-first-version)。
