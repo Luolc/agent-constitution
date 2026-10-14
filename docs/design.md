@@ -823,7 +823,7 @@ passes to Hugo as `--baseURL`.
   popup hangs from the button with no gap, centered under the length and
   at least as wide as it, so the pointer reaches its link without leaving
   it; on a narrow screen it spans the column. The
-  popup first says that the numbers there are the length of the version
+  popup first says that the length it hangs under is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
   full version is the generated file without its header line, anchors and
