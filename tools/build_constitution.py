@@ -168,7 +168,6 @@ class Language:
     agent_front: {opening}: in place of the front text, for agents.
     agent_draft: the opening while a draft.
     agent_active: the opening once active.
-    draft: in the title's parentheses while a draft without an edition.
     edition: {edition}, in the title's parentheses.
     draft_revision: {revision}, the revision while a draft.
     article_heading: {anchor}, {number}, {title}.
@@ -190,7 +189,6 @@ class Language:
   agent_front: str
   agent_draft: str
   agent_active: str
-  draft: str
   edition: str
   draft_revision: str
   article_heading: str
@@ -241,7 +239,6 @@ LANGUAGES = {
       "This is the version of this constitution for agents,"
       " and every agent must follow it"
     ),
-    draft="Draft",
     edition="{edition} edition",
     draft_revision="{revision} (draft)",
     article_heading="## {anchor}Article {number}. {title}",
@@ -282,7 +279,6 @@ LANGUAGES = {
     ),
     agent_draft="这是本宪法给 agent 读的版本，本宪法现为草案，尚未生效",
     agent_active="这是本宪法给 agent 读的版本，每个 agent 都必须遵守它",
-    draft="草案",
     edition="{edition} 版",
     draft_revision="{revision} (草案)",
     article_heading="## {anchor}{number} {title}",
@@ -304,7 +300,7 @@ LANGUAGES = {
 LANG = "lang"
 INDEX_SCHEMA = {
   "status": str,
-  "edition?": str,
+  "edition": str,
   "revision": str,
   "languages": list,
   "title": LANG,
@@ -775,9 +771,7 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
       f"`status` must be one of {INDEX_STATUS}",
     )
   edition = index.data.get("edition")
-  if index_status == "active" and edition is None:
-    errors.add(INDEX, 1, 1, "lacks `edition`, which an active constitution has")
-  elif edition is not None and not MONTH.fullmatch(edition):
+  if isinstance(edition, str) and not MONTH.fullmatch(edition):
     errors.add(
       INDEX,
       index.line("edition ="),
@@ -1344,11 +1338,7 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
     return entries
 
   index = src.index.data
-  edition = (
-    lng.edition.format(edition=index["edition"])
-    if "edition" in index
-    else lng.draft
-  )
+  edition = lng.edition.format(edition=index["edition"])
   revision = index["revision"]
   if index["status"] == "draft":
     revision = lng.draft_revision.format(revision=revision)
