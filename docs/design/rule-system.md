@@ -825,7 +825,7 @@ In the first version, `statute check` lists the enabled rules of the
 repository for review and runs the checks of those that have one; with
 `--base <ref>` it checks the change `git diff <ref>...HEAD`. It groups
 the rules by domain, the domains and the rules in each in order of ID,
-under a heading with the domain's reference and title (`## R1
+under a heading with the domain's reference and title (`## R13
 (Security)`). Each rule has a line with its outcome (`pass`,
 `violation`, `inconclusive`, or `review` for a rule without an
 automatic check), its reference and title, and a note, with the findings
@@ -833,9 +833,10 @@ below; a rule that is inconclusive or for review is followed by its
 reason and verification, with their citations rendered as in the
 compiled `AGENTS.md`, a cited rule always as its title and reference
 (`Title (rule R42)`), since the output has no anchors to link to. It
-exits with status 1 when a rule is violated, and 0 otherwise. A built-in check that covers only part of its
-rule, finding nothing, is inconclusive, not a pass, since the rest of
-the rule is still for the reviewer. The built-in checks:
+exits with status 1 when a rule is violated, and 0 otherwise. A
+built-in check that covers only part of its rule, finding nothing, is
+inconclusive, not a pass, since the rest of the rule is still for the
+reviewer. The built-in checks:
 
 - rule 46 (instruction-files-apart) tells instruction files, generated
   files and other files apart with the same path tables as
@@ -886,9 +887,9 @@ The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
 only for a rule set that still enables them.
 
 The reviewer runs `statute check`, and CI may run it too. It is not a
-commit hook: some checks scan the whole history or
-ask the forge over the network and can be slow, and a commit hook holds
-only checks that take seconds.
+commit hook: some checks scan the whole history or ask the forge over
+the network and can be slow, and a commit hook holds only checks that
+take seconds.
 
 For each rule it is handed, the reviewer decides whether the rule is met
 or violated. A violation is fixed. Where the reviewer's decision differs

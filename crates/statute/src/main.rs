@@ -159,7 +159,7 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     let mut by_domain: BTreeMap<Id, Vec<_>> = BTreeMap::new();
     for entry in &reports {
         by_domain
-            .entry(domain(source, entry.0))
+            .entry(source.root(entry.0))
             .or_default()
             .push(entry);
     }
@@ -197,19 +197,6 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     } else {
         Ok(())
     }
-}
-
-/// The domain a node is under: the top of its parent chain, which the
-/// source's own checks make a domain.
-fn domain(source: &statute::source::Source, id: Id) -> Id {
-    let mut id = id;
-    for _ in 0..=source.nodes.len() {
-        match source.get(id).and_then(|n| n.parent) {
-            Some(parent) => id = parent,
-            None => break,
-        }
-    }
-    id
 }
 
 /// The source's name in the rule set `init` writes.
