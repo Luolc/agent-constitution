@@ -1,18 +1,14 @@
-"""Tests for build_site and the site's Hugo templates.
+"""Tests for the site's Hugo templates.
 
-build_site runs the token count, Hugo and the site check in that order
-and stops at the first that fails, saying so when Hugo is missing. The
-templates, built by Hugo from a made-up constitution, put the revision,
+The templates, built by Hugo from a made-up constitution, put the revision,
 the length of the version for agents and the legend of the asterisk under
 the title, and a popup that gives both versions' lengths; the tokens come
 from data/lengths.json only when it counted the same text. The template
 tests need hugo-0.167.0 and are skipped without it, except in CI.
 """
 
-import contextlib
 import hashlib
 import html
-import io
 import json
 import os
 from pathlib import Path
@@ -24,11 +20,12 @@ import tomllib
 import unittest
 from unittest import mock
 
-import build_site
 import constitution_render
 import count_tokens
 
 ROOT = Path(__file__).resolve().parent.parent
+HUGO = "hugo-0.167.0"  # the version CI installs
+HUGO_TIMEOUT = 120  # seconds; a build takes well under one
 MARK = constitution_render.OMITTED_MARK
 # Each file as build_constitution.py writes it: the header line, a blank
 # line, the title, the text. The full version marks a part left out of
@@ -66,59 +63,10 @@ def visible(page: str) -> str:
   return " ".join(html.unescape(re.sub(r"<[^>]*>", " ", page)).split())
 
 
-class MainTest(unittest.TestCase):
-  """main with the token count, Hugo and the site check mocked."""
-
-  def main(self, count=0, run=None):
-    stderr = io.StringIO()
-    with (
-      mock.patch("count_tokens.main", return_value=count) as counted,
-      mock.patch("subprocess.run", **(run or {})) as hugo,
-      mock.patch("check_site_anchors.main", return_value=0) as checked,
-      contextlib.redirect_stderr(stderr),
-    ):
-      code = build_site.main(["--out", "/nonexistent-site", "--require-tokens"])
-    return code, counted, hugo, checked, stderr.getvalue()
-
-  def test_built_and_checked(self):
-    code, counted, hugo, checked, _ = self.main(
-      run={"return_value": mock.Mock(returncode=0)}
-    )
-    self.assertEqual(code, 0)
-    counted.assert_called_once_with(["--require-tokens"])
-    self.assertEqual(hugo.call_args.args[0][0], "hugo-0.167.0")
-    checked.assert_called_once_with(["/nonexistent-site"])
-
-  def test_stops_at_the_first_failure(self):
-    code, _, hugo, checked, _ = self.main(count=1)
-    self.assertEqual(code, 1)
-    hugo.assert_not_called()
-    code, _, _, checked, _ = self.main(
-      run={"return_value": mock.Mock(returncode=255)}
-    )
-    self.assertEqual(code, 255)
-    checked.assert_not_called()
-
-  def test_no_hugo(self):
-    code, _, _, checked, stderr = self.main(
-      run={"side_effect": FileNotFoundError}
-    )
-    self.assertEqual(code, 2)
-    self.assertIn("hugo-0.167.0 not found", stderr)
-    checked.assert_not_called()
-
-  def test_hugo_stalls(self):
-    stalled = subprocess.TimeoutExpired("hugo-0.167.0", 120)
-    code, _, _, checked, stderr = self.main(run={"side_effect": stalled})
-    self.assertEqual(code, 1)
-    self.assertIn("ran past", stderr)
-    checked.assert_not_called()
-
-
 # Skipped without Hugo, but never in CI (GitHub sets CI), which installs it.
 @unittest.skipUnless(
-  shutil.which(build_site.HUGO) or os.environ.get("CI"),
-  f"needs {build_site.HUGO}",
+  shutil.which(HUGO) or os.environ.get("CI"),
+  f"needs {HUGO}",
 )
 class SiteTest(unittest.TestCase):
   """The site Hugo builds from web/ and the made-up constitution."""
@@ -153,7 +101,7 @@ class SiteTest(unittest.TestCase):
         (root / "web/data/lengths.json").write_text(json.dumps(lengths))
       subprocess.run(
         [
-          build_site.HUGO,
+          HUGO,
           "--source",
           str(root / "web"),
           "--destination",
@@ -162,7 +110,7 @@ class SiteTest(unittest.TestCase):
           "--quiet",
         ],
         check=True,
-        timeout=build_site.HUGO_TIMEOUT,
+        timeout=HUGO_TIMEOUT,
       )
       pages = {
         page: (root / "site" / page).read_text(encoding="utf-8")

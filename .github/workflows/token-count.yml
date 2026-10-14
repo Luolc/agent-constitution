@@ -31,7 +31,7 @@ jobs:
           submodules: true
 
       # As in ci.yml: pinned by version and SHA-256, unpacked outside the
-      # checkout under the name tools/build_site.py calls.
+      # checkout under the versioned name the build step calls.
       - name: Install Hugo
         env:
           HUGO_VERSION: 0.167.0
@@ -56,7 +56,7 @@ jobs:
       # on a command line or into GITHUB_ENV, masked as soon as they exist.
       # A failed exchange prints its HTTP status and the error body with
       # every field named *token replaced.
-      - name: Exchange the OIDC token and build the site
+      - name: Exchange the OIDC token and count the tokens
         env:
           FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
           ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
@@ -103,7 +103,13 @@ jobs:
           fi
           echo "::add-mask::${CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN}"
           export CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
-          uv run --frozen tools/build_site.py --require-tokens
+          uv run --frozen tools/count_tokens.py --require-tokens
+
+      # As in ci.yml: Hugo reads the counts from web/data/lengths.json.
+      - name: Build the static site
+        run: hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning
+      - name: Link check
+        run: uv run --frozen tools/check_site_anchors.py site
 
       # The length line under the title of each built page, in the job
       # summary and in the log, which, unlike the summary, the API can read.

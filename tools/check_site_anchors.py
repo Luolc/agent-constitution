@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Check the built static site's links, ids and list markers.
 
 Every in-page link `href="#id"` has its target `id` on the same page,
@@ -7,8 +6,8 @@ appears twice on a page, and no list marker leaked into the text as a
 literal `- §` or `- 第` (a sign that the Markdown renderer did not see a
 list item where the build wrote one).
 
-Usage: check_site_anchors.py [<dir>], default site/ of the repo this
-script is in. Errors print as `path: message`; the exit status is 1 on
+Usage: uv run tools/check_site_anchors.py [<dir>], default site/ of the
+repo this script is in. Errors print as `path: message`; the exit status is 1 on
 any error, also when the directory holds no HTML page.
 """
 
