@@ -1,10 +1,13 @@
-# The static site: two pages per language, the constitution and its version
+# The static site: in each language, the constitution and its version
 # for agents, made by content/_content.gotmpl from
 # constitution.<lang>.md and constitution.<lang>.agent.md, the files
-# constitution-build generates.
-# `hugo-0.167.0 -s web` builds it into site/, with the tokens that
-# `uv run count-tokens` counted, if any; `uv run check-site-anchors site`
-# checks the links (both in tools/site). See docs/design/static-site.md.
+# constitution-build generates; the rules, made by
+# content/rules/_content.gotmpl from data/rules.json, which
+# `uv run site-rules` writes; and the design.
+# `hugo-0.167.0 -s web` builds it into site/, after `uv run site-rules`,
+# with the tokens that `uv run count-tokens` counted, if any;
+# `uv run check-site-anchors site` checks the links (all three in
+# tools/site). See docs/design/static-site.md.
 baseURL = "/"
 publishDir = "../site"
 # Relative links, so that site/index.html also opens as a file.
@@ -55,14 +58,33 @@ enableRobotsTXT = false
   [languages.zh.menus.before.params]
     class = "menu-group"
     BookIcon = "law"
-# The second group, the design, links its README; under it, its files in
+# The second group, the rules, links their list, rules/, made by
+# content/rules/_content.gotmpl. The icon is Octicons' `checklist` (MIT
+# license).
+[[languages.en.menus.before]]
+  identifier = "rules"
+  name = "Rules"
+  pageRef = "/rules"
+  weight = 2
+  [languages.en.menus.before.params]
+    class = "menu-group"
+    BookIcon = "checklist"
+[[languages.zh.menus.before]]
+  identifier = "rules"
+  name = "规定"
+  pageRef = "/rules"
+  weight = 2
+  [languages.zh.menus.before.params]
+    class = "menu-group"
+    BookIcon = "checklist"
+# The third group, the design, links its README; under it, its files in
 # the README's order, each entry added by content/design/_content.gotmpl.
 # The icon is the open book of Octicons' `book` (MIT license).
 [[languages.en.menus.before]]
   identifier = "design"
   name = "Design"
   pageRef = "/design"
-  weight = 2
+  weight = 3
   [languages.en.menus.before.params]
     class = "menu-group"
     collapse = true
@@ -71,7 +93,7 @@ enableRobotsTXT = false
   identifier = "design"
   name = "设计"
   pageRef = "/design"
-  weight = 2
+  weight = 3
   [languages.zh.menus.before.params]
     class = "menu-group"
     collapse = true
@@ -100,6 +122,9 @@ enableRobotsTXT = false
   BookComments = false
   BookServiceWorker = false
   BookTranslatedOnly = false
+  # The rules a page of their list shows (layouts/rules/section.html),
+  # fixed in docs/design/static-site.md.
+  rulesPerPage = 15
   # Linked in the sidebar, under the site's title.
   SourceRepo = "https://github.com/Luolc/agent-constitution"
   # The asterisk after a provision the version for agents leaves out, as
@@ -116,8 +141,8 @@ enableRobotsTXT = false
 # constitution/<YYYY-MM>/: index.toml, for the revision and the status,
 # and the two Markdown files of each language in generated/, all as
 # assets, which layouts/_partials/constitution/source.html finds by name.
-# data/lengths.json, written by count-tokens and not committed, holds the
-# tokens.
+# data/lengths.json, written by count-tokens, holds the tokens, and
+# data/rules.json, written by site-rules, the rules; neither is committed.
 # A component with a mount of its own loses its default one, so data and
 # assets are mounted again.
 [[module.mounts]]

@@ -4,11 +4,14 @@ The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
 `site/zh/agent/index.html`), and so is this design, under `design/`
-(`site/design/index.html`, `site/zh/design/index.html`). Hugo builds
-them, `hugo-0.167.0 -s web` alone. CI runs three steps: `uv run count-tokens` (the token
-count, below), `hugo-0.167.0 --source web --cleanDestinationDir
---panicOnWarning`, and `uv run check-site-anchors site`, the
-link check. The workflow `.github/workflows/pages.yml` publishes the
+(`site/design/index.html`, `site/zh/design/index.html`), and so are
+the rules, under `rules/` (`site/rules/index.html`,
+`site/zh/rules/index.html`). Hugo builds them with `hugo-0.167.0 -s
+web`, once `uv run site-rules` has written the rules' data (Rules,
+below). CI runs four steps on every pull request and push: `uv run
+site-rules`, `uv run count-tokens` (the token count, below),
+`hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning`, and
+`uv run check-site-anchors site`, the link check. The workflow `.github/workflows/pages.yml` publishes the
 site to GitHub Pages at `https://agent-constitution.luolc.com/`, which it
 passes to Hugo as `--baseURL`.
 
@@ -33,7 +36,7 @@ passes to Hugo as `--baseURL`.
   directory's `index.toml` from `constitution/` as assets, and the partial
   `web/layouts/_partials/constitution/source.html` finds each by name,
   failing the build unless exactly one file matches; Python writes no
-  page. The content adapter `web/content/_content.gotmpl` makes
+  page, only the data of the rules' pages (Rules, below). The content adapter `web/content/_content.gotmpl` makes
   each into the home page of its language: the header line is dropped,
   the title becomes the page's, each heading's anchor (`## <a
   id="general-provisions"></a>Article I. ...`) becomes the heading's id,
@@ -113,6 +116,49 @@ passes to Hugo as `--baseURL`.
   file that does not exist is left to the design translation check. Links on the
   constitution's pages, and absolute ones and fragments alone everywhere,
   are left as written.
+- Rules: `uv run site-rules` (`tools/site`) reads `rules/*.toml` with the
+  compiler's reader and writes `web/data/rules.json` (not committed),
+  which Hugo reads; the build fails without it, so CI and
+  `pages.yml` run it before Hugo. For each language of `index.toml` it
+  holds every node of the rule tree along the parent tree, a node's
+  children in order of ID, and, for each provision, the rules that name
+  it in `authority`. A superseded rule has a page but is in no list, not
+  under a provision either. The content adapter
+  `web/content/rules/_content.gotmpl` makes the list, `rules/`, and a
+  page for each node, `rules/<id>/`: the ID, not the `slug`, since the ID
+  never changes. The list (`web/layouts/rules/section.html`) shows 15
+  rules a page (`params.rulesPerPage` in `web/hugo.toml`) along the
+  tree, each rule's statement only, as plain text cut to three lines by
+  the style sheet, after its ID and linked to its page; a rule under
+  another rule is indented under it. Domains and one-ofs are not listed
+  but head the rules below them, and again at the top of each page. A
+  rule's page (`web/layouts/rules/page.html`) gives its title, for a
+  superseded rule the rule that supersedes it, its statement, reason and
+  verification, the provisions it cites (`authority`), linked to their
+  anchors on the home page, its relations (its parent, its requirements
+  and its conflicts, a conflict shown on both rules though written on
+  one) and all its metadata: ID, revision, kind, status, slug, default
+  level, the revisions of the constitution, the check with its command
+  and tools, the language of the original and the translations. A
+  domain's or a one-of's page lists the nodes below it. In the texts,
+  `{@constitution:...}` becomes a link to the provision's anchor, labeled
+  as the full version labels it, in the language of the text, and
+  `{@rule:N}` a link to the rule's page ("rule N", 「规定 N」). A page
+  shows a node's texts in its own language when the node is written in
+  it or has a translation into it whose hash in `[translations]` is that
+  of the current original; otherwise it shows the original, under a line
+  that names its language (`这条规定还没有中文译文，下面是原文
+  (英文)。`), with the text's `lang` set. A translation of an older
+  original is treated as no translation: it is not shown, and not listed
+  among the translations. `constitution-build --check` fails on such a
+  translation, so only a build from sources that fail that check meets
+  one. Under each provision of the home page that a listed rule cites,
+  the home page's content adapter adds a line, "Rules citing this
+  provision:", with the rules' titles linked to their pages: after an
+  article's heading, or at the end of the first line of a section or an
+  item, which the style sheet sets on a line of its own. The lengths are
+  of the text without these lines. The rules' pages have the design's
+  layout and style (`<div class="design rules">`).
 - Length: the second item of the list gives the length of the version
   for agents, bare, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
@@ -193,9 +239,10 @@ passes to Hugo as `--baseURL`.
   pages, not the articles, in groups named in `web/hugo.toml`'s menus:
   each group a top-level entry, its name in bold after an icon of its own
   from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
-  pages as children. There are two groups: the constitution, the home
-  page, with the scales (`law`), and the design, its README's page, with
-  an open book (`book`), its files below it as the content adapter lists
+  pages as children. There are three groups: the constitution, the home
+  page, with the scales (`law`); the rules, their list, with a checklist
+  (`checklist`) and no pages below it; and the design, its README's page,
+  with an open book (`book`), its files below it as the content adapter lists
   them (Design, above). The design group folds (`collapse` in its menu
   params): it is closed on every page but the design's own, where it is
   open with the current page marked. It uses the theme's checkbox, label
@@ -211,7 +258,7 @@ passes to Hugo as `--baseURL`.
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
   theme's own list with `bookHidden`, as it hides the design's pages,
-  which the menu lists. The table of contents lists the
+  which the menu lists, and the rules' pages. The table of contents lists the
   page's level-2 headings, the preamble and the articles
   (`markup.tableOfContents` in `web/hugo.toml`), under a heading of its
   own; on a narrow screen the theme hides it behind a button at the right
@@ -238,7 +285,7 @@ passes to Hugo as `--baseURL`.
   builds.
 - Raw HTML: Goldmark's `unsafe` renderer is on, since the anchors
   (`<a id="...">`) and the asterisks are raw HTML. The content is only this
-  repo's own built constitution and design, never outside input.
+  repo's own built constitution, design and rules, never outside input.
 - Anchors: the ID of the article, section or item: `#general-provisions`,
   `#terms`, `#terms.principal`, the same in both languages and in the
   Markdown. A citation is a reference link to it. `:target` flashes the
@@ -282,6 +329,4 @@ passes to Hugo as `--baseURL`.
   sources and their generated Markdown. Hugo needs a download, so the build
   is not a commit hook, and the tests of the templates
   (`test_site.py`, which builds a made-up constitution and design) are
-  skipped without it, except in CI; CI installs Hugo before the tests,
-  builds the site on every pull request and push and runs
-  `check-site-anchors` on it.
+  skipped without it, except in CI; CI installs Hugo before the tests.
