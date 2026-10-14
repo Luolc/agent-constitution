@@ -96,9 +96,10 @@ The Python tools run with uv: `pyproject.toml` pins limae, pre-commit and
 the Python checkers, `.python-version` the interpreter, and `uv.lock`
 locks them. After cloning, run `uv sync` once to create `.venv`, then
 install the hooks with `uv run pre-commit install`. The hooks run the
-tools with `uv run --frozen --no-sync`: they never create, sync or change
-`.venv` or `uv.lock`, so a hook fails when `.venv` is missing or stale;
-run `uv sync` again then. The commit hooks and the Python tools need only
+tools with `uv run --frozen --no-sync`: they never install into `.venv`
+nor change `uv.lock`. A tool missing from `.venv` fails its hook; a stale
+`.venv` runs the versions it has, so run `uv sync` whenever `uv.lock`
+changes. The commit hooks and the Python tools need only
 uv on the machine; the site build needs Hugo and the full-history scan
 gitleaks, both below. After changing a pin, run `uv sync`, which updates
 `uv.lock` and `.venv`, and commit `uv.lock`; the `uv-lock` hook fails
