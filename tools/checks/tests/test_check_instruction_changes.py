@@ -38,6 +38,8 @@ class Change(unittest.TestCase):
 
   def git(self, *args):
     # No user-level ignore file: it may ignore paths these tests change.
+    # No automatic maintenance: run in the background after a commit, it can
+    # still be writing .git/objects/pack when the test removes the directory.
     subprocess.run(
       [
         "git",
@@ -47,6 +49,8 @@ class Change(unittest.TestCase):
         "user.name=Test",
         "-c",
         "user.email=test@example.test",
+        "-c",
+        "maintenance.auto=false",
         "-c",
         "core.excludesFile=/dev/null",
         *args,
@@ -209,6 +213,8 @@ class HookEnvironment(unittest.TestCase):
           "user.name=Test",
           "-c",
           "user.email=test@example.test",
+          "-c",
+          "maintenance.auto=false",
           *args,
         ],
         check=True,

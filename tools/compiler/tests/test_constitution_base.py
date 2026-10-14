@@ -4,7 +4,9 @@ They run on a temporary git repository against a base commit.
 """
 
 import contextlib
+import hashlib
 import io
+import itertools
 import os
 from pathlib import Path
 import re
@@ -32,6 +34,8 @@ class BaseTest(Tree):
   """Check 7 against a base commit in a temporary git repository."""
 
   def git(self, *args):
+    # No automatic maintenance: run in the background after a commit, it can
+    # still be writing .git/objects/pack when the test removes the directory.
     subprocess.run(
       [
         "git",
@@ -41,6 +45,8 @@ class BaseTest(Tree):
         "user.name=t",
         "-c",
         "user.email=t@example.test",
+        "-c",
+        "maintenance.auto=false",
         *args,
       ],
       check=True,
@@ -78,6 +84,28 @@ class BaseTest(Tree):
   def test_control_passes(self):
     self.commit_base()
     self.assertEqual(self.base_errors(), ([], ""))
+
+  def test_commit_starts_no_maintenance(self):
+    """A commit with many loose objects leaves them loose.
+
+    Git estimates the loose objects from those in .git/objects/17; thirty
+    there pass the threshold of every default automatic maintenance, which
+    in the foreground would leave a pack.
+    """
+    found = 0
+    for i in itertools.count():
+      text = f"{i}\n"
+      blob = f"blob {len(text)}\0{text}".encode()
+      if hashlib.sha1(blob).hexdigest().startswith("17"):
+        self.write(f"loose/{i}.txt", text)
+        found += 1
+        if found == 30:
+          break
+    self.git("init", "-q")
+    self.git("config", "gc.autoDetach", "false")
+    self.git("add", "-A")
+    self.git("commit", "-q", "-m", "loose")
+    self.assertEqual(list((self.root / ".git/objects/pack").iterdir()), [])
 
   def test_main_runs_check_with_base(self):
     self.commit_base()
@@ -695,6 +723,8 @@ class HookEnvironment(unittest.TestCase):
           "user.name=Test",
           "-c",
           "user.email=test@example.test",
+          "-c",
+          "maintenance.auto=false",
           *args,
         ],
         check=True,
