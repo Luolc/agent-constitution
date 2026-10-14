@@ -1,11 +1,11 @@
 id = 45
 slug = "credential-not-between-agents"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "sensitive-info"]
+authority = ["sensitive-info"]
 constitution = ">=1"
 level = "project"
 check = "review"

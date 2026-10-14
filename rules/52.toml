@@ -1,11 +1,11 @@
 id = 52
 slug = "public-push-pre-review"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "sensitive-info", "must-ask.irreversible-effects", "independent-review"]
+authority = ["sensitive-info", "must-ask.irreversible-effects", "independent-review"]
 constitution = ">=1"
 level = "project"
 check = "review"

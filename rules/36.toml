@@ -1,11 +1,11 @@
 id = 36
 slug = "no-credential-values"
-revision = 2
+revision = 3
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "sensitive-info"]
+authority = ["sensitive-info"]
 constitution = ">=1"
 level = "project"
 check = "review"

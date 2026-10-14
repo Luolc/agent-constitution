@@ -1,11 +1,11 @@
 id = 34
 slug = "irreversible-effects-list"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 14
-authority = ["boundary-rule", "must-ask.irreversible-effects"]
+authority = ["must-ask.irreversible-effects"]
 constitution = ">=1"
 level = "project"
 check = "review"

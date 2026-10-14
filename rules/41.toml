@@ -1,11 +1,11 @@
 id = 41
 slug = "take-the-reviewed-route"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "guards"]
+authority = ["guards"]
 constitution = ">=1"
 level = "project"
 check = "review"

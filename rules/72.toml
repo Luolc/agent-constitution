@@ -1,11 +1,11 @@
 id = 72
 slug = "cite-the-ci-run"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 15
-authority = ["verification", "evidence"]
+authority = ["evidence"]
 constitution = ">=1"
 level = "project"
 check = "review"

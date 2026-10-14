@@ -1,11 +1,11 @@
 id = 27
 slug = "fixtures-made-up-data"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 15
-authority = ["safety", "sensitive-info", "personal-info", "must-ask.irreversible-effects"]
+authority = ["sensitive-info", "personal-info", "must-ask.irreversible-effects"]
 constitution = ">=1"
 level = "project"
 check = "review"
