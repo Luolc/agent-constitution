@@ -1,8 +1,9 @@
 # Rule system
 
-Status: draft. Nothing here is built yet. This document describes how
-rules are written, numbered, chosen, checked and compiled once the rule
-system is built. Where it differs from what the rest of the design says
+Status: draft. The rules of this repo are written in the
+[Rule file format](#rule-file-format), which `constitution-build` checks;
+the rest is not built yet. This document describes how rules are written,
+numbered, chosen, checked and compiled once the rule system is built. Where it differs from what the rest of the design says
 today, the section [What this replaces](#what-this-replaces) lists the
 difference; those sections stay as they are until the work that implements
 this design changes them.
@@ -261,7 +262,8 @@ rule set lists only the rules chosen directly:
 
 ```toml
 constitution = { source = "ac", edition = "2026-10" }
-rules = ["ac:42"]
+rules = ["ac:42", "ac:51"]
+packs = ["ac:3"]
 
 [sources]
 ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
@@ -272,7 +274,13 @@ agents-md = ["statement"]
 
 The rule set names the constitution's source and edition; the revision
 is the one at the commit of that source the lock file pins, and the lock
-file records it. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
+file records it. `rules` lists the rules chosen directly and `packs` the
+roots of the packs enabled, each as a reference
+([Sources and references](#sources-and-references)). A child of a one-of
+is chosen by listing it in `rules`, here `ac:51`; there is no other
+field for it. A domain or a one-of listed in `rules` fails the build,
+which says to enable the domain as a pack and the one-of through one of
+its children. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
 by default only `statement`; adding `reason` or `verification` puts those
 parts in as well ([Compilation and the site](#compilation-and-the-site)).
 
@@ -309,9 +317,12 @@ sha256 = "<SHA-256 of rules/7.toml>"
 
 Upgrading is an explicit step that rewrites the lock file and shows the
 diff of every rule whose revision moved, and of every rule a requirement
-brought in or dropped. When the rule set names a superseded rule, the
-build says so and names its successor, and one command replaces the old
-ID with the new one in the rule set. Downstream users do not have to
+brought in or dropped. When the rule set enables a superseded rule, the
+build warns and names its successor. For a rule listed in `rules`, one
+command replaces the old ID with the new one in the rule set; for a rule
+brought in by another, the warning names the rule that brings it in. An
+enabled repealed rule draws a warning too. These are warnings, not
+errors, since the rule set keeps working as it did. Downstream users do not have to
 follow the supersession chain by hand, and nothing changes under them
 until they upgrade.
 
@@ -381,6 +392,13 @@ a `[sources]` table, with its address and the tag or branch to follow:
 ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
+
+A source may also be a directory on disk, `ac = { path = "." }`, relative
+to the rule set's directory: a repository that holds its own rules, as
+this one does, names itself this way. Its rules are in `rules/` below
+that directory and its constitution in `constitution/<edition>/`. The
+first version reads only one source, on disk, and reports a `git`
+source as not supported yet.
 
 A reference is the name, a colon and the rule's ID: `ac:42`, `team:7`.
 The name means something only inside the file that defines it, so two
@@ -533,9 +551,17 @@ children: the tool cannot choose for
 the user, so it fails and lists the children to choose from.
 
 Packs: a pack is a subtree, named by its root, and a rule set can enable
-it as a whole. A one-of in the pack of which the rule set names no child
-contributes nothing, like any one-of with no child enabled; the build
-fails only when an enabled rule requires that one-of, as above.
+it as a whole, by listing the root in `packs`. A one-of in the pack of
+which the rule set names no child contributes nothing, like any one-of
+with no child enabled; the build fails only when an enabled rule requires
+that one-of, as above. When the rule set names a child in `rules`, the
+pack goes on into that child's subtree. In the first version that is the
+only way into a one-of: a child enabled only because a rule requires it
+does not take the pack into its subtree, and a one-of that is a child of
+a one-of is never entered. A superseded or repealed rule of the pack is
+left out, with the rules below it; a pack whose root is superseded or
+repealed enables nothing, and the build warns as it does for such a rule
+in `rules`.
 
 ## Tracing rules to the constitution
 
