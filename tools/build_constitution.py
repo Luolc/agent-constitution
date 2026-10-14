@@ -970,11 +970,13 @@ def revision_key(revision: str) -> tuple[int, int] | None:
 
 def source_text_changed(root: Path, ref: str) -> bool:
     """The article sources or `index.toml` other than its `revision` line
-    differ from the base's. The working tree is compared, so the result
-    does not depend on what is committed."""
+    differ from the base's. The files git tracks are compared as they are in
+    the working tree, so the result does not depend on what is committed."""
     drop = re.compile(r'^revision = ".*"\n', re.MULTILINE)
-    base_paths = {Path(p) for p in (git(root, "ls-tree", "-r", "--name-only", ref, "--", str(ARTICLES)) or "").split("\n") if p}
-    paths = {p.relative_to(root) for p in (root / ARTICLES).rglob("*") if p.is_file()}
+    listing = git(root, "ls-tree", "-r", "--name-only", ref, "--", str(ARTICLES)) or ""
+    base_paths = {Path(p) for p in listing.split("\n") if p}
+    tracked = git(root, "ls-files", "--", str(ARTICLES)) or ""
+    paths = {Path(p) for p in tracked.split("\n") if p and (root / p).is_file()}
     if paths != base_paths:
         return True
     if any((root / p).read_text(encoding="utf-8") != git(root, "show", f"{ref}:{p}") for p in paths):
