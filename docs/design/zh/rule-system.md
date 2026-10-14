@@ -1,4 +1,4 @@
-<!-- en-sha256: 62510e298f993945e25f09f360a47283e864b25df2bf4cf62e70f3f76e229fa8 -->
+<!-- en-sha256: 8ac0e06383fb0e4cc085bdf14b08c4504358f448ece2ef5e3373708ebfa9f80c -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -254,7 +254,18 @@ team = { git = "example.test/their-team/rules", branch = "main" }
 
 规定说明必须达到什么状态；skill 说明怎样做到：步骤、模板、命令、已知的坑 (`skills`)。别人能指着说「你违反了这一条」的内容，写进规定；只是帮 agent 把事情做对的内容，写进 skill。
 
-skill 声明自己落实哪些规定，只有当其中至少一条在规定清单里时才安装。仓库的 `AGENTS.md` 只保留这个仓库特有的内容 (它是什么、用什么语言、目录结构、检查命令)，并指明它使用的规定清单 (`division-of-instructions.project-instructions`)。规定清单按仓库选定 ([规定清单与锁文件](#rule-sets-and-the-lock-file))。
+skill 声明自己落实哪些规定，只有当其中至少一条在规定清单里时才安装。声明写在它 front matter 的 `metadata` 映射里，键是 `statute-rules`，值是它所在规定源里的规定 ID，用空格隔开。
+
+```yaml
+---
+name: example-skill
+description: How to do the thing that rules 42 and 51 require.
+metadata:
+  statute-rules: "42 51"
+---
+```
+
+[Agent Skills 规范](https://agentskills.io/specification) 规定 front matter 里只能有 `name`、`description`、`license`、`compatibility`、`metadata` 和 `allowed-tools`，`metadata` 的值只能是字符串 (2026-10-14 读取)；所以声明写成 `metadata` 下的一个字符串，不另设一个键。没有声明规定的 skill 永远不装；声明了规定源里没有的规定，编译失败。仓库的 `AGENTS.md` 只保留这个仓库特有的内容 (它是什么、用什么语言、目录结构、检查命令)，并指明它使用的规定清单 (`division-of-instructions.project-instructions`)。规定清单按仓库选定 ([规定清单与锁文件](#rule-sets-and-the-lock-file))。
 
 ## <a id="dependencies-one-ofs-and-packs"></a>依赖、one-of 与规定包
 
@@ -348,7 +359,15 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 - 要安装的检查二进制文件的版本，以及启用规定的外部命令；
 - 运行检查的钩子配置。
 
-第一版只写 `AGENTS.md`：`statute compile` 把它写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。它只替换自己写出的文件，即第一行是它那行「文件是生成的」注释的文件；手写的文件原样保留，命令失败。文件依次包含：一行说明文件是生成的注释；一行写明宪法的版、修订号和规定源；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。每个 domain 是二级标题，树每深一层标题降一级，到六级为止，更深的层级停在六级；一个子节点都没启用的 one-of 不出现。节点的标题是它的标题和 ID，前面放锚点 `rule-<id>`，这个锚点只在一个规定源内唯一。依赖另一个 domain 下的节点时，写一行「依赖：」并链接到那个锚点；同一 domain 内的依赖不写出来。规定有该语言的译文就用译文，没有就用原文。规定正文里的引用会渲染出来 ([ID](source-formats.md#ids))：`{@rule:<id>}` 写成被引节点的标题，与它的标题行一样选语言，节点在文件里就链接到它的锚点，不在就在后面加「(规定 <id>)」；`{@constitution:<id>}` 写成该条款在这种语言里的标签，与 agent 版一样是纯文本，例如 `第四条第一款第二项`。标签按这一版宪法的源算出：条和款的编号取自文件名，项的编号取自 `number`，算法与宪法构建相同 ([编译](compilation.md))；与宪法构建不同的是，连着的几处引用不缩写 (`第四条第一款、第四条第二款`)。引用了不存在的节点或条款时命令失败，并指出是哪条规定的哪一部分。规定文件和锁文件里的哈希都不变。skill 目录、检查二进制的版本和 hook 配置暂时还不写。
+`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外三样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释；一行写明宪法的版、修订号和规定源；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。每个 domain 是二级标题，树每深一层标题降一级，到六级为止，更深的层级停在六级；一个子节点都没启用的 one-of 不出现。节点的标题是它的标题和 ID，前面放锚点 `rule-<id>`，这个锚点只在一个规定源内唯一。依赖另一个 domain 下的节点时，写一行「依赖：」并链接到那个锚点；同一 domain 内的依赖不写出来。规定有该语言的译文就用译文，没有就用原文。规定正文里的引用会渲染出来 ([ID](source-formats.md#ids))：`{@rule:<id>}` 写成被引节点的标题，与它的标题行一样选语言，节点在文件里就链接到它的锚点，不在就在后面加「(规定 <id>)」；`{@constitution:<id>}` 写成该条款在这种语言里的标签，与 agent 版一样是纯文本，例如 `第四条第一款第二项`。标签按这一版宪法的源算出：条和款的编号取自文件名，项的编号取自 `number`，算法与宪法构建相同 ([编译](compilation.md))；与宪法构建不同的是，连着的几处引用不缩写 (`第四条第一款、第四条第二款`)。引用了不存在的节点或条款时命令失败，并指出是哪条规定的哪一部分。规定文件和锁文件里的哈希都不变。
+
+在 `AGENTS.md` 所在的目录里，`statute compile` 还会写：
+
+- 启用的规定需要的每个 skill ([规定与 skill](#rules-and-skills))：把规定源里的 `skills/<name>/` 整个复制到 `.agents/skills/<name>/`，加一个文件 `.statute-generated`，再建一个指向这份副本的软链 `.claude/skills/<name>`，目标写成相对路径 `../../.agents/skills/<name>`。每个 skill 各有一个软链，不给整个目录建一个，也不只链 `SKILL.md`；Claude Code 只从 `.claude/skills/` 读仓库的 skill (2026-10-14 读取)。只有 Unix 系统上才建软链：在别的系统上，规定清单需要 skill 时命令失败。skill 里只能有目录和普通文件；
+- `statute-checks.toml`：编译它的 statute 的版本，写成 `statute = "<version>"`，规定用到的内置检查就在这个二进制里；然后每条 `check = "command"` 的启用规定一张 `[[commands]]` 表，按 ID 排序，写明它的 `rule`、`run` 和 `tools`。这个文件随 statute 的版本变化；
+- `statute-hooks.yaml`：一份 pre-commit 配置，只有一个运行 `statute check` 的本地 hook (`language: system`，所以 `statute` 要在 `PATH` 上)。它不改仓库已有的 `.pre-commit-config.yaml`：用 `pre-commit run --config statute-hooks.yaml` 运行它，或者把它的 hook 抄进仓库自己的配置。
+
+每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，另外两个是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
 
 编译、检查和升级规定清单由同一个命令行工具完成 ([工具与第一版](#the-tool-and-the-first-version))。宪法的编译器暂时仍用 Python ([编译](compilation.md))，以后再并入那个工具。
 
@@ -368,7 +387,7 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 
 **第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
-**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` (只写 `AGENTS.md`) 和 `check` (内置检查有规定 43 和 46，以及被它们取代的 3 和 7) 八个命令，只支持一个磁盘上的规定源。继承规定清单和按路径分段都还没有实现；git 规定源、多个规定源，以及在 `requires` 或 `conflicts` 里对别的规定源的引用 (`"team:7"`)，会报告为暂不支持。
+**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43 和 46，以及被它们取代的 3 和 7) 八个命令，只支持一个磁盘上的规定源。继承规定清单和按路径分段都还没有实现；git 规定源、多个规定源，以及在 `requires` 或 `conflicts` 里对别的规定源的引用 (`"team:7"`)，会报告为暂不支持。
 
 **`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，空的 `rules`，以及一个名为 `ac` 的磁盘规定源。`--source <dir>` 指定规定源的目录，相对于当前目录，默认是 `.`。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
 
