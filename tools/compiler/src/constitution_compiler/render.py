@@ -255,7 +255,9 @@ class _Renderer:
     if self.agent:
       active = index["status"] == "active"
       opening = lng.agent_active if active else lng.agent_draft
-      return lng.agent_front.format(opening=opening)
+      return lng.agent_front.format(
+        opening=opening, full=self.src.layout.output(self.lang)
+      )
     return FRONT_HEADING.sub(
       lambda m: m.group() + OMITTED_MARK, self.refs(index["front"][self.lang])
     )
@@ -273,14 +275,15 @@ class _Renderer:
     revision = index["revision"]
     if index["status"] == "draft":
       revision = lng.draft_revision.format(revision=revision)
+    layout = self.src.layout
     header = (lng.agent_header if self.agent else lng.header).format(
-      revision=revision
+      revision=revision, index=layout.index, articles=layout.articles
     )
     marked = any(
       s.omitted or any(i.omitted for i in s.items) for s in self.src.sections
     )
     if not self.agent and (OMITTED_MARK in front or marked):
-      header += lng.legend
+      header += lng.legend.format(agent=layout.output(self.lang + ".agent"))
     return header
 
   def text(self) -> str:

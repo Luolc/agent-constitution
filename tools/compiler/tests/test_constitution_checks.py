@@ -473,10 +473,25 @@ class CheckTest(Tree):
       "authority cites undefined constitution:alpha-one.cash",
     )
 
+  def test_1_two_edition_directories(self):
+    new = self.to_edition_dir()
+    self.write(
+      "constitution/2027-03/index.toml",
+      (self.root / new / "index.toml").read_text(encoding="utf-8"),
+    )
+    self.assertFails(
+      1,
+      "constitution:1",
+      "more than one edition directory:"
+      " constitution/2026-10, constitution/2027-03",
+    )
+
   def test_6_outputs_match(self):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
     errors = cm.Errors()
-    bc.check_outputs(self.root, bc.build(self.root)[2], errors)
+    _, src, outputs = bc.build(self.root)
+    assert src is not None
+    bc.check_outputs(self.root, src, outputs, errors)
     self.assertEqual(errors, [])
 
   def test_6_stale_output(self):
@@ -484,7 +499,9 @@ class CheckTest(Tree):
     path = self.root / "constitution/constitution.en.md"
     path.write_bytes(path.read_bytes().replace(b"Money.", b"Money!"))
     errors = cm.Errors()
-    bc.check_outputs(self.root, bc.build(self.root)[2], errors)
+    _, src, outputs = bc.build(self.root)
+    assert src is not None
+    bc.check_outputs(self.root, src, outputs, errors)
     self.assertEqual(
       errors,
       [

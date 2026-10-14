@@ -25,7 +25,6 @@ from test_constitution_fixture import (
 from constitution_compiler import base as cb
 from constitution_compiler import build as bc
 from constitution_compiler import git_env
-from constitution_compiler import model as cm
 from constitution_compiler import revision as crv
 
 
@@ -559,7 +558,13 @@ class BaseTest(Tree):
     """A file the base lists but git cannot read fails check 7."""
     self.commit_base()
     blob = subprocess.run(
-      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{cm.INDEX}"],
+      [
+        "git",
+        "-C",
+        str(self.root),
+        "rev-parse",
+        "HEAD:constitution/index.toml",
+      ],
       check=True,
       capture_output=True,
       text=True,
@@ -571,7 +576,56 @@ class BaseTest(Tree):
         bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1
       )
     self.assertIn(
-      f"check 7: `git show HEAD:{cm.INDEX}` failed:", err.getvalue()
+      "check 7: `git show HEAD:constitution/index.toml` failed:", err.getvalue()
+    )
+
+  def move_to_edition_dir(self):
+    """Move the sources into an edition directory and rebuild.
+
+    Returns:
+      The directory, relative to the root.
+    """
+    new = self.to_edition_dir()
+    self.assertEqual(bc.main(["--root", str(self.root)]), 0)
+    self.git("add", "-A")
+    return new
+
+  def test_moved_to_edition_dir_passes(self):
+    """A base in the older layout, the same text in an edition directory."""
+    self.commit_base()
+    self.move_to_edition_dir()
+    self.assertEqual(
+      bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 0
+    )
+
+  def test_moved_and_changed_needs_higher_revision(self):
+    self.commit_base()
+    new = self.move_to_edition_dir()
+    self.edit(
+      f"{new}/articles/01-alpha/article.toml", 'en = "First"', 'en = "Fist"'
+    )
+    self.assertEqual(
+      self.revision_check(),
+      [
+        f"{new}/index.toml:3: check 7: the constitution text changed since"
+        " base HEAD but revision 1 is not greater than the base's 1"
+      ],
+    )
+
+  def test_moved_and_renumbered(self):
+    self.commit_base()
+    new = self.move_to_edition_dir()
+    self.move(
+      f"{new}/articles/02-beta/01a-beta-two.toml",
+      f"{new}/articles/02-beta/02-beta-two.toml",
+    )
+    errors, _ = self.base_errors()
+    self.assertEqual(
+      errors,
+      [
+        f"{new}/articles/02-beta/02-beta-two.toml:1: check 7:"
+        " section beta-two was renumbered from 1a to 2 since base HEAD"
+      ],
     )
 
   def test_unknown_base(self):

@@ -1,10 +1,13 @@
 """Build the constitution and its version for agents from the TOML sources.
 
-The outputs are constitution/constitution.<lang>.md and the version for
-agents, constitution/constitution.<lang>.agent.md.
+The outputs are constitution.<lang>.md and the version for agents,
+constitution.<lang>.agent.md, in the generated/ directory of the edition
+directory constitution/<YYYY-MM>/ (in constitution/ itself in the older
+layout, which has no edition directory).
 
-Sources: constitution/index.toml (status, revision, languages, title and
-front text); constitution/articles/<NN>-<id>/, one directory per article,
+Sources, in the edition directory: index.toml (status, revision,
+languages, title and front text); articles/<NN>-<id>/, one directory per
+article,
 holding its article.toml and one <NN>[a-z]-<id>.toml per section, the
 section's list items inside it; rules/<id>.toml, one rule each, and
 rules/retired-ids.txt, the IDs of deleted rules (checked, not rendered).
@@ -48,7 +51,7 @@ from constitution_compiler.checks import (
 )
 from constitution_compiler.model import (
   Errors,
-  INDEX,
+  LayoutError,
   Sources,
 )
 from constitution_compiler.read import (
@@ -62,20 +65,6 @@ from constitution_compiler.revision import (
 )
 
 AGENT = ".agent"  # after the language in the name of the version for agents
-
-
-def output_path(name: str) -> Path:
-  """Return where an output goes.
-
-  `en` is the full version, `en.agent` the version for agents.
-
-  Args:
-    name: the language, with AGENT after it for the version for agents.
-
-  Returns:
-    The path, relative to the checkout.
-  """
-  return Path(f"constitution/constitution.{name}.md")
 
 
 def build(root: Path) -> tuple[Errors, Sources | None, dict]:
@@ -109,16 +98,19 @@ def build(root: Path) -> tuple[Errors, Sources | None, dict]:
 # Check 6: outputs.
 
 
-def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
+def check_outputs(
+  root: Path, src: Sources, outputs: dict, errors: Errors
+) -> None:
   """Check 6: the committed outputs equal a fresh build byte for byte.
 
   Args:
     root: the checkout.
+    src: the sources.
     outputs: name -> text, as `build` returns them.
     errors: where errors go.
   """
   for name, text in outputs.items():
-    path = output_path(name)
+    path = src.layout.output(name)
     try:
       committed = (root / path).read_bytes()
     except OSError:
@@ -170,7 +162,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.error("--base needs --check")
   errors, src, outputs = build(args.root)
   if not errors and args.check:
-    check_outputs(args.root, outputs, errors)
+    assert src is not None
+    check_outputs(args.root, src, outputs, errors)
   if not errors and args.base:
     assert src is not None
     try:
@@ -178,16 +171,17 @@ def main(argv: list[str] | None = None) -> int:
       if note:
         print(note)
       check_revision(args.root, args.base, src, errors)
-    except GitError as e:
-      errors.add(INDEX, 1, 7, str(e))
+    except (GitError, LayoutError) as e:
+      errors.add(src.layout.index, 1, 7, str(e))
   if errors:
     print("\n".join(errors), file=sys.stderr)
     return 1
   if not args.check:
+    assert src is not None
     for name, text in outputs.items():
-      (args.root / output_path(name)).write_text(
-        text, encoding="utf-8", newline="\n"
-      )
+      path = args.root / src.layout.output(name)
+      path.parent.mkdir(exist_ok=True)
+      path.write_text(text, encoding="utf-8", newline="\n")
   return 0
 
 

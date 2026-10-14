@@ -1,7 +1,7 @@
 """Read the constitution and rule sources into Sources, running check 1.
 
-Reads constitution/index.toml, the article directories under
-constitution/articles/, rules/<id>.toml and rules/retired-ids.txt
+Reads index.toml and the article directories under articles/ in the
+edition directory (model.Layout), rules/<id>.toml and rules/retired-ids.txt
 (docs/design/source-formats.md, constitution.md, rules.md and
 checkers.md).
 """
@@ -17,18 +17,18 @@ from constitution_compiler.model import (
   ARTICLE_FILE,
   ARTICLE_NAME,
   ARTICLE_NAME_SHAPE,
-  ARTICLES,
+  CONSTITUTION,
   Doc,
   Errors,
-  INDEX,
   INDEX_STATUS,
   Item,
+  Layout,
+  LayoutError,
   MAINTAINERS,
   MONTH,
   name_number,
   NUMBER,
   NUMBER_SHAPE,
-  OLD_SECTIONS,
   RETIRED,
   Rule,
   RULES,
@@ -51,17 +51,18 @@ from constitution_compiler.schema import (
 )
 
 
-def load_index(root: Path, errors: Errors) -> Doc | None:
+def load_index(root: Path, layout: Layout, errors: Errors) -> Doc | None:
   """Read index.toml and check its format.
 
   Args:
     root: the checkout.
+    layout: where the sources are.
     errors: where errors go.
 
   Returns:
     The index, or None when any error was found.
   """
-  index = read_toml(root, INDEX, errors)
+  index = read_toml(root, layout.index, errors)
   if not index or not check_keys(index, index.data, INDEX_SCHEMA, None, errors):
     return None
   languages = index.data["languages"]
@@ -71,7 +72,7 @@ def load_index(root: Path, errors: Errors) -> Doc | None:
     or len(set(languages)) != len(languages)
   ):
     errors.add(
-      INDEX,
+      layout.index,
       index.line("languages ="),
       1,
       "`languages` must list each language once",
@@ -80,7 +81,7 @@ def load_index(root: Path, errors: Errors) -> Doc | None:
   for lang in languages:
     if lang not in LANGUAGES:
       errors.add(
-        INDEX,
+        layout.index,
         index.line("languages ="),
         1,
         f"no rendering for language `{lang}`;"
@@ -89,7 +90,7 @@ def load_index(root: Path, errors: Errors) -> Doc | None:
   index_status = index.data["status"]
   if index_status not in INDEX_STATUS:
     errors.add(
-      INDEX,
+      layout.index,
       index.line("status ="),
       1,
       f"`status` must be one of {INDEX_STATUS}",
@@ -97,7 +98,7 @@ def load_index(root: Path, errors: Errors) -> Doc | None:
   edition = index.data.get("edition")
   if isinstance(edition, str) and not MONTH.fullmatch(edition):
     errors.add(
-      INDEX,
+      layout.index,
       index.line("edition ="),
       1,
       f"`edition` must be `YYYY-MM`, got `{edition}`",
@@ -115,6 +116,7 @@ class _Reader:
 
   Attributes:
     root: the checkout.
+    layout: where the sources are.
     errors: where errors go.
     languages: the languages of index.toml.
     index_status: the status of index.toml.
@@ -124,6 +126,7 @@ class _Reader:
   """
 
   root: Path
+  layout: Layout
   errors: Errors
   languages: list[str]
   index_status: str
@@ -252,7 +255,8 @@ class _Reader:
         directory,
         1,
         1,
-        f"not an article directory; an article is {ARTICLES}/<NN>-<id>/"
+        f"not an article directory; an article is {self.layout.articles}"
+        "/<NN>-<id>/"
         f" with its {ARTICLE_FILE} and section files",
       )
       return
@@ -451,20 +455,25 @@ def load(root: Path, errors: Errors) -> Sources | None:
   Returns:
     The sources, or None when any error was found.
   """
-  index = load_index(root, errors)
+  try:
+    layout = Layout.of(root)
+  except LayoutError as e:
+    errors.add(CONSTITUTION, 1, 1, str(e))
+    return None
+  index = load_index(root, layout, errors)
   if not index:
     return None
   languages = index.data["languages"]
-  reader = _Reader(root, errors, languages, index.data["status"])
-  if (root / OLD_SECTIONS).exists():
+  reader = _Reader(root, layout, errors, languages, index.data["status"])
+  if (root / layout.old_sections).exists():
     errors.add(
-      OLD_SECTIONS,
+      layout.old_sections,
       1,
       1,
       "sections belong in their article's directory,"
-      f" {ARTICLES}/<NN>-<id>/<NN>[a-z]-<id>.toml",
+      f" {layout.articles}/<NN>-<id>/<NN>[a-z]-<id>.toml",
     )
-  for directory in reader.entries(ARTICLES):
+  for directory in reader.entries(layout.articles):
     reader.article_directory(directory)
   for path in sorted(
     p.relative_to(root) for p in (root / RULES).glob("*.toml")
@@ -474,5 +483,11 @@ def load(root: Path, errors: Errors) -> Sources | None:
   if errors:
     return None
   return Sources(
-    index, languages, reader.articles, reader.sections, reader.rules, retired
+    layout,
+    index,
+    languages,
+    reader.articles,
+    reader.sections,
+    reader.rules,
+    retired,
   )

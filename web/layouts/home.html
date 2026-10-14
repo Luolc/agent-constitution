@@ -57,7 +57,7 @@
       repository, in a new tab. */}}
     {{- $commitLink := "" }}
     {{- with $commit }}{{ $commitLink = printf `<a href="%s/commit/%s" target="_blank" rel="noopener">%s</a>` site.Params.SourceRepo . (substr . 0 7) }}{{ end }}
-    <span class="count-note" role="listitem">{{ i18n "count-source" (dict "revision" hugo.Data.constitution.revision "commit" $commitLink) | safeHTML }}</span>
+    <span class="count-note" role="listitem">{{ i18n "count-source" (dict "revision" (partial "constitution/index.html" .).revision "commit" $commitLink) | safeHTML }}</span>
     {{- /**/ -}}
   </span>
   {{- /**/ -}}
