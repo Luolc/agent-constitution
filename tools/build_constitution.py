@@ -1024,7 +1024,12 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
     )
   retired = []
   if (root / RETIRED).exists():
-    retired = (root / RETIRED).read_text(encoding="utf-8").splitlines()
+    try:
+      retired = (root / RETIRED).read_text(encoding="utf-8").splitlines()
+    except OSError as e:
+      errors.add(RETIRED, 1, 1, f"cannot read: {e.strerror}")
+    except UnicodeDecodeError:
+      errors.add(RETIRED, 1, 1, "not UTF-8")
   if errors:
     return None
   return Sources(index, languages, articles, sections, rules, retired)

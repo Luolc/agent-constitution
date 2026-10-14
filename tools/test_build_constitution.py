@@ -1036,6 +1036,10 @@ class CheckTest(Tree):
     self.write("rules/beta-one.toml", RULE.replace('"rule"', '"beta-one"'))
     self.assertEqual(self.errors(), [])
 
+  def test_1_retired_ids_not_utf8(self):
+    (self.root / "rules/retired-ids.txt").write_bytes(b"old-\xff\n")
+    self.assertFails(1, "rules/retired-ids.txt:1", "not UTF-8")
+
   def test_2_retired_rule_id(self):
     self.write("rules/retired-ids.txt", "old-rule\nrule\n")
     self.assertFails(
