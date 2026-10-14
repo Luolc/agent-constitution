@@ -141,9 +141,10 @@ with `public = true` (default, to be decided):
   `statute.private.toml`.
 - Private sources go in `statute.private.toml`, next to `statute.toml`,
   which git ignores. It names `statute.toml` as its base with
-  `base = "statute.toml"`, inheriting it as described in
-  [Rule sets and the lock file](rule-system.md#rule-sets-and-the-lock-file),
-  and adds sources, rules and overrides:
+  `base = "statute.toml"`, a new field for the inheritance that
+  [Rule sets and the lock file](rule-system.md#rule-sets-and-the-lock-file)
+  describes, and adds sources, rules and overrides; `output` in
+  `[compile]`, also new, names the file it compiles to:
 
   ```toml
   base = "statute.toml"
@@ -181,7 +182,7 @@ source. A public rule says the main checkout of a repository goes in
 them elsewhere writes a local rule with the other paths, which overrides
 the public one. The compiled file then has only the local rule, at the
 place of the one it overrides, with a line that says which one:
-"Overrides R12". The public rule is not superseded: it stays in force in
+"Overrides R200". The public rule is not superseded: it stays in force in
 every other rule set.
 
 **Declaring it.** The overriding rule names the rule it replaces, in one
@@ -190,7 +191,7 @@ field (default, to be decided):
 ```toml
 id = 3
 kind = "rule"
-overrides = "R12"
+overrides = "R200"
 ```
 
 `overrides` names exactly one rule, written as `requires` writes it. A
@@ -214,8 +215,8 @@ may override only a rule of a lower rank (default, to be decided):
 Two rules of the same rank cannot override each other, and within one
 source a rule is changed in place or superseded, never overridden. A
 chain is allowed: a local rule may override `team:7`, which overrides
-`R12`; the compiled file then shows the local rule, and its line says
-"Overrides team:7, which overrides R12". The reference direction
+`R200`; the compiled file then shows the local rule, and its line says
+"Overrides team:7, which overrides R200". The reference direction
 ([Which rules may cite which](#which-rules-may-cite-which)) applies as well: a public rule
 cannot override a private one.
 
@@ -223,7 +224,7 @@ cannot override a private one.
 rule is enabled:
 
 - The overridden rule counts as enabled for every requirement on it and
-  for its one-of, so a rule that requires `R12` is satisfied, and `R12`'s
+  for its one-of, so a rule that requires `R200` is satisfied, and `R200`'s
   siblings under a one-of stay excluded. Its own requirements are not
   brought in; the overriding rule's are. Its parent is the exception:
   when that is a rule, directly or through a one-of, it still counts as
@@ -247,13 +248,13 @@ with one more field:
 
 ```toml
 [[rules]]
-rule = "R12"
+rule = "R200"
 revision = 2
-sha256 = "<SHA-256 of rules/12.toml>"
+sha256 = "<SHA-256 of rules/200.toml>"
 overridden-by = "L3"
 ```
 
-So the source's later changes to `R12` still show on `statute upgrade`,
+So the source's later changes to `R200` still show on `statute upgrade`,
 which adds to each such line that `L3` overrides it, for the user to
 check that the override still holds.
 
@@ -297,7 +298,7 @@ parent = 104
   one-ofs never interleave: the tree goes domain, subdomain, then rules
   and one-ofs.
 - A rule's `parent` may also name a domain or a subdomain of another
-  source, never a rule or a one-of of another source, so that the local
+  source (default, to be decided), never a rule or a one-of of another source, so that the local
   rules of a repository about Git appear under the general Git heading
   rather than under one of their own. The reference direction applies:
   a public rule's parent is a public domain.
@@ -349,7 +350,8 @@ conditions inside either child.
 ## Cutover from the hand-written guide
 
 The hand-written guide is replaced by rules of the four kinds as a
-whole, in one step, once every part of it has one. There is no
+whole, in one step, once every part of it has one (default, to be
+decided, with the four conditions below). There is no
 transition clause: no text that keeps part of the guide in force after
 the switch, and no switch of one topic (credentials, say) before the
 others. What is specific to one environment was never a candidate for
@@ -405,8 +407,12 @@ that implements it changes them:
   `parent`.
 - Rule sets and the lock file: the rule set gains `public`, a source
   gains `public` and `scope`, a public repository gains
-  `statute.private.toml` with its lock file and output, and a rule of
-  the lock file may have `overridden-by`.
+  `statute.private.toml` with its lock file and output, a rule set
+  gains `base` and `output` in `[compile]`, and a rule of the lock file
+  may have `overridden-by`.
+- Compilation and the site: "a requirement that crosses subtrees is
+  rendered as a link" becomes one that leads out of the requiring
+  rule's nearest domain, subdomain included.
 - The tool and the first version, Moving over: the switch is the one of
   [Cutover](#cutover-from-the-hand-written-guide), whole, not one topic first.
 
