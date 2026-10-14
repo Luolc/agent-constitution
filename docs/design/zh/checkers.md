@@ -1,4 +1,4 @@
-<!-- en-sha256: a4399e9713bc84b88d73fb2e52677b166b5308e9c9ca06614b5791a9d87134c0 -->
+<!-- en-sha256: 19a6ef35e3dbd7839778f0acd412951b7c66da07d29a2b978ab0af4229c341de -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -37,7 +37,7 @@
 
 节点之间的关系不在这里查，由 `statute` 查 ([命令与第一版](statute-command.md#the-command-and-the-first-version))：`requires` 和 `conflicts` 指向的节点存在、种类对，在别的规定源里也一样，`requires` 不成环 (同一规定源内和跨规定源都不成环)、没有多余的项，规定不与它带入的节点冲突，以及[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs) 所说的 warning。CI 里由 `crates/statute/tests/real_rules.rs` 用 `statute` 读本仓的 `rules/`，有任何 error 或 warning 都失败。
 
-[规定源](rule-sources.md) 的检查也这样分。归 statute 的检查里，`requires`、`conflicts` 和 `{@rule:...}` 的引用方向已经实现；归构建的一项也没有实现，在那之前，检查 1 遇到带 `parent` 的领域和带 `overrides` 的规定会失败。构建将接受规定上的 `overrides`、领域上的 `parent`，以及规定指向另一个规定源的 `parent`，并检查单看一个规定源就能查的：各字段的类型；领域的 `parent` 是同一规定源里一个没有 parent 的领域的编号；规定有 `parent` 或 `overrides`，不能两个都有；`overrides` 指向另一个规定源的规定 (`"R200"`、`"team:7"`)，不能是一个数字，因为数字指的是同一规定源里的节点。要看别的规定源才能查的归 statute：引用方向、覆盖的级别、公开仓库的私有层所做的覆盖，以及指向另一个规定源的 `parent`。
+[规定源](rule-sources.md) 的检查也这样分。构建接受规定上的 `overrides`、领域上的 `parent`，以及规定指向另一个规定源的 `parent`，并检查单看一个规定源就能查的：各字段的类型；领域的 `parent` 是同一规定源里一个没有 parent 的领域的编号 (检查 3)；规定有 `parent` 或 `overrides`，必须有一个，不能两个都有；`overrides` 是另一个规定源的一条规定，写作 `"team:7"`，不能是列表，也不能是数字，因为数字指的是同一规定源里的节点；指向另一个规定源的 `parent` 只有规定能有，写作 `"team:3"`，只检查写法。本仓就是第一方规定源，所以在这里 `overrides` 或 `parent` 里的 `"R200"` 指的是同一规定源的规定，会失败；`parent` 写成这样时提示改写成编号。要看别的规定源才能查的归 statute：引用方向、覆盖的级别、公开仓库的私有层所做的覆盖，以及另一个规定源里的 `parent` 是否存在。其中除了对私有层所做覆盖的检查，都已实现；那一项随 `statute.private.toml` 一起实现。
 
 每项检查都有一个让它失败的测试和一个通过的对照；编号检查在一个临时的 git 仓库上测试 (`tools/compiler` 的 `tests/test_constitution_checks.py`、`tests/test_constitution_base.py`，以及针对 parent 树的 `tests/test_rule_tree.py`)。检查 1 至 6 和这些测试作为提交钩子运行，也在 CI 里运行；检查 7 只在 CI 里运行：在 pull request 上，对照检出的合并提交所基于的那个基准分支的末端 (即它的第一个父提交)；在推送到 `main` 时，对照推送前的那个提交。
 

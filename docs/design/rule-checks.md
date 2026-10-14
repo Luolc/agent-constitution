@@ -90,7 +90,8 @@ groups are formed, is set in the rule set.
 In the first version, `statute check` lists the enabled rules of the
 repository for review and runs the checks of those that have one; with
 `--base <ref>` it checks the change `git diff <ref>...HEAD`. It groups
-the rules by domain, the domains and the rules in each in order of ID,
+the rules by their top domain, a subdomain's rules under its domain,
+the domains and the rules in each in order of ID,
 under a heading with the domain's reference and title (`## R13
 (Security)`). Each rule has a line with its outcome (`pass`,
 `violation`, `inconclusive`, or `review` for a rule without an

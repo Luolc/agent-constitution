@@ -38,11 +38,11 @@ for agents in the rule set's language, the file
 `constitution/<edition>/generated/constitution.<lang>.agent.md` that the
 constitution's build writes, unchanged; and a heading "Rules" with the
 enabled rules. In a public repository it ends with one more line, which
-tells an agent to read `.statute/AGENTS.private.md` next when it exists,
-and the private layer compiles to that file and one more
+tells an agent to read `.statute/AGENTS.full.md` when it exists, the
+public and private rules together, which the private layer compiles to
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
 not built yet). Each domain is a heading of level two, a subdomain one of
-level three ([Subdomains](rule-sources.md#subdomains); not built yet),
+level three ([Subdomains](rule-sources.md#subdomains)),
 and each level of the tree one level deeper, down to level six, where
 deeper levels stay;
 a one-of none of whose children is enabled does not appear. The
@@ -51,7 +51,15 @@ sources by the sources' names, then the repository's own. A node's
 heading is its title and its reference as statute shows it (`R42`),
 after an anchor of `rule-` and that reference with a colon made a
 hyphen: `rule-R42`, `rule-L12`, `rule-team-7`, so the anchors of
-different sources never clash. A requirement of a node outside the
+different sources never clash. An overriding rule
+([Overrides](rule-sources.md#overrides)) stands at the place of the rule
+it overrides, with the anchors of every rule of the chain before its
+heading, so that a link to `#rule-R2` lands on it, and the children of
+every rule of the chain below it. Under its heading, a line names what
+it overrides: `Overrides R2.`, or along a chain
+`Overrides team:7, which overrides R2.` (in Chinese
+`覆盖 team:7，后者覆盖 R2。`). A requirement on an overridden rule, and a
+citation of one, render as the rule in its place. A requirement of a node outside the
 requiring rule's nearest domain, or subdomain, is a line "Requires:"
 with a link to that anchor; one within it is not rendered. A rule uses its translation into the language when it has
 one, and its original otherwise. A domain's applicability, when it has
@@ -109,6 +117,21 @@ finishes it. The order makes that work: a skill's
 `.statute-generated` is written before its files, a link is removed
 before its directory, and the `AGENTS.md` is written last.
 
+A `CLAUDE.md` at the top of the repository, a file or a link to
+`AGENTS.md`, draws a warning on every `statute compile`, with or without
+a private layer. The warning asks whether to delete it, and says why in
+a few short sentences: Claude Code reads `AGENTS.md` itself when there
+is no `CLAUDE.md`
+([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
+Monorepos), so a `CLAUDE.md` is not needed to point to it; with the
+private output, where `CLAUDE.local.md` gives Claude Code the full text
+in place of `AGENTS.md`, Claude Code reads a `CLAUDE.md` as well, so its
+content comes on top of the rules, the public rules twice for a link to
+`AGENTS.md` ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)),
+a sentence the warning leaves out without a private layer; and a
+migration will rename it to a legacy copy, asking the user first.
+statute neither deletes nor renames it. Not built yet.
+
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).
 The constitution's compiler stays in Python for now
@@ -162,11 +185,14 @@ with a note to write `R12`. A rule names a rule of another source in
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
 is not read yet. Of [Rule sources](rule-sources.md), `public` is built,
-with which rules may cite which in `requires`, `conflicts` and
-`{@rule:...}`, and the check of `public` against GitHub
-([Checks](rule-checks.md#checks)). Inherited rule sets, path segments
-and git sources are not built, nor `scope`, `statute.private.toml` and
-its output, overrides and subdomains.
+with which rules may cite which in `requires`, `conflicts`,
+`overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
+([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
+and the ranks, except the check of the private layer of a public
+repository, which comes with `statute.private.toml`, and so are
+subdomains and a rule's `parent` in another source. Inherited rule
+sets, path segments and git sources are not built, nor
+`statute.private.toml` and its output.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,

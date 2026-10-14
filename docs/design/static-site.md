@@ -143,13 +143,19 @@ site-rules`, `uv run count-tokens` (the token count, below),
   page, a superseded or repealed rule's status after it; a rule under
   another rule is indented under it. Domains and one-ofs are not listed
   but head the rules below them, a level deeper for each domain or
-  one-of above them (the templates allow a domain under another, which
-  the rule files do not yet), where the group
+  one-of above them, a subdomain under its domain's heading, where the group
   changes and again at the top of each page. Above the list, a filter
   folds open a checkbox for each status and each domain, applied with its
   button; a rule is shown when its status and its nearest domain are
   checked, and checking or unchecking a domain does the same to the
-  domains under it. By default the filter checks the statuses of
+  domains under it. A node whose `parent` is in another source, and a
+  rule with `overrides`, has no domain on the site: it is at the top
+  of the tree, with no group above it. The filter does not show it yet,
+  since it shows only the rules of a checked domain; without scripts it
+  appears under the heading before it. This repo has no such node yet;
+  the pull request that first adds one fixes the list, and the
+  first-party source overrides nothing. By default the filter checks
+  the statuses of
   `params.rulesStatuses` in `web/hugo.toml` and every domain; superseded
   and repealed rules are in the list but not checked, and so are draft
   ones. Beside the filter, a menu sets the page size: 100 by default,
@@ -167,7 +173,8 @@ site-rules`, `uv run count-tokens` (the token count, below),
   rule's page (`web/layouts/rules/page.html`) gives its label and title,
   for a superseded rule the rules that supersede it, its statement,
   reason and verification, the provisions it cites (`authority`), linked
-  to their anchors on the home page, its relations (its parent, its
+  to their anchors on the home page, its relations (its parent, or for a
+  rule with `overrides` "Overrides" and the rule it overrides, its
   requirements and its conflicts, a conflict shown on both rules though
   written on one) and all its metadata: ID, revision, kind, status, slug,
   default level, the revisions of the constitution, the check with its

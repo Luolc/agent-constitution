@@ -53,4 +53,4 @@ the whole design.
   the command and the first version, and why Rust.
 - [Rule sources](rule-sources.md): the four kinds of source (global or
   local, public or private), which may cite which, overrides,
-  subdomains and the cutover from the hand-written guide; not built yet.
+  subdomains and the cutover from the hand-written guide; built in part.

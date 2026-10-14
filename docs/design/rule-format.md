@@ -166,12 +166,12 @@ The fields:
   another source, written as `requires` writes one (`"team:3"`). Every
   rule and one-of has one, except a rule with `overrides`; a domain has
   none, or, as a subdomain, a domain of the same source that has none
-  ([Subdomains](rule-sources.md#subdomains)). A `parent` in another
-  source and a domain's `parent` are not built yet.
+  ([Subdomains](rule-sources.md#subdomains)). The build accepts both
+  ([Checkers](checkers.md#checkers)), and so does statute.
 - `overrides` (optional, a rule only): the rule of another source that
   this rule takes the place of in a rule set that enables it, written as
   `requires` writes one (`"R200"`); a rule with it has no `parent`
-  ([Overrides](rule-sources.md#overrides); not built yet).
+  ([Overrides](rule-sources.md#overrides)).
 - `requires` (optional): the rules or one-ofs that enabling this rule
   requires. A node of the same source is written as a number, one of
   another source as a string of the source's short name, a colon and the

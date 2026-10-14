@@ -44,13 +44,14 @@ default.
 
 [Rule sources](rule-sources.md) adds fields. `public` at the top,
 required, says whether the repository is public, and each source but
-`R` says `public` of itself; these are built. Not built yet: a source
-may have `scope`, `"global"` by default or `"local"`
-([Four kinds of source](rule-sources.md#four-kinds-of-source)), and a
-public repository names its private sources in `statute.private.toml`,
+`R` says `public` of itself, and may have `scope`, `"global"` by
+default or `"local"`
+([Four kinds of source](rule-sources.md#four-kinds-of-source)); these are
+built. Not built yet: a public repository names its private sources in `statute.private.toml`,
 which git ignores, inherits `statute.toml` through
 `base = "statute.toml"` and has its own lock file,
-`statute.private.lock`. It compiles to two files in `.statute/`
+`statute.private.lock`. It compiles to `.statute/AGENTS.full.md`, the
+public and private rules in one file
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 
 The lock file is TOML, written by statute and never edited by hand. It
@@ -89,9 +90,10 @@ file can be searched for as the rule set and the messages write it.
 A lock file of the earlier format, which named a rule by `source` and
 `id`, fails `upgrade` with a note to run `statute lock`, which writes it
 anew. A rule that an enabled rule overrides keeps its line, with one
-more field, `overridden-by = "L3"`, naming the rule that overrides it,
-so that `upgrade` still shows its changes
-([Overrides](rule-sources.md#overrides); not built yet).
+more field, `overridden-by = "L3"`, naming the rule that overrides it
+directly (in a chain, the next link), so that `upgrade` still shows its
+changes ([Overrides](rule-sources.md#overrides)). A rule that only an
+override brings in, which nothing else enables, has its line as well.
 
 A source on disk (`path`, see
 [Sources and references](#sources-and-references)) has no commit to
@@ -334,7 +336,7 @@ domains and one-ofs:
   one-of or a domain (below), so the rules form a tree, each domain
   refined level by level. A rule that overrides a rule of another source
   has none and stands in that rule's place
-  ([Overrides](rule-sources.md#overrides); not built yet). The tree decides where a rule stands in the
+  ([Overrides](rule-sources.md#overrides)). The tree decides where a rule stands in the
   compiled text and on the site, which block it is compiled in and which
   pack it belongs to.
 - `requires`: enabling rule A requires another rule B, or a one-of
@@ -357,7 +359,7 @@ check; it cannot be enabled on its own. When any rule
 below it is enabled, the domain appears in the compiled output as a heading. A
 domain may sit under a domain that has no parent, as a subdomain, so
 domains nest two levels deep and no deeper
-([Subdomains](rule-sources.md#subdomains); not built yet); a finer
+([Subdomains](rule-sources.md#subdomains)); a finer
 grouping is a rule or a one-of under the domain.
 
 **One-ofs.** A one-of is a node of the parent tree of which at most one
