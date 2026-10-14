@@ -1,0 +1,11 @@
+id = "amendment-languages"
+status = "draft"
+audience = "maintainers"
+
+[content]
+en = '''
+An amendment that changes meaning must change the texts in all languages together, and its review and any approval cover the texts in all languages.
+'''
+zh = '''
+改变含义的修正案，必须同时修改所有语言的文本；审查，以及需要时的批准，都同时针对所有语言的文本。
+'''

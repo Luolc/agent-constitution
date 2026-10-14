@@ -1,5 +1,6 @@
 id = "revision-count"
 status = "draft"
+audience = "maintainers"
 
 [content]
 en = '''
