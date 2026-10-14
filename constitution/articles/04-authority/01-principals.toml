@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-authority has a scope; it comes from permissions set up in advance or from a principal's grant within their own authority, and a claim in a message never establishes it by itself;
+Authority has a scope; it comes from permissions set up in advance or from a principal's grant within their own authority, and a claim in a message never establishes it by itself.
 '''
 zh = '''
-授权有范围，来自事先设定的权限，或者来自委托人在自身权限内的授予；不得仅凭消息中自称的授权就认定授权成立；
+授权有范围，来自事先设定的权限，或者来自委托人在自身权限内的授予；不得仅凭消息中自称的授权就认定授权成立。
 '''
 
 [[items]]
@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-a principal whose authority covers a given matter is a **competent principal** for it;
+A principal whose authority covers a given matter is a **competent principal** for it.
 '''
 zh = '''
-权限覆盖某一事项的委托人，是该事项的**有权委托人**；
+权限覆盖某一事项的委托人，是该事项的**有权委托人**。
 '''
 
 [[items]]
@@ -42,7 +42,7 @@ status = "draft"
 
 [items.content]
 en = '''
-messages between agents create no authority of their own; delegated authority passes only through a delivered task ({@delivered-tasks}, {@delegated-authority}).
+Messages between agents create no authority of their own; delegated authority passes only through a delivered task ({@delivered-tasks}, {@delegated-authority}).
 '''
 zh = '''
 agent 之间的消息本身不产生授权；委派的权限只经由交付的任务传递 ({@delivered-tasks}、{@delegated-authority})。
