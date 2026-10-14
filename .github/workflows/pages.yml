@@ -5,7 +5,9 @@
 # site to GitHub Pages (docs/design.md, Static site). The federation rule
 # accepts only runs on main, so this runs only there. A failed exchange,
 # count, build or link check fails the run and publishes nothing.
-# The four IDs are repository variables, identifiers rather than secrets.
+# The four IDs are identifiers, not credentials, but kept as repository
+# secrets: the run logs of a public repository are open to anyone, and a
+# step's header prints its variables in clear while it masks secrets as ***.
 
 name: Pages
 
@@ -69,10 +71,10 @@ jobs:
       # every field named *token replaced.
       - name: Exchange the OIDC token and count the tokens
         env:
-          FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
-          ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
-          SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
-          WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+          FEDERATION_RULE_ID: ${{ secrets.ANTHROPIC_FEDERATION_RULE_ID }}
+          ORGANIZATION_ID: ${{ secrets.ANTHROPIC_ORGANIZATION_ID }}
+          SERVICE_ACCOUNT_ID: ${{ secrets.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          WORKSPACE_ID: ${{ secrets.ANTHROPIC_WORKSPACE_ID }}
         run: |
           set -euo pipefail
           umask 077
