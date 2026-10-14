@@ -819,7 +819,8 @@ link check. Only the build exists here; publishing it is a release (rule
   (`ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`,
   `ANTHROPIC_SERVICE_ACCOUNT_ID`, `ANTHROPIC_WORKSPACE_ID`; identifiers,
   not secrets), counts the tokens with `--require-tokens`, builds and
-  checks the site as CI does, and writes the length line of both pages into the job summary and into the log, which,
+  checks the site as CI does, and writes the length line of both pages
+  into the job summary and into the log, which,
   unlike the summary, the API can read. It publishes nothing; a failed
   exchange or count fails the run. The future Pages workflow will get its
   token the same way. The CI on pull requests gets no credential,
@@ -827,9 +828,9 @@ link check. Only the build exists here; publishing it is a release (rule
   count sets the key variable for that one command, reading the key from
   the maintainer's secret store. So the pages of one commit differ with
   and without a credential, in that line and the popup only.
-- Generator: Hugo, a single binary pinned by version in CI (the
-  workflows and `tools/test_site.py`), which writes to `site/` (`publishDir`), with the theme
-  hugo-book (MIT license) as a git submodule at
+- Generator: Hugo, a single binary pinned by version in the workflows
+  and in `tools/test_site.py`, which writes to `site/` (`publishDir`),
+  with the theme hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
   switch, the light, dark and auto color themes, the sidebar's list of
   pages and the table of contents at the right. The sidebar lists the
