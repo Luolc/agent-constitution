@@ -1,7 +1,7 @@
 id = "instruction-only-changes"
 status = "draft"
 scope = "all"
-authority = ["constitution:separate-instruction-changes", "constitution:checks-everywhere"]
+authority = ["constitution:separate-instruction-changes", "constitution:discriminating-checks"]
 
 [title]
 en = "Change instructions in a change of their own"
