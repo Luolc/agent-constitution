@@ -1,4 +1,4 @@
-<!-- en-sha256: 0cc62c66cc70a31a0f585af68cf48294e964a7481d8be75901da8f6032915a60 -->
+<!-- en-sha256: e61380654a523a550202aad17f5c1fe3d29610c00bd4993076ed63951496c6da -->
 # 规定检查与审查
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -30,11 +30,11 @@
 
 审查从 `statute check` 开始：审查方运行它，拿到一份已启用规定的清单，脚本判定了的少数规定带着结果，其余的待审，每条都附上理由和核验方法，这两部分编译出的 `AGENTS.md` 默认不收 ([编译与网站](statute-command.md#compilation-and-the-site))。审查方按 domain、按规定逐项过这份清单：待审的规定、无法判定的结果和违反的结果。是由一个审查方全部接手，还是由几个审查方各接一组，以及怎样分组，在规定清单里设定。
 
-第一版里，`statute check` 列出仓库里已启用的规定供审查，有检查的就运行它的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它把规定按 domain 分组，domain 和每组里的规定都按 ID 排序，每组以 domain 的引用和标题作标题 (`## R13 (Security)`)。每条规定一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查的规定写 `review`)、引用和标题，以及一句说明，发现列在下面；无法判定或待审的规定后面紧跟它的理由和核验方法，其中的引用与编译出的 `AGENTS.md` 一样渲染，只是被引的规定一律写成标题加引用 (`标题 (规定 R42)`)，因为这里的输出没有锚点可链接。有规定被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看。各条内置检查如下：
+第一版里，`statute check` 列出仓库里已启用的规定供审查，有检查的就运行它的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它把规定按 domain 分组，domain 和每组里的规定都按 ID 排序，每组以 domain 的引用和标题作标题 (`## R13 (Security)`)。每条规定一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查的规定写 `review`)、引用和标题，以及一句说明，发现列在下面；无法判定或待审的规定后面紧跟它的理由和核验方法，其中的引用与编译出的 `AGENTS.md` 一样渲染，只是被引的规定一律写成标题加引用 (`标题 (规定 R42)`)，因为这里的输出没有锚点可链接。在各领域之前，`## statute.toml` 一节把规定清单的 `public` 与仓库在 GitHub 上的可见性比对 (见[公开与否](rule-sources.md#public-or-not))，经 `gh repo view --json visibility` 查询：仓库在 GitHub 上显示为 `PUBLIC` 而清单写着 `public = false`，即为违反；`gh` 给不出答案，算无法判定；其余情况都通过。有规定或规定清单被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看。内置检查属于第一方规定源的规定；别的规定源里写了 `check = "builtin"` 的规定算无法判定，并附一句说明 statute 没有它的内置检查，所以本地的 `L50` 不会运行规定 50 的检查。各条内置检查如下：
 
 - 规定 46 (instruction-files-apart) 用与 `check-instruction-changes` 相同的路径表区分指令文件、生成文件和其他文件，变更里既有指令文件又有其他文件的即为违反；路径表没有列出的 agent 工具的文件、路径表以外的指令源文件，以及仓库在自己的 `AGENTS.md` 里声明的路径，交给审查方；没有 `--base` 就没有可检查的变更。
 - 规定 43 (credential-designated-place) 带 `--redact` 运行机器上的 gitleaks，扫描变更里的提交或全部历史，有命中即为违反，命中只显示位置和 gitleaks 的规则名；gitleaks 识别不出的凭证，以及仓库以外的地方，交给审查方；没有 gitleaks 时算无法判定；
-- 规定 50 (commit-hook-credential-scan) 读 `.pre-commit-config.yaml`，有 hook 在 commit 阶段对每次提交、不带文件过滤、带 `--staged` 和 `--redact` 运行 gitleaks，即为通过；gitleaks 自己发布的 hook，无论用它现在的还是以前的仓库名，`rev` 为 v8.1.1 或更新时按它自己的 entry 计。statute 看不到命令的 hook (`rev` 更旧或读不出的 gitleaks 自带 hook、别的仓库的 hook、运行脚本的本地 hook)、不带 `--redact` 或带文件过滤的 gitleaks hook、别的扫描器、别的 hook 框架的配置，以及 statute 读不了的 YAML，算无法判定。根本没有 hook 配置，或者配置里 commit 阶段的 hook 都看得到命令、却没有一个扫描暂存的改动，即为违反；
+- 规定 50 (commit-hook-credential-scan) 读仓库顶层的 `.pre-commit-config.yaml` (不在 git 里时读规定清单所在目录的)，有 hook 在 commit 阶段对每次提交、不带文件过滤、带 `--staged` 和 `--redact` 运行 gitleaks，即为通过；gitleaks 自己发布的 hook，无论用它现在的还是以前的仓库名，`rev` 为 v8.1.1 或更新时按它自己的 entry 计。statute 看不到命令的 hook (`rev` 更旧或读不出的 gitleaks 自带 hook、别的仓库的 hook、运行脚本的本地 hook)、不带 `--redact` 或带文件过滤的 gitleaks hook、别的扫描器、别的 hook 框架的配置，以及 statute 读不了的 YAML，算无法判定。根本没有 hook 配置，或者配置里 commit 阶段的 hook 都看得到命令、却没有一个扫描暂存的改动，即为违反；
 - 规定 58 (release-first-green-commit) 把 `HEAD` 上的 tag 当作发布，把默认分支当作主分支，把包含默认分支所要求检查 (分支保护或 ruleset 要求的) 的 workflow 当作 CI；这个 workflow 为 `HEAD` 推送到默认分支而跑的 run 在第 1 次 attempt 就以成功结束的，即为通过，否则即为违反。`HEAD` 上没有 tag、没有要求的检查、没有这样的 run (推送不触发 CI，或者 commit 不在该分支上)，以及 run 还没跑完时，算无法判定；
 - 规定 61 (verdict-names-version) 读 `HEAD` 所属 pull request 上的 verdict：正文以 `Verdict:` 开头的评论或 review，以及批准或要求修改的 review。verdict 里没有其 pull request 中某个 commit 的完整 SHA，即为违反，review 还以 GitHub 为它记下的 commit 写明版本；在别处给出的 verdict，以及写明的 SHA 是不是审查过的版本，交给审查方；
 - 规定 71 (no-automatic-merge) 读 `HEAD` 所属 pull request 的时间线，只要某个 pull request 开过 auto-merge 就是违反，之后关掉了或已经由它合并了也一样；其他自动合并的方式，以及是谁开的，交给审查方。

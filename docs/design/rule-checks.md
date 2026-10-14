@@ -98,11 +98,20 @@ automatic check), its reference and title, and a note, with the findings
 below; a rule that is inconclusive or for review is followed by its
 reason and verification, with their citations rendered as in the
 compiled `AGENTS.md`, a cited rule always as its title and reference
-(`Title (rule R42)`), since the output has no anchors to link to. It
-exits with status 1 when a rule is violated, and 0 otherwise. A
+(`Title (rule R42)`), since the output has no anchors to link to. Before
+the domains, a section `## statute.toml` compares the rule set's
+`public` with the repository's visibility on GitHub
+([Public or not](rule-sources.md#public-or-not)), through `gh repo view
+--json visibility`: `public = false` in a repository GitHub shows as
+`PUBLIC` is a violation, an answer `gh` cannot give is inconclusive,
+and anything else passes. It exits with status 1 when a rule or the
+rule set is violated, and 0 otherwise. A
 built-in check that covers only part of its rule, finding nothing, is
 inconclusive, not a pass, since the rest of the rule is still for the
-reviewer. The built-in checks:
+reviewer. A built-in check belongs to a rule of the first-party source;
+a rule of another source with `check = "builtin"` is inconclusive, with
+a note that statute has no built-in check for it, so a local `L50` does
+not run rule 50's check. The built-in checks:
 
 - rule 46 (instruction-files-apart) tells instruction files, generated
   files and other files apart with the same path tables as
@@ -117,7 +126,8 @@ reviewer. The built-in checks:
   only; credentials gitleaks does not recognize, and places outside the
   repository, are left to the reviewer, and without gitleaks it is
   inconclusive;
-- rule 50 (commit-hook-credential-scan) reads `.pre-commit-config.yaml`,
+- rule 50 (commit-hook-credential-scan) reads `.pre-commit-config.yaml`
+  at the top of the repository (outside git, in the rule set's directory),
   and passes when a hook runs gitleaks with `--staged` and `--redact`,
   at the commit stage and for every commit, with no file filter; the
   hooks gitleaks publishes, under its present or its former repository

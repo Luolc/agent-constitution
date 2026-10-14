@@ -42,15 +42,15 @@ parts in as well ([Compilation and the site](statute-command.md#compilation-and-
 `lang` in `[compile]` names the language it is written in, `en` by
 default.
 
-[Rule sources](rule-sources.md) adds fields that are not built yet:
-`public` at the top, required, says whether the repository is public,
-and each source but `R` says `public` of itself and may have `scope`,
-`"global"` by default or `"local"`
-([Four kinds of source](rule-sources.md#four-kinds-of-source)). A public
-repository names its private sources in `statute.private.toml`, which
-git ignores, inherits `statute.toml` through `base = "statute.toml"`
-and has its own lock file, `statute.private.lock`. It compiles to the
-file `output` in `[compile]` names, in a form that is provisional
+[Rule sources](rule-sources.md) adds fields. `public` at the top,
+required, says whether the repository is public, and each source but
+`R` says `public` of itself; these are built. Not built yet: a source
+may have `scope`, `"global"` by default or `"local"`
+([Four kinds of source](rule-sources.md#four-kinds-of-source)), and a
+public repository names its private sources in `statute.private.toml`,
+which git ignores, inherits `statute.toml` through
+`base = "statute.toml"` and has its own lock file,
+`statute.private.lock`. It compiles to two files in `.statute/`
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 
 The lock file is TOML, written by statute and never edited by hand. It
@@ -238,8 +238,8 @@ A source may also be a directory on disk, `R = { path = "." }`,
 relative to the rule set's directory: a repository that holds its own
 rules, as this one does, names itself this way. Its rules are in
 `rules/` below that directory and its constitution in
-`constitution/<edition>/`. The first version reads only one source,
-on disk, and reports a `git` source as not supported yet.
+`constitution/<edition>/`. statute reads sources on disk only so far,
+and reports a `git` source as not supported yet.
 
 **Three kinds of reference.** Each kind has a form of its own, so no
 reference can be read as another kind:
@@ -277,8 +277,10 @@ same address.
 **References in a rule.** In a rule's own file, a number in `requires`
 or `conflicts` and a citation `{@rule:<id>}` in its text name a rule
 of the same source. A rule names a rule of another source in
-`requires` or `conflicts` as `"R12"` or `"team:7"`, with the names of
-its own source's `[sources]` table. A rule of the first-party source
+`requires` or `conflicts` as `"R12"` or `"team:7"`, and in its text as
+`{@rule:R12}` or `{@rule:team:7}`, with the names of its own source's
+`[sources]` table; statute resolves them with the rule set's names so
+far. A rule of the first-party source
 names another first-party rule by its number alone; for `"R12"` there,
 statute says to write `12`. When compiled, a rule of the same
 source is shown with that source's prefix: `{@rule:12}` in a
@@ -389,7 +391,8 @@ rules under one parent may conflict.
 
 The build checks these constraints:
 
-- No cycle, in the tree or in the requirements.
+- No cycle, in the tree or in the requirements, within one source or
+  across sources.
 - A domain has no parent, or, as a subdomain, a domain that has none;
   every rule and one-of has one, except a rule with `overrides`.
 - A rule's parent, when it is a rule, counts as one of its requirements:

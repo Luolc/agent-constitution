@@ -1,6 +1,8 @@
 # Rule sources
 
-Status: decided, not built. This part of the design says which kinds of
+Status: decided; built in part, as
+[The command and the first version](statute-command.md#the-command-and-the-first-version)
+says. This part of the design says which kinds of
 source a rule set draws on, which may cite which, how a rule set
 replaces one rule with its own (an override), how domains nest, and how
 the hand-written guide is moved into rules and retired. It builds on
@@ -10,9 +12,8 @@ and the tree, one-ofs and packs those of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 The other parts of the design that this one changes already describe it,
 each marking it as not built; [What this changes](#what-this-changes)
-lists them, and what the tools do today that building it replaces. The
-form of the private output of a public repository is provisional
-([Private rules in a public repository](#private-rules-in-a-public-repository)).
+lists them, and what the tools do today that building the rest
+replaces.
 
 ## Contents
 
@@ -154,9 +155,6 @@ with `public = true`:
   [sources]
   me = { path = "../my-rules", public = false }
   here = { path = "../my-rules/repos/example", public = false, scope = "local" }
-
-  [compile]
-  output = "AGENTS.private.md"
   ```
 
 - This private layer only adds to the public one. It may not override a
@@ -164,35 +162,100 @@ with `public = true`:
   ([Overrides](#overrides)): the committed `AGENTS.md` holds that rule
   whatever the private layer does, and an agent that read both files
   would find two rules that disagree.
-- It has its own lock file, `statute.private.lock`, and its own output.
-  Before writing either, `statute compile` checks with `git check-ignore`
-  that git ignores `statute.private.toml` and each file it would write,
-  and writes nothing when one is not ignored or when it cannot tell, as
-  outside a git repository.
+- It has its own lock file, `statute.private.lock`, and its own
+  output, below. Before writing any of them, `statute compile` checks
+  with `git check-ignore` that git ignores `statute.private.toml` and
+  each file it would write, and writes nothing when one is not ignored
+  or when it cannot tell, as outside a git repository.
 
-**The private output is provisional.** It takes form A below until the
-agents are measured, to learn whether each reads a local instruction
-file in addition to the committed one or in place of it. They are
-measured as for the instruction files of subdirectories
-([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
-Monorepos), and B is the alternative the measurement may lead to.
+**The private output** is two files in `.statute/`, a directory that
+the public `.gitignore` names, and two links to them that the agents
+find:
 
-- A: `AGENTS.private.md`, which `output` in `[compile]` names as in the
-  example above, holds only the rules the private layer adds: its own
-  rules and the public rules that only it brings in. A requirement of
-  one of them on a rule of the committed `AGENTS.md` is a link into that
-  file, `AGENTS.md#rule-R42`. The
-  committed `AGENTS.md` ends with one fixed line, the same in every
-  public repository, that tells an agent to read `AGENTS.private.md`
-  next when it exists, with a link to it.
-- B: statute compiles a private version for the local instruction file
-  that each agent reads (`CLAUDE.local.md`, `AGENTS.override.md` and the
-  like), and links each such name to it.
+```text
+.statute/
+  AGENTS.private.md       the rules only the private layer brings in
+  AGENTS.full.md          the public rules and those, in one file
+.claude/rules/statute-private.md -> ../../.statute/AGENTS.private.md
+AGENTS.override.md -> .statute/AGENTS.full.md
+```
+
+- `AGENTS.private.md` holds the private layer's own rules and the public
+  rules that only it brings in. A requirement of one of them on a rule
+  of the committed `AGENTS.md` is a link into that file, relative to
+  `.statute/`, where the file is: `../AGENTS.md#rule-R42`.
+- `AGENTS.full.md` is the committed `AGENTS.md` with those rules added,
+  each at its place in the tree, and without the fixed line below,
+  since it holds the private rules already.
+- Claude Code and Grok read every `*.md` of `.claude/rules/` in addition
+  to `AGENTS.md`, so they get the private rules through the first link.
+  `CLAUDE.local.md`, which both also read in addition, is not used:
+  where it exists, Claude Code no longer reads `AGENTS.md`.
+- Codex and Pi read `AGENTS.override.md` in place of the `AGENTS.md` of
+  the same directory, so the second link leads to the full text. The
+  others do not read that name, so no agent loads a rule twice through
+  the links.
+- OpenCode has no local file name of a repository. It reads the
+  private rules when its global configuration lists
+  `.statute/AGENTS.private.md` under `instructions`; that is the
+  machine's configuration, not statute's.
+- The committed `AGENTS.md` ends with one fixed line, the same in every
+  public repository, that tells an agent to read
+  `.statute/AGENTS.private.md` next when it exists. The path is in
+  backticks, so that Claude Code does not import it as an `@` path. It
+  is a fallback for an agent that finds neither link: it works only
+  when the model goes and reads the file.
+
+The two links are ignored through `.git/info/exclude`, never through a
+`.gitignore`: Grok skips an instruction file that a `.gitignore`
+matches, judging by the link's own path, and does not read
+`.git/info/exclude`. So `statute compile` checks with `git check-ignore
+--verbose` that each link is ignored by a pattern outside every
+`.gitignore`, and writes nothing otherwise, naming the lines to add to
+`.git/info/exclude`. A file at either path that is not such a link is
+left as it is, and the compile fails.
+
+By default Codex reads at most 32 KiB of a project's instruction files,
+from the repository's root down to the working directory together, and
+cuts off the rest. `statute compile` fails when `AGENTS.full.md` alone
+would be larger; the `AGENTS.md` files of subdirectories count toward
+the same limit, and statute does not add them in.
+
+Files git does not track do not come with `git worktree add`. Each
+worktree needs its own `statute compile` to write `.statute/` and the
+two links; `.git/info/exclude` is shared by the worktrees of a clone.
+Running it when a worktree is opened is the caller's part, not
+statute's. The links lead into the worktree, never out of it: by its
+documentation, Claude Code asks once, in an interactive session, before
+it loads a link of `.claude/rules/` that leads outside the working
+directory.
+
+The private rules only add to the public ones and never contradict
+them, as the private layer only adds rules (above): an agent that reads
+both files in addition gave no reliable priority to either when they
+disagreed.
+
+The agents' behavior was measured on 2026-10-14 in non-interactive mode
+on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
+folder-trust check turned off for each run (without it, Grok loads no
+project instructions in non-interactive mode); OpenCode 1.19.0 and Pi
+1.2.0 are from their documentation and source only, and the 32 KiB of
+Codex from its documentation and source. Interactive mode was not
+measured, nor the fallback line with its path in backticks; every
+negative result is one run. In runs of one small task, Codex and Grok
+read the file the fallback line names, two runs each, and Claude Code
+loaded it in one run because the line wrote the path as an `@` path.
+
+Not built yet. The private layer is to be built first in an earlier
+form, which this layout replaces: one file, `AGENTS.private.md`, named
+by `output` in `[compile]`, and the fixed line of the committed
+`AGENTS.md` pointing to it.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
 they are. Global private rules belong at the user level once it is
-built (same section, Where it lives); until then they reach a repository
+built ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
+Where it lives); until then they reach a repository
 this way.
 
 ## Overrides
@@ -458,8 +521,8 @@ marking what is not built:
   may name a domain of another source, a domain may have a `parent`, and
   a rule may have `overrides` in place of `parent`.
 - [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file):
-  `public`, `scope`, `statute.private.toml`, `base`, `output` in
-  `[compile]` and `overridden-by` in the lock file.
+  `public`, `scope`, `statute.private.toml`, `base` and `overridden-by`
+  in the lock file.
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
   two levels of domains.
 - [Compilation and the site](statute-command.md#compilation-and-the-site):
@@ -471,6 +534,10 @@ marking what is not built:
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
 
-Building it replaces what the tools do today: `constitution-build` fails
-a domain with a `parent` and a rule with `overrides`, and statute fails
-every new field and reads one source on disk only.
+Building the rest replaces what the tools do today: `constitution-build`
+fails a domain with a `parent` and a rule with `overrides`. statute reads
+several sources on disk, `public` and the references between sources,
+and checks which rules may cite which in `requires`, `conflicts` and
+`{@rule:...}`; it fails `scope`, `base`, `overrides`, a domain with a
+`parent`, a rule whose `parent` names another source and a git source,
+and does not read `statute.private.toml`.

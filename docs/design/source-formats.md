@@ -67,7 +67,10 @@ without a namespace: an article or section by its ID (`{@safety}`,
 (`{@must-ask.capital}`), always this full path, even inside the same
 section. A rule always names the namespace: `{@constitution:leaks}`,
 `{@constitution:must-ask.capital}`, `{@rule:3}`; the colon
-says which body of text, the dot where in it. The build renders a
+says which body of text, the dot where in it. A rule of the same source
+is cited by its number, `{@rule:3}`, and one of another source as
+`requires` names it, `{@rule:R12}` or `{@rule:team:7}`
+([Sources and references](rule-sets.md#sources-and-references)). The build renders a
 citation of the constitution as the number the provision has in that
 language (see [Numbering](constitution.md#numbering)); the generated text shows numbers only, never IDs. A
 long-lived record outside the sources (a case, a pull request, a report)
