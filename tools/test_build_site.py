@@ -77,10 +77,16 @@ class PageTest(unittest.TestCase):
           f'class="number">{labels["revision"]} 0.6</li>',
           out,
         )
-        self.assertIn('<li class="legend">', out)
+        # What the text holds is read from it, so that a change to the
+        # constitution alone never turns this test red.
+        self.assertEqual(
+          '<li class="legend">' in out, build_site.OMITTED_MARK in md
+        )
         self.assertNotIn("tools/build_constitution.py", out)
         self.assertTrue(out.endswith("\n</div>\n"))
-        self.assertIn(" {#general-provisions}\n", out)
+        anchor = re.search(r'^## <a id="([^"]+)"></a>', md, re.M)
+        assert anchor is not None
+        self.assertIn(f" {{#{anchor[1]}}}\n", out)
         self.assertNotIn("## <a id=", out)
 
   def test_other_first_line(self):
