@@ -1,5 +1,6 @@
 id = "approving-amendments"
 status = "draft"
+audience = "maintainers"
 
 [content]
 en = '''
