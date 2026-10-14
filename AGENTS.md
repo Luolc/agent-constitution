@@ -99,13 +99,14 @@ Checkers).
   pages of the constitution, the design and the rules, in both languages,
   into `site/`, which is never committed
   (`docs/design/static-site.md`).
-- `docs/design/`: the one design, one file per part, indexed by
-  `docs/design/README.md`, with its Chinese translation in
-  `docs/design/zh/` (Language, above); a new file is listed in the
-  README and translated in the same PR. A PR that changes how the repo
-  works (layout, source formats, compilation, checkers, releases) updates
-  the section it touches in the same PR. There are no other design or
-  decision files.
+- `docs/design/`: the one design, one file per topic (`rules/82.toml`),
+  indexed by `docs/design/README.md`, with its Chinese translation in
+  `docs/design/zh/` (Language, above); a new file is listed in the README
+  and translated in the same PR. The code and the design may change in
+  either order, and each place where they differ is marked
+  (`rules/81.toml`): the design marks what is not built yet, and a PR
+  whose code runs ahead of the design names the sections it leaves behind
+  and an open follow-up. There are no other design or decision files.
 - The full directory plan, with what belongs to which stage, is in
   `docs/design/file-structure.md`. Do not create a reserved directory
   before its stage.

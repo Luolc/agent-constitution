@@ -1,0 +1,46 @@
+id = 80
+slug = "design-with-the-code"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 79
+authority = ["evidence.grounds", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Change the design in the same change as the code"
+zh = "设计与代码在同一个变更里改"
+
+[text.statement]
+en = "A change to the code that alters how the repository works (its layout, formats, build, checks or releases) updates the sections of the design it touches in the same change."
+zh = "修改代码、改变了仓库运作方式 (目录布局、格式、构建、检查或发布) 的变更，在同一个变更里更新它涉及的设计章节。"
+
+[text.reason]
+en = '''
+The change then comes with grounds the reviewer can check, the design it claims to follow, in the same review ({@constitution:evidence.grounds}), and the design never states as fact what the repository no longer does ({@constitution:evidence.facts}).
+'''
+zh = '''
+这样变更就带着审查方能够核对的依据，即它所依据的设计，在同一次审查里交给审查方 ({@constitution:evidence.grounds})，设计也不会把仓库已经不再做的事当作事实陈述 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+Code here is every file of the repository other than the design and the instruction files. A change to instruction files is outside this rule: {@rule:46} keeps it apart from the design, so the two cannot share a change, and a repository that wants the design to follow such a change chooses {@rule:81} instead.
+
+For each thing the change adds, removes or alters in how the repository works, the design says so after the change: a new format, field, command or check has its place in the section that covers it; one that is gone or changed is no longer described the old way, in any file of the design. The parts that track the design's own state follow too: a status line, a list of what a planned part will replace, open questions that the change settles.
+
+Violated when a merged change to the code leaves a section of the design describing the repository as it was before the change.
+'''
+zh = '''
+这里的代码，指仓库里设计和指令文件以外的所有文件。修改指令文件的变更不受本规定约束：{@rule:46} 让它与设计分开，两者无法放在同一个变更里；希望设计也跟上这类变更的仓库，改选 {@rule:81}。
+
+变更在仓库运作方式上增加、删除或改动的每一项，变更之后的设计都写到了：新的格式、字段、命令或检查，在讲它的那一节里有它的位置；已经去掉或改掉的，设计的任何文件都不再按旧的样子描述。记录设计自身状态的部分也一并更新：状态行、计划中的部分将取代什么的清单、这个变更已经解决的待定问题。
+
+已合入的代码变更留下某一节设计仍按变更之前的样子描述仓库的，即为违反本规定。
+'''
+
+[translations]
+zh = "e6b1dcd1e3833f5005f6f77c9b7167ebfd3880c56921bc5c949170e5487bebdc"
