@@ -1,9 +1,9 @@
 id = 2
 slug = "credential-status-check"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 23
+superseded-by = [22, 23, 24]
 lang = "en"
 parent = 13
 authority = ["safety", "sensitive-info"]
