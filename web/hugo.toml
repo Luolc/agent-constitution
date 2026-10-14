@@ -12,7 +12,7 @@ relativeURLs = true
 title = "Agent Constitution"
 theme = "hugo-book"
 defaultContentLanguage = "en"
-disableKinds = ["taxonomy", "term", "section", "rss", "sitemap", "404"]
+disableKinds = ["taxonomy", "term", "rss", "sitemap", "404"]
 enableRobotsTXT = false
 
 # countWords: whether the lengths give words as well as characters; words
@@ -33,8 +33,8 @@ enableRobotsTXT = false
 
 # The sidebar lists the site's pages in groups, each a top-level entry
 # with the group's name in bold and an icon from assets/icons (BookIcon),
-# its pages as children. Today there is one group, the constitution, which
-# links the home page; under it, its editions newest first, each entry
+# its pages as children. The first group, the constitution, links the
+# home page; under it, its editions newest first, each entry
 # added by content/_content.gotmpl from its index.toml. Its
 # version for agents is not listed, as it is not meant for people to read,
 # and is linked from the home page. The icon is the scales of Octicons'
@@ -55,9 +55,28 @@ enableRobotsTXT = false
   [languages.zh.menus.before.params]
     class = "menu-group"
     BookIcon = "law"
+# The second group, the design, links its README; under it, its files in
+# the README's order, each entry added by content/design/_content.gotmpl.
+# The icon is the open book of Octicons' `book` (MIT license).
+[[languages.en.menus.before]]
+  identifier = "design"
+  name = "Design"
+  pageRef = "/design"
+  weight = 2
+  [languages.en.menus.before.params]
+    class = "menu-group"
+    BookIcon = "book"
+[[languages.zh.menus.before]]
+  identifier = "design"
+  name = "设计"
+  pageRef = "/design"
+  weight = 2
+  [languages.zh.menus.before.params]
+    class = "menu-group"
+    BookIcon = "book"
 
-# The content is only this repo's own built constitution; raw HTML is
-# needed for its anchors (<a id="...">) and the asterisks
+# The content is only this repo's own built constitution and design; raw
+# HTML is needed for their anchors (<a id="...">) and the asterisks
 # (<sup class="omitted">).
 [markup.goldmark.renderer]
   unsafe = true
@@ -103,6 +122,13 @@ enableRobotsTXT = false
   source = "../constitution"
   target = "assets/constitution"
   files = ["*/index.toml", "*/generated/constitution.*.md"]
+# The design, docs/design/*.md, and its Chinese translation,
+# docs/design/zh/*.md, as assets, which content/design/_content.gotmpl
+# makes into pages.
+[[module.mounts]]
+  source = "../docs/design"
+  target = "assets/design"
+  files = ["*.md", "zh/*.md"]
 [[module.mounts]]
   source = "data"
   target = "data"

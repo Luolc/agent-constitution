@@ -6,6 +6,7 @@ requires-python = ">=3.14"
 dependencies = []
 
 [project.scripts]
+check-design-translation = "repo_checks.check_design_translation:main"
 check-instruction-changes = "repo_checks.check_instruction_changes:main"
 lint-zh-sources = "repo_checks.lint_zh_sources:main"
 

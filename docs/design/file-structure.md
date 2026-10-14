@@ -31,6 +31,8 @@ constitution/
 docs/
   design/                 this design, one file per part, indexed
                           by README.md                                 A
+    zh/                   its Chinese translation, one file of the
+                          same name per file                           A
 rules/
   <id>.toml               one general rule per file, text in every
                           language                                     A
@@ -73,6 +75,8 @@ tools/                    a uv workspace, one Python project each:
     src/repo_checks/
       check_instruction_changes.py   instruction files apart
                           (check-instruction-changes)                  A
+      check_design_translation.py   the design's translation in step
+                          with the English (check-design-translation)  A
       lint_zh_sources.py  limae on the zh sources (lint-zh-sources)    A
     tests/                their tests                                  A
   <others>                compiler, checkers, private-term scanner     B

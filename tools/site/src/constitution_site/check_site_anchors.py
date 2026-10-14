@@ -1,7 +1,8 @@
 """Check the built static site's links, ids and list markers.
 
 Every in-page link `href="#id"` has its target `id` on the same page,
-every link to another page within the site leads to a file of it, no id
+every link to another page within the site leads to a file of it, and
+to an `id` on that page when it has a fragment, no id
 appears twice on a page, and no list marker leaked into the text as a
 literal `- §` or `- 第` (a sign that the Markdown renderer did not see a
 list item where the build wrote one).
@@ -13,6 +14,7 @@ any error, also when the directory holds no HTML page.
 
 import argparse
 from collections import Counter
+import functools
 from html.parser import HTMLParser
 from pathlib import Path
 import re
@@ -30,7 +32,8 @@ class Page(HTMLParser):
     super().__init__()
     self.ids: list[str] = []
     self.links: set[str] = set()  # in-page targets, without the `#`
-    self.pages: set[str] = set()  # paths of links to other pages
+    # Links to other pages: the path and the fragment, "" without one.
+    self.pages: set[tuple[str, str]] = set()
     self.text: list[str] = []
 
   def handle_starttag(
@@ -55,7 +58,8 @@ class Page(HTMLParser):
       and not urlsplit(href).scheme
       and not href.startswith(("#", "//"))
     ):
-      self.pages.add(unquote(urlsplit(href).path))
+      url = urlsplit(href)
+      self.pages.add((unquote(url.path), unquote(url.fragment)))
 
   def handle_data(self, data: str) -> None:
     """Record the text.
@@ -66,14 +70,31 @@ class Page(HTMLParser):
     self.text.append(data)
 
 
+@functools.cache
+def ids_of(path: Path) -> frozenset[str]:
+  """Return the ids of a page of the site.
+
+  Args:
+    path: The page.
+
+  Returns:
+    Its ids.
+  """
+  page = Page()
+  page.feed(path.read_text(encoding="utf-8"))
+  page.close()
+  return frozenset(page.ids)
+
+
 def check(
   html: str, path: Path | None = None, root: Path | None = None
 ) -> list[str]:
   """Check one page.
 
   With its path, its links to other pages must lead to a file, `dir/` to
-  `dir/index.html`: a relative link is resolved from the page's directory,
-  one that starts with `/` from the site's root.
+  `dir/index.html`, and a fragment to an id of that page: a relative link
+  is resolved from the page's directory, one that starts with `/` from
+  the site's root.
 
   Args:
     html: The page.
@@ -93,7 +114,7 @@ def check(
     for t in sorted(page.links - ids.keys())
   ]
   if path:
-    for href in sorted(page.pages):
+    for href, fragment in sorted(page.pages):
       if href.startswith("/"):
         target = (root or path.parent) / href.lstrip("/")
       else:
@@ -102,6 +123,8 @@ def check(
         target /= "index.html"
       if not target.is_file():
         errors.append(f"link {href} leads to no file of the site")
+      elif fragment and fragment not in ids_of(target.resolve()):
+        errors.append(f"link {href}#{fragment} has no target on that page")
   for m in LEAKED_MARKER.finditer("".join(page.text)):
     errors.append(f"literal list marker in the text: {m.group().strip()!r}")
   return errors

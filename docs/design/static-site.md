@@ -3,8 +3,9 @@
 The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
-`site/zh/agent/index.html`). Hugo builds them, `hugo-0.167.0 -s web`
-alone. CI runs three steps: `uv run count-tokens` (the token
+`site/zh/agent/index.html`), and so is this design, under `design/`
+(`site/design/index.html`, `site/zh/design/index.html`). Hugo builds
+them, `hugo-0.167.0 -s web` alone. CI runs three steps: `uv run count-tokens` (the token
 count, below), `hugo-0.167.0 --source web --cleanDestinationDir
 --panicOnWarning`, and `uv run check-site-anchors site`, the
 link check. The workflow `.github/workflows/pages.yml` publishes the
@@ -71,6 +72,47 @@ passes to Hugo as `--baseURL`.
   The sidebar, the language switch (to the other language's version for
   agents), the color switch and the table of contents are as on the home
   page, the table of contents linking to the IDs Hugo gives the headings.
+- Design: the files of `docs/design/` become the pages under `design/`
+  of each language, read where they are: `web/hugo.toml` mounts
+  `docs/design/*.md` and `docs/design/zh/*.md` as assets, and the content
+  adapter `web/content/design/_content.gotmpl` makes the pages, so no
+  copy is kept. `README.md` is the page `design/` itself, each other file
+  `design/<name>/`, in the order of the README's list of contents, whose
+  link texts name the pages in the sidebar; the build fails when the list
+  and the directory do not have the same files. Each file's `# ` title
+  becomes the page's. The English pages read `docs/design/`, the Chinese
+  ones the translation in `docs/design/zh/`: its first line, the SHA-256
+  of the English file (the design translation check in
+  [Checkers](checkers.md#checkers)), is dropped, and each heading's
+  anchor, `## <a id="checks"></a>检查`, becomes the heading's id, the same
+  as the English heading's. While a file has no translation, its Chinese
+  page shows the English text, under a line saying that there is no
+  translation yet (`本页还没有中文译文，下面是英文原文。`); the build
+  never fails for a missing translation, and the Chinese sidebar names
+  pages from the Chinese README, or the English one while it has none.
+  The layout (`web/layouts/design/all.html`) sets the title and the text
+  in `<div class="design">`, in the constitution's fonts, size and column
+  and with its colors, but as a document: headings at the left, the
+  theme's bullets, tables and code blocks. The table of contents lists
+  the level-2 headings, as on the constitution's pages; the design has no
+  deeper ones today.
+- Links in the design: written for the files as GitHub shows them, they
+  are rewritten for the site by the link render hook
+  (`web/layouts/_markup/render-link.html`), and the sources stay as they
+  are. A relative link is resolved against the directory of the file the
+  page read, `docs/design/` or `docs/design/zh/`, so a translation writes
+  a link to another design file as the English does (`rules.md#rules`)
+  and a link out of `docs/design/` with one more `../`. A link to a design
+  file, in either directory, goes to its page in the page's language; to
+  a generated constitution,
+  `constitution/<edition>/generated/constitution.<lang>.md`, to the home
+  page of that language; to any
+  other file of the repo, to the file on GitHub (`params.SourceRepo`,
+  `/blob/main/`). The fragment is kept. A link to a design file without a
+  page, or one that leads out of the repo, fails the build; a link to a
+  file that does not exist is left to the design translation check. Links on the
+  constitution's pages, and absolute ones and fragments alone everywhere,
+  are left as written.
 - Length: the second item of the list gives the length of the version
   for agents, bare, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
@@ -151,8 +193,10 @@ passes to Hugo as `--baseURL`.
   pages, not the articles, in groups named in `web/hugo.toml`'s menus:
   each group a top-level entry, its name in bold after an icon of its own
   from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
-  pages as children. Today there is one group, the constitution, the home
-  page, with the scales (`law`). Under it are its editions, newest first:
+  pages as children. There are two groups: the constitution, the home
+  page, with the scales (`law`), and the design, its README's page, with
+  an open book (`book`), its files below it as the content adapter lists
+  them (Design, above). Under the constitution are its editions, newest first:
   the content adapter adds each page's entry to the menu, named from
   `index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
   by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
@@ -161,7 +205,8 @@ passes to Hugo as `--baseURL`.
   yet. The version for agents is not listed, as
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
-  theme's own list with `bookHidden`. The table of contents lists the
+  theme's own list with `bookHidden`, as it hides the design's pages,
+  which the menu lists. The table of contents lists the
   page's level-2 headings, the preamble and the articles
   (`markup.tableOfContents` in `web/hugo.toml`), under a heading of its
   own; on a narrow screen the theme hides it behind a button at the right
@@ -188,7 +233,7 @@ passes to Hugo as `--baseURL`.
   builds.
 - Raw HTML: Goldmark's `unsafe` renderer is on, since the anchors
   (`<a id="...">`) and the asterisks are raw HTML. The content is only this
-  repo's own built constitution, never outside input.
+  repo's own built constitution and design, never outside input.
 - Anchors: the ID of the article, section or item: `#general-provisions`,
   `#terms`, `#terms.principal`, the same in both languages and in the
   Markdown. A citation is a reference link to it. `:target` flashes the
@@ -231,7 +276,7 @@ passes to Hugo as `--baseURL`.
   amendment touch it, while an amendment may change only the constitution
   sources and their generated Markdown. Hugo needs a download, so the build
   is not a commit hook, and the tests of the templates
-  (`test_site.py`, which builds a made-up constitution) are skipped
-  without it, except in CI; CI installs Hugo before the tests, builds the
-  site on every pull request and push and runs `check-site-anchors` on
-  it.
+  (`test_site.py`, which builds a made-up constitution and design) are
+  skipped without it, except in CI; CI installs Hugo before the tests,
+  builds the site on every pull request and push and runs
+  `check-site-anchors` on it.

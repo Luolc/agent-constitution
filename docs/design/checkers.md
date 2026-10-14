@@ -9,8 +9,9 @@ position. What each one proves, and what it does not:
 | --- | --- | --- |
 | Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name in [Source formats](source-formats.md), [The constitution](constitution.md) and [Rules](rules.md#rules); each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
-| Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
-| Chinese typography (`lint-zh-sources`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
+| Chinese typography (`lint-zh-sources`; limae on `constitution.zh.md`, `constitution.zh.agent.md` and `docs/design/zh/*.md`) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Design translation (`check-design-translation`) | `docs/design/zh/` holds a file for each of `docs/design/` and no other; each starts with the SHA-256 of the English file as it is now, then its title, and has the English file's headings, in the same order and at the same levels, each with the English heading's anchor; every relative link of the design, in either language, leads to a file or directory of the repo | That the translation says what the English says, or that it was brought up to date when its hash line was |
 | Python code (`ruff check`, `ruff format --check`, `pydoclint`, `basedpyright`, configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
@@ -126,7 +127,33 @@ for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
 either option replaces this repo's own part and generated files.
 
-Chinese typography is checked twice, with limae and its default
+The design translation check (`check-design-translation`) keeps the
+Chinese translation of the design, `docs/design/zh/<name>.md`, in step
+with the English `docs/design/<name>.md`, which is the source; the site
+shows both ([Static site](static-site.md)). A translation's first line is
+`<!-- en-sha256: <hex> -->`, the SHA-256 of the English file it was
+translated from, and its second its `# ` title. Each heading below the
+title starts with the anchor of the English heading in its place,
+`## <a id="checks"></a>检查`: the anchor GitHub and Hugo give the English
+heading (lowercased, punctuation dropped, spaces as hyphens, `-1` after a
+repeat), so a link to `#checks` works in both languages, on GitHub and on
+the site. Links between design files are written as in the English, and
+a link out of `docs/design/` takes one more `../`, so each resolves from
+its own file. The check fails on a file missing on either side, a hash
+that is not the English file's now, and any heading whose level or
+anchor differs from the English one's or that one side lacks; lines in
+fenced code blocks are not headings. It also fails on a relative link,
+in an English file or a translation, that leads to no file or directory
+of the repo from its own file's directory (a translation's link one
+`../` short, say), which the site would turn into a link to a missing
+file on GitHub; links in code are skipped. So any change to an English file,
+a typo fix included, fails the check until the same pull request carries
+it into the translation and updates the hash line; the check prints the
+new hash. While `docs/design/zh/` does not exist the check prints so and
+checks the English links only; once it exists, every file needs its
+translation.
+
+Chinese typography is checked with limae and its default
 configuration. `lint-zh-sources` hands every `zh` text of
 `index.toml` and `articles/` in the edition directory and of `rules/` to limae
 as a Markdown file of its own and prints each finding as `path:line:
@@ -146,7 +173,9 @@ directory's `generated/`
 checks what exists only after the build: section and item numbers,
 headings, the text around a rendered citation. A finding there is fixed in the source or in the build script,
 never in the generated file. The rules have no built text yet, so the
-source check is what covers their Chinese.
+source check is what covers their Chinese. The same hook checks the
+design's translation, `docs/design/zh/*.md`, where a finding is fixed in
+the file itself.
 
 The private-term scan prints only position and class, never the matched
 text. In CI it runs the generic classes only; the term list is injected at

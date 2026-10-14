@@ -1,0 +1,20 @@
+{{- /* One file of the design by its name in a language (`name`,
+  `lang`): for English docs/design/<name>, for another language its
+  translation, docs/design/<lang>/<name>, or the English file while there
+  is none. Returns the file as `text`, the
+  directory it is in, relative to the repo, as `dir`, and whether it is
+  a translation as `translated`. */ -}}
+{{- $translated := false }}
+{{- $dir := "docs/design" }}
+{{- $text := resources.Get (printf "design/%s" .name) }}
+{{- if ne .lang "en" }}
+  {{- with resources.Get (printf "design/%s/%s" .lang .name) }}
+    {{- $text = . }}
+    {{- $translated = true }}
+    {{- $dir = printf "docs/design/%s" $.lang }}
+  {{- end }}
+{{- end }}
+{{- if not $text }}
+  {{- errorf "docs/design/%s: not found" .name }}
+{{- end }}
+{{- return dict "text" $text "dir" $dir "translated" $translated }}
