@@ -185,7 +185,7 @@ Intro, see [Art. II §1a][beta-two].
 ZH = """\
 本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 \
 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。\
-修订版：0.2。语言：中文。
+修订号：0.2。语言：中文。
 
 # 测试宪法 (草案)
 
@@ -248,7 +248,7 @@ Intro, see Art. II §1a.
 ZH_AGENT = f"""\
 本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 \
 `constitution/articles/` 生成，是给 agent 的版本，不含写给维护者的条文；\
-不要手改，改源文件后重新生成。状态：draft。修订版：0.2。语言：中文。
+不要手改，改源文件后重新生成。状态：draft。修订号：0.2。语言：中文。
 
 # 测试宪法 (草案)
 
@@ -363,10 +363,13 @@ class RenderTest(Tree):
         self.assertIn(f'\n    -   <a id="alpha-one.machines"></a>(**2**){star} Machines;', outputs["en"])
         self.assertIn(f'\n-   <a id="beta-two"></a>**第一款之一**{star} 之间：\n', outputs["zh"])
         self.assertIn(f'\n    -   <a id="alpha-one.machines"></a>(**二**){star} 机器；', outputs["zh"])
-        self.assertIn("Language: English. Sections and items marked \\* keep only their numbers in"
-                      " the version for agents, `constitution/constitution.en.agent.md`.\n", outputs["en"])
-        self.assertIn("语言：中文。标 \\* 的款、项在给 agent 的版本"
-                      " `constitution/constitution.zh.agent.md` 里只留编号。\n", outputs["zh"])
+        self.assertIn("Language: English. Sections and items marked \\* are written for human readers: how"
+                      " this constitution is organized and amended. The version compiled for agents,"
+                      " `constitution/constitution.en.agent.md`, leaves out their text and keeps only a"
+                      " pointer to this full version.\n", outputs["en"])
+        self.assertIn("语言：中文。标 \\* 的条款写给人读，讲本宪法怎样编排、怎样修改。给 agent 编译的版本"
+                      " `constitution/constitution.zh.agent.md` 不收这些条款的正文，只留一句「见完整版」。\n",
+                      outputs["zh"])
         self.assertEqual(outputs["en"].replace(star, "").replace(bc.LANGUAGES["en"].legend, ""), EN)
         self.assertEqual(outputs["zh"].replace(star, "").replace(bc.LANGUAGES["zh"].legend, ""), ZH)
         self.assertEqual(outputs["en.agent"], EN_AGENT.replace(

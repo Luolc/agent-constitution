@@ -662,9 +662,10 @@ this repo.
 
 ## Static site
 
-The built constitution is also published as two static web pages, English
-at `site/index.html` and Chinese at `site/zh/index.html`, built by
-`python3 tools/build_site.py`. Only the build exists here; publishing it
+The built constitution is also published as static web pages, English at
+`site/index.html` and Chinese at `site/zh/index.html`, each with the
+version for agents under `agent/` (`site/agent/index.html`,
+`site/zh/agent/index.html`), built by `python3 tools/build_site.py`. Only the build exists here; publishing it
 is a release (rule `must-ask-items`) and not set up.
 
 - Input: the generated `constitution/constitution.<lang>.md`, not the
@@ -675,15 +676,40 @@ is a release (rule `must-ask-items`) and not set up.
   `index.toml` is set under the title, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. When
   the text marks a provision for maintainers, a third line under the title
-  says what the asterisk means; the asterisk is set small and bold in the
-  accent color.
-- Length: a second line under the revision gives the length of the full
-  version, the generated file without its header line, anchors and link
-  definitions included (the compiler takes the shorter version for
-  agents): characters in both languages, words split
-  on white space in English, and tokens as counted for `claude-opus-5-5`
-  by Anthropic's count_tokens API (`POST /v1/messages/count_tokens`,
-  standard library only).
+  says in words what the asterisk marks (provisions written for human
+  readers, on how the constitution is organized and amended) and that the
+  version compiled for agents, linked, keeps only a pointer to the full
+  version in their place. The asterisk is set small and bold in the accent
+  color, its top level with the top of the number, not a superscript and
+  without opening up the line; in the legend it sits on the line.
+- Version for agents: each `constitution/constitution.<lang>.agent.md`
+  becomes the page `agent/` under the home page of its language, built the
+  same way but with its text as is: no anchors, no links, the provisions
+  for maintainers only their numbers. Its headings carry
+  `{anchor=false}`, so the theme adds no `#` link to them. Under the revision, a link leads
+  back to the full version. The page is hidden from hugo-book's list of
+  pages; the sidebar, the language switch (to the other language's version
+  for agents) and the color switch are as on the home page, the list of
+  articles linking to the IDs Hugo gives the headings.
+- Length: a second line under the revision gives the length of the
+  version for agents, which is what takes room in an agent's context: the
+  generated file without its header line, in characters in both
+  languages, words split on white space in English, and tokens as counted
+  for `claude-opus-5-5` by Anthropic's count_tokens API
+  (`POST /v1/messages/count_tokens`, standard library only). An info
+  button after it opens a popup, on hover or a click or tap; it is a
+  disclosure button (`aria-expanded`), reached with the keyboard, and
+  Escape closes it (`web/assets/count-info.js`, inlined in `<head>`). The
+  popup hangs from the button with no gap and the button inside its width,
+  so the pointer reaches its link without leaving it. The
+  popup says which API counted the tokens for which model (the model is
+  `COUNT_MODEL` in `build_site.py`) or why they were not counted, that the
+  numbers are those of the version for agents and what it leaves out,
+  gives the length of the full version (the generated file without its
+  header line, anchors and link definitions included), the revision and
+  the abbreviated commit of the build (left out outside git), and links to
+  the page of the version for agents. Each page's two versions are counted
+  separately, so a build with a credential makes four calls.
 - Credential: only from the environment, never from a file in this repo,
   in one of two variables. `CONSTITUTION_TOKEN_COUNT_API_KEY` holds an API
   key, sent as `x-api-key`. `CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN` holds a
@@ -711,7 +737,7 @@ is a release (rule `must-ask-items`) and not set up.
   and neither does a pull request from a fork. A local build that wants the
   count sets the key variable for that one command, reading the key from
   the maintainer's secret store. So the pages of one commit differ with
-  and without a credential, in that line only.
+  and without a credential, in that line and the popup only.
 - Generator: Hugo, a single binary pinned by version in `build_site.py`
   and in CI, with the theme hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
@@ -742,7 +768,7 @@ is a release (rule `must-ask-items`) and not set up.
   block, light and dark; contrast of text on the page and the sidebar is
   above WCAG AA in both, the values are in the style sheet.
 - The few Chinese strings of the site itself (`web/i18n/zh.yaml`, the
-  language label in `hugo.toml`, the revision and length labels in
+  language label in `hugo.toml`, the labels and the popup text in
   `build_site.py`) are outside limae's reach.
 - `site/` is not committed: a generated page under review would make every
   amendment touch it, while an amendment may change only the constitution
@@ -759,7 +785,7 @@ position. What each one proves, and what it does not:
 | --- | --- | --- |
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition the revision is not lower and nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
-| Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds both pages without a warning; on every page each in-page link `#id` has an element with that id, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
+| Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each relative link to another page leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
