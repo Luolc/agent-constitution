@@ -4,8 +4,34 @@ audience = "maintainers"
 
 [content]
 en = '''
-Each amendment that takes effect increments `revision`, the revision number of the text it amends ({@editions.revision}). Affected lower-ranking provisions are reviewed again, neither assumed valid nor repealed wholesale.
+When an amendment takes effect:
 '''
 zh = '''
-每有一次修正案生效，被修改的那份文本的修订号 `revision` 就加一 ({@editions.revision})。受影响的下位法要重新审查，既不默认仍然有效，也不整体废止。
+每有一次修正案生效：
+'''
+
+[[items]]
+id = "increment"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+It increments `revision`, the revision number of the text it amends ({@editions.revision}).
+'''
+zh = '''
+被修改的那份文本的修订号 `revision` 就加一 ({@editions.revision})。
+'''
+
+[[items]]
+id = "lower-ranking"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+Affected lower-ranking provisions are reviewed again, neither assumed valid nor repealed wholesale.
+'''
+zh = '''
+受影响的下位法要重新审查，既不默认仍然有效，也不整体废止。
 '''
