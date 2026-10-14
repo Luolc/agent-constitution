@@ -429,7 +429,7 @@ is written `⟨must-ask⟩` in the table:
 
 | Item | en | zh |
 | --- | --- | --- |
-| Title | `# Agent Constitution (2026-10 edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
+| Title | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
 | Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
 | List item | `    -   ⟨must-ask.capital⟩(**3**) <content>` | `    -   ⟨must-ask.capital⟩(**三**) <content>` |
@@ -736,8 +736,13 @@ it is a release (rule `must-ask-items`) and not set up.
   the header line, a blank line and the `# ` title. The layout
   (`web/layouts/home.html`) sets the title, the list under it and the
   text in `<div class="constitution">`, the root the style sheet hangs
-  on; the revision from `index.toml` is followed by `(draft)` (`(草案)`)
-  while its `status` is `draft`. Its words, in both languages, are in
+  on. The title (`web/layouts/_partials/constitution/title.html`) has no
+  `#` link from the theme and keeps its name and its parenthesis each on
+  one line, so a narrow screen breaks it only before the parenthesis; its
+  size is chosen so that it fits on one line in a desktop window 1400
+  pixels wide. The revision from `index.toml` is followed by `(draft)`
+  (`(草案)`) while its `status` is `draft`. Its words, in both languages,
+  are in
   `web/i18n/`. Under
   the title is a list without bullets: the revision and the length
   (below), each centered under the title, and, when the text has an
