@@ -273,9 +273,9 @@ Workflow, say, or Rust under Languages. It is a domain with a `parent`
 that names a domain (default, to be decided):
 
 ```toml
-id = 30
+id = 105
 kind = "domain"
-parent = 16
+parent = 104
 ```
 
 - A domain's `parent`, when present, names a domain with no parent. So
