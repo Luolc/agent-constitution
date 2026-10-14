@@ -101,6 +101,25 @@ pub fn resolve(
             );
             continue;
         }
+        if let Some(node) = source.get(root)
+            && matches!(node.status, Status::Superseded | Status::Repealed)
+        {
+            let what = match node.superseded_by {
+                Some(next) => format!(
+                    "superseded by {}; replace {name}:{root} with {name}:{next} in `packs`",
+                    label(source, next)
+                ),
+                None => "repealed; take it out of `packs`".to_owned(),
+            };
+            diags.warning(
+                file,
+                format!(
+                    "pack {} enables nothing: its root is {what}",
+                    label(source, root)
+                ),
+            );
+            continue;
+        }
         let mut stack = vec![root];
         while let Some(id) = stack.pop() {
             let Some(node) = source.get(id) else { continue };
@@ -197,10 +216,22 @@ pub fn resolve(
             if res.enabled.contains_key(&other)
                 && conflicting.insert((id.min(other), id.max(other)))
             {
+                // Two rules of one pack cannot be taken out one at a time.
+                let shared_pack = res.enabled[&id].iter().find_map(|r| match r {
+                    Reason::Pack(p) if res.enabled[&other].contains(r) => Some(*p),
+                    _ => None,
+                });
+                let advice = match shared_pack {
+                    Some(p) => format!(
+                        "both are in pack {p}, so in place of the pack, list in `rules` the rules of it you want"
+                    ),
+                    None => "take one of them out of the rule set, or the rule that brings it in"
+                        .to_owned(),
+                };
                 diags.error(
                     file,
                     format!(
-                        "rules {} ({}) and {} ({}) conflict ({id} says so); take one of them out of the rule set",
+                        "rules {} ({}) and {} ({}) conflict ({id} says so); {advice}",
                         label(source, id),
                         how(&res, id),
                         label(source, other),
@@ -221,28 +252,40 @@ pub fn resolve(
         }
     }
 
-    for &id in res.enabled.keys() {
+    for (&id, reasons) in &res.enabled {
         let Some(node) = source.get(id) else { continue };
-        match (node.status, node.superseded_by) {
-            (Status::Superseded, Some(next)) => diags.warning(
-                file,
-                format!(
-                    "rule {} ({}) is superseded by {}; replace {name}:{id} with {name}:{next}",
-                    label(source, id),
-                    how(&res, id),
-                    label(source, next)
-                ),
+        let what = match (node.status, node.superseded_by) {
+            (Status::Superseded, Some(next)) => format!("superseded by {}", label(source, next)),
+            (Status::Repealed, _) => "repealed, with nothing in its place".to_owned(),
+            _ => continue,
+        };
+        // A rule listed directly is changed in `rules`; one brought in
+        // goes with the rule that brings it in.
+        let advice = match (reasons.contains(&Reason::Direct), node.superseded_by) {
+            (true, Some(next)) => format!("replace {name}:{id} with {name}:{next} in `rules`"),
+            (true, None) => format!("take {name}:{id} out of `rules`"),
+            (false, _) => {
+                let by = reasons.iter().find_map(|r| match r {
+                    Reason::ParentOf(b) | Reason::RequiredBy(b) => Some(*b),
+                    _ => None,
+                });
+                match by {
+                    Some(b) => format!(
+                        "it stays as long as {} is enabled, which brings it in",
+                        label(source, b)
+                    ),
+                    None => "it stays as long as what brings it in is enabled".to_owned(),
+                }
+            }
+        };
+        diags.warning(
+            file,
+            format!(
+                "rule {} ({}) is {what}; {advice}",
+                label(source, id),
+                how(&res, id)
             ),
-            (Status::Repealed, _) => diags.warning(
-                file,
-                format!(
-                    "rule {} ({}) is repealed, with nothing in its place; take it out of the rule set",
-                    label(source, id),
-                    how(&res, id)
-                ),
-            ),
-            _ => {}
-        }
+        );
     }
 
     res

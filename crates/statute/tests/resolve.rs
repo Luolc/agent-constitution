@@ -331,7 +331,7 @@ fn a_superseded_rule_is_a_warning_naming_its_successor() {
     warns(
         &s,
         &[8],
-        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2); replace ac:8 with ac:2",
+        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `rules`",
     );
 }
 
@@ -348,4 +348,58 @@ fn a_repealed_rule_is_a_warning() {
     warns(&s, &[2], "rule 2 (Rule 2) (listed in `rules`) is repealed");
     // Left out of a pack.
     assert!(ids(&enabled(&s, &[], &[1])).is_empty());
+}
+
+#[test]
+fn a_superseded_rule_brought_in_names_what_brings_it_in() {
+    let mut nodes = vec![
+        domain(1),
+        rule(2, 1, ""),
+        edit(
+            rule(8, 1, "superseded-by = 2"),
+            "status = \"draft\"",
+            "status = \"superseded\"",
+        ),
+    ];
+    nodes.push(rule(9, 1, "requires = [8]"));
+    let s = source(&nodes);
+    warns(
+        &s,
+        &[9],
+        "rule 8 (Rule 8) (required by 9) is superseded by 2 (Rule 2); it stays as long as 9 (Rule 9) is enabled, which brings it in",
+    );
+    let (_, diags) = run(&s, &[9], &[], 1);
+    assert!(
+        !diags.0.iter().any(|d| d.message.contains("replace")),
+        "{:#?}",
+        diags.0
+    );
+}
+
+#[test]
+fn a_pack_whose_root_is_superseded_warns() {
+    let s = pack_source();
+    let (res, diags) = run(&s, &[], &[8], 1);
+    assert!(res.enabled.is_empty());
+    let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
+    assert_eq!(
+        warnings,
+        [
+            "statute.toml: warning: pack 8 (Rule 8) enables nothing: its root is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `packs`"
+        ]
+    );
+}
+
+#[test]
+fn conflicting_rules_of_one_pack_are_listed_one_by_one() {
+    let s = source(&[domain(1), rule(2, 1, ""), rule(3, 1, "conflicts = [2]")]);
+    fails(
+        &s,
+        &[],
+        &[1],
+        1,
+        "both are in pack 1, so in place of the pack, list in `rules` the rules of it you want",
+    );
+    // With one of them listed directly as well, the advice stays the same.
+    fails(&s, &[2], &[1], 1, "both are in pack 1");
 }

@@ -36,6 +36,16 @@ MONTH = re.compile(r"([0-9]{4})-(0[1-9]|1[0-2])")
 
 INDEX_STATUS = ("draft", "active")
 STATUS = ("draft", "active", "repealed")
+# A node of the rule tree: a rule, a one-of or a domain in the format of
+# docs/design/rule-system.md (Rule file format), named `rules/<id>.toml` by
+# its number. A rule file with a word for a name is in the older format.
+NODE_NAME = re.compile(r"[0-9]+")
+NODE_ID = re.compile(r"[1-9][0-9]*")
+KINDS = ("rule", "one-of", "domain")
+NODE_STATUS = ("draft", "trial", "active", "superseded", "repealed")
+LEVELS = ("project", "user")
+CHECKS = ("builtin", "command", "review")
+PARTS = ("statement", "reason", "verification")
 # The one value of `audience`: a provision on how this text itself is made
 # and amended, whose text the version for agents leaves out.
 MAINTAINERS = "maintainers"
@@ -301,6 +311,43 @@ class Rule:
   content: Texts
 
 
+@dataclass(frozen=True, slots=True)
+class Node:
+  """One node of the rule tree: a rule, a one-of or a domain.
+
+  Attributes:
+    doc: its file.
+    id: its number.
+    slug: its readable name, if it has one.
+    kind: rule, one-of or domain.
+    status: draft, trial, active, superseded or repealed.
+    lang: the language of its original.
+    parent: the number of its parent, None for a domain.
+    superseded_by: the number of the rule that supersedes it, if any.
+    authority: the constitution provisions it refines, without a
+      namespace; empty for a one-of or a domain.
+    title: its title, by language.
+    text: its three parts, part -> text by language; empty for a one-of
+      or a domain.
+    translations: language -> the hash of the original it follows.
+    original: the hash of its original text, as `translations` records it.
+  """
+
+  doc: Doc
+  id: int
+  slug: str | None
+  kind: str
+  status: str
+  lang: str
+  parent: int | None
+  superseded_by: int | None
+  authority: list[str]
+  title: Texts
+  text: dict[str, Texts]
+  translations: dict[str, str]
+  original: str
+
+
 class Text(NamedTuple):
   """One multilingual text of the sources.
 
@@ -310,6 +357,8 @@ class Text(NamedTuple):
     texts: the text, by language.
     in_rule: whether a rule holds it.
     repealed: whether what holds it is repealed.
+    lang: the language of its original, None for one in every language of
+      index.toml.
   """
 
   doc: Doc
@@ -317,6 +366,7 @@ class Text(NamedTuple):
   texts: Texts
   in_rule: bool
   repealed: bool
+  lang: str | None = None
 
 
 @dataclass(frozen=True)
@@ -329,8 +379,9 @@ class Sources:
     languages: the languages of index.toml, in order.
     articles: the articles, in order.
     sections: the sections, in order.
-    rules: the general rules.
+    rules: the general rules in the older format.
     retired: rules/retired-ids.txt, in order.
+    nodes: the rules, one-ofs and domains, by number.
   """
 
   layout: Layout
@@ -340,6 +391,7 @@ class Sources:
   sections: list[Section]
   rules: list[Rule]
   retired: list[str]
+  nodes: list[Node]
 
   @property
   def items(self) -> list[Item]:
@@ -401,6 +453,11 @@ class Sources:
     for r in self.rules:
       yield Text(r.doc, "title", r.title, True, r.status == "repealed")
       yield Text(r.doc, "content", r.content, True, r.status == "repealed")
+    for n in self.nodes:
+      repealed = n.status == "repealed"
+      yield Text(n.doc, "title", n.title, True, repealed, n.lang)
+      for part, texts in n.text.items():
+        yield Text(n.doc, f"text.{part}", texts, True, repealed, n.lang)
 
 
 def number_key(number: str) -> tuple[int, str]:

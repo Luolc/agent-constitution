@@ -11,6 +11,9 @@ article,
 holding its article.toml and one <NN>[a-z]-<id>.toml per section, the
 section's list items inside it; rules/<id>.toml, one rule each, and
 rules/retired-ids.txt, the IDs of deleted rules (checked, not rendered).
+A rule file named by a number is a node of the rule tree, a rule, a one-of
+or a domain, in the format of docs/design/rule-system.md (Rule file
+format); one named by a word is in the older format.
 Article and section numbers are the name prefixes. The formats, the
 numbering and the checks are described in docs/design/source-formats.md,
 constitution.md, rules.md and checkers.md.
