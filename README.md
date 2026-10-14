@@ -18,7 +18,7 @@ so that AGENTS.md stays short, consistent and checked.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/site-dark.png">
-  <img src=".github/assets/site-light.png" width="900" alt="The constitution on its website: the title, the revision, the preamble, the design pages listed at the left and the articles at the right">
+  <img src=".github/assets/site-light.png" width="900" alt="The constitution on its website: the title, the revision, the preamble, the sidebar at the left and the articles at the right">
 </picture>
 
 </div>
