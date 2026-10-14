@@ -737,7 +737,19 @@ fn crlf_line_ends_hash_as_lf() {
 
 #[test]
 fn an_escaped_crlf_is_not_a_line_end() {
-    // `\r\n` written as an escape in a basic string keeps its CR.
+    // `\r\n` written as an escape in a basic string keeps its CR, as
+    // Python's tomllib does: `tomllib.loads('a = "Violated\\r\\nwhen."')`
+    // gives 'Violated\r\nwhen.', and the SHA-256 of the four values as
+    // tomllib returns them, joined with NUL, is the hex below.
+    assert_eq!(
+        original_hash(&[
+            "Rule 2",
+            "Do the thing 2.",
+            "Because.\n",
+            "Violated\r\nwhen."
+        ]),
+        "bb4d66ca9cc3adecba159bd59b6d4eda2621966805e93ce677509adc87c4c0ec"
+    );
     let escaped = edit(
         translated(&original_hash(&[
             "Rule 2",
