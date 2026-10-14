@@ -11,7 +11,7 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
 /// Domain 1 with rules 43, 46, 50, 58, 61 and 71 (built-in checks), rules 3 and 7 (the
 /// rules they supersede, whose checks stay), rule 20 (a command) and
-/// rule 21 (review only).
+/// rule 21 (review only, whose reason cites a provision and rule 20).
 fn nodes(command: &str) -> Vec<(u64, String)> {
     let builtin = |id| edit(rule(id, 1, ""), "check = \"review\"", "check = \"builtin\"");
     vec![
@@ -29,7 +29,11 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
             "check = \"review\"",
             &format!("check = \"command\"\nrun = {command:?}\ntools = [\"sh\"]"),
         ),
-        rule(21, 1, ""),
+        edit(
+            rule(21, 1, ""),
+            "Because.",
+            "Because of {@constitution:principals} and {@rule:20}.",
+        ),
     ]
 }
 
@@ -89,6 +93,14 @@ fn repo(name: &str, rules: &str, command: &str) -> PathBuf {
         write(&dir, &format!("rules/{id}.toml"), &text);
     }
     for (path, text) in [
+        (
+            "constitution/2026-10/articles/04-authority/article.toml",
+            "id = \"authority\"\n",
+        ),
+        (
+            "constitution/2026-10/articles/04-authority/01-principals.toml",
+            "id = \"principals\"\n",
+        ),
         ("AGENTS.md", "agents\n"),
         ("tools/build.py", "tool\n"),
         ("docs/design/README.md", "design\n"),
@@ -867,11 +879,14 @@ fn a_command_that_cannot_decide_is_inconclusive() {
 fn a_rule_without_a_check_goes_to_the_reviewer() {
     let dir = repo("review", "\"R21\"", "true");
     let run = statute(&dir, &["check"], None);
-    assert_eq!(run.code, 0);
+    assert_eq!(run.code, 0, "{}", run.stderr);
     assert!(line(&run, 21).starts_with("review "), "{}", run.stdout);
+    // The citations in the reason are rendered, as in the compiled
+    // AGENTS.md, and none is left as written.
     assert!(
-        run.stdout.contains("## R21 (Rule 21) (review)\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n"),
+        run.stdout.contains("## R21 (Rule 21) (review)\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n"),
         "{}",
         run.stdout
     );
+    assert!(!run.stdout.contains("{@"), "{}", run.stdout);
 }

@@ -381,11 +381,7 @@ fn agents_md(project: &Project) -> Result<String, String> {
         )
     })?;
 
-    let articles = project
-        .root
-        .join(&m.source.path)
-        .join(format!("constitution/{}/articles", m.edition));
-    let labels = Labels::load(&articles, lang)?;
+    let labels = labels(project)?;
 
     let w = words(lang);
     let mut out = String::new();
@@ -438,18 +434,31 @@ fn shown(project: &Project, node: &Node) -> bool {
     }
 }
 
-/// A rule's text with its citations rendered: a rule as its title, a link
-/// when it is in the file, else followed by its ID; a provision as its
-/// label, in plain text, as in the constitution's version for agents.
-fn cited(
+/// The labels of the provisions of the project's constitution, in the
+/// language compiled to.
+pub fn labels(project: &Project) -> Result<Labels, String> {
+    let m = &project.manifest;
+    let articles = project
+        .root
+        .join(&m.source.path)
+        .join(format!("constitution/{}/articles", m.edition));
+    Labels::load(&articles, &m.lang)
+}
+
+/// A rule's text with its citations rendered: a rule as its title, with
+/// `links` a link when it is in the file, else followed by its reference;
+/// a provision as its label, in plain text, as in the constitution's
+/// version for agents.
+pub fn cited(
     project: &Project,
-    w: &Words,
     labels: &Labels,
     node: &Node,
     part: &str,
     text: &str,
+    links: bool,
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
+    let w = words(lang);
     let fail = |what: &str| {
         Err(format!(
             "{}: {part}: {what}",
@@ -458,7 +467,7 @@ fn cited(
     };
     cite::replace(text, |c| match c {
         Citation::Rule(id) => match id.parse().ok().and_then(|id| project.source.get(id)) {
-            Some(n) if shown(project, n) => Ok(format!(
+            Some(n) if links && shown(project, n) => Ok(format!(
                 "[{}](#{})",
                 pick(&n.title, n, lang),
                 anchor(project, n.id)
@@ -514,7 +523,7 @@ fn render(
                 Part::Reason => ("reason", w.reason, &rule.reason),
                 Part::Verification => ("verification", w.verification, &rule.verification),
             };
-            let text = cited(project, w, labels, node, name, pick(text, node, lang))?;
+            let text = cited(project, labels, node, name, pick(text, node, lang), true)?;
             if label.is_empty() {
                 let _ = writeln!(out, "\n{text}");
             } else {

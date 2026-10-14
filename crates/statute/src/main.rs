@@ -160,6 +160,9 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
         .filter(|(_, r)| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review))
         .collect();
     if !for_reviewer.is_empty() {
+        let labels = statute::compile::labels(&project).map_err(|e| {
+            eprintln!("statute: error: {e}");
+        })?;
         println!("\nFor the reviewer:");
         for (id, report) in for_reviewer {
             let Some(node) = source.get(*id) else {
@@ -167,15 +170,16 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
             };
             let Some(rule) = &node.rule else { continue };
             let lang = &project.manifest.lang;
+            let text = |part: &str, text| {
+                let text = statute::compile::pick(text, node, lang);
+                statute::compile::cited(&project, &labels, node, part, text, false)
+                    .map_err(|e| eprintln!("statute: error: {e}"))
+            };
+            let reason = text("reason", &rule.reason)?;
+            let verification = text("verification", &rule.verification)?;
             println!("\n## {} ({})\n", label(source, *id), report.outcome.name());
-            println!(
-                "Reason: {}\n",
-                statute::compile::pick(&rule.reason, node, lang)
-            );
-            println!(
-                "Verification: {}",
-                statute::compile::pick(&rule.verification, node, lang)
-            );
+            println!("Reason: {reason}\n");
+            println!("Verification: {verification}");
         }
     }
     if reports.iter().any(|(_, r)| r.outcome == Outcome::Violation) {
