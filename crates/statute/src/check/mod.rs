@@ -1,4 +1,4 @@
-//! Running the checks of the enabled rules (`docs/design/rule-system.md`,
+//! Running the checks of the enabled rules (`docs/design/rule-checks.md`,
 //! Checks, and Outcomes and the review loop). A check has three outcomes;
 //! a rule without an automatic check goes to the reviewer as it is.
 

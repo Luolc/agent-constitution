@@ -56,7 +56,7 @@ statute compile       # 写出 AGENTS.md、skill 和检查
 statute check         # 列出已启用的规定，供审查
 ```
 
-大多数规定没法用脚本判定，所以工作要逐条规定地审。审查方运行 `statute check` 拿到按 domain 分组的清单：每条启用的规定一行，脚本判定不了的是 `review`，这占大多数；少数有脚本检查的，结果是 `pass`、`violation` 或 `inconclusive`；结果为 `review` 或 `inconclusive` 的规定后面紧跟它的理由和判定方法。审查方按 domain、按规定逐项过这份清单。有规定被违反时，`statute check` 的退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/rule-system.md#the-command-and-the-first-version)。
+大多数规定没法用脚本判定，所以工作要逐条规定地审。审查方运行 `statute check` 拿到按 domain 分组的清单：每条启用的规定一行，脚本判定不了的是 `review`，这占大多数；少数有脚本检查的，结果是 `pass`、`violation` 或 `inconclusive`；结果为 `review` 或 `inconclusive` 的规定后面紧跟它的理由和判定方法。审查方按 domain、按规定逐项过这份清单。有规定被违反时，`statute check` 的退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/statute-command.md#the-command-and-the-first-version)。
 
 ## 开发
 

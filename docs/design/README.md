@@ -39,7 +39,17 @@ the whole design.
 - [Rule system](rule-system.md): the planned rule system (numbered
   rules, sources and references, rule sets and lock files, dependencies,
   checks and the review loop), not built yet, and which parts above it
-  will replace.
+  will replace; its topics are in the four files below.
+- [Rule format](rule-format.md): what one rule holds, IDs and
+  revisions, the rule file format, rules and skills, and tracing rules
+  to the constitution.
+- [Rule sets, references and dependencies](rule-sets.md): rule sets and
+  the lock file, sources and references, and dependencies, one-ofs and
+  packs.
+- [Rule checks and review](rule-checks.md): checks, outcomes and the
+  review loop, and trial rules.
+- [The statute command](statute-command.md): compilation and the site,
+  the command and the first version, and why Rust.
 - [Rule sources](rule-sources.md): the four kinds of source (global or
   local, public or private), which may cite which, overrides,
   subdomains and the cutover from the hand-written guide; not built yet.

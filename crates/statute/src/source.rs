@@ -1,5 +1,5 @@
 //! A source: the nodes of one `rules/` directory, and the checks on how
-//! they relate (`docs/design/rule-system.md`, Dependencies, one-ofs and
+//! they relate (`docs/design/rule-sets.md`, Dependencies, one-ofs and
 //! packs).
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};

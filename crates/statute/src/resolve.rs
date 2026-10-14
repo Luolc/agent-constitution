@@ -1,6 +1,6 @@
 //! Resolving a rule set: which rules it enables, and why each
-//! (`docs/design/rule-system.md`, Dependencies, one-ofs and packs, and
-//! Tracing rules to the constitution).
+//! (`docs/design/rule-sets.md`, Dependencies, one-ofs and packs, and
+//! `docs/design/rule-format.md`, Tracing rules to the constitution).
 
 use std::collections::{BTreeMap, BTreeSet};
 

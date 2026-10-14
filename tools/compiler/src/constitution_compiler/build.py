@@ -13,7 +13,7 @@ section's list items inside it; rules/<id>.toml, one node of the rule
 tree each, a rule, a one-of or a domain (checked, not rendered).
 Article and section numbers are the name prefixes. The formats, the
 numbering and the checks are described in docs/design/source-formats.md,
-constitution.md, rule-system.md and checkers.md.
+constitution.md, rule-format.md and checkers.md.
 
 The version for agents has, in place of the front text, a note of this
 script's own that says what the file is and where the full text is; it

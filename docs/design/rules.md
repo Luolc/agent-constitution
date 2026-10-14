@@ -5,8 +5,8 @@
 One node of the rule tree per file, `rules/<id>.toml`, so that one
 proposal is one file and a diff shows exactly one rule changing. The
 format, the IDs and the statuses are in
-[Rule file format](rule-system.md#rule-file-format) and
-[IDs and revisions](rule-system.md#ids-and-revisions).
+[Rule file format](rule-format.md#rule-file-format) and
+[IDs and revisions](rule-format.md#ids-and-revisions).
 
 - The text cites the constitution with `{@constitution:<id>}` and another
   rule with `{@rule:<number>}` (see [IDs](source-formats.md#ids)); in the
@@ -16,7 +16,7 @@ format, the IDs and the statuses are in
   agent to person, or both.
 - While the constitution is a draft, every rule is `draft` too; once it is
   active, a new rule starts as `trial`
-  ([Trial rules](rule-system.md#trial-rules)).
+  ([Trial rules](rule-checks.md#trial-rules)).
 - `adjustable` (optional): the values in this rule that a lower-ranking text may
   change under `relaxations.adjustable-rules`, each with its default, for
   example `adjustable = ["wait_hours=24"]`. A rule without it cannot be
@@ -25,7 +25,7 @@ format, the IDs and the statuses are in
   value is one a repo or a task may change.
 
 Private rules in the overlay have the same format, in a source of their
-own ([Sources and references](rule-system.md#sources-and-references)).
+own ([Sources and references](rule-sets.md#sources-and-references)).
 
 ## Choosing rules
 

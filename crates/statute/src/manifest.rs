@@ -1,6 +1,6 @@
 //! The rule set, `statute.toml`: the constitution it rests on, its
 //! sources, the rules and packs it enables, and what the compiled output
-//! carries (`docs/design/rule-system.md`, Rule sets and the lock file).
+//! carries (`docs/design/rule-sets.md`, Rule sets and the lock file).
 
 use std::collections::BTreeMap;
 
@@ -40,7 +40,7 @@ pub enum Origin {
 }
 
 /// A reference to a rule, as a rule set and the command line write it
-/// (`docs/design/rule-system.md`, Sources and references).
+/// (`docs/design/rule-sets.md`, Sources and references).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RuleRef {
     pub origin: Origin,

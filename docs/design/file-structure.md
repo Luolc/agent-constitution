@@ -115,6 +115,12 @@ rust-toolchain.toml       the Rust toolchain version, read by rustup
                           toolchain never reads it                     A
 ```
 
+The design is split into files by topic, so that changes to different
+topics touch different files, as rule 82 (`design-files-by-topic`) asks.
+[Rule system](rule-system.md) is the overview of the files that describe
+the rule system, each listed in the index
+([agent-constitution design](README.md)).
+
 Four stage B pieces start early. `tools/` starts in stage A with the
 constitution build: the constitution is itself compiled from one directory
 per article and one file per section (see [Source formats](source-formats.md)). `rules/` starts in stage A too,
@@ -126,14 +132,8 @@ repo's own. `crates/` starts in stage A with one crate, `statute`, whose
 first release, a placeholder, was published early to hold the name on
 crates.io; the binary that compiles and checks the rules grows in it in
 stage B (what it does so far:
-[Rule system](rule-system.md#the-command-and-the-first-version)). Compiling and checking the
+[The command and the first version](statute-command.md#the-command-and-the-first-version)). Compiling and checking the
 rules, and building the instruction file, stay in stage B.
-
-The design is split into files by topic, so that changes to different
-topics touch different files, as rule 82 (`design-files-by-topic`) asks.
-Planned, not done yet: `rule-system.md` still holds several topics and
-will be split into files of its own, each listed in the index
-([agent-constitution design](README.md)).
 
 Stage B, in the order to build it: `schema/` and the schema checker,
 the rest of `rules/` (filled by migration), the compiler, `examples/`
