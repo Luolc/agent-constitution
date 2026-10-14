@@ -14,3 +14,6 @@ rules = [
 
 [sources]
 ac = { path = "../.." }
+
+[compile]
+agents-md = ["statement", "verification"]
