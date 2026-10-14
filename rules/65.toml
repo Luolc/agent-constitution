@@ -28,23 +28,23 @@ zh = '''
 
 [text.verification]
 en = '''
-Installing covers system packages, tools installed for the user or for the whole machine, and language toolchains; system or global configuration covers files outside the project and the agent's own scratch space, such as a shell profile, a package manager's global settings or a tool's user-wide configuration. Setting up the project's own environment the way its instructions prescribe, for example syncing its locked dependencies into the project directory, is not installing.
+Installing is putting onto the machine any software the project's instructions do not prescribe, wherever it lands: a system package, a tool installed for the user or for the whole machine, a language toolchain, or a package added to the project's environment or to a scratch environment. System or global configuration covers files outside the project and the agent's own scratch space, such as a shell profile, a package manager's global settings or a tool's user-wide configuration. Setting up the project's own environment the way its instructions prescribe, for example syncing its locked dependencies into the project directory, is not installing.
 
 The agent first looks for a tool already on the machine that does the job. Where there is none, it reports what is missing and why it is needed to whoever delegated the work, which decides how to provide it.
 
 When unsure whether an action installs something or changes system or global configuration, treat it as doing so.
 
-Violated when an agent installs a tool or changes system or global configuration to check or debug something.
+Violated when an agent installs a tool or changes system or global configuration to check or debug something, or, lacking a tool it needs, neither uses one already on the machine nor reports the gap.
 '''
 zh = '''
-安装包括系统软件包、为用户或整台机器安装的工具，以及语言工具链；系统配置或全局配置包括项目目录和 agent 自己的临时目录以外的文件，例如 shell 的 profile、包管理器的全局设置、工具的用户级配置。按项目说明搭建项目自己的环境，例如把项目锁定的依赖同步到项目目录里，不算安装。
+安装指把项目说明没有规定的任何软件放到机器上，不论放在哪里：系统软件包、为用户或整台机器安装的工具、语言工具链，或者加进项目环境或临时环境的软件包。系统配置或全局配置包括项目目录和 agent 自己的临时目录以外的文件，例如 shell 的 profile、包管理器的全局设置、工具的用户级配置。按项目说明搭建项目自己的环境，例如把项目锁定的依赖同步到项目目录里，不算安装。
 
 agent 先找机器上已有、能完成这件事的工具。找不到的，把缺什么、为什么需要报告给派活的一方，由它决定怎么提供。
 
 不确定某个操作是否属于安装、是否修改系统配置或全局配置的，按属于处理。
 
-agent 为了检查或调试而安装工具，或者修改系统配置或全局配置的，即为违反本规定。
+agent 为了检查或调试而安装工具，或者修改系统配置或全局配置，或者缺少需要的工具时，既没有改用机器上已有的工具，也没有报告这个缺口的，即为违反本规定。
 '''
 
 [translations]
-zh = "d64dc38b251f18142d3ec5188353ff0d551e6f89e22b9df710f7593a40a01b9b"
+zh = "5171a8daa0172b282f4f35c396a1ebd78ab3bd463d1837468fe092d6973f3508"

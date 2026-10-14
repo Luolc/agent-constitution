@@ -30,13 +30,13 @@ zh = '''
 en = '''
 The count matches what was meant to be cleaned up and nothing else: a pattern that also matches the command running the count, for example the shell running a process search, is not a count. A zero shows only that moment; where what was cleaned up can come back, such as a process a supervisor restarts or a child started late, the agent counts again after a while.
 
-Violated when an agent reports a cleanup as done without a count of what is left, or with a count above zero.
+Violated when an agent reports a cleanup as done without a count of what is left, with a count above zero, or, where what was cleaned up can come back, without counting again after a while.
 '''
 zh = '''
 清点的对象正好是要清理的东西，不多不少：匹配模式把运行清点的命令也匹配进去的 (例如执行进程搜索的那个 shell)，不算清点。一次清点为零只说明那一刻；清理掉的东西可能重新出现的，例如被守护进程拉起的进程、晚启动的子进程，agent 隔一段时间再清点一次。
 
-agent 没有清点残留就报告清理完成，或者清点结果大于零却报告清理完成的，即为违反本规定。
+agent 没有清点残留就报告清理完成，清点结果大于零却报告清理完成，或者清理掉的东西可能重新出现、却没有隔一段时间再清点一次就报告清理完成的，即为违反本规定。
 '''
 
 [translations]
-zh = "9093e3a814d7579aaa420031dc56763c6574fb6ff3917f4df5babe17427165e9"
+zh = "7d260c60fdfc69dc4efac27d010d3eaf090adfee7ce5b9835b43e254992ce1f7"
