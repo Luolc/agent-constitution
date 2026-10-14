@@ -840,7 +840,10 @@ rules of the repository; with `--base <ref>` it checks the change
 (`pass`, `violation`, `inconclusive`, or `review` for a rule without an
 automatic check) and a note, with the findings below, and then, for the
 reviewer, the reason and the verification of each rule that is
-inconclusive or for review. It exits with status 1 when a rule is
+inconclusive or for review, with their citations rendered as in the
+compiled `AGENTS.md`, a cited rule always as its title and reference
+(`Title (rule R42)`), since the output has no anchors to link to. It
+exits with status 1 when a rule is
 violated, and 0 otherwise. A built-in check that covers only part of its
 rule, finding nothing, is inconclusive, not a pass, since the rest of
 the rule is still for the reviewer. The built-in checks:

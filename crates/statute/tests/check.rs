@@ -881,12 +881,12 @@ fn a_rule_without_a_check_goes_to_the_reviewer() {
     let run = statute(&dir, &["check"], None);
     assert_eq!(run.code, 0, "{}", run.stderr);
     assert!(line(&run, 21).starts_with("review "), "{}", run.stdout);
-    // The citations in the reason are rendered, as in the compiled
-    // AGENTS.md, and none is left as written.
+    // No citation is left as written; each is rendered, as in the
+    // compiled AGENTS.md.
+    assert!(!run.stdout.contains("{@"), "{}", run.stdout);
     assert!(
         run.stdout.contains("## R21 (Rule 21) (review)\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n"),
         "{}",
         run.stdout
     );
-    assert!(!run.stdout.contains("{@"), "{}", run.stdout);
 }
