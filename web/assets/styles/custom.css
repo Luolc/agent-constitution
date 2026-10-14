@@ -359,10 +359,18 @@ body { font-family: var(--c-font-en); }
    article. */
 .constitution h2 a.anchor { display: none; }
 
-/* The sidebar lists the pages, the current one in the accent color; the
-   link to the source sits under the site's title, its icon the size of a
-   letter. */
+/* The sidebar lists the pages in groups, each named in bold after its
+   icon, which takes the color of the text; the current page is in the
+   accent color. The link to the source sits under the site's title, its
+   icon the size of a letter. */
 .book-menu a.active { color: var(--c-accent); }
+.book-menu a.menu-group {
+  display: flex;
+  align-items: center;
+  gap: .4em;
+  font-weight: var(--c-weight-bold);
+}
+.book-menu a.menu-group .book-icon { fill: currentColor; filter: none; flex: none; }
 .book-menu .source-link {
   display: flex;
   align-items: center;
@@ -372,10 +380,30 @@ body { font-family: var(--c-font-en); }
 }
 .book-menu .source-link .book-icon { width: 1em; height: 1em; flex: none; }
 /* The table of contents at the right: the articles of the page, the size
-   of the sidebar's text, under a muted heading. On a narrow screen the
-   theme hides it behind the button at the right of the top bar, which
-   opens it above the text. */
+   of the sidebar's text, under a muted heading. Set apart from the text
+   as a column of its own: muted, along a thin rule. The article the
+   reader is in (assets/toc-current.js) is marked by a bar over the rule
+   and bold, in the accent color. On a narrow screen the theme hides it
+   behind the button at the right of the top bar, which opens it above
+   the text. */
 .book-toc { font-size: .95rem; }
+.book-toc nav > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-inline-start: 1px solid var(--c-rule);
+}
+.book-toc nav a[href] {
+  margin-inline-start: -1px;
+  padding-inline-start: .8em;
+  border-inline-start: 2px solid transparent;
+  color: var(--c-muted);
+}
+.book-toc nav a[aria-current] {
+  border-color: currentColor;
+  color: var(--c-accent);
+  font-weight: var(--c-weight-bold);
+}
 .book-toc .toc-heading {
   margin: 0 0 .6em;
   color: var(--c-muted);
