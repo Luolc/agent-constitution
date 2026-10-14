@@ -790,8 +790,8 @@ link check. Only the build exists here; publishing it is a release (rule
   API (`POST /v1/messages/count_tokens`, standard library only). The
   content adapter counts the characters and words; `count-tokens`
   counts the tokens and writes them to `web/data/lengths.json` (not
-  committed), with the SHA-256 of each text it counted and the abbreviated
-  commit it ran on. The site shows a token count, and the commit, only
+  committed), with the SHA-256 of each text it counted and the full SHA
+  of the commit it ran on. The site shows a token count, and the commit, only
   when the SHA-256 is that of the text it builds, so a file left from
   another commit shows no stale number; without the file it says the
   tokens were not counted. An info
@@ -810,8 +810,10 @@ link check. Only the build exists here; publishing it is a release (rule
   (spans with ARIA list roles): what the version for agents omits, which
   API counted the tokens for which model or why they were not counted (the
   model named in words by `params.tokenCount.name` next to its ID), and
-  the revision and the abbreviated commit of the count (left out without
-  a count of this text, or outside git); last, on a line
+  the revision and the commit of the count, abbreviated to seven
+  characters and linked to that commit in the source repository, opened
+  in a new tab (left out without a count of this text, or outside git);
+  last, on a line
   of its own, the link to the page of the version for agents. The text of
   the popup is the size of the legend under the title, the numbers of the
   table a little larger. Each page's two versions are counted
