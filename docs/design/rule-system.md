@@ -524,26 +524,6 @@ statute says to write `12`. When compiled, a rule of the same
 source is shown with that source's prefix: `{@rule:12}` in a
 first-party rule is `R12`, in a local rule `L12`.
 
-**Where a rule belongs.** The kinds of source give a user a place for
-each kind of rule:
-
-- A rule that any repository could use is proposed to the first-party
-  source, where it is reviewed with the other general rules.
-- A rule about one repository, its layout, its commands, its CI, is
-  local: it lives in that repository's `rules/`, changes in its pull
-  requests, and reaches everyone who clones it.
-- A rule that a person's or a team's repositories share, but that is not
-  general, goes in a source of its own, a git repository, private when
-  it must be, which each of those rule sets names.
-- A rule that holds only on one machine or for one person, such as the
-  names of its bots and machines or where credentials are kept, goes in
-  a source outside the repository: a private repository, or a directory
-  on disk named by its path. A rule set that names such a source builds
-  only where the source can be read, so CI and a person who clones the
-  repository cannot build it; until the user level exists ([Rule sets
-  and the lock file](#rule-sets-and-the-lock-file), Where it lives),
-  keep these rules few, and keep out of them what other machines need.
-
 **Versions sit on the source.** The rule set says which tag or branch of
 a source to follow; the lock file resolves it to an exact commit. This is
 how `pyproject.toml` and `uv.lock` divide the work: the manifest states a
