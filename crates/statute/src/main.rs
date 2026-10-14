@@ -512,14 +512,16 @@ fn lock_command(root: &Path) -> Result<(), ()> {
 /// (`docs/design/rule-format.md`, IDs and revisions).
 const RAISE_REVISION: &str = "an edited rule's revision goes up by one";
 
-/// The enabled rules whose file differs from the one `old` locked while
-/// the revision is the same, each with that revision.
+/// The enabled rules that changed beyond their translations since `old`
+/// locked them while the revision is the same, each with that revision.
 fn same_revision_new_content(old: &lock::Locked, project: &Project) -> Vec<(Key, u64)> {
     lock::current(project)
         .rules
         .into_iter()
-        .filter_map(|(key, (revision, sha256))| match old.rules.get(&key) {
-            Some((was, before)) if *was == revision && *before != sha256 => Some((key, revision)),
+        .filter_map(|(key, now)| match old.rules.get(&key) {
+            Some(was) if was.revision == now.revision && was.original_changed(&now) => {
+                Some((key, now.revision))
+            }
             _ => None,
         })
         .collect()
@@ -609,7 +611,8 @@ fn report_changes(old: &lock::Locked, project: &Project) {
             old.revision, new.revision
         ));
     }
-    for (key, (revision, sha256)) in &new.rules {
+    for (key, now) in &new.rules {
+        let revision = now.revision;
         // An overridden rule that changed asks whether the override still
         // holds.
         let still = match project.resolution.overridden.get(key) {
@@ -617,12 +620,17 @@ fn report_changes(old: &lock::Locked, project: &Project) {
             None => String::new(),
         };
         match old.rules.get(key) {
-            Some((was, _)) if was != revision => line(format!(
-                "changed: rule {}: revision {was} -> {revision}{still}",
+            Some(was) if was.revision != revision => line(format!(
+                "changed: rule {}: revision {} -> {revision}{still}",
+                label(sources, key),
+                was.revision
+            )),
+            Some(was) if was.original_changed(now) => line(format!(
+                "changed: rule {}: content changed, still revision {revision}; {RAISE_REVISION}{still}",
                 label(sources, key)
             )),
-            Some((_, was)) if was != sha256 => line(format!(
-                "changed: rule {}: content changed, still revision {revision}; {RAISE_REVISION}{still}",
+            Some(was) if was.sha256 != now.sha256 => line(format!(
+                "changed: rule {}: only the translations or the layout changed, still revision {revision}{still}",
                 label(sources, key)
             )),
             Some(_) => {}

@@ -106,6 +106,9 @@ pub struct Node {
     pub rule: Option<RuleFields>,
     /// The SHA-256 of the file as read, in lowercase hex.
     pub sha256: String,
+    /// The SHA-256 of the node without its translations
+    /// ([`original_sha256`]), in lowercase hex.
+    pub original_sha256: String,
 }
 
 #[derive(Deserialize)]
@@ -414,6 +417,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
 
     let translations = raw.translations.clone().unwrap_or_default();
     check_languages(&raw, &translations, &mut err);
+    let original_sha256 = original_sha256(&content, &raw.lang);
 
     Some(Node {
         id: raw.id,
@@ -431,7 +435,36 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         translations,
         rule,
         sha256,
+        original_sha256,
     })
+}
+
+/// The SHA-256 of a node read as TOML without `[translations]` and
+/// without the text of every language but `lang`, written as JSON with its
+/// keys in order. A changed translation leaves it as it was; a changed
+/// original or any other field moves it (`docs/design/rule-format.md`,
+/// IDs and revisions).
+fn original_sha256(content: &str, lang: &str) -> String {
+    let mut table: toml::Table =
+        toml::from_str(content).expect("the file was read as a node above");
+    table.remove("translations");
+    let only_original = |value: &mut toml::Value| {
+        if let Some(t) = value.as_table_mut() {
+            t.retain(|key, _| key == lang);
+        }
+    };
+    for (key, value) in table.iter_mut() {
+        match (key.as_str(), value.as_table_mut()) {
+            ("title" | "applicability", _) => only_original(value),
+            ("text", Some(parts)) => parts.iter_mut().for_each(|(_, part)| only_original(part)),
+            _ => {}
+        }
+    }
+    sha256_hex(
+        serde_json::to_string(&table)
+            .expect("a TOML table is valid JSON")
+            .as_bytes(),
+    )
 }
 
 fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<RuleFields> {

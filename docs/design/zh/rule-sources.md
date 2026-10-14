@@ -1,4 +1,4 @@
-<!-- en-sha256: f8faba707f602c2058c839c8bfd25b434a3c22e5b838dd697b77fe37ba9d9214 -->
+<!-- en-sha256: 36527b30eb77087a8cd8c278468929ed74b9f8ae8b1f93cc67ad1ee5dbe3a293 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -195,6 +195,7 @@ error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; 
 rule = "R200"
 revision = 2
 sha256 = "<SHA-256 of rules/200.toml>"
+original-sha256 = "<SHA-256 of rule 200 without its translations>"
 overridden-by = "L3"
 ```
 

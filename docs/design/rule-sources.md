@@ -461,6 +461,7 @@ with one more field:
 rule = "R200"
 revision = 2
 sha256 = "<SHA-256 of rules/200.toml>"
+original-sha256 = "<SHA-256 of rule 200 without its translations>"
 overridden-by = "L3"
 ```
 

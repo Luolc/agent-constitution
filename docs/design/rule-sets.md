@@ -61,7 +61,9 @@ commit and, but for `R`, `public`, which is not written yet;
 [Git sources](global-configuration.md#git-sources)), and each enabled rule,
 whether chosen directly or brought in by a requirement (its reference,
 written as the rule set writes it, `R42` or `team:7`, and `L12` for a
-local rule; its revision; and the SHA-256 of its file):
+local rule; its revision; the SHA-256 of its file; and the SHA-256 of
+the rule without its translations, which a changed translation leaves as
+it was):
 
 ```toml
 [constitution]
@@ -80,11 +82,13 @@ commit = "<commit>"
 rule = "R7"
 revision = 2
 sha256 = "<SHA-256 of rules/7.toml>"
+original-sha256 = "<SHA-256 of rule 7 without its translations>"
 
 [[rules]]
 rule = "R42"
 revision = 1
 sha256 = "<SHA-256 of rules/42.toml>"
+original-sha256 = "<SHA-256 of rule 42 without its translations>"
 ```
 
 One field, `rule`, names the rule in the same form everywhere else, in
@@ -139,11 +143,17 @@ changed. For the same reason the first version cannot show the text of
 a change: it lists the constitution's revision, each rule whose revision
 or content moved, and each rule brought in, with why, or dropped. The
 text diff waits for git sources, whose old commit can be read. A rule
-whose content changed while its revision did not draws a warning from
+whose original changed while its revision did not draws a warning from
 `lock` and a note on its line from `upgrade`, since an edited rule's
-revision goes up by one ([IDs and revisions](rule-format.md#ids-and-revisions)). The
-two cannot tell a changed translation from a changed original, so either
-draws it.
+revision goes up by one ([IDs and revisions](rule-format.md#ids-and-revisions)).
+They compare the rule without its translations: the rule as TOML, less
+`[translations]` and the text in every language but the original,
+written as JSON with its keys in order and hashed with SHA-256, so
+that a change to the original or to any other field counts, and a change
+to a translation or to the file's layout alone does not. A rule whose
+translations changed and nothing else draws no warning, and `upgrade`
+lists it with its revision unchanged. A lock file written before this
+hash was recorded compares the file's SHA-256 instead.
 
 **Bound to one constitution.** A rule set names the constitution it
 rests on: the repository it comes from, the edition and the revision.
