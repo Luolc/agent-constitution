@@ -1,4 +1,4 @@
-<!-- en-sha256: 52d4a3dcb701d7509e83cc46f9e3829936191225eccf47c205405cacb7a4e500 -->
+<!-- en-sha256: bf26b9906cc797e65012be72d68e35ca6aacf87528463d67a69056e3e0dcc16e -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -13,7 +13,7 @@
 | 中文排版 (`lint-zh-sources`；对仓里每个 Markdown 文件跑 limae) | 宪法源文件和规定源文件里的每段 `zh` 文本、构建出的中文宪法的两个版本，以及设计的中文译文，都通过 limae 的默认规则；对宪法的引用按它渲染出的中文来判断 | 中文读起来自然，或者与英文意思相同；英文文本也过 limae 的规则，那里多半查不出什么 |
 | 设计译文 (`check-design-translation`) | `docs/design/zh/` 里的文件与 `docs/design/` 一一对应，不多不少；每份译文开头是英文文件当前的 SHA-256，接着是标题，标题以下的各级标题与英文文件相同，顺序和级别都一样，每个都带着英文标题的锚点；设计里的每个相对链接，无论哪种语言，都指向仓里的一个文件或目录 | 译文说的就是英文说的，或者更新哈希那一行时译文确实同步改过了 |
 | Python 代码 (`ruff check`、`ruff format --check`、`pydoclint`、`basedpyright`，在 `pyproject.toml` 里配置) | `tools/` 下的脚本符合所配置的 lint 规则和格式，docstring 写明了每个参数和返回值，类型检查程序在 standard 模式下没有发现错误 | 脚本做的就是 docstring 说的；那要靠测试 |
-| Rust 代码 (提交钩子 `cargo fmt --check`；CI 里的 `cargo clippy --all-targets -- -D warnings`、`cargo test` 和 `cargo publish --dry-run -p statute`) | `crates/` 下的 workspace 格式正确，clippy 没有警告，测试通过，`statute` 能像 crates.io 收到它时那样打包和构建 | 这个二进制已经能做什么事，或者 crates.io 会接受这次上传 |
+| Rust 代码 (提交钩子 `cargo fmt --check`；CI 里的 `cargo clippy --all-targets -- -D warnings`、`cargo test` 和 `cargo publish --dry-run -p statute`) | `crates/` 下的 workspace 格式正确，clippy 没有警告，测试通过，`statute` 能像 crates.io 收到它时那样打包和构建 | 测试没覆盖到的地方，命令的行为也与设计一致，或者 crates.io 会接受这次上传 |
 | Schema | fixture 和 overlay manifest 有必需的键，取值都在允许的范围内；ID 与文件名一致 | 正文的意思与字段所说的一致 |
 | 引用 | 每个被引用的 ID (宪法条文、规定、案例) 都存在且未废止；没有源文件指向核心或 overlay 以外的文件 | 被引用的那一条确实支持这条规定 |
 | 漂移 | `examples/golden/` 与编译器今天从 `examples/overlay/` 构建出的结果相同 | 真实的 overlay 能构建成功；它只说明编译器的行为没有在没人注意的情况下改变 |
