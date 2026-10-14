@@ -3,8 +3,34 @@ status = "draft"
 
 [content]
 en = '''
-A task delivered to an agent by the means set up in advance for handing it work, originating in a principal's request or in a setup the principal made or approved in advance, authorizes the work it describes as far as that principal's authority reaches. A task started automatically, on a schedule or on a condition, has only the authority of whoever set it up: one a principal set up or approved has the authority written into that setup; one an agent set up has no more than that agent's own authority and reaches no further than the task in which the agent set it up ({@delegated-authority}). A task never authorizes an item listed in {@must-ask}.
+A principal may deliver a task to an agent through a means set up in advance: by a direct request, or through a setup the principal made or approved in advance that starts the task. A task delivered this way authorizes the work it describes, within that principal's authority. No task authorizes an item listed in {@must-ask}. A task started automatically, on a schedule or on a condition, has only the authority of whoever set it up:
 '''
 zh = '''
-经事先设定的途径交付给 agent 的任务，源于委托人的请求，或者委托人事先作出或批准的设定，在该委托人的权限范围内授权任务所描述的工作。定时或者按条件自动发起的任务，权限以设立它的一方为限：委托人设立或者批准的，具有该设定中写明的权限；agent 设立的，不超过该 agent 自己的权限，也不超出它设立时所在的任务 ({@delegated-authority})。任务不得视为对{@must-ask}所列事项的授权。
+委托人可以经事先设定的途径向 agent 交付任务：直接提出请求，或者事先作出、批准一项设定，由它发起任务。这样交付的任务，在该委托人的权限范围内，授权 agent 做任务所描述的工作。任何任务都不构成对{@must-ask}所列事项的授权。定时或者按条件自动发起的任务，权限以设立它的一方为限：
+'''
+
+[[items]]
+id = "principal-setup"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+one a principal set up or approved has the authority written into that setup;
+'''
+zh = '''
+委托人设立或者批准的，具有该设定中写明的权限；
+'''
+
+[[items]]
+id = "agent-setup"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+one an agent set up has no more than that agent's own authority, and reaches no further than the task in which the agent set it up ({@delegated-authority}).
+'''
+zh = '''
+agent 设立的，不超过该 agent 自己的权限，也不超出它设立时所在的任务 ({@delegated-authority})。
 '''
