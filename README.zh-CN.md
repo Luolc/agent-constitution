@@ -49,7 +49,7 @@ cargo install --path agent-constitution/crates/statute
 然后在 agent 工作的那个仓库里 (这里假定克隆的目录就在它旁边)：
 
 ```sh
-statute init --source ../agent-constitution --public  # 写出 statute.toml；私有仓库用 --private
+statute init --source ../agent-constitution  # 写出 statute.toml；是否公开按 GitHub 显示的写，也可以用 --public / --private 指定
 statute add R43       # 启用规定 43，并写出 statute.lock
 statute lock          # 手改 statute.toml 之后重新解析
 statute compile       # 写出 AGENTS.md、skill 和检查
