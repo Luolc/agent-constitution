@@ -19,7 +19,7 @@ one key per language, `en` and `zh` (format in
 `docs/design/source-formats.md`), and the rules are written in `en` with a
 `zh` translation whose `[translations]` key holds the SHA-256 of the
 English it follows; when the English changes, `uv run constitution-build
---check` fails and prints the new hash (`docs/design/rule-system.md`,
+--check` fails and prints the new hash (`docs/design/rule-format.md`,
 Rule file format). Write the `zh` text in plain, natural
 simplified Chinese that says what the `en` text says, clause by clause,
 not word by word.
@@ -61,7 +61,7 @@ Checkers).
   never moves to another article (`docs/design/constitution.md`, Numbering).
 - `rules/<id>.toml`: one node of the rule tree per file, a general rule
   or a domain, named by its number without zero padding (`rules/7.toml`)
-  and checked by the same build (`docs/design/rule-system.md`, Rule file
+  and checked by the same build (`docs/design/rule-format.md`, Rule file
   format). No rule is ever deleted and no number is reused: a rule that
   goes is superseded or repealed.
 - The constitution's IDs are dateless words; a rule's ID is a number, and
@@ -87,7 +87,7 @@ Checkers).
 - `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
   `Cargo.lock`; `rust-toolchain.toml` pins the toolchain). `crates/statute`
   compiles a constitution and the chosen rules into `AGENTS.md`; which
-  commands are built so far is in `docs/design/rule-system.md`, The
+  commands are built so far is in `docs/design/statute-command.md`, The
   command and the first version. The
   release on crates.io, 0.0.1, is still a placeholder
   (`crates/statute/README.md`). Publishing a crate is a release
