@@ -225,6 +225,11 @@ class FormatTest(Tree):
       1, "rules/2.toml", "a domain is trial while index.toml is draft"
     )
 
+  def test_trial_under_an_active_index(self):
+    self.activate()
+    self.edit("rules/2.toml", 'status = "active"', 'status = "trial"')
+    self.assertEqual(self.errors(), [])
+
   def test_command_check(self):
     self.edit(
       "rules/10.toml",

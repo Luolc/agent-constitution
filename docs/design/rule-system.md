@@ -91,8 +91,14 @@ The ID of a rule therefore always means the same requirement. The revision
 is a number per rule, counted from 1; it has nothing to do with the
 revision of the constitution. A rule's status is one of `draft`,
 `trial`, `active`, `superseded` or `repealed`. `draft` is what every rule
-is while the constitution is a draft; `trial` marks a rule being tried on
-real work before it settles (see [Trial rules](#trial-rules)). A rule
+is while the constitution is a draft; once the constitution is active, a
+new rule starts as `trial`, a rule being tried on real work before it
+settles (see [Trial rules](#trial-rules)), and `draft` stays only for a
+rule that is not meant for real work yet, such as the canary rule in
+[Checkers](checkers.md). Moving a rule
+from `draft` to `trial` changes only its status, not what counts as
+compliant, so the rule is edited in place and its revision goes up by one,
+as for any such change above. A rule
 withdrawn with nothing in its place is repealed and, like a superseded
 one, keeps its ID and its file.
 
@@ -923,12 +929,23 @@ while it is tried, and made a regular rule once it has settled. The rules,
 skills and conventions of this repo itself are meant to come about the
 same way.
 
-**Becoming active.** Agents decide this, not a person. Once a trial rule
-has been used in real work a number of times (5 in the first version)
-with no false positive left unresolved in that time, the reviewing agent
-sets its `status` to `active`. That changes only the status, not what
-counts as compliant, so the rule is edited in place and its revision goes
-up by one ([IDs and revisions](#ids-and-revisions)).
+**Starting.** While the constitution is a draft, every rule is `draft`.
+Once it is active, a new rule starts as `trial`, and the rules written
+while it was a draft move from `draft` to `trial` in place
+([IDs and revisions](#ids-and-revisions)).
+
+**Becoming active.** Agents decide this, not a person. Most rules cannot
+be settled by a deterministic check, so the main use of a rule is in
+review: the reviewer runs the checks there are, reads the rule's
+verification, and judges the change by the rules of its domain. Once a
+trial rule has been used in real work a number of times (5 in the first
+version) with no false positive left unresolved in that time, the
+reviewing agent sets its `status` to `active`. That changes only the
+status, not what counts as compliant, so the rule is edited in place and
+its revision goes up by one ([IDs and revisions](#ids-and-revisions)). A
+false positive is a case where the rule was misapplied, in a review or in
+a check: it was held against work that complied, or its wording led the
+reviewer or the check astray.
 
 ## Compilation and the site
 
