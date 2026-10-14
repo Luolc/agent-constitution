@@ -343,13 +343,30 @@ path = "."
 Upgrading is an explicit step that rewrites the lock file and shows the
 diff of every rule whose revision moved, and of every rule a requirement
 brought in or dropped. When the rule set enables a superseded rule, the
-build warns and names its successor. For a rule listed in `rules`, one
-command replaces the old ID with the new one in the rule set; for a rule
-brought in by another, the warning names the rule that brings it in. An
-enabled repealed rule draws a warning too. These are warnings, not
-errors, since the rule set keeps working as it did. Downstream users do not have to
-follow the supersession chain by hand, and nothing changes under them
-until they upgrade.
+build warns and names its successor. For a rule listed in `rules` or a
+pack root in `packs`, one command, `statute upgrade
+--replace-superseded`, replaces the old ID with the new one in the rule
+set; for a rule brought in by another, the warning names the rule that
+brings it in. An enabled repealed rule draws a warning too. These are
+warnings, not errors, since the rule set keeps working as it did.
+Downstream users do not have to follow the supersession chain by hand.
+
+The promise that nothing changes under a rule set until it upgrades
+holds only where the lock file can keep the old version: a git source,
+locked at a commit. A
+source on disk has no old version to keep: the lock file records each
+rule's SHA-256, and once the rule is edited the file it hashed is gone.
+So `lock` reads a source on disk as it is now, as uv does a path
+dependency, and `upgrade` writes the same lock file and shows what
+changed. For the same reason the first version cannot show the text of
+a change: it lists the constitution's revision, each rule whose revision
+or content moved, and each rule brought in, with why, or dropped. The
+text diff waits for git sources, whose old commit can be read. A rule
+whose content changed while its revision did not draws a warning from
+`lock` and a note on its line from `upgrade`, since an edited rule's
+revision goes up by one ([IDs and revisions](#ids-and-revisions)). The
+two cannot tell a changed translation from a changed original, so either
+draws it.
 
 **Bound to one constitution.** A rule set names the constitution it
 rests on: the repository it comes from, the edition and the revision.
@@ -855,9 +872,9 @@ rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
-`remove`, `compile` (the `AGENTS.md` only) and `check` (built-in checks
-for rules 43 and 46, and for 3 and 7, which they supersede), for one source on disk; `upgrade` exits with status 2
-and says it is not implemented yet. Inherited rule sets and path segments are
+`remove`, `upgrade`, `compile` (the `AGENTS.md` only) and `check`
+(built-in checks for rules 43 and 46, and for 3 and 7, which they
+supersede), for one source on disk. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
 another source, in `requires` or `conflicts` (`"team:7"`), are reported
 as not supported yet.
@@ -873,6 +890,17 @@ writing it and writes nothing when that fails. It does not write
 `statute.lock`: with no rule enabled there is nothing to pin, and the
 first `add` writes it, replacing a `statute.lock` already there. An
 existing `statute.toml` is left as it is, and `init` exits with status 1.
+
+**`upgrade`** compares the resolution with `statute.lock`, prints what
+changed ([Rule sets and the lock file](#rule-sets-and-the-lock-file)),
+or that the lock file is up to date, and writes the lock file as `lock`
+does. Without a `statute.lock` there is nothing to compare with, and it
+exits with status 1. With `--replace-superseded` it first replaces, in
+`rules` and `packs`, each superseded rule with its successor, following
+the chain to its end, and keeps the rest of the file as written; when
+the successor is listed already, the old entry is only taken out. A
+repealed rule is left for the user to take out. When the changed rule
+set does not resolve, neither file is changed.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that

@@ -292,12 +292,272 @@ fn remove_that_would_break_the_rule_set_changes_nothing() {
     );
 }
 
+/// Writes a rule file (or the index, for `id` 0) over the one in `dir`.
+fn put(dir: &Path, (id, text): &(u64, String)) {
+    let file = if *id == 0 {
+        "constitution/2026-10/index.toml".to_owned()
+    } else {
+        format!("rules/{id}.toml")
+    };
+    std::fs::write(dir.join(file), text).unwrap();
+}
+
+/// `nodes()` and rule 9, which rule 7 also requires.
+fn upgrade_nodes() -> Vec<(u64, String)> {
+    let mut nodes = nodes();
+    nodes[6] = rule(7, 1, "requires = [4, 9]");
+    nodes.push(rule(9, 1, ""));
+    nodes
+}
+
 #[test]
-fn commands_not_written_yet_exit_2() {
-    let dir = repo("later", &manifest("\"ac:3\""), &nodes());
+fn upgrade_without_a_lock_file_fails() {
+    let dir = repo("upgrade-no-lock", &manifest("\"ac:3\""), &nodes());
     let run = statute(&dir, &["upgrade"]);
-    assert_eq!(run.code, 2);
-    assert_eq!(run.stderr, "statute: this command is not implemented yet\n");
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(
+        run.stderr.contains("statute.lock: error: cannot read: ")
+            && run.stderr.contains("`statute lock` writes it"),
+        "{}",
+        run.stderr
+    );
+    assert!(!dir.join("statute.lock").exists());
+}
+
+#[test]
+fn upgrade_reports_what_changed() {
+    let dir = repo("upgrade", &manifest("\"ac:7\", \"ac:5\""), &upgrade_nodes());
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["upgrade"]);
+    ok(&run);
+    assert_eq!(
+        run.stdout,
+        "statute.lock is up to date\nwrote statute.lock: 3 rules enabled\n"
+    );
+    // Rule 7 moves to revision 2 and requires 2 in place of 9; rule 5
+    // changes without a new revision; the constitution moves to revision 2.
+    put(
+        &dir,
+        &edit(
+            rule(7, 1, "requires = [4, 2]"),
+            "revision = 1",
+            "revision = 2",
+        ),
+    );
+    put(&dir, &edit(rule(5, 4, ""), "Do the thing 5.", "Do it 5."));
+    put(
+        &dir,
+        &(0, INDEX.replace("revision = \"1\"", "revision = \"2\"")),
+    );
+    let run = statute(&dir, &["upgrade"]);
+    ok(&run);
+    assert_eq!(
+        run.stdout,
+        "constitution: revision 1 -> 2\n\
+         brought in: rule 2 (Rule 2), required by 7 (Rule 7)\n\
+         changed: rule 5 (Rule 5): content changed, still revision 1; an edited rule's revision goes up by one\n\
+         changed: rule 7 (Rule 7): revision 1 -> 2\n\
+         dropped: rule 9 (Rule 9)\n\
+         wrote statute.lock: 3 rules enabled\n"
+    );
+    // The lock file is the one `lock` writes.
+    let upgraded = read(&dir, "statute.lock");
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(read(&dir, "statute.lock"), upgraded);
+    assert!(upgraded.contains("revision = \"2\"\n"), "{upgraded}");
+    let run = statute(&dir, &["upgrade"]);
+    assert_eq!(
+        run.stdout,
+        "statute.lock is up to date\nwrote statute.lock: 3 rules enabled\n"
+    );
+}
+
+#[test]
+fn lock_warns_of_a_rule_changed_without_a_new_revision() {
+    let dir = repo(
+        "lock-revision",
+        &manifest("\"ac:7\", \"ac:5\""),
+        &upgrade_nodes(),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert!(!run.stderr.contains("changed since"), "{}", run.stderr);
+    put(&dir, &edit(rule(5, 4, ""), "Do the thing 5.", "Do it 5."));
+    put(
+        &dir,
+        &edit(
+            edit(
+                rule(7, 1, "requires = [4, 9]"),
+                "revision = 1",
+                "revision = 2",
+            ),
+            "Do the thing 7.",
+            "Do it 7.",
+        ),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(
+        run.stderr,
+        "statute.toml: warning: rule ac:5 (Rule 5) changed since statute.lock and is still at revision 1; an edited rule's revision goes up by one\n"
+    );
+    // Locked again, the change is pinned and the warning gone.
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(run.stderr, "");
+    // Without a lock file there is nothing to compare with.
+    put(
+        &dir,
+        &edit(rule(5, 4, ""), "Do the thing 5.", "Do it again 5."),
+    );
+    std::fs::remove_file(dir.join("statute.lock")).unwrap();
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(run.stderr, "");
+}
+
+/// `nodes()` and rule 10, superseded by 11.
+fn superseded_nodes(eleven: &str) -> Vec<(u64, String)> {
+    let mut nodes = nodes();
+    nodes.push(edit(
+        rule(10, 1, "superseded-by = 11"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    ));
+    nodes.push(rule(11, 1, eleven));
+    nodes
+}
+
+#[test]
+fn upgrade_replaces_a_superseded_rule() {
+    let dir = repo(
+        "upgrade-replace",
+        &manifest("\"ac:10\", \"ac:3\""),
+        &superseded_nodes(""),
+    );
+    ok(&statute(&dir, &["lock"]));
+    // Without the flag, the rule set stays and the warning says what to do.
+    let run = statute(&dir, &["upgrade"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains(
+            "replace ac:10 with ac:11 in `rules` (`statute upgrade --replace-superseded` does it)"
+        ),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:10\", \"ac:3\""));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    ok(&run);
+    assert_eq!(
+        run.stdout,
+        "replaced ac:10 with ac:11 in `rules`\n\
+         brought in: rule 11 (Rule 11), listed in `rules`\n\
+         dropped: rule 10 (Rule 10)\n\
+         wrote statute.lock: 3 rules enabled\n"
+    );
+    assert_eq!(run.stderr, "");
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:11\", \"ac:3\""));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    assert_eq!(
+        run.stdout,
+        "statute.lock is up to date\nwrote statute.lock: 3 rules enabled\n"
+    );
+}
+
+#[test]
+fn upgrade_takes_out_a_superseded_rule_whose_successor_is_listed() {
+    let dir = repo(
+        "upgrade-replace-listed",
+        &manifest("\"ac:3\", \"ac:10\", \"ac:11\""),
+        &superseded_nodes(""),
+    );
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    ok(&run);
+    assert!(
+        run.stdout.starts_with(
+            "took ac:10 out of `rules`: superseded by ac:11, which it lists already\n"
+        ),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:3\", \"ac:11\""));
+}
+
+#[test]
+fn upgrade_replaces_two_rules_with_one_successor_once() {
+    let mut nodes = superseded_nodes("");
+    nodes.push(edit(
+        rule(12, 1, "superseded-by = 11"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    ));
+    let dir = repo(
+        "upgrade-replace-two",
+        &manifest("\"ac:10\", \"ac:3\", \"ac:12\""),
+        &nodes,
+    );
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    ok(&run);
+    assert!(
+        run.stdout.starts_with(
+            "took ac:10 out of `rules`: superseded by ac:11, which it lists already\n\
+             replaced ac:12 with ac:11 in `rules`\n"
+        ),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:3\", \"ac:11\""));
+}
+
+#[test]
+fn upgrade_replaces_a_superseded_pack_root() {
+    let text = manifest("").replace("\n\n[sources]", "\npacks = [\"ac:10\"]\n\n[sources]");
+    let mut nodes = superseded_nodes("");
+    nodes.push(rule(12, 11, ""));
+    let dir = repo("upgrade-replace-pack", &text, &nodes);
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    ok(&run);
+    assert!(
+        run.stdout
+            .starts_with("replaced ac:10 with ac:11 in `packs`\n"),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(
+        read(&dir, "statute.toml"),
+        text.replace("\"ac:10\"", "\"ac:11\"")
+    );
+    let lock = read(&dir, "statute.lock");
+    assert!(
+        lock.contains("id = 11\n") && lock.contains("id = 12\n"),
+        "{lock}"
+    );
+}
+
+#[test]
+fn upgrade_that_would_break_the_rule_set_changes_nothing() {
+    let dir = repo(
+        "upgrade-replace-breaks",
+        &manifest("\"ac:10\", \"ac:3\""),
+        &superseded_nodes("conflicts = [3]"),
+    );
+    ok(&statute(&dir, &["lock"]));
+    let lock = read(&dir, "statute.lock");
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(run.stderr.contains("conflict"), "{}", run.stderr);
+    assert!(
+        run.stderr
+            .contains("statute.toml and statute.lock are left unchanged"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:10\", \"ac:3\""));
+    assert_eq!(read(&dir, "statute.lock"), lock);
 }
 
 /// A repository with a source but no rule set yet.
@@ -390,6 +650,33 @@ fn init_picks_the_edition() {
     assert!(!dir.join("statute.toml").exists());
     ok(&statute(&dir, &["init", "--edition", "2027-04"]));
     assert!(read(&dir, "statute.toml").contains("edition = \"2027-04\""));
+}
+
+#[cfg(unix)]
+#[test]
+fn init_reports_an_edition_it_cannot_read() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = bare_repo("init-unreadable");
+    let locked = dir.join("constitution/2027-04");
+    std::fs::create_dir_all(&locked).unwrap();
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000)).unwrap();
+    let blocked = std::fs::metadata(locked.join("index.toml"))
+        .is_err_and(|e| e.kind() == std::io::ErrorKind::PermissionDenied);
+    let run = statute(&dir, &["init"]);
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755)).unwrap();
+    // Run as root, the permission does not block, and there is nothing to
+    // report.
+    if !blocked {
+        return;
+    }
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(
+        run.stderr
+            .contains("constitution/2027-04/index.toml: error: cannot read: "),
+        "{}",
+        run.stderr
+    );
+    assert!(!dir.join("statute.toml").exists());
 }
 
 #[test]

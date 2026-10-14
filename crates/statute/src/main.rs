@@ -7,7 +7,7 @@ use toml_edit::{Array, DocumentMut, Item, Value};
 use statute::diag::Diagnostics;
 use statute::lock;
 use statute::manifest::{self, Manifest};
-use statute::node::{Id, Kind, id_from_file_name};
+use statute::node::{Id, Kind, Status, id_from_file_name};
 use statute::project::Project;
 use statute::resolve::{Reason, label};
 
@@ -69,15 +69,18 @@ enum Command {
         #[arg(long)]
         base: Option<String>,
     },
-    /// Move the sources and the constitution to newer versions (not
-    /// implemented yet).
-    Upgrade,
+    /// Resolve statute.toml again, say how the result differs from
+    /// statute.lock, and write statute.lock.
+    Upgrade {
+        /// Replace each superseded rule or pack root in statute.toml with
+        /// the rule that supersedes it.
+        #[arg(long)]
+        replace_superseded: bool,
+    },
 }
 
 /// Exit status when the rule set, the source or the arguments are wrong.
 const FAILED: u8 = 1;
-/// Exit status of a command that does not exist yet.
-const NOT_IMPLEMENTED: u8 = 2;
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
@@ -90,10 +93,7 @@ fn main() -> ExitCode {
         Command::Compile { output } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
         Command::Init { source, edition } => init(root, &source, edition),
-        Command::Upgrade => {
-            eprintln!("statute: this command is not implemented yet");
-            return ExitCode::from(NOT_IMPLEMENTED);
-        }
+        Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -261,11 +261,24 @@ fn only_edition(dir: &Path, source: &str) -> Result<String, ()> {
     let entries = std::fs::read_dir(dir.join("constitution")).map_err(|e| {
         eprintln!("{}: error: cannot read the directory: {e}", shown.display());
     })?;
-    let mut editions: Vec<String> = entries
-        .filter_map(Result::ok)
-        .filter(|e| e.path().join("index.toml").is_file())
-        .filter_map(|e| e.file_name().into_string().ok())
-        .collect();
+    let mut editions = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(|e| {
+            eprintln!("{}: error: cannot read the directory: {e}", shown.display());
+        })?;
+        let index = entry.path().join("index.toml");
+        match index.try_exists() {
+            Ok(true) => editions.extend(entry.file_name().into_string().ok()),
+            Ok(false) => {}
+            Err(e) => {
+                eprintln!(
+                    "{}: error: cannot read: {e}",
+                    shown.join(entry.file_name()).join("index.toml").display()
+                );
+                return Err(());
+            }
+        }
+    }
     editions.sort();
     match editions.as_slice() {
         [edition] => Ok(edition.clone()),
@@ -289,7 +302,244 @@ fn only_edition(dir: &Path, source: &str) -> Result<String, ()> {
 
 fn lock_command(root: &Path) -> Result<(), ()> {
     let project = load(root)?;
+    // A lock file that cannot be read has nothing to compare with.
+    if let Some(old) = std::fs::read_to_string(root.join(lock::FILE))
+        .ok()
+        .and_then(|text| lock::read(&text).ok())
+    {
+        let name = &project.manifest.source.name;
+        for (id, revision) in same_revision_new_content(&old, &project) {
+            eprintln!(
+                "{}: warning: rule {name}:{} changed since {} and is still at revision {revision}; {}",
+                manifest::FILE,
+                label(&project.source, id),
+                lock::FILE,
+                RAISE_REVISION
+            );
+        }
+    }
     write_lock(root, &project)
+}
+
+/// What to do about a rule edited without a new revision
+/// (`docs/design/rule-system.md`, IDs and revisions).
+const RAISE_REVISION: &str = "an edited rule's revision goes up by one";
+
+/// The enabled rules whose file differs from the one `old` locked while
+/// the revision is the same, each with that revision.
+fn same_revision_new_content(old: &lock::Locked, project: &Project) -> Vec<(Id, u64)> {
+    lock::current(project)
+        .rules
+        .into_iter()
+        .filter_map(|(id, (revision, sha256))| match old.rules.get(&id) {
+            Some((was, before)) if *was == revision && *before != sha256 => Some((id, revision)),
+            _ => None,
+        })
+        .collect()
+}
+
+/// `upgrade`: resolves the rule set as `lock` does, after replacing
+/// superseded rules when asked, prints what changed against the lock file,
+/// and writes the lock file (and the rule set, when it changed).
+fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
+    let old = match std::fs::read_to_string(root.join(lock::FILE)) {
+        Ok(text) => lock::read(&text).map_err(|e| {
+            eprintln!("{}: error: {e}", lock::FILE);
+        })?,
+        Err(e) => {
+            eprintln!(
+                "{}: error: cannot read: {e}; `statute lock` writes it",
+                lock::FILE
+            );
+            return Err(());
+        }
+    };
+    let (project, diags) = Project::load(root);
+    let Some(project) = project else {
+        print(&diags);
+        return Err(());
+    };
+    let replaced = if replace_superseded {
+        replace(root, &project)?
+    } else {
+        None
+    };
+    let project = match replaced {
+        Some((original, changed, lines)) => {
+            let (next, diags) = Project::with_manifest(root, &changed);
+            print(&diags);
+            let Some(next) = next else {
+                eprintln!(
+                    "statute: {} and {} are left unchanged",
+                    manifest::FILE,
+                    lock::FILE
+                );
+                return Err(());
+            };
+            for line in lines {
+                println!("{line}");
+            }
+            report_changes(&old, &next);
+            write_both(root, &original, &changed, &next)?;
+            print_locked(&next);
+            return Ok(());
+        }
+        None => {
+            print(&diags);
+            project
+        }
+    };
+    report_changes(&old, &project);
+    write_lock(root, &project)
+}
+
+/// Prints how `project` differs from the lock file `old`.
+fn report_changes(old: &lock::Locked, project: &Project) {
+    let new = lock::current(project);
+    let source = &project.source;
+    let mut any = false;
+    let mut line = |text: String| {
+        any = true;
+        println!("{text}");
+    };
+    if old.edition != new.edition {
+        line(format!(
+            "constitution: edition {} -> {}",
+            old.edition, new.edition
+        ));
+    }
+    if old.revision != new.revision {
+        line(format!(
+            "constitution: revision {} -> {}",
+            old.revision, new.revision
+        ));
+    }
+    for (id, (revision, sha256)) in &new.rules {
+        match old.rules.get(id) {
+            Some((was, _)) if was != revision => line(format!(
+                "changed: rule {}: revision {was} -> {revision}",
+                label(source, *id)
+            )),
+            Some((_, was)) if was != sha256 => line(format!(
+                "changed: rule {}: content changed, still revision {revision}; {RAISE_REVISION}",
+                label(source, *id)
+            )),
+            Some(_) => {}
+            None => line(format!(
+                "brought in: rule {}, {}",
+                label(source, *id),
+                why(project, *id)
+            )),
+        }
+    }
+    for id in old.rules.keys().filter(|id| !new.rules.contains_key(id)) {
+        line(format!("dropped: rule {}", label(source, *id)));
+    }
+    if !any {
+        println!("{} is up to date", lock::FILE);
+    }
+}
+
+/// The reasons `id` is enabled, one step down the chain `explain` follows.
+fn why(project: &Project, id: Id) -> String {
+    let source = &project.source;
+    let reasons = project.resolution.enabled.get(&id);
+    reasons
+        .into_iter()
+        .flatten()
+        .map(|r| match *r {
+            Reason::Direct => "listed in `rules`".to_owned(),
+            Reason::Pack(root) => format!("in pack {}", label(source, root)),
+            Reason::ParentOf(c) => format!("the parent of {}", label(source, c)),
+            Reason::RequiredBy(b) => format!("required by {}", label(source, b)),
+        })
+        .collect::<Vec<_>>()
+        .join("; ")
+}
+
+/// The rule that takes the place of superseded `id`, following the chain
+/// to its end; `None` when `id` is not superseded.
+fn successor(project: &Project, id: Id) -> Option<Id> {
+    let mut seen = vec![id];
+    let mut at = id;
+    while let Some(node) = project.source.get(at)
+        && node.status == Status::Superseded
+        && let Some(next) = node.superseded_by
+        && !seen.contains(&next)
+    {
+        seen.push(next);
+        at = next;
+    }
+    (at != id).then_some(at)
+}
+
+/// The rule set with each superseded entry of `rules` and `packs` replaced
+/// by its successor, or taken out when the successor is listed already:
+/// the original text, the changed one and a line per replacement. `None`
+/// when nothing is superseded.
+fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec<String>)>, ()> {
+    let original = std::fs::read_to_string(root.join(manifest::FILE)).map_err(|e| {
+        eprintln!("{}: error: cannot read: {e}", manifest::FILE);
+    })?;
+    let mut doc: DocumentMut = original
+        .parse()
+        .map_err(|e| eprintln!("{}: error: {e}", manifest::FILE))?;
+    let name = &project.manifest.source.name;
+    let mut lines = Vec::new();
+    for field in ["rules", "packs"] {
+        let Some(list) = doc.get_mut(field).and_then(Item::as_array_mut) else {
+            continue;
+        };
+        // Manifest::parse has already checked that each entry is
+        // `<source>:<id>` with the one source.
+        let ids: Vec<Option<Id>> = list
+            .iter()
+            .map(|v| {
+                v.as_str()
+                    .and_then(|s| s.split_once(':'))
+                    .and_then(|(_, n)| id_from_file_name(&format!("{n}.toml")))
+            })
+            .collect();
+        // The IDs listed once this pass is done, so that two rules with
+        // one successor do not both become it.
+        let mut listed = ids.clone();
+        for i in (0..ids.len()).rev() {
+            let Some(old) = ids[i] else { continue };
+            let Some(new) = successor(project, old) else {
+                continue;
+            };
+            if listed.contains(&Some(new)) {
+                let removed = list.remove(i);
+                // The next entry takes the place of the first, spacing
+                // included.
+                if i == 0
+                    && let (Some(prefix), Some(first)) =
+                        (removed.decor().prefix().cloned(), list.get_mut(0))
+                {
+                    first.decor_mut().set_prefix(prefix);
+                }
+                lines.push(format!(
+                    "took {name}:{old} out of `{field}`: superseded by {name}:{new}, which it lists already"
+                ));
+            } else {
+                let decor = list.get(i).map(|v| v.decor().clone());
+                list.replace(i, format!("{name}:{new}"));
+                listed.push(Some(new));
+                if let (Some(decor), Some(v)) = (decor, list.get_mut(i)) {
+                    *v.decor_mut() = decor;
+                }
+                lines.push(format!(
+                    "replaced {name}:{old} with {name}:{new} in `{field}`"
+                ));
+            }
+        }
+    }
+    if lines.is_empty() {
+        return Ok(None);
+    }
+    lines.reverse();
+    let changed = doc.to_string();
+    Ok(Some((original, changed, lines)))
 }
 
 /// The ID a command-line reference names: `42`, or `<source>:42` with the
