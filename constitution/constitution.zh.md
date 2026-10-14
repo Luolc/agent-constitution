@@ -43,7 +43,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="legal-form.special-law"></a>(**三**) 本宪法明确排除「特别法优于一般法」(*lex specialis derogat legi generali*)，因为更具体的文本可能是越权的下位法；合法的细化已由[第八条第三款][lower-layers]规定。
 -   <a id="equal-languages"></a>**第六款**<sup class="omitted">*</sup> 本宪法目前有中文本和英文本：
     -   <a id="equal-languages.standing"></a>(**一**) 各语言文本同等有效。
-    -   <a id="equal-languages.adding"></a>(**二**) 增加或者删除一种语言，是对本宪法的修改。
+    -   <a id="equal-languages.language-changes"></a>(**二**) 增加或者删除一种语言，是对本宪法的修改。
     -   <a id="equal-languages.differences"></a>(**三**) 各语言文本的意思不一致时，该条文按「未定」处理 ([第八条第六款][undetermined])，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为何不译，只写在该语言的文本里，不算各语言文本意思不一致。
 -   <a id="inapplicable-provisions"></a>**第七款** 某一条文在个案中无法适用时，例如运行环境禁止 ([第八条第一款][highest-layer])，本宪法的其余部分照常适用，该条文也在仍能适用的范围内继续适用。
 -   <a id="amending"></a>**第八款**<sup class="omitted">*</sup> 本宪法只能以修正案修改 ([第十一条][amendment-procedure])。

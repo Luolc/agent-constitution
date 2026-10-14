@@ -43,7 +43,7 @@ As they evolve, instruction files for agents, such as AGENTS.md, tend to grow lo
     -   <a id="legal-form.special-law"></a>(**3**) This text expressly excludes the maxim that special law prevails over general law (*lex specialis derogat legi generali*), since a more specific text may be a lower-ranking provision exceeding its authority; lawful refinement is already provided for by [Art. VIII §3][lower-layers].
 -   <a id="equal-languages"></a>**§6**<sup class="omitted">*</sup> This constitution currently has English and Chinese texts:
     -   <a id="equal-languages.standing"></a>(**1**) The texts in all languages are equally authoritative.
-    -   <a id="equal-languages.adding"></a>(**2**) Adding or removing a language is an amendment to this constitution.
+    -   <a id="equal-languages.language-changes"></a>(**2**) Adding or removing a language is an amendment to this constitution.
     -   <a id="equal-languages.differences"></a>(**3**) Where the texts differ in meaning, the provision is undetermined ([Art. VIII §6][undetermined]) until they agree again; no text prevails. A note on how a word is translated or used in one language only, such as why a word is left untranslated, is written in that language's text alone and is no difference in meaning between the texts.
 -   <a id="inapplicable-provisions"></a>**§7** If a provision cannot apply in a case, for example because the runtime forbids it ([Art. VIII §1][highest-layer]), the rest of this text still applies, and so does that provision as far as it can.
 -   <a id="amending"></a>**§8**<sup class="omitted">*</sup> This text changes only by amendment ([Art. XI][amendment-procedure]).

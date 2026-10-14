@@ -24,7 +24,7 @@ zh = '''
 '''
 
 [[items]]
-id = "adding"
+id = "language-changes"
 number = "2"
 status = "draft"
 
