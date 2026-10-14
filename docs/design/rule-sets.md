@@ -148,7 +148,7 @@ whose original changed while its revision did not draws a warning from
 revision goes up by one ([IDs and revisions](rule-format.md#ids-and-revisions)).
 They compare the rule without its translations: the rule as TOML, less
 `[translations]` and the text in every language but the original,
-written as JSON with its keys in order and hashed with SHA-256, so
+written as JSON with its keys sorted and hashed with SHA-256, so
 that a change to the original or to any other field counts, and a change
 to a translation or to the file's layout alone does not. A rule whose
 translations changed and nothing else draws no warning, and `upgrade`
