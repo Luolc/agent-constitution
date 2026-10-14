@@ -1,0 +1,17 @@
+[project]
+name = "constitution-site"
+version = "0.1.0"
+description = "Token count and link check for the static site Hugo builds"
+requires-python = ">=3.14"
+dependencies = ["constitution-compiler"]
+
+[project.scripts]
+count-tokens = "constitution_site.count_tokens:main"
+check-site-anchors = "constitution_site.check_site_anchors:main"
+
+[tool.uv.sources]
+constitution-compiler = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"

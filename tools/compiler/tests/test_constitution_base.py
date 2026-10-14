@@ -5,14 +5,14 @@ They run on a temporary git repository against a base commit.
 
 import contextlib
 import io
+import os
+from pathlib import Path
 import re
 import subprocess
+import tempfile
 import unittest
+from unittest import mock
 
-import build_constitution as bc
-import constitution_base as cb
-import constitution_sources as cs
-import git_env
 from test_constitution_fixture import (
   A,
   B,
@@ -21,6 +21,11 @@ from test_constitution_fixture import (
   SECTIONS,
   Tree,
 )
+
+from constitution_compiler import base as cb
+from constitution_compiler import build as bc
+from constitution_compiler import git_env
+from constitution_compiler import sources as cs
 
 
 class BaseTest(Tree):
@@ -579,6 +584,55 @@ class BaseTest(Tree):
         "constitution/index.toml:1: check 7: base `no-such-ref` is not a commit"
       ],
     )
+
+
+class HookEnvironment(unittest.TestCase):
+  """The tests and check 7 leave the repository of a git hook alone.
+
+  They run from a git hook, which in a worktree sets GIT_DIR and
+  GIT_INDEX_FILE to the worktree's; they must leave its repository alone.
+  One test that runs check 7 covers its git calls and its test helper's.
+  """
+
+  def test_repository_of_the_hook_untouched(self):
+    tmp = tempfile.TemporaryDirectory()
+    self.addCleanup(tmp.cleanup)
+    outer = Path(tmp.name)
+    for args in (
+      ["init", "-q", "main"],
+      ["-C", "main", "commit", "-q", "--allow-empty", "-m", "x"],
+      ["-C", "main", "worktree", "add", "-q", "../wt"],
+    ):
+      subprocess.run(
+        [
+          "git",
+          "-C",
+          str(outer),
+          "-c",
+          "user.name=Test",
+          "-c",
+          "user.email=test@example.test",
+          *args,
+        ],
+        check=True,
+        capture_output=True,
+        env=git_env.clean(),
+      )
+    gitdir = outer / "main/.git/worktrees/wt"
+    config, index = (
+      (outer / "main/.git/config").read_bytes(),
+      (gitdir / "index").read_bytes(),
+    )
+    result = unittest.TestResult()
+    with mock.patch.dict(
+      os.environ,
+      {"GIT_DIR": str(gitdir), "GIT_INDEX_FILE": str(gitdir / "index")},
+    ):
+      BaseTest("test_main_runs_check_with_base").run(result)
+    self.assertEqual((outer / "main/.git/config").read_bytes(), config)
+    self.assertEqual((gitdir / "index").read_bytes(), index)
+    self.assertTrue(result.wasSuccessful(), result.errors + result.failures)
+    self.assertEqual(result.testsRun, 1)
 
 
 if __name__ == "__main__":

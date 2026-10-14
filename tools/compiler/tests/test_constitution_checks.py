@@ -6,14 +6,10 @@ Each check fails on a broken tree and passes on its control.
 import contextlib
 import io
 import os
-from pathlib import Path
 import subprocess
 import sys
 import unittest
 
-import build_constitution as bc
-import constitution_checks as cc
-import constitution_sources as cs
 from test_constitution_fixture import (
   A,
   ALPHA_ONE,
@@ -23,6 +19,10 @@ from test_constitution_fixture import (
   RULE,
   Tree,
 )
+
+from constitution_compiler import build as bc
+from constitution_compiler import checks as cc
+from constitution_compiler import sources as cs
 
 
 class CheckTest(Tree):
@@ -53,10 +53,16 @@ class CheckTest(Tree):
       'status = "draft"',
       'zeta = 1\nalpha = 2\nstatus = "draft"',
     )
-    script = Path(__file__).with_name("build_constitution.py")
     runs = {
       subprocess.run(
-        [sys.executable, str(script), "--root", str(self.root), "--check"],
+        [
+          sys.executable,
+          "-m",
+          "constitution_compiler.build",
+          "--root",
+          str(self.root),
+          "--check",
+        ],
         capture_output=True,
         text=True,
         env=os.environ | {"PYTHONHASHSEED": str(seed)},
@@ -482,7 +488,7 @@ class CheckTest(Tree):
       errors,
       [
         "constitution/constitution.en.md:12: check 6: differs from a"
-        " fresh build; run `uv run tools/build_constitution.py`"
+        " fresh build; run `uv run constitution-build`"
       ],
     )
     with contextlib.redirect_stderr(io.StringIO()):

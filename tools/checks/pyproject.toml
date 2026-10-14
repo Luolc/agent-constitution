@@ -1,0 +1,14 @@
+[project]
+name = "repo-checks"
+version = "0.1.0"
+description = "Checks this repo's CI runs on its own changes"
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+check-instruction-changes = "repo_checks.check_instruction_changes:main"
+lint-zh-sources = "repo_checks.lint_zh_sources:main"
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"

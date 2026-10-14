@@ -5,7 +5,8 @@ import re
 import subprocess
 import tomllib
 
-from constitution_sources import (
+from constitution_compiler import git_env
+from constitution_compiler.sources import (
   ARTICLE_FILE,
   ARTICLE_NAME,
   ARTICLES,
@@ -18,7 +19,6 @@ from constitution_sources import (
   SECTION_NAME,
   Sources,
 )
-import git_env
 
 # Check 7: numbering against a base commit.
 
