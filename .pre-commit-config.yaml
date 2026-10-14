@@ -1,7 +1,7 @@
 # Commit hooks: secret scan, lock check, Python lint, format, docstring
-# and type checks, constitution build check and its tests, the design
-# translation check, and limae on the Chinese text in the sources and on
-# every Markdown file of the repo.
+# and type checks, Rust format check, constitution build check and its
+# tests, the design translation check, and limae on the Chinese text in
+# the sources and on every Markdown file of the repo.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the commits of each PR or push, and gitleaks.yml the full history
@@ -54,6 +54,14 @@ repos:
         entry: uv run --frozen --no-sync basedpyright
         language: system
         files: ^(tools/.*\.(py|toml)|pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+      # Formatting of the Rust workspace under crates/, with the toolchain
+      # of rust-toolchain.toml. Lint and tests take longer and run in CI.
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --check
+        language: system
+        files: ^(crates/.*\.rs|(.*/)?Cargo\.toml|rust-toolchain\.toml)$
         pass_filenames: false
       # The constitution build: --check validates the sources (the
       # constitution and the rules) and requires the committed outputs to
