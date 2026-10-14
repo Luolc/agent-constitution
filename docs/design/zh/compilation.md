@@ -1,0 +1,27 @@
+<!-- en-sha256: 8209c2f014e00a7acc3a83b68f9c4461db34eca1c906d11224c9ca8bb6038852 -->
+# 编译
+
+输入：本仓的一个固定版本 (一个 tag，并核对它的提交 SHA) 和一个 overlay 目录。语言由 overlay 选定。编译器从该语言的 agent 版 `constitution.<lang>.agent.md` 取宪法 (不读宪法的源文件)，并取每条规定在该语言里的文字块。输出：一个文件，由 overlay 安装为用户级的指令文件 (家目录里的一个文件，三种 harness 都通过软链读它)，外加一份构建 manifest。此外没有别的输出。
+
+overlay 的目录结构：
+
+```text
+overlay.toml       core version, language, rules left out, output path,
+                   size budget
+params.toml        parameter values
+rules/<id>.toml    private rules
+skills/<name>/     private skills
+```
+
+编译器做的是确定性的拼接，不调用模型：
+
+1. 校验每一项输入 (schema、引用)；遇到第一类错误就停下，把这一类错误全部打印出来。
+2. 输出一段纯文本的文件头，不用 HTML 注释：这是生成文件，不要编辑，改源文件；核心版本、宪法修订号，以及输入摘要 (把每项输入的哈希排序成列表，再取它的 SHA-256)。
+3. 输出宪法，然后输出生效的规定 (核心和 overlay 的规定，减去 overlay 不用的那些)，按各条规定第一个 `authority` 所在的条分组，组内按 ID 排序。参数在这一步代入。
+4. 每一条和每条规定之前，输出一行写着其 ID 的来源注释，例如 `<!-- constitution:authority -->`，这样输出中的任何一段都能追溯到它的文件。
+5. 检查结果是否超出 `overlay.toml` 里的长度预算 (核心设有一个上限，overlay 不能调高)。超出就构建失败，不会悄悄丢掉任何内容。
+6. 写出输出和 manifest：每个输入文件的 SHA-256 (按路径排序)、核心版本和提交、编译器版本 (就是核心版本，因为编译器就在本仓)、宪法修订号、语言、不用的规定、输入摘要、输出摘要和大小。不带时间戳；同样的输入得到逐字节相同的输出。
+
+角色：所有人共用一份输出。核心里没有分角色的段落。overlay 以一条私有规定的形式提供一两句话，告诉 agent 怎样判断自己是在 fleet 下运行还是用别的工作方式，以及那种工作方式要读哪个 skill (如果有的话)。
+
+私有一侧目前计划的接法 (内容怎样安装还没有定)：overlay 的 apply 步骤拉取固定的核心版本，核对 tag 和提交，运行编译器，运行需要私有输入的检查程序 (私有词扫描)，安装输出和 skill，然后做加载验证。真实的输出从不提交到本仓。
