@@ -1,0 +1,46 @@
+id = 58
+slug = "release-first-green-commit"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["discriminating-checks", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Release only a commit whose CI on the main branch passed on the first attempt"
+zh = "只发布在主分支上 CI 第一次就通过的 commit"
+
+[text.statement]
+en = "Release only a commit whose CI run for its push to the main branch succeeded on its first attempt."
+zh = "只发布这样的 commit：它推送到主分支时触发的 CI run，第一次运行就成功。"
+
+[text.reason]
+en = '''
+A run that passed only when run again may have passed with whatever made it fail the first time still there, so its success does not show that the commit is sound ({@constitution:discriminating-checks}). Whether a release goes ahead at all is decided by {@rule:32}; this rule decides which commit it may be, from the result as actually looked up ({@constitution:evidence.facts}).
+'''
+zh = '''
+重跑一次才通过的 run，重跑时让它第一次失败的原因可能仍然存在，所以它的成功不能证明这个 commit 没有问题 ({@constitution:discriminating-checks})。要不要发布由 {@rule:32} 决定；本规定决定可以发布哪一个 commit，依据是实际查到的结果 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+What counts as a release is set by {@rule:32}. The run in question is the one that the push of the commit to the main branch started, of the workflow whose result the repository takes as CI's verdict on a commit (where a pull request must pass a check, the workflow that holds that check). Before releasing, the agent looks up that run and its attempt number: it complies when the run concluded in success on attempt 1. When there is no such run, the run was cancelled, it did not succeed, or its attempt number is above 1, the agent does not release that commit; it waits while the run has not finished, or releases a later commit of the main branch that complies. Running CI again at release time does not replace that run.
+
+Where no CI runs on pushes to the main branch, this rule asks nothing.
+
+Violated when an agent releases a commit whose run does not meet the condition above.
+'''
+zh = '''
+什么算发布由 {@rule:32} 规定。这里说的 run，是该 commit 推送到主分支时启动的那次 run，所属的 workflow 是仓库用来判定一个 commit 的 CI 结论的那个 (pull request 必须通过某项检查的，就是含有这项检查的 workflow)。发布之前，agent 查这次 run 及其 attempt 编号：run 在第 1 次 attempt 就以成功结束的，合规。没有这次 run、run 被取消、没有成功，或者 attempt 编号大于 1 的，agent 不发布这个 commit：run 还没跑完的就等，或者改为发布主分支上之后一个合规的 commit。发布时重跑 CI 不能代替这次 run。
+
+主分支的推送不触发 CI 的，本规定不作要求。
+
+agent 发布的 commit，其 run 不满足上述条件的，即为违反本规定。
+'''
+
+[translations]
+zh = "537c0b1e6f871db7922d6144ff9bf7c4d66de18f9c884b3d57d41eb21e26c0e0"
