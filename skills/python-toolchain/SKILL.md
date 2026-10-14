@@ -38,19 +38,31 @@ they are.
 3. CI installs the environment from the lock, then runs the same hooks:
    `uv sync --locked` (in a uv workspace `uv sync --locked
    --all-packages`) on every run, then `pre-commit run --all-files`.
-   `--locked` fails when the lock is stale. Pin the runner image and the actions as the
-   repo does for its other workflows.
+   `--locked` fails when the lock is stale. Pin the runner to a fixed
+   image (not `-latest`) and the actions by commit SHA, as the repo's
+   other workflows do.
 
 4. Several Python projects in one repo: make them one uv workspace with
    the dev tools in the workspace root, so the whole repo has one version
    of each tool. A project that really needs other tool versions, and so
-   is not a workspace member, gets its own set of hooks with
-   `entry: uv run --project <dir> --frozen --no-sync <tool> ...` and
-   `files:` limited to `<dir>`; write down why in the repo's `AGENTS.md`.
+   is not a workspace member, is set up as a second project beside the
+   first; write down why in the repo's `AGENTS.md`. It gets:
+
+   - its own Python hooks, `entry: uv run --project <dir> --frozen
+     --no-sync <tool> ...` with `files: ^<dir>/`;
+   - its own `uv-lock` hook, `args: [--project, <dir>]` with
+     `files: ^<dir>/(pyproject\.toml|uv\.lock)$`;
+   - `exclude: ^<dir>/` on the root's hooks, so the two sets of tools do
+     not both check its files. A root hook that checks the whole tree
+     rather than the file names it is given (basedpyright with
+     `pass_filenames: false`) ignores `exclude:`; leave `<dir>` out in
+     that tool's own configuration as well, for basedpyright `exclude`
+     under `[tool.basedpyright]`;
+   - its own `uv sync --locked --project <dir>` in CI.
 
 The first time in a fresh clone, run `uv sync` (`--all-packages` in a
-workspace) before the hooks: with `--no-sync` they do not create the
-environment.
+workspace, and `uv sync --project <dir>` for a separate project) before
+the hooks: with `--no-sync` they do not create the environment.
 
 ## Templates
 
@@ -83,12 +95,12 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: uv run --frozen --no-sync ruff check
+        entry: uv run --frozen --no-sync ruff check --force-exclude
         language: system
         types_or: [python, pyi]
       - id: ruff-format
         name: ruff format
-        entry: uv run --frozen --no-sync ruff format --check
+        entry: uv run --frozen --no-sync ruff format --check --force-exclude
         language: system
         types_or: [python, pyi]
       - id: pydoclint
@@ -103,6 +115,9 @@ repos:
         types_or: [python, pyi]
         pass_filenames: false
 ```
+
+`--force-exclude` keeps ruff's `exclude` settings in force for the file
+names that pre-commit passes; without it ruff checks them anyway.
 
 The `uv-lock` hook's default `files:` matches only the root
 `pyproject.toml`, `uv.toml` and `uv.lock`. In a workspace, widen it so a
