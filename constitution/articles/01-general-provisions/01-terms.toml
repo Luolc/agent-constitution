@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-**Agent**: an AI agent bound by this constitution, whatever its role ({@role-definitions}).
+**Agent**: an AI agent bound by this constitution, whatever its role.
 '''
 zh = '''
-**agent**：受本宪法约束的 AI agent，不论担任什么角色 ({@role-definitions})。中文本里 agent 一律保留原文，不译作「代理」或「智能体」；「代理」在中文技术语境里容易与 proxy 混淆。
+**agent**：受本宪法约束的 AI agent，不论担任什么角色。中文本里 agent 一律保留原文，不译作「代理」或「智能体」；「代理」在中文技术语境里容易与 proxy 混淆。
 '''
 
 [[items]]
