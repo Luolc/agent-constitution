@@ -19,7 +19,7 @@ en = '''
 Amendments to the edition in force, and opening a new edition ({@approving-amendments}); the yes covers the exact text that is to take effect.
 '''
 zh = '''
-对现行版的修正案，以及开新的一版 ({@approving-amendments})；同意针对的是将要生效的那份文本。
+对现行版的修正案，以及制定新的一版 ({@approving-amendments})；同意针对的是将要生效的那份文本。
 '''
 
 [[items]]
@@ -71,7 +71,7 @@ en = '''
 Means of production: creating, destroying or reconfiguring the resources the work is carried out with, such as machines and running services.
 '''
 zh = '''
-生产资料 (means of production)：创建、销毁或者重新配置用来开展工作的资源，比如机器和运行中的服务。
+生产资料 (means of production)：创建、销毁或者重新配置用来开展工作的资源，例如机器和运行中的服务。
 '''
 
 [[items]]
