@@ -10,9 +10,9 @@ and the like) into pre-commit and CI so that each tool's version is
 written in one place, the repo's `uv.lock`, and the hooks never change the
 environment behind your back.
 
-Scope: the Python checks only. Hooks for other files (secret scanners,
-Markdown linters, prettier and other hooks from external repos) stay as
-they are.
+Scope: the Python checks, and (point 5) how Python scripts are run.
+Hooks for other files (secret scanners, Markdown linters, prettier and
+other hooks from external repos) stay as they are.
 
 ## The setup
 
@@ -70,6 +70,12 @@ they are.
      that tool's own configuration as well, for basedpyright `exclude`
      under `[tool.basedpyright]`;
    - its own `uv sync --locked --project <dir>` in CI.
+
+5. Call scripts with `uv run <path>`. Do not give a Python script a
+   shebang such as `#!/usr/bin/env python3` or the executable bit: with
+   them `./script.py` runs outside uv's environment. When you move a repo
+   to this setup, check for both and remove them (`.py` files with a
+   shebang, or mode 100755 in `git ls-files -s`).
 
 The first time in a fresh clone, run `uv sync` (`--all-packages` in a
 workspace, and `uv sync --project <dir>` for a separate project) before
@@ -148,7 +154,7 @@ jobs:
     steps:
       - uses: actions/checkout@<sha> # <version>
       - uses: astral-sh/setup-uv@<sha> # <version>
-      - run: uv sync --locked
+      - run: uv sync --locked # in a uv workspace: --locked --all-packages
       - run: uv run --frozen --no-sync pre-commit run --all-files
 ```
 
@@ -167,11 +173,20 @@ Run these when you set this up or change it, in a clean checkout.
   still creates an empty `.venv`, so "`.venv` does not exist" is not the
   test; the tool missing from it is. The other arm: the same command
   with `--no-sync` taken out of the hooks passes, and `.venv/bin/<tool>`
-  is there.
+  is there. In a workspace, a bare `uv run` syncs only the root project
+  and what it depends on, so a hook that needs the dependency of a member
+  the root does not depend on fails without `--no-sync` too; use
+  `--all-packages` in place of `--no-sync` for this arm.
 - `uv-lock` takes effect: add a dependency to `pyproject.toml` without
   running `uv lock`. The `uv-lock` hook fails with `files were modified
   by this hook` and `uv.lock` is rewritten; stage it and the next run
   passes.
+- The widened `uv-lock` `files:` takes effect (workspace): with
+  `--all-files` the root `pyproject.toml` is always in the file set, so
+  that run cannot tell. Add a dependency to a member's `pyproject.toml`,
+  change nothing else, and run
+  `pre-commit run uv-lock --files <member>/pyproject.toml`: the widened
+  hook reports `Failed`, the default one `(no files to check)Skipped`.
 
 A trap in the second check: if pre-commit is started with `uv run
 pre-commit ...`, that outer `uv run` syncs `.venv` before any hook runs,
