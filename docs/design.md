@@ -77,7 +77,7 @@ Both languages live in the same source file, as two keys of the same TOML
 table (see Source formats), so one change edits both and a reviewer sees
 them side by side.
 
-The standing of the two texts of the constitution is set by the
+The standing of the constitution's texts in its languages is set by the
 constitution itself (`amendment-languages`,
 `equal-languages`), as drafted; it stays open until a person
 approves that text. The rules follow the same terms. What this repo adds:
@@ -242,7 +242,8 @@ revision that deletes another adds it:
   `decidable-provisions`;
 - revision 0.33: the section `rules-refine`, whose text is now the item
   `division-of-instructions.rules`;
-- revision 0.35: the section `role-definitions`.
+- revision 0.35: the section `role-definitions`;
+- revision 0.36: the section `compliance`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
@@ -1102,20 +1103,20 @@ open.
 - An amendment pull request changes only `constitution/`: the sources and
   the generated files rebuilt from them.
 - Its description opens with the diff of the generated text in the
-  language the person reads, then the same diff in the other language,
+  language the person reads, then the same diff in each other language,
   collapsed. The generated diff is what agents will read,
   numbers included; the person does not need to read the sources.
 - Agent review is finished before the person is asked: CI's constitution
-  check is green, and the reviewer has checked that the two languages say
-  the same thing. A person approving the change approves both texts on the
-  strength of that review.
+  check is green, and the reviewer has checked that the texts in all
+  languages say the same thing. A person approving the change approves the
+  texts in all languages on the strength of that review.
 - The description ends with the open questions, each clear and easy to
   answer and with a recommended answer (`asking`).
 - For an approved edition, the person's yes names the head commit it
   approves, and the merge lands exactly that commit (`independent-review`).
 - `proposing-amendments` asks for the generated diff in the
   language the approving person reads, and `amendment-languages`
-  for both languages to change together; the steps above are how this repo
+  for the texts in all languages to change together; the steps above are how this repo
   meets them. If the head changes afterwards, the person is
   asked again with only the diff since the approved head.
 
