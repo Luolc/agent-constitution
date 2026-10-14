@@ -163,15 +163,58 @@ fn unknown_fields_and_wrong_types_are_errors() {
 }
 
 #[test]
-fn only_rules_and_one_ofs_have_a_parent() {
+fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
+    let under = |id, parent: &str| {
+        edit(
+            domain(id),
+            "lang = \"en\"",
+            &format!("lang = \"en\"\nparent = {parent}"),
+        )
+    };
+    // A subdomain, with a rule and a one-of below it.
+    assert_clean(&load(&[
+        domain(1),
+        under(2, "1"),
+        rule(3, 2, ""),
+        one_of(4, 2),
+    ]));
     assert_error(
-        &load(&[
-            domain(1),
-            edit(domain(2), "lang = \"en\"", "lang = \"en\"\nparent = 1"),
-        ]),
-        "2.toml",
-        "a domain has no parent",
+        &load(&[domain(1), under(2, "1"), under(3, "2")]),
+        "3.toml",
+        "parent 2 is a subdomain already, under 1; domains nest two levels at most, so name a domain with no parent",
     );
+    assert_error(
+        &load(&[domain(1), rule(2, 1, ""), under(3, "2")]),
+        "3.toml",
+        "parent 2 is a rule; a domain's parent is a domain",
+    );
+    assert_error(
+        &load(&[domain(1), one_of(2, 1), under(3, "2")]),
+        "3.toml",
+        "parent 2 is a one-of; a domain's parent is a domain",
+    );
+    // Only a rule's parent may be in another source.
+    assert_clean(&load(&[
+        domain(1),
+        edit(rule(2, 1, ""), "parent = 1", "parent = \"team:7\""),
+    ]));
+    for node in [
+        under(2, "\"team:7\""),
+        edit(one_of(2, 1), "parent = 1", "parent = \"team:7\""),
+    ] {
+        let kind = if node.1.contains("domain") {
+            "domain"
+        } else {
+            "one-of"
+        };
+        assert_error(
+            &load(&[domain(1), node]),
+            "2.toml",
+            &format!(
+                "a {kind}'s `parent` is a node of the same source, written as its number; only a rule's may name a domain of another source"
+            ),
+        );
+    }
     assert_error(
         &load(&[domain(1), edit(rule(2, 1, ""), "parent = 1\n", "")]),
         "2.toml",

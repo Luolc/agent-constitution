@@ -212,14 +212,16 @@ pub fn resolve(
                     .or_default()
                     .insert(Reason::Pack(root.clone()));
             }
-            // Into a one-of, only through the child the rule set chose, or
-            // the child a rule it chose overrides.
+            // Within the pack's source only; into a one-of, only through
+            // the child the rule set chose, or the child a rule it chose
+            // overrides.
             stack.extend(sources.children(&key).into_iter().filter(|c| {
-                node.kind != Kind::OneOf
-                    || manifest
-                        .rules
-                        .iter()
-                        .any(|r| r == c || sources.place(r) == *c)
+                c.source == root.source
+                    && (node.kind != Kind::OneOf
+                        || manifest
+                            .rules
+                            .iter()
+                            .any(|r| r == c || sources.place(r) == *c))
             }));
         }
     }
