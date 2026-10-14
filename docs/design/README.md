@@ -1,9 +1,10 @@
 # agent-constitution design
 
 Status: draft. This is the one design of the repo, in the files listed
-below. The constitution itself is built from `constitution/index.toml`
-and `constitution/articles/` into [English](../../constitution/constitution.en.md)
-and [Chinese](../../constitution/constitution.zh.md); this design cites it
+below. The constitution itself is built from `index.toml` and
+`articles/` in its edition directory, `constitution/2026-10/`, into
+[English](../../constitution/2026-10/generated/constitution.en.md) and
+[Chinese](../../constitution/2026-10/generated/constitution.zh.md); this design cites it
 only by ID (see [Source formats, IDs](source-formats.md#ids)) and never
 restates it.
 

@@ -24,10 +24,11 @@ first one that finds errors, printing all of that one's errors:
 
 1. Format: every TOML file parses; it has exactly the required keys with
    the right types; every text table has exactly the languages of
-   `index.toml`; everything under `constitution/articles/` is an
+   `index.toml`; `constitution/` has exactly one edition directory, a
+   directory holding an `index.toml`; everything under its `articles/` is an
    article's directory, with an article's name and an `article.toml`, and
    everything else in an article's directory is a `.toml` file with a
-   section's name; there is no `constitution/sections/`; `id` equals the
+   section's name; there is no `sections/` beside `articles/`; `id` equals the
    name without its number; `status`, item `number` and `repealed` are
    well formed and agree with each other and with the status of
    `index.toml`; `edition` is a real month `YYYY-MM`. Hidden names
@@ -59,7 +60,9 @@ first one that finds errors, printing all of that one's errors:
    `rules/retired-ids.txt`, and every ID retired at the base is still
    listed. Each error says which it is: an edition not later than the
    base's, gone, renumbered, moved to another article,
-   no longer repealed, no longer retired. A base that is `draft`, has no
+   no longer repealed, no longer retired. The base's files are found in
+   the base's own edition directory, which may have another name than the
+   current one. A base that is `draft`, has no edition directory or no
    article directories yet, or has an earlier `edition` than the current
    one, skips the comparison with a printed note.
 
@@ -69,7 +72,8 @@ first one that finds errors, printing all of that one's errors:
    edition each names, so that renaming the edition a draft prepares does
    not start its revisions again, and the approved text's revision is
    greater than the draft's. The constitution text has changed when a file
-   under `constitution/articles/` was added, removed or edited, or
+   under `articles/` was added, removed or edited (compared by its path
+   within each side's edition directory), or
    `index.toml` differs in any line other than `revision`; the generated
    files and `rules/` do not count. If it changed, `revision` must be
    greater than the base's; if not, equal to it. "Greater" is strict, not
@@ -124,7 +128,7 @@ either option replaces this repo's own part and generated files.
 
 Chinese typography is checked twice, with limae and its default
 configuration. `lint-zh-sources` hands every `zh` text of
-`constitution/index.toml`, `constitution/articles/` and `rules/` to limae
+`index.toml` and `articles/` in the edition directory and of `rules/` to limae
 as a Markdown file of its own and prints each finding as `path:line:
 field: <message>`, the field being the TOML table, with an item's ID
 (`items.capital.content`). Before that it replaces each citation `{@...}`
@@ -137,7 +141,8 @@ only until stage B sets it (a rule's title, which may start or end in
 Latin letters). With `--fix` it writes limae's fixes back in place,
 changing no other byte, and parses the file again to make sure.
 The commit hook and CI only check; the fix is run by hand. The limae hook
-on `constitution/constitution.zh.md` and `constitution.zh.agent.md`
+on `constitution.zh.md` and `constitution.zh.agent.md` in the edition
+directory's `generated/`
 checks what exists only after the build: section and item numbers,
 headings, the text around a rendered citation. A finding there is fixed in the source or in the build script,
 never in the generated file. The rules have no built text yet, so the

@@ -2,7 +2,7 @@
 
 All sources are TOML, read with the standard library's `tomllib`. Every
 text a reader sees is a table whose keys are the language codes listed in
-`constitution/index.toml` and whose values are the text in that language,
+the constitution's `index.toml` and whose values are the text in that language,
 so one file holds all languages of one provision side by side. Multi-line
 text is a literal string (`'''...'''`); the build drops the newline after
 the opening quotes and before the closing ones.

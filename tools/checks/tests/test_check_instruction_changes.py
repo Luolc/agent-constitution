@@ -18,8 +18,8 @@ from repo_checks import git_env
 BASE = {
   "AGENTS.md": "agents\n",
   "rules/a.toml": "rule\n",
-  "constitution/articles/01-a/article.toml": "article\n",
-  "constitution/constitution.en.md": "generated\n",
+  "constitution/2026-10/articles/01-a/article.toml": "article\n",
+  "constitution/2026-10/generated/constitution.en.md": "generated\n",
   "tools/build_constitution.py": "tool\n",
   "docs/design/README.md": "design\n",
 }
@@ -82,7 +82,7 @@ class Change(unittest.TestCase):
       "sub/CLAUDE.md",
       ".claude/skills/x/SKILL.md",
       "rules/a.toml",
-      "constitution/articles/01-a/article.toml",
+      "constitution/2026-10/articles/01-a/article.toml",
       "skills/x/SKILL.md",
     )
     self.assertEqual(
@@ -113,43 +113,23 @@ class Change(unittest.TestCase):
 
   def test_generated_with_sources_pass(self):
     self.change(
-      "constitution/articles/01-a/article.toml",
-      "constitution/constitution.en.md",
+      "constitution/2026-10/articles/01-a/article.toml",
+      "constitution/2026-10/generated/constitution.en.md",
     )
     self.assertEqual(self.run_check()[0], 0)
 
-  def test_edition_directory(self):
-    """The sources and outputs in an edition directory count as before."""
-    self.change(
-      "constitution/2026-10/index.toml",
-      "constitution/2026-10/articles/01-a/article.toml",
-      "constitution/2026-10/generated/constitution.en.md",
-      "tools/build_constitution.py",
-    )
-    self.assertEqual(
-      self.run_check(),
-      (
-        1,
-        "instruction-only check: this change mixes instruction files"
-        " with other files since base; split it into two changes\n"
-        "instruction files:\n"
-        "  A constitution/2026-10/articles/01-a/article.toml\n"
-        "  A constitution/2026-10/index.toml\n"
-        "generated files:\n"
-        "  A constitution/2026-10/generated/constitution.en.md\n"
-        "other files:\n  M tools/build_constitution.py\n",
-      ),
-    )
-
   def test_generated_with_tools_pass(self):
     self.change(
-      "tools/build_constitution.py", "constitution/constitution.en.md"
+      "tools/build_constitution.py",
+      "constitution/2026-10/generated/constitution.en.md",
     )
     self.assertEqual(self.run_check()[0], 0)
 
   def test_mixed_fails(self):
     self.change(
-      "rules/a.toml", "constitution/constitution.en.md", "docs/design/README.md"
+      "rules/a.toml",
+      "constitution/2026-10/generated/constitution.en.md",
+      "docs/design/README.md",
     )
     self.assertEqual(
       self.run_check(),
@@ -158,7 +138,8 @@ class Change(unittest.TestCase):
         "instruction-only check: this change mixes instruction files"
         " with other files since base; split it into two changes\n"
         "instruction files:\n  M rules/a.toml\n"
-        "generated files:\n  M constitution/constitution.en.md\n"
+        "generated files:\n  M"
+        " constitution/2026-10/generated/constitution.en.md\n"
         "other files:\n  M docs/design/README.md\n",
       ),
     )

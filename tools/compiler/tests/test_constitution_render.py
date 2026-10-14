@@ -36,10 +36,15 @@ class RenderTest(Tree):
   def test_write_then_check(self):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
     self.assertEqual(
-      (self.root / "constitution/constitution.zh.md").read_bytes(), ZH.encode()
+      (
+        self.root / "constitution/2026-10/generated/constitution.zh.md"
+      ).read_bytes(),
+      ZH.encode(),
     )
     self.assertEqual(
-      (self.root / "constitution/constitution.zh.agent.md").read_bytes(),
+      (
+        self.root / "constitution/2026-10/generated/constitution.zh.agent.md"
+      ).read_bytes(),
       ZH_AGENT.encode(),
     )
     self.assertEqual(bc.main(["--root", str(self.root), "--check"]), 0)
@@ -51,12 +56,14 @@ class RenderTest(Tree):
     the asterisk in the full version, and the header explains it.
     """
     self.edit(
-      "constitution/index.toml",
+      "constitution/2026-10/index.toml",
       "The preamble cites",
       "## Preamble\n\nThe preamble cites",
     )
     self.edit(
-      "constitution/index.toml", "序言引用{@beta}", "## 序言\n\n序言引用{@beta}"
+      "constitution/2026-10/index.toml",
+      "序言引用{@beta}",
+      "## 序言\n\n序言引用{@beta}",
     )
     errors, _, outputs = bc.build(self.root)
     self.assertEqual(errors, [])
@@ -105,12 +112,14 @@ class RenderTest(Tree):
       "Language: English. \\* Background for people: where this constitution "
       "comes from, how it"
       " is organized and how it is amended. The agent version,"
-      " `constitution/constitution.en.agent.md`, omits these parts.\n",
+      " `constitution/2026-10/generated/constitution.en.agent.md`, omits these"
+      " parts.\n",
       outputs["en"],
     )
     self.assertIn(
       "语言：中文。\\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版"
-      " `constitution/constitution.zh.agent.md` 不收录这些部分。\n",
+      " `constitution/2026-10/generated/constitution.zh.agent.md`"
+      " 不收录这些部分。\n",
       outputs["zh"],
     )
     self.assertEqual(
@@ -153,7 +162,7 @@ class RenderTest(Tree):
       'number = "2"\nstatus = "repealed"\nrepealed = "2026-11"',
     )
     self.write(
-      "constitution/articles/03-gamma/article.toml",
+      "constitution/2026-10/articles/03-gamma/article.toml",
       BETA.replace('"beta"', '"gamma"').replace(
         "[title]", 'repealed = "2026-12"\n\n[title]'
       ),
@@ -460,33 +469,6 @@ class RenderTest(Tree):
     self.assertEqual(en.item_ref(3, "b"), "(3b)")
     self.assertEqual(zh.item_ref(3, "b"), "第三项之二")
     self.assertEqual(zh.item_marker(12, ""), "(**十二**) ")
-
-  def test_edition_directory(self):
-    """In an edition directory only the paths the build writes change.
-
-    They are in the header line and, for agents, in the note in place of
-    the front text.
-    """
-    _, _, old = bc.build(self.root)
-    new = self.to_edition_dir()
-    self.assertEqual(bc.main(["--root", str(self.root)]), 0)
-    self.assertEqual(
-      sorted((self.root / "constitution").glob("constitution.*.md")), []
-    )
-    for name, text in old.items():
-      path = self.root / new / "generated" / f"constitution.{name}.md"
-      built = path.read_text(encoding="utf-8").split("\n")
-      lines = text.split("\n")
-      self.assertEqual(len(built), len(lines))
-      changed = [
-        i for i, (a, b) in enumerate(zip(lines, built, strict=True)) if a != b
-      ]
-      self.assertEqual(changed, [0, 4] if name.endswith(".agent") else [0])
-      self.assertIn(f"`{new}/index.toml`", built[0])
-      self.assertIn(f"`{new}/articles/`", built[0])
-      if name.endswith(".agent"):
-        lang = name.split(".")[0]
-        self.assertIn(f"`{new}/generated/constitution.{lang}.md`", built[4])
 
 
 if __name__ == "__main__":

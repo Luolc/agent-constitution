@@ -2,8 +2,8 @@
 
 The outputs are constitution.<lang>.md and the version for agents,
 constitution.<lang>.agent.md, in the generated/ directory of the edition
-directory constitution/<YYYY-MM>/ (in constitution/ itself in the older
-layout, which has no edition directory).
+directory constitution/<YYYY-MM>/, the one directory under constitution/
+that holds an index.toml.
 
 Sources, in the edition directory: index.toml (status, revision,
 languages, title and front text); articles/<NN>-<id>/, one directory per

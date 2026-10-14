@@ -2,24 +2,37 @@
 
 ## Constitution
 
+The sources of the constitution are in its edition directory,
+`constitution/<YYYY-MM>/`, today `constitution/2026-10/`: `index.toml`
+and one directory per article under `articles/`. The directory is named
+after the edition and keeps its name when the draft is approved; the
+status is recorded only in `index.toml`. The tools take the edition
+directory to be the one directory under `constitution/` that holds an
+`index.toml`, and fail when there is none or more than one, so its name is
+written nowhere in them.
+
 The constitution is compiled by `uv run constitution-build`, the
 workspace member `tools/compiler` (Python standard library only), from
-`constitution/index.toml` and one directory per article under
-`constitution/articles/`. It writes two files for each language in
-`index.toml`, `constitution/constitution.<lang>.md` (the full version) and
-`constitution/constitution.<lang>.agent.md` (the version for agents, see
+those sources. It writes two files for each language in `index.toml` to
+the edition directory's `generated/`, `constitution.<lang>.md` (the full
+version) and `constitution.<lang>.agent.md` (the version for agents, see
 The version for agents), committed and never edited by hand; `--check`
 writes nothing and runs the checks under [Checkers](checkers.md#checkers).
 
 ```text
-constitution/articles/
-  05-boundary-rule/
-    article.toml
-    01-must-ask.toml
-    02-decide-yourself.toml
+constitution/2026-10/
+  index.toml
+  articles/
+    05-boundary-rule/
+      article.toml
+      01-must-ask.toml
+      02-decide-yourself.toml
+  generated/
+    constitution.en.md  constitution.en.agent.md
+    constitution.zh.md  constitution.zh.agent.md
 ```
 
-`constitution/index.toml`:
+`index.toml`:
 
 - `status`: `draft` until a person first approves the text, then
   `active`.
@@ -48,7 +61,7 @@ constitution/articles/
 - `[front]`: the Markdown between the title and the first article (draft
   notice, `## Preamble` and its text), per language. It may cite.
 
-An article is a directory `constitution/articles/<NN>-<id>/`: its number,
+An article is a directory `articles/<NN>-<id>/`: its number,
 two digits from `01`, a hyphen and its ID. In it, `article.toml` holds
 `id` (equal to the directory name without the number), `[title]`, an
 optional `[intro]` (the paragraph between the heading and the first

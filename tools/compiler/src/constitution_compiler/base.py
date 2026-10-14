@@ -15,6 +15,7 @@ from constitution_compiler.model import (
   CONSTITUTION,
   Doc,
   Errors,
+  INDEX_FILE,
   Layout,
   name_number,
   RETIRED,
@@ -79,15 +80,15 @@ def base_paths(root: Path, ref: str, *paths: Path) -> set[Path]:
   return {Path(p) for p in listing.split("\n") if p}
 
 
-def base_layout(root: Path, ref: str) -> Layout:
-  """Return the layout of the base commit, which may differ from the tree's.
+def base_layout(root: Path, ref: str) -> Layout | None:
+  """Return the layout of the base commit.
 
   Args:
     root: the checkout.
     ref: the base commit.
 
   Returns:
-    The layout.
+    The layout, or None when the base has no edition directory.
   """
   return Layout.find(base_paths(root, ref, CONSTITUTION))
 
@@ -118,6 +119,11 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
     errors.add(src.layout.index, 1, 7, f"base `{ref}` is not a commit")
     return ""
   layout = base_layout(root, ref)
+  if layout is None:
+    return (
+      f"base {ref} has no {CONSTITUTION}/<YYYY-MM>/{INDEX_FILE};"
+      " numbering not compared"
+    )
   base, listing, note = open_base(root, ref, layout, errors)
   if base is None:
     return note
@@ -146,8 +152,6 @@ def open_base(
   """
   index, articles = layout.index, layout.articles
   listing = base_paths(root, ref, index, articles, RULES, RETIRED)
-  if index not in listing:
-    return None, listing, f"base {ref} has no {index}; numbering not compared"
   try:
     base = tomllib.loads(git(root, "show", f"{ref}:{index}"))
   except tomllib.TOMLDecodeError as e:
