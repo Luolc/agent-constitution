@@ -180,6 +180,7 @@ fn r46_unmixed_change_goes_to_the_reviewer() {
     let l = line(&run, 46);
     assert!(l.starts_with("inconclusive "), "{l}");
     assert!(l.contains("(0 instruction, 1 other, 1 generated)"), "{l}");
+    assert!(l.contains("files of other agent tools, sources of instructions outside the path tables, and paths the repository declares in its AGENTS.md are for the reviewer"), "{l}");
     assert!(
         run.stdout
             .contains("For the reviewer:\n\n## 46 (Rule 46) (inconclusive)\n\nReason: Because.\n"),
