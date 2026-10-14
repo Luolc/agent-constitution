@@ -1,0 +1,42 @@
+id = 40
+slug = "relayed-yes-record"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["explicit-yes.rules", "evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Record the reference and the checks of a relayed yes"
+zh = "记下转告的同意的引用和核对结果"
+
+[text.statement]
+en = "When you act on a relayed yes, record its reference and the result of each check in the record the action leaves."
+zh = "凭转告的同意行事时，把引用和每一点的核对结果记在这次动作留下的记录里。"
+
+[text.reason]
+en = '''
+Where the verification of a yes is recorded is set by the rules ({@constitution:explicit-yes.rules}); a record lets a reviewer open the same message and check it again ({@constitution:evidence.grounds}), and lets a later agent see that the yes has been used.
+'''
+zh = '''
+同意的核实结果记在哪里，由规定确定 ({@constitution:explicit-yes.rules})；有了记录，审查方能打开同一条消息重新核对 ({@constitution:evidence.grounds})，后续的 agent 也能看出这一同意已经使用过。
+'''
+
+[text.verification]
+en = '''
+The record is the one the action itself leaves, for example the pull request, the release notes or the task report.
+
+Violated when an agent acts on a relayed yes and the record of the action lacks its reference or the result of any of the three checks of {@rule:39}.
+'''
+zh = '''
+记录指这次动作本身留下的记录，例如 pull request、发布说明或者任务报告。
+
+agent 凭转告的同意行事，而这次动作的记录里缺少引用，或者缺少{@rule:39}三点中任何一点的核对结果的，即为违反本规定。
+'''
+
+[translations]
+zh = "684bc6153e65207eec614d28f4e29f19fd8556b37368af2542aa47c45a1a265c"

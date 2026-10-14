@@ -1,0 +1,46 @@
+id = 34
+slug = "irreversible-effects-list"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["boundary-rule", "must-ask.irreversible-effects"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Acts that count as irreversible external effects"
+zh = "哪些动作算不可逆的对外影响"
+
+[text.statement]
+en = "Treat publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts and speaking for someone to third parties as irreversible external effects ({@constitution:must-ask.irreversible-effects})."
+zh = "公开私密材料、改写共享的历史、删除没有副本的数据、操作他人的账户，以及代表他人对第三方发言，按不可逆的对外影响 ({@constitution:must-ask.irreversible-effects}) 处理。"
+
+[text.reason]
+en = '''
+The rules say which concrete matters fall in each class of {@constitution:must-ask} ({@constitution:boundary-rule}); each of these acts cannot be undone once taken and reaches people or systems outside the work at hand.
+'''
+zh = '''
+{@constitution:must-ask}的各类事项具体包括哪些，由规定写明 ({@constitution:boundary-rule})；以上每一种动作一旦做了就无法撤回，并且会波及当前工作以外的人或系统。
+'''
+
+[text.verification]
+en = '''
+These acts need the yes that {@constitution:must-ask} requires. The list is not complete: another act that fits {@constitution:must-ask.irreversible-effects} needs it too.
+
+When unsure whether an act is one of these, treat it as one.
+
+Violated when an agent takes one of these acts without that yes.
+'''
+zh = '''
+这些动作需要取得{@constitution:must-ask}所要求的同意。以上并未列全：其他符合{@constitution:must-ask.irreversible-effects}的动作同样需要。
+
+不确定某个动作是否属于以上各项的，按属于处理。
+
+agent 未取得这一同意就采取了上述动作的，即为违反本规定。
+'''
+
+[translations]
+zh = "68109d80a68d41ea4bfa7e6ffd22d22566d8789fe23757f218838a6940e57768"
