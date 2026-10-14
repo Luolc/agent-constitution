@@ -43,15 +43,21 @@ impl Project {
     /// resolves the rule set. Returns the project only when nothing failed;
     /// the diagnostics hold the warnings either way.
     pub fn load(root: &Path) -> (Option<Project>, Diagnostics) {
-        let mut diags = Diagnostics::default();
-        let text = match std::fs::read_to_string(root.join(manifest::FILE)) {
-            Ok(text) => text,
+        match std::fs::read_to_string(root.join(manifest::FILE)) {
+            Ok(text) => Project::with_manifest(root, &text),
             Err(e) => {
+                let mut diags = Diagnostics::default();
                 diags.error(manifest::FILE, format!("cannot read: {e}"));
-                return (None, diags);
+                (None, diags)
             }
-        };
-        let manifest = match Manifest::parse(&text) {
+        }
+    }
+
+    /// As `load`, with the text of `statute.toml` given, so a changed rule
+    /// set can be tried before it is written.
+    pub fn with_manifest(root: &Path, text: &str) -> (Option<Project>, Diagnostics) {
+        let mut diags = Diagnostics::default();
+        let manifest = match Manifest::parse(text) {
             Ok(m) => m,
             Err(errors) => {
                 for e in errors {
