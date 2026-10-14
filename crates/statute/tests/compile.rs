@@ -12,6 +12,22 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 const CONSTITUTION_EN: &str = "# Constitution\n\nAgents follow it.\n";
 const CONSTITUTION_ZH: &str = "# 宪法\n\nagent 遵守它。\n";
 
+/// The constitution's sources, as far as citations read them: the
+/// provisions' numbers and IDs, `(path, text)`.
+const ARTICLES: [(&str, &str); 5] = [
+    ("04-authority/article.toml", "id = \"authority\"\n"),
+    (
+        "04-authority/01-principals.toml",
+        "id = \"principals\"\n\n[[items]]\nid = \"scope\"\nnumber = \"1\"\n\n[[items]]\nid = \"competent\"\nnumber = \"2\"\n",
+    ),
+    ("04-authority/02a-late.toml", "id = \"late\"\n"),
+    ("08-supremacy/article.toml", "id = \"supremacy\"\n"),
+    (
+        "08-supremacy/07-precedence.toml",
+        "id = \"precedence\"\n\n[[items]]\nid = \"first\"\nnumber = \"1\"\n\n[[items]]\nid = \"second\"\nnumber = \"1a\"\n",
+    ),
+];
+
 /// Domain 1: rule 2 and its child 3, one-of 4 with children 5 and 6.
 /// Domain 9: rule 10, which requires the one-of. Domain 11: rule 12.
 fn nodes() -> Vec<(u64, String)> {
@@ -46,6 +62,12 @@ fn repo(name: &str, manifest: &str) -> PathBuf {
     std::fs::write(dir.join("constitution/2026-10/index.toml"), INDEX).unwrap();
     std::fs::write(generated.join("constitution.en.agent.md"), CONSTITUTION_EN).unwrap();
     std::fs::write(generated.join("constitution.zh.agent.md"), CONSTITUTION_ZH).unwrap();
+    let articles = dir.join("constitution/2026-10/articles");
+    for (path, text) in ARTICLES {
+        let path = articles.join(path);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, text).unwrap();
+    }
     std::fs::write(dir.join("statute.toml"), manifest).unwrap();
     for (id, text) in nodes() {
         std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
@@ -218,9 +240,10 @@ fn compile_says_which_constitution_file_is_missing() {
 }
 
 #[test]
-fn this_repo_compiles_the_same_twice() {
+fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
     // This repository's constitution and rules, every domain as a pack,
-    // compiled into a directory under Cargo's test directory.
+    // with every part of each rule, compiled in each language into a
+    // directory under Cargo's test directory.
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .canonicalize()
@@ -233,33 +256,46 @@ fn this_repo_compiles_the_same_twice() {
         .map(|n| format!("\"ac:{}\"", n.id))
         .collect();
     assert!(!domains.is_empty());
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
-        .join("compile")
-        .join("this-repo");
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).unwrap();
-    std::fs::write(
-        dir.join("statute.toml"),
-        format!(
-            "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nac = {{ path = {:?} }}\n",
-            domains.join(", "),
-            repo_root.to_str().unwrap()
-        ),
-    )
-    .unwrap();
-    let first = compiled(&dir);
-    assert_eq!(compiled(&dir), first);
-    let constitution = std::fs::read_to_string(
-        repo_root.join("constitution/2026-10/generated/constitution.en.agent.md"),
-    )
-    .unwrap();
-    assert!(first.contains(constitution.trim_end()));
-    for domain in &domains {
-        let id = domain.trim_matches('"').trim_start_matches("ac:");
+    // The rules cite both rules and the constitution, so that the check
+    // that none of it is left as written below can fail.
+    let sources: String = std::fs::read_dir(repo_root.join("rules"))
+        .unwrap()
+        .map(|e| std::fs::read_to_string(e.unwrap().path()).unwrap())
+        .collect();
+    assert!(sources.contains("{@rule:") && sources.contains("{@constitution:"));
+    for lang in ["en", "zh"] {
+        let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+            .join("compile")
+            .join(format!("this-repo-{lang}"));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("statute.toml"),
+            format!(
+                "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nac = {{ path = {:?} }}\n\n[compile]\nlang = \"{lang}\"\nagents-md = [\"statement\", \"reason\", \"verification\"]\n",
+                domains.join(", "),
+                repo_root.to_str().unwrap()
+            ),
+        )
+        .unwrap();
+        let first = compiled(&dir);
+        assert_eq!(compiled(&dir), first);
+        let constitution = std::fs::read_to_string(repo_root.join(format!(
+            "constitution/2026-10/generated/constitution.{lang}.agent.md"
+        )))
+        .unwrap();
+        assert!(first.contains(constitution.trim_end()));
         assert!(
-            first.contains(&format!("<a id=\"rule-{id}\"></a>\n## ")),
-            "domain {id}"
+            !first.contains("{@"),
+            "{lang}: a citation is left as written"
         );
+        for domain in &domains {
+            let id = domain.trim_matches('"').trim_start_matches("ac:");
+            assert!(
+                first.contains(&format!("<a id=\"rule-{id}\"></a>\n## ")),
+                "{lang}: domain {id}"
+            );
+        }
     }
 }
 
@@ -359,4 +395,71 @@ fn compile_replaces_a_generated_file_and_leaves_a_hand_written_one() {
         std::fs::read_to_string(dir.join("AGENTS.md")).unwrap(),
         hand
     );
+}
+
+/// Rule 2 of `nodes`, whose statement cites rule 3 (enabled), rule 6 (not
+/// enabled), and sections and items of the constitution.
+fn citing_rule_2() -> String {
+    edit(
+        rule(2, 1, ""),
+        "en = \"Do the thing 2.\"",
+        "en = \"Do {@rule:3}, not {@rule:6}, under {@constitution:principals}, {@constitution:principals.competent}, {@constitution:precedence.first}, {@constitution:precedence.second}, {@constitution:late} and {@constitution:supremacy}; keep {braces} and {@ this}.\"",
+    )
+    .1
+}
+
+#[test]
+fn citations_render_as_titles_and_numbers() {
+    let dir = repo("cite-en", &manifest(""));
+    std::fs::write(dir.join("rules/2.toml"), citing_rule_2()).unwrap();
+    let out = compiled(&dir);
+    assert!(
+        out.contains("### Rule 2 (2)\n\nDo [Rule 3](#rule-3), not Rule 6 (rule 6), under Art. IV §1, Art. IV §1(2), Art. VIII §7(1), Art. VIII §7(1a), Art. IV §2a and Art. VIII; keep {braces} and {@ this}.\n"),
+        "{out}"
+    );
+    // The heading of rule 3 is the link's target; rule 6 has none.
+    assert!(out.contains("<a id=\"rule-3\"></a>"), "{out}");
+    assert!(!out.contains("<a id=\"rule-6\"></a>"), "{out}");
+
+    let compile = "\n[compile]\nlang = \"zh\"\n";
+    let dir = repo("cite-zh", &manifest(compile));
+    std::fs::write(dir.join("rules/2.toml"), citing_rule_2()).unwrap();
+    std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
+    let out = compiled(&dir);
+    assert!(
+        out.contains("Do [规定 3](#rule-3), not Rule 6 (规定 6), under 第四条第一款, 第四条第一款第二项, 第八条第七款第一项, 第八条第七款第一项之一, 第四条第二款之一 and 第八条;"),
+        "{out}"
+    );
+}
+
+#[test]
+fn a_citation_of_nothing_fails_and_names_where_it_is() {
+    for (citation, message) in [
+        (
+            "{@rule:99}",
+            "rules/2.toml: statement: cites `{@rule:99}`, which is not in source `ac`",
+        ),
+        (
+            "{@constitution:principals.nobody}",
+            "rules/2.toml: statement: cites `{@constitution:principals.nobody}`, which is not in edition 2026-10 of the constitution",
+        ),
+        (
+            "{@principals}",
+            "rules/2.toml: statement: cites `{@principals}` without `rule:` or `constitution:`",
+        ),
+    ] {
+        let dir = repo("cite-missing", &manifest(""));
+        let text = edit(
+            rule(2, 1, ""),
+            "Do the thing 2.",
+            &format!("Do {citation}."),
+        )
+        .1;
+        std::fs::write(dir.join("rules/2.toml"), text).unwrap();
+        ok(&statute(&dir, &["lock"]));
+        let run = statute(&dir, &["compile", "--output", "out.md"]);
+        assert_eq!(run.code, 1);
+        assert!(run.stderr.contains(message), "{}", run.stderr);
+        assert!(!dir.join("out.md").exists());
+    }
 }

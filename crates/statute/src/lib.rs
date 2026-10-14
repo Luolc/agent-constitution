@@ -2,6 +2,7 @@
 //! and resolves them into a lock file (`docs/design/rule-system.md`).
 
 pub mod check;
+pub mod cite;
 pub mod compile;
 pub mod diag;
 pub mod lock;

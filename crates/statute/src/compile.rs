@@ -1,13 +1,15 @@
 //! Compiling a locked rule set into `AGENTS.md`
 //! (`docs/design/rule-system.md`, Compilation and the site): the
 //! constitution's version for agents, then the enabled rules along the
-//! parent tree.
+//! parent tree, with the citations in their text rendered.
 
 use std::fmt::Write as _;
+use std::path::Path;
 
+use crate::cite::{self, Citation, Labels};
 use crate::lock;
 use crate::manifest::Part;
-use crate::node::{Id, Kind, Node, Ref, Text};
+use crate::node::{Id, Kind, Node, Ref, Text, file_name};
 use crate::project::Project;
 
 pub const FILE: &str = "AGENTS.md";
@@ -26,6 +28,8 @@ struct Words {
     reason: &'static str,
     verification: &'static str,
     requires: &'static str,
+    /// Follows the title of a cited rule that is not in the file.
+    rule: &'static str,
 }
 
 fn words(lang: &str) -> Words {
@@ -35,12 +39,14 @@ fn words(lang: &str) -> Words {
             reason: "理由：",
             verification: "判定：",
             requires: "依赖：",
+            rule: "规定",
         },
         _ => Words {
             rules: "Rules",
             reason: "Reason: ",
             verification: "Verification: ",
             requires: "Requires: ",
+            rule: "rule",
         },
     }
 }
@@ -54,7 +60,8 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
 
 /// Writes `AGENTS.md` for a resolved project. Fails, with a message, when
 /// the lock file is missing or not what `statute lock` would write now,
-/// or the constitution's version for agents in the language cannot be read.
+/// the constitution's version for agents in the language cannot be read,
+/// or a rule's text cites a rule or provision that is not there.
 pub fn compile(project: &Project) -> Result<String, String> {
     let current = lock::render(project);
     match std::fs::read_to_string(project.root.join(lock::FILE)) {
@@ -87,6 +94,12 @@ pub fn compile(project: &Project) -> Result<String, String> {
         )
     })?;
 
+    let articles = project
+        .root
+        .join(&m.source.path)
+        .join(format!("constitution/{}/articles", m.edition));
+    let labels = Labels::load(&articles, lang)?;
+
     let w = words(lang);
     let mut out = String::new();
     let _ = writeln!(out, "{GENERATED}\n");
@@ -118,7 +131,7 @@ pub fn compile(project: &Project) -> Result<String, String> {
         .collect();
     domains.sort_by_key(|n| n.id);
     for domain in domains {
-        render(project, &w, domain, 2, &mut out);
+        render(project, &w, &labels, domain, 2, &mut out)?;
     }
     Ok(out)
 }
@@ -132,9 +145,58 @@ fn shown(project: &Project, node: &Node) -> bool {
     }
 }
 
-fn render(project: &Project, w: &Words, node: &Node, level: usize, out: &mut String) {
+/// A rule's text with its citations rendered: a rule as its title, a link
+/// when it is in the file, else followed by its ID; a provision as its
+/// label, in plain text, as in the constitution's version for agents.
+fn cited(
+    project: &Project,
+    w: &Words,
+    labels: &Labels,
+    node: &Node,
+    part: &str,
+    text: &str,
+) -> Result<String, String> {
+    let lang = project.manifest.lang.as_str();
+    let fail = |what: &str| {
+        Err(format!(
+            "{}: {part}: {what}",
+            Path::new("rules").join(file_name(node.id)).display()
+        ))
+    };
+    cite::replace(text, |c| match c {
+        Citation::Rule(id) => match id.parse().ok().and_then(|id| project.source.get(id)) {
+            Some(n) if shown(project, n) => {
+                Ok(format!("[{}](#rule-{})", pick(&n.title, n, lang), n.id))
+            }
+            Some(n) => Ok(format!("{} ({} {})", pick(&n.title, n, lang), w.rule, n.id)),
+            None => fail(&format!(
+                "cites `{{@rule:{id}}}`, which is not in source `{}`",
+                project.manifest.source.name
+            )),
+        },
+        Citation::Constitution(id) => match labels.get(id) {
+            Some(label) => Ok(label.to_string()),
+            None => fail(&format!(
+                "cites `{{@constitution:{id}}}`, which is not in edition {} of the constitution",
+                project.manifest.edition
+            )),
+        },
+        Citation::Bare(id) => fail(&format!(
+            "cites `{{@{id}}}` without `rule:` or `constitution:`"
+        )),
+    })
+}
+
+fn render(
+    project: &Project,
+    w: &Words,
+    labels: &Labels,
+    node: &Node,
+    level: usize,
+    out: &mut String,
+) -> Result<(), String> {
     if !shown(project, node) {
-        return;
+        return Ok(());
     }
     let lang = project.manifest.lang.as_str();
     let _ = writeln!(out, "\n<a id=\"rule-{}\"></a>", node.id);
@@ -147,12 +209,12 @@ fn render(project: &Project, w: &Words, node: &Node, level: usize, out: &mut Str
     );
     if let Some(rule) = &node.rule {
         for part in &project.manifest.agents_md {
-            let (label, text) = match part {
-                Part::Statement => ("", &rule.statement),
-                Part::Reason => (w.reason, &rule.reason),
-                Part::Verification => (w.verification, &rule.verification),
+            let (name, label, text) = match part {
+                Part::Statement => ("statement", "", &rule.statement),
+                Part::Reason => ("reason", w.reason, &rule.reason),
+                Part::Verification => ("verification", w.verification, &rule.verification),
             };
-            let text = pick(text, node, lang);
+            let text = cited(project, w, labels, node, name, pick(text, node, lang))?;
             if label.is_empty() {
                 let _ = writeln!(out, "\n{text}");
             } else {
@@ -177,6 +239,7 @@ fn render(project: &Project, w: &Words, node: &Node, level: usize, out: &mut Str
     let mut children: Vec<&Node> = project.source.children(node.id).collect();
     children.sort_by_key(|n| n.id);
     for child in children {
-        render(project, w, child, level + 1, out);
+        render(project, w, labels, child, level + 1, out)?;
     }
+    Ok(())
 }
