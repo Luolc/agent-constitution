@@ -1,0 +1,27 @@
+{{- /* The rules' pages in one language, from data/rules.json, which
+  `uv run site-rules` writes from rules/ (not committed): the list as
+  rules/ itself, paginated by layouts/rules/section.html, and one page
+  per node of the rule tree, rules/<id>/, weighted in the order of the
+  parent tree, the node's data in its params. The pages are hidden from
+  the theme's own list (bookHidden); the menu links the list. The build
+  fails without the data. It runs once for each language of the site. */ -}}
+{{- .EnableAllLanguages }}
+{{- $lang := .Site.Language.Lang }}
+{{- $data := index (hugo.Data.rules | default dict) $lang }}
+{{- if not $data }}
+  {{- errorf "data/rules.json has no rules in %q: run `uv run site-rules` before Hugo" $lang }}
+{{- end }}
+{{- .AddPage (dict
+  "kind" "section"
+  "path" "."
+  "title" (i18n "rules")
+  "params" (dict "bookHidden" true "BookToC" false)
+) }}
+{{- range $i, $node := $data.nodes }}
+  {{- $.AddPage (dict
+    "path" (string $node.id)
+    "title" $node.title
+    "weight" (add $i 1)
+    "params" (dict "rule" $node "bookHidden" true "BookToC" false)
+  ) }}
+{{- end }}

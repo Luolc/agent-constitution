@@ -325,6 +325,62 @@
 }
 .design [id] { scroll-margin-top: 1rem; }
 
+/* The rules' pages, set as the design's. The list: under a domain's or
+   one-of's heading, each rule a block linked as a whole, its ID in a
+   narrow column at the left in the muted color, its statement cut to
+   three lines; a rule under another rule indented by its depth below
+   its domain. The page of one rule: its notes between rules as on an
+   untranslated design page, the statement a little larger, the
+   relations and metadata in two columns. */
+.rules .rules-intro { color: var(--c-muted); }
+.rules .rules-group { margin-bottom: .4em; }
+.rules a.rule-entry[href] {
+  display: flex;
+  gap: .8em;
+  align-items: baseline;
+  margin: .5em 0 .5em calc(var(--indent, 0) * 1.6em);
+  text-decoration: none;
+}
+.rules a.rule-entry[href]:hover .rule-statement { color: var(--c-accent); }
+.rules .rule-id {
+  flex: 0 0 2em;
+  text-align: end;
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+.rules .rule-statement {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.rules .rule-note {
+  border-block: 1px solid var(--c-rule);
+  padding: .6em 1em;
+  color: var(--c-muted);
+}
+.rules .statement { font-size: 1.1em; }
+.rules dl.rule-meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: .3em 1.2em;
+  line-height: 1.5;
+}
+.rules dl.rule-meta :is(dt, dd) { margin: 0; }
+.rules dl.rule-meta dt { color: var(--c-muted); font-weight: inherit; }
+
+/* The rules under a provision that cites them, on a line of their own,
+   smaller and muted. */
+.constitution .cited-by {
+  display: block;
+  margin: .2em 0 .4em;
+  font-size: .8em;
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+.constitution p.cited-by { text-align: start; }
+
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text
    and in the table of contents: small, in the accent color, close to the number,
