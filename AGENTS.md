@@ -209,7 +209,8 @@ when the two disagree.
 - `uv run site-rules`: reads `rules/*.toml` and writes `web/data/rules.json`
   (not committed), which Hugo reads; run it before every Hugo build, which
   fails without it (`docs/design/static-site.md`, Rules).
-- `hugo-0.167.0 -s web`: after `uv run site-rules`, builds the static site into `site/`, English at
+- `hugo-0.167.0 -s web`: after `uv run site-rules`, builds the static site
+  into `site/`, English at
   `site/index.html` and Chinese at `site/zh/index.html`, each with the
   version for agents at `agent/` and the design at `design/` below it;
   `hugo-0.167.0` is the version CI pins, and the build is not a commit
@@ -257,9 +258,9 @@ pinned to `ubuntu-24.04`, and actions by commit SHA.
 
 `.github/workflows/pages.yml` ("Pages") runs on pushes to `main` and on a
 manual run on `main`. Its job `build` gets an access token through Workload
-Identity Federation, writes the rules' data with `site-rules`, counts the tokens with `count-tokens --require-tokens`,
-builds the site with the site's domain as `--baseURL`, checks its links,
-writes the length lines of the two pages to the job summary and the log, and
+Identity Federation, counts the tokens with `count-tokens --require-tokens`,
+writes the rules' data with `site-rules`, builds the site with the site's
+domain as `--baseURL`, checks its links, writes the length lines of the two pages to the job summary and the log, and
 uploads the site. Its job `deploy` publishes the site to GitHub Pages only
 when the repository is public and the repository variable `PAGES_DEPLOY` is
 `true`, and is skipped otherwise; publishing is a release, and setting the
