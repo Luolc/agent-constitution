@@ -3,9 +3,10 @@
 # counts the tokens with it, builds and checks the site, writes the length
 # line of both pages into the job summary and the log, and publishes the
 # site to GitHub Pages (docs/design.md, Static site). The federation rule
-# matches the repository, not a branch; this repository publishes only main,
-# so the job runs only on a push to main or a manual run on main. A failed
-# exchange, count, build or link check fails the run and publishes nothing.
+# accepts a run on any branch of this repository, not only main; this
+# repository publishes only main, so the job runs only on a push to main or
+# a manual run on main. A failed exchange, count, build or link check fails
+# the run and publishes nothing.
 # The four IDs are identifiers, not credentials, but kept as repository
 # secrets: the run logs of a public repository are open to anyone, and a
 # step's header prints its variables in clear while it masks secrets as ***.

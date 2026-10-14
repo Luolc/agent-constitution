@@ -854,8 +854,8 @@ passes to Hugo as `--baseURL`.
   build goes on; with `count-tokens --require-tokens` the count fails
   instead and writes no file. The
   job `build` of `.github/workflows/pages.yml` runs only on `main`
-  (the federation rule matches the repository, not a branch; the repository
-  chooses to publish only `main`) and in no environment, which would
+  (the federation rule accepts a run on any branch of this repository, not
+  only `main`; the repository chooses to publish only `main`) and in no environment, which would
   change the token's subject: it asks GitHub for the run's
   OIDC token (audience `https://api.anthropic.com`), exchanges it for an
   access token with the IDs of the federation rule, organization, service
