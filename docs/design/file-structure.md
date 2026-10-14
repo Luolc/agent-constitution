@@ -38,9 +38,8 @@ docs/
     zh/                   its Chinese translation, one file of the
                           same name per file                           A
 rules/
-  <id>.toml               one general rule per file, text in every
-                          language                                     A
-  retired-ids.txt         IDs of deleted rules, one per line           A
+  <id>.toml               one node of the rule tree per file, named
+                          by its number                                A
 skills/
   <name>/SKILL.md         one general skill per directory, with any
                           template files beside it, installed as is    A

@@ -1,8 +1,9 @@
 # Rule system
 
-Status: draft. Nothing here is built yet. This document describes how
-rules are written, numbered, chosen, checked and compiled once the rule
-system is built. Where it differs from what the rest of the design says
+Status: draft. The rules of this repo are written in the
+[Rule file format](#rule-file-format), which `constitution-build` checks;
+the rest is not built yet. This document describes how rules are written,
+numbered, chosen, checked and compiled once the rule system is built. Where it differs from what the rest of the design says
 today, the section [What this replaces](#what-this-replaces) lists the
 difference; those sections stay as they are until the work that implements
 this design changes them.
@@ -181,7 +182,7 @@ The fields:
 - `slug` (optional): a short readable name, lowercase words joined by
   hyphens, unique within the source. It is used only in web addresses and
   to make the file easier to recognize; no reference ever uses it. The
-  rules of this repo keep their current word IDs here when they move to
+  rules of this repo kept their earlier word IDs here when they moved to
   this format.
 - `revision`: an integer from 1, raised by one at each change in place
   ([IDs and revisions](#ids-and-revisions)).
@@ -746,8 +747,8 @@ be published anew. The rule set is `statute.toml`, the lock file
 
 **The first version** builds the repository level only. The user level,
 whose instruction files in the user's home directory the private overlay
-installs today, is the second step. The rules of this repo move to the
-new format first, each keeping its word ID as its `slug`. Among the first
+installs today, is the second step. The rules of this repo have moved to
+the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
@@ -775,30 +776,13 @@ money is the reviewer's model calls. Rust is chosen because:
 
 ## What this replaces
 
-Once this design is implemented, it replaces parts of the current design.
-Those sections are not changed now; they will be when the work that
-implements this design lands. Until then, for the files of the rule
-system, [Rule file format](#rule-file-format) is the format the
-implementation follows.
+[Rule file format](#rule-file-format) is implemented, and
+[IDs](source-formats.md#ids), [Source formats](source-formats.md) and
+[Rules](rules.md#rules) now describe the rules in it. The rest of this
+design, once implemented, replaces parts of the current design. Those
+sections are not changed now; they will be when the work that implements
+this design lands.
 
-- [IDs](source-formats.md#ids): rule IDs become numbers, assigned in
-  sequence, in place of words. The rules in `rules/*.toml` get numbers
-  when they are moved to the new format, keep their word IDs as `slug`,
-  and a citation `{@rule:<id>}` then names a number.
-- [Source formats](source-formats.md): a text of a rule needs only the
-  language its `lang` names, and translations are tracked by hash; the
-  constitution's texts keep one key per language of `index.toml`.
-- [Rules](rules.md#rules): no rule is deleted any more, so
-  `rules/retired-ids.txt` is no longer needed; a rule is superseded or
-  repealed instead. The format of [Rule file format](#rule-file-format)
-  replaces the current one: `content` becomes the three parts of
-  `text`, `authority` lists IDs without the `constitution:` namespace,
-  `status` gains `trial` and `superseded`, and the fields `kind`,
-  `superseded-by`, `revision`, `slug`, `lang`, `parent`, `requires`,
-  `conflicts`, `level`, `constitution`, `check` and `translations` are
-  added. The new format has no `scope`. One-ofs and domains become kinds
-  of node in the parent tree. The verification method is part of each
-  rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". The rule set belongs to a
