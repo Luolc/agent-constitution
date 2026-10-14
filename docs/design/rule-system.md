@@ -112,9 +112,9 @@ Rules are related in two ways:
 
 - `parent`: every rule has exactly one parent, either another rule or one
   of the domains at the top of the tree (Python, CI, Git, security and so
-  on), so the rules form a tree, each domain refined level by level. The tree decides where a rule stands in
-  the compiled text and on the site, which block it is compiled in and
-  which pack it belongs to.
+  on), so the rules form a tree, each domain refined level by level. The
+  tree decides where a rule stands in the compiled text and on the site,
+  which block it is compiled in and which pack it belongs to.
 - `requires`: enabling rule A requires another rule B, or a capability
   (below) that some enabled rule provides. A rule may require several,
   and the requirements form a directed acyclic graph. A rule that
@@ -130,8 +130,8 @@ The build checks these constraints:
 
 - No cycle, in the tree or in the requirements.
 - A rule's parent, when it is a rule, counts as one of its requirements:
-  enabling a rule requires enabling its parent, and the parent is not written again under
-  `requires`.
+  enabling a rule requires enabling its parent, and the parent is not
+  written again under `requires`.
 - No redundant requirement: if A requires B and B requires C, A does not
   also list C.
 - A requirement that crosses to another subtree should name a capability
@@ -294,10 +294,10 @@ implements this design lands.
   rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](../design.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
-  rule by default, with named exclusions". Choosing rules per jurisdiction,
-  with one compiled file for all of a jurisdiction's repositories, may
-  conflict with a repository naming its own rule set; this is undecided
-  (see [Open questions](#open-questions)).
+  rule by default, with named exclusions". Choosing rules per
+  jurisdiction, with one compiled file for all of a jurisdiction's
+  repositories, may conflict with a repository naming its own rule set;
+  this is undecided (see [Open questions](#open-questions)).
 - [Relaxation declarations](../design.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another rule for the same
   capability, needs no relaxation. Whether `adjustable` values and the
@@ -309,8 +309,8 @@ implements this design lands.
   directories, checks and hook configuration, and the rules are grouped
   along the parent tree, not by the article of their first `authority`.
 - [Checkers](../design.md#checkers): the rule checks run by the Rust
-  binary, and their three outcomes, are added; the existing checkers of the
-  repo's sources stay.
+  binary, and their three outcomes, are added; the existing checkers of
+  the repo's sources stay.
 
 ## Open questions
 
