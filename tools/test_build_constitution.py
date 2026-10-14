@@ -1689,6 +1689,25 @@ class BaseTest(Tree):
       note, "base HEAD has no constitution/index.toml; numbering not compared"
     )
 
+  def test_unreadable_base_file(self):
+    """A file the base lists but git cannot read fails check 7."""
+    self.commit_base()
+    blob = subprocess.run(
+      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{bc.INDEX}"],
+      check=True,
+      capture_output=True,
+      text=True,
+      env=git_env.clean(),
+    ).stdout.strip()
+    (self.root / ".git/objects" / blob[:2] / blob[2:]).unlink()
+    with contextlib.redirect_stderr(io.StringIO()) as err:
+      self.assertEqual(
+        bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1
+      )
+    self.assertIn(
+      f"check 7: `git show HEAD:{bc.INDEX}` failed:", err.getvalue()
+    )
+
   def test_unknown_base(self):
     self.commit_base()
     errors, src, _ = bc.build(self.root)

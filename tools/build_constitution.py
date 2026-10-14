@@ -1515,7 +1515,14 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
 # Check 7: numbering against a base commit.
 
 
-def git(root: Path, *args: str) -> str | None:
+GIT_TIMEOUT = 60  # seconds, for one git command
+
+
+class GitError(Exception):
+  """A git command failed or timed out."""
+
+
+def git(root: Path, *args: str) -> str:
   """Run git in root.
 
   Args:
@@ -1523,15 +1530,42 @@ def git(root: Path, *args: str) -> str | None:
     *args: the git arguments.
 
   Returns:
-    Its output, or None when it fails.
+    Its output.
+
+  Raises:
+    GitError: when git exits non-zero or times out, with its stderr.
   """
-  result = subprocess.run(
-    ["git", "-C", str(root), *args],
-    capture_output=True,
-    text=True,
-    env=git_env.clean(),
+  command = f"git {' '.join(args)}"
+  try:
+    result = subprocess.run(
+      ["git", "-C", str(root), *args],
+      capture_output=True,
+      text=True,
+      env=git_env.clean(),
+      timeout=GIT_TIMEOUT,
+    )
+  except subprocess.TimeoutExpired as e:
+    raise GitError(f"`{command}` timed out") from e
+  if result.returncode != 0:
+    raise GitError(f"`{command}` failed: {result.stderr.strip()}")
+  return result.stdout
+
+
+def base_paths(root: Path, ref: str, *paths: Path) -> set[Path]:
+  """Return the files under the given paths in the base commit.
+
+  Args:
+    root: the checkout.
+    ref: the base commit.
+    *paths: the files and directories to list.
+
+  Returns:
+    The files, relative to the checkout.
+  """
+  listing = git(
+    root, "ls-tree", "-r", "--name-only", ref, "--", *map(str, paths)
   )
-  return result.stdout if result.returncode == 0 else None
+  return {Path(p) for p in listing.split("\n") if p}
 
 
 def check_base(  # noqa: C901
@@ -1556,35 +1590,21 @@ def check_base(  # noqa: C901
     A note when the step is skipped, else "".
   """
   commit = f"{ref}^{{commit}}"
-  if git(root, "rev-parse", "--verify", "--quiet", commit) is None:
+  try:
+    git(root, "rev-parse", "--verify", "--quiet", commit)
+  except GitError:
     errors.add(INDEX, 1, 7, f"base `{ref}` is not a commit")
     return ""
-  base_index = git(root, "show", f"{ref}:{INDEX}")
-  if base_index is None:
+  listing = base_paths(root, ref, INDEX, ARTICLES, RULES, RETIRED)
+  if INDEX not in listing:
     return f"base {ref} has no {INDEX}; numbering not compared"
   try:
-    base = tomllib.loads(base_index)
+    base = tomllib.loads(git(root, "show", f"{ref}:{INDEX}"))
   except tomllib.TOMLDecodeError as e:
     errors.add(INDEX, 1, 7, f"{INDEX} at base {ref} is not valid TOML: {e}")
     return ""
   if base.get("status") != "active":
     return f"base {ref} is {base.get('status')}; numbering not compared"
-  listing = [
-    Path(name)
-    for name in (
-      git(
-        root,
-        "ls-tree",
-        "-r",
-        "--name-only",
-        ref,
-        "--",
-        str(ARTICLES),
-        str(RULES),
-      )
-      or ""
-    ).split("\n")
-  ]
   if not any(
     p.name == ARTICLE_FILE and p.parent.parent == ARTICLES for p in listing
   ):
@@ -1619,7 +1639,7 @@ def check_base(  # noqa: C901
 
   def base_toml(path: Path) -> dict | None:
     try:
-      return tomllib.loads(git(root, "show", f"{ref}:{path}") or "")
+      return tomllib.loads(git(root, "show", f"{ref}:{path}"))
     except tomllib.TOMLDecodeError as e:
       errors.add(path, 1, 7, f"at base {ref} is not valid TOML: {e}")
       return None
@@ -1744,7 +1764,7 @@ def check_base(  # noqa: C901
         items[iid].status == "repealed",
       )
   if RETIRED in listing:
-    for value in (git(root, "show", f"{ref}:{RETIRED}") or "").splitlines():
+    for value in git(root, "show", f"{ref}:{RETIRED}").splitlines():
       if value and value not in retired:
         errors.add(
           RETIRED,
@@ -1789,20 +1809,16 @@ def source_text_changed(root: Path, ref: str) -> bool:
     True when the text changed.
   """
   drop = re.compile(r'^revision = ".*"\n', re.MULTILINE)
-  listing = (
-    git(root, "ls-tree", "-r", "--name-only", ref, "--", str(ARTICLES)) or ""
-  )
-  base_paths = {Path(p) for p in listing.split("\n") if p}
-  tracked = git(root, "ls-files", "--", str(ARTICLES)) or ""
+  tracked = git(root, "ls-files", "--", str(ARTICLES))
   paths = {Path(p) for p in tracked.split("\n") if p and (root / p).is_file()}
-  if paths != base_paths:
+  if paths != base_paths(root, ref, ARTICLES):
     return True
   if any(
     (root / p).read_text(encoding="utf-8") != git(root, "show", f"{ref}:{p}")
     for p in paths
   ):
     return True
-  base_index = git(root, "show", f"{ref}:{INDEX}") or ""
+  base_index = git(root, "show", f"{ref}:{INDEX}")
   return drop.sub("", (root / INDEX).read_text(encoding="utf-8")) != drop.sub(
     "", base_index
   )
@@ -1822,11 +1838,14 @@ def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
     src: the sources.
     errors: where errors go.
   """
-  base_index = git(root, "show", f"{ref}:{INDEX}")
-  if base_index is None:
+  try:
+    git(root, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}")
+  except GitError:
+    return  # check_base reports it
+  if INDEX not in base_paths(root, ref, INDEX):
     return
   try:
-    base = tomllib.loads(base_index)
+    base = tomllib.loads(git(root, "show", f"{ref}:{INDEX}"))
   except tomllib.TOMLDecodeError:
     return  # check_base reports it
   revision, base_revision = (
@@ -1900,10 +1919,13 @@ def main(argv: list[str] | None = None) -> int:
     check_outputs(args.root, outputs, errors)
   if not errors and args.base:
     assert src is not None
-    note = check_base(args.root, args.base, src, errors)
-    if note:
-      print(note)
-    check_revision(args.root, args.base, src, errors)
+    try:
+      note = check_base(args.root, args.base, src, errors)
+      if note:
+        print(note)
+      check_revision(args.root, args.base, src, errors)
+    except GitError as e:
+      errors.add(INDEX, 1, 7, str(e))
   if errors:
     print("\n".join(errors), file=sys.stderr)
     return 1
