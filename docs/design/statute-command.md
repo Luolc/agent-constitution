@@ -15,7 +15,8 @@ and a rule set with its lock file, and writes:
   followed by the domain's applicability when it has one; a
   subtree whose root is not enabled (for a one-of: none of its children
   is) contributes nothing, since none of its rules can be enabled without
-  it, and a requirement that crosses subtrees is rendered as a link. By
+  it, and a requirement that leads out of the requiring rule's nearest
+  domain, a subdomain when the rule is under one, is rendered as a link. By
   default each rule contributes only its statement, to keep the file
   small; the rule set can add the reason or the verification
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)), and the
@@ -36,15 +37,21 @@ constitution's edition, revision and source; the constitution's version
 for agents in the rule set's language, the file
 `constitution/<edition>/generated/constitution.<lang>.agent.md` that the
 constitution's build writes, unchanged; and a heading "Rules" with the
-enabled rules. Each domain is a heading of level two, and each level of
-the tree one level deeper, down to level six, where deeper levels stay;
+enabled rules. In a public repository it ends with one more line, which
+tells an agent to read `AGENTS.private.md` next when it exists, with a
+link to it, and the private layer compiles to that file
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
+provisional, not built yet). Each domain is a heading of level two, a subdomain one of
+level three ([Subdomains](rule-sources.md#subdomains); not built yet),
+and each level of the tree one level deeper, down to level six, where
+deeper levels stay;
 a one-of none of whose children is enabled does not appear. A node's
 heading is its title and its reference as statute shows it (`R42`),
 after an anchor of `rule-` and that reference with a colon made a
 hyphen: `rule-R42`, `rule-L12`, `rule-team-7`, so the anchors of
-different sources never clash. A requirement of a node under another domain is
-a line "Requires:" with a link to that anchor; one within the domain is
-not rendered. A rule uses its translation into the language when it has
+different sources never clash. A requirement of a node outside the
+requiring rule's nearest domain, or subdomain, is a line "Requires:"
+with a link to that anchor; one within it is not rendered. A rule uses its translation into the language when it has
 one, and its original otherwise. A domain's applicability, when it has
 one ([Rule file format](rule-format.md#rule-file-format)), is a paragraph
 under its heading, in the same language as the heading, its citations
@@ -151,7 +158,9 @@ read and shown as above, but with one source a rule set can use only
 the rules of that source: a local rule fails with a note to write
 `R12` when the first-party source is the rule set's own directory, and
 is reported as not supported yet when it is elsewhere, since the local
-rules would then be a second source.
+rules would then be a second source. Nothing of
+[Rule sources](rule-sources.md) is built: `public` and `scope`,
+`statute.private.toml`, overrides and subdomains.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, an empty `rules`, and one source on
@@ -181,13 +190,12 @@ set does not resolve, neither file is changed.
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that
 has a `statute.lock`, the repository's compiled output governs, and the
-user-level instruction files are set aside. This repo tries it first. It
-switches only once the compiled output covers what those files govern
-today that matters most: credentials, the git workflow and review. Until
-then the compiled output is built and compared, but not read in their
-place. [Rule sources](rule-sources.md#cutover-from-the-hand-written-guide)
-replaces this condition with a switch of the whole guide at once, made
-when every part of it has become a rule.
+user-level instruction files are set aside. Every repository they
+govern switches at once, when every part of them has become a rule and
+the conditions of
+[Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide)
+hold; no topic switches first. Until then the compiled output is built
+and compared, but not read in their place.
 
 ## Why Rust
 

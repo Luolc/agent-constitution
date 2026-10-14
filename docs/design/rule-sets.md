@@ -42,6 +42,17 @@ parts in as well ([Compilation and the site](statute-command.md#compilation-and-
 `lang` in `[compile]` names the language it is written in, `en` by
 default.
 
+[Rule sources](rule-sources.md) adds fields that are not built yet:
+`public` at the top, required, says whether the repository is public,
+and each source but `R` says `public` of itself and may have `scope`,
+`"global"` by default or `"local"`
+([Four kinds of source](rule-sources.md#four-kinds-of-source)). A public
+repository names its private sources in `statute.private.toml`, which
+git ignores, inherits `statute.toml` through `base = "statute.toml"`
+and has its own lock file, `statute.private.lock`. It compiles to the
+file `output` in `[compile]` names, in a form that is provisional
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
 each source (its short name, address and commit), and each enabled rule,
@@ -77,7 +88,10 @@ place of a source and an ID in two fields, so that a line of the lock
 file can be searched for as the rule set and the messages write it.
 A lock file of the earlier format, which named a rule by `source` and
 `id`, fails `upgrade` with a note to run `statute lock`, which writes it
-anew.
+anew. A rule that an enabled rule overrides keeps its line, with one
+more field, `overridden-by = "L3"`, naming the rule that overrides it,
+so that `upgrade` still shows its changes
+([Overrides](rule-sources.md#overrides); not built yet).
 
 A source on disk (`path`, see
 [Sources and references](#sources-and-references)) has no commit to
@@ -141,7 +155,8 @@ another revision than the base does. The build then takes the newer of
 the two, and fails if some enabled rule's range cannot hold it.
 
 **Per repository, with inheritance.** A rule set belongs to a repository,
-and it may inherit a shared base rule set, so the rules every repository
+and it may inherit a shared base rule set, named in its `base` field
+(not built yet), so the rules every repository
 of a user or team agrees on are written once. A repository adds to the
 base, leaves rules out, and picks among the children of a one-of. The
 jurisdiction of the current design (`division-of-instructions.rules`) is
@@ -315,7 +330,9 @@ domains and one-ofs:
 
 - `parent`: every rule has exactly one parent, either another rule, a
   one-of or a domain (below), so the rules form a tree, each domain
-  refined level by level. The tree decides where a rule stands in the
+  refined level by level. A rule that overrides a rule of another source
+  has none and stands in that rule's place
+  ([Overrides](rule-sources.md#overrides); not built yet). The tree decides where a rule stands in the
   compiled text and on the site, which block it is compiled in and which
   pack it belongs to.
 - `requires`: enabling rule A requires another rule B, or a one-of
@@ -334,9 +351,12 @@ satisfied by any of its children, such as a GitHub Actions rule.
 CI, Git or security. Besides its ID and title it has only the few fields
 every node has and an optional applicability, a sentence or two on which
 repositories it is for ([Rule file format](rule-format.md#rule-file-format)), and no text or
-check; it has no parent and cannot be enabled on its own. When any rule
-below it is enabled, the domain appears in the compiled output as a heading. Domains
-do not nest: a finer grouping is a rule or a one-of under the domain.
+check; it cannot be enabled on its own. When any rule
+below it is enabled, the domain appears in the compiled output as a heading. A
+domain may sit under a domain that has no parent, as a subdomain, so
+domains nest two levels deep and no deeper
+([Subdomains](rule-sources.md#subdomains); not built yet); a finer
+grouping is a rule or a one-of under the domain.
 
 **One-ofs.** A one-of is a node of the parent tree of which at most one
 child is enabled within one rule set (or one path segment of it).
@@ -370,7 +390,8 @@ rules under one parent may conflict.
 The build checks these constraints:
 
 - No cycle, in the tree or in the requirements.
-- A domain has no parent; every rule and one-of has one.
+- A domain has no parent, or, as a subdomain, a domain that has none;
+  every rule and one-of has one, except a rule with `overrides`.
 - A rule's parent, when it is a rule, counts as one of its requirements:
   enabling a rule requires enabling its parent, and the parent is not
   written again under `requires`. When the parent is a one-of, the

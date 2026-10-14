@@ -513,6 +513,8 @@ struct ApplicabilityCase {
     name: String,
     passes: bool,
     node: String,
+    /// What statute says of a case that fails.
+    statute: Option<String>,
 }
 
 /// The compiler's cases of `[applicability]`
@@ -539,8 +541,9 @@ fn the_compilers_applicability_cases() {
         assert_eq!(run.code == 0, case.passes, "{}: {}", case.name, run.stderr);
         // Rule 21 draws an error too when node 20 cannot be read at all.
         if !case.passes {
+            let reason = case.statute.as_deref().unwrap();
             assert!(
-                run.stderr.contains("rules/20.toml"),
+                run.stderr.contains("rules/20.toml") && run.stderr.contains(reason),
                 "{}: {}",
                 case.name,
                 run.stderr

@@ -162,7 +162,16 @@ The fields:
 - `lang`: the language the rule was written in, its original, as a
   language code such as `"en"` or `"zh"`.
 - `parent`: the ID of the parent node, a rule, a one-of or a domain of the
-  same source. Every rule and one-of has one; a domain has none.
+  same source. A rule's parent may also be a domain or a subdomain of
+  another source, written as `requires` writes one (`"team:3"`). Every
+  rule and one-of has one, except a rule with `overrides`; a domain has
+  none, or, as a subdomain, a domain of the same source that has none
+  ([Subdomains](rule-sources.md#subdomains)). A `parent` in another
+  source and a domain's `parent` are not built yet.
+- `overrides` (optional, a rule only): the rule of another source that
+  this rule takes the place of in a rule set that enables it, written as
+  `requires` writes one (`"R200"`); a rule with it has no `parent`
+  ([Overrides](rule-sources.md#overrides); not built yet).
 - `requires` (optional): the rules or one-ofs that enabling this rule
   requires. A node of the same source is written as a number, one of
   another source as a string of the source's short name, a colon and the
@@ -205,9 +214,10 @@ The fields:
   translation was made from.
 
 A domain and a one-of have only `id`, `slug`, `revision`, `kind`,
-`status`, `lang`, `parent` (a one-of only), `[title]`, `[applicability]`
-(a domain only, and optional) and, when they are translated,
-`[translations]`. They have no text, check or other metadata.
+`status`, `lang`, `parent` (a one-of always, a domain only as a
+subdomain), `[title]`, `[applicability]` (a domain only, and optional)
+and, when they are translated, `[translations]`. They have no text,
+check or other metadata.
 
 **Languages.** Each text, `[title]`, `[applicability]` and the three parts, is a table whose
 keys are language codes, as in [Source formats](source-formats.md). The

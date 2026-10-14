@@ -361,6 +361,8 @@ class ApplicabilityTest(Tree):
         self.assertTrue(
           all(e.startswith("rules/20.toml:") for e in errors), errors
         )
+        if not case["passes"]:
+          self.assertTrue(any(case["compiler"] in e for e in errors), errors)
 
   def test_only_a_domain_has_applicability(self):
     applicability = (
