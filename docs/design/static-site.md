@@ -20,7 +20,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
   `build` counts the tokens (below), builds and checks the site as CI
   does and uploads it; the job `deploy` publishes it, but only when the
   repository is public and its variable `PAGES_DEPLOY` is `true`, and is
-  skipped otherwise. Publishing is a release (rule 9, `must-ask-items`):
+  skipped otherwise. Publishing is a release (rule 32, `release-must-ask`):
   setting the variable is the person's yes to publish every later push
   to `main`, and deleting it stops that. The custom domain is set in the
   repository's Pages settings, with the source "GitHub Actions"; a
