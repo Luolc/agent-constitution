@@ -47,7 +47,10 @@ LANG_CODE = re.compile(r"[a-z]{2,3}(?:-[A-Za-z0-9]+)*")
 # One clause of `constitution`: revisions are whole numbers, so only the
 # comparisons of whole numbers (docs/design/rule-system.md, Tracing rules
 # to the constitution).
-REVISION_CLAUSE = re.compile(r"\s*(?:[<>]=?|[=!]=)\s*[0-9]+\s*")
+REVISION_CLAUSE = re.compile(r"\s*(?:[<>]=?|[=!]=)\s*([0-9]+)\s*")
+# The largest revision a clause may name: statute reads revisions as
+# unsigned 64-bit integers.
+REVISION_MAX = 2**64 - 1
 KINDS = ("rule", "one-of", "domain")
 NODE_STATUS = ("draft", "trial", "active", "superseded", "repealed")
 LEVELS = ("project", "user")

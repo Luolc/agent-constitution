@@ -9,6 +9,7 @@ checkers.md).
 from dataclasses import dataclass, field
 import hashlib
 from pathlib import Path
+from typing import Any
 
 from constitution_compiler.languages import (
   LANGUAGES,
@@ -41,6 +42,7 @@ from constitution_compiler.model import (
   NUMBER_SHAPE,
   PARTS,
   REVISION_CLAUSE,
+  REVISION_MAX,
   RULES,
   Section,
   SECTION_NAME,
@@ -591,7 +593,8 @@ class _Reader:
           f"`{key}` is there exactly when `check` is command",
         )
     spec = d["constitution"]
-    if not all(REVISION_CLAUSE.fullmatch(c) for c in spec.split(",")):
+    clauses = [REVISION_CLAUSE.fullmatch(c) for c in spec.split(",")]
+    if not all(clauses):
       self.errors.add(
         path,
         doc.line("constitution ="),
@@ -600,8 +603,16 @@ class _Reader:
         " clauses such as `>=1` joined by commas, each with"
         " >=, <=, >, <, == or !=",
       )
+    elif any(int(m[1]) > REVISION_MAX for m in clauses if m):
+      self.errors.add(
+        path,
+        doc.line("constitution ="),
+        1,
+        f'`constitution = "{spec}"` names a revision above {REVISION_MAX},'
+        " the largest there is",
+      )
     self.references(doc)
-    self.successors(doc)
+    self.superseded_by(doc)
     if not all(isinstance(t, str) for t in d.get("tools", [])):
       self.errors.add(
         path, doc.line("tools ="), 1, "`tools` must be a list of names"
@@ -616,7 +627,7 @@ class _Reader:
         "`authority` must be a non-empty list of provision IDs",
       )
 
-  def successors(self, doc: Doc) -> None:
+  def superseded_by(self, doc: Doc) -> None:
     """Check a rule's `superseded-by`: one rule ID or a list of them.
 
     That each names another rule is check 3, `check_tree`.
@@ -633,7 +644,9 @@ class _Reader:
     for v in ids:
       # TOML's booleans are Python ints too.
       if not isinstance(v, int) or isinstance(v, bool) or v < 1:
-        problems.append(f"entry `{v}` is not a rule ID, a number from 1")
+        problems.append(
+          f"entry `{toml_text(v)}` is not a rule ID, a number from 1"
+        )
       elif v in seen:
         problems.append(f"lists {v} twice")
       else:
@@ -659,8 +672,9 @@ class _Reader:
           or (isinstance(v, str) and FOREIGN_REF.fullmatch(v))
         ):
           problem = (
-            f"entry `{v}` is not a reference: a number from 1 for a node"
-            ' of this source, or "<source>:<id>" for one of another'
+            f"entry `{toml_text(v)}` is not a reference: a number from 1"
+            ' for a node of this source, or "<source>:<id>" for one of'
+            " another"
           )
         elif v == d["id"]:
           problem = "names the rule itself"
@@ -672,17 +686,32 @@ class _Reader:
         self.errors.add(path, doc.line(f"{key} ="), 1, f"`{key}` {problem}")
 
 
-def successors(d: dict) -> list:
+def successors(d: dict[str, Any]) -> list[Any]:
   """Return a node's `superseded-by` as a list, one ID or many.
 
   Args:
     d: the node's file, as parsed.
 
   Returns:
-    The entries; empty when there is no `superseded-by`.
+    The entries, as written and not yet checked; empty when there is no
+    `superseded-by`.
   """
   value = d.get("superseded-by", [])
   return value if isinstance(value, list) else [value]
+
+
+def toml_text(value: object) -> object:
+  """Return a value as TOML writes it where Python's text differs.
+
+  Args:
+    value: a value of a parsed TOML file.
+
+  Returns:
+    `true` or `false` for a boolean, else the value itself.
+  """
+  if isinstance(value, bool):
+    return "true" if value else "false"
+  return value
 
 
 def by_number(path: Path) -> tuple[int, str]:

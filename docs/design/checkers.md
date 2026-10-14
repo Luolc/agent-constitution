@@ -92,7 +92,8 @@ a rule's does; `superseded-by` is there exactly when the status is
 `superseded`, `run` and `tools` exactly when `check` is `command`;
 `authority` is a non-empty list of strings, `tools` a list of strings, and
 `constitution` a specifier of whole revisions
-([Tracing rules to the constitution](rule-system.md#tracing-rules-to-the-constitution));
+([Tracing rules to the constitution](rule-system.md#tracing-rules-to-the-constitution)),
+none above 18446744073709551615 (2^64 − 1, the largest statute reads);
 each entry of `requires` and `conflicts` is a number from 1 or a string
 `"<source>:<id>"`, names a node other than the rule itself and is listed
 once; `lang` and the keys of every text are language codes (`en`, `zh`,
