@@ -109,10 +109,10 @@ status = "draft"
 
 [items.content]
 en = '''
-**ID**: the permanent name of an article, section or item, made of words and independent of its number ({@text-and-sources}).
+**ID**: the permanent name of an article, section or item, made of words and independent of its number ({@text-and-sources.ids}).
 '''
 zh = '''
-**ID**：条、款、项的永久名称，由词组成，不随编号改变 ({@text-and-sources})。
+**ID**：条、款、项的永久名称，由词组成，不随编号改变 ({@text-and-sources.ids})。
 '''
 
 [[items]]
