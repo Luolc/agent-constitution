@@ -1,6 +1,6 @@
 id = 14
 slug = "collaboration"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -9,5 +9,13 @@ lang = "en"
 en = "Collaboration"
 zh = "协作"
 
+[applicability]
+en = '''
+Covers how agents work with principals and with each other: what goes through a principal, how a relayed yes is checked, and how changes are reviewed and merged. Enable it wherever an agent acts for a principal; the review rules matter once changes reach the main branch through pull requests.
+'''
+zh = '''
+管 agent 怎样与委托人、与别的 agent 共事：哪些事要经委托人同意，转告的同意怎样核实，改动怎样审查、合并。只要有 agent 替委托人做事就要启用；改动经 pull request 进主分支时，其中审查的规定才用得上。
+'''
+
 [translations]
-zh = "11a2b0f914523300e925a7f9172ddd404e2f700bb5099b1b3d5304e7cf000242"
+zh = "b1efe2a4d95c4bee427bcc2ecbcae8e35a5217a105985e4f4cc1c83c8e6790a4"
