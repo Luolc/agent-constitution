@@ -70,8 +70,10 @@ question: does it change what counts as compliant?
 
 The ID of a rule therefore always means the same requirement. The revision
 is a number per rule, counted from 1; it has nothing to do with the
-revision of the constitution. A rule's status is one of `trial` (see
-[Trial rules](#trial-rules)), `active`, `superseded` or `repealed`; a rule
+revision of the constitution. A rule's status is one of `draft`,
+`trial`, `active`, `superseded` or `repealed`. `draft` is what every rule
+is while the constitution is a draft; `trial` marks a rule being tried on
+real work before it settles (see [Trial rules](#trial-rules)). A rule
 withdrawn with nothing in its place is repealed and, like a superseded
 one, keeps its ID and its file.
 
@@ -108,25 +110,27 @@ chosen per repository or, as today, per jurisdiction
 
 Rules are related in two ways:
 
-- `parent`: every rule has exactly one parent, so the rules form a tree.
-  Below the root are the domains (Python, CI, Git, security and so on),
-  each refined level by level. The tree decides where a rule stands in
+- `parent`: every rule has exactly one parent, either another rule or one
+  of the domains at the top of the tree (Python, CI, Git, security and so
+  on), so the rules form a tree, each domain refined level by level. The tree decides where a rule stands in
   the compiled text and on the site, which block it is compiled in and
   which pack it belongs to.
-- `requires`: enabling rule A requires rule B. A rule may require several
-  others, and the requirements form a directed acyclic graph. A rule that
+- `requires`: enabling rule A requires another rule B, or a capability
+  (below) that some enabled rule provides. A rule may require several,
+  and the requirements form a directed acyclic graph. A rule that
   says how to run checks through uv requires the rule that has uv manage
   the project's dependencies.
 
 One parent is not enough on its own because many rules span domains: "in
-CI, run `uv sync --locked` first" depends both on uv and on GitHub
-Actions. It sits under one of them and requires the other.
+CI, run `uv sync --locked` first" depends both on uv and on the CI
+service. It sits under the uv rule and requires the capability "CI
+service", which a GitHub Actions rule provides.
 
 The build checks these constraints:
 
 - No cycle, in the tree or in the requirements.
-- A rule's parent counts as one of its requirements: enabling a rule
-  requires enabling its parent, and the parent is not written again under
+- A rule's parent, when it is a rule, counts as one of its requirements:
+  enabling a rule requires enabling its parent, and the parent is not written again under
   `requires`.
 - No redundant requirement: if A requires B and B requires C, A does not
   also list C.
@@ -216,12 +220,13 @@ from the check's, the check was wrong:
 - a false negative: the check passed something that violates the rule,
   found while reviewing another result or in later work.
 
-Either leads to a proposed fix to the rule's check. Fixing a check does not change what counts as compliant, so
-the rule keeps its ID and its revision goes up by one
-(`wrong-checkers.fixing`). People and agents alike may propose changes to
-a rule, under `rule-evolution`. This is how the rules improve themselves:
-the cheap checks run first, agents look only at what the checks could not
-settle, and what the agents conclude goes back into the checks.
+Either leads to a proposed fix to the rule's check. Fixing a check does
+not change what counts as compliant, so the rule keeps its ID and its
+revision goes up by one (`wrong-checkers.fixing`). People and agents alike
+may propose changes to a rule, under `rule-evolution`. This is how the
+rules improve themselves: the cheap checks run first, agents look only at
+what the checks could not settle, and what the agents conclude goes back
+into the checks.
 
 ## Trial rules
 
@@ -236,9 +241,11 @@ of this repo itself are meant to come about the same way.
 **Locally**, the compiler takes the constitution (the version for agents)
 and a rule set with its lock file, and writes:
 
-- an `AGENTS.md`, with the chosen rules in blocks along the parent tree,
-  one block per subtree; a subtree whose root is not enabled is left out
-  whole, and a requirement that crosses subtrees is rendered as a link.
+- an `AGENTS.md`, with the chosen rules in nested blocks along the parent
+  tree, one heading level per level of the tree; a subtree whose root is
+  not enabled contributes nothing, since none of its rules can be enabled
+  without it, and a requirement that crosses subtrees is rendered as a
+  link.
   Once the file's length passes a token threshold, measured with
   `count-tokens`, it is split into several files;
 - the skill directories the chosen rules need;
@@ -252,8 +259,9 @@ The constitution's compiler stays in Python for now
 
 **The public site** lists every rule that is not superseded, so that
 people can choose from the full list. The parent tree is its table of
-contents, and each rule's page shows its requirements. A superseded rule keeps its page, so
-links to it keep working, but it is left out of the lists by default.
+contents, and each rule's page shows its requirements. A superseded rule
+keeps its page, so links to it keep working, but it is left out of the
+lists by default.
 
 ## Why Rust
 
