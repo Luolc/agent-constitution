@@ -789,7 +789,19 @@ heading is its title and ID, after an anchor `rule-<id>`, which is unique
 within one source only. A requirement of a node under another domain is
 a line "Requires:" with a link to that anchor; one within the domain is
 not rendered. A rule uses its translation into the language when it has
-one, and its original otherwise. The skill directories, the check
+one, and its original otherwise. The citations in a rule's text are
+rendered ([IDs](source-formats.md#ids)): `{@rule:<id>}` as the cited
+node's title, in the language as its heading is, linked to its anchor
+when the node is in the file, and followed by "(rule <id>)" otherwise; and
+`{@constitution:<id>}` as the provision's label in the language, in plain
+text as in the version for agents, such as `Art. IV §1(2)`. The labels
+come from the edition's sources, the numbers of the articles' and
+sections' names and the items' `number`, by the same rules as in the
+constitution's build ([Compilation](compilation.md)); unlike that build,
+citations in a row are not shortened (`Art. IV §1, Art. IV §2`). A
+citation of a node or provision that does not exist fails the command,
+naming the rule and the part. The rules' files and their hashes in the
+lock file are unchanged. The skill directories, the check
 binary's version and the hook configuration are not written yet.
 
 Compiling, checking and upgrading a rule set are one command-line tool
@@ -837,13 +849,25 @@ the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
-**Built so far**: the commands `lock`, `explain`, `add`, `remove`,
-`compile` (the `AGENTS.md` only) and `check` (built-in checks for rules
-3 and 7), for one source on disk; the other commands exit with status 2 and say
-they are not implemented yet. Inherited rule sets and path segments are
+**Built so far**: the commands `init`, `lock`, `explain`, `add`,
+`remove`, `compile` (the `AGENTS.md` only) and `check` (built-in checks
+for rules 3 and 7), for one source on disk; `upgrade` exits with status 2
+and says it is not implemented yet. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
 another source, in `requires` or `conflicts` (`"team:7"`), are reported
 as not supported yet.
+
+**`init`** writes `statute.toml` in the current directory: the
+constitution's source and edition, an empty `rules`, and one source on
+disk named `ac`. `--source <dir>` gives the source's directory, relative
+to the current one, `.` by default. `--edition` names the edition;
+without it, `init` takes the one directory under the source's
+`constitution/` that holds an `index.toml`, and fails when there is none
+or more than one, naming those it found. It resolves the rule set before
+writing it and writes nothing when that fails. It does not write
+`statute.lock`: with no rule enabled there is nothing to pin, and the
+first `add` writes it, replacing a `statute.lock` already there. An
+existing `statute.toml` is left as it is, and `init` exits with status 1.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that
