@@ -107,7 +107,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 ## <a id="supremacy"></a>第八条 最高效力与位阶
 
 -   <a id="highest-layer"></a>**第一款** 本宪法的位阶高于[第八条第二款第一项][rank-order.order]所列的各种指令。它不凌驾于运行环境的系统指令、平台限制和权限机制之上：它们禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
--   <a id="rank-order"></a>**第二款** 本宪法之下，各种指令的位阶如下：
+-   <a id="rank-order"></a>**第二款** 本宪法之下：
     -   <a id="rank-order.order"></a>(**一**) 位阶由高到低依次是规定、项目的指令、任务的指令、skill、agent 工具的内置指令。
     -   <a id="rank-order.principal-instructions"></a>(**二**) 委托人亲自下达的指令优先于位阶更高的指令时，凭的是委托人的权限，不是任务指令的位阶，而且只限于那份指令允许调整的范围 ([第四条第六款][conflicting-instructions])；对规定，只能依照[第九条][departures]。
     -   <a id="rank-order.relayed-tasks"></a>(**三**) agent 转达的任务指令，只具有委派给它的那部分权限 ([第六条第一款][delegated-authority])。

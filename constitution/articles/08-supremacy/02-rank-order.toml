@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-Below this constitution, instructions rank as follows:
+Below this constitution:
 '''
 zh = '''
-本宪法之下，各种指令的位阶如下：
+本宪法之下：
 '''
 
 [[items]]
@@ -16,7 +16,7 @@ status = "draft"
 
 [items.content]
 en = '''
-From highest to lowest, the order is: the rules, the instructions of a project, those of a task, skills, and the built-in instructions of agent tools.
+The order from highest to lowest is: the rules, the instructions of a project, those of a task, skills, and the built-in instructions of agent tools.
 '''
 zh = '''
 位阶由高到低依次是规定、项目的指令、任务的指令、skill、agent 工具的内置指令。
