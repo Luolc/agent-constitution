@@ -823,7 +823,7 @@ passes to Hugo as `--baseURL`.
   popup hangs from the button with no gap, centered under the length and
   at least as wide as it, so the pointer reaches its link without leaving
   it; on a narrow screen it spans the column. The
-  popup first says that the length under the title is that of the version
+  popup first says that the length it hangs under is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
   full version is the generated file without its header line, anchors and
@@ -942,10 +942,10 @@ passes to Hugo as `--baseURL`.
   color alone. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
-  so a line keeps about 75 characters in English, the usual measure
-  (30em, measured on the text's full lines: EB Garamond's letters are
-  narrower than `ch`), and 40 in Chinese where the window has room for
-  it. Three columns would leave the text under
+  so a line keeps about 90 characters in English (36em, measured on the
+  text's full lines: EB Garamond's letters are narrower than `ch`; the
+  usual 75 reads too narrow for this text) and 40 in Chinese where the
+  window has room for it. Three columns would leave the text under
   about 65 characters a line in English below 70rem (1120px), so there
   the table of contents goes behind the theme's top-bar button, floating
   at the top right, which opens it over the text at the right edge; the
