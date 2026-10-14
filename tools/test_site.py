@@ -18,6 +18,7 @@ import subprocess
 import tempfile
 import tomllib
 import unittest
+from unittest import mock
 
 import constitution_render
 import count_tokens
