@@ -717,10 +717,10 @@ is a release (rule `must-ask-items`) and not set up.
   dropped, the title goes into the front matter and stays the heading,
   without the theme's `#` link, its name and its parenthesis each kept on
   one line so that a narrow screen breaks it only before the parenthesis
-  (on a desktop window 1400 pixels wide it fits on one line), the
-  revision from
-  `index.toml` is set under the title, followed by `(draft)` (`(草案)`)
-  while its `status` is `draft`, and the text is wrapped in
+  (the size is chosen so that it fits on one line in a desktop window 1400
+  pixels wide), the revision from `index.toml` is set under the title,
+  followed by `(draft)` (`(草案)`) while its `status` is `draft`, and the
+  text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. Under
   the title is a list without bullets: the revision and the length
   (below), each centered under the title, and, when the text has an
