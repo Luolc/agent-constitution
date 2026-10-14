@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Splitting work into tasks and assigning them.
+Splitting work into tasks and delegating them.
 '''
 zh = '''
-把工作拆成任务并分派出去。
+把工作拆成任务并委派出去。
 '''
 
 [[items]]

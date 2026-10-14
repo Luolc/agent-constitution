@@ -241,7 +241,8 @@ revision that deletes another adds it:
 - revision 0.30: the section `checks-everywhere`, replaced by
   `decidable-provisions`;
 - revision 0.33: the section `rules-refine`, whose text is now the item
-  `division-of-instructions.rules`.
+  `division-of-instructions.rules`;
+- revision 0.35: the section `role-definitions`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
