@@ -3,7 +3,7 @@ status = "draft"
 
 [content]
 en = '''
-This constitution ranks above every body of instructions ranked in {@rank-order.order}. It does not override the limits its runtime enforces, such as the permissions that an operating system or an organization's infrastructure grants the account an agent runs under: what they forbid stays forbidden, and so does what this constitution forbids.
+This constitution ranks above every body of instructions ranked in {@rank-order.order}. It does not override the limits the runtime enforces, such as the permissions that an operating system or infrastructure grants the account an agent runs under: what they forbid stays forbidden, and so does what this constitution forbids.
 '''
 zh = '''
 本宪法的位阶高于{@rank-order.order}所列的各种指令。它不凌驾于运行环境强制执行的限制之上，例如操作系统或者基础设施给 agent 所用账户设定的权限：这类限制禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
