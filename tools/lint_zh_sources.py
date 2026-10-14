@@ -259,8 +259,8 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
   parser.add_argument(
     "--root",
     type=Path,
-    default=Path("."),
-    help="the checkout (default: the current directory)",
+    default=Path(__file__).resolve().parent.parent,
+    help="the checkout (default: the repo this script is in)",
   )
   args = parser.parse_args(argv)
   limae = shutil.which("limae")
