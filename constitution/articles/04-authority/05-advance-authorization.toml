@@ -3,8 +3,34 @@ status = "draft"
 
 [content]
 en = '''
-A principal may authorize a class of actions in advance under written conditions, within their authority (for example, "release once this feature is tested"). It counts only as written and within its conditions. An advance authorization of an item listed in {@must-ask} must be written into the project's instructions or its charter ({@relaxations.project-overrides}); one given in conversation does not cover such an item.
+A principal may authorize a class of actions in advance under written conditions, within their authority (for example, "release once this feature is tested"):
 '''
 zh = '''
-委托人可以在自身权限内，按书面条件预先授权一类动作 (例如「这个功能测完就发布」)。预先授权只在写明的内容和条件范围内有效。对{@must-ask}所列事项的预先授权，必须写进项目的指令或项目章程 ({@relaxations.project-overrides})；在对话中给出的，不涵盖这类事项。
+委托人可以在自身权限内，按书面条件预先授权一类动作 (例如「这个功能测完就发布」)：
+'''
+
+[[items]]
+id = "as-written"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+an advance authorization counts only as written and within its conditions;
+'''
+zh = '''
+预先授权只在写明的内容和条件范围内有效；
+'''
+
+[[items]]
+id = "listed-items"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+an advance authorization of an item listed in {@must-ask} must be written into the project's instructions or its charter ({@relaxations.project-overrides}); one given in conversation does not cover such an item.
+'''
+zh = '''
+对{@must-ask}所列事项的预先授权，必须写进项目的指令或项目章程 ({@relaxations.project-overrides})；在对话中给出的，不涵盖这类事项。
 '''
