@@ -1,0 +1,42 @@
+id = 62
+slug = "author-never-merges"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["accountable-agent.own-work", "independent-review.another-party"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Never merge your own change"
+zh = "作者不合并自己的变更"
+
+[text.statement]
+en = "Never merge a change you authored."
+zh = "不合并自己写的变更。"
+
+[text.reason]
+en = '''
+The agent that did the work never accepts its own work ({@constitution:accountable-agent.own-work}), and the author must not approve their own change ({@constitution:independent-review.another-party}). Merging puts a change into effect; a merge by its author is the author accepting its own work.
+'''
+zh = '''
+实际做这项工作的 agent 一律不验收自己的工作 ({@constitution:accountable-agent.own-work})，作者也不得自己批准自己的变更 ({@constitution:independent-review.another-party})。合并就是让变更生效；作者自己合并，等于自己验收自己的工作。
+'''
+
+[text.verification]
+en = '''
+The authors of a change are the agents that wrote any of its content. A commit that only brings the base branch into the change, such as merging the latest main into its branch, does not make the agent that wrote it an author. A change is merged by someone other than its authors, such as the agent responsible for the work or a principal.
+
+Violated when an author of a change merges it.
+'''
+zh = '''
+一项变更的作者，是写了它任何一部分内容的 agent。只把基础分支引入变更的 commit，例如把最新的 main 合并进变更的分支，不会让写这个 commit 的 agent 成为作者。变更由作者以外的一方合并，例如负责这项工作的 agent，或者委托人。
+
+一项变更的作者合并了它的，即为违反本规定。
+'''
+
+[translations]
+zh = "b055eda986549f1e576e300bc251e5313d9d6a9d232aaa54838a822c38d07659"

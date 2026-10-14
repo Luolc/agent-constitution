@@ -1,0 +1,42 @@
+id = 61
+slug = "verdict-names-version"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["independent-review.reviewed-version", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Name the reviewed version in the verdict"
+zh = "verdict 写明审查过的版本"
+
+[text.statement]
+en = "Name in every review verdict the exact version of the change you reviewed."
+zh = "每份审查 verdict 都写明你所审查的变更的确切版本。"
+
+[text.reason]
+en = '''
+What takes effect must be exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}). A change can move on after a review; only a verdict that names its version lets whoever merges tell whether the version in front of them is the one the verdict is about.
+'''
+zh = '''
+生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})。审查之后变更还可能继续改动；只有 verdict 写明了版本，合并的一方才能分辨眼前的版本是不是这份 verdict 针对的那个。
+'''
+
+[text.verification]
+en = '''
+A version is named exactly when the name cannot stand for two different contents: a commit SHA can serve, a branch name, a pull request number or "the latest" cannot. The verdict names the version it was written on, for example the head commit SHA of the pull request, taken from the checkout or the change as the reviewer actually looked it up ({@constitution:evidence.facts}), whether the verdict approves the change or not.
+
+Violated when a verdict names no exact version of the change, or names one other than the version reviewed.
+'''
+zh = '''
+一个名字不可能对应两份不同的内容，才算写明了确切版本：commit SHA 可以，分支名、pull request 编号或者「最新的那个」都不行。无论是否批准，verdict 都写明它针对的版本，例如 pull request 的 head commit SHA，并且是审查方从 checkout 或变更上实际查到的 ({@constitution:evidence.facts})。
+
+verdict 没有写明变更的确切版本，或者写明的不是审查过的那个版本的，即为违反本规定。
+'''
+
+[translations]
+zh = "0eebb741b8b16e9848854f9591f4056f316372bea4225626188f899bbe1cf0a3"
