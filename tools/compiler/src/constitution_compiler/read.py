@@ -2,7 +2,8 @@
 
 Reads constitution/index.toml, the article directories under
 constitution/articles/, rules/<id>.toml and rules/retired-ids.txt
-(docs/design.md, Source formats, Checkers).
+(docs/design/source-formats.md, constitution.md, rules.md and
+checkers.md).
 """
 
 from dataclasses import dataclass, field

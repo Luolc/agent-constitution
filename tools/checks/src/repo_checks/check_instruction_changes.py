@@ -5,7 +5,7 @@ base. A rename counts as a deletion of the old path and an addition of the
 new one. Each changed path is an instruction file, a generated file or
 another file, by the tables below; a change with both instruction files and
 other files fails, generated files not counted. Instruction files only,
-other files only, or nothing, passes. docs/design.md (Checkers) says what
+other files only, or nothing, passes. docs/design/checkers.md says what
 this proves and how another repo runs it.
 
 Exit status: 0 on pass, 1 on a mixed change, 2 when git cannot give the diff.
