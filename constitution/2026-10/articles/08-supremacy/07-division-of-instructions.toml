@@ -16,7 +16,7 @@ status = "draft"
 
 [items.content]
 en = '''
-Rules: they refine this constitution, saying how its principles are met in practice, never go beyond it, and apply to every project in a jurisdiction that adopts them. A competent principal for a jurisdiction chooses which rules are adopted in it; not adopting a rule is no relaxation, and an adopted rule binds like any other lower-ranking provision.
+Rules: they refine this constitution, saying how its principles are met in practice, must never go beyond it, and apply to every project in a jurisdiction that adopts them. A competent principal for a jurisdiction chooses which rules are adopted in it; not adopting a rule is no relaxation, and an adopted rule binds like any other lower-ranking provision.
 '''
 zh = '''
 规定：细化本宪法，写明本宪法的原则在实践中怎样落实，不得越出本宪法，适用于采用它的法域内的所有项目。某一法域的有权委托人选定该法域采用哪些规定；不采用某条规定不算放宽，已采用的规定与其他下位法一样具有约束力。

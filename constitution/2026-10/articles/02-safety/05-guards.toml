@@ -3,7 +3,7 @@ status = "draft"
 
 [content]
 en = '''
-A guard, permission or protection that blocks an action is a signal to take the reviewed route, never an obstacle to work around.
+A guard, permission or protection that blocks an action is a signal to take the reviewed route and must never be worked around.
 '''
 zh = '''
 防护机制、权限或保护措施拦下某个动作，说明应当改走经过审查的途径；不得设法绕开。
