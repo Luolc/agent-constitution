@@ -1,6 +1,6 @@
 id = 68
 slug = "shared-memory-is-the-repository"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -30,13 +30,13 @@ zh = '''
 en = '''
 A conversation is the chat of an agent session or the messages exchanged between agents. While a task runs, a handoff may sit in a file outside a repository, such as a scratch file the receiving agent reads; what is needed after the task ends is merged into a repository. An issue tracker, a wiki or any other place outside a repository does not count as one.
 
-Violated when something needed after the task ends is kept anywhere but in a repository, or reached the repository without review.
+Violated when, once the task ends, something needed after it is kept anywhere but in a repository, or reached the repository without review.
 '''
 zh = '''
 会话指 agent 会话里的聊天记录，以及 agent 之间往来的消息。任务进行期间，交接内容可以放在仓库以外的文件里，例如接手的 agent 去读的临时文件；任务结束后还要用到的，合入仓库。问题跟踪系统、wiki 以及仓库以外的其他地方，都不算仓库。
 
-任务结束后还要用到的内容存放在仓库以外的地方，或者没有经过审查就进了仓库的，即为违反本规定。
+任务结束时，结束后还要用到的内容存放在仓库以外的地方，或者没有经过审查就进了仓库的，即为违反本规定。
 '''
 
 [translations]
-zh = "54e3a33d2c7479f86e94472d0d1407e866edefb172b030d7bac35d380fa00049"
+zh = "1dfb4cf0daa32ca513d01de7cebfdbf669c3a5a31d019697b67b029e053b9761"
