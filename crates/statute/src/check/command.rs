@@ -41,72 +41,42 @@ fn check_within(ctx: &Context, run: &str, tools: &[String], timeout: Duration) -
         );
     }
     let mut cmd = Command::new("sh");
-    cmd.arg("-c")
-        .arg(run)
-        .current_dir(ctx.root)
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null());
+    cmd.arg("-c").arg(run).current_dir(ctx.root);
     if let Some(base) = ctx.base {
         cmd.env("STATUTE_BASE", base);
     }
-    // A group of its own, so that a timeout stops what the command started
-    // too, and nothing else.
-    #[cfg(unix)]
-    std::os::unix::process::CommandExt::process_group(&mut cmd, 0);
-    let mut child = match cmd.spawn() {
-        Ok(child) => child,
-        Err(e) => return Report::new(Outcome::Inconclusive, format!("cannot run `{run}`: {e}")),
-    };
-    let deadline = Instant::now() + timeout;
-    let timed_out = || {
-        Report::new(
-            Outcome::Inconclusive,
-            format!(
-                "`{run}` did not finish within {} s, or left a process holding its output",
-                timeout.as_secs()
-            ),
-        )
-    };
-    // Read the output on another thread, so that the wait for it, which
-    // lasts as long as any process the command started keeps it open, is
-    // bounded by the timeout too.
-    let stdout = child.stdout.take().expect("stdout is piped");
-    let (sender, receiver) = mpsc::channel();
-    std::thread::spawn(move || {
-        let mut out = Vec::new();
-        let _ = stdout.take(OUTPUT_LIMIT + 1).read_to_end(&mut out);
-        let _ = sender.send(out);
-    });
-    let Ok(out) = receiver.recv_timeout(deadline.saturating_duration_since(Instant::now())) else {
-        stop(&mut child);
-        return timed_out();
-    };
-    if out.len() as u64 > OUTPUT_LIMIT {
-        stop(&mut child);
-        return Report::new(
-            Outcome::Inconclusive,
-            format!(
-                "`{run}` wrote more than {} MiB of output, so it was cut off and not read",
-                OUTPUT_LIMIT >> 20
-            ),
-        );
-    }
-    let status = loop {
-        match child.try_wait() {
-            Ok(Some(status)) => break status,
-            Ok(None) if Instant::now() >= deadline => {
-                stop(&mut child);
-                return timed_out();
-            }
-            Ok(None) => std::thread::sleep(Duration::from_millis(20)),
-            Err(e) => {
-                stop(&mut child);
-                return Report::new(
-                    Outcome::Inconclusive,
-                    format!("cannot wait for `{run}`: {e}"),
-                );
-            }
+    let Ran {
+        status,
+        stdout: out,
+        ..
+    } = match run_within(cmd, timeout) {
+        Ok(ran) => ran,
+        Err(Stopped::Spawn(e)) => {
+            return Report::new(Outcome::Inconclusive, format!("cannot run `{run}`: {e}"));
+        }
+        Err(Stopped::TimedOut) => {
+            return Report::new(
+                Outcome::Inconclusive,
+                format!(
+                    "`{run}` did not finish within {} s, or left a process holding its output",
+                    timeout.as_secs()
+                ),
+            );
+        }
+        Err(Stopped::TooLong) => {
+            return Report::new(
+                Outcome::Inconclusive,
+                format!(
+                    "`{run}` wrote more than {} MiB of output, so it was cut off and not read",
+                    OUTPUT_LIMIT >> 20
+                ),
+            );
+        }
+        Err(Stopped::Wait(e)) => {
+            return Report::new(
+                Outcome::Inconclusive,
+                format!("cannot wait for `{run}`: {e}"),
+            );
         }
     };
     match status.code() {
@@ -133,6 +103,89 @@ fn check_within(ctx: &Context, run: &str, tools: &[String], timeout: Duration) -
             format!("`{run}` could not decide ({status})"),
         ),
     }
+}
+
+/// Why a command run by [`run_within`] gave no result.
+pub(super) enum Stopped {
+    Spawn(std::io::Error),
+    /// It did not exit and close its output within the time.
+    TimedOut,
+    /// Its standard output passed [`OUTPUT_LIMIT`].
+    TooLong,
+    Wait(std::io::Error),
+}
+
+/// What a command run by [`run_within`] left: its standard error is cut
+/// at [`OUTPUT_LIMIT`].
+pub(super) struct Ran {
+    pub status: std::process::ExitStatus,
+    pub stdout: Vec<u8>,
+    pub stderr: Vec<u8>,
+}
+
+/// Runs a command, without input, to its end, within `timeout`; on a
+/// timeout or too much output it is stopped with what it started.
+pub(super) fn run_within(mut cmd: Command, timeout: Duration) -> Result<Ran, Stopped> {
+    cmd.stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    // A group of its own, so that a timeout stops what the command started
+    // too, and nothing else.
+    #[cfg(unix)]
+    std::os::unix::process::CommandExt::process_group(&mut cmd, 0);
+    let mut child = cmd.spawn().map_err(Stopped::Spawn)?;
+    let deadline = Instant::now() + timeout;
+    // Read the output on other threads, so that the wait for it, which
+    // lasts as long as any process the command started keeps it open, is
+    // bounded by the timeout too.
+    let stdout = child.stdout.take().expect("stdout is piped");
+    let stderr = child.stderr.take().expect("stderr is piped");
+    let (sender, receiver) = mpsc::channel();
+    std::thread::spawn(move || {
+        let mut out = Vec::new();
+        let _ = stdout.take(OUTPUT_LIMIT + 1).read_to_end(&mut out);
+        let _ = sender.send(out);
+    });
+    let (err_sender, err_receiver) = mpsc::channel();
+    std::thread::spawn(move || {
+        let mut err = Vec::new();
+        let mut stderr = stderr;
+        let _ = (&mut stderr).take(OUTPUT_LIMIT).read_to_end(&mut err);
+        let _ = std::io::copy(&mut stderr, &mut std::io::sink());
+        let _ = err_sender.send(err);
+    });
+    let left = || deadline.saturating_duration_since(Instant::now());
+    let Ok(stdout) = receiver.recv_timeout(left()) else {
+        stop(&mut child);
+        return Err(Stopped::TimedOut);
+    };
+    if stdout.len() as u64 > OUTPUT_LIMIT {
+        stop(&mut child);
+        return Err(Stopped::TooLong);
+    }
+    let Ok(stderr) = err_receiver.recv_timeout(left()) else {
+        stop(&mut child);
+        return Err(Stopped::TimedOut);
+    };
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break status,
+            Ok(None) if Instant::now() >= deadline => {
+                stop(&mut child);
+                return Err(Stopped::TimedOut);
+            }
+            Ok(None) => std::thread::sleep(Duration::from_millis(20)),
+            Err(e) => {
+                stop(&mut child);
+                return Err(Stopped::Wait(e));
+            }
+        }
+    };
+    Ok(Ran {
+        status,
+        stdout,
+        stderr,
+    })
 }
 
 /// Kills the command and the processes of its group. The child is not

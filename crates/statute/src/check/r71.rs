@@ -67,11 +67,21 @@ pub fn check(ctx: &Context) -> Report {
                 list(&prs)
             ),
         ),
-        Ok((prs, findings)) => Report {
-            outcome: Outcome::Violation,
-            findings,
-            note: format!("auto-merge was enabled on {}", list(&prs)),
-        },
+        Ok((prs, findings)) => {
+            let enabled: Vec<u64> = prs
+                .into_iter()
+                .filter(|n| {
+                    findings
+                        .iter()
+                        .any(|f| f.location == format!("pull request #{n}"))
+                })
+                .collect();
+            Report {
+                outcome: Outcome::Violation,
+                findings,
+                note: format!("auto-merge was enabled on {}", list(&enabled)),
+            }
+        }
         Err(report) => report,
     }
 }

@@ -678,7 +678,7 @@ fn r71_auto_merge_is_a_violation() {
 }
 
 /// A pull request #7 holding HEAD, with the given comment bodies and an
-/// approval naming HEAD.
+/// approval without text, which GitHub records on HEAD.
 fn r61_answers(dir: &Path, comments: &[&str]) -> Vec<(&'static str, String)> {
     let sha = head(dir);
     let comments: Vec<String> = comments
@@ -696,7 +696,7 @@ fn r61_answers(dir: &Path, comments: &[&str]) -> Vec<(&'static str, String)> {
         (
             "pr",
             format!(
-                r#"{{"commits":[{{"oid":"{sha}"}}],"comments":[{}],"reviews":[{{"body":"Approved at {sha}.","state":"APPROVED","submittedAt":"2026-10-01T00:00:00Z"}}]}}"#,
+                r#"{{"commits":[{{"oid":"{sha}"}}],"comments":[{}],"reviews":[{{"body":"","state":"APPROVED","submittedAt":"2026-10-01T00:00:00Z","commit":{{"oid":"{sha}"}}}}]}}"#,
                 comments.join(",")
             ),
         ),

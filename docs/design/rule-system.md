@@ -696,11 +696,12 @@ run, reads it through the `gh` on the machine, run in the repository,
 where `gh api` finds the repository from its GitHub remote. statute never
 reads, stores or prints a token: the credential stays in `gh`'s own
 configuration. No `gh` on `PATH`, no login, a repository that is not on
-GitHub and a call that fails are inconclusive, like any missing tool. What
-such a check looks at comes from the repository itself: the pull requests
-are those GitHub associates with `HEAD` (the one that merged it into the
-default branch, or else the open and merged ones that hold it), and a
-release is a tag on `HEAD`. A commit not pushed yet has no pull request,
+GitHub, a call that fails and one that has not answered within 60 s
+(stopped like a command past its time, below) are inconclusive, like any
+missing tool. What such a check looks at comes from the repository
+itself: the pull requests are those GitHub associates with `HEAD` (the
+one that merged it into the default branch, or else the open and merged
+ones that hold it), and a release is a tag on `HEAD`. A commit not pushed yet has no pull request,
 and a `HEAD` without a tag no release, and both are inconclusive.
 
 When a rule is superseded, its successor gets a new module, copied from
@@ -789,7 +790,8 @@ the rule is still for the reviewer. The built-in checks:
 - rule 61 (verdict-names-version) reads the verdicts on the pull
   requests of `HEAD`: each comment or review whose text opens with
   `Verdict:`, and each review that approves or asks for changes. A verdict
-  without the full SHA of a commit of its pull request is a violation;
+  without the full SHA of a commit of its pull request is a violation; a
+  review also names the commit GitHub records it on;
   verdicts given elsewhere, and whether the SHA named is the version
   reviewed, are left to the reviewer;
 - rule 71 (no-automatic-merge) reads the timeline of the pull requests of

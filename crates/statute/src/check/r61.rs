@@ -4,7 +4,8 @@
 //! that pull request; an abbreviated SHA, a branch name or a pull request
 //! number does not name a version exactly. A verdict is a comment or a
 //! review whose text opens with `Verdict:`, and a review that approves the
-//! change or asks for changes.
+//! change or asks for changes; a review also names the commit GitHub
+//! records it on.
 //!
 //! It covers only part of the rule: verdicts given elsewhere or in
 //! another form, and whether the SHA named is the version the reviewer
@@ -41,6 +42,7 @@ struct Review {
     body: String,
     state: String,
     submitted_at: Option<String>,
+    commit: Option<Commit>,
 }
 
 pub fn check(ctx: &Context) -> Report {
@@ -87,18 +89,18 @@ fn findings(ctx: &Context) -> Result<(Vec<u64>, usize, Vec<Finding>), Report> {
                 "commits,comments,reviews",
             ],
         )?;
-        let names_a_commit = |body: &str| {
-            sha.find_iter(body).any(|m| {
-                pr.commits
-                    .iter()
-                    .any(|c| c.oid.eq_ignore_ascii_case(m.as_str()))
-            })
+        let of_the_pr = |oid: &str| pr.commits.iter().any(|c| c.oid.eq_ignore_ascii_case(oid));
+        // A review names the commit GitHub records it on, as well as any
+        // in its text.
+        let names_a_commit = |body: &str, recorded: Option<&Commit>| {
+            recorded.is_some_and(|c| of_the_pr(&c.oid))
+                || sha.find_iter(body).any(|m| of_the_pr(m.as_str()))
         };
         let comments = pr
             .comments
             .iter()
             .filter(|c| opens_with_verdict(&c.body))
-            .map(|c| (c.body.as_str(), c.url.clone()));
+            .map(|c| (c.body.as_str(), None, c.url.clone()));
         let reviews = pr
             .reviews
             .iter()
@@ -110,12 +112,13 @@ fn findings(ctx: &Context) -> Result<(Vec<u64>, usize, Vec<Finding>), Report> {
                 let when = r.submitted_at.as_deref().unwrap_or("not submitted");
                 (
                     r.body.as_str(),
+                    r.commit.as_ref(),
                     format!("pull request #{number}, review {when}"),
                 )
             });
-        for (body, location) in comments.chain(reviews) {
+        for (body, recorded, location) in comments.chain(reviews) {
             verdicts += 1;
-            if !names_a_commit(body) {
+            if !names_a_commit(body, recorded) {
                 findings.push(Finding {
                     location,
                     reason: "the verdict names no commit of the pull request by its full SHA"

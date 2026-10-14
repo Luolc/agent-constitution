@@ -5,10 +5,17 @@
 //! repository not on GitHub and a failed call all make the check
 //! inconclusive.
 
+use std::process::Command;
+use std::time::Duration;
+
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 
+use super::command::{Stopped, run_within};
 use super::{Context, Outcome, Report, git, on_path, without_git_locals};
+
+/// How long one call of `gh` may take before the check is inconclusive.
+const TIMEOUT: Duration = Duration::from_secs(60);
 
 /// Runs `gh` in the repository and reads its standard output as JSON. In
 /// `gh api`, `{owner}` and `{repo}` stand for the repository's GitHub
@@ -20,14 +27,17 @@ pub fn gh<T: DeserializeOwned>(ctx: &Context, args: &[&str]) -> Result<T, Report
             "gh is not installed, so GitHub was not read",
         ));
     }
-    let mut cmd = std::process::Command::new("gh");
+    let mut cmd = Command::new("gh");
     without_git_locals(&mut cmd);
-    let out = cmd
-        .args(args)
-        .current_dir(ctx.root)
-        .stdin(std::process::Stdio::null())
-        .output()
-        .map_err(|e| Report::new(Outcome::Inconclusive, format!("cannot run gh: {e}")))?;
+    cmd.args(args).current_dir(ctx.root);
+    let out = run_within(cmd, TIMEOUT).map_err(|stopped| {
+        let why = match stopped {
+            Stopped::Spawn(e) | Stopped::Wait(e) => format!("cannot be run: {e}"),
+            Stopped::TimedOut => format!("did not answer within {} s", TIMEOUT.as_secs()),
+            Stopped::TooLong => "answered with more than statute reads".to_owned(),
+        };
+        Report::new(Outcome::Inconclusive, format!("gh {} {why}", args[0]))
+    })?;
     if !out.status.success() {
         // The last line says what went wrong: no login, no GitHub remote,
         // a call GitHub refused.
