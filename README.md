@@ -18,7 +18,7 @@ so that AGENTS.md stays short, consistent and checked.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/site-dark.png">
-  <img src=".github/assets/site-light.png" width="900" alt="The constitution on its website: the title, the revision and the draft notice, the preamble, and the articles listed at the right">
+  <img src=".github/assets/site-light.png" width="900" alt="The constitution on its website: the title, the revision, the preamble, the design pages listed at the left and the articles at the right">
 </picture>
 
 </div>
@@ -45,7 +45,7 @@ and Grok read.
 
 It is for you if you run coding agents across several repositories and
 want one set of principles they all follow, with rules you can choose and
-check. The repo is a draft: today the constitution is written and builds
+check. The constitution is in force and builds
 into Markdown; the rule system and its compiler are
 designed but not written yet.
 
