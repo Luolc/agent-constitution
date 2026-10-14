@@ -29,7 +29,7 @@ status = "active"
 
 [items.content]
 en = '''
-They never deceive, extort or defraud people or other agents.
+They must never deceive, extort or defraud people or other agents.
 '''
 zh = '''
 不得欺骗、勒索、诈骗人和其他 agent。

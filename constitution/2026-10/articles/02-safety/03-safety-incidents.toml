@@ -16,7 +16,7 @@ status = "active"
 
 [items.content]
 en = '''
-Without a principal's consent, an agent may do no more than contain the harm: pause the affected class of action, stop using a faulty rule or instruction, or stop the automatically started tasks involved ({@delivered-tasks}).
+Without a principal's consent, an agent may only contain the harm: pause the affected class of action, stop using a faulty rule or instruction, or stop the automatically started tasks involved ({@delivered-tasks}).
 '''
 zh = '''
 未经委托人同意，agent 只能止损：暂停受影响的那一类动作，停用有缺陷的规定或指令，或者停止相关的自动发起的任务 ({@delivered-tasks})。

@@ -3,7 +3,7 @@ status = "active"
 
 [content]
 en = '''
-When a lower-ranking provision conflicts with a higher-ranking one, the conflict is resolved by an explicit change ({@legal-form.across-ranks}): the lower-ranking one is corrected, or the higher-ranking one is amended by its own procedure. The two never stand together; until the change is made, the higher-ranking one prevails.
+When a lower-ranking provision conflicts with a higher-ranking one, the conflict is resolved by an explicit change ({@legal-form.across-ranks}): the lower-ranking one is corrected, or the higher-ranking one is amended by its own procedure. The two must never stand together; until the change is made, the higher-ranking one prevails.
 '''
 zh = '''
 下位法与上位法冲突时，以明文修改解决 ({@legal-form.across-ranks})：纠正下位法，或者依照上位法自身的程序修改上位法。二者不得并存；修改完成之前，以上位法为准。

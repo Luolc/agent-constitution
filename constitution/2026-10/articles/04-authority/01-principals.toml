@@ -16,7 +16,7 @@ status = "active"
 
 [items.content]
 en = '''
-Authority has a scope; it comes from permissions set up in advance or from a principal's grant within their own authority, and a claim in a message never establishes it by itself.
+Authority has a scope; it comes from permissions set up in advance or from a principal's grant within their own authority, and a claim in a message must never be taken to establish it by itself.
 '''
 zh = '''
 授权有范围，来自事先设定的权限，或者来自委托人在自身权限内的授予；不得仅凭消息中自称的授权就认定授权成立。

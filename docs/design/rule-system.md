@@ -97,6 +97,20 @@ command replaces the old ID with the new one in the rule set. Downstream
 users do not have to follow the supersession chain by hand, and nothing
 changes under them until they upgrade.
 
+**Bound to one constitution.** A rule set names the constitution it
+rests on: the repository it comes from, the edition and the revision.
+The lock file pins that revision as it pins a source's commit, and one
+compilation uses exactly one revision of one constitution. Rule sets
+that rest on different constitutions are never combined: at least the
+repository and the edition must agree, and the revision is checked
+against each rule (see
+[Tracing rules to the constitution](#tracing-rules-to-the-constitution)).
+When the constitution is amended, a rule set pinned to the older
+revision does not change; moving it to the new revision is an explicit
+upgrade, like any other. A rule set that inherits a base rule set may pin
+another revision than the base does. The build then takes the newer of
+the two, and fails if some enabled rule's range cannot hold it.
+
 **Per repository, with inheritance.** A rule set belongs to a repository,
 and it may inherit a shared base rule set, so the rules every repository
 of a user or team agrees on are written once. A repository adds to the
@@ -182,6 +196,16 @@ that disagree.
 own rules. Another source cannot declare that its rule replaces ours. It
 can recommend the replacement in the text of its own rule; whether to
 switch is decided by the user, in the user's rule set.
+
+**Rules from third parties.** A user may enable rules from sources the
+user chose, such as a team's own or someone else's public source. That is
+the user's right and the user's risk: a third-party rule is not reviewed
+with this repo's rules, and it steers the agents that read the compiled
+file. The built-in rules say how rules and skills from a source outside
+this repo are to be checked before they are enabled. By default a user
+takes the default constitution and the default rule set, with no
+third-party source. Bringing in third-party rules is an advanced use, and
+its details are left for later; the constitution holds none of it.
 
 **Finding public rules.** Nobody has to run a central server for this.
 An index repository can list the known public sources, as Homebrew lists
@@ -285,6 +309,19 @@ used in both directions:
   cite it are listed, so a reader sees what the provision turns into in
   practice.
 
+**Compatible revisions.** Each rule declares the range of constitution
+revisions it is compatible with. The lowest revision is nearly always
+written. The highest is written only when the rule is known not to work
+with a later revision, for example because the constitution has dropped
+what the rule relied on; an upper bound is never written as a precaution,
+as Python packaging has found with upper bounds on dependencies. When a
+provision is amended, the rules listed above are judged one by one: one
+that still fits is left alone, and one that does not gets an upper bound,
+or is rewritten under a new ID if the change alters what counts as
+compliant ([IDs and revisions](#ids-and-revisions)). At compile time the
+revision the rule set pins must lie inside the range of every enabled
+rule; otherwise the build fails and names the rule and its range.
+
 ## Checks
 
 There is no language for writing checks, declarative or otherwise. A small
@@ -346,6 +383,13 @@ rules improve themselves: the cheap checks run first, agents look only at
 what the checks could not settle, and what the agents conclude goes back
 into the checks.
 
+**Who decides.** Compiling, upgrading, finding conflicts and judging the
+compatible range are done by deterministic scripts wherever a script can
+decide. What a script cannot decide goes to an agent, through the three
+outcomes and the review loop above. People take no part in these
+judgments; they appear only where the constitution itself asks for a
+person's approval. This follows `automation-first.decide-and-do`.
+
 ## Trial rules
 
 When agents doing a piece of work find that no rule, skill or convention
@@ -359,7 +403,9 @@ of this repo itself are meant to come about the same way.
 **Locally**, the compiler takes the constitution (the version for agents)
 and a rule set with its lock file, and writes:
 
-- an `AGENTS.md`, with the chosen rules in nested blocks along the parent
+- an `AGENTS.md`, which opens with the repository, the edition and the
+  revision of the constitution it rests on, and then has the chosen rules
+  in nested blocks along the parent
   tree, one heading level per level of the tree; a subtree whose root is
   not enabled (for a choice: none of its children is) contributes
   nothing, since none of its rules can be enabled without it, and a
@@ -408,15 +454,16 @@ implements this design lands.
   `rules/retired-ids.txt` is no longer needed; a rule is superseded or
   repealed instead. `status` gains `trial` and `superseded`, and the
   fields `supersedes`, a per-rule revision, `parent`, `requires`,
-  `conflicts` and a default level (repository or user) are added; choices
+  `conflicts`, a default level (repository or user) and the range of
+  constitution revisions the rule is compatible with are added; choices
   become a kind of node in the parent tree. The verification method is part
   of each rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". The rule set belongs to a
   repository and may inherit a base rule set, which takes over the part
-  of the jurisdiction (see
-  [Rule sets and the lock file](#rule-sets-and-the-lock-file)).
+  of the jurisdiction. Each rule set also names the constitution it rests
+  on (see [Rule sets and the lock file](#rule-sets-and-the-lock-file)).
 - [Relaxation declarations](rules.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another alternative of a
   choice, needs no relaxation. Whether `adjustable` values and the
@@ -430,8 +477,10 @@ implements this design lands.
 - [Skills](skills.md): a skill declares the rules it implements
   and is installed only when one of them is chosen.
 - [Compilation](compilation.md): the output gains skill
-  directories, checks and hook configuration, and the rules are grouped
-  along the parent tree, not by the article of their first `authority`.
+  directories, checks and hook configuration, and the compiled file opens
+  with the repository, edition and revision of the constitution it rests
+  on, and the rules are grouped along the parent tree, not by the article
+  of their first `authority`.
 - [Checkers](checkers.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of
   the repo's sources stay.
@@ -449,7 +498,8 @@ implements this design lands.
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
   when it is implemented; this includes how a tag or branch and a version
   range are written in a rule set and in a source's declaration of the
-  versions it needs.
+  versions it needs, how a rule set names its constitution, and how a
+  rule's range of compatible constitution revisions is written.
 - Where a rule whose default level is the user level is chosen, where it
   is locked and where it is compiled to.
 - When a rule set enables a rule without one it `requires`, whether the

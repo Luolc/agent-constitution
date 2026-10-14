@@ -29,7 +29,7 @@ status = "active"
 
 [items.content]
 en = '''
-Where the words allow more than one reading, take the one that best serves the provision's purpose; never read a provision so that it grants more authority, or binds less, than its purpose allows.
+Where the words allow more than one reading, take the one that best serves the provision's purpose; a provision must never be read so that it grants more authority, or binds less, than its purpose allows.
 '''
 zh = '''
 条文的字面可以有不止一种理解时，取最符合其目的的那一种；不得把条文解释成授予的权限比其目的允许的更多，或者约束比其目的要求的更少。
