@@ -1,0 +1,42 @@
+id = 66
+slug = "waiters-exit-when-gone"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["safety", "decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Let a waiting loop exit when what it waits for is gone"
+zh = "等待的循环在等待对象消失时退出"
+
+[text.statement]
+en = "Give every loop that waits for something an exit for when what it waits for is gone."
+zh = "每个等待某个对象的循环，都要在等待对象消失时能够退出。"
+
+[text.reason]
+en = '''
+A loop that waits for something that is gone keeps running with no purpose, holding resources on the machine until someone notices it; agents pursue goals only by legitimate means, never by destructive ones ({@constitution:decency.legitimate-means}).
+'''
+zh = '''
+等待对象已经消失，循环却还在等，就会毫无意义地一直运行，占着机器上的资源，直到有人发现为止；agent 只用正当手段达成目标，绝不用破坏性的手段 ({@constitution:decency.legitimate-means})。
+'''
+
+[text.verification]
+en = '''
+What a loop waits for is gone when, for example, the process it watches has exited, the file, page or tab it waits on does not exist or was closed, or the job it polls was removed. The loop checks on each pass whether its object still exists and exits when it does not. A time limit alone does not meet this rule, since the loop keeps running after its object is gone until the limit.
+
+Violated when a loop that waits for something has no exit that a vanished object triggers.
+'''
+zh = '''
+等待对象消失，例如：循环盯着的进程已经退出，它等的文件、页面或 tab 不存在或已被关掉，它轮询的 job 已被删除。循环每一轮都检查等待对象是否还在，不在就退出。只设超时不满足本规定，因为等待对象消失之后，循环还会一直运行到超时为止。
+
+等待某个对象的循环，没有一个在对象消失时触发的退出条件的，即为违反本规定。
+'''
+
+[translations]
+zh = "f60e27724a2a44ac84de8f3ab79bf2ac4b4c67a775f27ce1a7b70427994e1eef"

@@ -1,0 +1,42 @@
+id = 72
+slug = "cite-the-ci-run"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "evidence"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Cite the CI run when stating that all checks passed"
+zh = "说全部检查都通过时，引用 CI 的那次运行"
+
+[text.statement]
+en = "When you state that all of a change's checks passed, cite the CI run on the exact version you mean, never a full run of your own in its place."
+zh = "说一个变更的全部检查都通过时，引用 CI 在所说那个确切版本上的那次运行，不拿自己跑的全量检查代替。"
+
+[text.reason]
+en = '''
+A claim that every check passed needs grounds someone else can check ({@constitution:evidence}). A CI run on a given version is one record that the author, the reviewer and whoever merges can all open and read the same way; a full run on one agent's machine can be seen by no one else, and may differ from CI in its environment or in the version it ran on.
+'''
+zh = '''
+声称全部检查都通过，需要别人能够核对的依据 ({@constitution:evidence})。CI 在某个版本上的运行是同一份记录，作者、审查方和合并方都能打开，读到的也一样；在某个 agent 自己机器上跑的全量检查，别人看不到，运行环境或所跑的版本也可能与 CI 不同。
+'''
+
+[text.verification]
+en = '''
+This rule applies where CI runs the full set of checks on a change. Whoever states that all of the change's checks passed, the author in a pull request description or report, the reviewer in a verdict, whoever merges as grounds for the merge, cites the CI run of the job that sums up the checks (the required check, where there is one) on the version the statement is about, by a link or the run's ID. The checks run before a push ({@rule:53}) are cited for what they cover, not as the full set, and the run's attempt number is read before the run is cited as passed ({@rule:55}). Which run a release rests on is set by {@rule:58}.
+
+Violated when an agent states that all of a change's checks passed and cites no CI run, cites one on another version, or cites a full run of its own instead.
+'''
+zh = '''
+本规定适用于 CI 会在变更上运行全部检查的情况。说一个变更的全部检查都通过的一方，无论是作者在 pull request 描述或报告里，审查方在 verdict 里，还是合并方作为合并的依据，都引用汇总这些检查的 job (有 required check 的就是它) 在这句话所说版本上的那次运行，给出链接或运行 ID。push 之前运行的检查 ({@rule:53}) 只代表它们覆盖的那部分，不能当作全部检查；引用这次运行说它通过之前，先读它的 attempt 编号 ({@rule:55})。发版依据哪一次运行，由 {@rule:58} 规定。
+
+agent 说一个变更的全部检查都通过，却没有引用 CI 的运行，引用的是另一个版本上的运行，或者拿自己跑的全量检查代替的，即为违反本规定。
+'''
+
+[translations]
+zh = "e6bbe782b71f94409dc8671c6ee1b69dc65d4fa55d18b1fe0516159877d3a0ec"
