@@ -789,7 +789,19 @@ heading is its title and ID, after an anchor `rule-<id>`, which is unique
 within one source only. A requirement of a node under another domain is
 a line "Requires:" with a link to that anchor; one within the domain is
 not rendered. A rule uses its translation into the language when it has
-one, and its original otherwise. The skill directories, the check
+one, and its original otherwise. The citations in a rule's text are
+rendered ([IDs](source-formats.md#ids)): `{@rule:<id>}` as the cited
+node's title, in the language as its heading is, linked to its anchor
+when the node is in the file, and followed by "(rule <id>)" otherwise; and
+`{@constitution:<id>}` as the provision's label in the language, in plain
+text as in the version for agents, such as `Art. IV §1(2)`. The labels
+come from the edition's sources, the numbers of the articles' and
+sections' names and the items' `number`, by the same rules as in the
+constitution's build ([Compilation](compilation.md)); unlike that build,
+citations in a row are not shortened (`Art. IV §1, Art. IV §2`). A
+citation of a node or provision that does not exist fails the command,
+naming the rule and the part. The rules' files and their hashes in the
+lock file are unchanged. The skill directories, the check
 binary's version and the hook configuration are not written yet.
 
 Compiling, checking and upgrading a rule set are one command-line tool
