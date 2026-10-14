@@ -30,8 +30,7 @@ constitution/
       constitution.zh.agent.md  the version for agents, Chinese        A
 crates/                   the Rust workspace's crates, one directory
                           each                                         A
-  statute/                the statute binary; today a placeholder
-                          that prints a notice                         A
+  statute/                the statute binary, under development        A
 docs/
   design/                 this design, one file per part, indexed
                           by README.md                                 A
@@ -123,10 +122,11 @@ holding the
 concrete practices taken out of the constitution. `skills/` starts in
 stage A as plain directories, each holding a `SKILL.md` with the usual
 skill front matter (`name`, `description`) and no metadata of this
-repo's own. `crates/` starts in stage A with one crate, `statute`, a
-placeholder that only prints a notice: it is published early to hold the
-name on crates.io, and the binary that compiles and checks the rules
-grows in it in stage B. Compiling and checking the
+repo's own. `crates/` starts in stage A with one crate, `statute`, whose
+first release, a placeholder, was published early to hold the name on
+crates.io; the binary that compiles and checks the rules grows in it in
+stage B, and so far reads a rule set and writes its lock file
+([Rule system](rule-system.md#the-tool-and-the-first-version)). Compiling and checking the
 rules, and building the instruction file, stay in stage B.
 
 Stage B, in the order to build it: `schema/` and the schema checker,
