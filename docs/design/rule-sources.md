@@ -242,8 +242,8 @@ may override only a rule of a lower rank:
 1. the first-party source, `R`, which overrides nothing;
 2. every other global source, public or private: a team's or a person's
    own rules may replace a first-party rule for all of their
-   repositories (in a public repository, only a rule that the private
-   layer alone enables, below);
+   repositories (a private source's rules, in a public repository, only
+   a rule that the private layer alone enables, below);
 3. local rules: the repository's `rules/` and any source with
    `scope = "local"`.
 
@@ -270,8 +270,8 @@ error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; 
 
 Within the private layer, a rule may override any rule of a lower rank
 that only the private layer enables, since both are compiled into the
-private output; within the public layer, a local rule may override a
-public rule of a lower rank. Both work as in a private repository.
+private output; within the public layer, a rule may override a public
+rule of a lower rank. Both work as in a private repository.
 
 **What the build does.** An override takes effect when the overriding
 rule is enabled:
