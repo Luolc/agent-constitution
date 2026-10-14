@@ -1,4 +1,4 @@
-//! Compiling a locked rule set (`docs/design/rule-system.md`, Compilation
+//! Compiling a locked rule set (`docs/design/statute-command.md`, Compilation
 //! and the site) into `AGENTS.md`, the constitution's version for agents
 //! and then the enabled rules along the parent tree, with the citations in
 //! their text rendered; and, next to it, the skills the enabled rules

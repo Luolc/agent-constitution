@@ -1,7 +1,7 @@
-<!-- en-sha256: 768b13448eea7c33eae57c45f0bff8b6617704d4d678aad1de8945a7b651c1de -->
+<!-- en-sha256: 83aff20dd823c252c67ce366738e892644b8433fb81cfd9ef98bd94f422809ff -->
 # 规定源
 
-状态：草案，尚未实现。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-system.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-system.md#dependencies-one-ofs-and-packs)。标着「默认，待定」的各点是推荐做法，人另有决定之前照它办。这一部分与[规定体系](rule-system.md) 现在的写法不一致的地方，列在[它改变什么](#what-this-changes) 一节。
+状态：草案，尚未实现。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。标着「默认，待定」的各点是推荐做法，人另有决定之前照它办。这一部分与[规定体系](rule-system.md) 现在的写法不一致的地方，列在[它改变什么](#what-this-changes) 一节。
 
 ## <a id="contents"></a>目录
 
@@ -26,7 +26,7 @@
 
 - **全局公开**：第一方规定源 `R`，以及其他团队公开的规定源，如 `team:7`。
 - **全局私有**：规定清单在 `[sources]` 里声明、带 `public = false` 的规定源，可以是私有 git 仓库，也可以是磁盘上的一个目录。
-- **本地公开**：仓库公开时，仓库自己的 `rules/`。例外是本身就是第一方规定源的仓库，比如本仓 (`R = { path = "." }`)：它的 `rules/` 是第一方规定，写作 `R12` (见[规定源与引用](rule-system.md#sources-and-references))。
+- **本地公开**：仓库公开时，仓库自己的 `rules/`。例外是本身就是第一方规定源的仓库，比如本仓 (`R = { path = "." }`)：它的 `rules/` 是第一方规定，写作 `R12` (见[规定源与引用](rule-sets.md#sources-and-references))。
 - **本地私有**：仓库私有时，仓库自己的 `rules/`。公开仓库把私有规定放在仓库之外的规定源里，声明时写 `scope = "local"`，见[公开仓库里的私有规定](#private-rules-in-a-public-repository)。
 
 不论哪一类，每条规定都自成一体 (self-contained)：引用别的规定只通过 `parent`、`requires`、`conflicts`、`overrides` 和 `{@rule:...}`，引用宪法只通过 `authority` 和 `{@constitution:...}`。一条规定还要指向手写的指南，或者指向任何既不是规定也不是宪法的文字，就说明它还没迁完 (见[切换](#cutover-from-the-hand-written-guide))。
@@ -49,7 +49,7 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 
 可见性靠声明，不靠查询：规定清单为自己、为每个规定源写明 `public = true` 或 `public = false` (默认，待定)。要是构建时去托管平台查 (GitHub 上仓库的 visibility)，构建就离不开网络和账号，同样的输入在两台机器上也可能得出不同结果；要是按规定源放在哪来猜 (`R` 公开，其余都私有)，一个团队公开的规定源就成了私有的，公开规定也就不能引用它的规定了。
 
-声明错了，只有一个方向危险。私有仓库声明了 `public = true`，检查比需要的严，但什么也不会泄漏。公开仓库声明了 `public = false`，就可能把私有规定写进谁都能读的文件。所以 `statute check` 有一项内置检查，在能查的时候把声明和托管平台对一对，像[检查](rule-system.md#checks) 里的内置检查那样通过 `gh` 查：规定清单写的是 `public = false`，而仓库的 visibility 是 `PUBLIC`，就失败；`gh` 答不上来时，报告说无法判断 (默认，待定)。
+声明错了，只有一个方向危险。私有仓库声明了 `public = true`，检查比需要的严，但什么也不会泄漏。公开仓库声明了 `public = false`，就可能把私有规定写进谁都能读的文件。所以 `statute check` 有一项内置检查，在能查的时候把声明和托管平台对一对，像[检查](rule-checks.md#checks) 里的内置检查那样通过 `gh` 查：规定清单写的是 `public = false`，而仓库的 visibility 是 `PUBLIC`，就失败；`gh` 答不上来时，报告说无法判断 (默认，待定)。
 
 ## <a id="which-rules-may-cite-which"></a>哪些规定可以引用哪些
 
@@ -75,7 +75,7 @@ rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`
 公开仓库提交的文件都是公开的，其中包括规定清单、锁文件和编译出的 `AGENTS.md`。在 `statute.toml` 里写一个私有规定源，就会把它的地址公开出去；把它的规定编译进 `AGENTS.md`，就会把规定的正文公开出去。所以在 `public = true` 的规定清单里 (默认，待定)：
 
 - `statute.toml` 只写公开的规定源；写了 `public = false` 的规定源就报错，并提示把它写进 `statute.private.toml`。
-- 私有规定源写在 `statute.private.toml` 里。它和 `statute.toml` 放在同一目录，被 git 忽略；它用 `base = "statute.toml"` 指明以 `statute.toml` 为基础，这是为[规定清单与锁文件](rule-system.md#rule-sets-and-the-lock-file) 里说的继承新加的字段；它再加上规定源、规定和覆盖；`[compile]` 里的 `output` 也是新字段，写明它编译到哪个文件：
+- 私有规定源写在 `statute.private.toml` 里。它和 `statute.toml` 放在同一目录，被 git 忽略；它用 `base = "statute.toml"` 指明以 `statute.toml` 为基础，这是为[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的继承新加的字段；它再加上规定源、规定和覆盖；`[compile]` 里的 `output` 也是新字段，写明它编译到哪个文件：
 
   ```toml
   base = "statute.toml"
@@ -91,7 +91,7 @@ rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`
 
 - 它有自己的锁文件 `statute.private.lock` 和自己的输出。输出是一份完整的指令文件，公开规定和私有规定都在里面，覆盖也已生效。`statute compile` 在写这些文件之前，先用 `git check-ignore` 确认 git 忽略了每一个，有一个没被忽略就什么都不写。
 
-私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。公开仓库里的 agent 怎样改读这份私有输出、不读提交进仓库的 `AGENTS.md`，还没有定：先在各家 agent 上实测，就像测子目录里的指令文件那样 ([规定清单与锁文件](rule-system.md#rule-sets-and-the-lock-file)，monorepo 一段)。全局私有规定等用户级做出来以后归用户级 (同一节，放在哪里一段)；在那之前，它们这样进入一个仓库。
+私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。公开仓库里的 agent 怎样改读这份私有输出、不读提交进仓库的 `AGENTS.md`，还没有定：先在各家 agent 上实测，就像测子目录里的指令文件那样 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)。全局私有规定等用户级做出来以后归用户级 (同一节，放在哪里一段)；在那之前，它们这样进入一个仓库。
 
 ## <a id="overrides"></a>覆盖
 
@@ -139,8 +139,8 @@ overridden-by = "L3"
 
 **和这些不是一回事。**
 
-- 取代：规定源在所有规定清单里永久替换自己的一条规定 (见 [ID 与修订号](rule-system.md#ids-and-revisions))；覆盖是在一份规定清单里替换另一个规定源的规定。
-- `conflicts`：两条规定不能同时启用，谁也不顶替谁 (见[依赖、one-of 与规定包](rule-system.md#dependencies-one-ofs-and-packs))；覆盖是用一条规定顶替另一条。
+- 取代：规定源在所有规定清单里永久替换自己的一条规定 (见 [ID 与修订号](rule-format.md#ids-and-revisions))；覆盖是在一份规定清单里替换另一个规定源的规定。
+- `conflicts`：两条规定不能同时启用，谁也不顶替谁 (见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))；覆盖是用一条规定顶替另一条。
 - one-of：规定源预先想到的几种做法，各自是一条规定，每份规定清单选一条；覆盖是规定源没有想到的偏离。两份规定清单以同样的方式覆盖同一条规定时，就把这种偏离作为 one-of 的一个子节点向规定源提议。
 - 去掉一条规定再加一条：规定清单就和原来那条断了联系。覆盖保留了这层联系：它在树里的位置、指向它的要求，以及原来那条改动时的提醒。
 - 放宽 (见[放宽声明](rules.md#relaxation-declarations))：放宽是依据宪法的某项许可解除一条规定的一部分；覆盖属于一个法域选用哪些规定 (`division-of-instructions.rules`)，不需要许可。
@@ -160,7 +160,7 @@ parent = 104
 - 规定的 `parent` 也可以指向另一个规定源的领域或子领域 (默认，待定)，但不能指向另一个规定源的规定或 one-of。这样，一个仓库关于 Git 的本地规定会出现在通用的 Git 标题下面，而不是另起一个标题。引用方向同样适用：公开规定的 `parent` 必须是公开的领域。
 - 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定，不在规定包里，要由规定清单在 `rules` 里列出来启用。
 
-**怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](rule-system.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
+**怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](statute-command.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
 
 ## <a id="conflicting-practices-as-one-ofs"></a>用 one-of 表达相互冲突的做法
 

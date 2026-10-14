@@ -2,7 +2,7 @@
 
 Reads index.toml and the article directories under articles/ in the
 edition directory (model.Layout) and rules/<id>.toml, the nodes of the rule
-tree (docs/design/source-formats.md, constitution.md, rule-system.md and
+tree (docs/design/source-formats.md, constitution.md, rule-format.md and
 checkers.md).
 """
 

@@ -2,7 +2,7 @@
 
 Where the sources are, the shapes of their names and IDs, and the records
 they are read into (docs/design/source-formats.md,
-constitution.md and rule-system.md).
+constitution.md and rule-format.md).
 """
 
 from collections.abc import Iterable, Iterator
@@ -36,7 +36,7 @@ MONTH = re.compile(r"([0-9]{4})-(0[1-9]|1[0-2])")
 INDEX_STATUS = ("draft", "active")
 STATUS = ("draft", "active", "repealed")
 # A node of the rule tree: a rule, a one-of or a domain in the format of
-# docs/design/rule-system.md (Rule file format), named `rules/<id>.toml` by
+# docs/design/rule-format.md (Rule file format), named `rules/<id>.toml` by
 # its number. NODE_NAME is any name of digits, as in a base commit's listing.
 NODE_NAME = re.compile(r"[0-9]+")
 NODE_ID = re.compile(r"[1-9][0-9]*")
@@ -45,7 +45,7 @@ FOREIGN_REF = re.compile(rf"{ID}:[1-9][0-9]*")
 # A language code such as `en`, `zh` or `zh-Hant`.
 LANG_CODE = re.compile(r"[a-z]{2,3}(?:-[A-Za-z0-9]+)*")
 # One clause of `constitution`: revisions are whole numbers, so only the
-# comparisons of whole numbers (docs/design/rule-system.md, Tracing rules
+# comparisons of whole numbers (docs/design/rule-format.md, Tracing rules
 # to the constitution).
 REVISION_CLAUSE = re.compile(r"\s*(?:[<>]=?|[=!]=)\s*([0-9]+)\s*")
 # The largest revision a clause may name: statute reads revisions as

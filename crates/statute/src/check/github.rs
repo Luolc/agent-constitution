@@ -1,5 +1,5 @@
 //! Reading GitHub through the `gh` on the machine, for the checks that
-//! need the state of a pull request or a CI run (`docs/design/rule-system.md`,
+//! need the state of a pull request or a CI run (`docs/design/rule-checks.md`,
 //! Checks). statute never reads, stores or prints a token: `gh` uses the
 //! login of its own configuration. No `gh` on `PATH`, no login, a
 //! repository not on GitHub and a failed call all make the check

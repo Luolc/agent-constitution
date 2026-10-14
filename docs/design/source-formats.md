@@ -5,7 +5,7 @@ text a reader sees is a table whose keys are the language codes listed in
 the constitution's `index.toml` and whose values are the text in that language,
 so one file holds all languages of one provision side by side. A rule's
 text needs only the language of its original, and its translations are
-tracked by hash ([Rule file format](rule-system.md#rule-file-format)). Multi-line
+tracked by hash ([Rule file format](rule-format.md#rule-file-format)). Multi-line
 text is a literal string (`'''...'''`); the build drops the newline after
 the opening quotes and before the closing ones.
 
@@ -22,7 +22,7 @@ are unique across the whole constitution, and a list item's ID only
 within its section, so items can have short names (`capital`). In the
 rules, the ID is a number that names one node of the rule tree of its
 source, a rule, a one-of or a domain
-([IDs and revisions](rule-system.md#ids-and-revisions)). An ID is
+([IDs and revisions](rule-format.md#ids-and-revisions)). An ID is
 never reused. From the first approved revision on, a provision of the
 constitution is only ever repealed, never deleted, so the sources hold
 every ID used since then and the build rejects a second one. While the
@@ -58,7 +58,7 @@ revision that deletes another adds it:
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule is never deleted: it is superseded or repealed
-instead ([IDs and revisions](rule-system.md#ids-and-revisions)).
+instead ([IDs and revisions](rule-format.md#ids-and-revisions)).
 
 Text cites with `{@...}`; nothing else in the text is markup, and any
 other braces are output as is. The constitution cites only itself,

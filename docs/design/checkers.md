@@ -87,7 +87,7 @@ first one that finds errors, printing all of that one's errors:
    purpose is that one revision names one text.
 
 The rules are nodes of the rule tree in the format of
-[Rule file format](rule-system.md#rule-file-format), each in
+[Rule file format](rule-format.md#rule-file-format), each in
 `rules/<id>.toml`, read in the order of their numbers. The checks above
 cover them as follows. 1: the keys of the node's `kind`, with
 their types; `id` is the file name, which has no leading zeros; `revision` is
@@ -97,7 +97,7 @@ a rule's does; `superseded-by` is there exactly when the status is
 `superseded`, `run` and `tools` exactly when `check` is `command`;
 `authority` is a non-empty list of strings, `tools` a list of strings, and
 `constitution` a specifier of whole revisions
-([Tracing rules to the constitution](rule-system.md#tracing-rules-to-the-constitution)),
+([Tracing rules to the constitution](rule-format.md#tracing-rules-to-the-constitution)),
 none above 18446744073709551615 (2^64 − 1, the largest statute reads);
 each entry of `requires` and `conflicts` is a number from 1 or a string
 `"<source>:<id>"`, names a node other than the rule itself and is listed
@@ -119,11 +119,11 @@ superseded once it was; a rule of a base from before the rule tree,
 named by a word, lives on as the node whose `slug` is that word.
 
 The relations between the nodes are not checked here but by `statute`
-([The command and the first version](rule-system.md#the-command-and-the-first-version)):
+([The command and the first version](statute-command.md#the-command-and-the-first-version)):
 the targets of `requires` and `conflicts` exist and are of the right kind,
 `requires` has no cycle and nothing redundant, a rule conflicts with
 nothing it brings in, and the warnings of
-[Dependencies, one-ofs and packs](rule-system.md#dependencies-one-ofs-and-packs).
+[Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 In CI, `crates/statute/tests/real_rules.rs` reads this repo's `rules/`
 with `statute` and fails on any error or warning.
 
