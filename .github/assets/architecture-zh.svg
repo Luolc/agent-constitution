@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" width="1160" height="440" role="img" aria-label="Agent 宪法的各部分怎样连起来：宪法目前已能构建成 Markdown 与网站；规定树、skill、每个仓库的规定清单、编译器、检查与审查回路已设计，尚未实现。">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 440" width="1160" height="440" role="img" aria-label="Agent 宪法的各部分怎样连起来：宪法目前已能构建成 Markdown；规定树、skill、每个仓库的规定清单、编译器、检查与审查回路已设计，尚未实现。">
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8a9a82"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7d3a1e"/></marker></defs>
 <g font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;PingFang SC&quot;, &quot;Hiragino Sans GB&quot;, &quot;Microsoft YaHei&quot;, &quot;Noto Sans CJK SC&quot;, Helvetica, Arial, sans-serif">
 <rect x="1" y="1" width="1158" height="438" rx="18" fill="#dde6d5" stroke="#b5c4aa"/>
@@ -28,8 +28,8 @@
 <text x="336" y="84" font-size="12.5" fill="#4b5946">构建并检查</text>
 
 <rect x="616" y="42" width="232" height="54" rx="12" fill="#eef3ea" stroke="#7d3a1e" stroke-width="1.6"/>
-<text x="632" y="65" font-size="15" font-weight="600" fill="#23301f">Markdown 与网站</text>
-<text x="632" y="84" font-size="12.5" fill="#4b5946">全文与 agent 版</text>
+<text x="632" y="65" font-size="15" font-weight="600" fill="#23301f">Markdown</text>
+<text x="632" y="84" font-size="12.5" fill="#4b5946">完整版与 agent 版</text>
 
 <rect x="24" y="140" width="232" height="54" rx="12" fill="#eef3ea" stroke="#b5c4aa" stroke-width="1.4" stroke-dasharray="6 4"/>
 <text x="40" y="163" font-size="15" font-weight="600" fill="#23301f">skill</text>
