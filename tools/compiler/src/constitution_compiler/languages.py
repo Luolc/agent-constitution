@@ -173,7 +173,8 @@ LANGUAGES = {
     ),
     agent_draft=(
       "This is the version of this constitution for agents,"
-      " and the constitution is a draft not yet in force"
+      " and the constitution is a draft that may be used on a trial basis"
+      " but is not final"
     ),
     agent_active=(
       "This is the version of this constitution for agents,"
@@ -217,7 +218,9 @@ LANGUAGES = {
       "修改本宪法或编译它的工具时，"
       "先读完整版 `constitution/constitution.zh.md`。"
     ),
-    agent_draft="这是本宪法给 agent 读的版本，本宪法现为草案，尚未生效",
+    agent_draft=(
+      "这是本宪法给 agent 读的版本，本宪法现为草案，可以试行，但尚未定稿"
+    ),
     agent_active="这是本宪法给 agent 读的版本，每个 agent 都必须遵守它",
     edition="{edition} 版",
     draft_revision="{revision} (草案)",
