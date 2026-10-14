@@ -142,9 +142,11 @@ tools/
   constitution_base.py    check 7, against a base commit               A
   test_constitution_*.py  their tests: render, checks, base, and the
                           shared test tree (fixture)                   A
-  build_site.py           builds the static site with Hugo              A
+  count_tokens.py         counts the tokens the static site shows       A
+  build_site.py           counts, builds the static site with Hugo
+                          and checks it                                 A
   check_site_anchors.py   checks the built site's in-page links         A
-  test_build_site.py      tests of both                                 A
+  test_<script>.py        tests of the three scripts above              A
   <others>                compiler, checkers, private-term scanner     B
 examples/
   overlay/                a fictional private overlay                  B
@@ -155,7 +157,8 @@ fixtures/
 cases/<id>.md             decided cases                                C
 proposals/                reserved for the adoption pipeline           D
 web/                      the static site's Hugo project: hugo.toml,
-                          layouts, style sheet, script, i18n           A
+                          content adapter, layouts, style sheet,
+                          script, i18n                                 A
   themes/hugo-book/       the theme, a git submodule at a pinned
                           commit                                       A
 site/                     built static site, not committed             A
@@ -715,17 +718,27 @@ this repo.
 The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
-`site/zh/agent/index.html`), built by `uv run tools/build_site.py`. Only the build exists here; publishing it
-is a release (rule `must-ask-items`) and not set up.
+`site/zh/agent/index.html`). Hugo builds them, `hugo-0.167.0 -s web`
+alone; `uv run tools/build_site.py` runs what CI runs: the token count
+(below), Hugo, and the link check. Only the build exists here; publishing
+it is a release (rule `must-ask-items`) and not set up.
 
 - Input: the generated `constitution/constitution.<lang>.md`, not the
   sources: the citations, numbers and anchors are rendered once, by
-  `build_constitution.py`. `build_site.py` turns each into the home page of
-  its language in a temporary content directory: the header line is
-  dropped, the title goes into the front matter, the revision from
-  `index.toml` is set under the title, followed by `(draft)` (`(草案)`)
-  while its `status` is `draft`, and the text is wrapped in
-  `<div class="constitution">`, the root the style sheet hangs on. Under
+  `build_constitution.py`. `web/hugo.toml` mounts them from
+  `constitution/` as assets and `constitution/index.toml` as data; Python
+  writes no page. The content adapter `web/content/_content.gotmpl` makes
+  each into the home page of its language: the header line is dropped,
+  the title becomes the page's, each heading's anchor (`## <a
+  id="general-provisions"></a>Article I. ...`) becomes the heading's id,
+  so the table of contents links to it, and the page gets the lengths
+  (below) as params. It fails the build when a file does not start with
+  the header line, a blank line and the `# ` title. The layout
+  (`web/layouts/home.html`) sets the title, the list under it and the
+  text in `<div class="constitution">`, the root the style sheet hangs
+  on; the revision from `index.toml` is followed by `(draft)` (`(草案)`)
+  while its `status` is `draft`. Its words, in both languages, are in
+  `web/i18n/`. Under
   the title is a list without bullets: the revision and the length
   (below), each centered under the title, and, when the text has an
   asterisk, its legend, starting at the column's left edge, smaller and
@@ -738,8 +751,9 @@ is a release (rule `must-ask-items`) and not set up.
   number's parentheses and its top well under the top of the number. The
   legend and the table of contents show it the same way.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
-  becomes the page `agent/` under the home page of its language, built the
-  same way but with its text as is: no anchors, no links, the provisions
+  becomes the page `agent/` under the home page of its language, made by
+  the same content adapter (layout `web/layouts/page.html`) but with its
+  text as is: no anchors, no links, the provisions
   written for human readers only their numbers and a pointer to the full
   version. Its headings carry `{anchor=false}`, so the theme adds no `#`
   link to them. Under the title is a list like the home page's, both lines
@@ -750,9 +764,17 @@ is a release (rule `must-ask-items`) and not set up.
 - Length: the second item of the list gives the length of the version
   for agents, bare, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
-  languages, words split on white space in English, and tokens as counted
-  for `claude-opus-5-5` by Anthropic's count_tokens API
-  (`POST /v1/messages/count_tokens`, standard library only). An info
+  languages, words split on white space (ASCII white space, the only kind
+  the files hold) in English, and tokens as counted for the model
+  `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
+  API (`POST /v1/messages/count_tokens`, standard library only). The
+  content adapter counts the characters and words; `tools/count_tokens.py`
+  counts the tokens and writes them to `web/data/lengths.json` (not
+  committed), with the SHA-256 of each text it counted and the abbreviated
+  commit it ran on. The site shows a token count, and the commit, only
+  when the SHA-256 is that of the text it builds, so a file left from
+  another commit shows no stale number; without the file it says the
+  tokens were not counted. An info
   button after it opens a popup, on hover or a click or tap; it is a
   disclosure button (`aria-expanded`), reached with the keyboard, and
   Escape closes it (`web/assets/count-info.js`, inlined in `<head>`). The
@@ -767,9 +789,9 @@ is a release (rule `must-ask-items`) and not set up.
   as wide as the popup; under it, fainter than the table, a bulleted list
   (spans with ARIA list roles): what the version for agents omits, which
   API counted the tokens for which model or why they were not counted (the
-  model is `COUNT_MODEL` in `build_site.py`, named in words by
-  `COUNT_MODEL_NAME` next to it), and the revision and the abbreviated
-  commit of the build (left out outside git); last, on a line
+  model named in words by `params.tokenCount.name` next to its ID), and
+  the revision and the abbreviated commit of the count (left out without
+  a count of this text, or outside git); last, on a line
   of its own, the link to the page of the version for agents. The text of
   the popup is the size of the legend under the title, the numbers of the
   table a little larger. Each page's two versions are counted
@@ -785,7 +807,8 @@ is a release (rule `must-ask-items`) and not set up.
   page; a failure prints one line with the HTTP status or the exception's
   class. Without a credential, or when the call fails or a connect or read
   stalls for 10 seconds, the page says the tokens were not counted and the
-  build goes on; with `--require-tokens` the build fails instead. The
+  build goes on; with `--require-tokens` (of `count_tokens.py` and
+  `build_site.py`) the build fails instead. The
   workflow `.github/workflows/token-count.yml` runs on each push to `main`,
   the only event the federation rule accepts: it asks GitHub for the run's
   OIDC token (audience `https://api.anthropic.com`), exchanges it for an
@@ -803,14 +826,16 @@ is a release (rule `must-ask-items`) and not set up.
   the maintainer's secret store. So the pages of one commit differ with
   and without a credential, in that line and the popup only.
 - Generator: Hugo, a single binary pinned by version in `build_site.py`
-  and in CI, with the theme hugo-book (MIT license) as a git submodule at
+  and in CI, which writes to `site/` (`publishDir`), with the theme
+  hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
   switch, the light, dark and auto color themes, the sidebar's list of
   pages and the table of contents at the right. The sidebar lists the
   pages, not the articles: today the constitution, the home page, with
   its version for agents under it, both named in `web/hugo.toml`'s menus
-  (the version for agents is the home page's child, which `build_site.py`
-  hides from the theme's own list with `bookHidden`). The table of contents lists the page's level-2
+  (the version for agents is the home page's child, which the content
+  adapter hides from the theme's own list with `bookHidden`). The table
+  of contents lists the page's level-2
   headings, the preamble and the articles (`markup.tableOfContents` in
   `web/hugo.toml`), under a heading of its own; on a narrow screen the
   theme hides it behind a button at the right of the top bar, which opens
@@ -824,7 +849,7 @@ is a release (rule `must-ask-items`) and not set up.
   the fonts. A submodule keeps the theme's files out of this repo's
   diffs; a Hugo module would need Go on every machine that builds.
 - Raw HTML: Goldmark's `unsafe` renderer is on, since the anchors
-  (`<a id="...">`) and the wrapper are raw HTML. The content is only this
+  (`<a id="...">`) and the asterisks are raw HTML. The content is only this
   repo's own built constitution, never outside input.
 - Anchors: the ID of the article, section or item: `#general-provisions`,
   `#terms`, `#terms.principal`, the same in both languages and in the
@@ -852,14 +877,17 @@ is a release (rule `must-ask-items`) and not set up.
   fonts, falling back to local serif fonts. The colors are one palette
   block, light and dark; contrast of text on the page and the sidebar is
   above WCAG AA in both, the values are in the style sheet.
-- The few Chinese strings of the site itself (`web/i18n/zh.yaml`, the
-  language label in `hugo.toml`, the labels and the popup text in
-  `build_site.py`) are outside limae's reach.
+- The few Chinese strings of the site itself (`web/i18n/zh.yaml`, which
+  holds the labels and the popup text, and the language label and menu
+  names in `hugo.toml`) are outside limae's reach.
 - `site/` is not committed: a generated page under review would make every
   amendment touch it, while an amendment may change only the constitution
   sources and their generated Markdown. Hugo needs a download, so the build
-  is not a commit hook; CI builds the site on every pull request and push
-  and runs `check_site_anchors.py` on it.
+  is not a commit hook, and the tests of the templates
+  (`test_build_site.py`, which builds a made-up constitution) are skipped
+  without it, except in CI; CI installs Hugo before the tests, builds the
+  site on every pull request and push and runs `check_site_anchors.py` on
+  it.
 
 ## Checkers
 
@@ -870,7 +898,7 @@ position. What each one proves, and what it does not:
 | --- | --- | --- |
 | Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
-| Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each relative link to another page leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
+| Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Python code (`ruff check`, `ruff format --check`, `pydoclint`, `basedpyright`, configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
