@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Amendments to this constitution ({@amendment-procedure}).
+Amendments to the edition in force, and opening a new edition ({@approving-amendments}).
 '''
 zh = '''
-本宪法的修正案 ({@amendment-procedure})。
+对现行版的修正案，以及开新的一版 ({@approving-amendments})。
 '''
 
 [[items]]

@@ -809,6 +809,13 @@ class BaseTest(Tree):
         note = bc.check_base(self.root, "HEAD", src, errors)
         return errors, note
 
+    def revision_check(self):
+        """Only the revision part of check 7, on the working tree against HEAD."""
+        errors, src, _ = bc.build(self.root)
+        self.assertEqual(errors, [])
+        bc.check_revision(self.root, "HEAD", src, errors)
+        return errors
+
     def test_control_passes(self):
         self.commit_base()
         self.assertEqual(self.base_errors(), ([], ""))
@@ -935,14 +942,119 @@ class BaseTest(Tree):
         self.assertEqual(self.base_errors(), (["constitution/index.toml:2: check 7:"
                                                " edition 2026-09 is not later than edition 2026-10 at base HEAD"], ""))
 
-    def test_lower_revision_in_same_edition(self):
+    def test_main_runs_revision_check(self):
+        self.commit_base()
+        self.change_text()
+        self.assertEqual(bc.main(["--root", str(self.root)]), 0)
+        self.assertEqual(bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1)
+        self.set_revision("1", "2")
+        self.assertEqual(bc.main(["--root", str(self.root)]), 0)
+        self.assertEqual(bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 0)
+
+    def change_text(self):
+        self.edit(f"{A}/article.toml", 'en = "First"', 'en = "First one"')
+
+    def set_revision(self, old, new):
+        self.edit("constitution/index.toml", f'revision = "{old}"', f'revision = "{new}"')
+
+    def test_text_change_with_higher_revision_passes(self):
+        self.commit_base()
+        self.change_text()
+        self.set_revision("1", "2")
+        self.assertEqual(self.revision_check(), [])
+
+    def test_text_change_with_same_revision_fails(self):
+        self.commit_base()
+        self.change_text()
+        self.assertEqual(self.revision_check(), [
+            "constitution/index.toml:3: check 7: the constitution text changed since base HEAD"
+            " but revision 1 is not greater than the base's 1"])
+
+    def test_text_change_with_lower_revision_fails(self):
         self.activate()
-        self.edit("constitution/index.toml", 'revision = "1"', 'revision = "2"')
+        self.set_revision("1", "2")
         self.commit_base(active=False)
-        self.edit("constitution/index.toml", 'revision = "2"', 'revision = "1"')
-        self.assertEqual(self.base_errors(), (["constitution/index.toml:3: check 7:"
-                                               " revision 1 is lower than revision 2 at base HEAD;"
-                                               " a new edition cannot start in the same month as the base's"], ""))
+        self.change_text()
+        self.set_revision("2", "1")
+        self.assertEqual(self.revision_check(), [
+            "constitution/index.toml:3: check 7: the constitution text changed since base HEAD"
+            " but revision 1 is not greater than the base's 2"])
+
+    def test_revision_change_without_text_change_fails(self):
+        self.commit_base()
+        self.set_revision("1", "2")
+        self.assertEqual(self.revision_check(), [
+            "constitution/index.toml:3: check 7: revision 2 differs from revision 1 at base HEAD"
+            " but the constitution text did not change"])
+
+    def test_nothing_changed_passes(self):
+        self.commit_base()
+        self.assertEqual(self.revision_check(), [])
+
+    def test_index_text_change_counts(self):
+        self.commit_base()
+        self.edit("constitution/index.toml", 'en = "Test Constitution"', 'en = "The Constitution"')
+        self.assertEqual(len(self.revision_check()), 1)
+        self.set_revision("1", "2")
+        self.assertEqual(self.revision_check(), [])
+
+    def test_added_and_removed_files_count(self):
+        self.commit_base()
+        self.write(f"{A}/02-new.toml", BETA_ONE.replace('"beta-one"', '"new"').replace('"draft"', '"active"'))
+        self.git("add", "-A")
+        self.assertEqual(len(self.revision_check()), 1)
+        self.set_revision("1", "2")
+        self.assertEqual(self.revision_check(), [])
+
+    def test_changes_outside_the_constitution_text_are_ignored(self):
+        self.commit_base()
+        self.edit("rules/rule.toml", 'en = "A rule"', 'en = "A changed rule"')
+        self.write("constitution/constitution.en.md", "changed\n")
+        self.assertEqual(self.revision_check(), [])
+
+    def test_draft_base_text_change_needs_higher_revision(self):
+        self.commit_base(active=False)
+        self.change_text()
+        self.assertEqual(self.revision_check(), [
+            "constitution/index.toml:2: check 7: the constitution text changed since base HEAD"
+            " but revision 0.2 is not greater than the base's 0.2"])
+        self.set_revision("0.2", "0.3")
+        self.assertEqual(self.revision_check(), [])
+
+    def test_draft_base_revision_without_text_change_fails(self):
+        self.commit_base(active=False)
+        self.set_revision("0.2", "0.3")
+        self.assertEqual(len(self.revision_check()), 1)
+
+    def test_draft_revisions_compare_by_number(self):
+        self.edit("constitution/index.toml", 'revision = "0.2"', 'revision = "0.9"')
+        self.commit_base(active=False)
+        self.change_text()
+        self.set_revision("0.9", "0.10")
+        self.assertEqual(self.revision_check(), [])
+        self.set_revision("0.10", "0.8")
+        self.assertEqual(len(self.revision_check()), 1)
+
+    def test_draft_revisions_sort_below_whole_numbers(self):
+        keys = [bc.revision_key(r) for r in ("0.2", "0.9", "0.10", "1", "2", "10")]
+        self.assertEqual(keys, sorted(keys))
+        self.assertEqual(len(set(keys)), 6)
+
+    def test_new_edition_revision_is_not_compared(self):
+        self.activate()
+        self.set_revision("1", "5")
+        self.commit_base(active=False)
+        self.change_text()
+        self.edit("constitution/index.toml", 'edition = "2026-10"', 'edition = "2027-03"')
+        self.set_revision("5", "1")
+        self.assertEqual(self.revision_check(), [])
+
+    def test_malformed_revision_fails(self):
+        self.commit_base(active=False)
+        self.change_text()
+        self.set_revision("0.2", "0.x")
+        self.assertEqual(self.revision_check(), [
+            "constitution/index.toml:2: check 7: revision 0.x is neither `0.<n>` nor a whole number from 1"])
 
     def test_base_without_edition(self):
         self.activate()

@@ -1,0 +1,10 @@
+id = "lower-layers"
+status = "draft"
+
+[content]
+en = '''
+A lower-ranking provision may refine and tighten a higher-ranking one; it may relax one only as {@departures} provides.
+'''
+zh = '''
+下位法可以细化、收紧上位法；要放宽上位法，只能依照{@departures}。
+'''

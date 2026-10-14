@@ -1,5 +1,5 @@
 status = "draft"
-revision = "0.24"
+revision = "0.28"
 languages = ["en", "zh"]
 
 [title]
