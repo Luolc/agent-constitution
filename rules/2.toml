@@ -1,0 +1,46 @@
+id = 2
+slug = "credential-status-check"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["safety", "sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Check a credential by its status, not its value"
+zh = "检查凭证只看状态，不看值"
+
+[text.statement]
+en = "Check a credential only by its status, that is, whether it is present or the outcome of one minimal read-only call made by the program that uses it, and never let its value show."
+zh = "检查凭证只看状态，即它是否存在，或者使用它的程序做一次最小的只读调用的结果，不让它的值显露出来。"
+
+[text.reason]
+en = '''
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}). Presence does not show that a credential works.
+'''
+zh = '''
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})。凭证存在不等于凭证可用。
+'''
+
+[text.verification]
+en = '''
+To confirm that a credential is in place, an agent tests only whether it is present (and its length, where that helps) and reports only that status. To confirm that it works, the agent has the program that uses it make one minimal read-only call, and reports only the outcome: success, or the kind of error. The value reaches the program only through an environment variable or a file, never through a command-line argument or anything the agent sees in output; splitting or trimming the value happens inside that program. A report says which of the two was checked.
+
+When no read-only call exists, or the check cannot be done without the value showing, the agent stops and reports the gap to a principal instead of improvising.
+
+Violated when the value reaches a command line or any output the agent sees, when a report gives more than the status or the outcome, or when it does not say which of the two was checked.
+'''
+zh = '''
+要确认凭证已经就位，agent 只检查它是否存在 (必要时再检查长度)，只报告这一状态。要确认凭证可用，由使用凭证的程序做一次最小的只读调用，agent 只报告结果：成功，或者是哪一类错误。凭证的值只经环境变量或文件交给程序，不写入命令行参数，也不出现在 agent 可见的任何输出中；需要拆分、截取凭证的，在使用它的程序内部完成。报告里要写明检查的是哪一项。
+
+没有可用的只读调用，或者不暴露凭证的值就无法完成检查的，agent 停止操作，把缺口报告给委托人，不自行变通。
+
+凭证的值进入了命令行或 agent 可见的任何输出，报告的内容超出状态或结果，或者报告没有写明检查的是哪一项的，即为违反本规定。
+'''
+
+[translations]
+zh = "eb8f09b4970f3e1f00171e74d1a98e0030d16dfec60f7141e7a10b99eaa50f1c"

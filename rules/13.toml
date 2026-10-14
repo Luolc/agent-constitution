@@ -1,0 +1,13 @@
+id = 13
+slug = "security"
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Security"
+zh = "安全"
+
+[translations]
+zh = "8f6fb4eb7f42c0e245e29e63f5b82cc3ba19852681d1ed9aed291f59cf75ec0e"

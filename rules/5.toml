@@ -1,13 +1,32 @@
-id = "fixture-outcomes"
+id = 5
+slug = "fixture-outcomes"
+revision = 1
+kind = "rule"
 status = "draft"
-scope = "all"
-authority = ["constitution:verification", "constitution:discriminating-checks"]
+lang = "en"
+parent = 15
+authority = ["verification", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
 
 [title]
 en = "Fixtures cover both outcomes and use made-up data"
 zh = "fixture 覆盖正反两面，只用虚构数据"
 
-[content]
+[text.statement]
+en = "Give each provision that can be checked both happy-path and red-line fixtures, and build every fixture from made-up data only."
+zh = "每一项可以检查的条文都要有正常路径的 fixture 和红线 fixture，所有 fixture 都只用虚构的数据。"
+
+[text.reason]
+en = '''
+A check must be shown both to pass correct work and to catch the error it is meant to rule out ({@constitution:discriminating-checks}).
+'''
+zh = '''
+一项检查要证明两面：正确的工作能通过，它要排除的错误确实会被发现 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
 en = '''
 Each provision of the constitution or of an adopted rule that can be checked has happy-path fixtures, showing that normal work still completes, and red-line fixtures, showing that a violation is caught ({@constitution:discriminating-checks}); violations of {@constitution:safety} and of the items listed in {@constitution:must-ask} are always among them. A change runs the fixtures bound to what it touches; a release runs them all.
 
@@ -16,6 +35,8 @@ Fixtures use made-up data only: no real credentials, private information or real
 Exception: a provision that no fixture can check needs none; the change that adds or amends it says why.
 
 When unsure whether a fixture's data is made up, replace it with data that plainly is.
+
+Violated when a provision that can be checked lacks either kind of fixture, a change or a release skips the fixtures it should run, or a fixture uses real data or has an effect outside the test environment.
 '''
 zh = '''
 宪法或已采用的规定中，每一项可以检查的条文都有正常路径的 fixture，证明正常工作仍能完成；也有红线 fixture，证明违规会被发现 ({@constitution:discriminating-checks})，其中必须包括违反{@constitution:safety}和{@constitution:must-ask}所列事项的情形。单个变更运行与其相关的 fixture，发布时运行全部 fixture。
@@ -25,4 +46,9 @@ fixture 只用虚构的数据：不用真实的凭证、私密信息或真人的
 例外：无法用 fixture 检查的条文不需要 fixture，引入或修改它的那次变更写明理由。
 
 不确定某份数据是否虚构的，换成明显虚构的数据。
+
+可以检查的条文缺少其中任何一种 fixture，变更或发布没有运行应当运行的 fixture，或者 fixture 用了真实数据、在测试环境之外留下了影响的，即为违反本规定。
 '''
+
+[translations]
+zh = "715a384c9df29f8d5893ca9cc59ced0d3156a82a93321e1adf6cc74ad90bd5b9"

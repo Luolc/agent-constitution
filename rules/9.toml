@@ -1,13 +1,32 @@
-id = "must-ask-items"
+id = 9
+slug = "must-ask-items"
+revision = 1
+kind = "rule"
 status = "draft"
-scope = "all"
-authority = ["constitution:boundary-rule", "constitution:must-ask", "constitution:list-defaults"]
+lang = "en"
+parent = 14
+authority = ["boundary-rule", "must-ask", "list-defaults"]
+constitution = ">=1"
+level = "project"
+check = "review"
 
 [title]
 en = "Releases, downtime and irreversible effects go through a principal"
 zh = "发布、停机和不可逆的对外影响须经委托人"
 
-[content]
+[text.statement]
+en = "Treat releases, breaking changes that cause downtime of a running service, the irreversible external effects listed below and buying, resetting or unlocking usage quotas as items of {@constitution:must-ask}, which go through a principal."
+zh = "发布、造成运行中的服务停机的破坏性变更、下文列出的不可逆对外影响，以及购买、重置或者解锁用量额度，都按{@constitution:must-ask}所列事项处理，须经委托人。"
+
+[text.reason]
+en = '''
+The rule library may add items to those listed in {@constitution:must-ask} ({@constitution:list-defaults}).
+'''
+zh = '''
+规定库可以在{@constitution:must-ask}所列事项之外增加事项 ({@constitution:list-defaults})。
+'''
+
+[text.verification]
 en = '''
 This rule adds two items to those listed in {@constitution:must-ask} ({@constitution:list-defaults}):
 
@@ -19,6 +38,8 @@ The following count as irreversible external effects ({@constitution:must-ask.ir
 Buying, resetting or unlocking usage quotas is among the items of {@constitution:must-ask}.
 
 When unsure whether an action is one of these, treat it as one.
+
+Violated when an agent takes one of these actions without the yes that {@constitution:must-ask} requires.
 '''
 zh = '''
 本规定在{@constitution:must-ask}所列事项之外增加两项 ({@constitution:list-defaults})：
@@ -31,4 +52,9 @@ zh = '''
 购买、重置或者解锁用量额度，属于{@constitution:must-ask}所列事项。
 
 不确定某个动作是否属于以上各项的，按属于处理。
+
+agent 未取得{@constitution:must-ask}所要求的同意就采取了上述动作的，即为违反本规定。
 '''
+
+[translations]
+zh = "a975418c321cd09b951b29d95b887a320c713b648afcd3e4dc2e584f71af69b5"
