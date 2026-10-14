@@ -905,15 +905,16 @@ passes to Hugo as `--baseURL`.
   site overrides the theme's sidebar (`layouts/_partials/docs/menu.html`)
   to put a link to the source repository, with GitHub's mark from
   Octicons (MIT license), between the site's title and the language
-  switch, and adds, through the theme's inject partials, a
-  switch for the color theme at the right end of the language switch's
-  row, and the fonts. The color switch is one button that cycles through
-  following the system, light and dark, as Docusaurus's does; it shows
-  the current setting by an Octicons icon (`device-desktop`, `sun`,
-  `moon`), and its title and accessible name give the setting and the
-  next one, from `web/i18n`. The choice is kept in `localStorage` and set
-  in `<head>` before the page is drawn. A submodule keeps the theme's files out of this repo's
-  diffs; a Hugo module would need Go on every machine that builds.
+  switch, and adds, through the theme's inject partials, a switch for the
+  color theme at the right end of the language switch's row, and the
+  fonts. The color switch is one button that cycles through following the
+  system, light and dark, as Docusaurus's does; it shows the current
+  setting by an Octicons icon (`device-desktop`, `sun`, `moon`), and its
+  title and accessible name give the setting and the next one, from
+  `web/i18n`. The choice is kept in `localStorage` and set in `<head>`
+  before the page is drawn. A submodule keeps the theme's files out of
+  this repo's diffs; a Hugo module would need Go on every machine that
+  builds.
 - Raw HTML: Goldmark's `unsafe` renderer is on, since the anchors
   (`<a id="...">`) and the asterisks are raw HTML. The content is only this
   repo's own built constitution, never outside input.

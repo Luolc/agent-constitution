@@ -390,7 +390,7 @@ body { font-family: var(--c-font-en); }
   display: flex;
   align-items: center;
   gap: .4em;
-  margin: .5rem 0 1rem;
+  margin: 1.5rem 0 1rem;
   color: var(--c-muted);
 }
 .book-menu .source-link .book-icon { width: 1em; height: 1em; flex: none; }
