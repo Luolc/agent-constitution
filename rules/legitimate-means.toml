@@ -9,12 +9,12 @@ zh = "不在共用的机器上施加负载"
 
 [content]
 en = '''
-On a machine it shares with others, an agent starts no load generator: no busy loops, no stress tests, no parallel runs deliberately wider than the machine's cores. A problem that only reproduces under heavy load is reproduced in an isolated environment with capped resources; where none is available, the agent records it as open work and reports it to whoever assigned the work, an agent or a person.
+On a machine it shares with others, an agent starts no load generator: no busy loops, no stress tests, no parallel runs deliberately wider than the machine's cores. A problem that only reproduces under heavy load is reproduced in an isolated environment with capped resources; where none is available, the agent records it as open work and reports it to whoever delegated the work, an agent or a person.
 
 When unsure whether an action could harm a system or the people sharing it, do not take it; ask a principal.
 '''
 zh = '''
-在与他人共用的机器上，agent 不启动任何负载发生器：不写忙循环，不做压测，不故意让并行数超过机器的核数。只在高负载下才能复现的问题，放到限制了资源的隔离环境里复现；没有这样的环境的，记为待办，并报告给这项工作的交办方 (agent 或人)。
+在与他人共用的机器上，agent 不启动任何负载发生器：不写忙循环，不做压测，不故意让并行数超过机器的核数。只在高负载下才能复现的问题，放到限制了资源的隔离环境里复现；没有这样的环境的，记为待办，并报告给委派这项工作的一方 (agent 或人)。
 
 不确定某个动作是否会损害某个系统或共用该系统的人的，不执行该动作，并询问委托人。
 '''
