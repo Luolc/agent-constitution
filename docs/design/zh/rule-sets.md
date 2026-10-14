@@ -1,4 +1,4 @@
-<!-- en-sha256: 056510c3bdf84bc9c1e07513893cb62082fcf6b37b608e5e7156329bd5cffbdd -->
+<!-- en-sha256: 411a70b83354f9cd4000303bc2765e2e89637ef35dcac75e01dc051f4ee7774c -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -23,7 +23,7 @@ agents-md = ["statement"]
 
 规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。在 one-of 的子节点中选一个，就是把它写进 `rules`，这里是 `R51`；没有别的字段管这件事。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个子节点启用。`[compile]` 设定编译出的 `AGENTS.md` 收录每条规定的哪些部分：默认只收 `statement`；加上 `reason` 或 `verification`，这些部分也会收进去 ([编译与网站](statute-command.md#compilation-and-the-site))。`[compile]` 里的 `lang` 指定用哪种语言写，默认 `en`。
 
-[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`；这些已经实现。尚未实现的是：规定源可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))；公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/` 里的两个文件 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
+[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))；这些已经实现。尚未实现的是：公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
 
 锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址和提交)，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；以及文件的 SHA-256)：
 
@@ -50,7 +50,7 @@ revision = 1
 sha256 = "<SHA-256 of rules/42.toml>"
 ```
 
-规定只用一个字段 `rule` 来写，写法与别处相同，不再拆成规定源和 ID 两个字段，这样按规定清单和提示信息里的写法就能在锁文件里搜到那一行。旧格式的锁文件用 `source` 和 `id` 两个字段写规定，`upgrade` 遇到它会报错，提示运行 `statute lock` 重新写一份。被某条启用的规定覆盖的规定仍保留它那一行，多一个字段 `overridden-by = "L3"`，写明覆盖它的是哪条规定，这样 `upgrade` 仍会显示它的修改 (见[覆盖](rule-sources.md#overrides)；尚未实现)。
+规定只用一个字段 `rule` 来写，写法与别处相同，不再拆成规定源和 ID 两个字段，这样按规定清单和提示信息里的写法就能在锁文件里搜到那一行。旧格式的锁文件用 `source` 和 `id` 两个字段写规定，`upgrade` 遇到它会报错，提示运行 `statute lock` 重新写一份。被某条启用的规定覆盖的规定仍保留它那一行，多一个字段 `overridden-by = "L3"`，写明直接覆盖它的是哪条规定 (在一条覆盖链上就是下一环)，这样 `upgrade` 仍会显示它的修改 (见[覆盖](rule-sources.md#overrides))。只因覆盖才带进来、别的都没有启用它的规定，也有自己的一行。
 
 磁盘上的规定源 (`path`，见[规定源与引用](#sources-and-references)) 没有可记的提交：提交锁文件的那次提交本身就会让它变掉，锁文件就永远不可能是最新的。这时宪法和规定源都按 `path` 记录，不记地址和提交，每条规定的内容只靠它的 `sha256` 钉住：
 
@@ -125,7 +125,7 @@ statute 不论在哪里提到一条规定，都用同一种写法：提示信息
 
 规定之间有两种关系，树上还有另外两种节点：领域和 one-of。
 
-- `parent`：每条规定恰好有一个 parent，它可以是另一条规定、一个 one-of 或一个领域 (见下文)，所以规定构成一棵树，每个领域逐级细化。覆盖另一个规定源的规定的那条规定没有 parent，它站在被覆盖的那条规定的位置上 (见[覆盖](rule-sources.md#overrides)；尚未实现)。这棵树决定一条规定在编译出的文本和网站上的位置、它编译进哪个块，以及它属于哪个规定包。
+- `parent`：每条规定恰好有一个 parent，它可以是另一条规定、一个 one-of 或一个领域 (见下文)，所以规定构成一棵树，每个领域逐级细化。覆盖另一个规定源的规定的那条规定没有 parent，它站在被覆盖的那条规定的位置上 (见[覆盖](rule-sources.md#overrides))。这棵树决定一条规定在编译出的文本和网站上的位置、它编译进哪个块，以及它属于哪个规定包。
 - `requires`：启用规定 A 需要另一条规定 B，或者一个 one-of (见下文)。一条规定可以依赖好几条，这些依赖构成一个有向无环图。一条说明怎样通过 uv 运行检查的规定，依赖让 uv 管理项目依赖的那条规定。也可以依赖另一个规定源的规定；见[规定源与引用](#sources-and-references)。
 
 只有 parent 不够，因为许多规定横跨几个领域：「在 CI 里先运行 `uv sync --locked`」既依赖 uv，也依赖 CI 服务。它放在 uv 那条规定下面，并依赖 one-of「CI 服务」，这个 one-of 的任何一个子节点 (例如一条关于 GitHub Actions 的规定) 都能满足它。

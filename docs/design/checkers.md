@@ -128,19 +128,22 @@ nothing it brings in, and the warnings of
 In CI, `crates/statute/tests/real_rules.rs` reads this repo's `rules/`
 with `statute` and fails on any error or warning.
 
-[Rule sources](rule-sources.md) divides its checks the same way. Of
-statute's, the reference direction in `requires`, `conflicts` and
-`{@rule:...}` is built; nothing of the build's is, and until then
-check 1 fails a domain with a `parent`
-and a rule with `overrides`. The build will accept `overrides` on a rule,
-a `parent` on a domain and a rule's `parent` in another source, and check
-what one source shows: each field's type; a domain's `parent` is the
-number of a domain of the same source that has no parent; a rule has
-`parent` or `overrides`, never both; and `overrides` names a rule of
-another source (`"R200"`, `"team:7"`), never a number, which would name
-a node of the same source. What needs another source is statute's: the
-reference direction, the ranks of an override, an override by the
-private layer of a public repository, and a `parent` in another source.
+[Rule sources](rule-sources.md) divides its checks the same way. The
+build accepts `overrides` on a rule, a `parent` on a domain and a rule's
+`parent` in another source, and checks what one source shows: each
+field's type; a domain's `parent` is the number of a domain of the same
+source that has no parent (check 3); a rule has `parent` or
+`overrides`, one of them and never both; `overrides` is one rule of
+another source, `"team:7"`, never a list nor a number, which would name
+a node of the same source; and a `parent` in another source is a rule's
+only, written `"team:3"`, checked for its form alone. Since this repo is
+the first-party source, `"R200"` in `overrides` or `parent` names a rule
+of the same source here and fails, with a note to write the number for a
+`parent`. What needs another source is statute's: the reference
+direction, the ranks of an override, an override by the private layer
+of a public repository, and whether a `parent` in another source exists.
+Of these, the reference direction in `requires`, `conflicts`,
+`overrides` and `{@rule:...}` and the ranks of an override are built.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository

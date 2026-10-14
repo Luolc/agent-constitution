@@ -168,43 +168,41 @@ with `public = true`:
   each file it would write, and writes nothing when one is not ignored
   or when it cannot tell, as outside a git repository.
 
-**The private output** is two files in `.statute/`, a directory that
-the public `.gitignore` names, and two links to them that the agents
-find:
+**The private output** is one file, `.statute/AGENTS.full.md`: the
+committed `AGENTS.md` with the rules only the private layer brings in
+(its own rules and the public rules that only it enables), each at its
+place in the tree. `.statute/` is a directory that the public
+`.gitignore` names. Two links lead to the file:
 
 ```text
 .statute/
-  AGENTS.private.md       the rules only the private layer brings in
-  AGENTS.full.md          the public rules and those, in one file
-.claude/rules/statute-private.md -> ../../.statute/AGENTS.private.md
+  AGENTS.full.md          the public rules and the private ones
+CLAUDE.local.md -> .statute/AGENTS.full.md
 AGENTS.override.md -> .statute/AGENTS.full.md
 ```
 
-- `AGENTS.private.md` holds the private layer's own rules and the public
-  rules that only it brings in. A requirement of one of them on a rule
-  of the committed `AGENTS.md` is a link into that file, relative to
-  `.statute/`, where the file is: `../AGENTS.md#rule-R42`.
-- `AGENTS.full.md` is the committed `AGENTS.md` with those rules added,
-  each at its place in the tree, and without the fixed line below,
-  since it holds the private rules already.
-- Claude Code and Grok read every `*.md` of `.claude/rules/` in addition
-  to `AGENTS.md`, so they get the private rules through the first link.
-  `CLAUDE.local.md`, which both also read in addition, is not used:
-  where it exists, Claude Code no longer reads `AGENTS.md`.
+- Claude Code reads `CLAUDE.local.md`, and where it exists no longer
+  reads `AGENTS.md`, so it reads the full text alone.
 - Codex and Pi read `AGENTS.override.md` in place of the `AGENTS.md` of
-  the same directory, so the second link leads to the full text. The
-  others do not read that name, so no agent loads a rule twice through
-  the links.
-- OpenCode has no local file name of a repository. It reads the
-  private rules when its global configuration lists
-  `.statute/AGENTS.private.md` under `instructions`; that is the
-  machine's configuration, not statute's.
+  the same directory, so they read the full text alone.
+- Grok reads both `AGENTS.md` and `CLAUDE.local.md`, so it reads the
+  public rules twice. They are the same rules and do not contradict
+  each other; the repetition is accepted.
+- A repository with a `CLAUDE.md` (a link to `AGENTS.md`, say) makes
+  Claude Code read it as well as `CLAUDE.local.md`, so the public rules
+  come twice there too. `statute compile` warns when it finds one, with
+  a note that the link `CLAUDE.md` can go.
+- OpenCode has no local file name of a repository. It reads the full
+  text when its global configuration lists `.statute/AGENTS.full.md`
+  under `instructions`, in addition to `AGENTS.md`, so it too reads the
+  public rules twice; that is the machine's configuration, not
+  statute's.
 - The committed `AGENTS.md` ends with one fixed line, the same in every
-  public repository, that tells an agent to read
-  `.statute/AGENTS.private.md` next when it exists. The path is in
-  backticks, so that Claude Code does not import it as an `@` path. It
-  is a fallback for an agent that finds neither link: it works only
-  when the model goes and reads the file.
+  public repository, that tells an agent to read `.statute/AGENTS.full.md`
+  when it exists. The path is in backticks, so that Claude Code does not
+  import it as an `@` path. It is a fallback for an agent that finds
+  neither link: it works only when the model goes and reads the file.
+  The full text leaves the line out.
 
 The two links are ignored through `.git/info/exclude`, never through a
 `.gitignore`: Grok skips an instruction file that a `.gitignore`
@@ -225,15 +223,13 @@ Files git does not track do not come with `git worktree add`. Each
 worktree needs its own `statute compile` to write `.statute/` and the
 two links; `.git/info/exclude` is shared by the worktrees of a clone.
 Running it when a worktree is opened is the caller's part, not
-statute's. The links lead into the worktree, never out of it: by its
-documentation, Claude Code asks once, in an interactive session, before
-it loads a link of `.claude/rules/` that leads outside the working
-directory.
+statute's. The links are relative and lead to the worktree's own
+`.statute/`.
 
 The private rules only add to the public ones and never contradict
-them, as the private layer only adds rules (above): an agent that reads
-both files in addition gave no reliable priority to either when they
-disagreed.
+them, as the private layer only adds rules (above): Grok reads the
+public rules apart from the full text, and an agent that read two files
+in addition gave no reliable priority to either when they disagreed.
 
 The agents' behavior was measured on 2026-10-14 in non-interactive mode
 on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
@@ -245,11 +241,22 @@ measured, nor the fallback line with its path in backticks; every
 negative result is one run. In runs of one small task, Codex and Grok
 read the file the fallback line names, two runs each, and Claude Code
 loaded it in one run because the line wrote the path as an `@` path.
+Some of the layout rests on inference from separate runs, not on a run
+of it:
 
-Not built yet. The private layer is to be built first in an earlier
-form, which this layout replaces: one file, `AGENTS.private.md`, named
-by `output` in `[compile]`, and the fixed line of the committed
-`AGENTS.md` pointing to it.
+- Grok read a `CLAUDE.local.md` that `.git/info/exclude` ignores when it
+  was a file, and skipped one that a `.gitignore` ignores when it was a
+  link; a link that `.git/info/exclude` ignores was measured only in
+  `.claude/rules/`. That Grok reads the link `CLAUDE.local.md` ignored
+  this way is inferred.
+- Claude Code dropped the `AGENTS.md` of the repository's root when a
+  `CLAUDE.local.md` was there. By its documentation, a `CLAUDE.local.md`
+  in the working directory or above counts as a `CLAUDE.md`; whether it
+  also drops the `AGENTS.md` files of subdirectories was not measured. If
+  it does, a repository whose subdirectories have them loses them in
+  Claude Code.
+
+None of the private layer is built yet.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
@@ -278,7 +285,8 @@ that its descriptions are in Chinese, which overrides the public one.
 The lasting fix is to propose to the source the rule in its
 principle-only form.
 The compiled file then has only the local rule, at the place of the one
-it overrides, with a line that says which one: "Overrides R200". The
+it overrides, with a line that says which one, `Overrides R200.`
+([Compilation and the site](statute-command.md#compilation-and-the-site)). The
 public rule is not superseded: it stays in force in every other rule
 set.
 
@@ -534,10 +542,6 @@ marking what is not built:
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
 
-Building the rest replaces what the tools do today: `constitution-build`
-fails a domain with a `parent` and a rule with `overrides`. statute reads
-several sources on disk, `public` and the references between sources,
-and checks which rules may cite which in `requires`, `conflicts` and
-`{@rule:...}`; it fails `scope`, `base`, `overrides`, a domain with a
-`parent`, a rule whose `parent` names another source and a git source,
-and does not read `statute.private.toml`.
+Building the rest replaces what the tools do today: statute fails
+`base`, a domain with a `parent`, a rule whose `parent` names another
+source and a git source, and does not read `statute.private.toml`.

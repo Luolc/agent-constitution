@@ -1,4 +1,4 @@
-<!-- en-sha256: 8f99ee3ed371cf84346428fb3352fbbd60209c0b8531d24eceb7d722fc981e96 -->
+<!-- en-sha256: 6233b5371d449bcab85dfc398245872e0ccc120280154b0500ba5b439ad3c9a2 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -90,34 +90,36 @@ rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`
 - 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
 - 它有自己的锁文件 `statute.private.lock` 和自己的输出 (见下文)。`statute compile` 在写其中任何一个之前，先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml` 和它要写的每个文件；有一个没被忽略，或者确认不了 (比如不在 git 仓库里)，就什么都不写。
 
-**私有输出**是 `.statute/` 里的两个文件，再加上指向它们、供各家 agent 找到的两个软链。`.statute/` 这个目录写在公开的 `.gitignore` 里：
+**私有输出**是一个文件 `.statute/AGENTS.full.md`：提交进仓库的 `AGENTS.md` 加上只由私有层带进来的规定 (它自己的规定，以及只由它启用的公开规定)，每条放在它在规定树里的位置。`.statute/` 这个目录写在公开的 `.gitignore` 里。有两个软链指向这个文件：
 
 ```text
 .statute/
-  AGENTS.private.md       只由私有层带进来的规定
-  AGENTS.full.md          公开规定加上这些规定，合成一份
-.claude/rules/statute-private.md -> ../../.statute/AGENTS.private.md
+  AGENTS.full.md          公开规定与私有规定
+CLAUDE.local.md -> .statute/AGENTS.full.md
 AGENTS.override.md -> .statute/AGENTS.full.md
 ```
 
-- `AGENTS.private.md` 含私有层自己的规定，以及只由它带进来的公开规定。其中的规定依赖提交进仓库的 `AGENTS.md` 里的规定时，写成指向那个文件的链接，路径相对于这个文件所在的 `.statute/`：`../AGENTS.md#rule-R42`。
-- `AGENTS.full.md` 是提交进仓库的 `AGENTS.md` 加上这些规定，每条放在它在规定树里的位置；下面说的固定那一行不写进去，因为它已经包含私有规定。
-- Claude Code 和 Grok 在 `AGENTS.md` 之外，还会追加读 `.claude/rules/` 下的每个 `*.md`，所以它们经第一个软链读到私有规定。两家也都追加读 `CLAUDE.local.md`，但这里不用它：只要有这个文件，Claude Code 就不再读 `AGENTS.md`。
-- Codex 和 Pi 读 `AGENTS.override.md`，用它代替同一目录下的 `AGENTS.md`，所以第二个软链指向全文。别的 agent 不读这个文件名，因此没有哪家会经这两个软链把一条规定加载两遍。
-- OpenCode 没有仓库层的本地文件名。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.private.md` 时，它才读到私有规定；那是机器的配置，不归 statute 管。
-- 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.private.md` 时接着读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。
+- Claude Code 读 `CLAUDE.local.md`，而且只要有这个文件就不再读 `AGENTS.md`，所以它只读全文。
+- Codex 和 Pi 读 `AGENTS.override.md`，用它代替同一目录下的 `AGENTS.md`，所以它们只读全文。
+- Grok 既读 `AGENTS.md` 也读 `CLAUDE.local.md`，所以公开规定它会读两遍。两遍是同样的规定，互不矛盾；这样的重复可以接受。
+- 仓库里有 `CLAUDE.md` 时 (比如指向 `AGENTS.md` 的软链)，Claude Code 除了 `CLAUDE.local.md` 也会读它，公开规定同样读两遍。`statute compile` 发现这种情况时给出 warning，提示可以删掉 `CLAUDE.md` 这个软链。
+- OpenCode 没有仓库层的本地文件名。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.full.md` 时，它在 `AGENTS.md` 之外还读全文，所以公开规定它也读两遍；那是机器的配置，不归 statute 管。
+- 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.full.md` 时读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。全文里不写这一行。
 
 两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则什么都不写，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
 
 Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到工作目录的各级文件合在一起算，超出的部分截掉。`AGENTS.full.md` 单独就会超过这个大小时，`statute compile` 失败；子目录里的 `AGENTS.md` 也算在同一个上限里，statute 不把它们加进来算。
 
-git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都要各自跑一次 `statute compile`，写出 `.statute/` 和两个软链；`.git/info/exclude` 由一个 clone 的各个 worktree 共用。开 worktree 时跑它是调用方的事，不归 statute。软链指向 worktree 之内，不指向外面：按 Claude Code 的文档，`.claude/rules/` 里的软链指向工作目录之外时，交互会话里要先批准一次才加载。
+git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都要各自跑一次 `statute compile`，写出 `.statute/` 和两个软链；`.git/info/exclude` 由一个 clone 的各个 worktree 共用。开 worktree 时跑它是调用方的事，不归 statute。软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
-私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
+私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
 
-各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；OpenCode 1.19.0 与 Pi 1.2.0 只依据它们的文档和源码，Codex 的 32 KiB 也依据文档和源码。交互模式没有测，路径写在反引号里的兜底那一行也没有测；每个否定结论都只跑了一次。在一个小任务的几次运行里，Codex 和 Grok 各两次都读了兜底那一行指向的文件；Claude Code 的一次运行读到了它，是因为那一行把路径写成了 `@` 路径。
+各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；OpenCode 1.19.0 与 Pi 1.2.0 只依据它们的文档和源码，Codex 的 32 KiB 也依据文档和源码。交互模式没有测，路径写在反引号里的兜底那一行也没有测；每个否定结论都只跑了一次。在一个小任务的几次运行里，Codex 和 Grok 各两次都读了兜底那一行指向的文件；Claude Code 的一次运行读到了它，是因为那一行把路径写成了 `@` 路径。这个布局有几处是从分开的几次运行推出来的，没有按布局本身跑过：
 
-尚未实现。私有层会先按一个较早的形式实现，之后由上面的布局取代：只有一个文件 `AGENTS.private.md`，由 `[compile]` 里的 `output` 指定，提交进仓库的 `AGENTS.md` 那固定的一行指向它。
+- `.git/info/exclude` 忽略的 `CLAUDE.local.md` 是普通文件时，Grok 读了；`.gitignore` 忽略的 `CLAUDE.local.md` 是软链时，Grok 跳过了；`.git/info/exclude` 忽略的软链只在 `.claude/rules/` 里测过。Grok 会读这样忽略的软链 `CLAUDE.local.md`，是推断。
+- 仓库根目录有 `CLAUDE.local.md` 时，Claude Code 不再读根目录的 `AGENTS.md`。按它的文档，工作目录或其上层的 `CLAUDE.local.md` 算作 `CLAUDE.md`；子目录里的 `AGENTS.md` 是否也一并不读，没有测。如果也不读，子目录里有 `AGENTS.md` 的仓库在 Claude Code 里会丢掉它们。
+
+私有层还完全没有实现。
 
 私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库。
 
@@ -125,7 +127,7 @@ git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都�
 
 规定清单可以用自己的一条规定顶替另一个规定源的一条规定。多数偏离用不着这样做。公开规定只写原则，具体的值留给下面的层，由它们写成自己的规定来补充：比如一条公开规定写 worktree 放在主检出之外、单独的目录里，一条全局私有规定再写明具体目录，主检出放在 `~/dev`，worktree 放在 `~/wt`。这两条规定同时成立，后一条是对前一条的补充，不覆盖什么。公开规定要写成能这样补充的样子。
 
-覆盖用在一条规定与规定清单的需要无法同时成立的时候。比如一条公开规定写 pull request 的描述用英文，这个值是规定源自己定的，没有留给下面的层；某个仓库的读者都读中文，它就写一条本地规定，规定描述用中文，覆盖那条公开规定。长远的解决办法是向规定源提议把这条规定改成只写原则的形式。编译出的文件里只有这条本地规定，放在被覆盖的那条原来的位置，另起一行写明覆盖了哪条：「Overrides R200」。那条公开规定并没有被取代，在其他规定清单里照样有效。
+覆盖用在一条规定与规定清单的需要无法同时成立的时候。比如一条公开规定写 pull request 的描述用英文，这个值是规定源自己定的，没有留给下面的层；某个仓库的读者都读中文，它就写一条本地规定，规定描述用中文，覆盖那条公开规定。长远的解决办法是向规定源提议把这条规定改成只写原则的形式。编译出的文件里只有这条本地规定，放在被覆盖的那条原来的位置，另起一行写明覆盖了哪条，`Overrides R200.` ([编译与网站](statute-command.md#compilation-and-the-site))。那条公开规定并没有被取代，在其他规定清单里照样有效。
 
 **怎样声明。** 覆盖方用一个字段写明它顶替哪条规定：
 
@@ -246,4 +248,4 @@ parent = 104
 - [检查程序](checkers.md#checkers)：`constitution-build` 对新字段查什么，哪些归 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
 
-实现其余部分会替换掉工具现在的行为：`constitution-build` 遇到带 `parent` 的领域和带 `overrides` 的规定会失败。statute 能读磁盘上的多个规定源，读 `public` 和规定源之间的引用，并检查 `requires`、`conflicts` 和 `{@rule:...}` 里哪些规定可以引用哪些；它遇到 `scope`、`base`、`overrides`、带 `parent` 的领域、`parent` 指向另一个规定源的规定以及 git 规定源都会失败，也不读 `statute.private.toml`。
+实现其余部分会替换掉工具现在的行为：statute 遇到 `base`、带 `parent` 的领域、`parent` 指向另一个规定源的规定以及 git 规定源都会失败，也不读 `statute.private.toml`。
