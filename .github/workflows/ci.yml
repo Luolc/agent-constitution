@@ -92,7 +92,7 @@ jobs:
         env:
           SKIP: gitleaks
 
-      # The static site (docs/design.md, Static site) in three steps. The
+      # The static site (docs/design/static-site.md) in three steps. The
       # token count gets no credential here, so the pages say the tokens
       # were not counted; Hugo writes site/ (publishDir in web/hugo.toml),
       # failing on any warning; then the link check.
@@ -125,7 +125,7 @@ jobs:
           uv run --frozen constitution-build --check --base "$base"
 
       # Instruction files and other files never change together (see
-      # docs/design.md, Checkers). Same base as the step above, skipped the
+      # docs/design/checkers.md). Same base as the step above, skipped the
       # same way on a push without a usable `before`.
       - name: Instruction-only changes against the base commit
         env:

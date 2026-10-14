@@ -1,7 +1,8 @@
 """The model of the constitution and rule sources.
 
 Where the sources are, the shapes of their names and IDs, and the records
-they are read into (docs/design.md, Source formats).
+they are read into (docs/design/source-formats.md,
+constitution.md and rules.md).
 """
 
 from collections.abc import Iterator

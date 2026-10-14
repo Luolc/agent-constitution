@@ -9,8 +9,8 @@ holding its article.toml and one <NN>[a-z]-<id>.toml per section, the
 section's list items inside it; rules/<id>.toml, one rule each, and
 rules/retired-ids.txt, the IDs of deleted rules (checked, not rendered).
 Article and section numbers are the name prefixes. The formats, the
-numbering and the checks are described in docs/design.md (Source formats,
-Checkers).
+numbering and the checks are described in docs/design/source-formats.md,
+constitution.md, rules.md and checkers.md.
 
 The version for agents has, in place of the front text, a note of this
 script's own that says what the file is and where the full text is; it

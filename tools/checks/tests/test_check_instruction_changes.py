@@ -21,7 +21,7 @@ BASE = {
   "constitution/articles/01-a/article.toml": "article\n",
   "constitution/constitution.en.md": "generated\n",
   "tools/build_constitution.py": "tool\n",
-  "docs/design.md": "design\n",
+  "docs/design/README.md": "design\n",
 }
 
 
@@ -97,7 +97,7 @@ class Change(unittest.TestCase):
   def test_other_files_only_pass(self):
     self.change(
       "tools/build_constitution.py",
-      "docs/design.md",
+      "docs/design/README.md",
       ".github/workflows/ci.yml",
       ".pre-commit-config.yaml",
       "README.md",
@@ -126,7 +126,7 @@ class Change(unittest.TestCase):
 
   def test_mixed_fails(self):
     self.change(
-      "rules/a.toml", "constitution/constitution.en.md", "docs/design.md"
+      "rules/a.toml", "constitution/constitution.en.md", "docs/design/README.md"
     )
     self.assertEqual(
       self.run_check(),
@@ -136,7 +136,7 @@ class Change(unittest.TestCase):
         " with other files since base; split it into two changes\n"
         "instruction files:\n  M rules/a.toml\n"
         "generated files:\n  M constitution/constitution.en.md\n"
-        "other files:\n  M docs/design.md\n",
+        "other files:\n  M docs/design/README.md\n",
       ),
     )
 
@@ -155,7 +155,7 @@ class Change(unittest.TestCase):
     ]:
       with self.subTest(name):
         self.git("reset", "-q", "--hard", "base")
-        self.change(name, "docs/design.md")
+        self.change(name, "docs/design/README.md")
         self.assertEqual(self.run_check()[0], 1)
 
   def test_rename_of_instruction_file_to_other_path_fails(self):
@@ -167,7 +167,7 @@ class Change(unittest.TestCase):
     self.assertIn("other files:\n  A docs/agents.md\n", out)
 
   def test_repo_declared_patterns_replace_this_repos(self):
-    self.change("rules/a.toml", "docs/design.md")
+    self.change("rules/a.toml", "docs/design/README.md")
     self.assertEqual(self.run_check()[0], 1)
     self.assertEqual(self.run_check("--instructions", r"policy/.+")[0], 0)
 

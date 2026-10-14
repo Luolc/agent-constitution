@@ -1,7 +1,6 @@
 """Checks 2 to 5 of the constitution and rule sources.
 
-IDs, structure, language alignment and references (docs/design.md,
-Checkers).
+IDs, structure, language alignment and references (docs/design/checkers.md).
 """
 
 import re

@@ -1,0 +1,289 @@
+# Checkers, fixtures and feedback
+
+## Checkers
+
+Every checker is a command that exits non-zero on failure and prints file and
+position. What each one proves, and what it does not:
+
+| Checker | Proves | Does not prove |
+| --- | --- | --- |
+| Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name in [Source formats](source-formats.md), [The constitution](constitution.md) and [Rules](rules.md#rules); each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
+| Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
+| Chinese typography (`lint-zh-sources`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Python code (`ruff check`, `ruff format --check`, `pydoclint`, `basedpyright`, configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
+| Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
+| References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
+| Drift | `examples/golden/` equals what the compiler builds from `examples/overlay/` today | That a real overlay builds; only that the compiler did not change behavior unnoticed |
+| Private-term scan | No hit from the generic classes (secret-store paths, private address ranges, home-directory paths, email addresses) in CI; no hit from the private term list when the overlay runs it | That nothing private is present: a term not on the list passes |
+| Relaxations | Each `relaxes:` names an existing item of `relaxations` open to that rank, an existing target, a scope and a condition; under `relaxations.adjustable-rules` the target rule lists the parameter as `adjustable` | That the condition is really met, or that no undeclared relaxation exists |
+| Fixture gate | Every fixture binds to existing IDs and passes; redline fixtures are never skipped, except those of rules a jurisdiction left out, which its manifest lists as not run | That agents behave as the fixtures expect outside these cases |
+
+The constitution check runs its checks in this order and stops after the
+first one that finds errors, printing all of that one's errors:
+
+1. Format: every TOML file parses; it has exactly the required keys with
+   the right types; every text table has exactly the languages of
+   `index.toml`; everything under `constitution/articles/` is an
+   article's directory, with an article's name and an `article.toml`, and
+   everything else in an article's directory is a `.toml` file with a
+   section's name; there is no `constitution/sections/`; `id` equals the
+   name without its number; `status`, item `number` and `repealed` are
+   well formed and agree with each other and with the status of
+   `index.toml`; `edition` is a real month `YYYY-MM`. Hidden names
+   (starting with `.`, such as `.DS_Store` or an editor's swap file) are
+   skipped.
+2. IDs: each has the format; article and section IDs are unique in the
+   constitution, item IDs in their section, rule IDs among the rules; no
+   rule's ID is listed in `rules/retired-ids.txt`, and each line there is
+   an ID.
+3. Structure: numbers are unique in their scope; a repealed article has
+   only repealed sections.
+4. Languages: in each text table, every language cites the same set of
+   IDs as the default language.
+5. References: each `{@...}` and each `authority` entry resolves; a
+   repealed target (an item of a repealed section counts as repealed) is an
+   error; the constitution cites only itself, without a namespace; a rule
+   cites with `constitution:` or `rule:`; `authority` names only
+   constitution provisions.
+6. A fresh build equals the committed `constitution.<lang>.md` and
+   `constitution.<lang>.agent.md` files byte for byte (only under
+   `--check`).
+7. Numbering against a base commit (only under `--check --base <git-ref>`,
+   read with `git show`): when the base's `index.toml` is `active`, the
+   status has not gone back to `draft`, and the current `edition` is the
+   base's or a later month; when it is the base's, every article, section and list item of the base, matched
+   by ID, still exists with the same number, a section in the same
+   article's directory and an item in the same section; what was repealed
+   is still repealed; every rule of the base still exists or has its ID in
+   `rules/retired-ids.txt`, and every ID retired at the base is still
+   listed. Each error says which it is: an edition not later than the
+   base's, gone, renumbered, moved to another article,
+   no longer repealed, no longer retired. A base that is `draft`, has no
+   article directories yet, or has an earlier `edition` than the current
+   one, skips the comparison with a printed note.
+
+   The revision part of check 7 runs when the base has an `index.toml`,
+   whatever its status, unless the base is `active` and its `edition`
+   differs from the current one; a `draft` base is compared whatever
+   edition each names, so that renaming the edition a draft prepares does
+   not start its revisions again, and the approved text's revision is
+   greater than the draft's. The constitution text has changed when a file
+   under `constitution/articles/` was added, removed or edited, or
+   `index.toml` differs in any line other than `revision`; the generated
+   files and `rules/` do not count. If it changed, `revision` must be
+   greater than the base's; if not, equal to it. "Greater" is strict, not
+   "plus one", so that a change which jumps ahead is not an error. A draft
+   `0.<n>` compares by the number `n` (`0.9` < `0.10`) and is below every
+   whole-number revision; a revision of any other form is an error. After
+   an active base of another edition, the revisions are not compared. Its
+   purpose is that one revision names one text.
+
+Each check has a test that makes it fail and a passing control; the
+numbering check is tested on a temporary git repository
+(`tests/test_constitution_checks.py`, `tests/test_constitution_base.py`
+of `tools/compiler`).
+Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
+CI only, on a pull request against the tip of the base branch the
+checked-out merge commit was made on (its first parent), on a push to
+`main` against the commit before the push.
+
+The revision part is only as good as that base. The required check `check`
+is strict: a pull request must be up to date with `main` before it merges,
+so its CI run has seen the revision of every amendment merged before it,
+and two amendments cannot both take the same revision. The push run on
+`main` applies the same test to each merge commit as a backstop; if it
+turns red on a repeated revision, the one who merged opens a correcting
+amendment that gives the text a revision of its own. Revisions already
+repeated in history stay; each push is judged on its own commit.
+
+The instruction-only check (`check-instruction-changes`) keeps
+the changes that an agent reads as instructions apart from all others, so
+each can be reviewed and reverted on its own. Which paths are instruction
+files, which are generated and which are other files is one table at the
+top of the script: a generic part that holds in any repo, this repo's own
+part (the constitution, rule and skill sources) and this repo's generated
+files.
+A generated file goes with whichever side changed it: with the
+constitution sources it is an amendment, alone with the tools it is a
+tools change. The script compares `HEAD` with `--base` (`git diff
+<base>...HEAD`, renames off) and lists both groups when they mix. CI runs
+it against the same base as check 7; a push to `main` that carries
+several changes at once is checked as one.
+
+Another repo runs the same check in its own CI: it fetches this repo at a
+pinned tag and commit SHA, as an overlay pins the core (Releases and
+versions), and runs `PYTHONPATH=<core>/tools/checks/src python3 -m
+repo_checks.check_instruction_changes --root . --base <base>` in its
+checkout: the script needs only the standard library, so that repo needs
+neither uv nor this workspace. The generic part always applies.
+The repo declares its own instruction paths in its `AGENTS.md`, in words
+for agents, and passes the same paths to the script as `--instructions
+<regex>`, one per path, and its generated files as `--generated <regex>`;
+either option replaces this repo's own part and generated files.
+
+Chinese typography is checked twice, with limae and its default
+configuration. `lint-zh-sources` hands every `zh` text of
+`constitution/index.toml`, `constitution/articles/` and `rules/` to limae
+as a Markdown file of its own and prints each finding as `path:line:
+field: <message>`, the field being the TOML table, with an item's ID
+(`items.capital.content`). Before that it replaces each citation `{@...}`
+with Chinese text shaped like a constitution citation's rendering
+(`第某条`) and puts the citation back afterwards: `agent{@x}` renders as
+`agent第十条` and needs a space that limae cannot see next to a brace,
+while `依照{@x}批准` needs none (limae 0.13.3, read 2026-10). A rule
+citation gets the same placeholder, which stands in for its rendering
+only until stage B sets it (a rule's title, which may start or end in
+Latin letters). With `--fix` it writes limae's fixes back in place,
+changing no other byte, and parses the file again to make sure.
+The commit hook and CI only check; the fix is run by hand. The limae hook
+on `constitution/constitution.zh.md` and `constitution.zh.agent.md`
+checks what exists only after the build: section and item numbers,
+headings, the text around a rendered citation. A finding there is fixed in the source or in the build script,
+never in the generated file. The rules have no built text yet, so the
+source check is what covers their Chinese.
+
+The private-term scan prints only position and class, never the matched
+text. In CI it runs the generic classes only; the term list is injected at
+run time on the private side (`--terms-file`) and never committed. Each class
+is first run against a control string that must match, so a broken pattern
+cannot pass silently.
+
+Undeclared relaxations cannot be caught completely. The relaxation checker
+also flags, as a warning, lower-ranking text that cites a rule or article ID
+next to wording that lifts an obligation ("not required", "instead of",
+"may skip") without a `relaxes:` entry. Review and behavior fixtures carry
+the rest. The checker runs in each repo's own CI, against a pinned core
+version, over that repo's `AGENTS.md`. The compiler runs the same warning over
+the overlay's private rules: a private rule that lifts an obligation of a
+general rule in use should leave that rule out by name instead.
+
+A check that the output contains a sentence proves the sentence is there. It
+does not prove an agent follows it; only behavior fixtures and real runs say
+anything about that, and even they only sample.
+
+## Fixtures
+
+```text
+fixtures/static/happy/<name>/
+fixtures/static/redline/<name>/
+fixtures/behavior/happy/<name>/     stage C
+fixtures/behavior/redline/<name>/   stage C
+```
+
+Each fixture directory holds a `fixture.md` (front matter `binds:
+[constitution:asking, rule:credential-storage]`, `kind: happy` or
+`redline`, and a short statement of what it shows),
+its inputs and its expected result.
+
+- Static fixtures are deterministic: an input overlay or a lower-ranking file,
+  and an assertion on the compiler or a checker (builds; fails with this
+  error; this declaration is rejected). They run in every CI run.
+- Behavior fixtures (later) give a real agent a scenario and judge what it
+  did. They record the harness, model and settings, the number of runs and
+  how each failed; one pass is never reported as a guarantee.
+- Happy-path and redline fixtures stay apart, so a fix for a safety case that
+  breaks ordinary work shows up as a failing happy fixture.
+- Every fixture binds to at least one constitution or rule ID, written
+  with its namespace as a rule cites it, and the checker rejects a fixture
+  whose IDs do not resolve.
+- Before a release, every fixture runs, all happy and all redline, as
+  the rule `fixture-outcomes` requires. Static fixtures run in this
+  repo's CI. Behavior fixtures (once they exist) need installed harnesses and
+  model credentials, which this repo's CI does not have; they run on the
+  private side, and a release needs the record of that run at the commit being
+  tagged.
+- Fixtures follow the constitution like any other file: made-up data only
+  (`example.test` domains, documentation address ranges, fictional names), no
+  real credentials, no private terms. The private-term scan covers
+  `fixtures/`.
+
+Open, for the person to decide: where red-line fixtures live. Recommended:
+with the text they test, bound to its ID.
+
+- Constitution: its red-line fixtures live in the core. Those for what no
+  project may change (for example, that an amendment goes through a person,
+  `must-ask.amendments`) run for every jurisdiction. Those for a default
+  boundary item test the default; a project that overrides that item under
+  `relaxations.project-overrides` runs its own fixture
+  for the override in place of the core's, as with a left-out rule.
+- General rules: each rule's red-line fixtures live in the core, bound to
+  that rule's ID. The core's CI runs all of them. A jurisdiction runs those of
+  the rules it uses; the fixtures of a rule it left out are not run there,
+  and its manifest lists them as not run, never as passed.
+- Private rules and a repo's relaxations: their fixtures live on that side
+  (the overlay, the repo) and run in its CI against the pinned core
+  version, the way the relaxation checker already runs there.
+
+Reasons: a fixture changes together with the text it tests, so it belongs
+where that text is, and binding it to the ID means that leaving a rule out
+leaves its fixtures out too, with no second list to keep. The concrete hard
+rules (credentials, for example) are now optional rules, not constitution,
+so their fixtures cannot sit at the constitution level and run everywhere.
+A copy of the core's fixtures in every project would drift and test text
+the project does not own.
+
+## Load verification
+
+Compiling the file does not show that an agent read it. The overlay's apply
+step checks each harness with its own read-only entry point (as of
+2026-10-12: Codex `debug prompt-input`, Grok `inspect`, and Claude Code's
+`InstructionsLoaded` hook):
+
+- Positive arm: the input digest from the plain-text header appears in what
+  each harness actually loaded. (Claude Code strips block-level HTML
+  comments before injecting the file, so the digest must not be in one.)
+- Control arm: a string that must not appear does not. The core ships a
+  fixed `draft` canary rule whose statement is a unique string; it is in
+  every build's sources and never in any output.
+- An entry point counts only if it returns the loaded content, not just the
+  file paths; which ones do is confirmed per harness when stage B builds
+  this check.
+
+If the positive arm passes and the control arm also finds its string, the
+check cannot tell a correct load from a load of the wrong file, and it fails.
+The core ships the check; it runs on the private side because it needs the
+installed harnesses.
+
+## Feedback loop: reserved places
+
+Not built now. The shape, so that later work has somewhere to go:
+
+```text
+event -> proposal -> rule revision, case, or amendment -> release
+```
+
+- Events come from where work already leaves records: worker reports,
+  review findings, failed checks, a person's corrections and answers. The
+  core does not store events; an event source only has to deliver a short
+  record (what happened, which build and rule IDs were in force, evidence
+  reference, first classification). "No rule change needed" is a valid
+  outcome.
+- Cases (`cases/<id>.md`, stage C): the facts, the build in force, the rule
+  IDs applied, the decision and its status. A case explains a rule; it never
+  grants a permission. A case that would change a right, a duty or a
+  prohibition becomes a rule revision; one that would relax a boundary item
+  for every project becomes an amendment proposal or, for an item the rule
+  library added, a change to that rule approved by a person on that change
+  (`list-defaults`); for one project, a `relaxations.project-overrides`
+  declaration does it.
+- Middle ground (`middle-ground`): when an agent is unsure and
+  asks a person, the
+  answer is written as a case candidate on the private side, with its
+  source. When the same kind of answer recurs, it becomes a rule proposal.
+  Which boundary changes the rule library may make, and which need an
+  amendment, is `list-defaults`.
+- Rule proposals are pull requests that change `rules/`, adopted under
+  `rule-evolution`,
+  each answering what problem, what evidence, why a rule and not a tool fix,
+  which IDs, what authority, what could break, how to test and roll back.
+  A clear productivity gain is adopted under `ordinary-rule-adoption`;
+  minor improvements are batched (`prefer-tooling`).
+- Amendment proposals are pull requests that change `constitution/`; they
+  take effect only under `amendment-procedure`.
+- Finding the next work and verifying it (stage D): the interface is two
+  record shapes, kept independent of any tracker. A work item: what, why,
+  acceptance criteria, stop conditions. An acceptance record: each check run,
+  at which commit, the output line that shows the result, and each check not
+  run with the reason. Whatever finds work and whatever verifies it exchanges
+  these; the core defines them in `schema/` when stage D starts.
