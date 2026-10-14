@@ -1,0 +1,42 @@
+id = 69
+slug = "no-agent-tool-memory"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["separate-instruction-changes", "independent-review"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write nothing into an agent tool's own memory"
+zh = "不写 agent 工具自带的记忆"
+
+[text.statement]
+en = "Never write to the cross-session memory an agent tool keeps for itself; keep a lesson that must last in a repository, through review."
+zh = "不写入 agent 工具自己保存的跨会话记忆；要留存的经验经审查放进仓库。"
+
+[text.reason]
+en = '''
+A tool loads its memory into later sessions, where it works as instructions. Writing it changes the instructions that bind agents without a change of its own and without review ({@constitution:separate-instruction-changes}, {@constitution:independent-review}), and other agents and people cannot see it.
+'''
+zh = '''
+工具会把它的记忆加载到之后的会话里，在那里起到指令的作用。写入记忆，就是在不单独提出变更、也不经审查的情况下修改约束 agent 的指令 ({@constitution:separate-instruction-changes}、{@constitution:independent-review})，其他 agent 和人也看不到它。
+'''
+
+[text.verification]
+en = '''
+An agent tool's memory is what the tool stores on its own initiative and loads into later sessions, for example a memory directory it keeps under the user's home directory, or a command or tool call that saves a note to memory. Files in a repository, and instruction files changed through review, are not memory.
+
+Violated when an agent writes to an agent tool's memory.
+'''
+zh = '''
+agent 工具的记忆，指工具自行保存、并加载到之后会话里的内容，例如工具在用户主目录下维护的记忆目录，或者把一条笔记存进记忆的命令或工具调用。仓库里的文件，以及经审查修改的指令文件，都不属于记忆。
+
+agent 写入 agent 工具的记忆的，即为违反本规定。
+'''
+
+[translations]
+zh = "c56332adef045acd9fbf3be532bc8b4d0c764a55afce4119ced52788dca35a4b"

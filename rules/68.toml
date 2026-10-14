@@ -1,0 +1,42 @@
+id = 68
+slug = "shared-memory-is-the-repository"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["evidence.grounds", "independent-review"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep what is needed after the task in a repository"
+zh = "任务结束后还要用到的内容放进仓库"
+
+[text.statement]
+en = "Put what is still needed after the task ends, such as a decision, knowledge to keep or work handed over to a later agent, into a repository through review, never only into a conversation."
+zh = "任务结束后还要用到的内容，例如做出的决定、要保留的知识、交接给之后的 agent 的工作，都经审查放进仓库，不能只留在会话里。"
+
+[text.reason]
+en = '''
+A conversation cannot be read by the next agent or a later session, and what is said in it can be neither checked nor reviewed ({@constitution:evidence.grounds}). A file merged into a repository through review can be found, checked and corrected ({@constitution:independent-review}).
+'''
+zh = '''
+下一个 agent 或之后的会话读不到这次会话，会话里说过的话既无法核对，也无法审查 ({@constitution:evidence.grounds})。经审查合入仓库的文件可以查到、核对和更正 ({@constitution:independent-review})。
+'''
+
+[text.verification]
+en = '''
+A conversation is the chat of an agent session or the messages exchanged between agents. While a task runs, a handoff may sit in a file outside a repository, such as a scratch file the receiving agent reads; what is needed after the task ends is merged into a repository. An issue tracker, a wiki or any other place outside a repository does not count as one.
+
+Violated when something needed after the task ends is kept anywhere but in a repository, or reached the repository without review.
+'''
+zh = '''
+会话指 agent 会话里的聊天记录，以及 agent 之间往来的消息。任务进行期间，交接内容可以放在仓库以外的文件里，例如接手的 agent 去读的临时文件；任务结束后还要用到的，合入仓库。问题跟踪系统、wiki 以及仓库以外的其他地方，都不算仓库。
+
+任务结束后还要用到的内容存放在仓库以外的地方，或者没有经过审查就进了仓库的，即为违反本规定。
+'''
+
+[translations]
+zh = "54e3a33d2c7479f86e94472d0d1407e866edefb172b030d7bac35d380fa00049"

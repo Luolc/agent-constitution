@@ -1,9 +1,9 @@
 id = 7
 slug = "instruction-only-changes"
-revision = 3
+revision = 4
 kind = "rule"
 status = "superseded"
-superseded-by = 46
+superseded-by = [46, 47, 48, 49]
 lang = "en"
 parent = 15
 authority = ["separate-instruction-changes", "discriminating-checks"]

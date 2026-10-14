@@ -1,9 +1,9 @@
 id = 8
 slug = "legitimate-means"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 30
+superseded-by = [30, 31]
 lang = "en"
 parent = 13
 authority = ["safety", "decency.legitimate-means"]
