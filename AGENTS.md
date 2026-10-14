@@ -190,13 +190,17 @@ behind `main`: run `gh pr update-branch <N>` or merge the latest `main`, rerun
 the checks, let the reviewer recheck the increment, then merge. Runners are
 pinned to `ubuntu-24.04`, and actions by commit SHA.
 
-`.github/workflows/token-count.yml` ("Token count") runs only on pushes to
-`main`. It gets an access token through Workload Identity Federation, counts
-the tokens with `count-tokens --require-tokens`, builds the site and checks
-its links, and writes the length lines of the two pages to the job summary and
-the log; it publishes nothing. It is not a required check, and it goes red
-when the token exchange, the count, the Hugo build or the link check fails
-(`docs/design.md`, Static site, Credential).
+`.github/workflows/pages.yml` ("Pages") runs on pushes to `main` and on a
+manual run on `main`. Its job `build` gets an access token through Workload
+Identity Federation, counts the tokens with `count-tokens --require-tokens`,
+builds the site with the site's domain as `--baseURL`, checks its links,
+writes the length lines of the two pages to the job summary and the log, and
+uploads the site. Its job `deploy` publishes the site to GitHub Pages only
+when the repository is public and the repository variable `PAGES_DEPLOY` is
+`true`, and is skipped otherwise; publishing is a release, and setting the
+variable is a person's decision (`docs/design.md`, Static site). It is not a
+required check, and it goes red when the token exchange, the count, the Hugo
+build, the link check or the deployment fails.
 
 ## Fleet
 
