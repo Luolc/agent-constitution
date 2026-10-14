@@ -636,8 +636,10 @@ unresolved or unused parameter fails the build.
 ### Skills
 
 `skills/<name>/SKILL.md` in the usual skill layout. Skills are not compiled
-into the instruction file; the overlay's apply step installs them where the
-harnesses look for skills. A skill says how to do something; what must be
+into the instruction file; they are installed as they are where the
+harnesses look for skills. How they are installed is not decided yet (see
+the opening of this document); the overlay's apply step under Compilation
+is the current plan. A skill says how to do something; what must be
 done stays in a rule, and the skill cites the rule ID. The instruction-only
 check counts everything under `skills/` as instruction files, since a
 skill directs the agents that read it.
@@ -693,7 +695,8 @@ overlay contributes, as a private rule, the one or two sentences that tell
 an agent how to tell whether it runs under fleet or as an orchestra, and
 which skill an orchestra reads.
 
-Wiring on the private side: the overlay's apply step fetches the pinned core
+Wiring on the private side, as currently planned (how the content is
+installed is not decided yet): the overlay's apply step fetches the pinned core
 version, verifies tag and commit, runs the compiler, runs the checkers that
 need private input (the private-term scan), installs the output and the
 skills, then runs load verification. The real output is never committed to
