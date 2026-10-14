@@ -114,6 +114,22 @@ thing to check when this is implemented is, for each supported agent,
 whether it reads the instruction file of a subdirectory it works in; the
 segment design is fixed only after that.
 
+**Where it lives.** The design follows a package manager such as uv: a
+source is like a package index, a rule set like a project manifest, the
+lock file like a lock file, compiling like a sync, and the user-level
+cache like a package cache. The repository holds the rule set, the lock
+file and the compiled output; an upgrade is one command in the repository
+and shows up as a pull request. The user level holds only the tool, a
+cache of the sources, and a thin personal layer for what concerns the
+person, not the project: the language of replies, reading messages as
+speech-to-text, where credentials are kept, how directories are laid out
+on the machine. That layer is the private overlay already in the design.
+Each rule declares a default level (project rules at the repository level,
+rules about the person or the machine at the user level), and the user can
+change it. The reason is that a person who clones the repository, CI and a
+cloud agent cannot read user-level files, and each repository pins its own
+versions and upgrades on its own schedule.
+
 ## Rules and skills
 
 A rule says what must be so; a skill says how to get there: steps,
@@ -358,21 +374,9 @@ implements this design lands.
 - The format of the lock file.
 - Whether a domain at the top of the tree is a rule of its own or only a
   heading.
-- Where the rule set, lock file and compiled output live, at the user
-  level or in the repository. Recommended: mainly in the repository. The
-  user level holds only the tool and a cache of the sources; the rule set,
-  the lock file and the compiled output are committed, and an upgrade is
-  one command in the repository that shows up as a pull request, like uv's
-  global cache with a lock file in each project. A person who clones the
-  repository, CI and a cloud agent cannot read user-level files, and each
-  repository then pins its own versions and upgrades on its own schedule.
-  The exception is what concerns the person, not the project: the language
-  of replies, reading messages as speech-to-text, where credentials are
-  kept, how directories are laid out on the machine. That goes in a thin
-  personal layer at the user level, which is the private overlay already in
-  the design. Each rule declares a default level (project rules at the
-  repository level, rules about the person or the machine at the user
-  level), and the user can change it.
+- The concrete fields and commands of the package-manager model
+  ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
+  when it is implemented.
 - When a rule set enables a rule without one it `requires`, whether the
   build fails or adds the missing rule.
 - The directory layout of the rules and their checks: whether a rule's
