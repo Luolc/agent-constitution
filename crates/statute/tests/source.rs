@@ -736,6 +736,37 @@ fn crlf_line_ends_hash_as_lf() {
 }
 
 #[test]
+fn an_escaped_crlf_is_not_a_line_end() {
+    // `\r\n` written as an escape in a basic string keeps its CR.
+    let escaped = edit(
+        translated(&original_hash(&[
+            "Rule 2",
+            "Do the thing 2.",
+            "Because.\n",
+            "Violated\r\nwhen.",
+        ])),
+        "en = \"Violated when the thing is not done.\"",
+        "en = \"Violated\\r\\nwhen.\"",
+    );
+    assert_clean(&load(&[domain(1), escaped.clone()]));
+    let as_lf = edit(
+        escaped,
+        &original_hash(&[
+            "Rule 2",
+            "Do the thing 2.",
+            "Because.\n",
+            "Violated\r\nwhen.",
+        ]),
+        &original_hash(&["Rule 2", "Do the thing 2.", "Because.\n", "Violated\nwhen."]),
+    );
+    assert_error(
+        &load(&[domain(1), as_lf]),
+        "2.toml",
+        "follows another original",
+    );
+}
+
+#[test]
 fn a_title_is_one_line() {
     // A multi-line string whose one line ends in a newline is still one
     // line.

@@ -244,8 +244,9 @@ follows. That hash is the SHA-256 of the original-language values of
 `title`, `text.statement`, `text.reason` and `text.verification`, in this
 order, as the TOML parser returns them (before the build drops the
 newlines next to the quotes of a multi-line string, see
-[Source formats](source-formats.md)), with each CRLF line end taken as
-LF, so that a file checked out with either hashes the same, encoded in
+[Source formats](source-formats.md)), with each CRLF line end of the file
+taken as LF, so that a file checked out with either hashes the same (a
+`\r\n` written as an escape is not a line end and stays), encoded in
 UTF-8 and joined with one NUL byte (0x00) between each two; for a domain or a one-of it is the
 hash of the title alone. When the original changes and a translation's
 hash no longer matches, the check fails and prints the new hash, as

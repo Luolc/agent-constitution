@@ -1,4 +1,4 @@
-<!-- en-sha256: eacbbb9b0b40634f82b24db938f1edc15a6352190657f928b30aac65a17be86f -->
+<!-- en-sha256: 19d6260fff6c5777049b2406b298dedc55b37ff4536eb505d978aca41a105b2e -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -150,7 +150,7 @@ en = "Python"
 
 领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (只有 one-of 有)、`[title]`，以及标题有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
 
-**语言。** 每段文字，即 `[title]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这种语言的标题和全部三部分，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
+**语言。** 每段文字，即 `[title]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这种语言的标题和全部三部分，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把文件里的每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同；转义写出的 `\r\n` 不是行尾，原样保留)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
 
 ## <a id="rule-sets-and-the-lock-file"></a>规定清单与锁文件
 

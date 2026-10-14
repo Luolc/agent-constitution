@@ -220,7 +220,12 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         diags.error(file, "not valid UTF-8");
         return None;
     };
-    let raw: RawNode = match toml::from_str(content) {
+    // A file's line ends are read as LF whatever it uses, as the TOML
+    // parsers of other tools return them, so a checkout with CRLF line ends
+    // reads, and hashes, the same. A `\r\n` written as an escape is not a
+    // line end and stays.
+    let content = content.replace("\r\n", "\n");
+    let raw: RawNode = match toml::from_str(&content) {
         Ok(raw) => raw,
         Err(e) => {
             diags.error(file, e.to_string().trim_end().to_owned());
@@ -513,10 +518,7 @@ fn check_languages(
     }
 
     // The hash can be checked only when every original text is there.
-    // Line ends count as `\n` whatever the file uses, as some TOML
-    // parsers already return them, so a checkout with CRLF line ends
-    // hashes the same.
-    let original = |t: &Text| t.get(lang).map(|s| s.replace("\r\n", "\n"));
+    let original = |t: &Text| t.get(lang).cloned();
     let mut parts = vec![original(&raw.title)];
     match (&raw.text, raw.kind) {
         (Some(t), Kind::Rule) => parts.extend([
