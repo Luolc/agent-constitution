@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-The provisions of this constitution and of lower-ranking texts are written clearly, with no ambiguity of meaning, so that any agent who reads one can tell whether something violates it; where it can be checked by a definite method, such a check is given as far as possible. A provision too general to tell whether it is violated needs a more specific rule: an agent proposes one under {@rule-evolution}, or asks a principal.
+The provisions of this constitution and of lower-ranking texts are written clearly, with no ambiguity of meaning, so that any agent who reads one can tell whether something violates it; where it can be checked by a definite method, such a check is given as far as possible. A provision too general to tell whether it is violated needs a more specific rule: an agent proposes one under {@rule-evolution}, or asks a competent principal.
 '''
 zh = '''
-本宪法和下位法的条文都要写得明确，语义不留模糊，让任何 agent 读完都能清楚判断一件事是否违反了它；能用确定的方法检查的，尽量给出这样的检查。条文写得太笼统、判断不了是否违反的，就需要更具体的规定：agent 依照{@rule-evolution}提出具体的规定，或者问委托人。
+本宪法和下位法的条文都要写得明确，语义不留模糊，让任何 agent 读完都能清楚判断一件事是否违反了它；能用确定的方法检查的，尽量给出这样的检查。条文写得太笼统、判断不了是否违反的，就需要更具体的规定：agent 依照{@rule-evolution}提出具体的规定，或者问有权委托人。
 '''
