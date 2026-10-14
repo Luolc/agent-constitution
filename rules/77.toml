@@ -11,11 +11,11 @@ zh = "Git"
 
 [applicability]
 en = '''
-For repositories kept in Git that agents commit to: commit hooks and the local main branch. Not needed when agents only read the repository, or it uses another version control system. {@rule:50}, the credential scan in the commit hooks, sits here and not under Security, so a Git repository enables both.
+For repositories kept in Git that agents commit to: commit hooks and the local main branch. Not needed when agents only read the repository, or it uses another version control system. {@rule:50} sits here and not under Security, so a Git repository enables both.
 '''
 zh = '''
-适用于用 Git 管理、agent 会往里提交的仓库：管 commit hook 和本地 main 分支。agent 只读不提交，或者仓库用的是别的版本控制系统，就不必启用。{@rule:50} (commit hook 里的凭证扫描) 挂在这里，不在 Security 下，所以用 Git 的仓库两个都要启用。
+适用于用 Git 管理、agent 会往里提交的仓库：管 commit hook 和本地 main 分支。agent 只读不提交，或者仓库用的是别的版本控制系统，就不必启用。{@rule:50} 挂在这里，不在 Security 下，所以用 Git 的仓库两个都要启用。
 '''
 
 [translations]
-zh = "d4e5466877fec975d3d376e1522dc2f983204f416aa3129f2b3a7005bb56bb73"
+zh = "b2c194fb3ed1db18ca695e0afb2259887d929fc1e108eb35f8f304893b4431ef"
