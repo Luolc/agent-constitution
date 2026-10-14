@@ -8,7 +8,7 @@ with a private overlay, into the one instruction file the agents read. The
 2026-10 edition of the constitution is in force. Today the repo has the
 constitution and the general rules as TOML sources, the design, the script
 that builds the constitution and the first version of the rule tool, the
-Rust crate `statute`; the rule compiler is not written yet.
+Rust crate `statute`, which is still under development.
 
 ## Language
 
@@ -86,9 +86,9 @@ Checkers).
   (`docs/design/file-structure.md`).
 - `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
   `Cargo.lock`; `rust-toolchain.toml` pins the toolchain). `crates/statute`
-  reads a rule set and writes `statute.lock` with the commands `lock`,
-  `explain`, `add` and `remove`; the rest is not built yet
-  (`docs/design/rule-system.md`, The tool and the first version). The
+  compiles a constitution and the chosen rules into `AGENTS.md`; which
+  commands are built so far is in `docs/design/rule-system.md`, The tool
+  and the first version. The
   release on crates.io, 0.0.1, is still a placeholder
   (`crates/statute/README.md`). Publishing a crate is a release
   (`docs/design/amendments-and-releases.md`).
