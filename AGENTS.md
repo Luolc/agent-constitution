@@ -180,8 +180,9 @@ when the two disagree.
   nothing and fails on an error in the constitution or rule sources or a
   stale generated file; `--check --base <git-ref>` also fails when a
   numbered provision of an active base commit is gone, renumbered or moved,
-  or a rule of that base is gone without being retired (a draft base is
-  skipped with a note for this part). Within one edition, a draft base
+  or a rule of that base is gone (a rule of the older format may live on
+  as a node whose `slug` is its ID; a draft base is skipped with a note for
+  this part). Within one edition, a draft base
   included, it also fails when the revision in `index.toml` is not greater
   than the base's although the constitution text changed, or differs from
   it although the text did not; `--root <dir>` runs it on another
