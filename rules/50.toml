@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The repository's commit hook configuration (for example `.pre-commit-config.yaml`) runs a credential scanner on the staged changes each time a commit is made. A scan that runs only on the history, at push time or in CI does not take its place, though a repository may run such scans as well. When the scanner reports a hit, the value stays out of the report ({@rule:44}).
+The repository's commit hook configuration (for example `.pre-commit-config.yaml`) runs a credential scanner on the staged changes each time a commit is made. A scan that runs only on the history, at push time or in CI does not take its place, though a repository may run such scans as well. When the scanner reports a hit, the value stays out of the report ({@rule:44}). What is judged is the repository's configuration; installing the hooks in a checkout is left to the project's instructions.
 
 Violated when a repository has no commit hook that scans the staged changes for credentials.
 '''
 zh = '''
-仓库的 commit hook 配置 (例如 `.pre-commit-config.yaml`) 在每次提交时，对暂存区里的改动运行凭证扫描工具。只扫描历史、只在 push 时或只在 CI 里运行的扫描，不能代替它，但仓库可以同时运行这类扫描。扫描工具报告命中时，报告里不出现凭证的值 ({@rule:44})。
+仓库的 commit hook 配置 (例如 `.pre-commit-config.yaml`) 在每次提交时，对暂存区里的改动运行凭证扫描工具。只扫描历史、只在 push 时或只在 CI 里运行的扫描，不能代替它，但仓库可以同时运行这类扫描。扫描工具报告命中时，报告里不出现凭证的值 ({@rule:44})。判断的对象是仓库里的配置；在检出的副本里安装 hook，由项目说明规定。
 
 仓库没有扫描暂存区凭证的 commit hook 的，即为违反本规定。
 '''
 
 [translations]
-zh = "c2a0c0cf18c4b97328fbcbf3c0c0ccca79f107537a6e7bb70abb8f6518c972f2"
+zh = "7b146fd0eeec286cc59404d1ca61c917d052253157d3909f38d613c2a6032e74"
