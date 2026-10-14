@@ -82,7 +82,8 @@ question: does it change what counts as compliant?
   Rewording, a new example, a fix to a bug in its check: what was
   compliant stays compliant, and what was a violation stays one.
 - If it does, the change gets a new ID. The old rule is marked
-  superseded, names the rule that supersedes it, and stays in the source
+  superseded, names the rule that supersedes it (or the rules, when it
+  is split into several), and stays in the source
   for good. Only a rule of the same source can supersede it (see
   [Sources and references](#sources-and-references)).
 
@@ -191,7 +192,10 @@ The fields:
 - `kind`: `rule`, `one-of` or `domain`.
 - `status`: `draft`, `trial`, `active`, `superseded` or `repealed`.
 - `superseded-by`: the ID of the rule of the same source that supersedes
-  this one; present only when `status` is `superseded`.
+  this one, or a list of IDs when several rules together take its place,
+  `superseded-by = [22, 23]`; present only when `status` is
+  `superseded`. Each names another rule, and none twice; a list is never
+  empty.
 - `lang`: the language the rule was written in, its original, as a
   language code such as `"en"` or `"zh"`.
 - `parent`: the ID of the parent node, a rule, a one-of or a domain of the
@@ -343,10 +347,11 @@ path = "."
 Upgrading is an explicit step that rewrites the lock file and shows the
 diff of every rule whose revision moved, and of every rule a requirement
 brought in or dropped. When the rule set enables a superseded rule, the
-build warns and names its successor. For a rule listed in `rules` or a
+build warns and names its successors. For a rule listed in `rules` or a
 pack root in `packs`, one command, `statute upgrade
 --replace-superseded`, replaces the old ID with the new one in the rule
-set; for a rule brought in by another, the warning names the rule that
+set when there is one successor, and leaves the choice among several to
+the user; for a rule brought in by another, the warning names the rule that
 brings it in. An enabled repealed rule draws a warning too. These are
 warnings, not errors, since the rule set keeps working as it did.
 Downstream users do not have to follow the supersession chain by hand.
@@ -585,7 +590,7 @@ The build checks these constraints:
   the build fails on it; so it does on a rule that requires a one-of with
   no children yet.
 - A rule that requires a superseded or repealed rule draws a warning,
-  which names the successor when there is one.
+  which names the successors when there are any.
 
 **Missing requirements are added.** When a rule set enables a rule
 without one it requires, the tool adds the missing rule, as a package
@@ -898,8 +903,10 @@ does. Without a `statute.lock` there is nothing to compare with, and it
 exits with status 1. With `--replace-superseded` it first replaces, in
 `rules` and `packs`, each superseded rule with its successor, following
 the chain to its end, and keeps the rest of the file as written; when
-the successor is listed already, the old entry is only taken out. A
-repealed rule is left for the user to take out. When the changed rule
+the successor is listed already, the old entry is only taken out. Where
+the chain reaches a rule with more than one successor, the entry is left
+as it is and the successors are listed, for the user to choose with
+`add` and `remove`. A repealed rule is left for the user to take out. When the changed rule
 set does not resolve, neither file is changed.
 
 **Moving over.** Today agents read the user-level instruction files of

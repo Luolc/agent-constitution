@@ -29,7 +29,7 @@ struct Index {
 
 /// `rules` for the source `.`, `../team/rules` for `../team`: how a path
 /// below the source is named in messages.
-fn shown(source_path: &str, below: &str) -> String {
+pub fn shown(source_path: &str, below: &str) -> String {
     let base = source_path.trim_end_matches('/');
     if base == "." || base.is_empty() {
         below.to_owned()

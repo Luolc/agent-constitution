@@ -399,7 +399,7 @@ fn lock_warns_of_a_rule_changed_without_a_new_revision() {
     ok(&run);
     assert_eq!(
         run.stderr,
-        "statute.toml: warning: rule ac:5 (Rule 5) changed since statute.lock and is still at revision 1; an edited rule's revision goes up by one\n"
+        "rules/5.toml: warning: rule ac:5 (Rule 5) changed since statute.lock and is still at revision 1; an edited rule's revision goes up by one\n"
     );
     // Locked again, the change is pinned and the warning gone.
     let run = statute(&dir, &["lock"]);
@@ -510,6 +510,39 @@ fn upgrade_replaces_two_rules_with_one_successor_once() {
         run.stdout
     );
     assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:3\", \"ac:11\""));
+}
+
+#[test]
+fn upgrade_leaves_a_rule_with_two_successors_to_the_user() {
+    let mut nodes = superseded_nodes("");
+    nodes[8] = edit(
+        rule(10, 1, "superseded-by = [11, 12]"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    );
+    nodes.push(rule(12, 1, ""));
+    let dir = repo(
+        "upgrade-replace-split",
+        &manifest("\"ac:10\", \"ac:3\""),
+        &nodes,
+    );
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    ok(&run);
+    assert!(
+        run.stdout.starts_with(
+            "left ac:10 in `rules`: superseded by ac:11, ac:12; choose among them with `statute add` and `statute remove`\n"
+        ),
+        "{}",
+        run.stdout
+    );
+    assert!(
+        run.stderr
+            .contains("replace ac:10 in `rules` with those of ac:11, ac:12 that apply"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:10\", \"ac:3\""));
 }
 
 #[test]
