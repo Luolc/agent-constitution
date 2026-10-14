@@ -135,7 +135,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
   another rule is indented under it. Domains and one-ofs are not listed
   but head the rules below them, and again at the top of each page. A
   rule's page (`web/layouts/rules/page.html`) gives its title, for a
-  superseded rule the rule that supersedes it, its statement, reason and
+  superseded rule the rules that supersede it, its statement, reason and
   verification, the provisions it cites (`authority`), linked to their
   anchors on the home page, its relations (its parent, its requirements
   and its conflicts, a conflict shown on both rules though written on

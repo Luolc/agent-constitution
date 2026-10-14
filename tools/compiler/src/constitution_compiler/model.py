@@ -309,7 +309,8 @@ class Node:
     status: draft, trial, active, superseded or repealed.
     lang: the language of its original.
     parent: the number of its parent, None for a domain.
-    superseded_by: the number of the rule that supersedes it, if any.
+    superseded_by: the numbers of the rules that supersede it; empty
+      unless it is superseded.
     authority: the constitution provisions it refines, without a
       namespace; empty for a one-of or a domain.
     title: its title, by language.
@@ -326,7 +327,7 @@ class Node:
   status: str
   lang: str
   parent: int | None
-  superseded_by: int | None
+  superseded_by: list[int]
   authority: list[str]
   title: Texts
   text: dict[str, Texts]

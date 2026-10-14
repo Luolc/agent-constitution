@@ -7,7 +7,8 @@ tree:
 - 1, a domain, translated;
   - 2, a one-of, translated;
     - 3, a rule, translated, citing `one` and `one-a`;
-  - 4, a rule superseded by 5, its translation made from another original;
+  - 4, a rule superseded by 5 and 6, its translation made from another
+    original;
   - 5, a rule, untranslated, requiring 3 and in conflict with it;
     - 6, a rule, untranslated, citing `one-a.x`.
 """
@@ -140,7 +141,7 @@ FILES = {
   "rules/4.toml": rule(
     4,
     1,
-    'status = "superseded"\nsuperseded-by = 5\nauthority = ["one"]\n',
+    'status = "superseded"\nsuperseded-by = [5, 6]\nauthority = ["one"]\n',
   ).replace('status = "active"\n', "", 1),
   "rules/5.toml": rule(
     5, 1, 'requires = [3]\nconflicts = [3, "team:7"]\nauthority = ["one"]\n'

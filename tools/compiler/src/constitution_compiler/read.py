@@ -477,7 +477,7 @@ class _Reader:
         status,
         d["lang"],
         d.get("parent"),
-        d.get("superseded-by"),
+        successors(d),
         d.get("authority", []),
         d["title"],
         {p: d["text"][p] for p in PARTS} if kind == "rule" else {},
@@ -601,6 +601,7 @@ class _Reader:
         " >=, <=, >, <, == or !=",
       )
     self.references(doc)
+    self.successors(doc)
     if not all(isinstance(t, str) for t in d.get("tools", [])):
       self.errors.add(
         path, doc.line("tools ="), 1, "`tools` must be a list of names"
@@ -613,6 +614,33 @@ class _Reader:
         doc.line("authority ="),
         1,
         "`authority` must be a non-empty list of provision IDs",
+      )
+
+  def successors(self, doc: Doc) -> None:
+    """Check a rule's `superseded-by`: one rule ID or a list of them.
+
+    That each names another rule is check 3, `check_tree`.
+
+    Args:
+      doc: the rule's file.
+    """
+    d, path = doc.data, doc.path
+    if "superseded-by" not in d:
+      return
+    ids = successors(d)
+    problems = [] if ids else ["is empty; name the rule that replaces it"]
+    seen = []
+    for v in ids:
+      # TOML's booleans are Python ints too.
+      if not isinstance(v, int) or isinstance(v, bool) or v < 1:
+        problems.append(f"entry `{v}` is not a rule ID, a number from 1")
+      elif v in seen:
+        problems.append(f"lists {v} twice")
+      else:
+        seen.append(v)
+    for problem in problems:
+      self.errors.add(
+        path, doc.line("superseded-by ="), 1, f"`superseded-by` {problem}"
       )
 
   def references(self, doc: Doc) -> None:
@@ -642,6 +670,19 @@ class _Reader:
           seen.append(v)
           continue
         self.errors.add(path, doc.line(f"{key} ="), 1, f"`{key}` {problem}")
+
+
+def successors(d: dict) -> list:
+  """Return a node's `superseded-by` as a list, one ID or many.
+
+  Args:
+    d: the node's file, as parsed.
+
+  Returns:
+    The entries; empty when there is no `superseded-by`.
+  """
+  value = d.get("superseded-by", [])
+  return value if isinstance(value, list) else [value]
 
 
 def by_number(path: Path) -> tuple[int, str]:

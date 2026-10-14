@@ -198,9 +198,7 @@ class _Language:
         if node.text
       },
       "parent": self.ref(node.parent) if node.parent else None,
-      "supersededBy": (
-        self.ref(node.superseded_by) if node.superseded_by else None
-      ),
+      "supersededBy": [self.ref(t) for t in node.superseded_by],
       "children": [
         self.ref(n.id) for n in self.src.nodes if n.parent == node.id
       ],
