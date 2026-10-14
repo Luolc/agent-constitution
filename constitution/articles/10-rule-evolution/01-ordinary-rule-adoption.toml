@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one. The conditions: the proposal states the problem and the evidence; the change passes review ({@independent-review}) and the checks ({@checks-everywhere}); and the change is not itself a matter listed in {@must-ask}.
+Agents propose, review and adopt ordinary rules, skills and precedents without a principal approving each one. The conditions: the proposal states the problem and the evidence; the change passes review ({@independent-review}) and the checks ({@checks-everywhere}); and the change is not itself a matter listed in {@must-ask}. A clear productivity gain is adopted this way once evidence shows the gain and shows that safety ({@safety}) is no weaker.
 '''
 zh = '''
-agent 可以自行提出、审查和采纳普通规定、skill 和判例，不需要委托人逐一批准。条件是：提案说明问题和证据；变更通过审查 ({@independent-review}) 和检查 ({@checks-everywhere})；变更本身不属于{@must-ask}所列事项。
+agent 可以自行提出、审查和采纳普通规定、skill 和判例，不需要委托人逐一批准。条件是：提案说明问题和证据；变更通过审查 ({@independent-review}) 和检查 ({@checks-everywhere})；变更本身不属于{@must-ask}所列事项。明显的效率提升，有证据表明收益确实存在、安全 ({@safety}) 也没有削弱之后，照此采纳。
 '''
