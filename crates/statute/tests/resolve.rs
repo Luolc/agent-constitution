@@ -331,7 +331,7 @@ fn a_superseded_rule_is_a_warning_naming_its_successor() {
     warns(
         &s,
         &[8],
-        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `rules`",
+        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `rules` (`statute upgrade --replace-superseded` does it)",
     );
 }
 
@@ -387,7 +387,7 @@ fn a_pack_whose_root_is_superseded_warns() {
     assert_eq!(
         warnings,
         [
-            "statute.toml: warning: pack 8 (Rule 8) enables nothing: its root is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `packs`"
+            "statute.toml: warning: pack 8 (Rule 8) enables nothing: its root is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `packs` (`statute upgrade --replace-superseded` does it)"
         ]
     );
 }
