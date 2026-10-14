@@ -9,7 +9,7 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
-/// Domain 1 with rules 43 and 46 (built-in checks), rules 3 and 7 (the
+/// Domain 1 with rules 43, 46 and 50 (built-in checks), rules 3 and 7 (the
 /// rules they supersede, whose checks stay), rule 20 (a command) and
 /// rule 21 (review only).
 fn nodes(command: &str) -> Vec<(u64, String)> {
@@ -20,6 +20,7 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
         builtin(7),
         builtin(43),
         builtin(46),
+        builtin(50),
         edit(
             rule(20, 1, ""),
             "check = \"review\"",
@@ -411,6 +412,55 @@ fn r43_with_the_real_gitleaks() {
     );
     assert!(run.stdout.contains("cfg.txt:1"), "{}", run.stdout);
     assert!(!run.stdout.contains(&token) && !run.stderr.contains(&token));
+}
+
+// Rule 50: the commit hooks scan the staged changes for credentials.
+
+/// gitleaks' own hook, as this repository configures it.
+const GITLEAKS_HOOK: &str = "  - repo: https://github.com/gitleaks/gitleaks\n    rev: v8.30.1\n    hooks:\n      - id: gitleaks\n        args: [\"--redact\", \"--no-banner\", \".\"]\n";
+
+/// Runs `statute check` with rule 50 on a pre-commit configuration.
+fn r50(name: &str, config: &str) -> Run {
+    let dir = repo(&format!("r50-{name}"), "\"ac:50\"", "true");
+    write(&dir, ".pre-commit-config.yaml", config);
+    statute(&dir, &["check"], None)
+}
+
+#[test]
+fn r50_gitleaks_on_the_staged_changes_passes() {
+    let run = r50("pass", &format!("repos:\n{GITLEAKS_HOOK}"));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 50);
+    assert!(l.starts_with("pass "), "{l}");
+    assert!(l.contains("hook gitleaks of https://github.com/gitleaks/gitleaks in .pre-commit-config.yaml runs gitleaks on the staged changes, with --redact, at every commit"), "{l}");
+}
+
+#[test]
+fn r50_a_scan_only_at_push_time_is_a_violation() {
+    let config = format!(
+        "default_stages: [pre-push]\nrepos:\n{GITLEAKS_HOOK}  - repo: local\n    hooks:\n      - id: fmt\n        entry: cargo fmt --check\n        language: system\n"
+    );
+    let run = r50("push", &config);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 50).starts_with("violation "), "{}", run.stdout);
+    assert!(
+        run.stdout.contains(".pre-commit-config.yaml: hook gitleaks of https://github.com/gitleaks/gitleaks: runs only at pre-push, not at the commit"),
+        "{}",
+        run.stdout
+    );
+}
+
+#[test]
+fn r50_another_scanner_goes_to_the_reviewer() {
+    let config = "repos:\n  - repo: https://example.test/Yelp/detect-secrets\n    rev: v1.5.0\n    hooks:\n      - id: detect-secrets\n";
+    let run = r50("other", config);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 50);
+    assert!(l.starts_with("inconclusive "), "{l}");
+    assert!(
+        l.contains("runs detect-secrets, which statute does not judge"),
+        "{l}"
+    );
 }
 
 // The rules 43 and 46 supersede keep their checks.
