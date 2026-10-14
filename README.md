@@ -82,6 +82,7 @@ statute add R43       # enable rule 43, and write statute.lock
 statute lock          # resolve statute.toml again after editing it by hand
 statute compile       # write AGENTS.md, the skills and the checks
 statute check         # list the enabled rules for review
+statute site          # a local site of every rule, private ones too, in .statute/site
 ```
 
 Most rules cannot be decided by a script, so the work is reviewed rule
