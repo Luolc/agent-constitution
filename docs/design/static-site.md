@@ -152,10 +152,11 @@ site-rules`, `uv run count-tokens` (the token count, below),
   domains under it. By default the filter checks the statuses of
   `params.rulesStatuses` in `web/hugo.toml` and every domain; superseded
   and repealed rules are in the list but not checked, and so are draft
-  ones. Beside the filter, a menu sets the page size: 100 by default, `params.rulesPerPage`, or 25, 50 or all; the
-  rules are filtered first and then split into pages. Hugo builds the
-  pages of the default filter; each holds every rule, each rule with all
-  its group headings, those not shown hidden.
+  ones. Beside the filter, a menu sets the page size: 100 by default,
+  `params.rulesPerPage`, or 25, 50 or all; the rules are filtered first
+  and then split into pages. Hugo builds the pages of the default
+  filter; each holds every rule, each rule with all its group headings,
+  those not shown hidden.
   `web/assets/rules-list.js`, inlined in `<head>`, takes the filter, the
   size and the page from the address, where the form puts them
   (`?filter=1&status=draft&domain=14&per=50&page=2`), shows that page's
