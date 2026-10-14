@@ -11,8 +11,8 @@ level = "project"
 check = "review"
 
 [title]
-en = "Before starting a lasting background process, record who stops it"
-zh = "启动长期运行的后台进程之前，记下由谁停掉它"
+en = "Before starting a lasting background process, record what stops it"
+zh = "启动长期运行的后台进程之前，记下由什么停掉它"
 
 [text.statement]
 en = "Before you start a background process that keeps holding resources, record what stops it if you are closed before you stop it yourself."
@@ -32,7 +32,7 @@ A background process that keeps holding resources is one that outlives the comma
 
 What stops it is one of: a limit the process enforces on itself, such as a time limit after which it exits; a supervisor that stops it when the agent that started it is gone; or another agent or a person, named, who is told how to find the process (its ID, name or a pattern that matches it and nothing else) and that they are to stop it. The agent stopping it at the end of its own work is the normal case, not what this rule asks for.
 
-The record is made before the process starts or in the same step, in the task's record, in the report, or in a file the named agent or person reads.
+The record is made before the process starts or in the same step, in the task's record or in a file the named agent or person reads.
 
 Violated when an agent starts such a process and no record made before or as it started says what stops it if the agent is closed first.
 '''
@@ -41,10 +41,10 @@ zh = '''
 
 由什么来停掉它，是下列之一：进程自身执行的限制，例如到时间就退出；在启动它的 agent 不在了时停掉它的守护进程；或者点名的另一个 agent 或人，并告诉对方怎样找到这个进程 (它的 ID、名字，或者只匹配它的模式) 以及由对方停掉它。agent 在自己的工作结束时停掉它是正常情况，不是本规定要求的内容。
 
-记录在进程启动之前或在同一步里做，写在任务记录里、报告里，或者点名的 agent 或人会读的文件里。
+记录在进程启动之前或在同一步里做，写在任务记录里，或者点名的 agent 或人会读的文件里。
 
 agent 启动了这样的进程，却没有在启动之前或启动时记下：如果自己先被关掉，由什么来停掉它的，即为违反本规定。
 '''
 
 [translations]
-zh = "d34c03d486b26a9fea896c5bb91be114a926e106434c332ade3e1479fbab197e"
+zh = "e7d893cc85f90dd451567812bf93315196a7afbc0de11e4e5b802feb6a8ab13a"
