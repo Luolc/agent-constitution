@@ -272,14 +272,19 @@ class RenderTest(Tree):
   def test_agent_front_follows_the_status(self):
     """The version for agents opens with the build's note on the status.
 
-    A draft is not in force; once active, every agent must follow it.
+    A draft may be used on a trial basis but is not final; once active,
+    every agent must follow it.
     """
     draft = bc.build(self.root)[2]
     self.activate()
     active = bc.build(self.root)[2]
     cases = [
-      ("en", "a draft not yet in force", "every agent must follow it"),
-      ("zh", "本宪法现为草案，尚未生效", "每个 agent 都必须遵守它"),
+      (
+        "en",
+        "a draft that may be used on a trial basis but is not final",
+        "every agent must follow it",
+      ),
+      ("zh", "本宪法现为草案，可以试行，但尚未定稿", "每个 agent 都必须遵守它"),
     ]
     for lang, in_draft, in_force in cases:
       with self.subTest(lang=lang):
