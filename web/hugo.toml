@@ -65,6 +65,7 @@ enableRobotsTXT = false
   weight = 2
   [languages.en.menus.before.params]
     class = "menu-group"
+    collapse = true
     BookIcon = "book"
 [[languages.zh.menus.before]]
   identifier = "design"
@@ -73,6 +74,7 @@ enableRobotsTXT = false
   weight = 2
   [languages.zh.menus.before.params]
     class = "menu-group"
+    collapse = true
     BookIcon = "book"
 
 # The content is only this repo's own built constitution and design; raw
