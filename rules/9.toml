@@ -1,9 +1,9 @@
 id = 9
 slug = "must-ask-items"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 32
+superseded-by = [32, 33, 34, 35]
 lang = "en"
 parent = 14
 authority = ["boundary-rule", "must-ask", "list-defaults"]

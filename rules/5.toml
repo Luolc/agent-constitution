@@ -1,9 +1,9 @@
 id = 5
 slug = "fixture-outcomes"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 25
+superseded-by = [25, 26, 27]
 lang = "en"
 parent = 15
 authority = ["verification", "discriminating-checks"]

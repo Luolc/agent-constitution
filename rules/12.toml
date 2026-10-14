@@ -1,9 +1,9 @@
 id = 12
 slug = "reviewed-route"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 41
+superseded-by = [41, 42]
 lang = "en"
 parent = 13
 authority = ["safety", "guards", "protected-text"]

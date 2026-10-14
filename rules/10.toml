@@ -1,9 +1,9 @@
 id = 10
 slug = "never-repeat-credentials"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 36
+superseded-by = [36, 37]
 lang = "en"
 parent = 13
 authority = ["safety", "sensitive-info", "leaks"]

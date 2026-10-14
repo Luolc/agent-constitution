@@ -1,9 +1,9 @@
 id = 11
 slug = "relayed-yes"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
-superseded-by = 39
+superseded-by = [38, 39, 40]
 lang = "en"
 parent = 14
 authority = ["explicit-yes"]
