@@ -150,9 +150,14 @@ team = "example.test/their-team/rules"
 ```
 
 A reference is the name, a colon and the rule's ID: `ac:42`, `team:7`.
-The name means something only inside the rule set that defines it, so two
+The name means something only inside the file that defines it, so two
 rule sets may use `ac` for different sources. When a source moves to
 another address, one line of the rule set changes and no reference does.
+A source that references rules of other sources has its own `[sources]`
+table in the same shape, and its names need not agree with those of any
+rule set that uses it. The build matches sources by address, not by
+name: the `ac` of one file and the `core` of another are the same source
+when both point to the same address.
 
 **Versions sit on the source.** The rule set says which tag or branch of
 a source to follow; the lock file resolves it to an exact commit. This is
@@ -164,12 +169,14 @@ And if two rules of one source were pinned to different commits, a
 differs from the one that was chosen. So a rule set takes one version of
 each source.
 
-**Dependencies across sources.** A rule of one source may `requires` a
-rule of another, such as `ac:12`. The source of the requiring rule then
-declares which versions of `ac` it works with, as a range. At compile
-time the build looks for one version of each source that every
-declaration accepts. If there is none, it fails and names the sources
-whose declarations disagree.
+**Dependencies across sources.** A rule of one source may list a rule of
+another under `requires`, such as `ac:12`. The source of the requiring
+rule then declares, in its `[sources]` table, which versions of that
+other source it works with, as a range. At compile time the build looks
+for one version of each source that every declaration accepts. The tag
+or branch the rule set itself follows counts as one of the declarations.
+If there is no such version, the build fails and names the declarations
+that disagree.
 
 **Supersession stays inside a source.** Only a source can supersede its
 own rules. Another source cannot declare that its rule replaces ours. It
@@ -433,16 +440,16 @@ implements this design lands.
 
 - At what token count the compiled `AGENTS.md` is split into several
   files, and along which subtrees.
-- The format of the lock file, and with it how a tag or branch and a
-  version range are written in a rule set and in a source's declaration
-  of the versions it needs.
+- The format of the lock file.
 - The index of public sources: its format, who may add to it, and when
   it is built.
 - Whether a domain at the top of the tree is a rule of its own or only a
   heading.
 - The concrete fields and commands of the package-manager model
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
-  when it is implemented.
+  when it is implemented; this includes how a tag or branch and a version
+  range are written in a rule set and in a source's declaration of the
+  versions it needs.
 - Where a rule whose default level is the user level is chosen, where it
   is locked and where it is compiled to.
 - When a rule set enables a rule without one it `requires`, whether the
