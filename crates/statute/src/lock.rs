@@ -3,9 +3,12 @@
 //! lock file). Written by the tool, never by hand; the same rule set and
 //! source always give the same bytes.
 
-use serde::Serialize;
+use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
 
 use crate::manifest::SourceSpec;
+use crate::node::Id;
 use crate::project::Project;
 
 pub const FILE: &str = "statute.lock";
@@ -83,4 +86,63 @@ pub fn render(project: &Project) -> String {
     };
     let body = toml::to_string(&lock).expect("the lock file holds only strings and integers");
     format!("{HEADER}{body}")
+}
+
+/// What a lock file pins, as `upgrade` compares it with a new resolution.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct Locked {
+    pub edition: String,
+    pub revision: String,
+    /// Each locked rule's revision and SHA-256, by ID.
+    pub rules: BTreeMap<Id, (u64, String)>,
+}
+
+#[derive(Deserialize)]
+struct RawLock {
+    constitution: RawConstitution,
+    #[serde(default)]
+    rules: Vec<RawRule>,
+}
+
+#[derive(Deserialize)]
+struct RawConstitution {
+    edition: String,
+    revision: String,
+}
+
+#[derive(Deserialize)]
+struct RawRule {
+    id: Id,
+    revision: u64,
+    sha256: String,
+}
+
+/// Reads the text of a lock file.
+pub fn read(text: &str) -> Result<Locked, String> {
+    let raw: RawLock = toml::from_str(text).map_err(|e| e.to_string().trim_end().to_owned())?;
+    Ok(Locked {
+        edition: raw.constitution.edition,
+        revision: raw.constitution.revision,
+        rules: raw
+            .rules
+            .into_iter()
+            .map(|r| (r.id, (r.revision, r.sha256)))
+            .collect(),
+    })
+}
+
+/// What a lock file pins now, read back from the project that would write
+/// it.
+pub fn current(project: &Project) -> Locked {
+    Locked {
+        edition: project.manifest.edition.clone(),
+        revision: project.revision.clone(),
+        rules: project
+            .resolution
+            .enabled
+            .keys()
+            .filter_map(|id| project.source.get(*id))
+            .map(|n| (n.id, (n.revision, n.sha256.clone())))
+            .collect(),
+    }
 }
