@@ -42,7 +42,7 @@ ITEM_ID = re.compile(r'^id = "([^"]*)"$')
 FINDING = re.compile(r"^(.*?):(\d+): (.*)$")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Text:
   """One `zh` text of a source file and where it is.
 
@@ -82,7 +82,7 @@ class Text:
       The text with its citations.
     """
     citations = iter(CITATION.findall(self.value))
-    return re.sub(PLACEHOLDER, lambda _: next(citations), text)
+    return re.sub(re.escape(PLACEHOLDER), lambda _: next(citations), text)
 
 
 def field_at(source: str, offset: int) -> str:
@@ -110,7 +110,10 @@ def field_at(source: str, offset: int) -> str:
   )
 
 
-def zh_leaves(data: object, keys: tuple = ()) -> list:
+Keys = tuple[str | int, ...]
+
+
+def zh_leaves(data: object, keys: Keys = ()) -> list[tuple[Keys, str]]:
   """List the values under a `zh` key, in TOML's own order.
 
   Args:
@@ -126,7 +129,9 @@ def zh_leaves(data: object, keys: tuple = ()) -> list:
     return [
       leaf for i, v in enumerate(data) for leaf in zh_leaves(v, keys + (i,))
     ]
-  return [(keys, data)] if keys and keys[-1] == "zh" else []
+  if keys and keys[-1] == "zh" and isinstance(data, str):
+    return [(keys, data)]
+  return []
 
 
 def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
@@ -259,8 +264,8 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
   parser.add_argument(
     "--root",
     type=Path,
-    default=Path("."),
-    help="the checkout (default: the current directory)",
+    default=Path(__file__).resolve().parent.parent,
+    help="the checkout (default: the repo this script is in)",
   )
   args = parser.parse_args(argv)
   limae = shutil.which("limae")
@@ -280,7 +285,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
       else:
         all_texts += found
   if problems:
-    print("\n".join(problems))
+    print("\n".join(problems), file=sys.stderr)
     return 2
 
   with tempfile.TemporaryDirectory() as tmp:
@@ -334,7 +339,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         else:
           print(f"{path}: fixed {len(items)} text(s)")
       if problems:
-        print("\n".join(problems))
+        print("\n".join(problems), file=sys.stderr)
         return 2
 
   print(
