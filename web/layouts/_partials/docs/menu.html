@@ -1,6 +1,8 @@
 {{- /* hugo-book's sidebar, with a link to the source repository between
-  the site's title and the language switch. The icon is GitHub's mark from
-  Octicons (MIT license), assets/icons/github.svg. */ -}}
+  the site's title and the language switch, and the color theme's button
+  on the language switch's row. The icons are Octicons (MIT license), in
+  assets/icons: GitHub's mark, github.svg, and sun.svg, moon.svg and
+  device-desktop.svg for the color themes. */ -}}
 <nav>
 {{ partial "docs/brand" . }}
 {{ with .Site.Params.SourceRepo }}
@@ -10,11 +12,14 @@
 </a>
 {{ end }}
 {{ partial "docs/search" . }}
+{{- /* The language switch and, at the right end of its row, the color
+  theme's button (docs/inject/menu-before). */}}
+<div class="menu-row">
 {{ if hugo.IsMultilingual }}
   {{ partial "docs/languages" . }}
 {{ end }}
-
 {{ partial "docs/inject/menu-before" . }}
+</div>
 {{ partial "docs/menu-hugo" (dict "Page" .Page "Menu" .Site.Menus.before) }}
 
 {{ partial "docs/menu-filetree" . }}

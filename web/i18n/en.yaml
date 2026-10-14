@@ -1,7 +1,6 @@
-theme-switch: "Switch the color theme"
-theme-auto: "Theme: system"
-theme-light: "Theme: light"
-theme-dark: "Theme: dark"
+theme-auto: "Color theme: system (switch to light)"
+theme-light: "Color theme: light (switch to dark)"
+theme-dark: "Color theme: dark (switch to system)"
 source-link: "Source code"
 toc-heading: "On this page"
 # An edition in the sidebar, under the constitution (content/_content.gotmpl).
