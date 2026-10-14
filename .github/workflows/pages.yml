@@ -3,8 +3,10 @@
 # counts the tokens with it, builds and checks the site, writes the length
 # line of both pages into the job summary and the log, and publishes the
 # site to GitHub Pages (docs/design.md, Static site). The federation rule
-# accepts only runs on main, so this runs only there. A failed exchange,
-# count, build or link check fails the run and publishes nothing.
+# accepts a run on any branch of this repository, not only main; this
+# repository publishes only main, so the job runs only on a push to main or
+# a manual run on main. A failed exchange, count, build or link check fails
+# the run and publishes nothing.
 # The four IDs are identifiers, not credentials, but kept as repository
 # secrets: the run logs of a public repository are open to anyone, and a
 # step's header prints its variables in clear while it masks secrets as ***.
@@ -15,7 +17,7 @@ on:
   push:
     branches: [main]
   # To publish main again, for example right after Pages is turned on;
-  # on another branch the run is skipped.
+  # on another branch the job is skipped.
   workflow_dispatch:
 
 concurrency:
@@ -29,8 +31,8 @@ permissions:
   contents: read
 
 jobs:
-  # No environment here: the federation rule matches the subject of a run
-  # on main, which an environment would replace with its own.
+  # No environment here: an environment would replace the subject of the
+  # run's OIDC token with its own, which the rule is not set up for.
   build:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
