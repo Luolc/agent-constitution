@@ -632,13 +632,13 @@ Violated when a change to tools changes a generated file and its description doe
 <a id="rule-R48"></a>
 ### Merge the change to the instructions first (R48)
 
-When work needs a change to instructions, merge that change first and do the rest of the work under the new instructions; the change of its own that updates the design next to it ([Change the design in the change that makes it true](#rule-R18)) may come before or after.
+When work needs a change to instructions, merge that change first and the changes it affects after it, under the new instructions; the design is not instructions and is outside this order.
 
-Verification: When work needs both a change to instruction files and changes to other files, which [Keep instruction files apart from other files in a change](#rule-R46) keeps in two changes, the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
+Verification: When work needs both a change to instruction files and changes to other files, which [Keep instruction files apart from other files in a change](#rule-R46) keeps in two changes, the change to the instructions is merged and takes effect first, and the changes it affects are merged after it, done under the new instructions.
 
-One change is outside this order: the change of its own in which the design follows the change to the instructions, which [Change the design in the change that makes it true](#rule-R18) lets be merged before or after it. A change that holds anything besides that change to the design is part of the rest of the work.
+A change to the design alone may be merged before or after the change to the instructions. A change that holds anything besides the design is one of the changes the instructions affect.
 
-Violated when a change with the rest of the work is merged before the change to the instructions is in effect.
+Violated when a change that the change to the instructions affects, other than a change to the design alone, is merged before the change to the instructions is in effect.
 
 <a id="rule-R49"></a>
 ### Run the instruction-only check in CI (R49)
