@@ -3,12 +3,16 @@ commit with one file of each kind, then a change on top of it."""
 
 import contextlib
 import io
+import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import check_instruction_changes as cic
+import git_env
+import test_build_constitution
 
 BASE = {
     "AGENTS.md": "agents\n",
@@ -35,7 +39,8 @@ class Change(unittest.TestCase):
     def git(self, *args):
         # No user-level ignore file: it may ignore paths these tests change.
         subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Test", "-c", "user.email=test@example.test",
-                        "-c", "core.excludesFile=/dev/null", *args], check=True, capture_output=True)
+                        "-c", "core.excludesFile=/dev/null", *args], check=True, capture_output=True,
+                       env=git_env.clean())
 
     def write(self, name, text):
         path = self.root / name
@@ -110,6 +115,32 @@ class Change(unittest.TestCase):
     def test_unknown_base(self):
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(cic.main(["--root", str(self.root), "--base", "nope"]), 2)
+
+
+class HookEnvironment(unittest.TestCase):
+    """The tests and the scripts run from a git hook, which in a worktree sets
+    GIT_DIR and GIT_INDEX_FILE to the worktree's; they must leave its
+    repository alone. One test of each script that runs git covers its
+    calls and its test helper's."""
+
+    def test_repository_of_the_hook_untouched(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        outer = Path(tmp.name)
+        for args in (["init", "-q", "main"], ["-C", "main", "commit", "-q", "--allow-empty", "-m", "x"],
+                     ["-C", "main", "worktree", "add", "-q", "../wt"]):
+            subprocess.run(["git", "-C", str(outer), "-c", "user.name=Test", "-c", "user.email=test@example.test",
+                            *args], check=True, capture_output=True, env=git_env.clean())
+        gitdir = outer / "main/.git/worktrees/wt"
+        config, index = (outer / "main/.git/config").read_bytes(), (gitdir / "index").read_bytes()
+        result = unittest.TestResult()
+        with mock.patch.dict(os.environ, {"GIT_DIR": str(gitdir), "GIT_INDEX_FILE": str(gitdir / "index")}):
+            Change("test_instructions_only_pass").run(result)
+            test_build_constitution.BaseTest("test_main_runs_check_with_base").run(result)
+        self.assertEqual((outer / "main/.git/config").read_bytes(), config)
+        self.assertEqual((gitdir / "index").read_bytes(), index)
+        self.assertTrue(result.wasSuccessful(), result.errors + result.failures)
+        self.assertEqual(result.testsRun, 2)
 
 
 if __name__ == "__main__":

@@ -39,6 +39,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import git_env
+
 INDEX = Path("constitution/index.toml")
 ARTICLES = Path("constitution/articles")
 ARTICLE_FILE = "article.toml"
@@ -843,7 +845,8 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
 # Check 7: numbering against a base commit.
 
 def git(root: Path, *args: str) -> str | None:
-    result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+    result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
+                            env=git_env.clean())
     return result.stdout if result.returncode == 0 else None
 
 

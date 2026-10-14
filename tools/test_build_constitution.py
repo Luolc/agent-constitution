@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 import build_constitution as bc
+import git_env
 
 INDEX = """\
 status = "draft"
@@ -793,7 +794,8 @@ class BaseTest(Tree):
 
     def git(self, *args):
         subprocess.run(["git", "-C", str(self.root), "-c", "user.name=t",
-                        "-c", "user.email=t@example.test", *args], check=True, capture_output=True)
+                        "-c", "user.email=t@example.test", *args], check=True, capture_output=True,
+                       env=git_env.clean())
 
     def commit_base(self, active=True):
         if active:

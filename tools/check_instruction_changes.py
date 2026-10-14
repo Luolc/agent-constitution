@@ -17,6 +17,8 @@ import re
 import subprocess
 import sys
 
+import git_env
+
 # Instruction files in any repo: what an agent harness reads as
 # instructions, skills, subagents, commands, hooks or permissions, in any
 # directory.
@@ -52,7 +54,7 @@ def changed(root: str, base: str) -> list[tuple[str, str]] | None:
     """(status letter, path) for each file changed in `base...HEAD`."""
     result = subprocess.run(
         ["git", "-C", root, "diff", "--name-status", "--no-renames", "-z", f"{base}...HEAD"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, env=git_env.clean())
     if result.returncode != 0:
         print(result.stderr.strip(), file=sys.stderr)
         return None
