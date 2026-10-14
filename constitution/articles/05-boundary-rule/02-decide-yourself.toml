@@ -6,7 +6,7 @@ en = '''
 Decided by the agent itself, by default without going to a principal.
 '''
 zh = '''
-由 agent 自己决定，默认不交给委托人。
+由 agent 自己决定，默认不交由委托人决定。
 '''
 
 [[items]]
