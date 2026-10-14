@@ -858,11 +858,13 @@ passes to Hugo as `--baseURL`.
   change the token's subject: it asks GitHub for the run's
   OIDC token (audience `https://api.anthropic.com`), exchanges it for an
   access token with the IDs of the federation rule, organization, service
-  account and workspace, which are repository variables
+  account and workspace, which are repository secrets
   (`ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`,
   `ANTHROPIC_SERVICE_ACCOUNT_ID`, `ANTHROPIC_WORKSPACE_ID`; identifiers,
-  not secrets), counts the tokens with `--require-tokens`, builds and
-  checks the site as CI does, and writes the length line of both pages
+  not credentials, but the logs of a public repository are open to anyone
+  and the log masks a secret as `***`, where it prints a variable), counts
+  the tokens with `--require-tokens`, builds and checks the site as CI
+  does, and writes the length line of both pages
   into the job summary and into the log, which,
   unlike the summary, the API can read. A failed exchange or count fails
   the run, and nothing is published. The CI on pull requests gets no credential,
