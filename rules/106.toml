@@ -15,8 +15,8 @@ en = "Start a new rule as a trial rule"
 zh = "新规定从试用开始"
 
 [text.statement]
-en = "Add a new rule with `status = \"trial\"`."
-zh = "新增规定时，写 `status = \"trial\"`。"
+en = "While the constitution is active, add a new rule meant for real work with `status = \"trial\"`."
+zh = "宪法生效期间，新增用于实际工作的规定时，写 `status = \"trial\"`。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "3e8d8d9b365e1fa7ed6f7958b6f994a61842f3602834ffd7039e8b11a9edc7dc"
+zh = "f475b281eaf85c04aa168061593d30e2f13e4cfb9dee69836f6490d5fe5aaa06"

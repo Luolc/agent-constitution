@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-What counts as compliant changes when some work that complied with the old text violates the new one, or the reverse. The old rule keeps its file and its text, with `status = "superseded"` and `superseded-by` naming the rule or rules of its own source that take its place. No rule is deleted and no ID reused.
+What counts as compliant changes when some work that complied with the old text violates the new one, or the reverse. The old rule keeps its file and its text, with `status = "superseded"` and `superseded-by` naming the rule or rules of its own source that take its place. That no rule is deleted, and that a superseded rule names the rules that take its place, are checked by the build of the rules, not here.
 
-Violated when a change alters what counts as compliant under a rule and keeps its ID, deletes a rule, reuses an ID, or marks a rule superseded without naming the rules that take its place.
+Violated when a change alters what counts as compliant under a rule and keeps its ID, or leaves the old rule in force beside the rule that takes its place.
 '''
 zh = '''
-有某项工作按旧文合规、按新文违反，或者反过来，什么算合规就变了。旧规定保留文件和原文，写 `status = "superseded"`，并用 `superseded-by` 写明同一来源里取代它的一条或几条规定。规定一律不删，ID 一律不复用。
+有某项工作按旧文合规、按新文违反，或者反过来，什么算合规就变了。旧规定保留文件和原文，写 `status = "superseded"`，并用 `superseded-by` 写明同一来源里取代它的一条或几条规定。规定不得删除、被取代的规定要写明取代它的规定，这两点由规定的构建检查，不归本规定。
 
-变更改变了某条规定下什么算合规却保留了它的 ID，删除了规定，复用了 ID，或者把规定标为已被取代却没写明取代它的规定，即为违反本规定。
+变更改变了某条规定下什么算合规却保留了它的 ID，或者让旧规定与取代它的规定同时有效的，即为违反本规定。
 '''
 
 [translations]
-zh = "06a456b6624e80331b2ea669550364bad23dcfbb96e0e9f346a6ed27ec58b39a"
+zh = "b28834d89f64d1537cc42c3701206715f6793068ed13d800f59a02adb3408b2c"

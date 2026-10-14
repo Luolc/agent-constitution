@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The applicability is a sentence or two. It names the work the domain governs and the repositories that need it, and says which can leave it off. A subdomain is a domain here.
+The applicability is a sentence or two. It names the work the domain governs and the repositories that need it, and says which can leave it off; a condition for enabling it ("enable it wherever agents write a repository's documents") says this too, since a repository where the condition does not hold can leave it off. A subdomain is a domain here.
 
 Violated when a change adds or rewrites a domain without an `[applicability]`, or with one that does not say which repositories should enable it and when one need not.
 '''
 zh = '''
-适用范围写一两句话：说明这个 domain 管的是什么工作，哪些仓库需要它，哪些可以不启用。这里的 domain 也包括子 domain。
+适用范围写一两句话：说明这个 domain 管的是什么工作，哪些仓库需要它，哪些可以不启用；写出启用的条件 (「agent 要写仓库的文档时就要启用」) 也算说明了这一点，因为条件不成立的仓库可以不启用。这里的 domain 也包括子 domain。
 
 变更新增或改写的 domain 没有 `[applicability]`，或者它没说清哪些仓库应该启用、什么情况下可以不启用的，即为违反本规定。
 '''
 
 [translations]
-zh = "4de1c393920f6d221a1c9ad741358b7d6c317b7953f694cd675f0478fe6cef82"
+zh = "a311023bc0198f97c98081fc4cfd8fb47853378252d4b95546298fa5d3498cbe"

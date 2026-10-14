@@ -15,8 +15,8 @@ en = "Keep a rule self-contained"
 zh = "规定要自成一体"
 
 [text.statement]
-en = "Make a rule stand on its own: name other rules only through `parent`, `requires`, `conflicts`, `overrides` and `{@rule:...}` citations, the constitution only through `authority` and `{@constitution:...}` citations, and no other text as part of what it requires."
-zh = "规定要自成一体：提到别的规定只通过 `parent`、`requires`、`conflicts`、`overrides` 和 `{@rule:...}` 引用，提到宪法只通过 `authority` 和 `{@constitution:...}` 引用，不把任何别的文字当作它要求的一部分。"
+en = "Make a rule stand on its own: name other rules only through `parent`, `requires`, `conflicts`, `overrides` and rule citations in its text, the constitution only through `authority` and citations of the constitution in its text, and no other text as part of what it requires."
+zh = "规定要自成一体：提到别的规定只通过 `parent`、`requires`、`conflicts`、`overrides` 和正文里的规定引用，提到宪法只通过 `authority` 和正文里的宪法引用，不把任何别的文字当作它要求的一部分。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "8cebb61a022c993d8db31f24b0e8e7c1ae384a099d4427d7fbb5166610a1000e"
+zh = "3a1495156c80b0555ba5c2a0dafbdce400cdae3a0e8e37bca7c1d4a58a85d257"

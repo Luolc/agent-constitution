@@ -15,8 +15,8 @@ en = "Let a public rule name no private rule"
 zh = "公开规定不点名私有规定"
 
 [text.statement]
-en = "In a rule of a public source, name no rule of a private source, in `requires`, `conflicts`, `overrides`, `parent` or a `{@rule:...}` citation."
-zh = "公开来源的规定，不在 `requires`、`conflicts`、`overrides`、`parent` 或 `{@rule:...}` 引用里点名私有来源的规定。"
+en = "In a rule of a public source, name no rule of a private source, in `requires`, `conflicts`, `overrides`, `parent` or a rule citation in its text."
+zh = "公开来源的规定，不在 `requires`、`conflicts`、`overrides`、`parent` 或正文里的规定引用中点名私有来源的规定。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "abb4635ca7026fd2aaf560a96b43fc72ef96ded80025effe52a91841ed9cd363"
+zh = "0e268e10800d25c88bf0e927095216021bbc3d593e5d1093a900e2a917e8f31c"

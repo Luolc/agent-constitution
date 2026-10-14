@@ -35,7 +35,7 @@ Violated when a change touches only the translations of a rule and raises its re
 zh = '''
 译文，指规定在原文语言以外的文本，连同它在 `[translations]` 里的哈希。新增译文、修正译文、把译文跟进到此前已改的原文，都只是对译文的改动。按文件哈希锁定每条规定的锁文件，会把这样的改动看作 revision 不变而内容变了，可能给出警告；这种情况下的警告是预期之内的。
 
-变更只涉及某条规定的译文，却把它的 revision 加了一的，即为违反本规定。
+变更只涉及某条规定的译文，却提高了它的 revision 的，即为违反本规定。
 '''
 
 [translations]
