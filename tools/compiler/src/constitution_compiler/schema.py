@@ -51,12 +51,16 @@ NODE_SCHEMA = {
   "title": TEXT,
   "translations?": dict,
 }
+# `parent` is a number, or for a one-of or a rule a reference to another
+# source; `overrides` takes the place of a rule's `parent`.
+# `_Reader.parent` and `_Reader.overrides` check them.
 NODE_SCHEMAS = {
-  "domain": NODE_SCHEMA | {"applicability?": TEXT},
-  "one-of": NODE_SCHEMA | {"parent": int},
+  "domain": NODE_SCHEMA | {"parent?": object, "applicability?": TEXT},
+  "one-of": NODE_SCHEMA | {"parent": object},
   "rule": NODE_SCHEMA
   | {
-    "parent": int,
+    "parent?": object,
+    "overrides?": object,
     # One rule ID or a list of them; `_Reader.superseded_by` checks it.
     "superseded-by?": object,
     "requires?": list,

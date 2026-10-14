@@ -98,9 +98,12 @@ def check_structure(src: Sources, errors: Errors) -> None:
 def check_tree(nodes: list[Node], errors: Errors) -> None:
   """Check the links between the nodes of the rule tree.
 
-  Each `parent` and each entry of `superseded-by` names a node of the
-  tree, another rule for `superseded-by`, and following the parents
-  never comes back to a node.
+  Each `parent` of this source and each entry of `superseded-by` names a
+  node of the tree, another rule for `superseded-by`; a domain's parent
+  is a domain with no parent, so domains nest two levels deep at most
+  (docs/design/rule-sources.md, Subdomains); and following the parents
+  never comes back to a node. A parent in another source is not checked
+  here.
 
   Args:
     nodes: the nodes.
@@ -108,9 +111,21 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
   """
   by_id = {n.id: n for n in nodes}
   for n in nodes:
-    if n.parent is not None and n.parent not in by_id:
+    parent = by_id.get(n.parent) if isinstance(n.parent, int) else None
+    if isinstance(n.parent, int) and parent is None:
       errors.add(
         n.doc.path, n.doc.line("parent ="), 3, f"parent {n.parent} is no node"
+      )
+    if (
+      n.kind == "domain"
+      and parent is not None
+      and (problem := domain_parent(n, parent))
+    ):
+      errors.add(
+        n.doc.path,
+        n.doc.line("parent ="),
+        3,
+        f"a domain's parent is a domain with no parent; {problem}",
       )
     for t in n.superseded_by:
       target = by_id.get(t)
@@ -121,9 +136,19 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
           3,
           f"superseded-by {t} is no other rule",
         )
-  for n in nodes:
+  check_cycles(by_id, errors)
+
+
+def check_cycles(by_id: dict[int, Node], errors: Errors) -> None:
+  """Check that following the parents never comes back to a node.
+
+  Args:
+    by_id: the nodes, by ID.
+    errors: where errors go.
+  """
+  for n in by_id.values():
     seen, at = {n.id}, n.parent
-    while at in by_id:
+    while isinstance(at, int) and at in by_id:
       if at == n.id:
         errors.add(
           n.doc.path,
@@ -136,6 +161,25 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
         break  # a cycle above this node, reported at its own nodes
       seen.add(at)
       at = by_id[at].parent
+
+
+def domain_parent(node: Node, parent: Node) -> str:
+  """Return what is wrong with a domain's parent, or "" when nothing is.
+
+  Args:
+    node: the domain.
+    parent: the node its `parent` names.
+
+  Returns:
+    The problem, or "".
+  """
+  if parent is node:
+    return f"{node.id} is the domain itself"
+  if parent.kind != "domain":
+    return f"{parent.id} is a {parent.kind}"
+  if parent.parent is not None:
+    return f"{parent.id} is a subdomain, under {parent.parent}"
+  return ""
 
 
 def unique(errors: Errors, numbered: list) -> None:

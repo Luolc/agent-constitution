@@ -23,6 +23,7 @@ from constitution_compiler.model import (
   CONSTITUTION,
   Doc,
   Errors,
+  FIRST_PARTY_REF,
   FOREIGN_REF,
   INDEX_STATUS,
   Item,
@@ -457,6 +458,7 @@ class _Reader:
       return
     before = len(self.errors)
     status = self.node_fields(doc, kind, path)
+    self.parent(doc, kind)
     texts = [("title", d["title"])]
     if "applicability" in d:
       texts.append(("applicability", d["applicability"]))
@@ -481,6 +483,7 @@ class _Reader:
         status,
         d["lang"],
         d.get("parent"),
+        d.get("overrides"),
         successors(d),
         d.get("authority", []),
         d["title"],
@@ -615,6 +618,7 @@ class _Reader:
         " the largest there is",
       )
     self.references(doc)
+    self.overrides(doc)
     self.superseded_by(doc)
     if not all(isinstance(t, str) for t in d.get("tools", [])):
       self.errors.add(
@@ -629,6 +633,91 @@ class _Reader:
         1,
         "`authority` must be a non-empty list of provision IDs",
       )
+
+  def parent(self, doc: Doc, kind: str) -> None:
+    """Check the form of a node's `parent`.
+
+    A domain's is the number of a domain of this source; a one-of's or a
+    rule's may also name a node of another source, of which only the
+    form is checked (docs/design/rule-sources.md, Subdomains). What the
+    number names is check 3, `check_tree`.
+
+    Args:
+      doc: the node's file.
+      kind: its kind.
+    """
+    d, path = doc.data, doc.path
+    if "parent" not in d:
+      return
+    v = d["parent"]
+    if kind == "domain":
+      if not is_number(v):
+        self.errors.add(
+          path,
+          doc.line("parent ="),
+          1,
+          f"a domain's `parent` `{toml_text(v)}` is not the number of a"
+          " domain of this source",
+        )
+    elif first_party(v):
+      self.errors.add(
+        path,
+        doc.line("parent ="),
+        1,
+        f"`parent` `{v}` names a node of this source; write {v[1:]}",
+      )
+    elif not (
+      is_number(v) or (isinstance(v, str) and FOREIGN_REF.fullmatch(v))
+    ):
+      self.errors.add(
+        path,
+        doc.line("parent ="),
+        1,
+        f"`parent` `{toml_text(v)}` is not a reference: a number from 1 for"
+        ' a node of this source, or "<source>:<id>" for a domain of another',
+      )
+
+  def overrides(self, doc: Doc) -> None:
+    """Check a rule's `overrides`, which takes the place of its `parent`.
+
+    It names one rule of another source; only its form is checked, since
+    what it names is in that source (docs/design/rule-sources.md,
+    Overrides).
+
+    Args:
+      doc: the rule's file.
+    """
+    d, path = doc.data, doc.path
+    if ("parent" in d) == ("overrides" in d):
+      self.errors.add(
+        path,
+        doc.line("overrides =", "parent =", "kind ="),
+        1,
+        "a rule has `parent` or `overrides`, not both: an overriding rule"
+        " stands where the rule it overrides stands"
+        if "parent" in d
+        else "a rule needs `parent`, or `overrides` in its place",
+      )
+    if "overrides" not in d:
+      return
+    v = d["overrides"]
+    if is_number(v) or first_party(v):
+      problem = (
+        f"names {toml_text(v)}, a rule of this source; within one source a"
+        " rule is changed in place or superseded, never overridden"
+      )
+    elif isinstance(v, list):
+      problem = (
+        "names one rule, as a string; a rule that replaces two is two rules"
+      )
+    elif not (isinstance(v, str) and FOREIGN_REF.fullmatch(v)):
+      problem = (
+        f"`{toml_text(v)}` is not a reference to a rule of another source,"
+        ' "<source>:<id>"'
+      )
+    else:
+      return
+    self.errors.add(path, doc.line("overrides ="), 1, f"`overrides` {problem}")
 
   def superseded_by(self, doc: Doc) -> None:
     """Check a rule's `superseded-by`: one rule ID or a list of them.
@@ -687,6 +776,34 @@ class _Reader:
           seen.append(v)
           continue
         self.errors.add(path, doc.line(f"{key} ="), 1, f"`{key}` {problem}")
+
+
+def is_number(value: object) -> bool:
+  """Tell whether a value is a node's number, an integer from 1.
+
+  Args:
+    value: a value of a parsed TOML file.
+
+  Returns:
+    True when it is.
+  """
+  # TOML's booleans are Python ints too.
+  return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
+def first_party(value: object) -> bool:
+  """Tell whether a value names a first-party rule, as `R12` does.
+
+  The rules of this repo are the first-party ones, so it names a node of
+  this source.
+
+  Args:
+    value: a value of a parsed TOML file.
+
+  Returns:
+    True when it does.
+  """
+  return isinstance(value, str) and FIRST_PARTY_REF.fullmatch(value) is not None
 
 
 def successors(d: dict[str, Any]) -> list[Any]:
