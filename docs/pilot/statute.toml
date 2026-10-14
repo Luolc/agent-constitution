@@ -2,14 +2,19 @@ constitution = { source = "ac", edition = "2026-10" }
 rules = [
   # Security
   "ac:43", "ac:44", "ac:45", "ac:22", "ac:23", "ac:24", "ac:36", "ac:37",
-  "ac:30", "ac:31", "ac:41", "ac:42",
+  "ac:30", "ac:31", "ac:41", "ac:42", "ac:50", "ac:51", "ac:52",
   # Collaboration
   "ac:28", "ac:29", "ac:32", "ac:33", "ac:34", "ac:35",
-  "ac:38", "ac:39", "ac:40",
+  "ac:38", "ac:39", "ac:40", "ac:57", "ac:58", "ac:59", "ac:60", "ac:61",
+  "ac:62", "ac:63", "ac:64", "ac:70", "ac:71",
   # Verification
   "ac:1", "ac:46", "ac:47", "ac:48", "ac:49",
+  "ac:53", "ac:54", "ac:55", "ac:56", "ac:72",
   # Documentation
   "ac:17", "ac:18", "ac:19", "ac:20", "ac:21",
+  # Agent conduct
+  "ac:65", "ac:66", "ac:67", "ac:68", "ac:69", "ac:73", "ac:74", "ac:75",
+  "ac:76",
 ]
 
 [sources]
