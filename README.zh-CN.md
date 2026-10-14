@@ -37,7 +37,7 @@ AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难�
 
 文件格式、规定树、规定包和审查循环见 [规定体系](docs/design/zh/rule-system.md)。
 
-## command: statute
+## Command: `statute`
 
 `statute` 是规定体系的命令，用 Rust 写，在 [`crates/statute`](crates/statute/)。它还在开发中：目前只从本地磁盘上的源读规定，也就是本仓的一份检出；crates.io 上的版本还只是占位。从源码构建：
 
