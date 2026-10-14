@@ -463,6 +463,45 @@ fn r50_another_scanner_goes_to_the_reviewer() {
     );
 }
 
+#[test]
+fn r50_gitleaks_under_its_former_name_passes() {
+    let config = format!(
+        "repos:\n{}",
+        GITLEAKS_HOOK
+            .replace("gitleaks/gitleaks", "zricethezav/gitleaks")
+            .replace("v8.30.1", "v8.18.0")
+    );
+    let run = r50("former", &config);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    assert!(line(&run, 50).starts_with("pass "), "{}", run.stdout);
+}
+
+#[test]
+fn r50_gitleaks_before_its_staged_entry_goes_to_the_reviewer() {
+    let config = format!("repos:\n{}", GITLEAKS_HOOK.replace("v8.30.1", "v8.1.0"));
+    let run = r50("old", &config);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 50);
+    assert!(l.starts_with("inconclusive "), "{l}");
+    assert!(
+        l.contains("is gitleaks at v8.1.0, whose entry statute does not know"),
+        "{l}"
+    );
+}
+
+#[test]
+fn r50_a_hook_of_another_repository_goes_to_the_reviewer() {
+    let config = "repos:\n  - repo: https://example.test/acme/secret-scan\n    rev: v1.0.0\n    hooks:\n      - id: scan\n";
+    let run = r50("unknown", config);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 50);
+    assert!(l.starts_with("inconclusive "), "{l}");
+    assert!(
+        l.contains("hook scan of https://example.test/acme/secret-scan has its entry in its repository, which statute does not read"),
+        "{l}"
+    );
+}
+
 // The rules 43 and 46 supersede keep their checks.
 
 #[test]
