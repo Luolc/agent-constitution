@@ -137,11 +137,12 @@ install the hooks with `uv run pre-commit install`. The hooks run the
 tools with `uv run --frozen --no-sync`: they never install into `.venv`
 nor change `uv.lock`. A tool missing from `.venv` fails its hook; a stale
 `.venv` runs the versions it has, so run `uv sync` whenever `uv.lock`
-changes. The commit hooks and the Python tools need only
-uv on the machine; the Rust checks need rustup, which installs the
-toolchain `rust-toolchain.toml` names on first use; the site build needs
-Hugo and the full-history scan gitleaks, both below. After changing a pin, run `uv sync`, which updates
-`uv.lock` and `.venv`, and commit `uv.lock`; the `uv-lock` hook fails
+changes. The Python tools need only uv on the machine; the commit
+hooks also need the Rust toolchain, for `cargo-fmt`: install rustup, and
+`rustup toolchain install` installs the toolchain `rust-toolchain.toml`
+names. The site build needs Hugo and the full-history scan gitleaks, both
+below. After changing a pin, run `uv sync`, which updates `uv.lock` and
+`.venv`, and commit `uv.lock`; the `uv-lock` hook fails
 when the two disagree.
 
 - `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
@@ -224,12 +225,12 @@ rev; the full history is left to `gitleaks.yml`, below), sets up uv at the
 version of the `uv-lock` hook's rev and syncs (`uv sync --locked
 --all-packages`, which fails on a stale lock), installs the Rust toolchain
 of `rust-toolchain.toml` (`rustup toolchain install --no-self-update`), runs
-`uv run pre-commit run
---all-files` with the gitleaks hook skipped, so `uv-lock`, the Python
-checkers, the constitution build check, the tests and both limae checks run
-there too, runs clippy, the tests and the publish dry run of the Rust
-workspace, counts the tokens (without a credential, so they stay
-uncounted), builds the static site with the pinned Hugo and checks its links,
+`uv run pre-commit run --all-files` with the gitleaks hook skipped, so
+`uv-lock`, the Python checkers, `cargo-fmt`, the constitution build check,
+the tests and both limae checks run there too, then runs clippy, the tests
+and the publish dry run of the Rust workspace, counts the tokens (without a
+credential, so they stay uncounted), builds the static site with the pinned
+Hugo and checks its links,
 and then runs the build check with `--base` and the instruction-only check,
 both against the first parent of the checked-out merge commit on a pull
 request (`docs/design/checkers.md`), or against the commit before the push on
