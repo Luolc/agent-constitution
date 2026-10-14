@@ -21,8 +21,9 @@ repos:
 
   # The local hooks run in the environment of pyproject.toml, which pins
   # limae and the Python checkers. `uv run --frozen --no-sync` uses .venv as
-  # it is: it never syncs it from uv.lock nor changes the lock, so a missing
-  # or stale environment fails the hook; run `uv sync` first.
+  # it is: it never syncs it from uv.lock nor changes the lock. A tool
+  # missing from .venv fails the hook; a stale .venv runs the versions it
+  # has. Run `uv sync` after cloning and whenever uv.lock changes.
   - repo: local
     hooks:
       # The Python checkers, configured in pyproject.toml, on the whole of
