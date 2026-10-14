@@ -61,8 +61,8 @@ jobs:
 
       # Hugo builds the static site and runs in the tests of its templates.
       # Pinned by version and SHA-256, unpacked outside the checkout under
-      # the name tools/build_site.py calls; change the version in both
-      # places and in token-count.yml.
+      # the versioned name the build step and the tests call; change the
+      # version in all three places and in token-count.yml.
       - name: Install Hugo
         env:
           HUGO_VERSION: 0.167.0
@@ -85,10 +85,16 @@ jobs:
         env:
           SKIP: gitleaks
 
-      # The static site (docs/design.md, Static site): the token count, which
-      # gets no credential here, Hugo and the link check.
-      - name: Static site build and link check
-        run: uv run --frozen tools/build_site.py
+      # The static site (docs/design.md, Static site) in three steps. The
+      # token count gets no credential here, so the pages say the tokens
+      # were not counted; Hugo writes site/ (publishDir in web/hugo.toml),
+      # failing on any warning; then the link check.
+      - name: Token count
+        run: uv run --frozen tools/count_tokens.py
+      - name: Build the static site
+        run: hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning
+      - name: Link check
+        run: uv run --frozen tools/check_site_anchors.py site
 
       # Numbering against the base: on a pull request the first parent of
       # the checked-out merge commit, which is the tip of the base branch

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Fail when a change mixes instruction files with other files.
 
 The change is `git diff <base>...HEAD`: what HEAD changed since it left the

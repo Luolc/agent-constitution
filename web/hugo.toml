@@ -1,9 +1,9 @@
 # The static site: two pages per language, the constitution and its version
 # for agents, made by content/_content.gotmpl from
 # constitution/constitution.<lang>.md and constitution.<lang>.agent.md.
-# `hugo-0.167.0 -s web` builds it into site/; tools/build_site.py counts the
-# tokens first and checks the links after. See docs/design.md (Static
-# site).
+# `hugo-0.167.0 -s web` builds it into site/, with the tokens that
+# tools/count_tokens.py counted, if any; tools/check_site_anchors.py checks
+# the links. See docs/design.md (Static site).
 baseURL = "/"
 publishDir = "../site"
 # Relative links, so that site/index.html also opens as a file.

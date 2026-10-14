@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Count the tokens of the built constitution for the static site.
 
 Writes web/data/lengths.json, which Hugo reads (docs/design.md, Static
