@@ -400,21 +400,25 @@ Once built, this part replaces these statements in
 [Rule system](rule-system.md), which stay as they are until the work
 that implements it changes them:
 
-- Dependencies, one-ofs and packs, Domains: "Domains do not nest"
-  becomes the two levels of [Subdomains](#subdomains).
-- Rule file format: `parent` may name a domain of another source, a
-  domain may have a `parent`, and a rule may have `overrides` in place of
-  `parent`.
-- Rule sets and the lock file: the rule set gains `public`, a source
-  gains `public` and `scope`, a public repository gains
-  `statute.private.toml` with its lock file and output, a rule set
-  gains `base` and `output` in `[compile]`, and a rule of the lock file
-  may have `overridden-by`.
-- Compilation and the site: "a requirement that crosses subtrees is
-  rendered as a link" becomes one that leads out of the requiring
-  rule's nearest domain, subdomain included.
-- The command and the first version, Moving over: the switch is the one of
-  [Cutover](#cutover-from-the-hand-written-guide), whole, not one topic first.
+- [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs),
+  Domains: "Domains do not nest" becomes the two levels of
+  [Subdomains](#subdomains).
+- [Rule file format](rule-format.md#rule-file-format): `parent` may name
+  a domain of another source, a domain may have a `parent`, and a rule
+  may have `overrides` in place of `parent`.
+- [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file):
+  the rule set gains `public`, a source gains `public` and `scope`, a
+  public repository gains `statute.private.toml` with its lock file and
+  output, a rule set gains `base` and `output` in `[compile]`, and a rule
+  of the lock file may have `overridden-by`.
+- [Compilation and the site](statute-command.md#compilation-and-the-site):
+  "a requirement that crosses subtrees is rendered as a link" becomes one
+  that leads out of the requiring rule's nearest domain, subdomain
+  included.
+- [The command and the first version](statute-command.md#the-command-and-the-first-version),
+  Moving over: the switch is the one of
+  [Cutover](#cutover-from-the-hand-written-guide), whole, not one topic
+  first.
 
 And in the rest of the design: [Choosing rules](rules.md#choosing-rules),
 "to change a rule, the overlay leaves it out and adds a private rule in
