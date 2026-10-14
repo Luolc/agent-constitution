@@ -1658,18 +1658,23 @@ class BaseTest(Tree):
     self.assertEqual(self.revision_check(), [])
 
   def test_draft_renaming_its_edition_compares_revisions(self):
+    """Renaming the edition a draft prepares does not restart its revisions."""
     self.name_edition("2026-10")
     self.commit_base(active=False)
     self.name_edition("2026-11")
-    self.assertEqual(len(self.revision_check()), 1)
+    self.assertEqual(
+      self.revision_check(),
+      [
+        "constitution/index.toml:3: check 7: the constitution text changed "
+        "since base HEAD"
+        " but revision 0.2 is not greater than the base's 0.2"
+      ],
+    )
     self.set_revision("0.2", "0.3")
     self.assertEqual(self.revision_check(), [])
 
-  def test_draft_to_active_revision_is_not_compared(self):
-    """Approval starts the edition's revisions; the draft's do not count.
-
-    Revision 0.1 after the base's 0.2 would fail were they compared.
-    """
+  def test_approval_compares_with_the_draft(self):
+    """The approved text's revision is greater than the draft's."""
     self.name_edition("2026-10")
     self.commit_base(active=False)
     self.edit(
@@ -1677,7 +1682,15 @@ class BaseTest(Tree):
     )
     for name in SECTIONS + ["rules/rule.toml"]:
       self.edit(name, 'status = "draft"', 'status = "active"', -1)
-    self.set_revision("0.2", "0.1")
+    self.assertEqual(
+      self.revision_check(),
+      [
+        "constitution/index.toml:3: check 7: the constitution text changed "
+        "since base HEAD"
+        " but revision 0.2 is not greater than the base's 0.2"
+      ],
+    )
+    self.set_revision("0.2", "1")
     self.assertEqual(self.revision_check(), [])
 
   def test_malformed_revision_fails(self):

@@ -26,9 +26,9 @@ committed outputs must equal a fresh build byte for byte. With --check
 constitution is active, the edition may only move to a later month,
 within an edition nothing numbered may
 disappear, change number or move, and no deleted rule may go unretired.
-Within an edition, and from one draft to the next whatever edition it
-names, the revision rises when the constitution text changes and stays
-when it does not.
+Within an edition, and from a draft whatever edition it names, the
+revision rises when the constitution text changes and stays when it
+does not.
 Errors print as `path:line: check N: message`; the exit status is 1 on any
 error.
 """
@@ -1789,10 +1789,10 @@ def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
 
   Within one edition the revision is greater than the base's when the
   constitution text changed since it, and equal to it when the text did
-  not change. Two drafts count as one edition whatever edition they name,
-  so renaming the edition a draft prepares does not restart its
-  revisions. Not compared: a different status, or two active editions
-  that differ.
+  not change. A draft base counts as the same edition whatever edition
+  each names, so renaming the edition a draft prepares does not restart
+  its revisions, and the approved text's revision is greater than the
+  draft's. Not compared: an active base of another edition.
 
   Args:
     root: the checkout.
@@ -1811,10 +1811,9 @@ def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
     src.index.data["revision"],
     str(base.get("revision")),
   )
-  status = src.index.data["status"]
-  if status != base.get("status") or (
-    status == "active" and src.index.data["edition"] != base.get("edition")
-  ):
+  if base.get("status") == "active" and src.index.data.get(
+    "edition"
+  ) != base.get("edition"):
     return
   line = src.index.line("revision =")
   key, base_key = revision_key(revision), revision_key(base_revision)

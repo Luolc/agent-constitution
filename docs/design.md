@@ -293,15 +293,15 @@ constitution/articles/
 
 - `status`: `draft` until a person first approves the text, then
   `active`.
-- `edition`: the name of the edition, the month a principal approved it
-  as in force, `YYYY-MM`; required once `status` is `active`. A draft
-  may name the edition it prepares, the month it is meant to be approved
-  in; if it is approved in another month, the edition is renamed then. An edition is a whole version of the text, like a
-  constitution named by the year it was adopted. Starting a new edition
-  is itself an amendment and needs a principal's approval, and at most
-  one edition starts in a month, so no two share a name; within an
-  edition, numbers never change (see Numbering), and a new edition may
-  renumber freely.
+- `edition`: the name of the edition, the month a principal approved it as
+  in force, `YYYY-MM`; required once `status` is `active`. A draft may
+  name the edition it prepares, the month it is meant to be approved in;
+  if it is approved in another month, the edition is renamed then. An
+  edition is a whole version of the text, like a constitution named by the
+  year it was adopted. Starting a new edition is itself an amendment and
+  needs a principal's approval, and at most one edition starts in a month,
+  so no two share a name; within an edition, numbers never change (see
+  Numbering), and a new edition may renumber freely.
 - `revision`: a string, the revision within the edition: a draft is
   `0.<n>`, with `<n>` counting from 1 in every draft (the first
   edition's and each later one's), the first approved text of an edition
@@ -833,7 +833,7 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from one draft to the next whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each relative link to another page leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
@@ -890,21 +890,21 @@ first one that finds errors, printing all of that one's errors:
    article directories yet, or has an earlier `edition` than the current
    one, skips the comparison with a printed note.
 
-   The revision part of check 7 also runs when the base is a `draft`. It
-   runs when the base has an `index.toml` with the same `status` as the
-   current one, and, when both are `active`, the same `edition`; two
-   drafts are compared whatever edition each names, so that renaming the
-   edition a draft prepares does not start its revisions again. The constitution
-   text has changed when a file under `constitution/articles/` was added,
-   removed or edited, or `index.toml` differs in any line other than
-   `revision`; the generated files and `rules/` do not count. If it
-   changed, `revision` must be greater than the base's; if not, equal to
-   it. "Greater" is strict, not "plus one", so that a change which jumps
-   ahead is not an error. A draft `0.<n>` compares by the number `n`
-   (`0.9` < `0.10`) and is below every whole-number revision; a revision
-   of any other form is an error. When the status differs (a draft
-   approved), or the edition of two active texts, the revisions are not
-   compared. Its purpose is that one revision names one text.
+   The revision part of check 7 runs when the base has an `index.toml`,
+   whatever its status, unless the base is `active` and its `edition`
+   differs from the current one; a `draft` base is compared whatever
+   edition each names, so that renaming the edition a draft prepares does
+   not start its revisions again, and the approved text's revision is
+   greater than the draft's. The constitution text has changed when a file
+   under `constitution/articles/` was added, removed or edited, or
+   `index.toml` differs in any line other than `revision`; the generated
+   files and `rules/` do not count. If it changed, `revision` must be
+   greater than the base's; if not, equal to it. "Greater" is strict, not
+   "plus one", so that a change which jumps ahead is not an error. A draft
+   `0.<n>` compares by the number `n` (`0.9` < `0.10`) and is below every
+   whole-number revision; a revision of any other form is an error. After
+   an active base of another edition, the revisions are not compared. Its
+   purpose is that one revision names one text.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
