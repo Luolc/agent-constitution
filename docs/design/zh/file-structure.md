@@ -1,4 +1,4 @@
-<!-- en-sha256: 1e267776f05a36a5dd799ae3afb235585092202dee1d93fbae2676a2842dff9a -->
+<!-- en-sha256: 099a611eebc885a9b79bce8ddd22fdd5a82d089c3d8202d49ff4709bde6a7bfa -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -24,8 +24,7 @@ constitution/
       constitution.en.agent.md  agent 版，英文                         A
       constitution.zh.agent.md  agent 版，中文                         A
 crates/                   Rust workspace 的各个 crate，每个一个目录    A
-  statute/                statute 二进制；目前是只打印一句说明的
-                          占位版本                                     A
+  statute/                statute 二进制，正在开发                     A
 docs/
   design/                 本设计，一部分一个文件，
                           由 README.md 索引                            A
@@ -100,7 +99,7 @@ rust-toolchain.toml       Rust 工具链的版本，本地和 CI 里的 rustup
                           工具链从不读它                               A
 ```
 
-有四项阶段 B 的内容提前开始。`tools/` 随宪法的构建在阶段 A 开始：宪法本身就是从一条一个目录、一款一个文件的源文件编译出来的 (见[源文件格式](source-formats.md))。`rules/` 也在阶段 A 开始，放从宪法中移出的具体做法。`skills/` 在阶段 A 只是普通的目录，每个目录放一个 `SKILL.md`，带通常的 skill front matter (`name`、`description`)，不带本仓自己的元数据。`crates/` 在阶段 A 开始，只有一个 crate `statute`，是只打印一句说明的占位版本：提前发布是为了在 crates.io 上占住这个名字，编译和检查规定的二进制到阶段 B 再在这个 crate 里写出来。编译和检查规定、构建指令文件，仍留在阶段 B。
+有四项阶段 B 的内容提前开始。`tools/` 随宪法的构建在阶段 A 开始：宪法本身就是从一条一个目录、一款一个文件的源文件编译出来的 (见[源文件格式](source-formats.md))。`rules/` 也在阶段 A 开始，放从宪法中移出的具体做法。`skills/` 在阶段 A 只是普通的目录，每个目录放一个 `SKILL.md`，带通常的 skill front matter (`name`、`description`)，不带本仓自己的元数据。`crates/` 在阶段 A 开始，只有一个 crate `statute`，它的第一个版本是占位版本，提前发布是为了在 crates.io 上占住这个名字；编译和检查规定的二进制在阶段 B 里在这个 crate 中写出来，目前能读取规定清单、写出锁文件 ([规定体系](rule-system.md#the-tool-and-the-first-version))。编译和检查规定、构建指令文件，仍留在阶段 B。
 
 阶段 B 按下面的顺序实现：`schema/` 和 schema 检查程序，`rules/` 的其余部分 (由迁移填充)，编译器，`examples/` 和漂移检查，引用检查程序和放宽检查程序，私有词扫描程序，`fixtures/static/` 和 fixture 检查，最后是加载验证。每一步单独就能用。
 
