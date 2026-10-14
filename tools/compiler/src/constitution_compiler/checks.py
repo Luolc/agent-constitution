@@ -98,8 +98,9 @@ def check_structure(src: Sources, errors: Errors) -> None:
 def check_tree(nodes: list[Node], errors: Errors) -> None:
   """Check the links between the nodes of the rule tree.
 
-  Each `parent` and `superseded-by` names a node of the tree, a rule for
-  `superseded-by`, and following the parents never comes back to a node.
+  Each `parent` and each entry of `superseded-by` names a node of the
+  tree, another rule for `superseded-by`, and following the parents
+  never comes back to a node.
 
   Args:
     nodes: the nodes.
@@ -111,14 +112,14 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
       errors.add(
         n.doc.path, n.doc.line("parent ="), 3, f"parent {n.parent} is no node"
       )
-    if n.superseded_by is not None:
-      target = by_id.get(n.superseded_by)
+    for t in n.superseded_by:
+      target = by_id.get(t)
       if target is None or target.kind != "rule" or target is n:
         errors.add(
           n.doc.path,
           n.doc.line("superseded-by ="),
           3,
-          f"superseded-by {n.superseded_by} is no other rule",
+          f"superseded-by {t} is no other rule",
         )
   for n in nodes:
     seen, at = {n.id}, n.parent
