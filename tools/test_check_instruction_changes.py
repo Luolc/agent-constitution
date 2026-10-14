@@ -84,13 +84,14 @@ class Change(unittest.TestCase):
       ".claude/skills/x/SKILL.md",
       "rules/a.toml",
       "constitution/articles/01-a/article.toml",
+      "skills/x/SKILL.md",
     )
     self.assertEqual(
       self.run_check(),
       (
         0,
         "instruction-only check: instruction files only since base"
-        " (5 instruction, 0 other, 0 generated)\n",
+        " (6 instruction, 0 other, 0 generated)\n",
       ),
     )
 
