@@ -34,7 +34,7 @@ Whatever is designated for storage, a credential never appears in a message, a l
 
 When unsure whether a place is designated, treat it as not designated: keep the credential out, and ask a principal with authority over the jurisdiction.
 
-A credential stored anywhere else, or found in a message, a log, a command line or other output, or passed between agents, violates the rule.
+Violated when a credential is stored anywhere else, appears in a message, a log, a command line or other output, or passes from one agent to another.
 '''
 zh = '''
 凭证 (密码、API key、token、私钥、助记词) 只存放在法域内指定的地方，例如密钥管理器，或者不纳入版本控制的本地环境变量文件。代码仓库只有在法域内明确指定的情况下，才属于存放凭证的地方，例如部署在自托管服务上的私有仓库，按其工作流程本就将凭证存放在仓库中；否则仓库里最多存放一个指向凭证所在位置的引用。
@@ -47,4 +47,4 @@ zh = '''
 '''
 
 [translations]
-zh = "68cd2fea329acb6a1e4e0bbdc6a5776787590765ce0bcd28f39e0e681101cbcd"
+zh = "82764d9a0ebcabee7c6a1cc8ca6338d2a48bb5a77587767fe033bcb695cd1976"

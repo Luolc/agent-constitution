@@ -15,8 +15,8 @@ en = "Change instructions in a change of their own"
 zh = "修改指令单独成一个变更"
 
 [text.statement]
-en = "Change instruction files in a change of their own, never in one that also changes other files."
-zh = "修改指令文件要单独成一个变更，不与其他文件的修改放在同一个变更里。"
+en = "Change instruction files in a change of their own, never together with changes to other files; a generated file goes with the side that changed it."
+zh = "修改指令文件要单独成一个变更，不与其他文件的修改放在同一个变更里；生成文件归入使它发生变化的那一方。"
 
 [text.reason]
 en = '''
@@ -69,4 +69,4 @@ CI 已证明与构建结果一致的生成文件，不单独归类，归入使�
 '''
 
 [translations]
-zh = "93abea0d5e22a1b8ad9d83a75b6078da337bbcce6509704b5eb43045437e91c1"
+zh = "3393733cc3c5ab6a0b240507571e65e561a7b51a57614d59fca22527fa3e0061"

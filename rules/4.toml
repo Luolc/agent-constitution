@@ -34,7 +34,7 @@ Exception: where the jurisdiction keeps no work items, the agent reports to a pr
 
 When unsure whether an item is authorized, treat it as not authorized: take another, and ask a principal whose authority would cover the item ({@constitution:asking}).
 
-Violated when such an agent waits idle while authorized items are open, takes an item that is not authorized or out of order, does not mark it as taken, or does not verify it and report.
+Violated when such an agent waits idle while authorized items are open, takes an item that is not authorized or out of order, does not mark it as taken, or does not verify it or does not report.
 '''
 zh = '''
 角色允许自行开展工作的 agent (worker 不在此列，见{@rule:6})，手上没有委派给它的工作时，到法域内存放工作项的地方 (例如 issue tracker 或任务清单) 找下一项已授权的工作，不等待他人委派。已授权的工作，指权限覆盖该工作项的委托人建立或批准的工作项 ({@constitution:principals.competent}、{@constitution:delivered-tasks})，以及 agent 从这类工作项中拆分出来的工作项。agent 按法域内规定的顺序选取 (默认先看优先级，再看建立时间)，按那里的做法标为已领取，以免其他 agent 重复开工，然后完成、验证 ({@constitution:verification})，并向建立或批准该工作项的委托人报告。工作项中涉及{@constitution:must-ask}所列事项的，那个动作仍需按{@constitution:explicit-yes}取得同意。
@@ -43,8 +43,8 @@ zh = '''
 
 不确定某一工作项是否已授权的，按未授权处理：改做另一项，并向权限可能覆盖该项的委托人提问 ({@constitution:asking})。
 
-这样的 agent 在有已授权的工作项待做时闲等，选取了未授权的工作项或者不按顺序选取，没有标为已领取，或者没有验证和报告的，即为违反本规定。
+这样的 agent 在有已授权的工作项待做时闲等，选取了未授权的工作项或者不按顺序选取，没有标为已领取，没有验证，或者没有报告的，即为违反本规定。
 '''
 
 [translations]
-zh = "3ac08996f68ebeede92fd9394c8dab1f9c30434df1a08ad60f9a2c81a7ed1efb"
+zh = "91b30d54737ea2b441f93d33e79d13b2673752ea8d4e8e7cd99463fe12ae6b8a"

@@ -20,10 +20,10 @@ zh = "检查凭证只看状态，即它是否存在，或者使用它的程序�
 
 [text.reason]
 en = '''
-A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}), and checking its status needs no value. Presence does not show that a credential works.
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}). Presence does not show that a credential works.
 '''
 zh = '''
-凭证要严格保护，防止泄露 ({@constitution:sensitive-info})，而检查它的状态用不到它的值。凭证存在不等于凭证可用。
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})。凭证存在不等于凭证可用。
 '''
 
 [text.verification]
@@ -43,4 +43,4 @@ zh = '''
 '''
 
 [translations]
-zh = "975ba4ad0c2a4d2606df68fe4ad8862fa72ec4faffec5d8cc7a4d4b7f8898f59"
+zh = "eb8f09b4970f3e1f00171e74d1a98e0030d16dfec60f7141e7a10b99eaa50f1c"

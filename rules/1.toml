@@ -20,10 +20,10 @@ zh = "向其他 agent 或人报告工作完成时，在报告里附一份验收�
 
 [text.reason]
 en = '''
-A report that work is done is a claim, and a claim comes with grounds that someone else can check ({@constitution:evidence}): the record shows which checks the work passed, on which version, and which it did not undergo ({@constitution:verification}).
+A claim that work is done comes with grounds that someone else can check, and says how someone else can confirm that it is done ({@constitution:evidence}).
 '''
 zh = '''
-报告工作完成是一项主张，主张要附上别人能够核对的依据 ({@constitution:evidence})：验收记录写明工作通过了哪些检查、基于哪个版本，以及哪些检查没有做 ({@constitution:verification})。
+声称工作已经完成，要附上别人能够核对的依据，并说明别人怎样确认它确已完成 ({@constitution:evidence})。
 '''
 
 [text.verification]
@@ -37,7 +37,7 @@ Each value in the record is copied from the output that established it ({@consti
 
 When unsure whether a check applies, list it as not run, with the reason, rather than leave it out.
 
-A report of done without such a record, or with a record that lacks any of the above, violates the rule.
+Violated when a report of done has no such record, or its record lacks any of the above.
 '''
 zh = '''
 验收记录列出：
@@ -53,4 +53,4 @@ zh = '''
 '''
 
 [translations]
-zh = "a1c203c2cf3a00d20be2539eaa9735e8030559f6945201b53a940c99298c86dd"
+zh = "3426fe48b26df29af5a9af1a01bf1d78966ac1fb662d00600961c0a32d99b218"
