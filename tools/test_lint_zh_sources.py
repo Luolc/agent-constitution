@@ -3,9 +3,11 @@
 import contextlib
 import dataclasses
 import io
+import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 import lint_zh_sources as lzs
 
@@ -85,6 +87,25 @@ class Sources(unittest.TestCase):
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
       code = lzs.main(["--root", str(self.root), *extra])
     return code, out.getvalue()
+
+  def test_limae_only_from_the_environment(self):
+    """A limae on PATH is never run when the environment has none."""
+    with tempfile.TemporaryDirectory() as tmp:
+      bin_dir, scripts = Path(tmp, "bin"), Path(tmp, "scripts")
+      bin_dir.mkdir()
+      scripts.mkdir()
+      ran = Path(tmp, "ran")
+      fake = bin_dir / "limae"
+      fake.write_text(f"#!/bin/sh\n: > {ran}\n", encoding="utf-8")
+      fake.chmod(0o755)
+      with (
+        mock.patch.dict(os.environ, {"PATH": str(bin_dir)}),
+        mock.patch("sysconfig.get_path", return_value=str(scripts)),
+      ):
+        code, out = self.run_lint()
+      self.assertEqual(code, 2)
+      self.assertIn("limae is not installed in this Python environment", out)
+      self.assertFalse(ran.exists())
 
   def test_clean_tree_passes(self):
     self.assertEqual(self.run_lint(), (0, "limae: 6 zh texts clean\n"))
