@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::manifest::SourceSpec;
+use crate::manifest::{RuleRef, SourceSpec};
 use crate::node::Id;
 use crate::project::Project;
 
@@ -50,10 +50,10 @@ fn pin(spec: &SourceSpec) -> Pin<'_> {
     Pin { path: &spec.path }
 }
 
+/// A rule, named as the rule set names it (`R42`, `team:7`).
 #[derive(Serialize)]
 struct Rule<'a> {
-    source: &'a str,
-    id: u64,
+    rule: String,
     revision: u64,
     sha256: &'a str,
 }
@@ -77,8 +77,7 @@ pub fn render(project: &Project) -> String {
             .keys()
             .filter_map(|id| project.source.get(*id))
             .map(|node| Rule {
-                source: &spec.name,
-                id: node.id,
+                rule: project.source.show(node.id),
                 revision: node.revision,
                 sha256: &node.sha256,
             })
@@ -112,7 +111,9 @@ struct RawConstitution {
 
 #[derive(Deserialize)]
 struct RawRule {
-    id: Id,
+    /// Missing in a lock file of the earlier format, which named a rule
+    /// by `source` and `id`.
+    rule: Option<String>,
     revision: u64,
     sha256: String,
 }
@@ -126,8 +127,13 @@ pub fn read(text: &str) -> Result<Locked, String> {
         rules: raw
             .rules
             .into_iter()
-            .map(|r| (r.id, (r.revision, r.sha256)))
-            .collect(),
+            .map(|r| {
+                let rule = r.rule.ok_or(
+                    "a rule without `rule`, as in a lock file of an earlier format; run `statute lock` to write it anew",
+                )?;
+                Ok((RuleRef::parse(&rule)?.id, (r.revision, r.sha256)))
+            })
+            .collect::<Result<_, String>>()?,
     })
 }
 
