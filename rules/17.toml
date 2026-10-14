@@ -28,19 +28,19 @@ zh = '''
 
 [text.verification]
 en = '''
-The design lives in one directory, for example `docs/design/`. Each file covers one part, reads on its own and has one `# ` title. The directory's index, for example its `README.md`, links to every other file of the directory, in reading order, with a line on what each covers. A change that adds a design file adds it to the index in the same change.
+The design lives in one directory, for example `docs/design/`. Each file covers one part, reads on its own and has one `# ` title. The directory's index, for example its `README.md`, links to every other file of the directory except the translations ({@rule:21}), in reading order, with a line on what each covers. A change that adds a design file adds it to the index in the same change.
 
 A decision is written into the part of the design it concerns, with its reasons; a decision that replaces another changes that part. No separate decision record, design note or second design is kept elsewhere in the repository.
 
-Violated when a design or decision document lives outside that directory, or a file of the directory is missing from the index.
+Violated when a design or decision document lives outside that directory, or a file of the directory other than a translation is missing from the index.
 '''
 zh = '''
-设计放在一个目录里，例如 `docs/design/`。每个文件讲一部分，可以单独阅读，有且只有一个 `# ` 标题。目录的索引 (例如它的 `README.md`) 按阅读顺序链接到目录里的其他每个文件，每个配一行说明讲的是什么。新增设计文件的变更，在同一个变更里把它加进索引。
+设计放在一个目录里，例如 `docs/design/`。每个文件讲一部分，可以单独阅读，有且只有一个 `# ` 标题。目录的索引 (例如它的 `README.md`) 按阅读顺序链接到目录里除译文 ({@rule:21}) 以外的其他每个文件，每个配一行说明讲的是什么。新增设计文件的变更，在同一个变更里把它加进索引。
 
 一个决定连同理由写进它所涉及的那部分设计；取代旧决定的新决定，直接改那部分。仓库里别处不另设决策记录、设计笔记或第二份设计。
 
-设计文档或决策文档放在这个目录之外，或者目录里的文件没有列进索引的，即为违反本规定。
+设计文档或决策文档放在这个目录之外，或者目录里译文以外的文件没有列进索引的，即为违反本规定。
 '''
 
 [translations]
-zh = "11f90c6e976d46526b77ffcaecf70ed80b8267eec6c22e17657e209842cb665f"
+zh = "1ff91513d18cee9ab6858c7d9bc5ef62cb36af62913b432331df702f890ee690"
