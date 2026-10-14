@@ -74,7 +74,7 @@ struct Checks<'a> {
 
 #[derive(Serialize)]
 struct Command<'a> {
-    rule: Id,
+    rule: String,
     run: &'a str,
     tools: &'a [String],
 }
@@ -149,7 +149,7 @@ pub fn compile(project: &Project) -> Result<Output, String> {
         .keys()
         .filter_map(|&id| match &project.source.get(id)?.rule.as_ref()?.check {
             Check::Command { run, tools } => Some(Command {
-                rule: id,
+                rule: project.source.show(id),
                 run,
                 tools,
             }),
@@ -381,11 +381,7 @@ fn agents_md(project: &Project) -> Result<String, String> {
         )
     })?;
 
-    let articles = project
-        .root
-        .join(&m.source.path)
-        .join(format!("constitution/{}/articles", m.edition));
-    let labels = Labels::load(&articles, lang)?;
+    let labels = labels(project)?;
 
     let w = words(lang);
     let mut out = String::new();
@@ -423,6 +419,12 @@ fn agents_md(project: &Project) -> Result<String, String> {
     Ok(out)
 }
 
+/// The anchor of a node's heading, its reference with any colon made a
+/// hyphen: `rule-R42`, `rule-team-7`.
+fn anchor(project: &Project, id: Id) -> String {
+    format!("rule-{}", project.source.show(id).replace(':', "-"))
+}
+
 /// Whether a node appears: a rule when enabled, a one-of or a domain when
 /// something below it does.
 fn shown(project: &Project, node: &Node) -> bool {
@@ -432,18 +434,31 @@ fn shown(project: &Project, node: &Node) -> bool {
     }
 }
 
-/// A rule's text with its citations rendered: a rule as its title, a link
-/// when it is in the file, else followed by its ID; a provision as its
-/// label, in plain text, as in the constitution's version for agents.
-fn cited(
+/// The labels of the provisions of the project's constitution, in the
+/// language compiled to.
+pub fn labels(project: &Project) -> Result<Labels, String> {
+    let m = &project.manifest;
+    let articles = project
+        .root
+        .join(&m.source.path)
+        .join(format!("constitution/{}/articles", m.edition));
+    Labels::load(&articles, &m.lang)
+}
+
+/// A rule's text with its citations rendered: a rule as its title, with
+/// `links` a link when it is in the file, else followed by its reference;
+/// a provision as its label, in plain text, as in the constitution's
+/// version for agents.
+pub fn cited(
     project: &Project,
-    w: &Words,
     labels: &Labels,
     node: &Node,
     part: &str,
     text: &str,
+    links: bool,
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
+    let w = words(lang);
     let fail = |what: &str| {
         Err(format!(
             "{}: {part}: {what}",
@@ -452,10 +467,17 @@ fn cited(
     };
     cite::replace(text, |c| match c {
         Citation::Rule(id) => match id.parse().ok().and_then(|id| project.source.get(id)) {
-            Some(n) if shown(project, n) => {
-                Ok(format!("[{}](#rule-{})", pick(&n.title, n, lang), n.id))
-            }
-            Some(n) => Ok(format!("{} ({} {})", pick(&n.title, n, lang), w.rule, n.id)),
+            Some(n) if links && shown(project, n) => Ok(format!(
+                "[{}](#{})",
+                pick(&n.title, n, lang),
+                anchor(project, n.id)
+            )),
+            Some(n) => Ok(format!(
+                "{} ({} {})",
+                pick(&n.title, n, lang),
+                w.rule,
+                project.source.show(n.id)
+            )),
             None => fail(&format!(
                 "cites `{{@rule:{id}}}`, which is not in source `{}`",
                 project.manifest.source.name
@@ -486,13 +508,13 @@ fn render(
         return Ok(());
     }
     let lang = project.manifest.lang.as_str();
-    let _ = writeln!(out, "\n<a id=\"rule-{}\"></a>", node.id);
+    let _ = writeln!(out, "\n<a id=\"{}\"></a>", anchor(project, node.id));
     let _ = writeln!(
         out,
         "{} {} ({})",
         "#".repeat(level.min(DEEPEST)),
         pick(&node.title, node, lang),
-        node.id
+        project.source.show(node.id)
     );
     if let Some(rule) = &node.rule {
         for part in &project.manifest.agents_md {
@@ -501,7 +523,7 @@ fn render(
                 Part::Reason => ("reason", w.reason, &rule.reason),
                 Part::Verification => ("verification", w.verification, &rule.verification),
             };
-            let text = cited(project, w, labels, node, name, pick(text, node, lang))?;
+            let text = cited(project, labels, node, name, pick(text, node, lang), true)?;
             if label.is_empty() {
                 let _ = writeln!(out, "\n{text}");
             } else {
@@ -517,7 +539,7 @@ fn render(
             })
             .filter(|&id| project.source.root(id) != project.source.root(node.id))
             .filter_map(|id: Id| project.source.get(id))
-            .map(|n| format!("[{}](#rule-{})", pick(&n.title, n, lang), n.id))
+            .map(|n| format!("[{}](#{})", pick(&n.title, n, lang), anchor(project, n.id)))
             .collect();
         if !crossing.is_empty() {
             let _ = writeln!(out, "\n{}{}", w.requires, crossing.join(", "));

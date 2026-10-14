@@ -8,11 +8,11 @@ use statute::project::Project;
 mod common;
 use common::{domain, edit, rule};
 
-const MANIFEST: &str = r#"constitution = { source = "ac", edition = "2026-10" }
-rules = ["ac:3"]
+const MANIFEST: &str = r#"constitution = { source = "R", edition = "2026-10" }
+rules = ["R3"]
 
 [sources]
-ac = { path = "." }
+R = { path = "." }
 "#;
 
 const INDEX: &str = "status = \"active\"\nedition = \"2026-10\"\nrevision = \"2\"\n";
@@ -73,7 +73,7 @@ fn the_revision_is_checked_against_each_rule() {
     nodes[1] = edit(nodes[1].clone(), ">=1", ">=3");
     fails(
         &repo("revision-range", MANIFEST, &nodes, INDEX),
-        "statute.toml: error: rule 2 (Rule 2) is compatible with constitution revisions `>=3`, and the rule set rests on revision 2",
+        "statute.toml: error: rule R2 (Rule 2) is compatible with constitution revisions `>=3`, and the rule set rests on revision 2",
     );
 }
 

@@ -47,7 +47,7 @@ fn nodes() -> Vec<(u64, String)> {
 
 fn manifest(compile: &str) -> String {
     format!(
-        "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\nrules = [\"ac:3\", \"ac:5\", \"ac:10\"]\n\n[sources]\nac = {{ path = \".\" }}\n{compile}"
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [\"R3\", \"R5\", \"R10\"]\n\n[sources]\nR = {{ path = \".\" }}\n{compile}"
     )
 }
 
@@ -112,43 +112,43 @@ fn compiled(dir: &Path) -> String {
 
 const RULES_EN: &str = r#"# Rules
 
-<a id="rule-1"></a>
-## Domain 1 (1)
+<a id="rule-R1"></a>
+## Domain 1 (R1)
 
-<a id="rule-2"></a>
-### Rule 2 (2)
+<a id="rule-R2"></a>
+### Rule 2 (R2)
 
 Do the thing 2.
 
-<a id="rule-3"></a>
-#### Rule 3 (3)
+<a id="rule-R3"></a>
+#### Rule 3 (R3)
 
 Do the thing 3.
 
-<a id="rule-4"></a>
-### One-of 4 (4)
+<a id="rule-R4"></a>
+### One-of 4 (R4)
 
-<a id="rule-5"></a>
-#### Rule 5 (5)
+<a id="rule-R5"></a>
+#### Rule 5 (R5)
 
 Do the thing 5.
 
-<a id="rule-9"></a>
-## Domain 9 (9)
+<a id="rule-R9"></a>
+## Domain 9 (R9)
 
-<a id="rule-10"></a>
-### Rule 10 (10)
+<a id="rule-R10"></a>
+### Rule 10 (R10)
 
 Do the thing 10.
 
-Requires: [One-of 4](#rule-4)
+Requires: [One-of 4](#rule-R4)
 "#;
 
 #[test]
 fn compiles_the_rules_along_the_tree() {
     let dir = repo("tree", &manifest(""));
     let expected = format!(
-        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n\nConstitution: edition 2026-10, revision 1, from source `ac` (`.`).\n\n# Constitution\n\nAgents follow it.\n\n{RULES_EN}"
+        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n\nConstitution: edition 2026-10, revision 1, from source `R` (`.`).\n\n# Constitution\n\nAgents follow it.\n\n{RULES_EN}"
     );
     assert_eq!(compiled(&dir), expected);
     // AGENTS.md is written only without --output.
@@ -170,7 +170,7 @@ fn the_rule_set_adds_the_reason_and_the_verification() {
     );
     let out = compiled(&dir);
     assert!(
-        out.contains("### Rule 2 (2)\n\nDo the thing 2.\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n"),
+        out.contains("### Rule 2 (R2)\n\nDo the thing 2.\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n"),
         "{out}"
     );
     let plain = compiled(&repo("parts-plain", &manifest("")));
@@ -185,13 +185,13 @@ fn compiles_in_the_language_of_the_rule_set() {
     );
     let out = compiled(&dir);
     assert!(
-        out.contains("依据的宪法：2026-10 版，修订号 1，来自规定源 `ac` (`.`)。\n\n# 宪法\n"),
+        out.contains("依据的宪法：2026-10 版，修订号 1，来自规定源 `R` (`.`)。\n\n# 宪法\n"),
         "{out}"
     );
     assert!(out.contains("\n# 规定\n"), "{out}");
     // No translation: the original.
     assert!(out.contains("Do the thing 2.\n\n理由：Because.\n"), "{out}");
-    assert!(out.contains("依赖：[One-of 4](#rule-4)"), "{out}");
+    assert!(out.contains("依赖：[One-of 4](#rule-R4)"), "{out}");
 }
 
 #[test]
@@ -232,7 +232,7 @@ fn compile_says_which_constitution_file_is_missing() {
     assert_eq!(run.code, 1);
     assert!(
         run.stderr.contains(
-            "cannot read constitution/2026-10/generated/constitution.fr.agent.md of source `ac`"
+            "cannot read constitution/2026-10/generated/constitution.fr.agent.md of source `R`"
         ) && run.stderr.contains("`uv run constitution-build` writes it"),
         "{}",
         run.stderr
@@ -253,7 +253,7 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
         .nodes
         .values()
         .filter(|n| n.kind == statute::node::Kind::Domain)
-        .map(|n| format!("\"ac:{}\"", n.id))
+        .map(|n| format!("\"R{}\"", n.id))
         .collect();
     assert!(!domains.is_empty());
     // The rules cite both rules and the constitution, so that the check
@@ -272,7 +272,7 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
         std::fs::write(
             dir.join("statute.toml"),
             format!(
-                "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nac = {{ path = {:?} }}\n\n[compile]\nlang = \"{lang}\"\nagents-md = [\"statement\", \"reason\", \"verification\"]\n",
+                "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nR = {{ path = {:?} }}\n\n[compile]\nlang = \"{lang}\"\nagents-md = [\"statement\", \"reason\", \"verification\"]\n",
                 domains.join(", "),
                 repo_root.to_str().unwrap()
             ),
@@ -290,9 +290,9 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
             "{lang}: a citation is left as written"
         );
         for domain in &domains {
-            let id = domain.trim_matches('"').trim_start_matches("ac:");
+            let id = domain.trim_matches('"').trim_start_matches("R");
             assert!(
-                first.contains(&format!("<a id=\"rule-{id}\"></a>\n## ")),
+                first.contains(&format!("<a id=\"rule-R{id}\"></a>\n## ")),
                 "{lang}: domain {id}"
             );
         }
@@ -303,7 +303,7 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
 fn headings_stop_at_level_six() {
     let dir = repo(
         "deep",
-        &manifest("").replace("\"ac:3\", \"ac:5\", \"ac:10\"", "\"ac:107\""),
+        &manifest("").replace("\"R3\", \"R5\", \"R10\"", "\"R107\""),
     );
     // A chain under domain 1 (level 2): 102 to 107, each under the one
     // before, 105 at level 6.
@@ -318,10 +318,10 @@ fn headings_stop_at_level_six() {
         std::fs::write(dir.join(format!("rules/{id}.toml")), rule(id, parent, "").1).unwrap();
     }
     let out = compiled(&dir);
-    assert!(out.contains("\n##### Rule 104 (104)\n"), "{out}");
-    assert!(out.contains("\n###### Rule 105 (105)\n"), "{out}");
-    assert!(out.contains("\n###### Rule 106 (106)\n"), "{out}");
-    assert!(out.contains("\n###### Rule 107 (107)\n"), "{out}");
+    assert!(out.contains("\n##### Rule 104 (R104)\n"), "{out}");
+    assert!(out.contains("\n###### Rule 105 (R105)\n"), "{out}");
+    assert!(out.contains("\n###### Rule 106 (R106)\n"), "{out}");
+    assert!(out.contains("\n###### Rule 107 (R107)\n"), "{out}");
 }
 
 /// Rule 3 of `nodes`, with a Chinese translation.
@@ -355,17 +355,20 @@ fn a_translation_is_used_in_its_language() {
     std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
     let out = compiled(&dir);
     assert!(
-        out.contains("#### 规定 3 (3)\n\n做事 3。\n\n理由：因为。\n"),
+        out.contains("#### 规定 3 (R3)\n\n做事 3。\n\n理由：因为。\n"),
         "{out}"
     );
     // Rule 2 has no translation: its original.
-    assert!(out.contains("### Rule 2 (2)\n\nDo the thing 2.\n"), "{out}");
+    assert!(
+        out.contains("### Rule 2 (R2)\n\nDo the thing 2.\n"),
+        "{out}"
+    );
     // In English, rule 3 is in its original.
     let dir = repo("translated-en", &manifest(""));
     std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
     let out = compiled(&dir);
     assert!(
-        out.contains("#### Rule 3 (3)\n\nDo the thing 3.\n"),
+        out.contains("#### Rule 3 (R3)\n\nDo the thing 3.\n"),
         "{out}"
     );
 }
@@ -414,12 +417,12 @@ fn citations_render_as_titles_and_numbers() {
     std::fs::write(dir.join("rules/2.toml"), citing_rule_2()).unwrap();
     let out = compiled(&dir);
     assert!(
-        out.contains("### Rule 2 (2)\n\nDo [Rule 3](#rule-3), not Rule 6 (rule 6), under Art. IV §1, Art. IV §1(2), Art. VIII §7(1), Art. VIII §7(1a), Art. IV §2a and Art. VIII; keep {braces} and {@ this}.\n"),
+        out.contains("### Rule 2 (R2)\n\nDo [Rule 3](#rule-R3), not Rule 6 (rule R6), under Art. IV §1, Art. IV §1(2), Art. VIII §7(1), Art. VIII §7(1a), Art. IV §2a and Art. VIII; keep {braces} and {@ this}.\n"),
         "{out}"
     );
     // The heading of rule 3 is the link's target; rule 6 has none.
-    assert!(out.contains("<a id=\"rule-3\"></a>"), "{out}");
-    assert!(!out.contains("<a id=\"rule-6\"></a>"), "{out}");
+    assert!(out.contains("<a id=\"rule-R3\"></a>"), "{out}");
+    assert!(!out.contains("<a id=\"rule-R6\"></a>"), "{out}");
 
     let compile = "\n[compile]\nlang = \"zh\"\n";
     let dir = repo("cite-zh", &manifest(compile));
@@ -427,7 +430,7 @@ fn citations_render_as_titles_and_numbers() {
     std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
     let out = compiled(&dir);
     assert!(
-        out.contains("Do [规定 3](#rule-3), not Rule 6 (规定 6), under 第四条第一款, 第四条第一款第二项, 第八条第七款第一项, 第八条第七款第一项之一, 第四条第二款之一 and 第八条;"),
+        out.contains("Do [规定 3](#rule-R3), not Rule 6 (规定 R6), under 第四条第一款, 第四条第一款第二项, 第八条第七款第一项, 第八条第七款第一项之一, 第四条第二款之一 and 第八条;"),
         "{out}"
     );
 }
@@ -437,7 +440,7 @@ fn a_citation_of_nothing_fails_and_names_where_it_is() {
     for (citation, message) in [
         (
             "{@rule:99}",
-            "rules/2.toml: statement: cites `{@rule:99}`, which is not in source `ac`",
+            "rules/2.toml: statement: cites `{@rule:99}`, which is not in source `R`",
         ),
         (
             "{@constitution:principals.nobody}",
@@ -570,7 +573,7 @@ fn a_skill_naming_a_missing_rule_fails() {
     assert_eq!(run.code, 1);
     assert!(
         run.stderr.contains(
-            "skills/lost/SKILL.md: `metadata.statute-rules` names rule 99, which is not in source `ac`"
+            "skills/lost/SKILL.md: `metadata.statute-rules` names rule 99, which is not in source `R`"
         ),
         "{}",
         run.stderr
@@ -600,7 +603,7 @@ fn the_checks_and_the_hooks_are_written_next_to_agents_md() {
     assert_eq!(
         checks,
         format!(
-            "{}\n\nstatute = \"{}\"\n\n[[commands]]\nrule = 5\nrun = \"./check-5.sh --strict\"\ntools = [\"uv\", \"go\"]\n",
+            "{}\n\nstatute = \"{}\"\n\n[[commands]]\nrule = \"R5\"\nrun = \"./check-5.sh --strict\"\ntools = [\"uv\", \"go\"]\n",
             statute::compile::GENERATED_HASH,
             env!("CARGO_PKG_VERSION")
         )
@@ -670,7 +673,7 @@ fn a_skill_no_longer_enabled_goes_with_its_link_and_nothing_else() {
     std::fs::write(mine.join("SKILL.md"), "mine\n").unwrap();
     std::fs::write(
         dir.join("statute.toml"),
-        manifest("").replace("\"ac:3\", ", ""),
+        manifest("").replace("\"R3\", ", ""),
     )
     .unwrap();
     compiled(&dir);

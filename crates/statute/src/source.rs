@@ -6,11 +6,15 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
 use crate::diag::Diagnostics;
+use crate::manifest::FIRST_PARTY;
 use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
 
 #[derive(Debug, Default)]
 pub struct Source {
     pub nodes: BTreeMap<Id, Node>,
+    /// The source's name in the rule set, which its rules are shown with
+    /// (`manifest::show`); empty when the directory is read alone.
+    pub name: String,
 }
 
 impl Source {
@@ -103,6 +107,11 @@ impl Source {
         }
         .run();
         (source, diags)
+    }
+
+    /// How rule `id` of this source is shown: `R42`, `team:7`, or `42`.
+    pub fn show(&self, id: Id) -> String {
+        crate::manifest::show(&self.name, id)
     }
 
     pub fn get(&self, id: Id) -> Option<&Node> {
@@ -225,8 +234,14 @@ impl Checker<'_> {
                             self.diags.error(
                                 &file,
                                 format!(
-                                    "`{field}` names {}, a rule of another source; references to other sources are not supported yet",
-                                    show_ref(r)
+                                    "`{field}` names {}, a rule of another source; references to other sources are not supported yet{}",
+                                    show_ref(r),
+                                    match r {
+                                        Ref::Foreign { source, id } if source == FIRST_PARTY => format!(
+                                            "; in a rule of the first-party source itself, write the number, {id}"
+                                        ),
+                                        _ => String::new(),
+                                    }
                                 ),
                             );
                             continue;

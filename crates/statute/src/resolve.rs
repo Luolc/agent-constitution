@@ -45,11 +45,11 @@ fn title(node: &Node) -> &str {
     node.title.get(&node.lang).map_or("", String::as_str)
 }
 
-/// `42 (Sync from the lock file first in CI)`.
+/// `R42 (Sync from the lock file first in CI)`.
 pub fn label(source: &Source, id: Id) -> String {
     match source.get(id) {
-        Some(n) => format!("{id} ({})", title(n)),
-        None => id.to_string(),
+        Some(n) => format!("{} ({})", source.show(id), title(n)),
+        None => source.show(id),
     }
 }
 
@@ -61,10 +61,10 @@ pub fn labels(source: &Source, ids: &[Id]) -> String {
         .join(", ")
 }
 
-/// `ids` as references of the source `name`, joined by commas.
-pub fn refs(name: &str, ids: &[Id]) -> String {
+/// `ids` as references of `source`, joined by commas.
+pub fn refs(source: &Source, ids: &[Id]) -> String {
     ids.iter()
-        .map(|id| format!("{name}:{id}"))
+        .map(|id| source.show(*id))
         .collect::<Vec<_>>()
         .join(", ")
 }
@@ -81,12 +81,16 @@ pub fn resolve(
     let file = manifest::FILE;
     let mut res = Resolution::default();
     let name = &manifest.source.name;
+    let show = |id: Id| source.show(id);
 
     for &id in &manifest.rules {
         let Some(node) = source.get(id) else {
             diags.error(
                 file,
-                format!("`rules` names {name}:{id}, which does not exist in source `{name}`"),
+                format!(
+                    "`rules` names {}, which does not exist in source `{name}`",
+                    show(id)
+                ),
             );
             continue;
         };
@@ -103,7 +107,7 @@ pub fn resolve(
                 format!(
                     "`rules` names one-of {}; a one-of is enabled by choosing one of its children: {}",
                     label(source, id),
-                    children_list(source, id, name)
+                    children_list(source, id)
                 ),
             ),
         }
@@ -113,7 +117,10 @@ pub fn resolve(
         if source.get(root).is_none() {
             diags.error(
                 file,
-                format!("`packs` names {name}:{root}, which does not exist in source `{name}`"),
+                format!(
+                    "`packs` names {}, which does not exist in source `{name}`",
+                    show(root)
+                ),
             );
             continue;
         }
@@ -123,13 +130,16 @@ pub fn resolve(
             let what = match node.superseded_by.as_slice() {
                 [] => "repealed; take it out of `packs`".to_owned(),
                 [next] => format!(
-                    "superseded by {}; replace {name}:{root} with {name}:{next} in `packs` (`statute upgrade --replace-superseded` does it)",
-                    label(source, *next)
+                    "superseded by {}; replace {} with {} in `packs` (`statute upgrade --replace-superseded` does it)",
+                    label(source, *next),
+                    show(root),
+                    show(*next)
                 ),
                 many => format!(
-                    "superseded by {}; replace {name}:{root} in `packs` with those of {} that apply",
+                    "superseded by {}; replace {} in `packs` with those of {} that apply",
                     labels(source, many),
-                    refs(name, many)
+                    show(root),
+                    refs(source, many)
                 ),
             };
             diags.warning(
@@ -198,7 +208,7 @@ pub fn resolve(
                     "rule {} requires one-of {}, and the rule set enables none of its children; add one of them to `rules`: {}",
                     label(source, rule),
                     label(source, one_of),
-                    children_list(source, one_of, name)
+                    children_list(source, one_of)
                 ),
             );
         }
@@ -213,7 +223,7 @@ pub fn resolve(
         if chosen.len() > 1 {
             let list: Vec<String> = chosen
                 .iter()
-                .map(|&c| format!("{} ({})", label(source, c), how(&res, c)))
+                .map(|&c| format!("{} ({})", label(source, c), how(source, &res, c)))
                 .collect();
             diags.error(
                 file,
@@ -244,7 +254,8 @@ pub fn resolve(
                 });
                 let advice = match shared_pack {
                     Some(p) => format!(
-                        "both are in pack {p}, so in place of the pack, list in `rules` the rules of it you want"
+                        "both are in pack {}, so in place of the pack, list in `rules` the rules of it you want",
+                        show(p)
                     ),
                     None => "take one of them out of the rule set, or the rule that brings it in"
                         .to_owned(),
@@ -252,11 +263,12 @@ pub fn resolve(
                 diags.error(
                     file,
                     format!(
-                        "rules {} ({}) and {} ({}) conflict ({id} says so); {advice}",
+                        "rules {} ({}) and {} ({}) conflict ({} says so); {advice}",
                         label(source, id),
-                        how(&res, id),
+                        how(source, &res, id),
                         label(source, other),
-                        how(&res, other)
+                        how(source, &res, other),
+                        show(id)
                     ),
                 );
             }
@@ -286,13 +298,16 @@ pub fn resolve(
             reasons.contains(&Reason::Direct),
             node.superseded_by.as_slice(),
         ) {
-            (true, []) => format!("take {name}:{id} out of `rules`"),
+            (true, []) => format!("take {} out of `rules`", show(id)),
             (true, [next]) => format!(
-                "replace {name}:{id} with {name}:{next} in `rules` (`statute upgrade --replace-superseded` does it)"
+                "replace {} with {} in `rules` (`statute upgrade --replace-superseded` does it)",
+                show(id),
+                show(*next)
             ),
             (true, many) => format!(
-                "replace {name}:{id} in `rules` with those of {} that apply",
-                refs(name, many)
+                "replace {} in `rules` with those of {} that apply",
+                show(id),
+                refs(source, many)
             ),
             (false, _) => {
                 let by = reasons.iter().find_map(|r| match r {
@@ -313,7 +328,7 @@ pub fn resolve(
             format!(
                 "rule {} ({}) is {what}; {advice}",
                 label(source, id),
-                how(&res, id)
+                how(source, &res, id)
             ),
         );
     }
@@ -331,11 +346,11 @@ fn is_enabled(source: &Source, res: &Resolution, id: Id) -> bool {
     }
 }
 
-fn children_list(source: &Source, id: Id, name: &str) -> String {
+fn children_list(source: &Source, id: Id) -> String {
     let children: Vec<String> = source
         .children(id)
         .filter(|c| !matches!(c.status, Status::Superseded | Status::Repealed))
-        .map(|c| format!("\"{name}:{}\" ({})", c.id, title(c)))
+        .map(|c| format!("\"{}\" ({})", source.show(c.id), title(c)))
         .collect();
     if children.is_empty() {
         "it has none yet".to_owned()
@@ -346,7 +361,7 @@ fn children_list(source: &Source, id: Id, name: &str) -> String {
 
 /// How a rule came in, in a few words: `listed in rules`, `required by
 /// 12`, and so on.
-pub fn how(res: &Resolution, id: Id) -> String {
+pub fn how(source: &Source, res: &Resolution, id: Id) -> String {
     let Some(reasons) = res.enabled.get(&id) else {
         // A one-of child that is itself a one-of.
         return "through a child".to_owned();
@@ -355,9 +370,9 @@ pub fn how(res: &Resolution, id: Id) -> String {
         .iter()
         .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
-            Reason::Pack(root) => format!("in pack {root}"),
-            Reason::ParentOf(child) => format!("parent of {child}"),
-            Reason::RequiredBy(by) => format!("required by {by}"),
+            Reason::Pack(root) => format!("in pack {}", source.show(*root)),
+            Reason::ParentOf(child) => format!("parent of {}", source.show(*child)),
+            Reason::RequiredBy(by) => format!("required by {}", source.show(*by)),
         })
         .collect::<Vec<_>>()
         .join(", ")

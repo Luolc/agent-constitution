@@ -95,7 +95,10 @@ pub fn run(project: &Project, ctx: &Context) -> Vec<(Id, Report)> {
                     71 => r71::check(ctx),
                     _ => Report::new(
                         Outcome::Inconclusive,
-                        format!("no built-in check for rule {id} in this version of statute"),
+                        format!(
+                            "no built-in check for rule {} in this version of statute",
+                            project.source.show(id)
+                        ),
                     ),
                 },
                 Check::Command { run, tools } => command::check(ctx, run, tools),
