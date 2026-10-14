@@ -169,14 +169,14 @@ Latin letters). With `--fix` it writes limae's fixes back in place,
 changing no other byte, and parses the file again to make sure.
 The commit hook and CI only check; the fix is run by hand. The limae hook
 runs on every Markdown file of the repo except the theme under `web/themes/`,
-English files included, where limae mostly finds nothing. On
-`constitution.zh.md` and `constitution.zh.agent.md` in the edition
-directory's `generated/` it checks what exists only after the build: section
-and item numbers, headings, the text around a rendered citation. A finding
-there is fixed in the source or in the build script, never in the generated
-file. The rules have no built text yet, so the
-source check is what covers their Chinese. A finding in any other
-Markdown file is fixed in the file itself. A false positive is passed
+English files included, where limae mostly finds nothing. The Chinese
+files in the edition directory's `generated/`, `constitution.zh.md` and
+`constitution.zh.agent.md`, get a check of what exists only after the
+build: section and item numbers, headings, the text around a rendered
+citation. A finding in any of the four files there is fixed in the source
+or in the build script, never in the generated file. The rules have no built
+text yet, so the source check is what covers their Chinese. A finding in a
+Markdown file that is not generated is fixed in the file itself. A false positive is passed
 over on its line with a `<!-- limae-disable-next-line <rule> -->` comment
 above it, never by switching the rule off for the repo.
 
