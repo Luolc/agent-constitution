@@ -1,8 +1,9 @@
 """Tests for build_site's pages and check_site_anchors: a built constitution
 becomes a Hugo page in both languages with the length and token count of
-the version for agents, or a note that the tokens were not counted, and a
-popup on the counts that gives the full version's and links to the page of
-the version for agents, which has no anchors or links and links back; the
+the version for agents, or a note that the tokens were not counted, in a
+list under the title with the legend of the asterisk, and a popup on the
+counts that puts both versions' in a table and links to the page of the
+version for agents, which has no anchors or links and links back; the
 token count asks the API (mocked here) once per version and survives its
 failure unless --require-tokens is given; the site check passes a page
 whose links all have targets and fails a broken link, a link to a missing
@@ -11,6 +12,7 @@ page or a leaked list marker. Hugo itself runs in CI, not here."""
 import contextlib
 import http.client
 import io
+import re
 import tempfile
 import unittest
 import urllib.error
@@ -55,7 +57,8 @@ class PageTest(unittest.TestCase):
                 title = md.split("\n")[2]
                 out = build_site.page(md, agent, labels, "0.6", "abc1234", None, None)
                 self.assertTrue(out.startswith(f'+++\ntitle = "{title[2:]}"\n+++\n<div class="constitution">\n'))
-                self.assertIn(f'{title}\n\n<p class="revision">{labels["revision"]} 0.6<br><span class="length">', out)
+                self.assertIn(f'{title}\n\n<ul class="revision"><li class="number">{labels["revision"]} 0.6</li>', out)
+                self.assertIn('<li class="legend">', out)
                 self.assertNotIn("tools/build_constitution.py", out)
                 self.assertTrue(out.endswith("\n</div>\n"))
                 self.assertIn(" {#general-provisions}\n", out)
@@ -65,54 +68,63 @@ class PageTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_site.split("# Title\n\nText.\n")
 
-    def test_length_line(self):
-        """The line under the revision gives the version for agents."""
+    def test_header_list(self):
+        """Under the title, a list: the revision, then the length of the
+        version for agents, bare, with the info button."""
         cases = [
-            ("en", None, "Version for agents: 15 characters · 3 words · tokens not counted"),
-            ("en", 345, "Version for agents: 15 characters · 3 words · 345 tokens (counted for claude-opus-5-5)"),
-            ("zh", None, "agent 版：11 字符 · token 数未计算"),
-            ("zh", 345, "agent 版：11 字符 · 345 token (按 claude-opus-5-5 计数)"),
+            ("en", None, "15 characters · 3 words · tokens not counted"),
+            ("en", 345, "15 characters · 3 words · 345 tokens"),
+            ("zh", None, "11 字符 · token 数未计算"),
+            ("zh", 345, "11 字符 · 345 token"),
         ]
         for lang, tokens, line in cases:
             with self.subTest(lang=lang, tokens=tokens):
-                out = build_site.page(SHORT[lang], AGENT[lang], build_site.PAGES[lang], "0.6", None, 12345, tokens)
-                self.assertIn(f'0.6<br><span class="length">{line}</span><span class="count-info">', out)
+                labels = build_site.PAGES[lang]
+                out = build_site.page(SHORT[lang], AGENT[lang], labels, "0.6", None, 12345, tokens)
+                self.assertIn(f'\n<ul class="revision"><li class="number">{labels["revision"]} 0.6</li>'
+                              f'<li class="length">{line}<span class="count-info">', out)
 
     def test_popup(self):
+        """The lengths of both versions in a table first, then how they were
+        counted, then the link to the version for agents."""
         cases = [
-            ("en", 12345, 345, "abc1234", [
-                "Tokens are counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5.",
-                "The numbers are those of the version agents read, which leaves out the text of the sections and"
-                " items written for human readers, keeping only a pointer to the full version, and has no anchors"
-                " or links.",
-                "The full version on this page: 25 characters · 5 words · 12,345 tokens (counted for claude-opus-5-5).",
-                "Counted at revision 0.6, commit abc1234.",
-                '<a href="/agent/">See the version agents read</a>']),
-            ("en", None, None, None, [
-                "Tokens are counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5; this build"
-                " had no credential for it, or the call failed, so they were not counted.",
-                "The full version on this page: 25 characters · 5 words · tokens not counted.",
-                "Counted at revision 0.6."]),
-            ("zh", 12345, 345, "abc1234", [
-                "token 数由 Anthropic 的 token 计数接口 (count_tokens) 按 claude-opus-5-5 计算。",
-                "这里的数字是 agent 读的精简版：写给人读的条款不收正文，只留一句「见完整版」，也不含锚点和链接。",
-                "本页完整版：15 字符 · 12,345 token (按 claude-opus-5-5 计数)。",
-                "按修订号 0.6、commit abc1234 计算。",
-                '<a href="/zh/agent/">查看 agent 读到的版本</a>']),
-            ("zh", None, None, None, [
-                "token 数按 Anthropic 的 token 计数接口 (count_tokens) 以 claude-opus-5-5 计数；这次构建没有凭证，或者调用失败，未计算。",
-                "本页完整版：15 字符 · token 数未计算。",
-                "按修订号 0.6 计算。"]),
+            ("en", 12345, 345, "abc1234",
+             ["", "characters", "words", "tokens", "For agents", "15", "3", "345", "Full, this page", "25", "5", "12,345"],
+             ["Tokens counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5.",
+              "The version for agents leaves out the preamble, keeps only a pointer to the full version for the"
+              " other parts marked *, and has no anchors or links.",
+              "Counted at revision 0.6, commit abc1234."]),
+            ("en", None, None, None,
+             ["", "characters", "words", "tokens", "For agents", "15", "3", "—", "Full, this page", "25", "5", "—"],
+             ["Tokens are counted by Anthropic's token counting API (count_tokens) for claude-opus-5-5; this build"
+              " had no credential for it, or the call failed, so they were not counted.",
+              "The version for agents leaves out the preamble, keeps only a pointer to the full version for the"
+              " other parts marked *, and has no anchors or links.",
+              "Counted at revision 0.6."]),
+            ("zh", 12345, 345, "abc1234",
+             ["", "字符", "token", "agent 版", "11", "345", "完整版 (本页)", "15", "12,345"],
+             ["token 数由 Anthropic 的 token 计数接口 (count_tokens) 按 claude-opus-5-5 计算。",
+              "agent 版不含序言，其余标 * 的部分只留一句「见完整版」，也不含锚点和链接。",
+              "按修订号 0.6、commit abc1234 计算。"]),
+            ("zh", None, None, None,
+             ["", "字符", "token", "agent 版", "11", "—", "完整版 (本页)", "15", "—"],
+             ["token 数按 Anthropic 的 token 计数接口 (count_tokens) 以 claude-opus-5-5 计数；这次构建没有凭证，或者调用失败，未计算。",
+              "agent 版不含序言，其余标 * 的部分只留一句「见完整版」，也不含锚点和链接。",
+              "按修订号 0.6 计算。"]),
         ]
-        for lang, tokens, agent_tokens, commit, lines in cases:
+        for lang, tokens, agent_tokens, commit, table, notes in cases:
             with self.subTest(lang=lang, tokens=tokens):
-                out = build_site.page(SHORT[lang], AGENT[lang], build_site.PAGES[lang], "0.6", commit,
-                                      tokens, agent_tokens)
+                labels = build_site.PAGES[lang]
+                out = build_site.page(SHORT[lang], AGENT[lang], labels, "0.6", commit, tokens, agent_tokens)
                 self.assertIn('<button type="button" class="count-button" aria-expanded="false"'
-                              f' aria-controls="count-popup" aria-label="{build_site.PAGES[lang]["info"]}"><svg', out)
-                popup = out.split('<span class="count-popup" id="count-popup">')[1].split("</span></span>")[0]
-                for line in lines:
-                    self.assertIn(f'<span class="count-line">{line}', popup)
+                              f' aria-controls="count-popup" aria-label="{labels["info"]}"><svg', out)
+                popup = out.split('<span class="count-popup" id="count-popup">')[1].split("</span></span></li>")[0]
+                self.assertTrue(popup.startswith(f'<span class="count-summary">{labels["summary"]}</span>'
+                                                 '<span class="count-table"><span class="count-row">'))
+                self.assertEqual(re.findall(r'<span class="count-(?:label|cell)">([^<]*)</span>', popup), table)
+                self.assertEqual(re.findall(r'<span class="count-note">([^<]*)</span>', popup), notes)
+                self.assertTrue(popup.endswith(f'</span><a class="count-link" href="{labels["home"]}agent/">'
+                                               f'{labels["agent_link"]}</a>'))
 
     def test_agent_page(self):
         for lang, labels in build_site.PAGES.items():
@@ -138,11 +150,11 @@ class PageTest(unittest.TestCase):
         """The legend says in words what the asterisk marks and links to the
         version for agents; the asterisk in it is not a superscript."""
         legends = {
-            "en": ('<span class="legend">Sections and items marked <span class="mark">*</span> are written for human'
-                   ' readers: how this constitution is organized and amended. <a href="/agent/">The version compiled'
-                   ' for agents</a> leaves out their text and keeps only a pointer to this full version.</span></p>\n'),
-            "zh": ('<span class="legend">标 <span class="mark">*</span> 的条款写给人读，讲本宪法怎样编排、怎样修改。'
-                   '<a href="/zh/agent/">给 agent 编译的版本</a>不收这些条款的正文，只留一句「见完整版」。</span></p>\n'),
+            "en": ('<li class="legend">Parts marked <span class="mark">*</span> are about how this constitution came'
+                   ' about, is organized and is amended, and are shown to people by default; <a href="/agent/">the'
+                   ' version compiled for agents</a> leaves out their text by default.</li></ul>\n'),
+            "zh": ('<li class="legend">标 <span class="mark">*</span> 的部分讲本宪法的由来、编排和修改，默认只对人可见；'
+                   '<a href="/zh/agent/">给 agent 编译的版本</a>默认不收录它们的正文。</li></ul>\n'),
         }
         for lang, legend in legends.items():
             with self.subTest(lang=lang):
@@ -151,7 +163,7 @@ class PageTest(unittest.TestCase):
                                                                    None, None))
                 marked = SHORT[lang] + f"\n-   **§2**{build_site.OMITTED_MARK} Text.\n"
                 out = build_site.page(marked, AGENT[lang], labels, "0.6", None, None, None)
-                self.assertIn(f"</span></span><br>{legend}", out)
+                self.assertIn(f"</span></span></li>{legend}", out)
 
 
 class CountTokensTest(unittest.TestCase):
@@ -255,7 +267,8 @@ class RequireTokensTest(unittest.TestCase):
         self.main([], {}, {})
         self.assertEqual(sorted(self.content), ["_index.md", "_index.zh.md", "agent.md", "agent.zh.md"])
         for labels in build_site.PAGES.values():
-            self.assertIn(f'<a href="{labels["home"]}agent/">{labels["agent_link"]}</a>', self.content[labels["file"]])
+            self.assertIn(f'<a class="count-link" href="{labels["home"]}agent/">{labels["agent_link"]}</a>',
+                          self.content[labels["file"]])
             self.assertIn(f'<a href="{labels["home"]}">{labels["back"]}</a>', self.content[labels["agent_file"]])
             self.assertIn("commit abc1234", self.content[labels["file"]])
 
