@@ -301,3 +301,30 @@ fn commands_not_written_yet_exit_2() {
         assert_eq!(run.stderr, "statute: this command is not implemented yet\n");
     }
 }
+
+#[test]
+fn add_leaves_both_files_as_they_were_when_the_lock_file_cannot_be_written() {
+    let dir = repo("add-lock-fails", &manifest("\"ac:3\""), &nodes());
+    // A directory in the way: the rule set is written, the lock file not.
+    std::fs::create_dir_all(dir.join("statute.lock/in-the-way")).unwrap();
+    let run = statute(&dir, &["add", "ac:5"]);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(
+        run.stderr.contains("statute.lock: error: cannot write"),
+        "{}",
+        run.stderr
+    );
+    assert!(
+        run.stderr
+            .contains("statute.toml and statute.lock are left unchanged"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:3\""));
+    assert!(!dir.join("statute.toml.tmp").exists());
+    assert!(!dir.join("statute.lock.tmp").exists());
+    // With the way clear, the same command goes through.
+    std::fs::remove_dir_all(dir.join("statute.lock")).unwrap();
+    ok(&statute(&dir, &["add", "ac:5"]));
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"ac:3\", \"ac:5\""));
+}

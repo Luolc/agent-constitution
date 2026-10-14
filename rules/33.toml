@@ -1,0 +1,46 @@
+id = 33
+slug = "downtime-must-ask"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["boundary-rule", "must-ask", "list-defaults", "relaxations.project-overrides"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "A breaking change that causes downtime goes through a principal"
+zh = "造成停机的破坏性变更须经委托人"
+
+[text.statement]
+en = "Treat a breaking change that causes downtime of a running service as an item of {@constitution:must-ask}, which goes through a principal."
+zh = "造成运行中的服务停机的破坏性变更，按{@constitution:must-ask}所列事项处理，须经委托人。"
+
+[text.reason]
+en = '''
+The rule library may add items to those listed in {@constitution:must-ask} ({@constitution:list-defaults}).
+'''
+zh = '''
+规定库可以在{@constitution:must-ask}所列事项之外增加事项 ({@constitution:list-defaults})。
+'''
+
+[text.verification]
+en = '''
+A project's declaration under {@constitution:relaxations.project-overrides} covers such a change only if it names it; one that covers releases, or changes to machines and services, does not cover it.
+
+When unsure whether a change causes downtime, treat it as one that does.
+
+Violated when an agent makes such a change without the yes that {@constitution:must-ask} requires, unless a declaration that names it covers it.
+'''
+zh = '''
+项目依照{@constitution:relaxations.project-overrides}作出的声明，写明了这一项才涵盖它；声明涵盖发布或者对机器和服务的变更，并不因此涵盖这一项。
+
+不确定某个变更是否会造成停机的，按会造成停机处理。
+
+agent 未取得{@constitution:must-ask}所要求的同意就做了这样的变更，又没有写明这一项的声明涵盖它的，即为违反本规定。
+'''
+
+[translations]
+zh = "ccb64b10743c96462b46049dde45b8c2a0f228221298684c95e5b1b895ae8fdb"

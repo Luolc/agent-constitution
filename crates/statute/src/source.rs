@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
 use crate::diag::Diagnostics;
-use crate::node::{self, Id, Kind, Node, Ref, show_ref};
+use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
 
 #[derive(Debug, Default)]
 pub struct Source {
@@ -243,6 +243,19 @@ impl Checker<'_> {
                                 &file,
                                 format!("`requires` names one-of {id}, which has no children yet, so the rule can never be enabled; require a rule, or add a child to the one-of first"),
                             )
+                        }
+                        ("requires", Some(Kind::Rule))
+                            if matches!(
+                                source.get(id).map(|n| n.status),
+                                Some(Status::Superseded | Status::Repealed)
+                            ) =>
+                        {
+                            let target = &source.nodes[&id];
+                            let what = match target.superseded_by {
+                                Some(next) => format!("is superseded by {next}; require {next} instead"),
+                                None => "is repealed, with nothing in its place".to_owned(),
+                            };
+                            self.diags.warning(&file, format!("`requires` names rule {id}, which {what}"));
                         }
                         ("requires", Some(Kind::Domain)) => self.diags.error(
                             &file,

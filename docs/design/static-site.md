@@ -20,7 +20,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
   `build` counts the tokens (below), builds and checks the site as CI
   does and uploads it; the job `deploy` publishes it, but only when the
   repository is public and its variable `PAGES_DEPLOY` is `true`, and is
-  skipped otherwise. Publishing is a release (rule 9, `must-ask-items`):
+  skipped otherwise. Publishing is a release (rule 32, `release-must-ask`):
   setting the variable is the person's yes to publish every later push
   to `main`, and deleting it stops that. The custom domain is set in the
   repository's Pages settings, with the source "GitHub Actions"; a
@@ -243,11 +243,13 @@ site-rules`, `uv run count-tokens` (the token count, below),
   from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
   pages as children. There are three groups: the constitution, the home
   page, with the scales (`law`); the rules, their list, with a checklist
-  (`checklist`) and no pages below it; and the design, its README's page,
-  with an open book (`book`), its files below it as the content adapter lists
-  them (Design, above). The design group folds (`collapse` in its menu
-  params): it is closed on every page but the design's own, where it is
-  open with the current page marked. It uses the theme's checkbox, label
+  (`checklist`) and no pages below it, so the group itself is marked as
+  the current page on the list and on each rule's page; and the design,
+  its README's page, with an open book (`book`), its files below it as the
+  content adapter lists them (Design, above). The design group folds
+  (`collapse` in its menu params): it is closed on every page but the
+  design's own, where it is open with the current page marked. It uses
+  the theme's checkbox, label
   and chevron from its file tree; the chevron points right when closed and
   down when open, and the keyboard toggles it. The constitution group does
   not fold. Under the constitution are its editions, newest first:
