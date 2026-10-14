@@ -716,7 +716,8 @@ is a release (rule `must-ask-items`) and not set up.
   popup hangs from the button with no gap and the button inside its width,
   so the pointer reaches its link without leaving it. The
   popup first says that the length under the title is that of the version
-  for agents and gives the lengths of both versions in a small table (the
+  for agents and gives the lengths of both versions in a small table
+  (spans with ARIA table roles, so a screen reader names the columns; the
   full version is the generated file without its header line, anchors and
   link definitions included; a token count not made is a dash); under it,
   smaller and fainter, which API counted the tokens for which model (the

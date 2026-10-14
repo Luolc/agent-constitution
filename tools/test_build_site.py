@@ -120,8 +120,13 @@ class PageTest(unittest.TestCase):
                               f' aria-controls="count-popup" aria-label="{labels["info"]}"><svg', out)
                 popup = out.split('<span class="count-popup" id="count-popup">')[1].split("</span></span></li>")[0]
                 self.assertTrue(popup.startswith(f'<span class="count-summary">{labels["summary"]}</span>'
-                                                 '<span class="count-table"><span class="count-row">'))
-                self.assertEqual(re.findall(r'<span class="count-(?:label|cell)">([^<]*)</span>', popup), table)
+                                                 '<span class="count-table" role="table"><span class="count-row"'
+                                                 ' role="row"><span class="count-label" role="columnheader"></span>'))
+                self.assertEqual(re.findall(r'<span class="count-(?:label|cell)" role="[a-z]+">([^<]*)</span>', popup),
+                                 table)
+                self.assertEqual(re.findall(r'role="(rowheader|columnheader|cell)"', popup),
+                                 ["columnheader"] * (len(labels["columns"]) + 1)
+                                 + (["rowheader"] + ["cell"] * len(labels["columns"])) * 2)
                 self.assertEqual(re.findall(r'<span class="count-note">([^<]*)</span>', popup), notes)
                 self.assertTrue(popup.endswith(f'</span><a class="count-link" href="{labels["home"]}agent/">'
                                                f'{labels["agent_link"]}</a>'))

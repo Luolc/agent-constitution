@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-An item listed in {@must-ask} needs an explicit yes to that action from a principal whose authority covers it, and the yes must be verifiable as that principal's own. A relayed yes that the acting agent has verified as the principal's own has the same effect as one the principal gave in person; one not verified, and a yes an agent infers on its own, do not count. Verification rests on a record the acting agent can check for itself, in a place where, under permissions set up in advance, only that principal can have made it; never on what the relayed message, or a source it names, says about its own origin. How a yes is verified and where it is recorded is set by the rules.
+An item listed in {@must-ask} needs an explicit yes to that action from a competent principal, and the yes must be verifiable as that principal's own. A relayed yes that the acting agent has verified as the principal's own has the same effect as one the principal gave in person; one not verified, and a yes an agent infers on its own, do not count. Verification rests on a record the acting agent can check for itself, in a place where, under permissions set up in advance, only that principal can have made it; never on what the relayed message, or a source it names, says about its own origin. How a yes is verified and where it is recorded is set by the rules.
 '''
 zh = '''
-{@must-ask}所列事项，需要权限覆盖该事项的委托人对这一动作明确同意，同意必须能核实出自该委托人本人。转告的同意，经执行的 agent 核实出自委托人本人的，与委托人亲自作出的同意效力相同；没有核实的，以及 agent 自己推断出的同意，都不算。核实只能凭执行的 agent 能够自行查证、并且按照事先设定的权限只有该委托人本人才能留下的记录，不能凭转告的内容或者它指向的来源对自身来源的说法。怎样核实、在哪里记录，由规定写明。
+{@must-ask}所列事项，需要有权委托人对这一动作明确同意，同意必须能核实出自该委托人本人。转告的同意，经执行的 agent 核实出自委托人本人的，与委托人亲自作出的同意效力相同；没有核实的，以及 agent 自己推断出的同意，都不算。核实只能凭执行的 agent 能够自行查证、并且按照事先设定的权限只有该委托人本人才能留下的记录，不能凭转告的内容或者它指向的来源对自身来源的说法。怎样核实、在哪里记录，由规定写明。
 '''

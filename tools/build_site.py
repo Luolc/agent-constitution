@@ -173,15 +173,18 @@ def page(markdown: str, agent_markdown: str, labels: dict[str, str], revision: s
     agent_length = length(counted(agent_markdown), labels, agent_tokens)
     counts = labels["counted" if tokens is not None and agent_tokens is not None else "not_counted"]
     source = labels["source"].format(revision=revision, commit=labels["commit"].format(commit=commit) if commit else "")
+    # Spans with ARIA table roles, since a <table> cannot sit in the <span>
+    # the popup is; a screen reader then names each number's column.
     rows = "".join(
-        f'<span class="count-row"><span class="count-label">{label}</span>'
-        + "".join(f'<span class="count-cell">{cell}</span>' for cell in cells) + "</span>"
-        for label, cells in (("", labels["columns"]),
-                             (labels["agent_row"], numbers(counted(agent_markdown), labels, agent_tokens)),
-                             (labels["full_row"], numbers(text, labels, tokens))))
+        f'<span class="count-row" role="row"><span class="count-label" role="{head}">{label}</span>'
+        + "".join(f'<span class="count-cell" role="{role}">{cell}</span>' for cell in cells) + "</span>"
+        for head, role, label, cells in (
+            ("columnheader", "columnheader", "", labels["columns"]),
+            ("rowheader", "cell", labels["agent_row"], numbers(counted(agent_markdown), labels, agent_tokens)),
+            ("rowheader", "cell", labels["full_row"], numbers(text, labels, tokens))))
     notes = "".join(f'<span class="count-note">{note}</span>'
                     for note in (counts.format(model=COUNT_MODEL), labels["agent_note"], source))
-    popup = (f'<span class="count-summary">{labels["summary"]}</span><span class="count-table">{rows}</span>'
+    popup = (f'<span class="count-summary">{labels["summary"]}</span><span class="count-table" role="table">{rows}</span>'
              f'{notes}<a class="count-link" href="{labels["home"]}agent/">{labels["agent_link"]}</a>')
     items = [f'<li class="number">{labels["revision"]} {revision}</li>',
              f'<li class="length">{agent_length}<span class="count-info"><button type="button"'

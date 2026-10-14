@@ -277,13 +277,15 @@
 .constitution code { font-size: .85em; }
 
 /* The asterisk after the number of a section or an item, or the heading
-   of the preamble, that the version for agents leaves out: small, in the
-   accent color, close to the number, and without opening up the line.
-   Not raised as a superscript: the glyph itself sits at the height of the
-   capitals, so it is lowered until its middle sits a little above the
-   middle of the parentheses around an item's number and its top well
-   under the top of the number, as a mark on the line, not above it. */
-.constitution sup.omitted {
+   of the preamble, that the version for agents leaves out, in the text
+   and in the sidebar: small, in the accent color, close to the number,
+   and without opening up the line. Not raised as a superscript: the glyph
+   itself sits at the height of the capitals, so it is lowered until its
+   middle sits a little above the middle of the parentheses around an
+   item's number and its top well under the top of the number, as a mark
+   on the line, not above it. */
+.constitution sup.omitted,
+.constitution-nav sup.omitted {
   color: var(--c-accent);
   font-size: .85em;
   font-weight: var(--c-weight-bold);
@@ -308,14 +310,6 @@
 /* Block, not the theme's flex, so that the asterisk sits in the line. */
 .constitution-nav a { display: block; color: var(--c-ink); text-decoration: none; }
 .constitution-nav a:hover { color: var(--c-accent); }
-.constitution-nav sup.omitted {
-  color: var(--c-accent);
-  font-size: .85em;
-  font-weight: var(--c-weight-bold);
-  vertical-align: -.55em;
-  line-height: 0;
-  margin-inline-start: .05em;
-}
 
 @media print {
   :root, body { background: #fff; }

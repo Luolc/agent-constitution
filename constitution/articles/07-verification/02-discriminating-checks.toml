@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A check that would also pass in the case it is meant to rule out must not be cited as evidence that the case is ruled out.
+A check or other method of verification used to prove something must discriminate: a correct result passes it, and the error it is meant to rule out is in fact caught when it occurs. A check that still passes when the error occurs is not strict enough: it lets the error through and cannot count as evidence that the error is ruled out. Whoever designs a check confirms both sides: with a correct result, that it passes, and with a wrong one, that it is stopped.
 '''
 zh = '''
-在它要排除的那种情况下也会通过的检查，不得当作已经排除那种情况的证据。
+用来证明一件事的检查或验证方法，必须有区分度：正确的结果能够通过，它要排除的错误一旦出现，也确实会被发现。错误出现时照样通过的检查不够严，会放过错误，不能当作已经排除这种错误的证据。设计检查时，两头都要确认：用正确的结果确认它能通过，用错误的结果确认它会被拦下。
 '''
