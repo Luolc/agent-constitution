@@ -29,21 +29,21 @@ zh = '''
 
 [text.verification]
 en = '''
-Code here is every file of the repository other than the design and the instruction files ({@rule:46}).
+Code here is every file of the repository other than the design, instruction files included.
 
 - Design ahead of the code: the design marks what is not built yet as {@rule:19} asks.
 - Code ahead of the design: the description of the change to the code names the sections of the design that no longer match it, and the follow-up that will update them, for example an issue or a pull request; the follow-up is open when the change is merged.
 
-Violated when a merged change to the code leaves a section of the design describing the repository as it was before the change, and its description does not name that section or names no follow-up.
+Violated when a merged change to the code leaves a section of the design describing the repository as it was before the change, and its description does not name that section, names no follow-up, or names one that is not open when the change is merged.
 '''
 zh = '''
-这里的代码，指仓库里设计和指令文件 ({@rule:46}) 以外的所有文件。
+这里的代码，指仓库里设计以外的所有文件，包括指令文件。
 
 - 设计走在代码前面：设计按 {@rule:19} 标明尚未构建的内容。
 - 代码走在设计前面：代码变更的说明写明设计里哪些章节已经与它不符，以及由哪个 follow-up 来更新它们，例如一个 issue 或一个 pull request；变更合入时，这个 follow-up 已经建好、尚未关闭。
 
-已合入的代码变更留下某一节设计仍按变更之前的样子描述仓库，而它的说明没有写出这一节、或者没有指明 follow-up 的，即为违反本规定。
+已合入的代码变更留下某一节设计仍按变更之前的样子描述仓库，而它的说明没有写出这一节、没有指明 follow-up，或者指明的 follow-up 在变更合入时并未处于打开状态的，即为违反本规定。
 '''
 
 [translations]
-zh = "0cd4b43ecc8cf9127ab24f88b4554b96a655bb67cbafb13768f873681abb6fc8"
+zh = "51acc76e4bf277d5672df9fd211d35d876285e7e654b566353a31273989d3826"
