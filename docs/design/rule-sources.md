@@ -254,8 +254,10 @@ subdirectory are lost to it, unless the model happens to read the file.
 So with the private output, a repository keeps such rules in its rule
 set, not in `AGENTS.md` files of subdirectories. When it compiles the
 private layer, `statute compile` warns of each `AGENTS.md` that git
-tracks below the top of the repository, saying that Claude Code does not load it and that its rules
-belong in the rule set. statute does not compile their content into
+tracks below the directory of `statute.toml` (the top of the
+repository, as a rule, and where the links are written), saying that
+Claude Code does not load it and that its rules belong in the rule
+set. statute does not compile their content into
 the full text.
 
 Files git does not track do not come with `git worktree add`. Each
@@ -277,7 +279,8 @@ project instructions in non-interactive mode), and on Pi 1.2.0 and
 OpenCode 1.19.0 in one run per case; the 32 KiB of Codex is from its
 documentation and source. In runs of one small task, Codex and Grok
 read the file a fallback line with an `@` path names, two runs each,
-and Claude Code loaded it as an import; with the path in backticks,
+and Claude Code loaded it as an import; with a line of the same kind
+but other wording than statute's, the path in backticks and no `@`,
 Claude Code (two runs) and OpenCode (two runs) read the full text when
 nothing else loaded it, each time the model's own read. Every run had
 the user's own instruction files and skills in place, which also urge

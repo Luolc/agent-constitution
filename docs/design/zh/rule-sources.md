@@ -1,4 +1,4 @@
-<!-- en-sha256: 726d5907c746d9cc56a112bd0c99d83ea2d0c9cacd22e2ee214fc508fb1554b5 -->
+<!-- en-sha256: 02547ecd55eb5cd03972b280ef90d0e4e6a0f6b0f61d0e86c288046c95e679e8 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -114,13 +114,13 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 
 Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到工作目录的各级文件合在一起算，超出的部分截掉。`AGENTS.full.md` 单独就会超过这个大小时，`statute compile` 失败；子目录里的 `AGENTS.md` 也算在同一个上限里，statute 不把它们加进来算。
 
-有 `CLAUDE.local.md` 时，Claude Code 也不加载任何子目录里的 `AGENTS.md`：工作目录在那个子目录时启动不加载，碰到那里的文件时也不加载，而没有 `CLAUDE.local.md` 时这两种情况它都会加载。子目录的规定对它就丢了，除非模型碰巧自己去读那个文件。所以有私有输出的仓库把这类规定写进规定清单，不放在子目录的 `AGENTS.md` 里。编译私有层时，`statute compile` 遇到 git 跟踪的、不在仓库顶层的 `AGENTS.md`，逐个给出 warning，说明 Claude Code 不加载它，其中的规定应当并入规定清单。statute 不把它们的内容编进全文。
+有 `CLAUDE.local.md` 时，Claude Code 也不加载任何子目录里的 `AGENTS.md`：工作目录在那个子目录时启动不加载，碰到那里的文件时也不加载，而没有 `CLAUDE.local.md` 时这两种情况它都会加载。子目录的规定对它就丢了，除非模型碰巧自己去读那个文件。所以有私有输出的仓库把这类规定写进规定清单，不放在子目录的 `AGENTS.md` 里。编译私有层时，`statute compile` 遇到 git 跟踪的、在 `statute.toml` 所在目录 (通常就是仓库顶层，也是写软链的地方) 之下的 `AGENTS.md`，逐个给出 warning，说明 Claude Code 不加载它，其中的规定应当并入规定清单。statute 不把它们的内容编进全文。
 
 git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都要各自跑一次 `statute compile`，写出 `.statute/` 和两个软链；`.git/info/exclude` 由一个 clone 的各个 worktree 共用。开 worktree 时跑它是调用方的事，不归 statute。软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
 私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
 
-各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；Pi 1.2.0 与 OpenCode 1.19.0 每种情况各跑了一次；Codex 的 32 KiB 依据它的文档和源码。在一个小任务的几次运行里，兜底那一行写成 `@` 路径时，Codex 和 Grok 各两次都读了它指向的文件，Claude Code 则当作导入加载了它；路径写在反引号里时，在别的都没加载全文的情况下，Claude Code (两次) 和 OpenCode (两次) 都读了全文，每次都是模型自己去读的。每次运行时用户自己的指令文件和 skill 都在，它们本身也催 agent 去找指令。布局本身用一份代替全文的文件测过：
+各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；Pi 1.2.0 与 OpenCode 1.19.0 每种情况各跑了一次；Codex 的 32 KiB 依据它的文档和源码。在一个小任务的几次运行里，兜底那一行写成 `@` 路径时，Codex 和 Grok 各两次都读了它指向的文件，Claude Code 则当作导入加载了它；换成同一类、但措辞与 statute 写的不同的一行 (路径写在反引号里，没有 `@`) 时，在别的都没加载全文的情况下，Claude Code (两次) 和 OpenCode (两次) 都读了全文，每次都是模型自己去读的。每次运行时用户自己的指令文件和 skill 都在，它们本身也催 agent 去找指令。布局本身用一份代替全文的文件测过：
 
 - 软链 `CLAUDE.local.md` 经 `.git/info/exclude` 忽略时，Grok 2 次运行 2 次都加载了；经 `.gitignore` 忽略时，2 次运行 2 次都跳过。
 - 仓库根目录有 `CLAUDE.local.md` 时，Claude Code 4 次运行 4 次都没有加载 `sub/AGENTS.md`，其中两次工作目录在 `sub/`，两次工作目录在根目录、改 `sub/` 里的一个文件；没有它时，两次对照运行都加载了，一次在启动时，一次在读了 `sub/` 里的文件之后。四次里有一次是模型自己去读了那个文件。
