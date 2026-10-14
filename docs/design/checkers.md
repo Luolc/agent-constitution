@@ -261,7 +261,7 @@ its inputs and its expected result.
   with its namespace as a rule cites it, and the checker rejects a fixture
   whose IDs do not resolve.
 - Before a release, every fixture runs, all happy and all redline, as
-  rule 5 (`fixture-outcomes`) requires. Static fixtures run in this
+  rule 26 (`fixture-runs`) requires. Static fixtures run in this
   repo's CI. Behavior fixtures (once they exist) need installed harnesses and
   model credentials, which this repo's CI does not have; they run on the
   private side, and a release needs the record of that run at the commit being
