@@ -1,0 +1,42 @@
+id = 38
+slug = "relayed-yes-reference"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["explicit-yes.verification", "explicit-yes.rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Relay a yes with a reference to the original message"
+zh = "转告同意时附原消息的引用"
+
+[text.statement]
+en = "When you relay a principal's yes to another agent, send with it a reference by which that agent can find the original message."
+zh = "向其他 agent 转告委托人的同意时，附上原消息的引用，让对方能据此找到原消息。"
+
+[text.reason]
+en = '''
+A relayed yes counts only once the acting agent has verified it against a record it can check for itself ({@constitution:explicit-yes.verification}), and how it is verified is set by the rules ({@constitution:explicit-yes.rules}); without a reference, the acting agent cannot find that record.
+'''
+zh = '''
+转告的同意，只有执行的 agent 依据它自己能查验的记录核实之后才算数 ({@constitution:explicit-yes.verification})，怎样核实由规定确定 ({@constitution:explicit-yes.rules})；没有引用，执行的 agent 就找不到这份记录。
+'''
+
+[text.verification]
+en = '''
+A reference is a link to the message, or the conversation it was sent in and its time. A summary or a quotation of the message is not a reference.
+
+Violated when an agent relays a principal's yes without a reference.
+'''
+zh = '''
+引用指消息的链接，或者原消息所在的会话和发送时间。对原消息的概述或者摘引不构成引用。
+
+agent 转告委托人的同意而没有附引用的，即为违反本规定。
+'''
+
+[translations]
+zh = "7d3ec435b8652858585e1920bee400d84e9d0a2fb2021165c5baffa5595ef39b"

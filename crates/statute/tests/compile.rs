@@ -5,7 +5,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, one_of, rule};
+use common::{domain, edit, one_of, rule};
+use statute::node::original_hash;
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 const CONSTITUTION_EN: &str = "# Constitution\n\nAgents follow it.\n";
@@ -285,4 +286,77 @@ fn headings_stop_at_level_six() {
     assert!(out.contains("\n###### Rule 105 (105)\n"), "{out}");
     assert!(out.contains("\n###### Rule 106 (106)\n"), "{out}");
     assert!(out.contains("\n###### Rule 107 (107)\n"), "{out}");
+}
+
+/// Rule 3 of `nodes`, with a Chinese translation.
+fn rule_3_in_chinese() -> String {
+    let hash = original_hash(&[
+        "Rule 3",
+        "Do the thing 3.",
+        "Because.\n",
+        "Violated when the thing is not done.",
+    ]);
+    let r = rule(3, 2, "");
+    let r = edit(r, "en = \"Rule 3\"", "en = \"Rule 3\"\nzh = \"规定 3\"");
+    let r = edit(
+        r,
+        "en = \"Do the thing 3.\"",
+        "en = \"Do the thing 3.\"\nzh = \"做事 3。\"",
+    );
+    let r = edit(r, "Because.\n'\'\'", "Because.\n'\'\'\nzh = \"因为。\"");
+    let r = edit(
+        r,
+        "en = \"Violated when the thing is not done.\"",
+        "en = \"Violated when the thing is not done.\"\nzh = \"没做即为违反。\"",
+    );
+    format!("{}\n[translations]\nzh = \"{hash}\"\n", r.1)
+}
+
+#[test]
+fn a_translation_is_used_in_its_language() {
+    let compile = "\n[compile]\nlang = \"zh\"\nagents-md = [\"statement\", \"reason\"]\n";
+    let dir = repo("translated", &manifest(compile));
+    std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
+    let out = compiled(&dir);
+    assert!(
+        out.contains("#### 规定 3 (3)\n\n做事 3。\n\n理由：因为。\n"),
+        "{out}"
+    );
+    // Rule 2 has no translation: its original.
+    assert!(out.contains("### Rule 2 (2)\n\nDo the thing 2.\n"), "{out}");
+    // In English, rule 3 is in its original.
+    let dir = repo("translated-en", &manifest(""));
+    std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
+    let out = compiled(&dir);
+    assert!(
+        out.contains("#### Rule 3 (3)\n\nDo the thing 3.\n"),
+        "{out}"
+    );
+}
+
+#[test]
+fn compile_replaces_a_generated_file_and_leaves_a_hand_written_one() {
+    let dir = repo("default-path", &manifest(""));
+    ok(&statute(&dir, &["lock"]));
+    // An earlier output of statute is replaced.
+    let old = format!("{}\n\nold\n", statute::compile::GENERATED);
+    std::fs::write(dir.join("AGENTS.md"), &old).unwrap();
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    let written = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    assert!(written.starts_with(statute::compile::GENERATED) && written.contains("# Rules\n"));
+    // A file written by hand is not.
+    let hand = "# hand-written\n\nKeep me.\n";
+    std::fs::write(dir.join("AGENTS.md"), hand).unwrap();
+    let run = statute(&dir, &["compile"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr.contains("AGENTS.md: error: not written by statute, so it is left as it is; write elsewhere with --output"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(
+        std::fs::read_to_string(dir.join("AGENTS.md")).unwrap(),
+        hand
+    );
 }

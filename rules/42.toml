@@ -1,0 +1,46 @@
+id = 42
+slug = "change-sources-not-copies"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["separate-instruction-changes", "independent-review", "no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Change instructions, skills and tool settings in their source, not in an installed copy"
+zh = "指令、skill 和工具配置改源文件，不改已安装的副本"
+
+[text.statement]
+en = "Change instructions, skills and agent tool settings in their source, through review, never in an installed copy."
+zh = "指令、skill 和 agent 工具的配置，改源文件并经过审查，不改已安装的副本。"
+
+[text.reason]
+en = '''
+A change to instructions that bind agents is proposed and reviewed as a change of its own ({@constitution:separate-instruction-changes}, {@constitution:independent-review}). An edit to an installed copy skips that review, and makes the copy differ from its source, so two places say different things until the next install silently undoes the edit ({@constitution:no-restating}).
+'''
+zh = '''
+约束 agent 的指令，改动要作为单独的变更提出并经过审查 ({@constitution:separate-instruction-changes}、{@constitution:independent-review})。就地修改已安装的副本，跳过了这道审查，还让副本和源文件不一致：在下一次安装悄悄覆盖这处修改之前，两个地方说的不是一回事 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+The change goes into the source, through review, and the copy is installed again from there.
+
+When unsure whether a file is an installed copy, treat it as one.
+
+Violated when an agent edits an installed copy of instructions, skills or agent tool settings in place.
+'''
+zh = '''
+改动写入源文件，经过审查，再从源文件重新安装副本。
+
+不确定某个文件是否属于已安装的副本的，按属于处理。
+
+agent 就地修改指令、skill 或 agent 工具配置的已安装副本的，即为违反本规定。
+'''
+
+[translations]
+zh = "2d0fe1c381f362b54379b73a8c2adf7c75b7172cf010e7b013db8286504a2d0d"

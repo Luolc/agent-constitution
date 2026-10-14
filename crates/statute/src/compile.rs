@@ -12,6 +12,11 @@ use crate::project::Project;
 
 pub const FILE: &str = "AGENTS.md";
 
+/// The first line of every file `compile` writes; a file that does not
+/// start with it was written by hand, and is never overwritten.
+pub const GENERATED: &str =
+    "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->";
+
 /// The deepest heading Markdown has; deeper levels of the tree stay at it.
 const DEEPEST: usize = 6;
 
@@ -84,10 +89,7 @@ pub fn compile(project: &Project) -> Result<String, String> {
 
     let w = words(lang);
     let mut out = String::new();
-    let _ = writeln!(
-        out,
-        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n"
-    );
+    let _ = writeln!(out, "{GENERATED}\n");
     let (edition, revision, name, path) = (
         &m.edition,
         &project.revision,

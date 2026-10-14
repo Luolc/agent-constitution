@@ -772,7 +772,10 @@ and a rule set with its lock file, and writes:
 
 The first version writes the `AGENTS.md` only: `statute compile` writes
 it next to `statute.toml`, or to another file with `--output`, and only
-when the lock file is what `statute lock` would write now. It holds, in
+when the lock file is what `statute lock` would write now. It replaces
+only a file it wrote itself, whose first line is its comment that the
+file is generated: a file written by hand is left as it is, and the
+command fails. It holds, in
 this order: a comment that the file is generated; a line with the
 constitution's edition, revision and source; the constitution's version
 for agents in the rule set's language, the file
