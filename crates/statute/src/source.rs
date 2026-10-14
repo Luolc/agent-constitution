@@ -243,17 +243,50 @@ impl Sources {
         }
     }
 
+    /// A node's parent: in its own source, or for a rule, a domain of
+    /// another source.
     pub fn parent(&self, key: &Key) -> Option<Key> {
-        let parent = self.get(key)?.parent?;
-        Some(Key::new(&key.source, parent))
+        let node = self.get(key)?;
+        match (&node.parent, &node.foreign_parent) {
+            (Some(parent), _) => Some(Key::new(&key.source, *parent)),
+            (None, Some(r)) => Some(r.key(&key.source)),
+            (None, None) => None,
+        }
     }
 
-    /// The children of a node, in order of key.
+    /// The children of a node, in order of key: those of its own source,
+    /// and the rules of other sources hung under it.
     pub fn children(&self, key: &Key) -> Vec<Key> {
-        self.source(&key.source)
+        let mut out: Vec<Key> = self
+            .source(&key.source)
             .into_iter()
             .flat_map(|s| s.children(key.id).map(|c| Key::new(&s.name, c.id)))
-            .collect()
+            .collect();
+        for s in self.0.iter().filter(|s| s.name != key.source) {
+            out.extend(
+                s.nodes
+                    .values()
+                    .filter(|n| {
+                        n.foreign_parent.as_ref().map(|r| r.key(&s.name)).as_ref() == Some(key)
+                    })
+                    .map(|n| Key::new(&s.name, n.id)),
+            );
+        }
+        out.sort();
+        out
+    }
+
+    /// The domain or subdomain nearest above a node, or the node itself
+    /// when it is one.
+    pub fn domain(&self, key: &Key) -> Option<Key> {
+        let mut at = self.place(key);
+        for _ in 0..=self.0.iter().map(|s| s.nodes.len()).sum::<usize>() {
+            if self.get(&at)?.kind == Kind::Domain {
+                return Some(at);
+            }
+            at = self.parent(&self.place(&at))?;
+        }
+        None
     }
 
     /// The nodes a rule lists in `requires`.
@@ -277,11 +310,14 @@ impl Sources {
     /// above it that its source has. A rule that overrides another stands
     /// in that one's place.
     pub fn root(&self, key: &Key) -> Key {
-        let key = self.place(key);
-        match self.source(&key.source) {
-            Some(s) => Key::new(&s.name, s.root(key.id)),
-            None => key,
+        let mut at = self.place(key);
+        for _ in 0..=self.0.iter().map(|s| s.nodes.len()).sum::<usize>() {
+            match self.parent(&at) {
+                Some(parent) if self.get(&parent).is_some() => at = self.place(&parent),
+                _ => break,
+            }
         }
+        at
     }
 
     /// The rule a rule overrides.
@@ -343,6 +379,20 @@ impl Sources {
                             );
                         }
                     }
+                }
+                if let Some(r) = &node.foreign_parent {
+                    let what = format!("`parent` names {}", show_ref(r));
+                    self.check_ref(source, r, &what, &file, diags, |(_, target), file, diags| {
+                        if target.kind != Kind::Domain {
+                            diags.error(
+                                file,
+                                format!(
+                                    "{what}, a {}; a rule's parent in another source is a domain or a subdomain",
+                                    target.kind.name()
+                                ),
+                            );
+                        }
+                    });
                 }
                 if let Some(r) = &node.overrides {
                     let what = format!("`overrides` names {}", show_ref(r));
@@ -550,7 +600,11 @@ impl Sources {
         if source.public && !target_source.public {
             diags.error(
                 file,
-                format!("{what}, a rule of the private {}; a public rule may name only rules of public sources", target_source.described()),
+                format!(
+                    "{what}, a {} of the private {}; a public rule may name only rules of public sources",
+                    target.kind.name(),
+                    target_source.described()
+                ),
             );
         }
         more((target_source, target), file, diags);
@@ -598,6 +652,30 @@ impl Checker<'_> {
                     &file,
                     format!("parent {parent} does not exist in this source"),
                 );
+            }
+            // A subdomain's parent is a domain with no parent: two levels.
+            if node.kind == Kind::Domain
+                && let Some(parent) = node.parent.and_then(|p| source.get(p))
+                && parent.id != node.id
+            {
+                match (parent.kind, parent.parent) {
+                    (Kind::Domain, None) => {}
+                    (Kind::Domain, Some(above)) => self.diags.error(
+                        &file,
+                        format!(
+                            "parent {} is a subdomain already, under {above}; domains nest two levels at most, so name a domain with no parent",
+                            parent.id
+                        ),
+                    ),
+                    (kind, _) => self.diags.error(
+                        &file,
+                        format!(
+                            "parent {} is a {}; a domain's parent is a domain",
+                            parent.id,
+                            kind.name()
+                        ),
+                    ),
+                }
             }
             for &next in &node.superseded_by {
                 match source.get(next) {
@@ -851,9 +929,13 @@ impl Checker<'_> {
 
     fn check_crossing_requirements(&mut self) {
         let source = self.source;
-        // A rule that overrides another stands in another source's tree,
-        // which this source cannot see.
-        for node in source.nodes.values().filter(|n| n.overrides.is_none()) {
+        // A rule that overrides another, or hangs under a domain of
+        // another source, stands in a tree this source cannot see.
+        for node in source
+            .nodes
+            .values()
+            .filter(|n| n.overrides.is_none() && n.foreign_parent.is_none())
+        {
             let Some(rule) = &node.rule else { continue };
             for r in &rule.requires {
                 let Ref::Local(target) = *r else { continue };
