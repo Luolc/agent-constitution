@@ -14,7 +14,11 @@ import subprocess
 
 @functools.cache
 def local_vars() -> frozenset[str]:
-  """The variables `git rev-parse --local-env-vars` lists."""
+  """List the variables `git rev-parse --local-env-vars` names.
+
+  Returns:
+    The names of git's repository-local environment variables.
+  """
   return frozenset(
     subprocess.run(
       ["git", "rev-parse", "--local-env-vars"],
@@ -26,5 +30,9 @@ def local_vars() -> frozenset[str]:
 
 
 def clean() -> dict[str, str]:
-  """os.environ, read at each call, without the local variables of git."""
+  """Copy os.environ without the local variables of git.
+
+  Returns:
+    os.environ, read at each call, without the local variables of git.
+  """
   return {k: v for k, v in os.environ.items() if k not in local_vars()}

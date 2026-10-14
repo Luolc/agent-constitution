@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Build constitution/constitution.<lang>.md and the version for agents,
-constitution/constitution.<lang>.agent.md, from the TOML sources.
+"""Build the constitution and its version for agents from the TOML sources.
+
+The outputs are constitution/constitution.<lang>.md and the version for
+agents, constitution/constitution.<lang>.agent.md.
 
 Sources: constitution/index.toml (status, revision, languages, title and
 front text); constitution/articles/<NN>-<id>/, one directory per article,
@@ -31,13 +33,13 @@ error.
 """
 
 import argparse
+from collections.abc import Callable, Iterator
+from dataclasses import dataclass, field
+from pathlib import Path
 import re
 import subprocess
 import sys
 import tomllib
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from pathlib import Path
 
 import git_env
 
@@ -56,7 +58,10 @@ MARK = re.compile(
 ARTICLE_NAME = re.compile(r"(0[1-9]|[1-9][0-9])-(.+)")
 SECTION_NAME = re.compile(r"(0[1-9]|[1-9][0-9])([a-z]?)-(.+)")
 ARTICLE_NAME_SHAPE = "two digits from 01, a hyphen and the ID (04-<id>)"
-SECTION_NAME_SHAPE = "two digits from 01, an optional lowercase letter, a hyphen and the ID (02-<id>, 02a-<id>)"
+SECTION_NAME_SHAPE = (
+  "two digits from 01, an optional lowercase letter, a hyphen and the ID"
+  " (02-<id>, 02a-<id>)"
+)
 NUMBER = re.compile(r"([1-9][0-9]*)([a-z]?)")
 NUMBER_SHAPE = "an integer with an optional letter suffix (2, 2a)"
 MONTH = re.compile(r"([0-9]{4})-(0[1-9]|1[0-2])")
@@ -94,6 +99,14 @@ EN_MONTHS = [
 
 
 def roman(n: int) -> str:
+  """Return n in Roman numerals.
+
+  Args:
+    n: the number, from 1.
+
+  Returns:
+    The numeral, such as `XIV`.
+  """
   out = ""
   for value, symbol in ROMAN:
     count, n = divmod(n, value)
@@ -102,6 +115,17 @@ def roman(n: int) -> str:
 
 
 def zh_number(n: int) -> str:
+  """Return n in Chinese numerals, for 1 to 99.
+
+  Args:
+    n: the number.
+
+  Returns:
+    The numeral, such as 十四.
+
+  Raises:
+    ValueError: when n is outside 1 to 99.
+  """
   if not 0 < n < 100:
     raise ValueError(f"no Chinese numeral rendering for {n}")
   tens, ones = divmod(n, 10)
@@ -115,36 +139,67 @@ def zh_number(n: int) -> str:
 
 
 def zh_suffix(suffix: str) -> str:
-  """The letter suffix of a number in Chinese: a is 之一, b is 之二, ..."""
+  """Return the letter suffix of a number in Chinese.
+
+  a is 之一, b is 之二, and so on.
+
+  Args:
+    suffix: the letter, or "" for none.
+
+  Returns:
+    The Chinese suffix, or "" for none.
+  """
   return f"之{zh_number(ord(suffix) - ord('a') + 1)}" if suffix else ""
 
 
 @dataclass(frozen=True)
 class Language:
-  """Everything that differs between output languages. Adding a language
-  means adding one entry to LANGUAGES and listing it in index.toml."""
+  """Everything that differs between output languages.
 
-  header: str  # {status}, {revision}
-  legend: str  # follows the header when a provision is marked
-  agent_header: str  # {status}, {revision}: the version for agents
-  omitted: str  # in place of a marked provision's text, for agents
-  agent_front: str  # {opening}: in place of the front text, for agents
-  agent_draft: str  # the opening while a draft
-  agent_active: str  # the opening once active
-  draft: str  # in the title's parentheses while a draft
-  edition: str  # {edition}, in the title's parentheses once active
-  article_heading: str  # {anchor}, {number}, {title}
-  repealed_article_heading: str  # {anchor}, {number}, {note}
-  article_ref: str  # {number}
-  section_ref: str  # {article}, {section}
+  Adding a language means adding one entry to LANGUAGES and listing it in
+  index.toml.
+
+  Attributes:
+    header: {status}, {revision}.
+    legend: follows the header when a provision is marked.
+    agent_header: {status}, {revision}: the version for agents.
+    omitted: in place of a marked provision's text, for agents.
+    agent_front: {opening}: in place of the front text, for agents.
+    agent_draft: the opening while a draft.
+    agent_active: the opening once active.
+    draft: in the title's parentheses while a draft.
+    edition: {edition}, in the title's parentheses once active.
+    article_heading: {anchor}, {number}, {title}.
+    repealed_article_heading: {anchor}, {number}, {note}.
+    article_ref: {number}.
+    section_ref: {article}, {section}.
+    article_number: number and suffix to the article's number.
+    section_number: number and suffix to the section's number.
+    item_marker: starts an item's list line, after its anchor.
+    item_ref: follows the section's citation.
+    connectors: between item citations rendered short.
+    repealed_note: year, month.
+  """
+
+  header: str
+  legend: str
+  agent_header: str
+  omitted: str
+  agent_front: str
+  agent_draft: str
+  agent_active: str
+  draft: str
+  edition: str
+  article_heading: str
+  repealed_article_heading: str
+  article_ref: str
+  section_ref: str
   article_number: Callable[[int, str], str]
   section_number: Callable[[int, str], str]
-  item_marker: Callable[
-    [int, str], str
-  ]  # starts an item's list line, after its anchor
-  item_ref: Callable[[int, str], str]  # follows the section's citation
-  connectors: tuple[str, ...]  # between item citations rendered short
-  repealed_note: Callable[[int, int], str]  # year, month
+  item_marker: Callable[[int, str], str]
+  item_ref: Callable[[int, str], str]
+  connectors: tuple[str, ...]
+  repealed_note: Callable[[int, int], str]
 
 
 LANGUAGES = {
@@ -156,9 +211,9 @@ LANGUAGES = {
       " Status: {status}. Revision: {revision}. Language: English."
     ),
     legend=(
-      " \\* Background for people: where this constitution comes from, how it is organized"
-      " and how it is amended. The agent version, `constitution/constitution.en.agent.md`,"
-      " omits these parts."
+      " \\* Background for people: where this constitution comes from, how it"
+      " is organized and how it is amended. The agent version,"
+      " `constitution/constitution.en.agent.md`, omits these parts."
     ),
     agent_header=(
       "Generated from `constitution/index.toml` and `constitution/articles/`"
@@ -169,13 +224,20 @@ LANGUAGES = {
     ),
     omitted="(see the full text)",
     agent_front=(
-      "{opening}; it leaves out the preamble and the text of the provisions written for"
-      " human readers, on how this constitution is organized and amended, keeping only a"
-      " pointer to the full version in their place, so before changing this constitution or"
-      " the tools that build it, read the full version, `constitution/constitution.en.md`."
+      "{opening}; it leaves out the preamble and the text of the provisions"
+      " written for human readers, on how this constitution is organized and"
+      " amended, keeping only a pointer to the full version in their place,"
+      " so before changing this constitution or the tools that build it,"
+      " read the full version, `constitution/constitution.en.md`."
     ),
-    agent_draft="This is the version of this constitution for agents, and the constitution is a draft not yet in force",
-    agent_active="This is the version of this constitution for agents, and every agent must follow it",
+    agent_draft=(
+      "This is the version of this constitution for agents,"
+      " and the constitution is a draft not yet in force"
+    ),
+    agent_active=(
+      "This is the version of this constitution for agents,"
+      " and every agent must follow it"
+    ),
     draft="Draft",
     edition="{edition} Edition",
     article_heading="## {anchor}Article {number}. {title}",
@@ -201,13 +263,18 @@ LANGUAGES = {
     ),
     agent_header=(
       "本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和"
-      " `constitution/articles/` 生成，是给 agent 的版本，不收写给人读的条款的正文；"
-      "不要手改，改源文件后重新生成。状态：{status}。修订号：{revision}。语言：中文。"
+      " `constitution/articles/` 生成，是给 agent 的版本，"
+      "不收写给人读的条款的正文；"
+      "不要手改，改源文件后重新生成。"
+      "状态：{status}。修订号：{revision}。语言：中文。"
     ),
     omitted="(见完整版)",
     agent_front=(
-      "{opening}；不含序言；写给人读、讲本宪法怎样编排和修改的条款不收正文，只留一句「见完整版」；"
-      "修改本宪法或编译它的工具时，先读完整版 `constitution/constitution.zh.md`。"
+      "{opening}；不含序言；"
+      "写给人读、讲本宪法怎样编排和修改的条款不收正文，"
+      "只留一句「见完整版」；"
+      "修改本宪法或编译它的工具时，"
+      "先读完整版 `constitution/constitution.zh.md`。"
     ),
     agent_draft="这是本宪法给 agent 读的版本，本宪法现为草案，尚未生效",
     agent_active="这是本宪法给 agent 读的版本，每个 agent 都必须遵守它",
@@ -271,20 +338,43 @@ MAINTAINERS = "maintainers"
 
 
 class Errors(list):
+  """The errors found, each a line `path:line: check N: message`."""
+
   def add(self, path: Path, line: int, check: int, message: str) -> None:
+    """Record one error.
+
+    Args:
+      path: the file.
+      line: its line, from 1.
+      check: the number of the check that failed.
+      message: what is wrong.
+    """
     self.append(f"{path}:{line}: check {check}: {message}")
 
 
 @dataclass
 class Doc:
-  """One parsed TOML file with its text, for locating errors by line."""
+  """One parsed TOML file with its text, for locating errors by line.
+
+  Attributes:
+    path: the file, relative to the checkout.
+    data: the parsed TOML.
+    text: the file's text.
+  """
 
   path: Path
   data: dict
   text: str
 
   def line(self, *needles: str) -> int:
-    """The first line holding the first needle found, else 1."""
+    """Return the first line holding the first needle found, else 1.
+
+    Args:
+      *needles: the strings to look for, in order.
+
+    Returns:
+      The line number, from 1.
+    """
     for needle in needles:
       for n, line in enumerate(self.text.split("\n"), start=1):
         if needle in line:
@@ -294,12 +384,24 @@ class Doc:
 
 @dataclass
 class Item:
+  """One list item of a section.
+
+  Attributes:
+    id: its ID.
+    number: its number, `2` or `2a`.
+    status: draft, active or repealed.
+    repealed: the month it was repealed, if it was.
+    content: its text, by language.
+    section: the section holding it.
+    omitted: whether the version for agents leaves out its text.
+  """
+
   id: str
   number: str
   status: str
   repealed: str | None
   content: dict
-  section: "Section"
+  section: Section
   omitted: bool = False
 
   @property
@@ -310,6 +412,17 @@ class Item:
 
 @dataclass
 class Article:
+  """One article.
+
+  Attributes:
+    doc: its article.toml.
+    id: its ID.
+    number: its number, from the directory name.
+    repealed: the month it was repealed, if it was.
+    title: its title, by language.
+    intro: its intro, by language, if it has one.
+  """
+
   doc: Doc
   id: str
   number: str
@@ -320,6 +433,20 @@ class Article:
 
 @dataclass
 class Section:
+  """One section.
+
+  Attributes:
+    doc: its file.
+    id: its ID.
+    article: the number of its article.
+    number: its number, from the file name.
+    status: draft, active or repealed.
+    repealed: the month it was repealed, if it was.
+    content: its text, by language.
+    items: its list items.
+    omitted: whether the version for agents leaves out its text.
+  """
+
   doc: Doc
   id: str
   article: str
@@ -333,6 +460,17 @@ class Section:
 
 @dataclass
 class Rule:
+  """One general rule.
+
+  Attributes:
+    doc: its file.
+    id: its ID.
+    status: draft, active or repealed.
+    authority: the constitution provisions it rests on.
+    title: its title, by language.
+    content: its text, by language.
+  """
+
   doc: Doc
   id: str
   status: str
@@ -343,26 +481,40 @@ class Rule:
 
 @dataclass
 class Sources:
+  """Everything read from the sources.
+
+  Attributes:
+    index: constitution/index.toml.
+    languages: the languages of index.toml, in order.
+    articles: the articles, in order.
+    sections: the sections, in order.
+    rules: the general rules.
+    retired: rules/retired-ids.txt, in order.
+    provisions: constitution citation -> article | section | item.
+    repealed: the constitution citations that are repealed.
+  """
+
   index: Doc
   languages: list[str]
   articles: list[Article]
   sections: list[Section]
   rules: list[Rule]
-  retired: list[str]  # rules/retired-ids.txt, in order
-  provisions: dict = field(
-    default_factory=dict
-  )  # constitution citation -> article | section | item
-  repealed: set = field(
-    default_factory=set
-  )  # constitution citations that are repealed
+  retired: list[str]
+  provisions: dict = field(default_factory=dict)
+  repealed: set = field(default_factory=set)
 
   @property
   def items(self) -> list[Item]:
+    """Every list item of every section, in order."""
     return [item for section in self.sections for item in section.items]
 
-  def texts(self):
-    """Every multilingual text: (doc, field name, lang -> text, source
-    is a rule, source is repealed)."""
+  def texts(self) -> Iterator[tuple[Doc, str, dict, bool, bool]]:
+    """Yield every multilingual text.
+
+    Yields:
+      (doc, field name, lang -> text, source is a rule, source is
+      repealed).
+    """
     yield self.index, "title", self.index.data["title"], False, False
     yield self.index, "front", self.index.data["front"], False, False
     for a in self.articles:
@@ -379,18 +531,44 @@ class Sources:
 
 
 def number_key(number: str) -> tuple:
+  """Return the sort key of a number, `2a` as (2, "a").
+
+  Args:
+    number: a number checked against NUMBER.
+
+  Returns:
+    The key.
+  """
   m = NUMBER.fullmatch(number)
+  assert m is not None
   return (int(m.group(1)), m.group(2))
 
 
 def name_number(digits: str, suffix: str = "") -> str:
-  """The number a name prefix stands for: `02a` is 2a."""
+  """Return the number a name prefix stands for: `02a` is 2a.
+
+  Args:
+    digits: the two digits.
+    suffix: the letter, if any.
+
+  Returns:
+    The number.
+  """
   return f"{int(digits)}{suffix}"
 
 
 def citations(text: str) -> list[str]:
-  """The citations in the text as written, with their namespace if any:
-  `leaks`, `must-ask.capital`, `constitution:leaks`, `rule:x`."""
+  """Return the citations in the text as written.
+
+  With their namespace if any: `leaks`, `must-ask.capital`,
+  `constitution:leaks`, `rule:x`.
+
+  Args:
+    text: the source text.
+
+  Returns:
+    The citations, in order.
+  """
   return [
     (f"{m.group(1)}:" if m.group(1) else "") + m.group(2)
     for m in MARK.finditer(text)
@@ -401,6 +579,16 @@ def citations(text: str) -> list[str]:
 
 
 def read_toml(root: Path, path: Path, errors: Errors) -> Doc | None:
+  """Read and parse one TOML file; on failure, record check 1.
+
+  Args:
+    root: the checkout.
+    path: the file, relative to root.
+    errors: where errors go.
+
+  Returns:
+    The parsed file, or None when it cannot be read or parsed.
+  """
   try:
     text = (root / path).read_text(encoding="utf-8")
     data = tomllib.loads(text)
@@ -424,9 +612,22 @@ def check_keys(
   errors: Errors,
   where: str = "",
 ) -> bool:
-  """The table has the schema's keys, no others, with the right types;
-  language tables have exactly the languages. Returns True when clean.
-  The text of the language tables is normalized later by `strip_texts`."""
+  """Check that the table has the schema's keys, no others, of their types.
+
+  Language tables have exactly the languages. The text of the language
+  tables is normalized later by `strip_texts`.
+
+  Args:
+    doc: the file holding the table.
+    table: the table.
+    schema: key -> type, as the schemas above.
+    languages: the languages of index.toml, or None before they are known.
+    errors: where errors go.
+    where: the table's name in messages, "" for the file's top level.
+
+  Returns:
+    True when clean.
+  """
   before = len(errors)
   label = f"`{where}` " if where else ""
   for key, kind in schema.items():
@@ -453,7 +654,8 @@ def check_keys(
           doc.path,
           line,
           1,
-          f"{label}`{name}` has languages {list(value)}, index.toml lists {languages}",
+          f"{label}`{name}` has languages {list(value)},"
+          f" index.toml lists {languages}",
         )
       elif name == "title" and any(
         "\n" in text.strip("\n") for text in value.values()
@@ -474,8 +676,14 @@ def check_keys(
 
 
 def strip_texts(table: dict, schema: dict) -> None:
-  """Drop the newline after the opening and before the closing quotes of
-  each text of the table's language tables."""
+  """Drop the newlines that open and close each text of the language tables.
+
+  That is, the newline after the opening and before the closing quotes.
+
+  Args:
+    table: the table, changed in place.
+    schema: its schema.
+  """
   for key, kind in schema.items():
     name = key.rstrip("?")
     if kind == LANG and name in table:
@@ -486,8 +694,18 @@ def strip_texts(table: dict, schema: dict) -> None:
 def check_repealed(
   doc: Doc, table: dict, status: str | None, errors: Errors, where: str = ""
 ) -> None:
-  """`repealed` is a year-month and present exactly when the status says
-  repealed (for articles: present only when repealed)."""
+  """Check that `repealed` is a year-month, there when the status says so.
+
+  It is present exactly when the status says repealed (for articles:
+  present only when repealed).
+
+  Args:
+    doc: the file holding the table.
+    table: the article, section or item.
+    status: its status, None for an article.
+    errors: where errors go.
+    where: the table's name in messages, "" for the file's top level.
+  """
   label = f"`{where}` " if where else ""
   value = table.get("repealed")
   line = doc.line("repealed =")
@@ -508,8 +726,16 @@ def check_repealed(
     )
 
 
-def load(root: Path, errors: Errors) -> Sources | None:
-  """Check 1: read every source and check its format."""
+def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
+  """Check 1: read every source and check its format.
+
+  Args:
+    root: the checkout.
+    errors: where errors go.
+
+  Returns:
+    The sources, or None when any error was found.
+  """
   index = read_toml(root, INDEX, errors)
   if not index or not check_keys(index, index.data, INDEX_SCHEMA, None, errors):
     return None
@@ -532,7 +758,8 @@ def load(root: Path, errors: Errors) -> Sources | None:
         INDEX,
         index.line("languages ="),
         1,
-        f"no rendering for language `{lang}`; add it to LANGUAGES in {Path(__file__).name}",
+        f"no rendering for language `{lang}`;"
+        f" add it to LANGUAGES in {Path(__file__).name}",
       )
   index_status = index.data["status"]
   if index_status not in INDEX_STATUS:
@@ -612,8 +839,16 @@ def load(root: Path, errors: Errors) -> Sources | None:
     return doc
 
   def entries(directory: Path) -> list[Path]:
-    """What the directory holds, skipping hidden names (`.DS_Store`,
-    editor swap files)."""
+    """Return what the directory holds, skipping hidden names.
+
+    Hidden names are `.DS_Store`, editor swap files and the like.
+
+    Args:
+      directory: the directory, relative to root.
+
+    Returns:
+      Its entries, relative to root, sorted.
+    """
     return sorted(
       p.relative_to(root)
       for p in (root / directory).glob("*")
@@ -770,10 +1005,16 @@ def load(root: Path, errors: Errors) -> Sources | None:
 # Check 2: IDs.
 
 
-def check_ids(src: Sources, errors: Errors) -> None:
-  """Every ID has the format; article and section IDs are unique in the
-  constitution, item IDs in their section, rule IDs among the rules and
-  the retired rule IDs."""
+def check_ids(src: Sources, errors: Errors) -> None:  # noqa: C901
+  """Check 2: every ID has the format and is unique where it must be.
+
+  Article and section IDs are unique in the constitution, item IDs in
+  their section, rule IDs among the rules and the retired rule IDs.
+
+  Args:
+    src: the sources.
+    errors: where errors go.
+  """
 
   def unique_ids(declared: list) -> None:
     seen = {}
@@ -835,8 +1076,14 @@ def check_ids(src: Sources, errors: Errors) -> None:
 
 
 def check_structure(src: Sources, errors: Errors) -> None:
-  """Numbers are unique in their scope; a repealed article has only
-  repealed sections."""
+  """Check 3: numbers are unique in their scope.
+
+  A repealed article has only repealed sections.
+
+  Args:
+    src: the sources.
+    errors: where errors go.
+  """
   unique(errors, [(a.doc, a.number, "article") for a in src.articles])
   for a in src.articles:
     own = [s for s in src.sections if s.article == a.id]
@@ -855,6 +1102,12 @@ def check_structure(src: Sources, errors: Errors) -> None:
 
 
 def unique(errors: Errors, numbered: list) -> None:
+  """Check that no number repeats in one scope.
+
+  Args:
+    errors: where errors go.
+    numbered: (doc, number, what) for each provision of the scope.
+  """
   seen = {}
   for doc, number, what in numbered:
     k = number_key(number)
@@ -873,6 +1126,12 @@ def unique(errors: Errors, numbered: list) -> None:
 
 
 def check_languages(src: Sources, errors: Errors) -> None:
+  """Check 4: each language of a text cites what the first language cites.
+
+  Args:
+    src: the sources.
+    errors: where errors go.
+  """
   first = src.languages[0]
   for doc, name, texts, _, _ in src.texts():
     refs = {lang: set(citations(text)) for lang, text in texts.items()}
@@ -890,14 +1149,29 @@ def check_languages(src: Sources, errors: Errors) -> None:
 # Check 5: references.
 
 
-def check_refs(src: Sources, errors: Errors) -> None:
-  """The constitution cites itself without a namespace; a rule cites with
+def check_refs(src: Sources, errors: Errors) -> None:  # noqa: C901
+  """Check 5: every citation and authority resolves to an unrepealed target.
+
+  The constitution cites itself without a namespace; a rule cites with
   `constitution:` or `rule:`; every citation and authority resolves to a
-  provision or rule that is not repealed."""
+  provision or rule that is not repealed.
+
+  Args:
+    src: the sources.
+    errors: where errors go.
+  """
   rules = {r.id: r for r in src.rules}
 
   def problem(ref: str, in_rule: bool) -> str:
-    """What is wrong with the citation, or "" when nothing is."""
+    """Return what is wrong with the citation, or "" when nothing is.
+
+    Args:
+      ref: the citation as written.
+      in_rule: whether a rule cites it.
+
+    Returns:
+      The problem, or "".
+    """
     namespace, _, target = ref.rpartition(":")
     if not in_rule and namespace:
       return f"{ref}; the constitution cites only itself, without a namespace"
@@ -911,7 +1185,7 @@ def check_refs(src: Sources, errors: Errors) -> None:
       return f"undefined {ref}"
     return f"repealed {ref}" if target in src.repealed else ""
 
-  for doc, name, texts, in_rule, repealed in src.texts():
+  for doc, _name, texts, in_rule, repealed in src.texts():
     if repealed:
       continue
     for text in texts.values():
@@ -949,26 +1223,37 @@ OMITTED_MARK = '<sup class="omitted">*</sup>'
 FRONT_HEADING = re.compile(r"^#{2,6} .+$", re.M)
 
 
-def render(lang: str, src: Sources, agent: bool = False) -> str:
-  """The constitution in one language: the full version, or with `agent`
-  the version for agents, without anchors and links, its citations as
-  plain text, a note of its own in place of the front text, and each
-  provision marked for maintainers as its number and a note."""
-  L = LANGUAGES[lang]
+def render(lang: str, src: Sources, agent: bool = False) -> str:  # noqa: C901
+  """Return the constitution in one language.
+
+  The full version, or with `agent` the version for agents, without
+  anchors and links, its citations as plain text, a note of its own in
+  place of the front text, and each provision marked for maintainers as
+  its number and a note.
+
+  Args:
+    lang: the language.
+    src: the sources.
+    agent: whether to render the version for agents.
+
+  Returns:
+    The Markdown text.
+  """
+  lng = LANGUAGES[lang]
   # short: a section's or an item's citation without its article or
   # section; parent: the article or section that short leaves out.
   labels, numbers, short, parent = {}, {}, {}, {}
   for a in src.articles:
-    numbers[a.id] = L.article_number(*number_key(a.number))
-    labels[a.id] = L.article_ref.format(number=numbers[a.id])
+    numbers[a.id] = lng.article_number(*number_key(a.number))
+    labels[a.id] = lng.article_ref.format(number=numbers[a.id])
   for s in src.sections:
-    numbers[s.id] = short[s.id] = L.section_number(*number_key(s.number))
-    labels[s.id] = L.section_ref.format(
+    numbers[s.id] = short[s.id] = lng.section_number(*number_key(s.number))
+    labels[s.id] = lng.section_ref.format(
       article=labels[s.article], section=numbers[s.id]
     )
     parent[s.id] = s.article
     for i in s.items:
-      short[i.ref] = L.item_ref(*number_key(i.number))
+      short[i.ref] = lng.item_ref(*number_key(i.number))
       labels[i.ref] = labels[s.id] + short[i.ref]
       parent[i.ref] = s.id
 
@@ -977,23 +1262,35 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:
   def anchor(ref: str) -> str:
     return "" if agent else f'<a id="{ref}"></a>'
 
-  def note(month: str) -> str:
+  def note(month: str | None) -> str:
+    # Called only on a repealed provision, which check 1 gave a month.
+    assert month is not None
     m = MONTH.fullmatch(month)
-    return L.repealed_note(int(m.group(1)), int(m.group(2)))
+    assert m is not None
+    return lng.repealed_note(int(m.group(1)), int(m.group(2)))
 
   def refs(text: str) -> str:
-    """Each citation as a link to its provision's anchor, its label as
+    """Return the text with each citation rendered.
+
+    Each citation becomes a link to its provision's anchor, its label as
     the link text, except that a section or item citation joined by a
     connector to the citation of another section of the same article,
     or another item of the same section, just before it renders short:
     `Art. IV §1 and §2`, `Art. IV §1(2) or (4)`. Reference links, not
     inline ones: limae reads the `)` of an inline link followed by a
-    Chinese character as a parenthesis that needs a space after it."""
+    Chinese character as a parenthesis that needs a space after it.
+
+    Args:
+      text: the source text.
+
+    Returns:
+      The rendered text.
+    """
     out, end, previous = [], 0, None
     for m in MARK.finditer(text):
       ref, between = m.group(2), text[end : m.start()]
       joined = (
-        ref in parent and parent[ref] == previous and between in L.connectors
+        ref in parent and parent[ref] == previous and between in lng.connectors
       )
       label = short[ref] if joined else labels[ref]
       if not agent:
@@ -1004,23 +1301,33 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:
     return "".join(out) + text[end:]
 
   def indented(first: str, text: str, indent: str) -> list[str]:
-    """A list line `first` + the text's first line, the other lines
-    indented under it."""
+    """Return a list line `first` + the text's first line, then the rest.
+
+    The other lines are indented under it.
+
+    Args:
+      first: the start of the list line.
+      text: the source text.
+      indent: the indent of the other lines.
+
+    Returns:
+      The lines.
+    """
     head, *tail = refs(text).split("\n")
     return [first + head, *(indent + t if t else t for t in tail)]
 
   def section_entries(s: Section) -> list[list[str]]:
     number = f"{SECTION}{anchor(s.id)}**{numbers[s.id]}**"
     if s.omitted and agent:
-      return [[f"{number} {L.omitted}"]]
+      return [[f"{number} {lng.omitted}"]]
     mark = OMITTED_MARK if s.omitted else ""
     entries = [indented(f"{number}{mark} ", s.content[lang], INDENT)]
     for i in sorted(s.items, key=lambda i: number_key(i.number)):
-      marker = anchor(i.ref) + L.item_marker(*number_key(i.number))
+      marker = anchor(i.ref) + lng.item_marker(*number_key(i.number))
       if i.status == "repealed":
         entries.append([f"{ITEM}{marker.rstrip()} ({note(i.repealed)})"])
       elif i.omitted and agent:
-        entries.append([f"{ITEM}{marker}{L.omitted}"])
+        entries.append([f"{ITEM}{marker}{lng.omitted}"])
       elif i.omitted:
         entries.append(
           indented(
@@ -1035,16 +1342,16 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:
 
   index = src.index.data
   edition = (
-    L.edition.format(edition=index["edition"])
+    lng.edition.format(edition=index["edition"])
     if "edition" in index
-    else L.draft
+    else lng.draft
   )
-  header = (L.agent_header if agent else L.header).format(
+  header = (lng.agent_header if agent else lng.header).format(
     status=index["status"], revision=index["revision"]
   )
-  opening = L.agent_active if index["status"] == "active" else L.agent_draft
+  opening = lng.agent_active if index["status"] == "active" else lng.agent_draft
   front = (
-    L.agent_front.format(opening=opening)
+    lng.agent_front.format(opening=opening)
     if agent
     else FRONT_HEADING.sub(
       lambda m: m.group() + OMITTED_MARK, refs(index["front"][lang])
@@ -1054,18 +1361,18 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:
     OMITTED_MARK in front
     or any(s.omitted or any(i.omitted for i in s.items) for s in src.sections)
   ):
-    header += L.legend
+    header += lng.legend
   parts = [header, f"# {refs(index['title'][lang])} ({edition})\n\n{front}"]
   for a in sorted(src.articles, key=lambda a: number_key(a.number)):
     if a.repealed:
       parts.append(
-        L.repealed_article_heading.format(
+        lng.repealed_article_heading.format(
           anchor=anchor(a.id), number=numbers[a.id], note=note(a.repealed)
         )
       )
       continue
     block = [
-      L.article_heading.format(
+      lng.article_heading.format(
         anchor=anchor(a.id), number=numbers[a.id], title=refs(a.title[lang])
       )
     ]
@@ -1101,17 +1408,34 @@ AGENT = ".agent"  # after the language in the name of the version for agents
 
 
 def output_path(name: str) -> Path:
-  """Where an output goes: `en` is the full version, `en.agent` the
-  version for agents."""
+  """Return where an output goes.
+
+  `en` is the full version, `en.agent` the version for agents.
+
+  Args:
+    name: the language, with AGENT after it for the version for agents.
+
+  Returns:
+    The path, relative to the checkout.
+  """
   return Path(f"constitution/constitution.{name}.md")
 
 
 def build(root: Path) -> tuple[Errors, Sources | None, dict]:
-  """Run checks 1 to 5 in order, stopping after the first that fails."""
+  """Run checks 1 to 5 in order, stopping after the first that fails.
+
+  Args:
+    root: the checkout.
+
+  Returns:
+    The errors, the sources (None when check 1 failed) and the outputs,
+    name -> text, empty when a check failed.
+  """
   errors = Errors()
   src = load(root, errors)
   if errors:
     return errors, None, {}
+  assert src is not None
   for check in (check_ids, check_structure, check_languages, check_refs):
     check(src, errors)
     if errors:
@@ -1129,7 +1453,13 @@ def build(root: Path) -> tuple[Errors, Sources | None, dict]:
 
 
 def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
-  """The committed outputs equal a fresh build byte for byte."""
+  """Check 6: the committed outputs equal a fresh build byte for byte.
+
+  Args:
+    root: the checkout.
+    outputs: name -> text, as `build` returns them.
+    errors: where errors go.
+  """
   for name, text in outputs.items():
     path = output_path(name)
     try:
@@ -1142,7 +1472,9 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
     built = text.encode("utf-8")
     if committed != built:
       old, new = committed.split(b"\n"), built.split(b"\n")
-      pairs = enumerate(zip(old, new), start=1)
+      # The lengths may differ: when the shorter is a prefix of the longer,
+      # the line reported is the shorter one's last.
+      pairs = enumerate(zip(old, new, strict=False), start=1)
       line = next((i for i, (a, b) in pairs if a != b), min(len(old), len(new)))
       errors.add(
         path,
@@ -1156,6 +1488,15 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
 
 
 def git(root: Path, *args: str) -> str | None:
+  """Run git in root.
+
+  Args:
+    root: the checkout.
+    *args: the git arguments.
+
+  Returns:
+    Its output, or None when it fails.
+  """
   result = subprocess.run(
     ["git", "-C", str(root), *args],
     capture_output=True,
@@ -1165,14 +1506,29 @@ def git(root: Path, *args: str) -> str | None:
   return result.stdout if result.returncode == 0 else None
 
 
-def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
-  """Once the base is active: the edition is the base's or a later one.
+def check_base(  # noqa: C901
+  root: Path, ref: str, src: Sources, errors: Errors
+) -> str:
+  """Check 7: compare the numbering with a base commit.
+
+  Once the base is active: the edition is the base's or a later one.
   While it is the base's: every article,
   section and item of the base still exists, by ID, with the same number,
   a section in the same article; what was repealed is still repealed;
   every rule of the base still exists or is retired, and every retired ID
-  stays retired. Returns a note when the step is skipped."""
-  if git(root, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}") is None:
+  stays retired.
+
+  Args:
+    root: the checkout.
+    ref: the base commit.
+    src: the sources.
+    errors: where errors go.
+
+  Returns:
+    A note when the step is skipped, else "".
+  """
+  commit = f"{ref}^{{commit}}"
+  if git(root, "rev-parse", "--verify", "--quiet", commit) is None:
     errors.add(INDEX, 1, 7, f"base `{ref}` is not a commit")
     return ""
   base_index = git(root, "show", f"{ref}:{INDEX}")
@@ -1204,7 +1560,10 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
   if not any(
     p.name == ARTICLE_FILE and p.parent.parent == ARTICLES for p in listing
   ):
-    return f"base {ref} has no {ARTICLES}/<NN>-<id>/{ARTICLE_FILE}; numbering not compared"
+    return (
+      f"base {ref} has no {ARTICLES}/<NN>-<id>/{ARTICLE_FILE};"
+      " numbering not compared"
+    )
   if src.index.data["status"] != "active":
     errors.add(
       INDEX,
@@ -1217,12 +1576,16 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
     # Both are `YYYY-MM`, so string order is month order.
     if edition != base_edition:
       if isinstance(base_edition, str) and edition > base_edition:
-        return f"base {ref} is edition {base_edition}, this is edition {edition}; numbering not compared"
+        return (
+          f"base {ref} is edition {base_edition}, this is edition {edition};"
+          " numbering not compared"
+        )
       errors.add(
         INDEX,
         src.index.line("edition ="),
         7,
-        f"edition {edition} is not later than edition {base_edition} at base {ref}",
+        f"edition {edition} is not later than edition {base_edition}"
+        f" at base {ref}",
       )
       return ""
 
@@ -1306,6 +1669,7 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
         now.doc, f"article {aid}", "repealed" in old, bool(now.repealed)
       )
       continue
+    assert section is not None
     sid = section.group(3)
     now = sections.get(sid)
     if now is None:
@@ -1316,7 +1680,8 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
         now.doc.path,
         1,
         7,
-        f"section {sid} moved from article {article.group(2)} to {now.article} since base {ref}",
+        f"section {sid} moved from article {article.group(2)}"
+        f" to {now.article} since base {ref}",
       )
     else:
       renumbered(
@@ -1363,8 +1728,17 @@ def check_base(root: Path, ref: str, src: Sources, errors: Errors) -> str:
 
 
 def revision_key(revision: str) -> tuple[int, int] | None:
-  """Sort key of a revision: a draft `0.<n>` by its number, before every
-  approved integer revision; None for any other string."""
+  """Return the sort key of a revision.
+
+  A draft `0.<n>` sorts by its number, before every approved integer
+  revision.
+
+  Args:
+    revision: the revision as written.
+
+  Returns:
+    The key, or None for any other string.
+  """
   if re.fullmatch(r"0\.[0-9]+", revision):
     return 0, int(revision[2:])
   if re.fullmatch(r"[1-9][0-9]*", revision):
@@ -1373,9 +1747,19 @@ def revision_key(revision: str) -> tuple[int, int] | None:
 
 
 def source_text_changed(root: Path, ref: str) -> bool:
-  """The article sources or `index.toml` other than its `revision` line
-  differ from the base's. The files git tracks are compared as they are in
-  the working tree, so the result does not depend on what is committed."""
+  """Return whether the constitution text differs from the base's.
+
+  The text is the article sources and `index.toml` other than its
+  `revision` line. The files git tracks are compared as they are in the
+  working tree, so the result does not depend on what is committed.
+
+  Args:
+    root: the checkout.
+    ref: the base commit.
+
+  Returns:
+    True when the text changed.
+  """
   drop = re.compile(r'^revision = ".*"\n', re.MULTILINE)
   listing = (
     git(root, "ls-tree", "-r", "--name-only", ref, "--", str(ARTICLES)) or ""
@@ -1397,10 +1781,19 @@ def source_text_changed(root: Path, ref: str) -> bool:
 
 
 def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
-  """Within one edition (a draft has none) the revision is greater than
+  """Check 7: compare the revision with the base's.
+
+  Within one edition (a draft has none) the revision is greater than
   the base's when the constitution text changed since it, and equal to it
   when the text did not change. A different edition is not compared. Runs
-  whatever the status of the base."""
+  whatever the status of the base.
+
+  Args:
+    root: the checkout.
+    ref: the base commit.
+    src: the sources.
+    errors: where errors go.
+  """
   base_index = git(root, "show", f"{ref}:{INDEX}")
   if base_index is None:
     return
@@ -1431,21 +1824,30 @@ def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
         INDEX,
         line,
         7,
-        f"the constitution text changed since base {ref} but revision {revision}"
-        f" is not greater than the base's {base_revision}",
+        f"the constitution text changed since base {ref}"
+        f" but revision {revision} is not greater"
+        f" than the base's {base_revision}",
       )
   elif revision != base_revision:
     errors.add(
       INDEX,
       line,
       7,
-      f"revision {revision} differs from revision {base_revision} at base {ref}"
-      " but the constitution text did not change",
+      f"revision {revision} differs from revision {base_revision}"
+      f" at base {ref} but the constitution text did not change",
     )
 
 
 def main(argv: list[str] | None = None) -> int:
-  parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+  """Build or check the constitution.
+
+  Args:
+    argv: the arguments, None for the command line's.
+
+  Returns:
+    The exit status: 1 on any error, else 0.
+  """
+  parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
   parser.add_argument(
     "--root",
     type=Path,
@@ -1469,6 +1871,7 @@ def main(argv: list[str] | None = None) -> int:
   if not errors and args.check:
     check_outputs(args.root, outputs, errors)
   if not errors and args.base:
+    assert src is not None
     note = check_base(args.root, args.base, src, errors)
     if note:
       print(note)

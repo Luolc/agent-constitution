@@ -1,14 +1,17 @@
-"""Tests for build_constitution: each check fails on a broken tree and passes
-on its control, a valid tree renders as expected in both languages, and the
-numbering check against a base commit runs on a temporary git repository."""
+"""Tests for build_constitution.
+
+Each check fails on a broken tree and passes on its control, a valid tree
+renders as expected in both languages, and the numbering check against a
+base commit runs on a temporary git repository.
+"""
 
 import contextlib
 import io
+from pathlib import Path
 import re
 import subprocess
 import tempfile
 import unittest
-from pathlib import Path
 
 import build_constitution as bc
 import git_env
@@ -181,7 +184,7 @@ Intro, see [Art. II §1a][beta-two].
 [beta-one]: #beta-one
 [alpha-one.money]: #alpha-one.money
 [alpha]: #alpha
-"""
+"""  # noqa: E501
 
 ZH = """\
 本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 \
@@ -215,7 +218,7 @@ ZH = """\
 [beta-one]: #beta-one
 [alpha-one.money]: #alpha-one.money
 [alpha]: #alpha
-"""
+"""  # noqa: E501
 
 EN_AGENT = f"""\
 Generated from `constitution/index.toml` and `constitution/articles/` by \
@@ -292,9 +295,15 @@ SECTIONS = [
 ]
 
 
-def plain(text):
-  """The text without anchors, bold and link markup, for tests about the
-  words of a rendering."""
+def plain(text: str) -> str:
+  """Strip anchors, bold and link markup, for tests about rendered words.
+
+  Args:
+    text: The rendered Markdown.
+
+  Returns:
+    The text without the markup.
+  """
   text = re.sub(r'<a id="[^"]+"></a>', "", text).replace("**", "")
   return re.sub(r"\[([^\]]+)\]\[[^\]]+\]", r"\1", text)
 
@@ -341,7 +350,7 @@ class Tree(unittest.TestCase):
     errors, _, _ = bc.build(self.root)
     return errors
 
-  def assertFails(self, check, location, message):
+  def assertFails(self, check, location, message):  # noqa: N802
     errors = self.errors()
     self.assertTrue(errors, "expected an error, got none")
     self.assertTrue(all(f": check {check}: " in e for e in errors), errors)
@@ -368,8 +377,11 @@ class RenderTest(Tree):
     self.assertEqual(bc.main(["--root", str(self.root), "--check"]), 0)
 
   def test_preamble_heading_is_marked(self):
-    """The version for agents leaves out the front text, so a heading in
-    it has the asterisk in the full version, and the header explains it."""
+    """A heading in the front text has the asterisk in the full version.
+
+    The version for agents leaves out the front text, so a heading in it has
+    the asterisk in the full version, and the header explains it.
+    """
     self.edit(
       "constitution/index.toml",
       "The preamble cites",
@@ -388,9 +400,12 @@ class RenderTest(Tree):
       self.assertNotIn(star, outputs[lang + bc.AGENT])
 
   def test_provisions_for_maintainers(self):
-    """A section and an item marked for maintainers keep their text, with
-    an asterisk, in the full version; the version for agents keeps only
-    their numbers. The others are as without the mark."""
+    """Provisions marked for maintainers keep only their numbers for agents.
+
+    A section and an item marked for maintainers keep their text, with an
+    asterisk, in the full version; the version for agents keeps only their
+    numbers. The others are as without the mark.
+    """
     self.edit(
       f"{B}/01a-beta-two.toml",
       'status = "draft"',
@@ -419,7 +434,8 @@ class RenderTest(Tree):
       outputs["zh"],
     )
     self.assertIn(
-      "Language: English. \\* Background for people: where this constitution comes from, how it"
+      "Language: English. \\* Background for people: where this constitution "
+      "comes from, how it"
       " is organized and how it is amended. The agent version,"
       " `constitution/constitution.en.agent.md`, omits these parts.\n",
       outputs["en"],
@@ -485,7 +501,8 @@ class RenderTest(Tree):
     errors, _, outputs = bc.build(self.root)
     self.assertEqual(errors, [])
     self.assertIn(
-      '\n    -   <a id="alpha-one.machines"></a>(**2**) (repealed November 2026)\n',
+      '\n    -   <a id="alpha-one.machines"></a>(**2**) (repealed November '
+      "2026)\n",
       outputs["en"],
     )
     self.assertIn(
@@ -536,15 +553,19 @@ class RenderTest(Tree):
     )
 
   def test_section_of_several_paragraphs_before_the_next(self):
-    """A nested list and a further paragraph sit at the section's content
+    """A section's later paragraphs stay in it and out of the next one.
+
+    A nested list and a further paragraph sit at the section's content
     column, and a blank line keeps the next section's line out of that
     paragraph: Python-Markdown nests only what is indented four spaces
-    and joins a list line to the paragraph just above it."""
+    and joins a list line to the paragraph just above it.
+    """
     self.edit(f"{B}/01a-beta-two.toml", "2. second\n", "2. second\n\nAfter.\n")
     self.edit(f"{B}/01a-beta-two.toml", "2. 第二\n", "2. 第二\n\n之后。\n")
     self.write(
       f"{B}/02-beta-three.toml",
-      'id = "beta-three"\nstatus = "draft"\n\n[content]\nen = "Next."\nzh = "下一款。"\n',
+      'id = "beta-three"\nstatus = "draft"\n\n[content]\nen = "Next."\nzh = '
+      '"下一款。"\n',
     )
     errors, _, outputs = bc.build(self.root)
     self.assertEqual(errors, [])
@@ -567,8 +588,10 @@ class RenderTest(Tree):
     self.assertIn("\n# 测试宪法 (2026-10 版)\n", outputs["zh"])
 
   def test_agent_front_follows_the_status(self):
-    """The version for agents opens with the build's note: a draft is not
-    in force; once active, every agent must follow it."""
+    """The version for agents opens with the build's note on the status.
+
+    A draft is not in force; once active, every agent must follow it.
+    """
     draft = bc.build(self.root)[2]
     self.activate()
     active = bc.build(self.root)[2]
@@ -651,14 +674,18 @@ class RenderTest(Tree):
     )
 
   def test_adjacent_item_citations_render_short(self):
-    three = '[[items]]\nid = "people"\nnumber = "3"\nstatus = "draft"\n\n[items.content]\nen = "People."\nzh = "人。"\n'
+    three = (
+      '[[items]]\nid = "people"\nnumber = "3"\nstatus = '
+      '"draft"\n\n[items.content]\nen = "People."\nzh = "人。"\n'
+    )
     self.write(f"{A}/01-alpha-one.toml", ALPHA_ONE + "\n" + three)
     self.write(
       f"{B}/01-beta-one.toml",
       BETA_ONE.replace(
         "[content]",
         'items = [{ id = "one", number = "1",'
-        ' status = "draft", content = { en = "One.", zh = "一。" } }]\n\n[content]',
+        ' status = "draft", content = { en = "One.", zh = "一。" } '
+        "}]\n\n[content]",
       ),
     )
     cites = [
@@ -797,7 +824,8 @@ class CheckTest(Tree):
     self.assertFails(
       1,
       "constitution/articles/2-beta:1",
-      "article directory name is not two digits from 01, a hyphen and the ID (04-<id>)",
+      "article directory name is not two digits from 01, a hyphen and the ID "
+      "(04-<id>)",
     )
 
   def test_1_article_number_has_no_suffix(self):
@@ -805,7 +833,8 @@ class CheckTest(Tree):
     self.assertFails(
       1,
       "constitution/articles/01a-beta:1",
-      "article directory name is not two digits from 01, a hyphen and the ID (04-<id>)",
+      "article directory name is not two digits from 01, a hyphen and the ID "
+      "(04-<id>)",
     )
 
   def test_1_bad_section_file_name(self):
@@ -814,7 +843,8 @@ class CheckTest(Tree):
       1,
       f"{B}/00-beta-two.toml:1",
       "section file name is not two digits from 01, an optional"
-      " lowercase letter, a hyphen and the ID (02-<id>, 02a-<id>), then `.toml`",
+      " lowercase letter, a hyphen and the ID (02-<id>, 02a-<id>),"
+      " then `.toml`",
     )
 
   def test_1_misplaced_files(self):
@@ -825,14 +855,19 @@ class CheckTest(Tree):
     self.assertEqual(
       self.errors(),
       [
-        "constitution/sections:1: check 1: sections belong in their article's directory,"
+        "constitution/sections:1: check 1: sections belong in their article's "
+        "directory,"
         " constitution/articles/<NN>-<id>/<NN>[a-z]-<id>.toml",
-        f"{B}/notes.md:1: check 1: not a section file; an article's directory holds only its"
+        f"{B}/notes.md:1: check 1: not a section file; an article's directory "
+        "holds only its"
         " article.toml and <NN>[a-z]-<id>.toml section files",
-        f"{B}/old:1: check 1: not a section file; an article's directory holds only its"
+        f"{B}/old:1: check 1: not a section file; an article's directory holds "
+        "only its"
         " article.toml and <NN>[a-z]-<id>.toml section files",
-        "constitution/articles/gamma.toml:1: check 1: not an article directory; an article is"
-        " constitution/articles/<NN>-<id>/ with its article.toml and section files",
+        "constitution/articles/gamma.toml:1: check 1: not an article "
+        "directory; an article is"
+        " constitution/articles/<NN>-<id>/ with its article.toml and section "
+        "files",
       ],
     )
 
@@ -863,7 +898,8 @@ class CheckTest(Tree):
     self.assertFails(
       1,
       f"{A}/01-alpha-one.toml:27",
-      "`items[1]` `number` `H2` is not an integer with an optional letter suffix (2, 2a)",
+      "`items[1]` `number` `H2` is not an integer with an optional letter "
+      "suffix (2, 2a)",
     )
 
   def test_1_status_against_index(self):
@@ -987,7 +1023,8 @@ class CheckTest(Tree):
       'id = "money"\nnumber = "2"',
       'id = "machines"\nnumber = "2"',
     )
-    # The same item ID in another section, and a rule named like a section, are fine.
+    # The same item ID in another section, and a rule named like a section, are
+    # fine.
     self.write(
       f"{B}/02-beta-three.toml",
       ALPHA_ONE.replace('"alpha-one"', '"beta-three"'),
@@ -1049,8 +1086,10 @@ class CheckTest(Tree):
     self.assertEqual(
       self.errors(),
       [
-        "constitution/index.toml:11: check 4: en `front` cites beta; zh does not",
-        "constitution/index.toml:14: check 4: zh `front` cites alpha; en does not",
+        "constitution/index.toml:11: check 4: en `front` cites beta; zh does "
+        "not",
+        "constitution/index.toml:14: check 4: zh `front` cites alpha; en does "
+        "not",
       ],
     )
 
@@ -1098,7 +1137,8 @@ class CheckTest(Tree):
       f"{B}/01-beta-one.toml:6: check 5: cites repealed alpha-one.money", errors
     )
     self.assertIn(
-      "rules/rule.toml:4: check 5: authority cites repealed constitution:alpha-one.money",
+      "rules/rule.toml:4: check 5: authority cites repealed "
+      "constitution:alpha-one.money",
       errors,
     )
 
@@ -1107,7 +1147,8 @@ class CheckTest(Tree):
     self.assertFails(
       5,
       f"{B}/01-beta-one.toml:6",
-      "cites rule:rule; the constitution cites only itself, without a namespace",
+      "cites rule:rule; the constitution cites only itself, without a"
+      " namespace",
     )
 
   def test_5_rule_cites_without_namespace(self):
@@ -1192,13 +1233,19 @@ class BaseTest(Tree):
   def base_errors(self):
     errors, src, _ = bc.build(self.root)
     self.assertEqual(errors, [])
+    assert src is not None
     note = bc.check_base(self.root, "HEAD", src, errors)
     return errors, note
 
   def revision_check(self):
-    """Only the revision part of check 7, on the working tree against HEAD."""
+    """Run only the revision part of check 7, on the tree against HEAD.
+
+    Returns:
+      The errors it found.
+    """
     errors, src, _ = bc.build(self.root)
     self.assertEqual(errors, [])
+    assert src is not None
     bc.check_revision(self.root, "HEAD", src, errors)
     return errors
 
@@ -1241,7 +1288,8 @@ class BaseTest(Tree):
     self.assertEqual(
       errors,
       [
-        f"{A}/01-alpha-one.toml:27: check 7: item alpha-one.machines was renumbered from 2 to 3 since base HEAD",
+        f"{A}/01-alpha-one.toml:27: check 7: item alpha-one.machines was "
+        "renumbered from 2 to 3 since base HEAD",
         "constitution/articles/03-beta/article.toml:1: check 7:"
         " article beta was renumbered from 2 to 3 since base HEAD",
       ],
@@ -1265,7 +1313,10 @@ class BaseTest(Tree):
     text = (self.root / path).read_text(encoding="utf-8")
     machines = text[text.index('[[items]]\nid = "machines"') :]
     self.write(path, text.replace("\n" + machines, ""))
-    gone = f"{path}:12: check 7: item alpha-one.machines existed at base HEAD and is gone; repeal it instead"
+    gone = (
+      f"{path}:12: check 7: item alpha-one.machines existed at base HEAD "
+      "and is gone; repeal it instead"
+    )
     self.assertEqual(self.base_errors(), ([gone], ""))
     # Moved to another section: still gone from this one.
     self.write(
@@ -1352,7 +1403,8 @@ class BaseTest(Tree):
     self.assertEqual(
       errors,
       [
-        "rules/rule.toml:2: check 7: rule rule was repealed at base HEAD and is no longer"
+        "rules/rule.toml:2: check 7: rule rule was repealed at base HEAD and "
+        "is no longer"
       ],
     )
 
@@ -1397,7 +1449,8 @@ class BaseTest(Tree):
     self.assertEqual(errors, [])
     self.assertEqual(
       note,
-      "base HEAD is edition 2026-10, this is edition 2027-03; numbering not compared",
+      "base HEAD is edition 2026-10, this is edition 2027-03; numbering not "
+      "compared",
     )
 
   def test_earlier_edition(self):
@@ -1449,7 +1502,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed since base HEAD"
+        "constitution/index.toml:3: check 7: the constitution text changed "
+        "since base HEAD"
         " but revision 1 is not greater than the base's 1"
       ],
     )
@@ -1463,7 +1517,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed since base HEAD"
+        "constitution/index.toml:3: check 7: the constitution text changed "
+        "since base HEAD"
         " but revision 1 is not greater than the base's 2"
       ],
     )
@@ -1474,7 +1529,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: revision 2 differs from revision 1 at base HEAD"
+        "constitution/index.toml:3: check 7: revision 2 differs from revision "
+        "1 at base HEAD"
         " but the constitution text did not change"
       ],
     )
@@ -1517,7 +1573,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:2: check 7: the constitution text changed since base HEAD"
+        "constitution/index.toml:2: check 7: the constitution text changed "
+        "since base HEAD"
         " but revision 0.2 is not greater than the base's 0.2"
       ],
     )
@@ -1539,7 +1596,8 @@ class BaseTest(Tree):
     self.assertEqual(len(self.revision_check()), 1)
 
   def test_draft_revisions_sort_below_whole_numbers(self):
-    keys = [bc.revision_key(r) for r in ("0.2", "0.9", "0.10", "1", "2", "10")]
+    revisions = ("0.2", "0.9", "0.10", "1", "2", "10")
+    keys = [k for r in revisions if (k := bc.revision_key(r)) is not None]
     self.assertEqual(keys, sorted(keys))
     self.assertEqual(len(set(keys)), 6)
 
@@ -1561,7 +1619,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:2: check 7: revision 0.x is neither `0.<n>` nor a whole number from 1"
+        "constitution/index.toml:2: check 7: revision 0.x is neither `0.<n>` "
+        "nor a whole number from 1"
       ],
     )
 
@@ -1629,6 +1688,7 @@ class BaseTest(Tree):
   def test_unknown_base(self):
     self.commit_base()
     errors, src, _ = bc.build(self.root)
+    assert src is not None
     bc.check_base(self.root, "no-such-ref", src, errors)
     self.assertEqual(
       errors,

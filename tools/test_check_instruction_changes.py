@@ -1,13 +1,15 @@
-"""Tests for check_instruction_changes on a temporary git repository: a base
-commit with one file of each kind, then a change on top of it."""
+"""Tests for check_instruction_changes on a temporary git repository.
+
+A base commit with one file of each kind, then a change on top of it.
+"""
 
 import contextlib
 import io
 import os
+from pathlib import Path
 import subprocess
 import tempfile
 import unittest
-from pathlib import Path
 from unittest import mock
 
 import check_instruction_changes as cic
@@ -177,10 +179,13 @@ class Change(unittest.TestCase):
 
 
 class HookEnvironment(unittest.TestCase):
-  """The tests and the scripts run from a git hook, which in a worktree sets
-  GIT_DIR and GIT_INDEX_FILE to the worktree's; they must leave its
-  repository alone. One test of each script that runs git covers its
-  calls and its test helper's."""
+  """The tests and the scripts leave the repository of a git hook alone.
+
+  They run from a git hook, which in a worktree sets GIT_DIR and
+  GIT_INDEX_FILE to the worktree's; they must leave its repository alone.
+  One test of each script that runs git covers its calls and its test
+  helper's.
+  """
 
   def test_repository_of_the_hook_untouched(self):
     tmp = tempfile.TemporaryDirectory()

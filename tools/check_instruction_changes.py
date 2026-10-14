@@ -47,11 +47,28 @@ GENERATED = [
 
 
 def matches(path: str, patterns: list[str]) -> bool:
+  """Tell whether one of the patterns matches the whole path.
+
+  Args:
+    path: A path relative to the repository.
+    patterns: Regular expressions.
+
+  Returns:
+    True when a pattern matches.
+  """
   return any(re.fullmatch(p, path) for p in patterns)
 
 
 def changed(root: str, base: str) -> list[tuple[str, str]] | None:
-  """(status letter, path) for each file changed in `base...HEAD`."""
+  """List the files changed in `base...HEAD`.
+
+  Args:
+    root: The repository.
+    base: The git ref HEAD is compared with.
+
+  Returns:
+    (status letter, path) for each changed file, or None when git fails.
+  """
   result = subprocess.run(
     [
       "git",
@@ -71,11 +88,19 @@ def changed(root: str, base: str) -> list[tuple[str, str]] | None:
     print(result.stderr.strip(), file=sys.stderr)
     return None
   fields = result.stdout.split("\0")[:-1]
-  return list(zip(fields[0::2], fields[1::2]))
+  return list(zip(fields[0::2], fields[1::2], strict=True))
 
 
 def main(argv: list[str] | None = None) -> int:
-  parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+  """Run the check and print its result.
+
+  Args:
+    argv: The command-line arguments, or None for sys.argv.
+
+  Returns:
+    The exit status: 0 on pass, 1 on a mixed change, 2 when git fails.
+  """
+  parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
   parser.add_argument(
     "--base", required=True, help="the git ref to compare HEAD with"
   )
@@ -118,8 +143,8 @@ def main(argv: list[str] | None = None) -> int:
 
   if groups["instruction"] and groups["other"]:
     print(
-      f"instruction-only check: this change mixes instruction files with other files"
-      f" since {args.base}; split it into two changes"
+      "instruction-only check: this change mixes instruction files with"
+      f" other files since {args.base}; split it into two changes"
     )
     for group, lines in groups.items():
       if lines:

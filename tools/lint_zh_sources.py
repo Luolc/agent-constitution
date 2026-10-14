@@ -17,14 +17,14 @@ clean, 1 with errors left), or 2 when a text cannot be checked or fixed.
 """
 
 import argparse
+from dataclasses import dataclass
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import tomllib
-from dataclasses import dataclass
-from pathlib import Path
 
 SOURCES = [
   "constitution/index.toml",
@@ -44,25 +44,57 @@ FINDING = re.compile(r"^(.*?):(\d+): (.*)$")
 
 @dataclass
 class Text:
+  """One `zh` text of a source file and where it is.
+
+  Attributes:
+    path: The file, relative to the checkout.
+    start: The offset of the text in the file.
+    end: The offset just after the text.
+    line: The line of the text's first line in the file.
+    field: `title`, `content`, `items.<id>.content`, ...
+    basic: Whether the text is a basic string rather than a literal one.
+    value: The text as TOML parses it.
+  """
+
   path: Path
-  start: int  # offset of the text in the file
+  start: int
   end: int
-  line: int  # line of the text's first line in the file
-  field: str  # `title`, `content`, `items.<id>.content`, ...
+  line: int
+  field: str
   basic: bool
-  value: str  # as TOML parses it
+  value: str
 
   def masked(self) -> str:
+    """Replace each citation in the text by PLACEHOLDER.
+
+    Returns:
+      The masked text.
+    """
     return CITATION.sub(PLACEHOLDER, self.value)
 
   def unmasked(self, text: str) -> str:
+    """Put this text's citations back in place of the placeholders.
+
+    Args:
+      text: The masked text, possibly fixed by limae.
+
+    Returns:
+      The text with its citations.
+    """
     citations = iter(CITATION.findall(self.value))
     return re.sub(PLACEHOLDER, lambda _: next(citations), text)
 
 
 def field_at(source: str, offset: int) -> str:
-  """The dotted name of the table holding the `zh` key at `offset`, with
-  an item's ID in place of `items`."""
+  """Name the table holding the `zh` key at `offset`.
+
+  Args:
+    source: The text of a source file.
+    offset: The offset of a `zh` key in it.
+
+  Returns:
+    The dotted name of the table, with an item's ID in place of `items`.
+  """
   table, item = "", None
   for line in source[:offset].split("\n"):
     if m := HEADER.match(line):
@@ -78,8 +110,16 @@ def field_at(source: str, offset: int) -> str:
   )
 
 
-def zh_leaves(data, keys=()) -> list:
-  """Every (key path, value) under a `zh` key, in TOML's own order."""
+def zh_leaves(data: object, keys: tuple = ()) -> list:
+  """List the values under a `zh` key, in TOML's own order.
+
+  Args:
+    data: Parsed TOML, or a part of it.
+    keys: The key path of `data`.
+
+  Returns:
+    Every (key path, value) under a `zh` key.
+  """
   if isinstance(data, dict):
     return [leaf for k, v in data.items() for leaf in zh_leaves(v, keys + (k,))]
   if isinstance(data, list):
@@ -90,8 +130,16 @@ def zh_leaves(data, keys=()) -> list:
 
 
 def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
-  """The `zh` texts of one file, or an error when one of them is in a
-  form this script cannot write back."""
+  """Find the `zh` texts of one file.
+
+  Args:
+    root: The checkout.
+    path: The file, relative to the checkout.
+
+  Returns:
+    The texts, and an error when one of them is in a form this script
+    cannot write back, else None.
+  """
   source = (root / path).read_text(encoding="utf-8")
   found = []
   for m in BASIC.finditer(source):
@@ -124,13 +172,15 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
   if parsed != sorted(t.value for t in found):
     return (
       found,
-      f"{path}:1: a `zh` text is not `zh = \"...\"` on one line or `zh = '''` on its own line",
+      f'{path}:1: a `zh` text is not `zh = "..."` on one line'
+      " or `zh = '''` on its own line",
     )
   for t in found:
     if PLACEHOLDER in t.value:
       return (
         found,
-        f"{path}:{t.line}: {t.field}: contains `{PLACEHOLDER}`, the citation placeholder",
+        f"{path}:{t.line}: {t.field}: contains `{PLACEHOLDER}`,"
+        " the citation placeholder",
       )
   return found, None
 
@@ -138,8 +188,18 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
 def write_back(
   root: Path, path: Path, changed: list[tuple[Text, str]]
 ) -> str | None:
-  """Put each fixed text in place of its original, then check that the
-  file parses to the same data apart from those texts."""
+  """Put each fixed text in place of its original.
+
+  Then check that the file parses to the same data apart from those texts.
+
+  Args:
+    root: The checkout.
+    path: The file, relative to the checkout.
+    changed: Each text with its fixed version.
+
+  Returns:
+    An error when the file is left as it was, else None.
+  """
   file = root / path
   source = file.read_text(encoding="utf-8")
   new = source
@@ -155,7 +215,10 @@ def write_back(
     if zh_leaves(tomllib.loads(new)) != expected or strip_zh(
       tomllib.loads(new)
     ) != strip_zh(tomllib.loads(source)):
-      return f"{path}:1: writing the fixes back would change more than the fixed texts; file left as it was"
+      return (
+        f"{path}:1: writing the fixes back would change more than the fixed"
+        " texts; file left as it was"
+      )
   except tomllib.TOMLDecodeError as e:
     return (
       f"{path}:1: the fixed file would not parse ({e}); file left as it was"
@@ -164,7 +227,15 @@ def write_back(
   return None
 
 
-def strip_zh(data):
+def strip_zh(data: object) -> object:
+  """Return parsed TOML without its `zh` keys.
+
+  Args:
+    data: Parsed TOML, or a part of it.
+
+  Returns:
+    The same data without any `zh` key.
+  """
   if isinstance(data, dict):
     return {k: strip_zh(v) for k, v in data.items() if k != "zh"}
   if isinstance(data, list):
@@ -172,8 +243,16 @@ def strip_zh(data):
   return data
 
 
-def main(argv: list[str] | None = None) -> int:
-  parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+def main(argv: list[str] | None = None) -> int:  # noqa: C901
+  """Check, or with --fix fix, the `zh` texts and print the findings.
+
+  Args:
+    argv: The command-line arguments, or None for sys.argv.
+
+  Returns:
+    limae's exit status, or 2 when a text cannot be checked or fixed.
+  """
+  parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
   parser.add_argument(
     "--fix", action="store_true", help="write limae's fixes back to the sources"
   )
@@ -228,7 +307,8 @@ def main(argv: list[str] | None = None) -> int:
     ):
       print(result.stdout + result.stderr, file=sys.stderr)
       print(
-        f"limae exited {result.returncode} without a finding this script can place",
+        f"limae exited {result.returncode} without a finding this script"
+        " can place",
         file=sys.stderr,
       )
       return 2
@@ -239,7 +319,8 @@ def main(argv: list[str] | None = None) -> int:
         fixed = Path(tmp, name).read_text(encoding="utf-8")
         if fixed.count(PLACEHOLDER) != len(CITATION.findall(t.value)):
           problems.append(
-            f"{t.path}:{t.line}: {t.field}: limae's fix changed the citations; not written"
+            f"{t.path}:{t.line}: {t.field}: limae's fix changed the"
+            " citations; not written"
           )
           continue
         fixed = (

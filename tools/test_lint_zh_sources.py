@@ -3,9 +3,9 @@
 import contextlib
 import dataclasses
 import io
+from pathlib import Path
 import tempfile
 import unittest
-from pathlib import Path
 
 import lint_zh_sources as lzs
 
@@ -187,8 +187,8 @@ class Sources(unittest.TestCase):
         )
         self.assertEqual(
           lzs.write_back(self.root, Path(S), [(misplaced, fixed)]),
-          f"{S}:1: writing the fixes back would change more than the fixed texts;"
-          " file left as it was",
+          f"{S}:1: writing the fixes back would change more than the fixed"
+          " texts; file left as it was",
         )
         self.assertEqual((self.root / S).read_text(encoding="utf-8"), SECTION)
 
