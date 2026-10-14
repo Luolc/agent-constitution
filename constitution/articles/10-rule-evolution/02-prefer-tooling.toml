@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-A problem that can be solved by better tools or procedures, or by organizing the instructions better, is better solved that way than by adding an obligation. The number of rules is itself a cost ({@simplicity}): rules that no longer earn their keep are merged, shortened or repealed.
+A problem that can be solved by better tools or procedures, or by organizing the instructions better, is better solved that way than by adding an obligation. The number of rules is itself a cost ({@simplicity}): rules that no longer earn their keep are merged, shortened or repealed. Minor improvements are optional; those that are made are batched, and settled without a new rule where possible.
 '''
 zh = '''
-一个问题能靠改进工具、流程或者指令的编排解决的，优先这样解决，而不是增加义务。规定的数量本身就是成本 ({@simplicity})：不再值得保留的规定，合并、精简或者废止。
+一个问题能靠改进工具、流程或者指令的编排解决的，优先这样解决，而不是增加义务。规定的数量本身就是成本 ({@simplicity})：不再值得保留的规定，合并、精简或者废止。小的改进可做可不做；要做的，攒在一起处理，能不新立规定就不新立。
 '''
