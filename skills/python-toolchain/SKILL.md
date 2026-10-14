@@ -26,8 +26,10 @@ they are.
    `pyproject.toml`, so their versions are in `uv.lock` and nowhere else;
    no `rev:` of a tool's own pre-commit repo repeats them. `--frozen`
    keeps uv from touching the lock; `--no-sync` keeps it from installing
-   into `.venv`, so a hook run in a wrong or empty environment fails
-   instead of quietly building one.
+   into `.venv`, so a hook whose tool is missing from `.venv` fails
+   instead of quietly installing it. A `.venv` that is out of date is not
+   caught: after a change to the dependencies, run `uv sync`, or the
+   hooks run the old versions still installed.
 
 2. The `uv-lock` hook from astral-sh/uv-pre-commit keeps `uv.lock`
    consistent with `pyproject.toml`. When they disagree, it rewrites
@@ -35,8 +37,8 @@ they are.
 
 3. CI installs the environment from the lock, then runs the same hooks:
    `uv sync --locked` (in a uv workspace `uv sync --locked
-   --all-packages`), then `pre-commit run --all-files`. `--locked` fails
-   when the lock is stale. Pin the runner image and the actions as the
+   --all-packages`) on every run, then `pre-commit run --all-files`.
+   `--locked` fails when the lock is stale. Pin the runner image and the actions as the
    repo does for its other workflows.
 
 4. Several Python projects in one repo: make them one uv workspace with
