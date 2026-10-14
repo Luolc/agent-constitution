@@ -1,5 +1,5 @@
 {{- /* The page of one node of the rule tree (content/rules/_content.gotmpl):
-  its title; for a superseded rule, the rule that supersedes it; a note
+  its title; for a superseded rule, the rules that supersede it; a note
   when the text is not in the page's language; a rule's statement, reason
   and verification, their citations linked; the provisions of the
   constitution it cites; its relations; and all its metadata. A domain or
@@ -10,7 +10,9 @@
 <article class="markdown book-article"><div class="design rules rule">
 <h1 lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</h1>
 {{- with $rule.supersededBy }}
-<p class="rule-note superseded">{{ i18n "rule-superseded-by" (dict "rule" (partial "rules/link.html" .)) | safeHTML }}</p>
+  {{- $links := slice }}
+  {{- range . }}{{ $links = $links | append (partial "rules/link.html" .) }}{{ end }}
+<p class="rule-note superseded">{{ i18n "rule-superseded-by" (dict "rule" (delimit $links (cond (eq $lang "zh") "、" ", "))) | safeHTML }}</p>
 {{- end }}
 {{- if ne $rule.shown $lang }}
 <p class="rule-note untranslated">{{ i18n "rule-untranslated" (dict "lang" (partial "rules/language.html" $rule.shown)) }}</p>

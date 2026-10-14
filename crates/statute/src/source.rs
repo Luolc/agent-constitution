@@ -201,7 +201,7 @@ impl Checker<'_> {
                     format!("parent {parent} does not exist in this source"),
                 );
             }
-            if let Some(next) = node.superseded_by {
+            for &next in &node.superseded_by {
                 match source.get(next) {
                     None => self.diags.error(
                         &file,
@@ -251,9 +251,16 @@ impl Checker<'_> {
                             ) =>
                         {
                             let target = &source.nodes[&id];
-                            let what = match target.superseded_by {
-                                Some(next) => format!("is superseded by {next}; require {next} instead"),
-                                None => "is repealed, with nothing in its place".to_owned(),
+                            let what = match target.superseded_by.as_slice() {
+                                [] => "is repealed, with nothing in its place".to_owned(),
+                                [next] => format!("is superseded by {next}; require {next} instead"),
+                                many => {
+                                    let many: Vec<String> = many.iter().map(Id::to_string).collect();
+                                    format!(
+                                        "is superseded by {}; require those of them that apply instead",
+                                        many.join(", ")
+                                    )
+                                }
                             };
                             self.diags.warning(&file, format!("`requires` names rule {id}, which {what}"));
                         }

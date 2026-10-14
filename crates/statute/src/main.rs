@@ -9,7 +9,7 @@ use statute::lock;
 use statute::manifest::{self, Manifest};
 use statute::node::{Id, Kind, Status, id_from_file_name};
 use statute::project::Project;
-use statute::resolve::{Reason, label};
+use statute::resolve::{Reason, label, refs};
 
 /// Compile a constitution and the rules a repository chooses into the
 /// instruction files coding agents read. Run in the directory of
@@ -57,9 +57,11 @@ enum Command {
         #[arg(long)]
         edition: Option<String>,
     },
-    /// Write AGENTS.md from the constitution and the locked rule set.
+    /// Write AGENTS.md from the constitution and the locked rule set, and
+    /// next to it the skills, the checks and the hook configuration.
     Compile {
-        /// Write here instead of AGENTS.md next to statute.toml.
+        /// Write here instead of AGENTS.md next to statute.toml; the other
+        /// files go next to it.
         #[arg(long)]
         output: Option<std::path::PathBuf>,
     },
@@ -125,23 +127,15 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
 
 fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let project = load(root)?;
-    let text = statute::compile::compile(&project).map_err(|e| {
-        eprintln!("statute: error: {e}");
-    })?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
-    if let Ok(existing) = std::fs::read(&path)
-        && !existing.starts_with(format!("{}\n", statute::compile::GENERATED).as_bytes())
-    {
-        eprintln!(
-            "{}: error: not written by statute, so it is left as it is; write elsewhere with --output, or move the file away first",
-            path.display()
-        );
-        return Err(());
+    let written = statute::compile::compile(&project)
+        .and_then(|out| statute::compile::write(&out, &path))
+        .map_err(|e| {
+            eprintln!("statute: error: {e}");
+        })?;
+    for path in written {
+        println!("wrote {}", path.display());
     }
-    std::fs::write(&path, text).map_err(|e| {
-        eprintln!("{}: error: cannot write: {e}", path.display());
-    })?;
-    println!("wrote {}", path.display());
     Ok(())
 }
 
@@ -311,7 +305,10 @@ fn lock_command(root: &Path) -> Result<(), ()> {
         for (id, revision) in same_revision_new_content(&old, &project) {
             eprintln!(
                 "{}: warning: rule {name}:{} changed since {} and is still at revision {revision}; {}",
-                manifest::FILE,
+                statute::project::shown(
+                    &project.manifest.source.path,
+                    &format!("rules/{}", statute::node::file_name(id))
+                ),
                 label(&project.source, id),
                 lock::FILE,
                 RAISE_REVISION
@@ -457,24 +454,31 @@ fn why(project: &Project, id: Id) -> String {
         .join("; ")
 }
 
-/// The rule that takes the place of superseded `id`, following the chain
-/// to its end; `None` when `id` is not superseded.
-fn successor(project: &Project, id: Id) -> Option<Id> {
+/// What takes the place of superseded `id`, following the chain while
+/// each rule on it has one successor: nothing when `id` is not superseded,
+/// the rule at the end of the chain, or the successors of the rule where
+/// the chain splits.
+fn successors(project: &Project, id: Id) -> Vec<Id> {
     let mut seen = vec![id];
     let mut at = id;
     while let Some(node) = project.source.get(at)
         && node.status == Status::Superseded
-        && let Some(next) = node.superseded_by
-        && !seen.contains(&next)
     {
-        seen.push(next);
-        at = next;
+        match node.superseded_by.as_slice() {
+            [next] if !seen.contains(next) => {
+                seen.push(*next);
+                at = *next;
+            }
+            [_] | [] => break,
+            many => return many.to_vec(),
+        }
     }
-    (at != id).then_some(at)
+    if at == id { Vec::new() } else { vec![at] }
 }
 
 /// The rule set with each superseded entry of `rules` and `packs` replaced
-/// by its successor, or taken out when the successor is listed already:
+/// by its successor, or taken out when the successor is listed already; an
+/// entry with more than one successor is left for the user to choose:
 /// the original text, the changed one and a line per replacement. `None`
 /// when nothing is superseded.
 fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec<String>)>, ()> {
@@ -505,8 +509,16 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
         let mut listed = ids.clone();
         for i in (0..ids.len()).rev() {
             let Some(old) = ids[i] else { continue };
-            let Some(new) = successor(project, old) else {
-                continue;
+            let new = match successors(project, old).as_slice() {
+                [] => continue,
+                [new] => *new,
+                many => {
+                    lines.push(format!(
+                        "left {name}:{old} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
+                        refs(name, many)
+                    ));
+                    continue;
+                }
             };
             if listed.contains(&Some(new)) {
                 let removed = list.remove(i);

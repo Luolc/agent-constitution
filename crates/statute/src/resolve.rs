@@ -53,6 +53,22 @@ pub fn label(source: &Source, id: Id) -> String {
     }
 }
 
+/// The labels of `ids`, joined by commas.
+pub fn labels(source: &Source, ids: &[Id]) -> String {
+    ids.iter()
+        .map(|id| label(source, *id))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// `ids` as references of the source `name`, joined by commas.
+pub fn refs(name: &str, ids: &[Id]) -> String {
+    ids.iter()
+        .map(|id| format!("{name}:{id}"))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 /// Resolves `manifest` against `source`, which has passed its own checks,
 /// for the constitution `revision`. Problems go to `diags`, against
 /// `statute.toml`.
@@ -104,12 +120,17 @@ pub fn resolve(
         if let Some(node) = source.get(root)
             && matches!(node.status, Status::Superseded | Status::Repealed)
         {
-            let what = match node.superseded_by {
-                Some(next) => format!(
+            let what = match node.superseded_by.as_slice() {
+                [] => "repealed; take it out of `packs`".to_owned(),
+                [next] => format!(
                     "superseded by {}; replace {name}:{root} with {name}:{next} in `packs` (`statute upgrade --replace-superseded` does it)",
-                    label(source, next)
+                    label(source, *next)
                 ),
-                None => "repealed; take it out of `packs`".to_owned(),
+                many => format!(
+                    "superseded by {}; replace {name}:{root} in `packs` with those of {} that apply",
+                    labels(source, many),
+                    refs(name, many)
+                ),
             };
             diags.warning(
                 file,
@@ -254,18 +275,25 @@ pub fn resolve(
 
     for (&id, reasons) in &res.enabled {
         let Some(node) = source.get(id) else { continue };
-        let what = match (node.status, node.superseded_by) {
-            (Status::Superseded, Some(next)) => format!("superseded by {}", label(source, next)),
-            (Status::Repealed, _) => "repealed, with nothing in its place".to_owned(),
+        let what = match node.status {
+            Status::Superseded => format!("superseded by {}", labels(source, &node.superseded_by)),
+            Status::Repealed => "repealed, with nothing in its place".to_owned(),
             _ => continue,
         };
         // A rule listed directly is changed in `rules`; one brought in
         // goes with the rule that brings it in.
-        let advice = match (reasons.contains(&Reason::Direct), node.superseded_by) {
-            (true, Some(next)) => format!(
+        let advice = match (
+            reasons.contains(&Reason::Direct),
+            node.superseded_by.as_slice(),
+        ) {
+            (true, []) => format!("take {name}:{id} out of `rules`"),
+            (true, [next]) => format!(
                 "replace {name}:{id} with {name}:{next} in `rules` (`statute upgrade --replace-superseded` does it)"
             ),
-            (true, None) => format!("take {name}:{id} out of `rules`"),
+            (true, many) => format!(
+                "replace {name}:{id} in `rules` with those of {} that apply",
+                refs(name, many)
+            ),
             (false, _) => {
                 let by = reasons.iter().find_map(|r| match r {
                     Reason::ParentOf(b) | Reason::RequiredBy(b) => Some(*b),

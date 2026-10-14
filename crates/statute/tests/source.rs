@@ -312,6 +312,36 @@ fn superseded_names_its_successor() {
     );
 }
 
+#[test]
+fn superseded_by_a_list() {
+    let split = |by: &str| {
+        edit(
+            rule(2, 1, &format!("superseded-by = {by}")),
+            "status = \"draft\"",
+            "status = \"superseded\"",
+        )
+    };
+    let with = |by: &str| load(&[domain(1), split(by), rule(3, 1, ""), rule(4, 1, "")]);
+    assert_clean(&with("[3, 4]"));
+    assert_clean(&with("[3]"));
+    assert_error(&with("[]"), "2.toml", "`superseded-by` is empty");
+    assert_error(&with("[3, 3]"), "2.toml", "`superseded-by` lists 3 twice");
+    assert_error(
+        &with("[3, 2]"),
+        "2.toml",
+        "`superseded-by` names the rule itself",
+    );
+    assert_error(&with("[3, 5]"), "2.toml", "superseded-by 5 does not exist");
+    // Requiring the split rule names both successors.
+    let mut nodes = vec![domain(1), split("[3, 4]"), rule(3, 1, ""), rule(4, 1, "")];
+    nodes.push(rule(5, 1, "requires = [2]"));
+    assert_warning(
+        &load(&nodes),
+        "5.toml",
+        "`requires` names rule 2, which is superseded by 3, 4; require those of them that apply instead",
+    );
+}
+
 // Languages and translations.
 
 fn translated(hash: &str) -> (u64, String) {

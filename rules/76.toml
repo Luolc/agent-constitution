@@ -1,0 +1,46 @@
+id = 76
+slug = "write-agreed-narrowings-into-the-text"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["evidence.grounds", "independent-review"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write a narrowing agreed in discussion into the repository text"
+zh = "讨论中同意的收窄，写进仓库正文"
+
+[text.statement]
+en = "Write each narrowing agreed in a message or a review comment about a change into the repository text the change writes, and before you report the change done, check that each one is there."
+zh = "在关于一个变更的消息或审查评论里同意的每一处收窄，都写进这个变更写入仓库的正文；报告变更完成之前，核对每一处都已写入。"
+
+[text.reason]
+en = '''
+A narrowing agreed in a message or a comment changes what the change claims or covers, and the review approves the change with it ({@constitution:independent-review}). Messages and comments are not where a later reader looks; a narrowing that stays there leaves the repository claiming more than was agreed, with no grounds for the rest ({@constitution:evidence.grounds}). Having said it is not having written it, so the check comes before the report.
+'''
+zh = '''
+在消息或评论里同意的收窄，改变了这个变更所主张或覆盖的范围，审查也是连同它一起批准的变更 ({@constitution:independent-review})。之后的读者不会去翻消息和评论；收窄只留在那里，仓库里的说法就比同意的更宽，多出的部分没有依据 ({@constitution:evidence.grounds})。说过不等于写过，所以核对要在报告之前。
+'''
+
+[text.verification]
+en = '''
+A narrowing is an agreement that a claim holds in less than it said, or that a rule, a feature or a statement of scope covers less, for example "only on Linux", "measured once, not proven", "generated files excluded". It is agreed when one party proposed it and the author accepted it, whoever proposed it. It is about the repository text when that text states the claim or the scope that was narrowed; a narrowing of the change alone, with nothing in the repository text it bears on, is outside this rule; {@rule:56} covers those accepted in review rounds.
+
+The narrowing is written at the claim it narrows, in the repository text of the change. Stating it only in the pull request description, a comment or a message does not count. Before reporting the change done, the author goes through the messages and the review comments of the change and checks each agreed narrowing against the text.
+
+Violated when a change is reported done while a narrowing agreed in a message or a review comment about it is missing from the repository text that states what it narrows.
+'''
+zh = '''
+收窄，指同意一个说法的成立范围比它原来说的小，或者一条规定、一项功能、一段范围说明覆盖的比原来少，例如「只在 Linux 上」「只测了一次，未证明」「生成的文件除外」。一方提出、作者接受了的，就算同意，不论是谁提出的。仓库正文陈述了被收窄的那个说法或那个范围的，这处收窄就关乎仓库正文；只收窄变更本身、仓库正文里没有与之相关内容的，不在本规定之内；在审查轮次中接受的这类收窄由 {@rule:56} 管。
+
+收窄写在仓库正文里它所收窄的说法处。只写在 pull request 描述、评论或消息里的，不算。报告变更完成之前，作者逐一翻看这个变更的消息和审查评论，把每一处同意的收窄都与正文核对一遍。
+
+变更报告完成时，关于它的消息或审查评论里同意的某处收窄，没有写进陈述被收窄内容的仓库正文的，即为违反本规定。
+'''
+
+[translations]
+zh = "afa6275c39d31cf2c23e39c808982fb6619dd4ae2f579a2e142a77b096082f06"

@@ -10,5 +10,6 @@ pub mod manifest;
 pub mod node;
 pub mod project;
 pub mod resolve;
+pub mod skill;
 pub mod source;
 pub mod specifier;

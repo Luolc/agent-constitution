@@ -82,7 +82,8 @@ question: does it change what counts as compliant?
   Rewording, a new example, a fix to a bug in its check: what was
   compliant stays compliant, and what was a violation stays one.
 - If it does, the change gets a new ID. The old rule is marked
-  superseded, names the rule that supersedes it, and stays in the source
+  superseded, names the rule that supersedes it (or the rules, when it
+  is split into several), and stays in the source
   for good. Only a rule of the same source can supersede it (see
   [Sources and references](#sources-and-references)).
 
@@ -191,7 +192,10 @@ The fields:
 - `kind`: `rule`, `one-of` or `domain`.
 - `status`: `draft`, `trial`, `active`, `superseded` or `repealed`.
 - `superseded-by`: the ID of the rule of the same source that supersedes
-  this one; present only when `status` is `superseded`.
+  this one, or a list of IDs when several rules together take its place,
+  `superseded-by = [22, 23]`; present only when `status` is
+  `superseded`. Each names another rule, and none twice; a list is never
+  empty.
 - `lang`: the language the rule was written in, its original, as a
   language code such as `"en"` or `"zh"`.
 - `parent`: the ID of the parent node, a rule, a one-of or a domain of the
@@ -343,10 +347,11 @@ path = "."
 Upgrading is an explicit step that rewrites the lock file and shows the
 diff of every rule whose revision moved, and of every rule a requirement
 brought in or dropped. When the rule set enables a superseded rule, the
-build warns and names its successor. For a rule listed in `rules` or a
+build warns and names its successors. For a rule listed in `rules` or a
 pack root in `packs`, one command, `statute upgrade
 --replace-superseded`, replaces the old ID with the new one in the rule
-set; for a rule brought in by another, the warning names the rule that
+set when there is one successor, and leaves the choice among several to
+the user; for a rule brought in by another, the warning names the rule that
 brings it in. An enabled repealed rule draws a warning too. These are
 warnings, not errors, since the rule set keeps working as it did.
 Downstream users do not have to follow the supersession chain by hand.
@@ -499,7 +504,26 @@ and say "you broke this" belongs in a rule; what only helps an agent get
 it right belongs in a skill.
 
 A skill declares which rules it implements, and it is installed only when
-at least one of them is in the rule set. A repository's `AGENTS.md` keeps
+at least one of them is in the rule set. It declares them in the
+`metadata` map of its front matter, under the key `statute-rules`: the
+IDs of rules of its own source, separated by spaces.
+
+```yaml
+---
+name: example-skill
+description: How to do the thing that rules 42 and 51 require.
+metadata:
+  statute-rules: "42 51"
+---
+```
+
+The [Agent Skills specification](https://agentskills.io/specification)
+allows only `name`, `description`, `license`, `compatibility`,
+`metadata` and `allowed-tools` in the front matter, and only strings as
+the values of `metadata` (read 2026-10-14); hence a string under
+`metadata` and not a key of its own. A skill that declares no rules is
+never installed, and one that names a rule its source does not have
+fails the compile. A repository's `AGENTS.md` keeps
 only what is specific to that repository (what it is, its language, its
 layout, its check commands) and names the rule set it uses
 (`division-of-instructions.project-instructions`). A rule set is chosen
@@ -585,7 +609,7 @@ The build checks these constraints:
   the build fails on it; so it does on a rule that requires a one-of with
   no children yet.
 - A rule that requires a superseded or repealed rule draws a warning,
-  which names the successor when there is one.
+  which names the successors when there are any.
 
 **Missing requirements are added.** When a rule set enables a rule
 without one it requires, the tool adds the missing rule, as a package
@@ -793,12 +817,10 @@ and a rule set with its lock file, and writes:
   of the enabled rules;
 - the hook configuration that runs the checks.
 
-The first version writes the `AGENTS.md` only: `statute compile` writes
-it next to `statute.toml`, or to another file with `--output`, and only
-when the lock file is what `statute lock` would write now. It replaces
-only a file it wrote itself, whose first line is its comment that the
-file is generated: a file written by hand is left as it is, and the
-command fails. It holds, in
+`statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
+another file with `--output`, and the other three next to it (below),
+and only when the lock file is what `statute lock` would write now. The
+`AGENTS.md` holds, in
 this order: a comment that the file is generated; a line with the
 constitution's edition, revision and source; the constitution's version
 for agents in the rule set's language, the file
@@ -823,8 +845,49 @@ constitution's build ([Compilation](compilation.md)); unlike that build,
 citations in a row are not shortened (`Art. IV §1, Art. IV §2`). A
 citation of a node or provision that does not exist fails the command,
 naming the rule and the part. The rules' files and their hashes in the
-lock file are unchanged. The skill directories, the check
-binary's version and the hook configuration are not written yet.
+lock file are unchanged.
+
+In the directory of the `AGENTS.md`, `statute compile` also writes:
+
+- each skill an enabled rule needs ([Rules and skills](#rules-and-skills)),
+  copied whole from `skills/<name>/` of the source to
+  `.agents/skills/<name>/`, with a file `.statute-generated` added, and a
+  link to that copy, `.claude/skills/<name>`, whose target is the
+  relative path `../../.agents/skills/<name>`. Each skill has a link of
+  its own, never one for the whole directory nor one for `SKILL.md`
+  alone; Claude Code reads a repository's skills only from
+  `.claude/skills/` (read 2026-10-14). Links are made only on a Unix
+  system: elsewhere, a rule set that needs a skill fails the command. A
+  skill may hold only directories and regular files;
+- `statute-checks.toml`: the version of the statute that compiled it,
+  as `statute = "<version>"`, the binary whose built-in checks the
+  rules use, and one `[[commands]]` table per enabled rule with
+  `check = "command"`, ordered by ID, with its `rule`, `run` and
+  `tools`. The file changes with statute's version;
+- `statute-hooks.yaml`: a pre-commit configuration with one local hook
+  that runs `statute check` (`language: system`, so `statute` must be
+  on `PATH`). It leaves the repository's `.pre-commit-config.yaml` as it
+  is: run it with `pre-commit run --config statute-hooks.yaml`, or copy
+  its hook into the repository's own configuration.
+
+Each file starts with a comment that statute wrote it (`<!-- ... -->`
+in the `AGENTS.md`, `# ...` in the other two). Before writing anything,
+the command checks every place it would write, and when one holds
+something it did not write (a file without that first line, a skill
+directory without `.statute-generated`, a `.claude/skills/<name>` that
+is not its link), it writes nothing at all and fails. When a skill is to
+be written, `.agents/skills` and `.claude/skills` must be plain
+directories, or absent: a repository that links the whole of
+`.claude/skills` to `../.agents/skills` fails the command, which names
+the link, since statute writes a link per skill. A skill directory
+with `.statute-generated` that the rule set no longer needs is removed,
+with its link; nothing else in `.agents/skills/` or `.claude/skills/` is
+touched. The same input compiles to the same bytes, links included.
+The files are not written all at once: an error midway, such as a full
+disk, can leave part of the output, and running the command again
+finishes it. The order makes that work: a skill's
+`.statute-generated` is written before its files, a link is removed
+before its directory, and the `AGENTS.md` is written last.
 
 Compiling, checking and upgrading a rule set are one command-line tool
 ([The tool and the first version](#the-tool-and-the-first-version)).
@@ -872,7 +935,7 @@ rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
-`remove`, `upgrade`, `compile` (the `AGENTS.md` only) and `check`
+`remove`, `upgrade`, `compile` and `check`
 (built-in checks for rules 43 and 46, and for 3 and 7, which they
 supersede), for one source on disk. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
@@ -898,8 +961,10 @@ does. Without a `statute.lock` there is nothing to compare with, and it
 exits with status 1. With `--replace-superseded` it first replaces, in
 `rules` and `packs`, each superseded rule with its successor, following
 the chain to its end, and keeps the rest of the file as written; when
-the successor is listed already, the old entry is only taken out. A
-repealed rule is left for the user to take out. When the changed rule
+the successor is listed already, the old entry is only taken out. Where
+the chain reaches a rule with more than one successor, the entry is left
+as it is and the successors are listed, for the user to choose with
+`add` and `remove`. A repealed rule is left for the user to take out. When the changed rule
 set does not resolve, neither file is changed.
 
 **Moving over.** Today agents read the user-level instruction files of
