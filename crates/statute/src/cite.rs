@@ -54,6 +54,13 @@ impl Labels {
     pub fn get(&self, id: &str) -> Option<&str> {
         self.0.get(id).map(String::as_str)
     }
+
+    /// Every citation with its label, in order of citation.
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.0
+            .iter()
+            .map(|(id, label)| (id.as_str(), label.as_str()))
+    }
 }
 
 /// The entries of a directory named `<number>-<id>`: articles'
