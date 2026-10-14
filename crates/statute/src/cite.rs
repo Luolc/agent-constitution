@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 /// The label of every article, section and item of one edition, by
 /// citation, as the constitution's version for agents writes them:
 /// `Art. IV §1(2)` for `principals.competent`.
-pub struct Labels(pub BTreeMap<String, String>);
+pub struct Labels(BTreeMap<String, String>);
 
 impl Labels {
     /// Reads the numbers from the edition's sources, `articles` its
@@ -53,6 +53,13 @@ impl Labels {
 
     pub fn get(&self, id: &str) -> Option<&str> {
         self.0.get(id).map(String::as_str)
+    }
+
+    /// Every citation with its label, in order of citation.
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.0
+            .iter()
+            .map(|(id, label)| (id.as_str(), label.as_str()))
     }
 }
 

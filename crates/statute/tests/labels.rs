@@ -79,7 +79,11 @@ fn every_provision_is_labeled_as_the_build_labels_it() {
     assert!(!python.provisions.is_empty());
     assert!(!python.labels.is_empty());
     for (lang, theirs) in &python.labels {
-        let ours = Labels::load(&root.join(&python.articles), lang).unwrap().0;
+        let ours: BTreeMap<String, String> = Labels::load(&root.join(&python.articles), lang)
+            .unwrap()
+            .iter()
+            .map(|(id, label)| (id.to_string(), label.to_string()))
+            .collect();
         // Both sides label every provision and nothing else, so the
         // comparison below covers each of them.
         let keys = |m: &BTreeMap<String, String>| m.keys().cloned().collect::<BTreeSet<_>>();
