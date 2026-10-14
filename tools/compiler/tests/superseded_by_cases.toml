@@ -1,0 +1,57 @@
+# Values of `superseded-by` for rule 11, a superseded rule, in a source
+# that also holds domain 2, one-of 3 and rules 10 and 12. The compiler
+# (test_rule_tree.py) and statute (crates/statute/tests/superseded_by.rs)
+# each read rule 11 with every value, and agree on whether it passes: a
+# value that fails draws errors on rules/11.toml and on no other file.
+
+[[cases]]
+value = "10"
+passes = true
+
+[[cases]]
+value = "[10]"
+passes = true
+
+[[cases]]
+value = "[10, 12]"
+passes = true
+
+[[cases]]
+value = "[]"
+passes = false
+
+[[cases]]
+value = "11"
+passes = false
+
+[[cases]]
+value = "[10, 11]"
+passes = false
+
+[[cases]]
+value = "[10, 10]"
+passes = false
+
+[[cases]]
+value = "2"
+passes = false
+
+[[cases]]
+value = "[10, 3]"
+passes = false
+
+[[cases]]
+value = "99"
+passes = false
+
+[[cases]]
+value = "[12, 99]"
+passes = false
+
+[[cases]]
+value = '"10"'
+passes = false
+
+[[cases]]
+value = '[10, "12"]'
+passes = false

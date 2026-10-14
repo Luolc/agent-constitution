@@ -355,16 +355,19 @@ class SiteTest(unittest.TestCase):
     )
 
   def test_rule_pages(self):
-    """Every node has a page; a superseded rule's names its successor."""
+    """Every node has a page; a superseded rule's names its successors."""
     raw = self.build(raw=True)
     pages = {p: visible(t) for p, t in raw.items()}
     for lang in ("", "zh/"):
       for node_id in range(1, 7):
         self.assertIn(f"{lang}rules/{node_id}/index.html", pages)
     self.assertIn(
-      "Rule 4 Superseded by 5. Rule 5 . Old. Reason Why.",
+      "Rule 4 Superseded by 5. Rule 5 , 6. Rule 6 . Old. Reason Why.",
       pages["rules/4/index.html"],
     )
+    # The successors joined as each language writes a list.
+    self.assertIn("</a>, <a", raw["rules/4/index.html"])
+    self.assertIn("</a>、<a", raw["zh/rules/4/index.html"])
     self.assertNotIn("Superseded by", pages["rules/5/index.html"])
     self.assertIn(
       "Rule 3 See Art. I §1 and rule 6 . Reason Why. Verification Violated when"
