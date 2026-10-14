@@ -1,0 +1,14 @@
+{{- /* A page of the design (content/design/_content.gotmpl): its title
+  and its text, in the constitution's fonts and column but set as a
+  document, with bullets and headings at the left. A Chinese page whose
+  file has no translation yet shows the English text under a note. */ -}}
+{{ define "main" }}
+<article class="markdown book-article"><div class="design">
+{{ printf "# %s {anchor=false}" .Title | .RenderString }}
+{{- if and (ne site.Language.Lang "en") (not .Params.translated) }}
+<p class="untranslated">{{ i18n "untranslated" }}</p>
+{{- end }}
+{{ .Content }}
+</div>
+</article>
+{{ end }}

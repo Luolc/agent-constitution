@@ -1,4 +1,4 @@
-<!-- en-sha256: 781a912fdb6a42e660cce7910b3ae76026b8f94ed951d768e95f0df218e955ca -->
+<!-- en-sha256: 4ded711379204e0d3e96f5e3c8652c46b275e8ecdbbe650c7644fc57f6e28b0c -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -26,6 +26,7 @@ constitution/
 docs/
   design/                 本设计，一部分一个文件，
                           由 README.md 索引                            A
+    zh/                   本设计的中文译文，每个文件一份同名译文       A
 rules/
   <id>.toml               一条通用规定一个文件，含各语言的正文         A
   retired-ids.txt         已删除规定的 ID，一行一个                    A
@@ -62,6 +63,8 @@ tools/                    一个 uv workspace，每个子目录一个 Python 项
     src/repo_checks/
       check_instruction_changes.py  指令文件单独变更
                           (check-instruction-changes)                  A
+      check_design_translation.py  设计的中文译文与英文同步
+                          (check-design-translation)                   A
       lint_zh_sources.py  对 zh 源文本跑 limae (lint-zh-sources)       A
     tests/                它们的测试                                   A
   <others>                编译器、检查程序、私有词扫描程序             B
