@@ -4,6 +4,8 @@ A small valid constitution with its rules, its expected outputs, and the
 TestCase that writes it.
 """
 
+from collections.abc import Iterator
+import contextlib
 import hashlib
 from pathlib import Path
 import re
@@ -424,6 +426,26 @@ class Tree(unittest.TestCase):
     text = path.read_text(encoding="utf-8")
     self.assertIn(old, text)
     path.write_text(text.replace(old, new, count), encoding="utf-8")
+
+  @contextlib.contextmanager
+  def edited(self, name: str, old: str, new: str) -> Iterator[None]:
+    """Edit a file for the block, and restore it after, even on a failure.
+
+    Args:
+      name: the file, relative to the root.
+      old: the text to replace.
+      new: the text to put in its place.
+
+    Yields:
+      Nothing; the file holds `new` inside the block.
+    """
+    path = self.root / name
+    text = path.read_text(encoding="utf-8")
+    self.edit(name, old, new)
+    try:
+      yield
+    finally:
+      path.write_text(text, encoding="utf-8")
 
   def move(self, old, new):
     (self.root / new).parent.mkdir(parents=True, exist_ok=True)

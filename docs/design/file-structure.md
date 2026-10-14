@@ -100,8 +100,8 @@ web/                      the static site's Hugo project: hugo.toml,
                           commit                                       A
 site/                     built static site, not committed             A
 .github/workflows/        CI                                           A
-.github/assets/           the README's icon, diagrams and screenshots,
-                          light and dark                               A
+.github/assets/           the README's icon and diagrams, light and
+                          dark                                         A
 .pre-commit-config.yaml   commit hooks                                 A
 pyproject.toml            the workspace root: its members, Python
                           version, pins of limae, pre-commit and the

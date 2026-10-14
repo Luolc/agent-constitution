@@ -1,11 +1,11 @@
 id = 56
 slug = "description-read-back"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 15
-authority = ["verification", "evidence.facts", "independent-review.reviewed-version"]
+authority = ["evidence.facts", "independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
 check = "review"

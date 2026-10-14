@@ -9,10 +9,16 @@ use crate::node::{Check, Id};
 use crate::project::Project;
 
 mod command;
+mod github;
 mod r3;
 mod r43;
 mod r46;
+mod r50;
+mod r58;
+mod r61;
 mod r7;
+mod r71;
+mod yaml;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Outcome {
@@ -83,9 +89,16 @@ pub fn run(project: &Project, ctx: &Context) -> Vec<(Id, Report)> {
                     7 => r7::check(ctx),
                     43 => r43::check(ctx),
                     46 => r46::check(ctx),
+                    50 => r50::check(ctx),
+                    58 => r58::check(ctx),
+                    61 => r61::check(ctx),
+                    71 => r71::check(ctx),
                     _ => Report::new(
                         Outcome::Inconclusive,
-                        format!("no built-in check for rule {id} in this version of statute"),
+                        format!(
+                            "no built-in check for rule {} in this version of statute",
+                            project.source.show(id)
+                        ),
                     ),
                 },
                 Check::Command { run, tools } => command::check(ctx, run, tools),

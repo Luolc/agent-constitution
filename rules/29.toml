@@ -1,10 +1,10 @@
 id = 29
 slug = "job-agent-asks-through-relay"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
-parent = 14
+parent = 78
 authority = ["asking-principals", "asking", "accountable-agent", "decide-yourself"]
 constitution = ">=1"
 level = "project"

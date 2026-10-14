@@ -1,0 +1,13 @@
+id = 77
+slug = "git"
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Git"
+zh = "Git"
+
+[translations]
+zh = "b949c922b6ef9ffbf41eb853b99578624ca6f6475c4f13abe2995484b0348e5c"

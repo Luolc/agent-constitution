@@ -1,11 +1,11 @@
 id = 4
 slug = "find-next-work"
-revision = 2
+revision = 3
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 14
-authority = ["purpose", "automation-first.keep-moving", "delivered-tasks"]
+authority = ["automation-first.keep-moving", "delivered-tasks"]
 constitution = ">=1"
 level = "project"
 check = "review"

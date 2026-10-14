@@ -252,9 +252,8 @@ Hugo and checks its links, and then runs the build check with `--base` and
 the instruction-only check, both against the first parent of the checked-out
 merge commit on a pull request (`docs/design/checkers.md`), or against the
 commit before the push on a push to `main`. `check` is the required status check on `main`: a merge
-waits for it to pass, and the PR must be up to date with `main`. A PR that is
-behind `main`: run `gh pr update-branch <N>` or merge the latest `main`, rerun
-the checks, let the reviewer recheck the increment, then merge. Runners are
+waits for it to pass. The PR need not be up to date with `main`; the run on
+the push to `main` checks the merged result. Runners are
 pinned to `ubuntu-24.04`, and actions by commit SHA.
 
 `.github/workflows/pages.yml` ("Pages") runs on pushes to `main` and on a

@@ -270,12 +270,12 @@ root of the repository (named for the tool,
 rule set lists only the rules chosen directly:
 
 ```toml
-constitution = { source = "ac", edition = "2026-10" }
-rules = ["ac:42", "ac:51"]
-packs = ["ac:3"]
+constitution = { source = "R", edition = "2026-10" }
+rules = ["R42", "R51", "12"]
+packs = ["R3"]
 
 [sources]
-ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
 
 [compile]
 agents-md = ["statement"]
@@ -285,8 +285,10 @@ The rule set names the constitution's source and edition; the revision
 is the one at the commit of that source the lock file pins, and the lock
 file records it. `rules` lists the rules chosen directly and `packs` the
 roots of the packs enabled, each as a reference
-([Sources and references](#sources-and-references)). A child of a one-of
-is chosen by listing it in `rules`, here `ac:51`; there is no other
+([Sources and references](#sources-and-references)): here `R42` and
+`R51` are first-party rules and `12` is one of the repository's own. A
+child of a one-of is chosen by listing it in `rules`, here `R51`; there
+is no other
 field for it. A domain or a one-of listed in `rules` fails the build,
 which says to enable the domain as a pack and the one-of through one of
 its children. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
@@ -298,8 +300,9 @@ default.
 The lock file is TOML, written by the tool and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
 each source (its short name, address and commit), and each enabled rule,
-whether chosen directly or brought in by a requirement (its source, ID,
-revision and the SHA-256 of its file):
+whether chosen directly or brought in by a requirement (its reference,
+written as the rule set writes it, `R42` or `team:7`, and `L12` for a
+local rule; its revision; and the SHA-256 of its file):
 
 ```toml
 [constitution]
@@ -309,22 +312,27 @@ revision = "<revision>"
 commit = "<commit>"
 
 [[sources]]
-name = "ac"
+name = "R"
 address = "github.com/Luolc/agent-constitution"
 commit = "<commit>"
 
 [[rules]]
-source = "ac"
-id = 42
-revision = 1
-sha256 = "<SHA-256 of rules/42.toml>"
-
-[[rules]]
-source = "ac"
-id = 7
+rule = "R7"
 revision = 2
 sha256 = "<SHA-256 of rules/7.toml>"
+
+[[rules]]
+rule = "R42"
+revision = 1
+sha256 = "<SHA-256 of rules/42.toml>"
 ```
+
+One field, `rule`, names the rule in the same form everywhere else, in
+place of a source and an ID in two fields, so that a line of the lock
+file can be searched for as the rule set and the messages write it.
+A lock file of the earlier format, which named a rule by `source` and
+`id`, fails `upgrade` with a note to run `statute lock`, which writes it
+anew.
 
 A source on disk (`path`, see
 [Sources and references](#sources-and-references)) has no commit to
@@ -340,7 +348,7 @@ edition = "2026-10"
 revision = "1"
 
 [[sources]]
-name = "ac"
+name = "R"
 path = "."
 ```
 
@@ -400,13 +408,31 @@ Bazel.
 
 **Monorepos.** A rule set may be split by path into segments, each
 naming a directory and the rules for it. Exclusion is checked within each
-segment, and the compiler writes each segment's instruction file into its
-directory, so one part of a monorepo can use uv and another Bazel. This
-depends on how each agent reads instruction files in subdirectories,
-which differs between agents and has not been measured here. The first
-thing to check when this is implemented is, for each supported agent,
-whether it reads the instruction file of a subdirectory it works in; the
-segment design is fixed only after that.
+segment, so one part of a monorepo can use uv and another Bazel. What
+the agents do with instruction files in subdirectories was measured on
+2026-10-14, in non-interactive mode only (Claude Code 2.1.296, Codex
+0.159.3, Grok 1.0.50; Grok's project instructions load only in a trusted
+folder):
+
+- With the working directory in the subdirectory, all three load that
+  subdirectory's instruction file at the start.
+- With the working directory at the repository root and a file in the
+  subdirectory being changed, only Claude Code loads the subdirectory's
+  `CLAUDE.md` by itself, when it touches a file there. Codex and Grok
+  load nothing; the model has to go and read the file, and in the runs
+  here it did. In both runs where Grok read the subdirectory's file
+  before the root's, it followed the root's on a conflict, against its
+  documentation.
+- By default, Claude Code reads `AGENTS.md` only when no `CLAUDE.md` is
+  in the working directory or above it (a setting can make it read both;
+  not tested).
+
+So a segment cannot rely on its own directory's instruction file being
+read. The compiler writes every segment's rules into the instruction
+file at the repository root, and each such rule says which directory it
+applies to; the compiled output of one repository uses one file name. A
+subdirectory file may repeat a segment, but nothing depends on it being
+read.
 
 **Where it lives.** The design follows a package manager such as uv: a
 source is like a package index, a rule set like a project manifest, the
@@ -431,31 +457,72 @@ on its own schedule. The first version builds the repository level only
 A rule is found by its source and its ID. The commit is not part of
 that identity.
 
-**Naming a source.** A rule set gives each source a short local name, in
-a `[sources]` table, with its address and the tag or branch to follow:
+**Naming a source.** A rule set names each source in a `[sources]`
+table, with its address and the tag or branch to follow:
 
 ```toml
 [sources]
-ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
-A source may also be a directory on disk, `ac = { path = "." }`, relative
-to the rule set's directory: a repository that holds its own rules, as
-this one does, names itself this way. Its rules are in `rules/` below
-that directory and its constitution in `constitution/<edition>/`. The
-first version reads only one source, on disk, and reports a `git`
-source as not supported yet.
+The key `R` is reserved for the first-party source: this repo, which
+publishes the constitution and the general rules. A rule set declares
+it as it declares any other source, with the tag or the path to read,
+since a source the tool knew by itself would need a built-in address
+and version. Every other source has a short name of lowercase words
+joined by hyphens, which the rule set chooses. `L` and `local` are
+reserved for the repository's own rules (below), and `ac`, the
+first-party source's earlier name, fails with a note to name it `R`.
+A source may also be a directory on disk, `R = { path = "." }`,
+relative to the rule set's directory: a repository that holds its own
+rules, as this one does, names itself this way. Its rules are in
+`rules/` below that directory and its constitution in
+`constitution/<edition>/`. The first version reads only one source,
+on disk, and reports a `git` source as not supported yet.
 
-A reference is the name, a colon and the rule's ID: `ac:42`, `team:7`.
-The name means something only inside the file that defines it, so two
-rule sets may use `ac` for different sources. When a source moves to
-another address, one line of the rule set changes and no reference does.
-A source that references rules of other sources has its own `[sources]`
-table in the same shape, and its names need not agree with those of any
-rule set that uses it. The build matches sources by address, not by
-name: the `ac` of one file and the `core` of another are the same source
-when both point to the same address.
+**Three kinds of reference.** Each kind has a form of its own, so no
+reference can be read as another kind:
+
+- a first-party rule: `R` and the ID, `R42`;
+- a local rule, one in the `rules/` directory next to the rule set,
+  that is, of the repository that holds it: the ID alone, `12`; `L12`
+  and `local:12` mean the same;
+- a rule of another source: its short name, a colon and the ID,
+  `team:7`.
+
+statute names a rule in one form wherever it shows one: in its
+messages, in `statute explain`, in the lock file and in the compiled
+`AGENTS.md`. That form is `R42`, `L12` or `team:7`: a local rule is
+shown as `L12`, so that it never reads like `R12`. The site lists the
+first-party rules alone, as `R42`. A rule set keeps each entry as
+written, and the commands that add one write `R42`, `12` or `team:7`.
+
+When the first-party source is the rule set's own directory,
+`R = { path = "." }`, as in this repo, its `rules/` are the
+first-party rules. They are written and shown as `R12`, and a local
+reference to one, such as `12`, fails with a note to write `R12`, so
+that one file never has two names.
+
+The short name of another source means something only inside the file
+that defines it, so two rule sets may use `team` for different
+sources. When a source moves to another address, one line of the rule
+set changes and no reference does. A source that references rules of
+other sources has its own `[sources]` table in the same shape, and its
+names need not agree with those of any rule set that uses it. The
+build matches sources by address, not by name: the `team` of one file
+and the `core` of another are the same source when both point to the
+same address.
+
+**References in a rule.** In a rule's own file, a number in `requires`
+or `conflicts` and a citation `{@rule:<id>}` in its text name a rule
+of the same source. A rule names a rule of another source in
+`requires` or `conflicts` as `"R12"` or `"team:7"`, with the names of
+its own source's `[sources]` table. A rule of the first-party source
+names another first-party rule by its number alone; for `"R12"` there,
+statute says to write `12`. When compiled, a rule of the same
+source is shown with that source's prefix: `{@rule:12}` in a
+first-party rule is `R12`, in a local rule `L12`.
 
 **Versions sit on the source.** The rule set says which tag or branch of
 a source to follow; the lock file resolves it to an exact commit. This is
@@ -468,7 +535,7 @@ differs from the one that was chosen. So a rule set takes one version of
 each source.
 
 **Dependencies across sources.** A rule of one source may list a rule of
-another under `requires`, such as `"ac:12"`. The source of the requiring
+another under `requires`, such as `"R12"`. The source of the requiring
 rule then declares, in its `[sources]` table, which versions of that
 other source it works with, as a range written as a Python version
 specifier. At compile time the build looks for one version of each source
@@ -679,7 +746,8 @@ TOML file has this value") would keep needing one more case, "or", and
 check is code, of one of two kinds, and there is no third.
 
 **Our rules: Rust.** The checks of the rules in this repo are in the
-tool's crate ([The tool and the first version](#the-tool-and-the-first-version)),
+tool's crate
+([The tool and the first version](#the-tool-and-the-first-version)),
 with one module per rule, named for the rule's ID (`r42.rs` for
 rule 42), the way ruff and clippy implement each lint as a function. The
 rule's text and metadata stay in `rules/42.toml`, so the person writing a
@@ -687,9 +755,25 @@ rule and the one writing its check each change their own file; the
 module's test cases sit next to the check, in the crate. Common
 operations, such as reading a key from a TOML file, are ordinary helper
 functions in the same crate; an operation becomes a helper on its third
-repetition, not before (`simplicity`). The crate builds into one binary,
-released with the rules, so a downstream user installs one binary and has
-every check, with no scripts to deploy.
+repetition, not before (`simplicity`). The crate builds into one binary, so a
+downstream user installs one binary and has every check, with no scripts
+to deploy. The crate is published to crates.io with its own version, and
+publishing it is a release; the rules are released with tags of the
+repository ([Releases and versions](amendments-and-releases.md#releases-and-versions)).
+
+A check that needs the state of GitHub, of a pull request or of a CI
+run, reads it through the `gh` on the machine, run in the repository,
+where `gh api` finds the repository from its GitHub remote. statute never
+reads, stores or prints a token: the credential stays in `gh`'s own
+configuration. No `gh` on `PATH`, no login, a repository that is not on
+GitHub, a call that fails and one that has not answered within 60 s
+(stopped like a command past its time, below) are inconclusive, like any
+missing tool. What such a check looks at comes from the repository
+itself: the pull requests are those GitHub associates with `HEAD` (the
+one that merged it into the default branch, or else the open and merged
+ones that hold it), and a release is a tag on `HEAD`. A commit not
+pushed yet has no pull request, and a `HEAD` without a tag no release,
+and both are inconclusive.
 
 When a rule is superseded, its successor gets a new module, copied from
 the old one and changed as needed. The old module stays in the code,
@@ -736,10 +820,13 @@ rules of the repository; with `--base <ref>` it checks the change
 (`pass`, `violation`, `inconclusive`, or `review` for a rule without an
 automatic check) and a note, with the findings below, and then, for the
 reviewer, the reason and the verification of each rule that is
-inconclusive or for review. It exits with status 1 when a rule is
+inconclusive or for review, with their citations rendered as in the
+compiled `AGENTS.md`, a cited rule always as its title and reference
+(`Title (rule R42)`), since the output has no anchors to link to. It
+exits with status 1 when a rule is
 violated, and 0 otherwise. A built-in check that covers only part of its
 rule, finding nothing, is inconclusive, not a pass, since the rest of
-the rule is still for the reviewer:
+the rule is still for the reviewer. The built-in checks:
 
 - rule 46 (instruction-files-apart) tells instruction files, generated
   files and other files apart with the same path tables as
@@ -753,9 +840,40 @@ the rule is still for the reviewer:
   history, and is violated by a hit, shown by its place and gitleaks rule
   only; credentials gitleaks does not recognize, and places outside the
   repository, are left to the reviewer, and without gitleaks it is
-  inconclusive.
+  inconclusive;
+- rule 50 (commit-hook-credential-scan) reads `.pre-commit-config.yaml`,
+  and passes when a hook runs gitleaks with `--staged` and `--redact`,
+  at the commit stage and for every commit, with no file filter; the
+  hooks gitleaks publishes, under its present or its former repository
+  name, count by their own entry when their `rev` is v8.1.1 or later.
+  A hook whose command statute cannot see (gitleaks' own at an older or
+  unreadable `rev`, a hook of another repository, a local hook that runs
+  a script), a gitleaks hook without `--redact` or with a file filter,
+  another scanner, another hook framework's configuration and YAML
+  statute does not read are inconclusive. No hook configuration at all,
+  or one whose hooks at the commit stage all show their command and none
+  scans the staged changes, is a violation;
+- rule 58 (release-first-green-commit) takes a tag on `HEAD` as the
+  release, the default branch as the main branch, and as CI the workflow
+  holding a check the default branch requires, by branch protection or a
+  ruleset; it passes when that workflow's run for the push of `HEAD` to
+  the default branch concluded in success on attempt 1, and is violated
+  when it did not. Without a tag on `HEAD`, without a required check,
+  without such a run (no CI on pushes, or a commit not on the branch) and
+  while the run has not finished, it is inconclusive;
+- rule 61 (verdict-names-version) reads the verdicts on the pull
+  requests of `HEAD`: each comment or review whose text opens with
+  `Verdict:`, and each review that approves or asks for changes. A verdict
+  without the full SHA of a commit of its pull request is a violation; a
+  review also names the commit GitHub records it on;
+  verdicts given elsewhere, and whether the SHA named is the version
+  reviewed, are left to the reviewer;
+- rule 71 (no-automatic-merge) reads the timeline of the pull requests of
+  `HEAD`, and is violated when auto-merge was ever enabled on one, even if
+  it was disabled again or has merged it; other ways of merging
+  automatically, and who enabled it, are left to the reviewer.
 
-The rules these two supersede, 3 and 7, keep their modules, which run
+The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
 only for a rule set that still enables them.
 
 For each rule it is handed, the reviewer decides whether the rule is met
@@ -833,14 +951,16 @@ constitution's build writes, unchanged; and a heading "Rules" with the
 enabled rules. Each domain is a heading of level two, and each level of
 the tree one level deeper, down to level six, where deeper levels stay;
 a one-of none of whose children is enabled does not appear. A node's
-heading is its title and ID, after an anchor `rule-<id>`, which is unique
-within one source only. A requirement of a node under another domain is
+heading is its title and its reference as statute shows it (`R42`),
+after an anchor of `rule-` and that reference with a colon made a
+hyphen: `rule-R42`, `rule-L12`, `rule-team-7`, so the anchors of
+different sources never clash. A requirement of a node under another domain is
 a line "Requires:" with a link to that anchor; one within the domain is
 not rendered. A rule uses its translation into the language when it has
 one, and its original otherwise. The citations in a rule's text are
 rendered ([IDs](source-formats.md#ids)): `{@rule:<id>}` as the cited
 node's title, in the language as its heading is, linked to its anchor
-when the node is in the file, and followed by "(rule <id>)" otherwise; and
+when the node is in the file, and followed by "(rule R42)" otherwise; and
 `{@constitution:<id>}` as the provision's label in the language, in plain
 text as in the version for agents, such as `Art. IV §1(2)`. The labels
 come from the edition's sources, the numbers of the articles' and
@@ -866,8 +986,8 @@ In the directory of the `AGENTS.md`, `statute compile` also writes:
 - `statute-checks.toml`: the version of the statute that compiled it,
   as `statute = "<version>"`, the binary whose built-in checks the
   rules use, and one `[[commands]]` table per enabled rule with
-  `check = "command"`, ordered by ID, with its `rule`, `run` and
-  `tools`. The file changes with statute's version;
+  `check = "command"`, ordered by ID, with its `rule` (`"R42"`),
+  `run` and `tools`. The file changes with statute's version;
 - `statute-hooks.yaml`: a pre-commit configuration with one local hook
   that runs `statute check` (`language: system`, so `statute` must be
   on `PATH`). It leaves the repository's `.pre-commit-config.yaml` as it
@@ -905,7 +1025,8 @@ ordered along the parent tree, of a fixed number of rules a page
 short when it is long. Each rule has a page of its own with its reason
 and verification, its check, its requirements and conflicts (both sides
 of each conflict), the provisions of the constitution it cites, and all
-its metadata. A superseded rule keeps its page, so links to it keep
+its metadata. A rule of this repo is shown as `R42` there too. A
+superseded rule keeps its page, so links to it keep
 working, but it is left out of the lists by default.
 
 ## The tool and the first version
@@ -940,15 +1061,20 @@ which try the whole process on real work.
 
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
-(built-in checks for rules 43 and 46, and for 3 and 7, which they
-supersede), for one source on disk. Inherited rule sets and path segments are
+(built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
+which 43 and 46 supersede), for one source on disk. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
-another source, in `requires` or `conflicts` (`"team:7"`), are reported
-as not supported yet.
+another source, in `requires` or `conflicts` (`"R12"` or `"team:7"`),
+are reported as not supported yet. The three kinds of reference are
+read and shown as above, but with one source a rule set can use only
+the rules of that source: a local rule fails with a note to write
+`R12` when the first-party source is the rule set's own directory, and
+is reported as not supported yet when it is elsewhere, since the local
+rules would then be a second source.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, an empty `rules`, and one source on
-disk named `ac`. `--source <dir>` gives the source's directory, relative
+disk, the first-party source `R`. `--source <dir>` gives the source's directory, relative
 to the current one, `.` by default. `--edition` names the edition;
 without it, `init` takes the one directory under the source's
 `constitution/` that holds an `index.toml`, and fails when there is none
@@ -1036,9 +1162,9 @@ this design lands.
 - How versions are resolved across sources in detail: how the ranges
   that sources declare for each other are matched against tags and
   branches, and what the build reports when they disagree.
-- Path segments for monorepos, settled once it has been measured whether
-  each supported agent reads the instruction file of a subdirectory it
-  works in.
+- Path segments for monorepos: how an agent behaves in interactive mode,
+  which was not measured, and the syntax with which a rule in the root
+  file names the directory it applies to.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
 - The tool's final name, chosen before its first real release. `statute`

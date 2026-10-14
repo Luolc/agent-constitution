@@ -84,14 +84,12 @@ class FormatTest(Tree):
       ('check = "review"', 'check = "manual"', "`check` must be one of"),
       ("revision = 1", "revision = 0", "`revision` must be 1 or more"),
     ):
-      with self.subTest(new):
-        self.edit("rules/10.toml", old, new)
+      with self.subTest(new), self.edited("rules/10.toml", old, new):
         errors = self.errors()
         self.assertTrue(
           any(e.startswith("rules/10.toml:") and message in e for e in errors),
           errors,
         )
-        self.edit("rules/10.toml", new, old)
 
   def test_list_fields(self):
     self.edit(
@@ -114,10 +112,8 @@ class FormatTest(Tree):
       ),
       ('tools = ["uv"]', "tools = [1]", "`tools` must be a list of names"),
     ):
-      with self.subTest(new):
-        self.edit("rules/10.toml", old, new)
+      with self.subTest(new), self.edited("rules/10.toml", old, new):
         self.assertError(1, "rules/10.toml", message)
-        self.edit("rules/10.toml", new, old)
 
   def test_references(self):
     self.edit(
@@ -136,7 +132,7 @@ class FormatTest(Tree):
         ('["seven"]', f"`{key}` entry `seven`{bad}"),
         ("[0]", f"`{key}` entry `0`{bad}"),
         ("[-3]", f"`{key}` entry `-3`{bad}"),
-        ("[true]", f"`{key}` entry `True`{bad}"),
+        ("[true]", f"`{key}` entry `true`{bad}"),
         ("[2.5]", f"`{key}` entry `2.5`{bad}"),
         ('["team:07"]', f"`{key}` entry `team:07`{bad}"),
         ('["Team:7"]', f"`{key}` entry `Team:7`{bad}"),
@@ -144,21 +140,32 @@ class FormatTest(Tree):
         ("[3, 3]", f"`{key}` lists 3 twice"),
         ('["team:7", "team:7"]', f"`{key}` lists team:7 twice"),
       ):
-        with self.subTest(key=key, new=new):
-          self.edit("rules/10.toml", f"{key} = {old}", f"{key} = {new}")
+        with (
+          self.subTest(key=key, new=new),
+          self.edited("rules/10.toml", f"{key} = {old}", f"{key} = {new}"),
+        ):
           self.assertError(1, "rules/10.toml", message)
-          self.edit("rules/10.toml", f"{key} = {new}", f"{key} = {old}")
 
   def test_constitution_compares_whole_revisions(self):
     old = 'constitution = ">=1"'
-    for good in (">=1", "==1", ">= 1, <4", " > 0 ,!=3", "<=2"):
-      with self.subTest(good):
-        self.edit("rules/10.toml", old, f'constitution = "{good}"')
+    for good in (
+      ">=1",
+      "==1",
+      ">= 1, <4",
+      " > 0 ,!=3",
+      "<=2",
+      "<=18446744073709551615",
+    ):
+      with (
+        self.subTest(good),
+        self.edited("rules/10.toml", old, f'constitution = "{good}"'),
+      ):
         self.assertEqual(self.errors(), [])
-        self.edit("rules/10.toml", f'constitution = "{good}"', old)
     for bad in ("~=1", "1", "any", ">=1.0", "==1.*", "===1", "", ">=1,"):
-      with self.subTest(bad):
-        self.edit("rules/10.toml", old, f'constitution = "{bad}"')
+      with (
+        self.subTest(bad),
+        self.edited("rules/10.toml", old, f'constitution = "{bad}"'),
+      ):
         self.assertError(
           1,
           "rules/10.toml",
@@ -166,7 +173,20 @@ class FormatTest(Tree):
           " clauses such as `>=1` joined by commas, each with"
           " >=, <=, >, <, == or !=",
         )
-        self.edit("rules/10.toml", f'constitution = "{bad}"', old)
+
+  def test_constitution_revisions_fit_in_64_bits(self):
+    old = 'constitution = ">=1"'
+    for bad in (">=18446744073709551616", ">=1, <018446744073709551616"):
+      with (
+        self.subTest(bad),
+        self.edited("rules/10.toml", old, f'constitution = "{bad}"'),
+      ):
+        self.assertError(
+          1,
+          "rules/10.toml",
+          f'`constitution = "{bad}"` names a revision above'
+          " 18446744073709551615, the largest there is",
+        )
 
   def test_language_codes(self):
     self.write("rules/2.toml", DOMAIN.replace("zh =", "zh-Hant ="))
@@ -272,16 +292,25 @@ class SupersededTest(Tree):
 
   def test_superseded_by_another_rule(self):
     for target in ("2", "11", "99"):
-      with self.subTest(target):
-        self.edit(
+      with (
+        self.subTest(target),
+        self.edited(
           "rules/11.toml", "superseded-by = 10", f"superseded-by = {target}"
-        )
+        ),
+      ):
         self.assertError(
           3, "rules/11.toml", f"superseded-by {target} is no other rule"
         )
-        self.edit(
-          "rules/11.toml", f"superseded-by = {target}", "superseded-by = 10"
-        )
+
+  def test_superseded_by_shows_a_boolean_as_toml_writes_it(self):
+    with self.edited(
+      "rules/11.toml", "superseded-by = 10", "superseded-by = [true]"
+    ):
+      self.assertError(
+        1,
+        "rules/11.toml",
+        "`superseded-by` entry `true` is not a rule ID, a number from 1",
+      )
 
   def test_superseded_by_cases(self):
     """The cases statute reads too, with the same outcome."""
@@ -293,15 +322,15 @@ class SupersededTest(Tree):
     )
     cases = tomllib.loads(CASES.read_text(encoding="utf-8"))["cases"]
     self.assertGreater(len(cases), 0)
-    value = "10"
     for case in cases:
-      with self.subTest(case["value"]):
-        self.edit(
+      with (
+        self.subTest(case["value"]),
+        self.edited(
           "rules/11.toml",
-          f"superseded-by = {value}\n",
+          "superseded-by = 10\n",
           f"superseded-by = {case['value']}\n",
-        )
-        value = case["value"]
+        ),
+      ):
         errors = self.errors()
         self.assertEqual(not errors, case["passes"], errors)
         self.assertTrue(

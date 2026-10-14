@@ -1,10 +1,10 @@
 id = 70
 slug = "local-main-fast-forward-only"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
-parent = 14
+parent = 77
 authority = ["independent-review.another-party", "independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
