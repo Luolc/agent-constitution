@@ -294,8 +294,9 @@ constitution/articles/
 - `status`: `draft` until a person first approves the text, then
   `active`.
 - `edition`: the name of the edition, the month a principal approved it
-  as in force, `YYYY-MM`; absent while `status` is `draft`, required
-  once it is `active`. An edition is a whole version of the text, like a
+  as in force, `YYYY-MM`; required once `status` is `active`. A draft
+  may name the edition it prepares, the month it is meant to be approved
+  in; if it is approved in another month, the edition is renamed then. An edition is a whole version of the text, like a
   constitution named by the year it was adopted. Starting a new edition
   is itself an amendment and needs a principal's approval, and at most
   one edition starts in a month, so no two share a name; within an
@@ -313,7 +314,8 @@ constitution/articles/
   the shapes of headings, numbers and citations, the repealed note). Adding
   a language means adding one entry there and one key to every text table.
 - `[title]`: the title, one line per language; the build adds the
-  edition or the draft mark after it (see Numbering).
+  edition after it, or the draft mark for a draft that names none (see
+  Numbering).
 - `[front]`: the Markdown between the title and the first article (draft
   notice, `## Preamble` and its text), per language. It may cite.
 
@@ -407,8 +409,8 @@ is written `⟨must-ask⟩` in the table:
 
 | Item | en | zh |
 | --- | --- | --- |
-| Title, draft | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
-| Title, active | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
+| Title | `# Agent Constitution (2026-10 edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
+| Title, draft without `edition` | `# Agent Constitution (Draft)` | `# Agent 宪法 (草案)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
 | Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
 | List item | `    -   ⟨must-ask.capital⟩(**3**) <content>` | `    -   ⟨must-ask.capital⟩(**三**) <content>` |
@@ -463,8 +465,9 @@ number is bold inside its parentheses, because limae asks for a space
 between `**` and a parenthesis.
 
 Each output starts with a plain-text paragraph, in its own language:
-generated file, do not edit it, edit the sources; and the `status`,
-`revision` and language; in the full version, when a part has the
+generated file, do not edit it, edit the sources; and the `revision`,
+followed by `(draft)` (`(草案)`) while `status` is `draft`, and the
+language; in the full version, when a part has the
 asterisk (a provision marked for maintainers, or the preamble's heading),
 also what the asterisk means: the parts marked are background for people,
 where the constitution comes from, how it is organized and how it is
@@ -830,7 +833,7 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from one draft to the next whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`build_site.py`, then `check_site_anchors.py`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each relative link to another page leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
@@ -853,8 +856,8 @@ first one that finds errors, printing all of that one's errors:
    section's name; there is no `constitution/sections/`; `id` equals the
    name without its number; `status`, item `number` and `repealed` are
    well formed and agree with each other and with the status of
-   `index.toml`; `edition` is a real month `YYYY-MM`, absent when
-   `index.toml` is `draft` and present when it is `active`. Hidden names
+   `index.toml`; `edition` is a real month `YYYY-MM`, present when
+   `index.toml` is `active`. Hidden names
    (starting with `.`, such as `.DS_Store` or an editor's swap file) are
    skipped.
 2. IDs: each has the format; article and section IDs are unique in the
@@ -887,9 +890,11 @@ first one that finds errors, printing all of that one's errors:
    article directories yet, or has an earlier `edition` than the current
    one, skips the comparison with a printed note.
 
-   The revision part of check 7 also runs when the base is a `draft`, as
-   long as the base and the current `index.toml` have the same `edition`
-   (a draft has none) and the base has an `index.toml`. The constitution
+   The revision part of check 7 also runs when the base is a `draft`. It
+   runs when the base has an `index.toml` with the same `status` as the
+   current one, and, when both are `active`, the same `edition`; two
+   drafts are compared whatever edition each names, so that renaming the
+   edition a draft prepares does not start its revisions again. The constitution
    text has changed when a file under `constitution/articles/` was added,
    removed or edited, or `index.toml` differs in any line other than
    `revision`; the generated files and `rules/` do not count. If it
@@ -897,8 +902,9 @@ first one that finds errors, printing all of that one's errors:
    it. "Greater" is strict, not "plus one", so that a change which jumps
    ahead is not an error. A draft `0.<n>` compares by the number `n`
    (`0.9` < `0.10`) and is below every whole-number revision; a revision
-   of any other form is an error. When the edition differs, the revisions
-   are not compared. Its purpose is that one revision names one text.
+   of any other form is an error. When the status differs (a draft
+   approved), or the edition of two active texts, the revisions are not
+   compared. Its purpose is that one revision names one text.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
