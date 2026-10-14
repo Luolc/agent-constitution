@@ -38,7 +38,7 @@ The yes counts only when all three hold. When one fails, or the agent cannot ope
 
 When unsure whether a check holds, treat it as failed.
 
-Violated when an agent acts on a relayed yes that it did not open itself or that fails any of the three checks.
+Violated when an agent acts on a relayed yes that came without a reference, that it did not open itself, or that fails any of the three checks.
 '''
 zh = '''
 执行的 agent 按引用 ({@rule:38})，用自己的访问途径打开原消息，核对三点：
@@ -51,8 +51,8 @@ zh = '''
 
 不确定某一点是否通过核对的，按未通过处理。
 
-agent 凭转告的同意行事，而它没有亲自打开原消息，或者三点中有一点未通过的，即为违反本规定。
+agent 凭转告的同意行事，而这一同意没有附引用、它没有亲自打开原消息，或者三点中有一点未通过的，即为违反本规定。
 '''
 
 [translations]
-zh = "8a4f477e521f556faef57dccdc694772098642776152ec7e6b90881969cae672"
+zh = "65e7cced0c518720ba94c97a4212fb8536dcb9673a10491f31548d7730d27a8b"

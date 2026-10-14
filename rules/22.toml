@@ -32,15 +32,15 @@ The test prints whether the credential is set, and its length where that helps, 
 
 When unsure whether a way of testing could print the value, use one that plainly cannot.
 
-Violated when a presence test prints any part of the value, or its report claims more than presence.
+Violated when a presence test prints any part of the value, or its report claims more than presence or does not say that only presence was checked.
 '''
 zh = '''
 检查只打印凭证是否已设置，必要时再打印长度，不打印值。报告写明检查的是凭证是否存在，不说凭证可用；凭证是否可用按{@rule:23}检查。
 
 不确定某种检查写法是否会打印出值的，换一种明显不会打印的写法。
 
-存在性检查打印出了值的任何部分，或者报告的内容超出了凭证是否存在的，即为违反本规定。
+存在性检查打印出了值的任何部分，或者报告的内容超出了凭证是否存在，或者报告没有写明检查的只是凭证是否存在的，即为违反本规定。
 '''
 
 [translations]
-zh = "d7c29d44d3df9771ebe0de59747f57b52bd25390130addade85215a02eaedd8f"
+zh = "4be47570c746ea150eb1c2720765e1abf2f3ac0109156699e4dca776ec242143"

@@ -15,8 +15,8 @@ en = "Reproduce a heavy-load problem in an isolated environment"
 zh = "只在高负载下出现的问题，放到隔离环境里复现"
 
 [text.statement]
-en = "Reproduce a problem that only shows under heavy load in an isolated environment with capped resources, or, where none is available, record it as open work and report it."
-zh = "只在高负载下才能复现的问题，放到限制了资源的隔离环境里复现；没有这样的环境的，记为待办并报告。"
+en = "On a machine you share with others, reproduce a problem that only shows under heavy load in an isolated environment with capped resources, or, where none is available, record it as open work and report it."
+zh = "在与他人共用的机器上，只在高负载下才能复现的问题，放到限制了资源的隔离环境里复现；没有这样的环境的，记为待办并报告。"
 
 [text.reason]
 en = '''
@@ -30,13 +30,13 @@ agent 只能用正当的手段达成目标 ({@constitution:decency.legitimate-me
 en = '''
 An isolated environment with capped resources is one whose load cannot reach the others on the shared machine, such as a container with limited CPU. Where none is available, the agent records the problem as open work and reports it to whoever delegated the work, an agent or a person.
 
-Violated when an agent reproduces such a problem outside an isolated environment with capped resources, or, having none, neither records it nor reports it.
+Violated when an agent on a shared machine reproduces such a problem outside an isolated environment with capped resources, or, having none, neither records it nor reports it.
 '''
 zh = '''
 限制了资源的隔离环境，指负载波及不到共用机器上其他人的环境，例如限制了 CPU 的容器。没有这样的环境的，agent 把问题记为待办，并报告给委派这项工作的一方 (agent 或人)。
 
-agent 在限制了资源的隔离环境之外复现这类问题，或者没有这样的环境时既不记为待办也不报告的，即为违反本规定。
+agent 在共用的机器上、在限制了资源的隔离环境之外复现这类问题，或者没有这样的环境时既不记为待办也不报告的，即为违反本规定。
 '''
 
 [translations]
-zh = "43079478b1bcb2f1eaa0a4ff1f774bcdd410eb8facf1820f0263db822194ff28"
+zh = "084ef3005c0e11dbf1aa4b1fbf0349b6c237fa4f2f6222d4b017da90c830580c"

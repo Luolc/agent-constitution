@@ -16,7 +16,7 @@ zh = "发布须经委托人"
 
 [text.statement]
 en = "Treat a release, any act that makes a version or artifact available, as an item of {@constitution:must-ask}, which goes through a principal."
-zh = "发布，即使某个版本或制品对外可用的任何动作，按{@constitution:must-ask}所列事项处理，须经委托人。"
+zh = "发布 (使某个版本或制品对外可用的任何动作) 按{@constitution:must-ask}所列事项处理，须经委托人。"
 
 [text.reason]
 en = '''
@@ -28,14 +28,14 @@ zh = '''
 
 [text.verification]
 en = '''
-A release is, for example, pushing a release tag or publishing a package. Raising a version number, a dry run, or opening or merging a change that raises the version makes nothing available and is not a release.
+A release is, for example, pushing a release tag or publishing a package. Raising a version number or a dry run makes nothing available and is not a release, and neither is opening or merging a change that raises the version, unless the merge itself starts the publication.
 
 When unsure whether an act makes a version or artifact available, treat it as a release.
 
 Violated when an agent releases without the yes that {@constitution:must-ask} requires.
 '''
 zh = '''
-发布的例子有推送发布 tag、发布软件包。提升版本号、试运行，以及提交或合并提升版本号的变更，都没有让任何东西对外可用，不算发布。
+发布的例子有推送发布 tag、发布软件包。提升版本号和试运行都没有让任何东西对外可用，不算发布；提交或合并提升版本号的变更也不算，除非合并本身就会启动发布。
 
 不确定某个动作是否使版本或制品对外可用的，按发布处理。
 
@@ -43,4 +43,4 @@ agent 未取得{@constitution:must-ask}所要求的同意就发布的，即为�
 '''
 
 [translations]
-zh = "cd5d1993f8f4d0aa29887f3e8b53cfa550588f3f2477119a6d652ce545f1884a"
+zh = "3ec3960fbe8a07bc9aef28f7128a6e4216c772d0394c28bf82e25e5da7229246"
