@@ -209,6 +209,18 @@ class CheckTest(Tree):
       "`items[1]` is active while index.toml is draft",
     )
 
+  def test_1_draft_rule_under_active_index(self):
+    """A rule may stay draft once the constitution is active; a section not."""
+    self.activate()
+    self.edit("rules/rule.toml", 'status = "active"', 'status = "draft"')
+    self.assertEqual(self.errors(), [])
+    self.edit(f"{B}/01-beta-one.toml", 'status = "active"', 'status = "draft"')
+    self.assertFails(
+      1,
+      f"{B}/01-beta-one.toml:2",
+      "a section is draft while index.toml is active",
+    )
+
   def test_1_edition(self):
     index = "constitution/2026-10/index.toml"
     for bad in ("2026-13", "2026-10-20"):
