@@ -45,9 +45,8 @@ and Grok read.
 
 It is for you if you run coding agents across several repositories and
 want one set of principles they all follow, with rules you can choose and
-check. The constitution is in force and builds
-into Markdown; the rule system and its compiler are
-designed but not written yet.
+check. The constitution is in force and builds into Markdown; the rule
+system and its compiler are designed but not written yet.
 
 ## Quick start
 
