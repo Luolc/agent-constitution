@@ -821,7 +821,10 @@ class CheckTest(Tree):
       'number = "1"\nstatus = "draft"\n',
       'number = "1"\n',
     )
-    self.assertFails(1, f"{A}/01-alpha-one.toml:1", "`items[0]` lacks `status`")
+    # The line of the item's `[[items]]` header.
+    self.assertFails(
+      1, f"{A}/01-alpha-one.toml:12", "`items[0]` lacks `status`"
+    )
 
   def test_1_languages_differ(self):
     self.edit(f"{B}/article.toml", 'zh = "第二"', 'fr = "Deuxième"')
@@ -927,9 +930,10 @@ class CheckTest(Tree):
       'number = "2"\nstatus = "draft"',
       'number = "2"\nstatus = "active"',
     )
+    # The item's own `status`, not the section's on line 2.
     self.assertFails(
       1,
-      f"{A}/01-alpha-one.toml:2",
+      f"{A}/01-alpha-one.toml:28",
       "`items[1]` is active while index.toml is draft",
     )
 
@@ -1040,6 +1044,10 @@ class CheckTest(Tree):
     self.write("rules/beta-one.toml", RULE.replace('"rule"', '"beta-one"'))
     self.assertEqual(self.errors(), [])
 
+  def test_1_retired_ids_not_utf8(self):
+    (self.root / "rules/retired-ids.txt").write_bytes(b"old-\xff\n")
+    self.assertFails(1, "rules/retired-ids.txt:1", "not UTF-8")
+
   def test_2_retired_rule_id(self):
     self.write("rules/retired-ids.txt", "old-rule\nrule\n")
     self.assertFails(
@@ -1108,6 +1116,14 @@ class CheckTest(Tree):
       f"{A}/01-alpha-one.toml:22",
       "zh `money.content` cites alpha; en does not",
     )
+
+  def test_5_on_its_own(self):
+    """Check 5 needs no other check to have run before it."""
+    errors = bc.Errors()
+    src = bc.load(self.root, errors)
+    assert src is not None
+    bc.check_refs(src, errors)
+    self.assertEqual(errors, [])
 
   def test_5_undefined(self):
     self.edit(
@@ -1734,6 +1750,25 @@ class BaseTest(Tree):
     self.assertEqual(errors, [])
     self.assertEqual(
       note, "base HEAD has no constitution/index.toml; numbering not compared"
+    )
+
+  def test_unreadable_base_file(self):
+    """A file the base lists but git cannot read fails check 7."""
+    self.commit_base()
+    blob = subprocess.run(
+      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{bc.INDEX}"],
+      check=True,
+      capture_output=True,
+      text=True,
+      env=git_env.clean(),
+    ).stdout.strip()
+    (self.root / ".git/objects" / blob[:2] / blob[2:]).unlink()
+    with contextlib.redirect_stderr(io.StringIO()) as err:
+      self.assertEqual(
+        bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1
+      )
+    self.assertIn(
+      f"check 7: `git show HEAD:{bc.INDEX}` failed:", err.getvalue()
     )
 
   def test_unknown_base(self):

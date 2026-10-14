@@ -7,9 +7,9 @@ appears twice on a page, and no list marker leaked into the text as a
 literal `- §` or `- 第` (a sign that the Markdown renderer did not see a
 list item where the build wrote one).
 
-Usage: check_site_anchors.py [<dir>], default site/. Errors print as
-`path: message`; the exit status is 1 on any error, also when the
-directory holds no HTML page.
+Usage: check_site_anchors.py [<dir>], default site/ of the repo this
+script is in. Errors print as `path: message`; the exit status is 1 on
+any error, also when the directory holds no HTML page.
 """
 
 import argparse
@@ -110,9 +110,9 @@ def main(argv: list[str] | None = None) -> int:
   parser.add_argument(
     "dir",
     nargs="?",
-    default="site",
+    default=Path(__file__).resolve().parent.parent / "site",
     type=Path,
-    help="the built site (default: site/)",
+    help="the built site (default: site/ of the repo this script is in)",
   )
   args = parser.parse_args(argv)
   pages = sorted(args.dir.rglob("*.html"))

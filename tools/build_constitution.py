@@ -35,12 +35,14 @@ error.
 
 import argparse
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 import re
 import subprocess
 import sys
 import tomllib
+from typing import Any, NamedTuple
 
 import git_env
 
@@ -338,6 +340,10 @@ STATUS = ("draft", "active", "repealed")
 MAINTAINERS = "maintainers"
 
 
+# A text in every language of index.toml: language -> text.
+Texts = dict[str, str]
+
+
 class Errors(list):
   """The errors found, each a line `path:line: check N: message`."""
 
@@ -353,7 +359,7 @@ class Errors(list):
     self.append(f"{path}:{line}: check {check}: {message}")
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Doc:
   """One parsed TOML file with its text, for locating errors by line.
 
@@ -364,26 +370,44 @@ class Doc:
   """
 
   path: Path
-  data: dict
+  data: dict[str, Any]
   text: str
 
-  def line(self, *needles: str) -> int:
-    """Return the first line holding the first needle found, else 1.
+  def line(self, *needles: str, start: int = 1) -> int:
+    """Return the first line holding the first needle found, else start.
 
     Args:
       *needles: the strings to look for, in order.
+      start: the line to search from, from 1.
 
     Returns:
       The line number, from 1.
     """
+    lines = self.text.split("\n")
     for needle in needles:
-      for n, line in enumerate(self.text.split("\n"), start=1):
+      for n, line in enumerate(lines[start - 1 :], start=start):
         if needle in line:
           return n
-    return 1
+    return start
+
+  def item_line(self, n: int) -> int:
+    """Return the line of the n-th `[[items]]` header, else 1.
+
+    Args:
+      n: the item's index, from 0.
+
+    Returns:
+      The line number, from 1.
+    """
+    headers = [
+      k
+      for k, line in enumerate(self.text.split("\n"), start=1)
+      if line.strip() == "[[items]]"
+    ]
+    return headers[n] if n < len(headers) else 1
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Item:
   """One list item of a section.
 
@@ -393,7 +417,7 @@ class Item:
     status: draft, active or repealed.
     repealed: the month it was repealed, if it was.
     content: its text, by language.
-    section: the section holding it.
+    section: the ID of the section holding it.
     omitted: whether the version for agents leaves out its text.
   """
 
@@ -401,17 +425,17 @@ class Item:
   number: str
   status: str
   repealed: str | None
-  content: dict
-  section: Section
+  content: Texts
+  section: str
   omitted: bool = False
 
   @property
   def ref(self) -> str:
     """How the constitution cites it: `<section id>.<item id>`."""
-    return f"{self.section.id}.{self.id}"
+    return f"{self.section}.{self.id}"
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Article:
   """One article.
 
@@ -428,11 +452,11 @@ class Article:
   id: str
   number: str
   repealed: str | None
-  title: dict
-  intro: dict | None
+  title: Texts
+  intro: Texts | None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Section:
   """One section.
 
@@ -454,12 +478,12 @@ class Section:
   number: str
   status: str
   repealed: str | None
-  content: dict
-  items: list[Item] = field(default_factory=list)
+  content: Texts
+  items: tuple[Item, ...] = ()
   omitted: bool = False
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Rule:
   """One general rule.
 
@@ -475,12 +499,30 @@ class Rule:
   doc: Doc
   id: str
   status: str
-  authority: list
-  title: dict
-  content: dict
+  authority: list[str]
+  title: Texts
+  content: Texts
 
 
-@dataclass
+class Text(NamedTuple):
+  """One multilingual text of the sources.
+
+  Attributes:
+    doc: the file holding it.
+    field: its field, as in error messages.
+    texts: the text, by language.
+    in_rule: whether a rule holds it.
+    repealed: whether what holds it is repealed.
+  """
+
+  doc: Doc
+  field: str
+  texts: Texts
+  in_rule: bool
+  repealed: bool
+
+
+@dataclass(frozen=True)
 class Sources:
   """Everything read from the sources.
 
@@ -491,8 +533,6 @@ class Sources:
     sections: the sections, in order.
     rules: the general rules.
     retired: rules/retired-ids.txt, in order.
-    provisions: constitution citation -> article | section | item.
-    repealed: the constitution citations that are repealed.
   """
 
   index: Doc
@@ -501,37 +541,70 @@ class Sources:
   sections: list[Section]
   rules: list[Rule]
   retired: list[str]
-  provisions: dict = field(default_factory=dict)
-  repealed: set = field(default_factory=set)
 
   @property
   def items(self) -> list[Item]:
     """Every list item of every section, in order."""
     return [item for section in self.sections for item in section.items]
 
-  def texts(self) -> Iterator[tuple[Doc, str, dict, bool, bool]]:
+  @cached_property
+  def provisions(self) -> set[str]:
+    """Return every constitution citation.
+
+    Returns:
+      The IDs of the articles and sections and the refs of the items.
+    """
+    return (
+      {a.id for a in self.articles}
+      | {s.id for s in self.sections}
+      | {i.ref for i in self.items}
+    )
+
+  @cached_property
+  def repealed(self) -> set[str]:
+    """Return the constitution citations that are repealed.
+
+    An item of a repealed section is repealed with it.
+
+    Returns:
+      The repealed citations, as in `provisions`.
+    """
+    return (
+      {a.id for a in self.articles if a.repealed}
+      | {s.id for s in self.sections if s.status == "repealed"}
+      | {
+        i.ref
+        for s in self.sections
+        for i in s.items
+        if i.status == "repealed" or s.status == "repealed"
+      }
+    )
+
+  def texts(self) -> Iterator[Text]:
     """Yield every multilingual text.
 
     Yields:
-      (doc, field name, lang -> text, source is a rule, source is
-      repealed).
+      Each text, with where it is.
     """
-    yield self.index, "title", self.index.data["title"], False, False
-    yield self.index, "front", self.index.data["front"], False, False
+    index = self.index.data
+    yield Text(self.index, "title", index["title"], False, False)
+    yield Text(self.index, "front", index["front"], False, False)
     for a in self.articles:
-      yield a.doc, "title", a.title, False, bool(a.repealed)
+      yield Text(a.doc, "title", a.title, False, bool(a.repealed))
       if a.intro is not None:
-        yield a.doc, "intro", a.intro, False, bool(a.repealed)
+        yield Text(a.doc, "intro", a.intro, False, bool(a.repealed))
     for s in self.sections:
-      yield s.doc, "content", s.content, False, s.status == "repealed"
+      yield Text(s.doc, "content", s.content, False, s.status == "repealed")
       for i in s.items:
-        yield s.doc, f"{i.id}.content", i.content, False, i.status == "repealed"
+        yield Text(
+          s.doc, f"{i.id}.content", i.content, False, i.status == "repealed"
+        )
     for r in self.rules:
-      yield r.doc, "title", r.title, True, r.status == "repealed"
-      yield r.doc, "content", r.content, True, r.status == "repealed"
+      yield Text(r.doc, "title", r.title, True, r.status == "repealed")
+      yield Text(r.doc, "content", r.content, True, r.status == "repealed")
 
 
-def number_key(number: str) -> tuple:
+def number_key(number: str) -> tuple[int, str]:
   """Return the sort key of a number, `2a` as (2, "a").
 
   Args:
@@ -612,6 +685,7 @@ def check_keys(
   languages: list[str] | None,
   errors: Errors,
   where: str = "",
+  start: int = 1,
 ) -> bool:
   """Check that the table has the schema's keys, no others, of their types.
 
@@ -625,6 +699,7 @@ def check_keys(
     languages: the languages of index.toml, or None before they are known.
     errors: where errors go.
     where: the table's name in messages, "" for the file's top level.
+    start: the table's first line, where the search for its keys begins.
 
   Returns:
     True when clean.
@@ -636,10 +711,10 @@ def check_keys(
     name = key.rstrip("?")
     if name not in table:
       if not optional:
-        errors.add(doc.path, 1, 1, f"{label}lacks `{name}`")
+        errors.add(doc.path, start, 1, f"{label}lacks `{name}`")
       continue
     value = table[name]
-    line = doc.line(f"[{name}]", f"{name} =")
+    line = doc.line(f"[{name}]", f"{name} =", start=start)
     if kind == LANG:
       if not isinstance(value, dict) or not all(
         isinstance(v, str) for v in value.values()
@@ -669,7 +744,7 @@ def check_keys(
   for name in table.keys() - {k.rstrip("?") for k in schema}:
     errors.add(
       doc.path,
-      doc.line(f"[{name}]", f"{name} ="),
+      doc.line(f"[{name}]", f"{name} =", start=start),
       1,
       f"{label}unknown key `{name}`",
     )
@@ -693,7 +768,12 @@ def strip_texts(table: dict, schema: dict) -> None:
 
 
 def check_repealed(
-  doc: Doc, table: dict, status: str | None, errors: Errors, where: str = ""
+  doc: Doc,
+  table: dict,
+  status: str | None,
+  errors: Errors,
+  where: str = "",
+  start: int = 1,
 ) -> None:
   """Check that `repealed` is a year-month, there when the status says so.
 
@@ -706,10 +786,11 @@ def check_repealed(
     status: its status, None for an article.
     errors: where errors go.
     where: the table's name in messages, "" for the file's top level.
+    start: the table's first line, where the search for its keys begins.
   """
   label = f"`{where}` " if where else ""
   value = table.get("repealed")
-  line = doc.line("repealed =")
+  line = doc.line("repealed =", start=start)
   if value is not None and not MONTH.fullmatch(value):
     errors.add(
       doc.path, line, 1, f"{label}`repealed` must be `YYYY-MM`, got `{value}`"
@@ -717,7 +798,7 @@ def check_repealed(
   if status == "repealed" and value is None:
     errors.add(
       doc.path,
-      doc.line("status ="),
+      doc.line("status =", start=start),
       1,
       f"{label}status is repealed but there is no `repealed` date",
     )
@@ -792,37 +873,38 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
         f"`id` must be `{expected}`, as in the name `{name}`",
       )
 
-  def status_of(doc: Doc, table: dict, what: str) -> str:
+  def status_of(doc: Doc, table: dict, what: str, start: int = 1) -> str:
     status = table["status"]
+    line = doc.line("status =", start=start)
     if status not in STATUS:
       errors.add(
         doc.path,
-        doc.line("status ="),
+        line,
         1,
         f"{what} `status` must be one of {STATUS}",
       )
     elif index_status == "draft" and status != "draft":
       errors.add(
         doc.path,
-        doc.line("status ="),
+        line,
         1,
         f"{what} is {status} while index.toml is draft",
       )
     elif index_status == "active" and what != "rule" and status == "draft":
       errors.add(
         doc.path,
-        doc.line("status ="),
+        line,
         1,
         f"{what} is draft while index.toml is active",
       )
     return status
 
-  def omitted(doc: Doc, table: dict, what: str) -> bool:
+  def omitted(doc: Doc, table: dict, what: str, start: int = 1) -> bool:
     audience = table.get("audience")
     if audience not in (None, MAINTAINERS):
       errors.add(
         doc.path,
-        doc.line("audience ="),
+        doc.line("audience =", start=start),
         1,
         f"{what} `audience` must be `{MAINTAINERS}`",
       )
@@ -932,44 +1014,49 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
       status = status_of(doc, doc.data, "a section")
       check_repealed(doc, doc.data, status, errors)
       d = doc.data
-      section = Section(
-        doc,
-        d["id"],
-        article_id,
-        name_number(m.group(1), m.group(2)),
-        status,
-        d.get("repealed"),
-        d["content"],
-        omitted=omitted(doc, d, "a section"),
-      )
+      section_omitted = omitted(doc, d, "a section")
+      items = []
       for n, item in enumerate(d.get("items", [])):
         where = f"items[{n}]"
+        start = doc.item_line(n)
         if not isinstance(item, dict) or not check_keys(
-          doc, item, ITEM_SCHEMA, languages, errors, where
+          doc, item, ITEM_SCHEMA, languages, errors, where, start
         ):
           continue
         strip_texts(item, ITEM_SCHEMA)
         if not NUMBER.fullmatch(item["number"]):
           errors.add(
             path,
-            doc.line(f'number = "{item["number"]}"'),
+            doc.line("number =", start=start),
             1,
             f"`{where}` `number` `{item['number']}` is not {NUMBER_SHAPE}",
           )
-        status = status_of(doc, item, f"`{where}`")
-        check_repealed(doc, item, status, errors, where)
-        section.items.append(
+        item_status = status_of(doc, item, f"`{where}`", start)
+        check_repealed(doc, item, item_status, errors, where, start)
+        items.append(
           Item(
             item["id"],
             item["number"],
-            status,
+            item_status,
             item.get("repealed"),
             item["content"],
-            section,
-            omitted(doc, item, f"`{where}`"),
+            d["id"],
+            omitted(doc, item, f"`{where}`", start),
           )
         )
-      sections.append(section)
+      sections.append(
+        Section(
+          doc,
+          d["id"],
+          article_id,
+          name_number(m.group(1), m.group(2)),
+          status,
+          d.get("repealed"),
+          d["content"],
+          tuple(items),
+          section_omitted,
+        )
+      )
   for path in sorted(
     p.relative_to(root) for p in (root / RULES).glob("*.toml")
   ):
@@ -993,7 +1080,12 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
     )
   retired = []
   if (root / RETIRED).exists():
-    retired = (root / RETIRED).read_text(encoding="utf-8").splitlines()
+    try:
+      retired = (root / RETIRED).read_text(encoding="utf-8").splitlines()
+    except OSError as e:
+      errors.add(RETIRED, 1, 1, f"cannot read: {e.strerror}")
+    except UnicodeDecodeError:
+      errors.add(RETIRED, 1, 1, "not UTF-8")
   if errors:
     return None
   return Sources(index, languages, articles, sections, rules, retired)
@@ -1054,19 +1146,6 @@ def check_ids(src: Sources, errors: Errors) -> None:  # noqa: C901
         2,
         f"{r.id} is retired in {RETIRED}; choose another ID",
       )
-
-  for a in src.articles:
-    src.provisions[a.id] = "article"
-    if a.repealed:
-      src.repealed.add(a.id)
-  for s in src.sections:
-    src.provisions[s.id] = "section"
-    if s.status == "repealed":
-      src.repealed.add(s.id)
-    for i in s.items:
-      src.provisions[i.ref] = "item"
-      if i.status == "repealed" or s.status == "repealed":
-        src.repealed.add(i.ref)
 
 
 # Check 3: structure.
@@ -1130,16 +1209,16 @@ def check_languages(src: Sources, errors: Errors) -> None:
     errors: where errors go.
   """
   first = src.languages[0]
-  for doc, name, texts, _, _ in src.texts():
-    refs = {lang: set(citations(text)) for lang, text in texts.items()}
+  for t in src.texts():
+    refs = {lang: set(citations(text)) for lang, text in t.texts.items()}
     for lang in src.languages[1:]:
       for a, b in ((first, lang), (lang, first)):
         for ref in sorted(refs[a] - refs[b]):
           errors.add(
-            doc.path,
-            doc.line(f"{{@{ref}}}"),
+            t.doc.path,
+            t.doc.line(f"{{@{ref}}}"),
             4,
-            f"{a} `{name}` cites {ref}; {b} does not",
+            f"{a} `{t.field}` cites {ref}; {b} does not",
           )
 
 
@@ -1182,13 +1261,13 @@ def check_refs(src: Sources, errors: Errors) -> None:  # noqa: C901
       return f"undefined {ref}"
     return f"repealed {ref}" if target in src.repealed else ""
 
-  for doc, _name, texts, in_rule, repealed in src.texts():
-    if repealed:
+  for t in src.texts():
+    if t.repealed:
       continue
-    for text in texts.values():
+    for text in t.texts.values():
       for ref in citations(text):
-        if found := problem(ref, in_rule):
-          errors.add(doc.path, doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
+        if found := problem(ref, t.in_rule):
+          errors.add(t.doc.path, t.doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
   for r in src.rules:
     if r.status == "repealed":
       continue
@@ -1481,7 +1560,14 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
 # Check 7: numbering against a base commit.
 
 
-def git(root: Path, *args: str) -> str | None:
+GIT_TIMEOUT = 60  # seconds, for one git command
+
+
+class GitError(Exception):
+  """A git command failed or timed out."""
+
+
+def git(root: Path, *args: str) -> str:
   """Run git in root.
 
   Args:
@@ -1489,15 +1575,42 @@ def git(root: Path, *args: str) -> str | None:
     *args: the git arguments.
 
   Returns:
-    Its output, or None when it fails.
+    Its output.
+
+  Raises:
+    GitError: when git exits non-zero or times out, with its stderr.
   """
-  result = subprocess.run(
-    ["git", "-C", str(root), *args],
-    capture_output=True,
-    text=True,
-    env=git_env.clean(),
+  command = f"git {' '.join(args)}"
+  try:
+    result = subprocess.run(
+      ["git", "-C", str(root), *args],
+      capture_output=True,
+      text=True,
+      env=git_env.clean(),
+      timeout=GIT_TIMEOUT,
+    )
+  except subprocess.TimeoutExpired as e:
+    raise GitError(f"`{command}` timed out") from e
+  if result.returncode != 0:
+    raise GitError(f"`{command}` failed: {result.stderr.strip()}")
+  return result.stdout
+
+
+def base_paths(root: Path, ref: str, *paths: Path) -> set[Path]:
+  """Return the files under the given paths in the base commit.
+
+  Args:
+    root: the checkout.
+    ref: the base commit.
+    *paths: the files and directories to list.
+
+  Returns:
+    The files, relative to the checkout.
+  """
+  listing = git(
+    root, "ls-tree", "-r", "--name-only", ref, "--", *map(str, paths)
   )
-  return result.stdout if result.returncode == 0 else None
+  return {Path(p) for p in listing.split("\n") if p}
 
 
 def check_base(  # noqa: C901
@@ -1522,35 +1635,21 @@ def check_base(  # noqa: C901
     A note when the step is skipped, else "".
   """
   commit = f"{ref}^{{commit}}"
-  if git(root, "rev-parse", "--verify", "--quiet", commit) is None:
+  try:
+    git(root, "rev-parse", "--verify", "--quiet", commit)
+  except GitError:
     errors.add(INDEX, 1, 7, f"base `{ref}` is not a commit")
     return ""
-  base_index = git(root, "show", f"{ref}:{INDEX}")
-  if base_index is None:
+  listing = base_paths(root, ref, INDEX, ARTICLES, RULES, RETIRED)
+  if INDEX not in listing:
     return f"base {ref} has no {INDEX}; numbering not compared"
   try:
-    base = tomllib.loads(base_index)
+    base = tomllib.loads(git(root, "show", f"{ref}:{INDEX}"))
   except tomllib.TOMLDecodeError as e:
     errors.add(INDEX, 1, 7, f"{INDEX} at base {ref} is not valid TOML: {e}")
     return ""
   if base.get("status") != "active":
     return f"base {ref} is {base.get('status')}; numbering not compared"
-  listing = [
-    Path(name)
-    for name in (
-      git(
-        root,
-        "ls-tree",
-        "-r",
-        "--name-only",
-        ref,
-        "--",
-        str(ARTICLES),
-        str(RULES),
-      )
-      or ""
-    ).split("\n")
-  ]
   if not any(
     p.name == ARTICLE_FILE and p.parent.parent == ARTICLES for p in listing
   ):
@@ -1585,7 +1684,7 @@ def check_base(  # noqa: C901
 
   def base_toml(path: Path) -> dict | None:
     try:
-      return tomllib.loads(git(root, "show", f"{ref}:{path}") or "")
+      return tomllib.loads(git(root, "show", f"{ref}:{path}"))
     except tomllib.TOMLDecodeError as e:
       errors.add(path, 1, 7, f"at base {ref} is not valid TOML: {e}")
       return None
@@ -1710,7 +1809,7 @@ def check_base(  # noqa: C901
         items[iid].status == "repealed",
       )
   if RETIRED in listing:
-    for value in (git(root, "show", f"{ref}:{RETIRED}") or "").splitlines():
+    for value in git(root, "show", f"{ref}:{RETIRED}").splitlines():
       if value and value not in retired:
         errors.add(
           RETIRED,
@@ -1755,20 +1854,16 @@ def source_text_changed(root: Path, ref: str) -> bool:
     True when the text changed.
   """
   drop = re.compile(r'^revision = ".*"\n', re.MULTILINE)
-  listing = (
-    git(root, "ls-tree", "-r", "--name-only", ref, "--", str(ARTICLES)) or ""
-  )
-  base_paths = {Path(p) for p in listing.split("\n") if p}
-  tracked = git(root, "ls-files", "--", str(ARTICLES)) or ""
+  tracked = git(root, "ls-files", "--", str(ARTICLES))
   paths = {Path(p) for p in tracked.split("\n") if p and (root / p).is_file()}
-  if paths != base_paths:
+  if paths != base_paths(root, ref, ARTICLES):
     return True
   if any(
     (root / p).read_text(encoding="utf-8") != git(root, "show", f"{ref}:{p}")
     for p in paths
   ):
     return True
-  base_index = git(root, "show", f"{ref}:{INDEX}") or ""
+  base_index = git(root, "show", f"{ref}:{INDEX}")
   return drop.sub("", (root / INDEX).read_text(encoding="utf-8")) != drop.sub(
     "", base_index
   )
@@ -1790,11 +1885,14 @@ def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
     src: the sources.
     errors: where errors go.
   """
-  base_index = git(root, "show", f"{ref}:{INDEX}")
-  if base_index is None:
+  try:
+    git(root, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}")
+  except GitError:
+    return  # check_base reports it
+  if INDEX not in base_paths(root, ref, INDEX):
     return
   try:
-    base = tomllib.loads(base_index)
+    base = tomllib.loads(git(root, "show", f"{ref}:{INDEX}"))
   except tomllib.TOMLDecodeError:
     return  # check_base reports it
   revision, base_revision = (
@@ -1870,10 +1968,13 @@ def main(argv: list[str] | None = None) -> int:
     check_outputs(args.root, outputs, errors)
   if not errors and args.base:
     assert src is not None
-    note = check_base(args.root, args.base, src, errors)
-    if note:
-      print(note)
-    check_revision(args.root, args.base, src, errors)
+    try:
+      note = check_base(args.root, args.base, src, errors)
+      if note:
+        print(note)
+      check_revision(args.root, args.base, src, errors)
+    except GitError as e:
+      errors.add(INDEX, 1, 7, str(e))
   if errors:
     print("\n".join(errors), file=sys.stderr)
     return 1
