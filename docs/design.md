@@ -139,11 +139,17 @@ tools/                    a uv workspace, one Python project each:
     src/constitution_compiler/
       build.py            builds and checks the constitution, from the
                           modules below                                A
-      sources.py          the sources' data model, check 1             A
+      model.py            where the sources are, the shapes of their
+                          names, the records they are read into        A
+      schema.py           the schemas and the per-table format checks
+                          of check 1                                   A
+      read.py             reads the sources, check 1                   A
       checks.py           checks 2 to 5                                A
       languages.py        what differs between languages               A
       render.py           renders the constitution                     A
-      base.py             check 7, against a base commit               A
+      base.py             check 7, numbering against a base commit,
+                          and the git access                           A
+      revision.py         check 7, the revision against the base's     A
     tests/                render, checks, base, and the shared test
                           tree (test_constitution_fixture.py)          A
   site/                   package constitution_site, depends on the
