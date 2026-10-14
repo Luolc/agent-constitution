@@ -1,4 +1,4 @@
-<!-- en-sha256: 72bdf5985ac24b52bb972c217d7488707d21af93ce4616b445afddcce949f830 -->
+<!-- en-sha256: fe296dab289b7a4e237b1f7c62e22ce8657fcfdf94994e2c92503aee6fcf27fc -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](#rule-file-format) 编写，由 `constitution-build` 检查，工具也能读取它们和规定清单、写出锁文件 ([工具与第一版](#the-tool-and-the-first-version))；其余部分还没有实现。本文档描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
@@ -311,6 +311,8 @@ metadata:
 
 **我们的规定：Rust。** 本仓规定的检查放在工具的 crate 里 ([工具与第一版](#the-tool-and-the-first-version))，每条规定一个模块，以规定的 ID 命名 (规定 42 的模块是 `r42.rs`)，就像 ruff 和 clippy 把每条 lint 实现为一个函数。规定的正文和元数据留在 `rules/42.toml`，写规定的人和写检查的人各改各的文件；模块的测试用例跟着检查放在 crate 里。常用的操作，例如从 TOML 文件读一个键，是同一个 crate 里普通的辅助函数；一个操作第三次重复时才抽成辅助函数，不提前 (`simplicity`)。这个 crate 构建成一个二进制文件，随规定一起发布，所以下游用户装一个二进制文件就有了全部检查，不用部署任何脚本。
 
+需要读 GitHub 状态 (pull request 或 CI run) 的检查，在仓库里运行机器上的 `gh` 去读，`gh api` 从仓库的 GitHub remote 找到仓库。statute 不读、不存、也不打印任何 token，凭证留在 `gh` 自己的配置里。`PATH` 上没有 `gh`、没有登录、仓库不在 GitHub 上、调用失败，以及调用 60 秒内没有返回 (按下文超时的命令那样停掉)，都和缺工具一样算无法判定。这类检查看的对象从仓库本身得出：pull request 是 GitHub 与 `HEAD` 关联的那些 (把它合入默认分支的那一个；没有的话，是包含它的那些未关闭和已合并的 pull request)，发布是 `HEAD` 上的 tag。还没推送的 commit 没有 pull request，没有 tag 的 `HEAD` 没有发布，两者都算无法判定。
+
 一条规定被取代时，它的后继规定得到一个新模块，从旧模块复制过来，按需修改。旧模块留在代码里，标为被取代，除非专门要求，否则不运行。
 
 **下游编写的规定：外部命令。** 存放在别的规定源里的规定，把它的检查声明为一条命令 (`check = "command"`，另写 `run` 和 `tools`)，用什么语言都可以。脚本放在那个规定源自己的仓库里，用它自己的工具链运行；规定写明它需要的工具 (例如 uv 或 Go)。约定如下：
@@ -328,12 +330,16 @@ metadata:
 
 自动检查先运行，因为它们成本最低。然后审查方查看违反的结果、无法判定的结果，以及没有自动检查的规定。交给审查方的材料里有每条规定的理由和核验方法，这两部分编译出的 `AGENTS.md` 默认不收 ([编译与网站](#compilation-and-the-site))。是由一个审查方全部接手，还是由几个审查方各接一组，以及怎样分组，在规定清单里设定。
 
-第一版里，`statute check` 运行仓库里已启用规定的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它每条规定输出一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查的规定写 `review`) 和一句说明，发现列在下面；然后为审查方列出每条无法判定或待审规定的理由和核验方法。有规定被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看：
+第一版里，`statute check` 运行仓库里已启用规定的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它每条规定输出一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查的规定写 `review`) 和一句说明，发现列在下面；然后为审查方列出每条无法判定或待审规定的理由和核验方法。有规定被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看。各条内置检查如下：
 
 - 规定 46 (instruction-files-apart) 用与 `check-instruction-changes` 相同的路径表区分指令文件、生成文件和其他文件，变更里既有指令文件又有其他文件的即为违反；路径表没有列出的 agent 工具的文件、路径表以外的指令源文件，以及仓库在自己的 `AGENTS.md` 里声明的路径，交给审查方；没有 `--base` 就没有可检查的变更。
-- 规定 43 (credential-designated-place) 带 `--redact` 运行机器上的 gitleaks，扫描变更里的提交或全部历史，有命中即为违反，命中只显示位置和 gitleaks 的规则名；gitleaks 识别不出的凭证，以及仓库以外的地方，交给审查方；没有 gitleaks 时算无法判定。
+- 规定 43 (credential-designated-place) 带 `--redact` 运行机器上的 gitleaks，扫描变更里的提交或全部历史，有命中即为违反，命中只显示位置和 gitleaks 的规则名；gitleaks 识别不出的凭证，以及仓库以外的地方，交给审查方；没有 gitleaks 时算无法判定；
+- 规定 50 (commit-hook-credential-scan) 读 `.pre-commit-config.yaml`，有 hook 在 commit 阶段对每次提交、不带文件过滤、带 `--staged` 和 `--redact` 运行 gitleaks，即为通过；gitleaks 自己发布的 hook，无论用它现在的还是以前的仓库名，`rev` 为 v8.1.1 或更新时按它自己的 entry 计。statute 看不到命令的 hook (`rev` 更旧或读不出的 gitleaks 自带 hook、别的仓库的 hook、运行脚本的本地 hook)、不带 `--redact` 或带文件过滤的 gitleaks hook、别的扫描器、别的 hook 框架的配置，以及 statute 读不了的 YAML，算无法判定。根本没有 hook 配置，或者配置里 commit 阶段的 hook 都看得到命令、却没有一个扫描暂存的改动，即为违反；
+- 规定 58 (release-first-green-commit) 把 `HEAD` 上的 tag 当作发布，把默认分支当作主分支，把包含默认分支所要求检查 (分支保护或 ruleset 要求的) 的 workflow 当作 CI；这个 workflow 为 `HEAD` 推送到默认分支而跑的 run 在第 1 次 attempt 就以成功结束的，即为通过，否则即为违反。`HEAD` 上没有 tag、没有要求的检查、没有这样的 run (推送不触发 CI，或者 commit 不在该分支上)，以及 run 还没跑完时，算无法判定；
+- 规定 61 (verdict-names-version) 读 `HEAD` 所属 pull request 上的 verdict：正文以 `Verdict:` 开头的评论或 review，以及批准或要求修改的 review。verdict 里没有其 pull request 中某个 commit 的完整 SHA，即为违反，review 还以 GitHub 为它记下的 commit 写明版本；在别处给出的 verdict，以及写明的 SHA 是不是审查过的版本，交给审查方；
+- 规定 71 (no-automatic-merge) 读 `HEAD` 所属 pull request 的时间线，只要某个 pull request 开过 auto-merge 就是违反，之后关掉了或已经由它合并了也一样；其他自动合并的方式，以及是谁开的，交给审查方。
 
-这两条取代的规定 3 和 7 保留各自的模块，只在规定清单仍然启用它们时运行。
+规定 43 和 46 取代的规定 3 和 7 保留各自的模块，只在规定清单仍然启用它们时运行。
 
 对交给它的每条规定，审查方判断规定是满足还是违反。违反的要修正。审查方的判断与检查的结论不同时，就是检查错了：
 
@@ -387,7 +393,7 @@ agent 做某项工作时，发现没有任何规定、skill 或惯例覆盖它�
 
 **第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
-**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43 和 46，以及被它们取代的 3 和 7) 八个命令，只支持一个磁盘上的规定源。继承规定清单和按路径分段都还没有实现；git 规定源、多个规定源，以及在 `requires` 或 `conflicts` 里对别的规定源的引用 (`"team:7"`)，会报告为暂不支持。
+**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，只支持一个磁盘上的规定源。继承规定清单和按路径分段都还没有实现；git 规定源、多个规定源，以及在 `requires` 或 `conflicts` 里对别的规定源的引用 (`"team:7"`)，会报告为暂不支持。
 
 **`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，空的 `rules`，以及一个名为 `ac` 的磁盘规定源。`--source <dir>` 指定规定源的目录，相对于当前目录，默认是 `.`。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
 
