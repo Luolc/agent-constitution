@@ -34,12 +34,14 @@ error.
 
 import argparse
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 import re
 import subprocess
 import sys
 import tomllib
+from typing import Any, NamedTuple
 
 import git_env
 
@@ -337,6 +339,10 @@ STATUS = ("draft", "active", "repealed")
 MAINTAINERS = "maintainers"
 
 
+# A text in every language of index.toml: language -> text.
+Texts = dict[str, str]
+
+
 class Errors(list):
   """The errors found, each a line `path:line: check N: message`."""
 
@@ -352,7 +358,7 @@ class Errors(list):
     self.append(f"{path}:{line}: check {check}: {message}")
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Doc:
   """One parsed TOML file with its text, for locating errors by line.
 
@@ -363,7 +369,7 @@ class Doc:
   """
 
   path: Path
-  data: dict
+  data: dict[str, Any]
   text: str
 
   def line(self, *needles: str, start: int = 1) -> int:
@@ -400,7 +406,7 @@ class Doc:
     return headers[n] if n < len(headers) else 1
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Item:
   """One list item of a section.
 
@@ -410,7 +416,7 @@ class Item:
     status: draft, active or repealed.
     repealed: the month it was repealed, if it was.
     content: its text, by language.
-    section: the section holding it.
+    section: the ID of the section holding it.
     omitted: whether the version for agents leaves out its text.
   """
 
@@ -418,17 +424,17 @@ class Item:
   number: str
   status: str
   repealed: str | None
-  content: dict
-  section: Section
+  content: Texts
+  section: str
   omitted: bool = False
 
   @property
   def ref(self) -> str:
     """How the constitution cites it: `<section id>.<item id>`."""
-    return f"{self.section.id}.{self.id}"
+    return f"{self.section}.{self.id}"
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Article:
   """One article.
 
@@ -445,11 +451,11 @@ class Article:
   id: str
   number: str
   repealed: str | None
-  title: dict
-  intro: dict | None
+  title: Texts
+  intro: Texts | None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Section:
   """One section.
 
@@ -471,12 +477,12 @@ class Section:
   number: str
   status: str
   repealed: str | None
-  content: dict
-  items: list[Item] = field(default_factory=list)
+  content: Texts
+  items: tuple[Item, ...] = ()
   omitted: bool = False
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Rule:
   """One general rule.
 
@@ -492,12 +498,30 @@ class Rule:
   doc: Doc
   id: str
   status: str
-  authority: list
-  title: dict
-  content: dict
+  authority: list[str]
+  title: Texts
+  content: Texts
 
 
-@dataclass
+class Text(NamedTuple):
+  """One multilingual text of the sources.
+
+  Attributes:
+    doc: the file holding it.
+    field: its field, as in error messages.
+    texts: the text, by language.
+    in_rule: whether a rule holds it.
+    repealed: whether what holds it is repealed.
+  """
+
+  doc: Doc
+  field: str
+  texts: Texts
+  in_rule: bool
+  repealed: bool
+
+
+@dataclass(frozen=True)
 class Sources:
   """Everything read from the sources.
 
@@ -508,8 +532,6 @@ class Sources:
     sections: the sections, in order.
     rules: the general rules.
     retired: rules/retired-ids.txt, in order.
-    provisions: constitution citation -> article | section | item.
-    repealed: the constitution citations that are repealed.
   """
 
   index: Doc
@@ -518,37 +540,70 @@ class Sources:
   sections: list[Section]
   rules: list[Rule]
   retired: list[str]
-  provisions: dict = field(default_factory=dict)
-  repealed: set = field(default_factory=set)
 
   @property
   def items(self) -> list[Item]:
     """Every list item of every section, in order."""
     return [item for section in self.sections for item in section.items]
 
-  def texts(self) -> Iterator[tuple[Doc, str, dict, bool, bool]]:
+  @cached_property
+  def provisions(self) -> set[str]:
+    """Return every constitution citation.
+
+    Returns:
+      The IDs of the articles and sections and the refs of the items.
+    """
+    return (
+      {a.id for a in self.articles}
+      | {s.id for s in self.sections}
+      | {i.ref for i in self.items}
+    )
+
+  @cached_property
+  def repealed(self) -> set[str]:
+    """Return the constitution citations that are repealed.
+
+    An item of a repealed section is repealed with it.
+
+    Returns:
+      The repealed citations, as in `provisions`.
+    """
+    return (
+      {a.id for a in self.articles if a.repealed}
+      | {s.id for s in self.sections if s.status == "repealed"}
+      | {
+        i.ref
+        for s in self.sections
+        for i in s.items
+        if i.status == "repealed" or s.status == "repealed"
+      }
+    )
+
+  def texts(self) -> Iterator[Text]:
     """Yield every multilingual text.
 
     Yields:
-      (doc, field name, lang -> text, source is a rule, source is
-      repealed).
+      Each text, with where it is.
     """
-    yield self.index, "title", self.index.data["title"], False, False
-    yield self.index, "front", self.index.data["front"], False, False
+    index = self.index.data
+    yield Text(self.index, "title", index["title"], False, False)
+    yield Text(self.index, "front", index["front"], False, False)
     for a in self.articles:
-      yield a.doc, "title", a.title, False, bool(a.repealed)
+      yield Text(a.doc, "title", a.title, False, bool(a.repealed))
       if a.intro is not None:
-        yield a.doc, "intro", a.intro, False, bool(a.repealed)
+        yield Text(a.doc, "intro", a.intro, False, bool(a.repealed))
     for s in self.sections:
-      yield s.doc, "content", s.content, False, s.status == "repealed"
+      yield Text(s.doc, "content", s.content, False, s.status == "repealed")
       for i in s.items:
-        yield s.doc, f"{i.id}.content", i.content, False, i.status == "repealed"
+        yield Text(
+          s.doc, f"{i.id}.content", i.content, False, i.status == "repealed"
+        )
     for r in self.rules:
-      yield r.doc, "title", r.title, True, r.status == "repealed"
-      yield r.doc, "content", r.content, True, r.status == "repealed"
+      yield Text(r.doc, "title", r.title, True, r.status == "repealed")
+      yield Text(r.doc, "content", r.content, True, r.status == "repealed")
 
 
-def number_key(number: str) -> tuple:
+def number_key(number: str) -> tuple[int, str]:
   """Return the sort key of a number, `2a` as (2, "a").
 
   Args:
@@ -962,16 +1017,8 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
       status = status_of(doc, doc.data, "a section")
       check_repealed(doc, doc.data, status, errors)
       d = doc.data
-      section = Section(
-        doc,
-        d["id"],
-        article_id,
-        name_number(m.group(1), m.group(2)),
-        status,
-        d.get("repealed"),
-        d["content"],
-        omitted=omitted(doc, d, "a section"),
-      )
+      section_omitted = omitted(doc, d, "a section")
+      items = []
       for n, item in enumerate(d.get("items", [])):
         where = f"items[{n}]"
         start = doc.item_line(n)
@@ -987,20 +1034,32 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
             1,
             f"`{where}` `number` `{item['number']}` is not {NUMBER_SHAPE}",
           )
-        status = status_of(doc, item, f"`{where}`", start)
-        check_repealed(doc, item, status, errors, where, start)
-        section.items.append(
+        item_status = status_of(doc, item, f"`{where}`", start)
+        check_repealed(doc, item, item_status, errors, where, start)
+        items.append(
           Item(
             item["id"],
             item["number"],
-            status,
+            item_status,
             item.get("repealed"),
             item["content"],
-            section,
+            d["id"],
             omitted(doc, item, f"`{where}`", start),
           )
         )
-      sections.append(section)
+      sections.append(
+        Section(
+          doc,
+          d["id"],
+          article_id,
+          name_number(m.group(1), m.group(2)),
+          status,
+          d.get("repealed"),
+          d["content"],
+          tuple(items),
+          section_omitted,
+        )
+      )
   for path in sorted(
     p.relative_to(root) for p in (root / RULES).glob("*.toml")
   ):
@@ -1091,19 +1150,6 @@ def check_ids(src: Sources, errors: Errors) -> None:  # noqa: C901
         f"{r.id} is retired in {RETIRED}; choose another ID",
       )
 
-  for a in src.articles:
-    src.provisions[a.id] = "article"
-    if a.repealed:
-      src.repealed.add(a.id)
-  for s in src.sections:
-    src.provisions[s.id] = "section"
-    if s.status == "repealed":
-      src.repealed.add(s.id)
-    for i in s.items:
-      src.provisions[i.ref] = "item"
-      if i.status == "repealed" or s.status == "repealed":
-        src.repealed.add(i.ref)
-
 
 # Check 3: structure.
 
@@ -1166,16 +1212,16 @@ def check_languages(src: Sources, errors: Errors) -> None:
     errors: where errors go.
   """
   first = src.languages[0]
-  for doc, name, texts, _, _ in src.texts():
-    refs = {lang: set(citations(text)) for lang, text in texts.items()}
+  for t in src.texts():
+    refs = {lang: set(citations(text)) for lang, text in t.texts.items()}
     for lang in src.languages[1:]:
       for a, b in ((first, lang), (lang, first)):
         for ref in sorted(refs[a] - refs[b]):
           errors.add(
-            doc.path,
-            doc.line(f"{{@{ref}}}"),
+            t.doc.path,
+            t.doc.line(f"{{@{ref}}}"),
             4,
-            f"{a} `{name}` cites {ref}; {b} does not",
+            f"{a} `{t.field}` cites {ref}; {b} does not",
           )
 
 
@@ -1218,13 +1264,13 @@ def check_refs(src: Sources, errors: Errors) -> None:  # noqa: C901
       return f"undefined {ref}"
     return f"repealed {ref}" if target in src.repealed else ""
 
-  for doc, _name, texts, in_rule, repealed in src.texts():
-    if repealed:
+  for t in src.texts():
+    if t.repealed:
       continue
-    for text in texts.values():
+    for text in t.texts.values():
       for ref in citations(text):
-        if found := problem(ref, in_rule):
-          errors.add(doc.path, doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
+        if found := problem(ref, t.in_rule):
+          errors.add(t.doc.path, t.doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
   for r in src.rules:
     if r.status == "repealed":
       continue

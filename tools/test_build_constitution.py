@@ -1109,6 +1109,14 @@ class CheckTest(Tree):
       "zh `money.content` cites alpha; en does not",
     )
 
+  def test_5_on_its_own(self):
+    """Check 5 needs no other check to have run before it."""
+    errors = bc.Errors()
+    src = bc.load(self.root, errors)
+    assert src is not None
+    bc.check_refs(src, errors)
+    self.assertEqual(errors, [])
+
   def test_5_undefined(self):
     self.edit(
       f"{B}/01-beta-one.toml", "{@alpha-one.money}", "{@alpha-one.cash}", 2
