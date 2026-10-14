@@ -1,8 +1,8 @@
 id = 38
 slug = "relayed-yes-reference"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 14
 authority = ["explicit-yes.verification", "explicit-yes.rules"]

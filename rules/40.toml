@@ -1,8 +1,8 @@
 id = 40
 slug = "relayed-yes-record"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 14
 authority = ["explicit-yes.rules", "evidence.grounds"]

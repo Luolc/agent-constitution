@@ -1,8 +1,8 @@
 id = 23
 slug = "credential-working-check"
-revision = 2
+revision = 3
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 13
 authority = ["sensitive-info"]

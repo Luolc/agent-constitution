@@ -1,8 +1,8 @@
 id = 74
 slug = "check-a-relayed-fact-at-its-source"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 authority = ["evidence.facts", "decency.no-hallucination"]

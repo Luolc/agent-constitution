@@ -1,8 +1,8 @@
 id = 69
 slug = "no-agent-tool-memory"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 authority = ["separate-instruction-changes", "independent-review"]

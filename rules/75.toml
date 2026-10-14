@@ -1,8 +1,8 @@
 id = 75
 slug = "repository-text-claims-no-more-than-the-description"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 authority = ["evidence.grounds", "decency.no-hallucination"]

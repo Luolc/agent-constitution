@@ -1,8 +1,8 @@
 id = 47
 slug = "generated-file-side"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 15
 authority = ["separate-instruction-changes"]

@@ -1,8 +1,8 @@
 id = 21
 slug = "design-translation"
-revision = 2
+revision = 3
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 authority = ["no-restating", "discriminating-checks"]

@@ -1,8 +1,8 @@
 id = 67
 slug = "cleanup-counts-leftovers"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 15
 authority = ["evidence.grounds", "discriminating-checks"]

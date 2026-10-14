@@ -1,8 +1,8 @@
 id = 79
 slug = "design-code-sync"
-revision = 1
+revision = 2
 kind = "one-of"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 
