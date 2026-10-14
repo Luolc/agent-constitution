@@ -184,7 +184,8 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 ```
 
 - Claude Code reads `CLAUDE.local.md`, and where it exists no longer
-  reads `AGENTS.md`, so it reads the full text alone.
+  reads `AGENTS.md`, so it reads the full text alone. Nor does it read
+  the `AGENTS.md` of a subdirectory, below.
 - Codex and Pi read `AGENTS.override.md` in place of the `AGENTS.md` of
   the same directory, so they read the full text alone.
 - Grok reads both `AGENTS.md` and `CLAUDE.local.md`, so it reads the
@@ -193,10 +194,10 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - A repository with a `CLAUDE.md` makes Claude Code read it as well as
   `CLAUDE.local.md`, so its content comes on top of the full text: the
   public rules twice when it is a link to `AGENTS.md` or a copy of it,
-  and otherwise text that may not agree with the rules. Grok, which
-  reads every instruction file of a directory, then gets the public
-  rules a third time from such a link. `statute compile` warns of a
-  `CLAUDE.md`
+  and otherwise text that may not agree with the rules. Grok counts a
+  `CLAUDE.md` and an `AGENTS.md` that lead to the same file as one, so
+  it reads the public rules twice with such a link as without it.
+  `statute compile` warns of a `CLAUDE.md`
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 - OpenCode has no local file name of a repository. It reads the full
   text when its global configuration lists `.statute/AGENTS.full.md`
@@ -225,6 +226,16 @@ cuts off the rest. `statute compile` fails when `AGENTS.full.md` alone
 would be larger; the `AGENTS.md` files of subdirectories count toward
 the same limit, and statute does not add them in.
 
+Where `CLAUDE.local.md` exists, Claude Code loads no `AGENTS.md` of a
+subdirectory either, neither at the start in that subdirectory nor when
+it touches a file there, as it does without it. The rules of a
+subdirectory are lost to it, unless the model happens to read the file.
+So with the private output, a repository keeps such rules in its rule
+set, not in `AGENTS.md` files of subdirectories, and `statute compile`
+warns of each `AGENTS.md` that git tracks outside the repository's
+root, saying that Claude Code does not load it and that its rules
+belong in the rule set. Not built yet.
+
 Files git does not track do not come with `git worktree add`. Each
 worktree needs its own `statute compile` to write `.statute/` and the
 two links; `.git/info/exclude` is shared by the worktrees of a clone.
@@ -242,25 +253,32 @@ on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
 folder-trust check turned off for each run (without it, Grok loads no
 project instructions in non-interactive mode); OpenCode 1.19.0 and Pi
 1.2.0 are from their documentation and source only, and the 32 KiB of
-Codex from its documentation and source. Interactive mode was not
-measured, nor the fallback line with its path in backticks; every
-negative result is one run. In runs of one small task, Codex and Grok
-read the file the fallback line names, two runs each, and Claude Code
-loaded it in one run because the line wrote the path as an `@` path.
-Some of the layout rests on inference from separate runs, not on a run
-of it:
+Codex from its documentation and source. In runs of one small task,
+Codex and Grok read the file the fallback line names, two runs each, and
+Claude Code loaded it in one run because the line wrote the path as an
+`@` path. The layout itself, with a stand-in for the full text:
 
-- Grok read a `CLAUDE.local.md` that `.git/info/exclude` ignores when it
-  was a file, and skipped one that a `.gitignore` ignores when it was a
-  link; a link that `.git/info/exclude` ignores was measured only in
-  `.claude/rules/`. That Grok reads the link `CLAUDE.local.md` ignored
-  this way is inferred.
-- Claude Code dropped the `AGENTS.md` of the repository's root when a
-  `CLAUDE.local.md` was there. By its documentation, a `CLAUDE.local.md`
-  in the working directory or above counts as a `CLAUDE.md`; whether it
-  also drops the `AGENTS.md` files of subdirectories was not measured. If
-  it does, a repository whose subdirectories have them loses them in
-  Claude Code.
+- Grok loaded the link `CLAUDE.local.md` ignored through
+  `.git/info/exclude` in 2 runs of 2, and skipped it ignored through a
+  `.gitignore` in 2 runs of 2.
+- With `CLAUDE.local.md` at the root, Claude Code loaded no
+  `sub/AGENTS.md` in 4 runs of 4, two with the working directory in
+  `sub/` and two at the root changing a file in `sub/`; without it, it
+  loaded the file in both control runs, once at the start and once
+  after reading a file in `sub/`. In one of the four runs the
+  model read the file itself.
+- With `CLAUDE.md -> AGENTS.md` and `CLAUDE.local.md`, Claude Code loaded
+  the public rules twice in one run, against once with
+  `CLAUDE.md -> AGENTS.md` alone. That Grok counts the two as one comes
+  from the files `grok inspect` lists, with no model run.
+
+Not measured: interactive mode; the fallback line with its path in
+backticks; a `CLAUDE.md -> AGENTS.md` in a subdirectory, and whether it
+brings that subdirectory's rules back to Claude Code; Claude Code's
+setting that reads `AGENTS.md` beside `CLAUDE.md`, for subdirectories;
+and Grok's reading of a subdirectory's `AGENTS.md` under this layout.
+Each negative result holds only for the runs counted; the others are
+one run each.
 
 None of the private layer is built yet.
 
