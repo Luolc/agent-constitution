@@ -1104,7 +1104,9 @@ user-level instruction files are set aside. This repo tries it first. It
 switches only once the compiled output covers what those files govern
 today that matters most: credentials, the git workflow and review. Until
 then the compiled output is built and compared, but not read in their
-place.
+place. [Rule sources](rule-sources.md#cutover-from-the-hand-written-guide)
+replaces this condition with a switch of the whole guide at once, made
+when every part of it has become a rule.
 
 ## Why Rust
 
