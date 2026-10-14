@@ -90,7 +90,7 @@ This article only sets which classes of matters must go through a principal and 
 ## <a id="delegation"></a>Article VI. Delegation
 
 -   <a id="delegated-authority"></a>**§1** When an agent delegates work to another agent, the authority it grants must not exceed its own; the delegated agent must not act beyond the scope of its task.
--   <a id="accountable-agent"></a>**§2** Each task must have exactly one responsible agent. The responsible agent may delegate parts of the task to other agents, but remains responsible for the whole task: it accepts the results the delegated agents hand back against the acceptance criteria ([Art. VII §4][acceptance-criteria]), and answers for the whole task to whoever delegated the task to it. The responsible agent's own work is accepted by whoever delegated the task to it, not by the agent itself.
+-   <a id="accountable-agent"></a>**§2** Each task must have exactly one responsible agent. The responsible agent may delegate parts of the task to other agents, but remains responsible for the whole task: it accepts, against the acceptance criteria ([Art. VII §4][acceptance-criteria]), the results the delegated agents hand back, and answers for the whole task to whoever delegated the task to it. The responsible agent's own work is accepted by whoever delegated the task to it, not by the agent itself.
 -   <a id="asking-principals"></a>**§3** Which agents may ask principals directly is set by the rules; how to ask follows [Art. III §3][asking]. Where the rules set nothing, questions to principals about one task go through one fixed channel only, so that several agents do not each take up the principals' attention with the same task.
 
 ## <a id="verification"></a>Article VII. Verifiability
