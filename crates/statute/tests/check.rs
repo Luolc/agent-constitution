@@ -9,14 +9,17 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
-/// Domain 1 with rule 3 and rule 7 (built-in checks), rule 20 (a command)
-/// and rule 21 (review only).
+/// Domain 1 with rules 43 and 46 (built-in checks), rules 3 and 7 (the
+/// rules they supersede, whose checks stay), rule 20 (a command) and
+/// rule 21 (review only).
 fn nodes(command: &str) -> Vec<(u64, String)> {
     let builtin = |id| edit(rule(id, 1, ""), "check = \"review\"", "check = \"builtin\"");
     vec![
         domain(1),
         builtin(3),
         builtin(7),
+        builtin(43),
+        builtin(46),
         edit(
             rule(20, 1, ""),
             "check = \"review\"",
@@ -139,15 +142,15 @@ fn line(run: &Run, id: u64) -> String {
         .to_owned()
 }
 
-// Rule 7: a change does not mix instruction files with other files.
+// Rule 46: a change does not mix instruction files with other files.
 
 #[test]
-fn r7_mixed_change_is_a_violation() {
-    let dir = repo("r7-mixed", "\"ac:7\"", "true");
+fn r46_mixed_change_is_a_violation() {
+    let dir = repo("r46-mixed", "\"ac:46\"", "true");
     change(&dir, &["AGENTS.md", "tools/build.py"]);
     let run = statute(&dir, &["check", "--base", "base"], None);
     assert_eq!(run.code, 1, "{}", run.stdout);
-    assert!(line(&run, 7).starts_with("violation "), "{}", run.stdout);
+    assert!(line(&run, 46).starts_with("violation "), "{}", run.stdout);
     assert!(
         run.stdout
             .contains("M AGENTS.md: an instruction file, in the same change"),
@@ -163,8 +166,8 @@ fn r7_mixed_change_is_a_violation() {
 }
 
 #[test]
-fn r7_unmixed_change_goes_to_the_reviewer() {
-    let dir = repo("r7-other", "\"ac:7\"", "true");
+fn r46_unmixed_change_goes_to_the_reviewer() {
+    let dir = repo("r46-other", "\"ac:46\"", "true");
     change(
         &dir,
         &[
@@ -174,34 +177,34 @@ fn r7_unmixed_change_goes_to_the_reviewer() {
     );
     let run = statute(&dir, &["check", "--base", "base"], None);
     assert_eq!(run.code, 0, "{}", run.stdout);
-    let l = line(&run, 7);
+    let l = line(&run, 46);
     assert!(l.starts_with("inconclusive "), "{l}");
     assert!(l.contains("(0 instruction, 1 other, 1 generated)"), "{l}");
     assert!(
         run.stdout
-            .contains("For the reviewer:\n\n## 7 (Rule 7) (inconclusive)\n\nReason: Because.\n"),
+            .contains("For the reviewer:\n\n## 46 (Rule 46) (inconclusive)\n\nReason: Because.\n"),
         "{}",
         run.stdout
     );
 }
 
 #[test]
-fn r7_without_a_base_is_inconclusive() {
-    let dir = repo("r7-no-base", "\"ac:7\"", "true");
+fn r46_without_a_base_is_inconclusive() {
+    let dir = repo("r46-no-base", "\"ac:46\"", "true");
     let run = statute(&dir, &["check"], None);
     assert_eq!(run.code, 0);
     assert!(
-        line(&run, 7).contains("give the base of the change with --base"),
+        line(&run, 46).contains("give the base of the change with --base"),
         "{}",
         run.stdout
     );
 }
 
-/// The same changes, judged by statute's rule 7 and by this repository's
+/// The same changes, judged by statute's rule 46 and by this repository's
 /// `check-instruction-changes`: a violation exactly where the Python check
 /// exits 1.
 #[test]
-fn r7_agrees_with_check_instruction_changes() {
+fn r46_agrees_with_check_instruction_changes() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let cases: &[(&str, &[&str])] = &[
         ("instructions", &["AGENTS.md", "skills/a/SKILL.md"]),
@@ -238,7 +241,7 @@ fn r7_agrees_with_check_instruction_changes() {
     ];
     let mut seen = (0, 0);
     for (name, files) in cases {
-        let dir = repo(&format!("r7-parity-{name}"), "\"ac:7\"", "true");
+        let dir = repo(&format!("r46-parity-{name}"), "\"ac:46\"", "true");
         change(&dir, files);
         let ours = statute(&dir, &["check", "--base", "base"], None);
         let python = Command::new("uv")
@@ -269,24 +272,24 @@ fn r7_agrees_with_check_instruction_changes() {
             seen.0 += 1;
         }
         assert_eq!(
-            line(&ours, 7).starts_with("violation "),
+            line(&ours, 46).starts_with("violation "),
             python_code == 1,
             "{name}: statute says {:?}, check-instruction-changes exits {python_code}",
-            line(&ours, 7)
+            line(&ours, 46)
         );
     }
     // Both conclusions occur among the cases, so the comparison can fail.
     assert!(seen.0 > 0 && seen.1 > 0, "{seen:?}");
     // A rename is a removal and an addition: AGENTS.md to docs/agents.md
     // mixes the two in both.
-    let dir = repo("r7-parity-rename", "\"ac:7\"", "true");
+    let dir = repo("r46-parity-rename", "\"ac:46\"", "true");
     git(&dir, &["mv", "AGENTS.md", "docs/agents.md"]);
     git(&dir, &["commit", "-qm", "rename"]);
     let ours = statute(&dir, &["check", "--base", "base"], None);
-    assert!(line(&ours, 7).starts_with("violation "), "{}", ours.stdout);
+    assert!(line(&ours, 46).starts_with("violation "), "{}", ours.stdout);
 }
 
-// Rule 3: credentials stay where they are designated; gitleaks sees the
+// Rule 43: credentials are stored only where designated; gitleaks sees the
 // part in the repository.
 
 /// A directory holding a fake `gitleaks` that answers as given, plus the
@@ -315,12 +318,12 @@ fn fake_gitleaks(name: &str, exit: i32, stdout: &str) -> String {
 }
 
 #[test]
-fn r3_a_leak_is_a_violation_with_its_place_only() {
-    let dir = repo("r3-leak", "\"ac:3\"", "true");
+fn r43_a_leak_is_a_violation_with_its_place_only() {
+    let dir = repo("r43-leak", "\"ac:43\"", "true");
     let report = r#"[{"File":"cfg.txt","StartLine":1,"RuleID":"github-pat","Commit":"abc123","Secret":"REDACTED","Match":"REDACTED"}]"#;
     let run = statute(&dir, &["check"], Some(&fake_gitleaks("leak", 3, report)));
     assert_eq!(run.code, 1, "{}", run.stdout);
-    assert!(line(&run, 3).starts_with("violation "), "{}", run.stdout);
+    assert!(line(&run, 43).starts_with("violation "), "{}", run.stdout);
     assert!(
         run.stdout
             .contains("cfg.txt:1 (commit abc123): gitleaks rule github-pat"),
@@ -331,23 +334,27 @@ fn r3_a_leak_is_a_violation_with_its_place_only() {
 }
 
 #[test]
-fn r3_no_leak_goes_to_the_reviewer() {
-    let dir = repo("r3-clean", "\"ac:3\"", "true");
+fn r43_no_leak_goes_to_the_reviewer() {
+    let dir = repo("r43-clean", "\"ac:43\"", "true");
     let run = statute(&dir, &["check"], Some(&fake_gitleaks("clean", 0, "[]")));
     assert_eq!(run.code, 0, "{}", run.stdout);
-    let l = line(&run, 3);
+    let l = line(&run, 43);
     assert!(l.starts_with("inconclusive "), "{l}");
-    assert!(l.contains("gitleaks found nothing in the whole history; the parts of the rule outside the repository are for the reviewer"), "{l}");
+    assert!(l.contains("gitleaks found nothing in the whole history; credentials gitleaks does not recognize, and places outside the repository, are for the reviewer"), "{l}");
 }
 
 #[test]
-fn r3_without_gitleaks_or_with_its_error_is_inconclusive() {
-    let dir = repo("r3-missing", "\"ac:3\"", "true");
+fn r43_without_gitleaks_or_with_its_error_is_inconclusive() {
+    let dir = repo("r43-missing", "\"ac:43\"", "true");
     // Asked without --redact, the fake exits 9: an error, not a leak.
     let run = statute(&dir, &["check"], Some(&fake_gitleaks("error", 1, "")));
     assert_eq!(run.code, 0);
-    assert!(line(&run, 3).starts_with("inconclusive "), "{}", run.stdout);
-    assert!(line(&run, 3).contains("gitleaks failed"), "{}", run.stdout);
+    assert!(
+        line(&run, 43).starts_with("inconclusive "),
+        "{}",
+        run.stdout
+    );
+    assert!(line(&run, 43).contains("gitleaks failed"), "{}", run.stdout);
     let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("check")
         .join("git-only");
@@ -355,7 +362,7 @@ fn r3_without_gitleaks_or_with_its_error_is_inconclusive() {
     let run = statute(&dir, &["check"], Some(git_only.to_str().unwrap()));
     assert_eq!(run.code, 0);
     assert!(
-        line(&run, 3).contains("gitleaks is not installed"),
+        line(&run, 43).contains("gitleaks is not installed"),
         "{}",
         run.stdout
     );
@@ -365,16 +372,20 @@ fn r3_without_gitleaks_or_with_its_error_is_inconclusive() {
 /// the repository, is found and its value never printed. The token is
 /// built when the test runs, so no file of this repository holds one.
 #[test]
-fn r3_with_the_real_gitleaks() {
+fn r43_with_the_real_gitleaks() {
     let installed = std::env::var_os("PATH")
         .is_some_and(|p| std::env::split_paths(&p).any(|d| d.join("gitleaks").is_file()));
     if !installed {
         eprintln!("gitleaks is not installed; this test checks nothing here");
         return;
     }
-    let dir = repo("r3-real", "\"ac:3\"", "true");
+    let dir = repo("r43-real", "\"ac:43\"", "true");
     let run = statute(&dir, &["check"], None);
-    assert!(line(&run, 3).starts_with("inconclusive "), "{}", run.stdout);
+    assert!(
+        line(&run, 43).starts_with("inconclusive "),
+        "{}",
+        run.stdout
+    );
     // 36 letters and digits from a fixed linear congruential sequence.
     let alphabet = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let mut x: u64 = 7;
@@ -393,12 +404,35 @@ fn r3_with_the_real_gitleaks() {
     let run = statute(&dir, &["check", "--base", "base"], None);
     assert_eq!(run.code, 1, "{}", run.stdout);
     assert!(
-        line(&run, 3).contains("in the commits since base"),
+        line(&run, 43).contains("in the commits since base"),
         "{}",
         run.stdout
     );
     assert!(run.stdout.contains("cfg.txt:1"), "{}", run.stdout);
     assert!(!run.stdout.contains(&token) && !run.stderr.contains(&token));
+}
+
+// The rules 43 and 46 supersede keep their checks.
+
+#[test]
+fn rules_3_and_7_run_their_own_checks() {
+    let dir = repo("superseded", "\"ac:3\", \"ac:7\"", "true");
+    let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("check")
+        .join("git-only");
+    std::fs::create_dir_all(&git_only).unwrap();
+    let run = statute(&dir, &["check"], Some(git_only.to_str().unwrap()));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    assert!(
+        line(&run, 3).contains("gitleaks is not installed"),
+        "{}",
+        run.stdout
+    );
+    assert!(
+        line(&run, 7).contains("give the base of the change with --base"),
+        "{}",
+        run.stdout
+    );
 }
 
 // External commands and rules without a check.
