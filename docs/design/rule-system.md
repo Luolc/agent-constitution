@@ -99,17 +99,17 @@ A skill declares which rules it implements, and it is installed only when
 at least one of them is in the rule set. A repository's `AGENTS.md` keeps
 only what is specific to that repository (what it is, its language, its
 layout, its check commands) and names the rule set it uses
-(`division-of-instructions.project-instructions`). Choosing which rules a
-rule set holds is for a competent principal of the jurisdiction
-(`division-of-instructions.rules`); whether repositories of one
-jurisdiction may use different rule sets is an
+(`division-of-instructions.project-instructions`). Whether a rule set is
+chosen per repository or, as today, per jurisdiction
+(`division-of-instructions.rules`) is an
 [open question](#open-questions).
 
 ## Dependencies, capabilities and packs
 
 - `requires`: enabling rule A requires rule B. A rule that says how to run
   checks through uv requires the rule that has uv manage the project's
-  dependencies. The build fails when a rule set enables A without B.
+  dependencies. When a rule set enables A without B, the build either
+  fails or adds B; which of the two is an open question.
 - `provides`: a rule may provide a named capability, such as "Python
   package manager". Within one rule set, each capability is provided by at
   most one rule. That is how alternatives exclude each other: a uv rule, a
@@ -139,7 +139,7 @@ TOML file has this value") would keep needing one more case, "or", and
 check is code, of one of two kinds, and there is no third.
 
 **Our rules: Rust.** The checks of the rules in this repo are one Rust
-crate, with one module per rule, named after the rule's ID, the
+crate, with one module per rule that points at the rule's file, the
 way ruff and clippy implement each lint as a function. Common operations,
 such as reading a key from a TOML file, are ordinary helper functions in
 the same crate; an operation becomes a helper on its third repetition, not
@@ -250,9 +250,10 @@ implements this design lands.
   rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](../design.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
-  rule by default, with named exclusions". If repositories of one
-  jurisdiction may use different rule sets, one compiled file per rule set
-  replaces one per jurisdiction.
+  rule by default, with named exclusions". Choosing rules per jurisdiction,
+  with one compiled file for all of a jurisdiction's repositories, may
+  conflict with a repository naming its own rule set; this is undecided
+  (see [Open questions](#open-questions)).
 - [Relaxation declarations](../design.md#relaxation-declarations): a
   rule set that leaves a rule out, or picks another rule for the same
   capability, needs no relaxation. Whether `adjustable` values and the
@@ -274,12 +275,13 @@ implements this design lands.
 - How a rule's source is written in an ID, for example `ac:42` for a rule
   of this repo and `myteam:7` for one of a downstream team.
 - The format of the lock file.
-- Whether repositories of one jurisdiction may use different rule sets,
-  or each jurisdiction has one.
+- Whether a rule set is chosen per repository or per jurisdiction, and by
+  whom.
 - When a rule set enables a rule without one it `requires`, whether the
   build fails or adds the missing rule.
-- Whether a rule's text and metadata stay in their own file under
-  `rules/` or move next to its check in the crate.
+- The directory layout of the rules and their checks: whether a rule's
+  text and metadata stay in their own file under `rules/`, with the
+  crate's module pointing at it, or move next to the check.
 - How a trial rule becomes a regular rule, and who decides.
 - The rules and the skill for writing a design document itself, to be
   written as rules and skills later.
