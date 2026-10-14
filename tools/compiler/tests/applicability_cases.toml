@@ -1,0 +1,300 @@
+# Node 20, a domain, a one-of or a rule, with and without
+# `[applicability]`, in a source that also holds rules 2 and 10. The
+# compiler (test_rule_tree.py) builds the source with each node; statute
+# (crates/statute/tests/compile.rs) locks it and compiles it with a rule
+# 21 under node 20 enabled, so that a domain's applicability is rendered
+# and its citations followed. Both agree on whether each case passes: a
+# case that fails draws errors on rules/20.toml and on no other file.
+
+[[cases]]
+name = "a domain with applicability in its original"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+
+[applicability]
+en = '''
+For repositories that use the tool; see {@rule:10}.
+Not needed elsewhere.
+'''
+"""
+
+[[cases]]
+name = "a translated domain with applicability"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+zh = "工具"
+
+[applicability]
+en = '''
+For repositories that use the tool; see {@rule:10}.
+Not needed elsewhere.
+'''
+zh = '''
+用这个工具的仓库启用，见{@rule:10}。
+别的仓库不必。
+'''
+
+[translations]
+zh = "a7f2ecaa74661015ca7837df9f84a98aa8d174f0b1f9d1f7ebcbdabf49563c5d"
+"""
+
+[[cases]]
+name = "a translation whose hash leaves the applicability out"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+zh = "工具"
+
+[applicability]
+en = '''
+For repositories that use the tool; see {@rule:10}.
+Not needed elsewhere.
+'''
+zh = '''
+用这个工具的仓库启用，见{@rule:10}。
+别的仓库不必。
+'''
+
+[translations]
+zh = "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
+"""
+
+[[cases]]
+name = "a translated domain without applicability, hashing the title alone"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+zh = "工具"
+
+[translations]
+zh = "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
+"""
+
+[[cases]]
+name = "a translation that lacks the applicability"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+zh = "工具"
+
+[applicability]
+en = '''
+For repositories that use the tool; see {@rule:10}.
+Not needed elsewhere.
+'''
+
+[translations]
+zh = "a7f2ecaa74661015ca7837df9f84a98aa8d174f0b1f9d1f7ebcbdabf49563c5d"
+"""
+
+[[cases]]
+name = "applicability without its original"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+
+[applicability]
+zh = "用这个工具的仓库启用。"
+"""
+
+[[cases]]
+name = "an empty applicability"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+
+[applicability]
+en = ""
+"""
+
+[[cases]]
+name = "applicability that is a string, not a table"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+applicability = "For repositories that use the tool."
+
+[title]
+en = "Tools"
+"""
+
+[[cases]]
+name = "applicability whose text is a number"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+
+[applicability]
+en = 3
+"""
+
+[[cases]]
+name = "applicability that cites a rule the source does not have"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Tools"
+
+[applicability]
+en = "For repositories that use the tool; see {@rule:99}."
+"""
+
+[[cases]]
+name = "a one-of without applicability"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 2
+
+[title]
+en = "Tools"
+"""
+
+[[cases]]
+name = "a one-of with applicability"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 2
+
+[title]
+en = "Tools"
+
+[applicability]
+en = "For repositories that use the tool."
+"""
+
+[[cases]]
+name = "a rule without applicability"
+passes = true
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 2
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Use the tool"
+
+[text.statement]
+en = "Use the tool."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a rule with applicability"
+passes = false
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 2
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Use the tool"
+
+[applicability]
+en = "For repositories that use the tool."
+
+[text.statement]
+en = "Use the tool."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""

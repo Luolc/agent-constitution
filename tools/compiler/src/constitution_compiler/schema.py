@@ -52,7 +52,7 @@ NODE_SCHEMA = {
   "translations?": dict,
 }
 NODE_SCHEMAS = {
-  "domain": NODE_SCHEMA,
+  "domain": NODE_SCHEMA | {"applicability?": TEXT},
   "one-of": NODE_SCHEMA | {"parent": int},
   "rule": NODE_SCHEMA
   | {

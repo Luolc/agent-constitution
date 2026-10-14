@@ -172,7 +172,9 @@ site-rules`, `uv run count-tokens` (the token count, below),
   written on one) and all its metadata: ID, revision, kind, status, slug,
   default level, the revisions of the constitution, the check with its
   command and tools, the language of the original and the translations.
-  A domain's or a one-of's page lists the nodes below it. A node named on
+  A domain's or a one-of's page lists the nodes below it; a domain's
+  page gives its applicability, when it has one, under its title, its
+  citations linked as in a rule's text. A node named on
   a page shows its label and title; the table of contents lists the
   page's headings. In the texts,
   `{@constitution:...}` becomes a link to the provision's anchor, labeled

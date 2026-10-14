@@ -229,6 +229,9 @@ class _Language:
       "depth": depth,
       "groups": groups,
       "title": node.title[shown],
+      "applicability": self.links(node.applicability[shown], shown)
+      if node.applicability
+      else None,
       "text": {
         part: self.links(node.text[part][shown], shown)
         for part in PARTS
