@@ -881,7 +881,13 @@ passes to Hugo as `--baseURL`.
   each group a top-level entry, its name in bold after an icon of its own
   from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
   pages as children. Today there is one group, the constitution, the home
-  page, with the scales (`law`). The version for agents is not listed, as
+  page, with the scales (`law`). Under it are its editions, newest first:
+  the content adapter adds each page's entry to the menu, named from
+  `constitution/index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
+  by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
+  edition's year and month, negated. Today that is the one edition, the
+  home page; a page per edition, once there are several, is not built
+  yet. The version for agents is not listed, as
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
   theme's own list with `bookHidden`. The table of contents lists the
