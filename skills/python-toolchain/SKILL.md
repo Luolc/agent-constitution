@@ -27,7 +27,12 @@ they are.
    no `rev:` of a tool's own pre-commit repo repeats them. `--frozen`
    keeps uv from touching the lock; `--no-sync` keeps it from installing
    into `.venv`, so a hook whose tool is missing from `.venv` fails
-   instead of quietly installing it. A `.venv` that is out of date is not
+   instead of quietly installing it. That holds only while no other copy
+   of the tool is on `PATH`: when the tool is not in `.venv`, `uv run`
+   falls back to `PATH`, so another active virtual environment (one that
+   direnv activates, say) or a copy installed elsewhere runs instead, and
+   the hook may pass. CI syncs first, and a synced `.venv` comes before
+   `PATH`. A `.venv` that is out of date is not
    caught: after a change to the dependencies, run `uv sync`, or the
    hooks run the old versions still installed.
 
@@ -49,7 +54,13 @@ they are.
    first; write down why in the repo's `AGENTS.md`. It gets:
 
    - its own Python hooks, `entry: uv run --project <dir> --frozen
-     --no-sync <tool> ...` with `files: ^<dir>/`;
+     --no-sync <tool> ...` with `files: ^<dir>/`. `--project` keeps the
+     working directory at the root, so a tool that reads its settings
+     from there must be pointed at `<dir>`: `basedpyright -p <dir>` with a
+     `[tool.basedpyright]` section in `<dir>/pyproject.toml` (without
+     that section it finds no source files and passes), and `pydoclint
+     --config <dir>/pyproject.toml` with a `[tool.pydoclint]` section
+     there. ruff finds the nearest `pyproject.toml` by itself;
    - its own `uv-lock` hook, `args: [--project, <dir>]` with
      `files: ^<dir>/(pyproject\.toml|uv\.lock)$`;
    - `exclude: ^<dir>/` on the root's hooks, so the two sets of tools do
@@ -147,8 +158,11 @@ Run these when you set this up or change it, in a clean checkout.
 
 - Happy path: `uv sync` (`--all-packages` in a workspace), then
   `pre-commit run --all-files` passes.
-- `--no-sync` takes effect: delete `.venv` and run pre-commit without
-  syncing first. Each Python hook fails with `Failed to spawn: <tool>`,
+- `--no-sync` takes effect: delete `.venv`, check that `command -v
+  <tool>` prints nothing for each tool (otherwise the hook runs that copy,
+  see point 1; deactivate the other environment or take its directory
+  off `PATH`), and run pre-commit without syncing first. Each Python hook
+  fails with `Failed to spawn: <tool>`,
   and afterwards `.venv/bin/<tool>` does not exist. `uv run --no-sync`
   still creates an empty `.venv`, so "`.venv` does not exist" is not the
   test; the tool missing from it is. The other arm: the same command
