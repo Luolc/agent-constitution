@@ -541,6 +541,27 @@ fn no_enabled_skill_writes_no_skill_directory() {
 }
 
 #[test]
+fn a_skill_with_flow_style_metadata_fails() {
+    let dir = repo("skill-flow-metadata", &manifest(""));
+    skill(&dir, "flow", "");
+    std::fs::write(
+        dir.join("skills/flow/SKILL.md"),
+        "---\nname: flow\ndescription: Skill flow.\nmetadata: {statute-rules: \"3\"}\n---\n",
+    )
+    .unwrap();
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["compile", "--output", "out.md"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr
+            .contains("skills/flow/SKILL.md: line 4: `metadata` is written in flow style"),
+        "{}",
+        run.stderr
+    );
+    assert!(!dir.join("out.md").exists());
+}
+
+#[test]
 fn a_skill_naming_a_missing_rule_fails() {
     let dir = repo("skill-missing-rule", &manifest(""));
     skill(&dir, "lost", "3 99");
@@ -759,6 +780,17 @@ fn a_run_stopped_halfway_is_finished_by_the_next() {
     // A file of the skill that cannot be read stops the copy halfway.
     let more = dir.join("skills/three/references/more.md");
     std::fs::set_permissions(&more, std::fs::Permissions::from_mode(0o000)).unwrap();
+    // Root reads the file anyway, and nothing stops the copy. CI does not
+    // run as root, so there the test must not skip.
+    if std::fs::File::open(&more).is_ok() {
+        std::fs::set_permissions(&more, std::fs::Permissions::from_mode(0o644)).unwrap();
+        assert!(
+            std::env::var_os("CI").is_none(),
+            "an unreadable file is read in CI; the test would not run"
+        );
+        eprintln!("skipped: an unreadable file is read anyway (running as root?)");
+        return;
+    }
     let run = statute(&dir, &["compile", "--output", "out.md"]);
     std::fs::set_permissions(&more, std::fs::Permissions::from_mode(0o644)).unwrap();
     assert_eq!(run.code, 1, "{}", run.stdout);

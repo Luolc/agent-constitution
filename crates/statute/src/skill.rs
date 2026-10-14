@@ -59,22 +59,43 @@ pub fn load(source: &Path, shown: &str) -> Result<Vec<Skill>, String> {
 
 /// The rules a `SKILL.md` declares: the value of `statute-rules` in the
 /// `metadata` map of its front matter. Reads only that much YAML: a
-/// top-level line `metadata:`, then its indented `key: value` lines.
+/// top-level line `metadata:`, then its indented `key: value` lines. A
+/// `metadata` written in flow style (`{...}`) that names the key fails
+/// instead of passing for no declaration.
 fn declared(text: &str) -> Result<Vec<Id>, String> {
     let mut lines = text.lines().map(|l| l.trim_end_matches('\r'));
     if lines.next() != Some("---") {
         return Ok(Vec::new());
     }
     let mut in_metadata = false;
-    for line in lines.take_while(|l| *l != "---") {
+    let mut in_flow = false;
+    // The front matter starts on line 2.
+    for (number, line) in (2..).zip(lines.take_while(|l| *l != "---")) {
         if !line.starts_with([' ', '\t']) {
-            in_metadata = line.trim_end() == "metadata:";
+            in_metadata = false;
+            in_flow = false;
+            if let Some(rest) = line.strip_prefix("metadata:") {
+                let rest = rest.trim();
+                in_metadata = rest.is_empty() || rest.starts_with('#');
+                in_flow = !in_metadata;
+            }
+        } else if in_metadata && line.trim_start().starts_with('{') {
+            in_metadata = false;
+            in_flow = true;
+        }
+        if in_flow {
+            if line.contains(KEY) {
+                return Err(flow_style(number));
+            }
+            continue;
+        }
+        if !in_metadata {
             continue;
         }
         let Some((key, value)) = line.trim().split_once(':') else {
             continue;
         };
-        if !in_metadata || key.trim() != KEY {
+        if key.trim() != KEY {
             continue;
         }
         let value = value.trim();
@@ -91,6 +112,12 @@ fn declared(text: &str) -> Result<Vec<Id>, String> {
         };
     }
     Ok(Vec::new())
+}
+
+fn flow_style(line: usize) -> String {
+    format!(
+        "line {line}: `metadata` is written in flow style (`{{...}}`); statute reads `{KEY}` only from a block mapping, the key on its own indented line:\n  metadata:\n    {KEY}: \"42 51\""
+    )
 }
 
 #[cfg(test)]
@@ -125,5 +152,43 @@ mod tests {
             "{e}"
         );
         assert!(declared("---\nmetadata:\n  statute-rules: \"\"\n---\n").is_err());
+    }
+
+    #[test]
+    fn a_flow_style_metadata_that_names_the_key_fails() {
+        for text in [
+            "---\nname: a\nmetadata: {statute-rules: \"42\"}\n---\n",
+            "---\nname: a\nmetadata: {author: x,\n  statute-rules: \"42\"}\n---\n",
+            "---\nname: a\nmetadata:\n  {statute-rules: \"42\"}\n---\n",
+        ] {
+            let e = declared(text).unwrap_err();
+            assert!(e.starts_with("line "), "{e}");
+            assert!(e.contains("only from a block mapping"), "{e}");
+            assert!(
+                e.contains("\n  metadata:\n    statute-rules: \"42 51\""),
+                "{e}"
+            );
+        }
+        assert!(
+            declared("---\nname: a\nmetadata: {statute-rules: \"42\"}\n---\n")
+                .unwrap_err()
+                .starts_with("line 3: ")
+        );
+        assert!(
+            declared("---\nname: a\nmetadata: {author: x,\n  statute-rules: \"42\"}\n---\n")
+                .unwrap_err()
+                .starts_with("line 4: ")
+        );
+    }
+
+    #[test]
+    fn a_metadata_without_the_key_declares_nothing() {
+        for text in [
+            "---\nname: a\n---\n",
+            "---\nname: a\nmetadata:\n  author: x\n---\n",
+            "---\nname: a\nmetadata: {author: x}\n---\n",
+        ] {
+            assert_eq!(declared(text), Ok(vec![]), "{text}");
+        }
     }
 }
