@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-Before a change takes effect, someone other than its author reviews it against this constitution and the lower-ranking provisions that apply to it. The author never puts the change into effect. What takes effect must be exactly the version that was reviewed.
+Before an author puts a change into effect, another party must review it against this constitution, the lower-ranking provisions that apply and the rules. The other party may be an agent other than the author, or a competent principal. The author must not approve their own change. What takes effect must be exactly the version that was reviewed.
 '''
 zh = '''
-变更生效之前，由作者以外的一方对照本宪法和适用于它的下位法审查。作者不得让自己的变更生效。生效的必须正是审查过的那个版本。
+作者要让一项变更生效，必须先由另一方对照本宪法、适用的下位法和规定加以审查。另一方可以是作者以外的 agent，也可以是有权委托人。作者不得自己批准自己的变更。生效的必须正是审查过的那个版本。
 '''
