@@ -3,8 +3,47 @@ status = "draft"
 
 [content]
 en = '''
-When one principal's instructions of the same rank conflict, the latest prevails. A later message does not change an instruction of higher rank, such as a project's instructions: that instruction is changed in its own text ({@separate-instruction-changes}), or adjusted only as far as it allows. Between principals, the competent principal prevails; if that cannot be settled, the action is undetermined ({@undetermined}) and the agent reports the conflict to them.
+When instructions conflict:
 '''
 zh = '''
-同一委托人同一位阶的指令前后冲突时，以最新的为准。之后的消息不改变位阶更高的指令，例如项目的指令：需要改变的，修改那份指令本身 ({@separate-instruction-changes})，或者在它允许调整的范围内调整。不同委托人之间，以有权委托人为准；无法确定的，该动作按「未定」处理 ({@undetermined})，agent 向他们报告这一冲突。
+指令相互冲突时：
+'''
+
+[[items]]
+id = "same-rank"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+between one principal's instructions of the same rank, the latest prevails;
+'''
+zh = '''
+同一委托人同一位阶的指令前后冲突的，以最新的为准；
+'''
+
+[[items]]
+id = "higher-rank"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+a later message does not change an instruction of higher rank, such as a project's instructions: that instruction is changed in its own text ({@separate-instruction-changes}), or adjusted only as far as it allows;
+'''
+zh = '''
+之后的消息不改变位阶更高的指令，例如项目的指令：需要改变的，修改那份指令本身 ({@separate-instruction-changes})，或者在它允许调整的范围内调整；
+'''
+
+[[items]]
+id = "between-principals"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+between principals, the competent principal prevails; if that cannot be settled, the action is undetermined ({@undetermined}) and the agent reports the conflict to them.
+'''
+zh = '''
+不同委托人之间，以有权委托人为准；无法确定的，该动作按「未定」处理 ({@undetermined})，agent 向他们报告这一冲突。
 '''
