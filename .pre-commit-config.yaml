@@ -1,6 +1,6 @@
-# Commit hooks: secret scan, Python lint, format, docstring and type
-# checks, constitution build check and its tests, and limae on the Chinese
-# text, in the sources and in the built file.
+# Commit hooks: secret scan, lock check, Python lint, format, docstring
+# and type checks, constitution build check and its tests, and limae on
+# the Chinese text, in the sources and in the built file.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the full history, so the two complement each other.
@@ -12,34 +12,43 @@ repos:
       - id: gitleaks
         args: ["--redact", "--no-banner", "."]
 
+  # Keeps uv.lock in step with pyproject.toml: fails when `uv lock` would
+  # change the lock. The rev is the uv version, the same as in CI.
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.13.0
+    hooks:
+      - id: uv-lock
+
   # The local hooks run in the environment of pyproject.toml, which pins
-  # limae and the Python checkers; `uv run --frozen` creates or syncs it
-  # from uv.lock and never changes the lock.
+  # limae and the Python checkers. `uv run --frozen --no-sync` uses .venv as
+  # it is: it never syncs it from uv.lock nor changes the lock. A tool
+  # missing from .venv fails the hook; a stale .venv runs the versions it
+  # has. Run `uv sync` after cloning and whenever uv.lock changes.
   - repo: local
     hooks:
       # The Python checkers, configured in pyproject.toml, on the whole of
       # tools/ rather than the staged files.
       - id: ruff-check
         name: ruff check
-        entry: uv run --frozen ruff check .
+        entry: uv run --frozen --no-sync ruff check .
         language: system
         files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       - id: ruff-format
         name: ruff format
-        entry: uv run --frozen ruff format --check .
+        entry: uv run --frozen --no-sync ruff format --check .
         language: system
         files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       - id: pydoclint
         name: pydoclint
-        entry: uv run --frozen pydoclint --config pyproject.toml --quiet tools
+        entry: uv run --frozen --no-sync pydoclint --config pyproject.toml --quiet tools
         language: system
         files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       - id: basedpyright
         name: basedpyright
-        entry: uv run --frozen basedpyright
+        entry: uv run --frozen --no-sync basedpyright
         language: system
         files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
         pass_filenames: false
@@ -49,14 +58,14 @@ repos:
       # against a base commit (--base) runs only in CI.
       - id: constitution
         name: constitution build check
-        entry: uv run --frozen tools/build_constitution.py --check
+        entry: uv run --frozen --no-sync tools/build_constitution.py --check
         language: system
         files: ^(constitution|rules|tools)/
         pass_filenames: false
       # The tests of lint_zh_sources.py run limae.
       - id: constitution-tests
         name: tools tests
-        entry: uv run --frozen python -m unittest discover -s tools
+        entry: uv run --frozen --no-sync python -m unittest discover -s tools
         language: system
         files: ^(tools/|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
@@ -65,7 +74,7 @@ repos:
       # `uv run tools/lint_zh_sources.py --fix`.
       - id: zh-sources
         name: limae on the zh text of the sources
-        entry: uv run --frozen tools/lint_zh_sources.py
+        entry: uv run --frozen --no-sync tools/lint_zh_sources.py
         language: system
         files: ^(constitution/(index\.toml|articles/)|rules/|tools/lint_zh_sources\.py$|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
@@ -75,6 +84,6 @@ repos:
       # --enable make limae skip its configuration file.
       - id: limae
         name: limae on the built Chinese constitution
-        entry: uv run --frozen limae
+        entry: uv run --frozen --no-sync limae
         language: system
         files: ^constitution/constitution\.zh(\.agent)?\.md$
