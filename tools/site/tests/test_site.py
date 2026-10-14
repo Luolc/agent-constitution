@@ -400,6 +400,19 @@ class SiteTest(unittest.TestCase):
       )
     self.assertNotIn("还没有中文译文", pages["zh/rules/3/index.html"])
 
+  def test_rules_group_current(self):
+    """The rules group is marked current on all of its pages, only there."""
+    raw = self.build(raw=True, per_page=2)
+    for page, href, mark in (
+      ("rules/index.html", "../rules/", " active"),
+      ("rules/page/2/index.html", "../../../rules/", " active"),
+      ("rules/3/index.html", "../../rules/", " active"),
+      ("zh/rules/3/index.html", "../../../zh/rules/", " active"),
+      ("design/one/index.html", "../../rules/", ""),
+    ):
+      with self.subTest(page=page):
+        self.assertIn(f'href="{href}" class="menu-group{mark}"', raw[page])
+
   def test_rules_under_provisions(self):
     """Under each provision, the rules not superseded that cite it."""
     raw = self.build(raw=True)

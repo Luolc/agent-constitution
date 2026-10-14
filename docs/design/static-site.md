@@ -243,9 +243,10 @@ site-rules`, `uv run count-tokens` (the token count, below),
   from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
   pages as children. There are three groups: the constitution, the home
   page, with the scales (`law`); the rules, their list, with a checklist
-  (`checklist`) and no pages below it; and the design, its README's page,
-  with an open book (`book`), its files below it as the content adapter lists
-  them (Design, above). The design group folds (`collapse` in its menu
+  (`checklist`) and no pages below it, so the group itself is marked as
+  the current page on the list and on each rule's page; and the design,
+  its README's page, with an open book (`book`), its files below it as the
+  content adapter lists them (Design, above). The design group folds (`collapse` in its menu
   params): it is closed on every page but the design's own, where it is
   open with the current page marked. It uses the theme's checkbox, label
   and chevron from its file tree; the chevron points right when closed and
