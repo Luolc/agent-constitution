@@ -24,12 +24,12 @@ import tomllib
 import unittest
 from unittest import mock
 
-import build_constitution
 import build_site
+import constitution_render
 import count_tokens
 
 ROOT = Path(__file__).resolve().parent.parent
-MARK = build_constitution.OMITTED_MARK
+MARK = constitution_render.OMITTED_MARK
 # Each file as build_constitution.py writes it: the header line, a blank
 # line, the title, the text. The full version marks a part left out of
 # the version for agents and gives its headings anchors.
@@ -257,7 +257,7 @@ class SiteTest(unittest.TestCase):
 
 class OmittedMarkTest(unittest.TestCase):
   def test_site_knows_the_mark(self):
-    """web/hugo.toml finds the asterisk as build_constitution writes it."""
+    """web/hugo.toml finds the asterisk as the build writes it."""
     with (ROOT / "web/hugo.toml").open("rb") as f:
       params = tomllib.load(f)["params"]
     self.assertEqual(params["omittedMark"], MARK)

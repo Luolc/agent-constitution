@@ -82,7 +82,7 @@ enableRobotsTXT = false
   # Linked in the sidebar, under the site's title.
   SourceRepo = "https://github.com/Luolc/agent-constitution"
   # The asterisk after a provision the version for agents leaves out, as
-  # tools/build_constitution.py writes it (OMITTED_MARK).
+  # tools/constitution_render.py writes it (OMITTED_MARK).
   omittedMark = '<sup class="omitted">*</sup>'
   # The model tools/count_tokens.py counts the tokens for, and its name in
   # the popup on the counts.
