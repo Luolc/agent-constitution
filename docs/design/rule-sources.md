@@ -69,8 +69,8 @@ two:
 public = true
 
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
-team = { git = "example.test/our-team/rules", branch = "main", public = true }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
+team = { git = "https://example.test/our-team/rules.git", branch = "main", public = true }
 ```
 
 - `public` at the top of the rule set: whether the repository that holds
@@ -115,16 +115,12 @@ gives no clear answer:
 | `INTERNAL`, which everyone in the enterprise can read | `true`, with a warning that says how to make it private |
 | no answer (no `gh`, no login, no GitHub remote) | `true`, with a warning that names why and says how to make it private |
 
-How a source's `public` is found when a source is added is open:
-statute has no command that adds a source yet (`init` writes only `R`,
-which is always public), and it is to be settled when the way sources
-are declared is next redesigned. The default proposed for then: a
-source on disk is asked about through the repository that holds its
-directory; `INTERNAL`, no answer, and a directory in no GitHub
-repository count as private; and in a public rule set, the command
-stops without writing and names two ways, to run it again with
-`--public`, or to add the source to `statute.private.toml` with
-`--private`.
+When a source is added, `statute source add` asks `gh` in the same
+way, with the safe side reversed: `INTERNAL`, no answer and a directory
+in no GitHub repository count as private, and a private source of a
+public repository is written to `statute.private.toml` rather than
+stopping the command
+([Adding a source](global-configuration.md#adding-a-source)).
 
 ## Which rules may cite which
 
@@ -352,7 +348,8 @@ one `statute.toml` names every source, and its outputs are committed as
 they are. Global private rules belong at the user level once it is
 built ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
 Where it lives); until then they reach a repository
-this way.
+this way, their source named once in the global configuration
+([Global configuration and git sources](global-configuration.md)).
 
 ## Overrides
 
@@ -503,10 +500,13 @@ kind = "domain"
 parent = 104
 ```
 
-- A domain's `parent`, when present, is the number of a domain of the
-  same source that has no parent. So
+- A domain's `parent`, when present, is a domain that has no parent:
+  of the same source, written as its number, or of another source,
+  written as `requires` writes one (`"R78"`). So
   there are at most two levels; a subdomain under a subdomain fails the
-  build, as does a domain whose parent is a rule or a one-of.
+  build, as does a domain whose parent is a rule or a one-of. The
+  reference direction applies: a domain of a public source hangs only
+  under a public domain.
 - A rule or a one-of may have a subdomain as its parent, as it may a
   domain. A one-of cannot have a domain below it, so subdomains and
   one-ofs never interleave: the tree goes domain, subdomain, then rules
@@ -516,17 +516,27 @@ parent = 104
   rules of a repository about Git appear under the general Git heading
   rather than under one of their own. The reference direction applies:
   a public rule's parent is a public domain.
+- A domain of one source may hang under a domain of another for the
+  same reason: a private source's domain about the user's fleet of
+  agents appears as a subdomain of the first-party domain about agents,
+  with its rules below it. The first-party source's own domains are the
+  roots: its build accepts a `parent` in another source on a rule only
+  ([Checkers](checkers.md#checkers)).
 - Enabling a domain as a pack enables its subdomains' rules; a subdomain
   may be the root of a pack of its own. A pack is a subtree of one
-  source: it does not reach the rules of another source hung under its
-  domains, which a rule set enables by listing them in `rules`.
+  source: it does not reach the rules or subdomains of another source
+  hung under its domains, which a rule set enables by listing them in
+  `rules`, or a subdomain of another source as a pack of its own.
 
 **Rendering.** In the compiled `AGENTS.md`, a domain is a heading of
 level two and a subdomain one of level three; each level of the tree
 below is one level deeper, down to level six, as in
 [Compilation and the site](statute-command.md#compilation-and-the-site). A
 subdomain with no enabled rule below it does not appear, nor does a
-domain all of whose subdomains and rules are absent. A requirement is
+domain all of whose subdomains and rules are absent. Under a domain,
+its own subdomains come first, then those of other sources by the
+sources' names, as the domains themselves are ordered; a domain with an
+enabled rule only in a subdomain of another source appears for it. A requirement is
 rendered as a link when it leads out of the requiring rule's nearest
 domain, subdomain included. On the site, a subdomain heads the rules
 below it as a domain does, nested under its domain's heading, and its
@@ -615,7 +625,8 @@ The parts of the design this one changes describe it already, each
 marking what is not built:
 
 - [Rule file format](rule-format.md#rule-file-format): a rule's `parent`
-  may name a domain of another source, a domain may have a `parent`, and
+  may name a domain of another source, a domain may have a `parent`, in
+  its own source or another, and
   a rule may have `overrides` in place of `parent`.
 - [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file):
   `public`, `scope`, `statute.private.toml`, `base` and `overridden-by`

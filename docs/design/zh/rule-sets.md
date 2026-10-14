@@ -1,4 +1,4 @@
-<!-- en-sha256: 90f8e24d8d552e8102d1353c716e8f7c2d412fa79eb733c63839a464f5ccff17 -->
+<!-- en-sha256: b317746d61a11ebabfb050a0a65fb7fe53e383c1638f00fd2583858fb49c3ae2 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -15,7 +15,7 @@ rules = ["R42", "R51", "12"]
 packs = ["R3"]
 
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 
 [compile]
 agents-md = ["statement"]
@@ -25,18 +25,19 @@ agents-md = ["statement"]
 
 [规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
 
-锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址和提交)，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；以及文件的 SHA-256)：
+锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag，以及提交；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；以及文件的 SHA-256)：
 
 ```toml
 [constitution]
-repository = "github.com/Luolc/agent-constitution"
+git = "https://github.com/Luolc/agent-constitution"
 edition = "2026-10"
 revision = "<revision>"
 commit = "<commit>"
 
 [[sources]]
 name = "R"
-address = "github.com/Luolc/agent-constitution"
+git = "https://github.com/Luolc/agent-constitution"
+tag = "<tag>"
 commit = "<commit>"
 
 [[rules]]
@@ -81,7 +82,7 @@ path = "."
 
 所以分段规定不能指望自己目录里的指令文件被读到。编译器把每一段的规定都编译进仓根的指令文件，每条这样的规定写明它适用的目录；同一个仓库的编译输出只用一个文件名。子目录里可以再放一份重复某一段的文件，但不依赖它被读到。
 
-**放在哪里。** 这套设计仿照 uv 这样的包管理器：规定源相当于包索引，规定清单相当于项目 manifest，锁文件就相当于锁文件，编译相当于 sync，用户级缓存相当于包缓存。仓库里放规定清单、锁文件和编译输出；升级是在仓库里执行的一条命令，结果以一个 pull request 的形式出现。用户级只放命令、规定源的缓存，以及很薄的一层个人设置，存放与人有关、与项目无关的内容：回复用什么语言、把消息当作语音转文字来读、凭证存放在哪里、机器上的目录怎样布局。这一层接管设计中已有的私有 overlay 里与个人相关的那部分。每条规定声明一个默认层级 (项目规定在仓库级，关于人或机器的规定在用户级)，用户可以修改。这样做的原因是：克隆仓库的人、CI 和云端的 agent 都读不到用户级的文件，而且每个仓库固定自己的版本，按自己的节奏升级。第一版只做仓库级 ([命令与第一版](statute-command.md#the-command-and-the-first-version))。
+**放在哪里。** 这套设计仿照 uv 这样的包管理器：规定源相当于包索引，规定清单相当于项目 manifest，锁文件就相当于锁文件，编译相当于 sync，用户级缓存相当于包缓存。仓库里放规定清单、锁文件和编译输出；升级是在仓库里执行的一条命令，结果以一个 pull request 的形式出现。用户级只放命令、规定源的缓存，以及很薄的一层个人设置，存放与人有关、与项目无关的内容：回复用什么语言、把消息当作语音转文字来读、凭证存放在哪里、机器上的目录怎样布局。这一层接管设计中已有的私有 overlay 里与个人相关的那部分。每条规定声明一个默认层级 (项目规定在仓库级，关于人或机器的规定在用户级)，用户可以修改。这样做的原因是：克隆仓库的人、CI 和云端的 agent 都读不到用户级的文件，而且每个仓库固定自己的版本，按自己的节奏升级。第一版只做仓库级 ([命令与第一版](statute-command.md#the-command-and-the-first-version))。规定源的缓存，以及为所有仓库登记规定源的全局配置，设计在[全局配置与 git 规定源](global-configuration.md)；个人那一层规定还没有设计。
 
 ## <a id="sources-and-references"></a>规定源与引用
 
@@ -91,11 +92,11 @@ path = "."
 
 ```toml
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
-键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag 或路径，因为命令自己认定的规定源就得内置一个地址和版本。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。statute 目前只读磁盘上的规定源，`git` 规定源会报告为暂不支持。
+键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag、分支或路径；也可以不写，交给全局配置和内置默认，即第一方仓库的 `main` 分支 ([全局配置与 git 规定源](global-configuration.md#the-global-configuration))。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。规定源也可以是一个 git 仓库，克隆到用户的 statute 目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))；statute 目前只读磁盘上的规定源，`git` 规定源会报告为暂不支持。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
 
 **三种引用。** 每种引用各有自己的写法，不会把一种读成另一种：
 

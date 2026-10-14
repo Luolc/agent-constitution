@@ -1,4 +1,4 @@
-<!-- en-sha256: ecce287e3f405aa44502c566ac212f2b08ce40719b3586303cba249688e6345a -->
+<!-- en-sha256: f8faba707f602c2058c839c8bfd25b434a3c22e5b838dd697b77fe37ba9d9214 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -37,8 +37,8 @@
 public = true
 
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
-team = { git = "example.test/our-team/rules", branch = "main", public = true }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
+team = { git = "https://example.test/our-team/rules.git", branch = "main", public = true }
 ```
 
 - 规定清单顶层的 `public`：持有这份清单的仓库是否公开。必填，没有默认值。它决定本地规定的可见性，也决定提交进仓库的规定清单能写哪些规定源 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))。
@@ -60,7 +60,7 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 | `INTERNAL`，企业内的人都能读 | `true`，并给出 warning，说明怎样改成私有 |
 | 没有答案 (没有 `gh`、没登录、没有 GitHub remote) | `true`，并给出 warning，说明原因以及怎样改成私有 |
 
-加入一个规定源时怎样得到它的 `public`，还没有定：statute 目前没有加规定源的命令 (`init` 只写 `R`，而 `R` 总是公开的)，这件事留到下一次重新设计规定源的声明方式时一起定。届时建议的默认做法是：磁盘上的规定源，问的是包含它所在目录的那个仓库；`INTERNAL`、没有答案，以及不在任何 GitHub 仓库里的目录，都当作私有；在公开的规定清单里，命令什么都不写就停下，并给出两条路：加 `--public` 重新运行，或者用 `--private` 把这个规定源加进 `statute.private.toml`。
+添加规定源时，`statute source add` 用同样的办法问 `gh`，只是不会泄漏的那一边反过来：`INTERNAL`、没有答案，以及不在任何 GitHub 仓库里的目录，都当作私有；公开仓库的私有规定源写进 `statute.private.toml`，命令不停下 ([添加规定源](global-configuration.md#adding-a-source))。
 
 ## <a id="which-rules-may-cite-which"></a>哪些规定可以引用哪些
 
@@ -144,7 +144,7 @@ git 不跟踪的文件不会随 `git worktree add` 出现。每个 worktree 都�
 
 私有层已按这里所写实现。
 
-私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库。
+私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库，它们的规定源在全局配置里登记一次 ([全局配置与 git 规定源](global-configuration.md))。
 
 ## <a id="overrides"></a>覆盖
 
@@ -218,12 +218,13 @@ kind = "domain"
 parent = 104
 ```
 
-- 领域的 `parent` 如果有，只能是同一规定源里一个自己没有 `parent` 的领域的编号。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或 one-of，构建也失败。
+- 领域的 `parent` 如果有，只能是一个自己没有 `parent` 的领域：同一规定源里的写编号，另一个规定源里的写法与 `requires` 相同 (`"R78"`)。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或 one-of，构建也失败。引用方向同样适用：公开规定源的领域只能挂在公开的领域下面。
 - 规定和 one-of 可以把子领域当作 `parent`，就像把领域当作 `parent` 一样。one-of 下面不能有领域，所以子领域和 one-of 不会交错：树的顺序是领域、子领域，然后是规定和 one-of。
 - 规定的 `parent` 也可以指向另一个规定源的领域或子领域，但不能指向另一个规定源的规定或 one-of。这样，一个仓库关于 Git 的本地规定会出现在通用的 Git 标题下面，而不是另起一个标题。引用方向同样适用：公开规定的 `parent` 必须是公开的领域。
-- 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定，不在规定包里，要由规定清单在 `rules` 里列出来启用。
+- 出于同样的理由，一个规定源的领域也可以挂在另一个规定源的领域下面：私有规定源里关于用户自己那套 agent 的领域，作为第一方「agent」领域的子领域出现，它的规定在它下面。第一方规定源自己的领域是根：它的构建只接受规定指向另一个规定源的 `parent` ([检查程序](checkers.md#checkers))。
+- 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定或子领域，不在规定包里；规定要由规定清单在 `rules` 里列出来启用，别的规定源的子领域可以作为它自己的规定包启用。
 
-**怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](statute-command.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
+**怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](statute-command.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一个领域下面，先排它自己规定源的子领域，再按规定源的名字排别的规定源的子领域，和领域本身的排法一样；一个领域只在别的规定源的子领域里有启用的规定时，也因此出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
 
 ## <a id="conflicting-practices-as-one-ofs"></a>用 one-of 表达相互冲突的做法
 
@@ -263,7 +264,7 @@ parent = 104
 
 设计里受这一部分影响的地方已经按它写好，并各自标明尚未实现的内容：
 
-- [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，规定可以用 `overrides` 代替 `parent`。
+- [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，在自己的规定源或另一个规定源里，规定可以用 `overrides` 代替 `parent`。
 - [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、`statute.private.toml`、`base`，以及锁文件里的 `overridden-by`。
 - [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：两级领域。
 - [编译与网站](statute-command.md#compilation-and-the-site)：子领域的标题，以及哪些依赖显示为链接。

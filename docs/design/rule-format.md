@@ -165,7 +165,8 @@ The fields:
   same source. A rule's parent may also be a domain or a subdomain of
   another source, written as `requires` writes one (`"team:3"`). Every
   rule and one-of has one, except a rule with `overrides`; a domain has
-  none, or, as a subdomain, a domain of the same source that has none
+  none, or, as a subdomain, a domain that has none, of the same source
+  or, written as `requires` writes one, of another
   ([Subdomains](rule-sources.md#subdomains)). The build accepts both
   ([Checkers](checkers.md#checkers)), and so does statute.
 - `overrides` (optional, a rule only): the rule of another source that

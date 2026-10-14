@@ -1,4 +1,4 @@
-<!-- en-sha256: 308595b8d40cc0244cf67e2e96783230f8c739141d960f857e4ed70d21c457d0 -->
+<!-- en-sha256: fa53ceb4c78ade52ebad1a1c094cc704372c0d2e9744ae72dc5f7efcc3f7d653 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -30,23 +30,35 @@
 
 **命令。** 规定体系的命令用 Rust 写 (见[为什么用 Rust](#why-rust))，在 `crates/statute` 这个 crate 里逐步实现 ([文件结构](file-structure.md))。第一版就是这一个 crate。`statute` 这个名字已经用一个占位版本在 crates.io 上占住 ([发布与版本](amendments-and-releases.md#releases-and-versions))；第一次正式发布前仍可能改名，改了就要用新名字另行发布。规定清单是 `statute.toml`，锁文件是 `statute.lock`，命令有：
 
-- `init`：写一份新的规定清单；
+- `init`：写一份新的规定清单；加 `--global` 时写全局配置 ([全局配置与 git 规定源](global-configuration.md))；
+- `source add`：在规定清单、它的私有层或全局配置里登记一个规定源 ([添加规定源](global-configuration.md#adding-a-source))；
 - `add` 和 `remove`：在规定清单里启用一条规定或去掉它，并更新锁文件；加 `--private` 时改的是 `statute.private.toml` (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))；
 - `lock`：把规定清单解析成锁文件；
 - `compile`：写出编译输出 ([编译与网站](#compilation-and-the-site))；
 - `check`：按 domain 列出启用的规定供审查，脚本能检查的附上结果 ([检查](rule-checks.md#checks))；
 - `upgrade`：把规定源和宪法移到更新的版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；
-- `explain`：说明一条规定为什么被启用、哪些规定依赖它。
+- `explain`：说明一条规定为什么被启用、哪些规定依赖它；
+- `site`：为规定清单能用到的规定生成一个本地网站 ([本地网站](#the-local-site))。
 
 **第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
-**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，支持磁盘上的规定源，`[sources]` 写几个就读几个。没有规定源在 `.` 时，`statute.toml` 旁边的 `rules/` 是仓库自己的规定，写作 `L12`；有 `R = { path = "." }` 时，它们是第一方规定，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定指向另一个规定源的 `parent`，以及 `statute.private.toml` 连同它的锁文件和输出，也都已实现。继承规定清单、按路径分段和 git 规定源都还没有实现。
+**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，支持磁盘上的规定源，`[sources]` 写几个就读几个。没有规定源在 `.` 时，`statute.toml` 旁边的 `rules/` 是仓库自己的规定，写作 `L12`；有 `R = { path = "." }` 时，它们是第一方规定，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定指向另一个规定源的 `parent`，以及 `statute.private.toml` 连同它的锁文件和输出，也都已实现。继承规定清单、按路径分段和 git 规定源都还没有实现；全局配置、`init --global`、`source add`、领域指向另一个规定源的 `parent` ([子领域](rule-sources.md#subdomains)) 和 `site` 也还没有实现。
 
-**`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，`public = true` 或 `public = false`，空的 `rules`，以及一个磁盘上的规定源，即第一方规定源 `R`。`public` 取 `--public` 或 `--private` 指定的值 (两者最多给一个)，没有指定时取 `gh` 显示的这个仓库的情况，见[公开与否](rule-sources.md#public-or-not)。`--source <dir>` 指定规定源的目录，相对于当前目录，默认是 `.`。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
+**`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，`public = true` 或 `public = false`，空的 `rules`，以及一个磁盘上的规定源，即第一方规定源 `R`。`public` 取 `--public` 或 `--private` 指定的值 (两者最多给一个)，没有指定时取 `gh` 显示的这个仓库的情况，见[公开与否](rule-sources.md#public-or-not)。`--source <dir>` 指定规定源的目录，相对于当前目录，默认是 `.`。git 规定源实现之后，`--source` 不再有默认值：不给时，`init` 不写 `[sources]`，`R` 取全局配置里的或内置默认的那个 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))，读它所跟踪分支的最新提交。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
 
 **`upgrade`** 把解析结果与 `statute.lock` 比较，打印变了什么 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))，没有变化就说锁文件已是最新，然后像 `lock` 一样写锁文件。没有 `statute.lock` 时没有可比的东西，以退出码 1 退出。加上 `--replace-superseded` 时，它先在 `rules` 和 `packs` 里把每条被取代的规定换成它的后继规定，顺着取代链找到最后一条，文件其余部分保持原样；后继规定已经列出的，只去掉旧的那一项。取代链走到一条有多个后继规定的规定时，这一项保持不动，把这几条后继规定列出来，由用户用 `add` 和 `remove` 自己选。已废止的规定留给用户自己去掉。改过的规定清单解析不通过时，两个文件都不改。
 
 **切换。** 目前 agent 读的是私有 overlay 的用户级指令文件。这些文件将加一条：仓库里有 `statute.lock` 的，以这个仓库的编译输出为准，用户级指令文件不再适用。它们管着的所有仓库一次切换：等它们的每一部分都成了规定，并且[从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide) 的几个条件都成立；不先切某一个主题。在那之前，编译输出照常构建、用来对比，但不代替它们给 agent 读。
+
+## <a id="the-local-site"></a>本地网站
+
+`statute site` 把规定清单能用到的规定生成一个网站，写到 `statute.toml` 旁边的 `.statute/site/`，在浏览器里直接从磁盘打开；它从不发布，也不是[公开网站](static-site.md)。它读 `statute.toml`，有 `statute.private.toml` 时也读，两层都在内存里解析，每个 git 规定源读锁文件记录的那个提交 ([git 规定源](global-configuration.md#git-sources))；它不写锁文件。最后打印 `index.html` 的路径。
+
+- **文件。** 纯 HTML，加一份内嵌的样式表：没有脚本，不用 Hugo，不引入 statute 现有依赖之外的依赖。每次运行都重新生成：先删掉旧的 `.statute/site/`，但只在这个目录里有 statute 写的 `.gitignore` (见下) 时才删，否则什么都不写并报错。`.statute/site/` 之外什么都不写。
+- **让 git 忽略。** statute 先写 `.statute/site/.gitignore`，内容是 `*`，这样 git 忽略那里的每个文件，包括它自己；在 git 仓库里，再用 `git check-ignore` 问一个页面的路径，git 不忽略它就一个页面都不写。不在 git 仓库里时没有东西会被提交，也就不用问。
+- **首页**按四类规定源 ([四类规定源](rule-sources.md#four-kinds-of-source)) 分节：全局公开、全局私有、本仓公开、本仓私有。每节列出它的规定源，每个规定源列出它的领域树，包括每个节点，不论启用与否：节点的引用、标题和状态，以及这份规定清单是启用它、覆盖它还是没选它。按规定源类别筛选，以及隐藏已被取代和已废止的规定，都只靠复选框和样式表实现。
+- **规定源属于哪一类**看它的两个属性：仓库自己的 `rules/` (`L`) 和 `scope = "local"` 的规定源是本仓的，其余都是全局的，包括全局配置里的；公开与否按规定源自己的声明，`L` 按规定清单的声明。在 `.` 的规定源，比如本仓的 `R = { path = "." }`，是第一方规定源，所以是全局公开的，同时也是仓库自己的规定：它只在全局公开下列一次，本仓公开那一节写明这一点并链接过去。
+- **每个节点一页**，`<source>/<id>.html`：陈述、理由、验证方式和适用范围；`requires`、`conflicts`、`overrides` 和取代它的规定；上溯的父节点路径和子节点。领域的页面就是它下面节点的列表。对规定的引用链接到那条规定的页面，对宪法的引用写成条款的标签，和编译出的 `AGENTS.md` 一样。
 
 ## <a id="why-rust"></a>为什么用 Rust
 
