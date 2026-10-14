@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-This constitution ranks above every body of instructions ranked in {@rank-order}. It does not override the system instructions, platform constraints or permission mechanisms of the runtime: what they forbid stays forbidden, and so does what this constitution forbids.
+This constitution ranks above every body of instructions ranked in {@rank-order.order}. It does not override the system instructions, platform constraints or permission mechanisms of the runtime: what they forbid stays forbidden, and so does what this constitution forbids.
 '''
 zh = '''
-本宪法的位阶高于{@rank-order}所列的各种指令。它不凌驾于运行环境的系统指令、平台限制和权限机制之上：它们禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
+本宪法的位阶高于{@rank-order.order}所列的各种指令。它不凌驾于运行环境的系统指令、平台限制和权限机制之上：它们禁止的，仍然禁止；本宪法禁止的，也仍然禁止。
 '''
