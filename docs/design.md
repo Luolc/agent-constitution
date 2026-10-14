@@ -818,14 +818,16 @@ it is a release (rule `must-ask-items`) and not set up.
   the maintainer's secret store. So the pages of one commit differ with
   and without a credential, in that line and the popup only.
 - Generator: Hugo, a single binary pinned by version in `build_site.py`
-  and in CI, which writes to `site/` (`publishDir`), with the theme hugo-book (MIT license) as a git submodule at
+  and in CI, which writes to `site/` (`publishDir`), with the theme
+  hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
   switch, the light, dark and auto color themes, the sidebar's list of
   pages and the table of contents at the right. The sidebar lists the
   pages, not the articles: today the constitution, the home page, with
   its version for agents under it, both named in `web/hugo.toml`'s menus
   (the version for agents is the home page's child, which the content
-  adapter hides from the theme's own list with `bookHidden`). The table of contents lists the page's level-2
+  adapter hides from the theme's own list with `bookHidden`). The table
+  of contents lists the page's level-2
   headings, the preamble and the articles (`markup.tableOfContents` in
   `web/hugo.toml`), under a heading of its own; on a narrow screen the
   theme hides it behind a button at the right of the top bar, which opens
