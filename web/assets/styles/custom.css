@@ -115,26 +115,18 @@
   letter-spacing: .04em;
   margin: 1.2em 0 .2em;
 }
-/* Under the title: on the home pages a list (the revision, the length of
-   the version for agents, the legend of the asterisk), on the page of the
-   version for agents the revision and a link back. Muted and smaller than
-   the text; the revision in small caps. The list starts at the column's
-   left edge, as the text does; the legend, a note on the text rather than
-   a fact about it, is smaller and fainter than the two items above it. */
-.constitution .revision {
-  text-align: center;
-  font-variant: small-caps;
-  letter-spacing: .08em;
-  color: var(--c-muted);
-  margin-top: 0;
-}
+/* Under the title, a list: on the home pages the revision, the length of
+   the version for agents and the legend of the asterisk, on the page of
+   the version for agents the revision and a link back. Muted and smaller
+   than the text; the revision in small caps. The list starts at the
+   column's left edge, as the text does; the legend, a note on the text
+   rather than a fact about it, is smaller and fainter than the two items
+   above it. */
 .constitution ul.revision {
   margin: .6em 0 1.4em;
   padding-inline-start: 1.1em;
   list-style: disc;
-  text-align: start;
-  font-variant: normal;
-  letter-spacing: normal;
+  color: var(--c-muted);
   font-size: .9em;
   line-height: 1.5;
 }
@@ -146,10 +138,13 @@
   font-size: .85em;
   color: var(--c-faint);
 }
-/* Every link, in the text, under the title, in the popup, in the sidebar
-   and in the top bar of a narrow screen, is underlined, so that it is told
-   apart without its color: in the text color with a quiet underline, like
-   the citations. The theme's heading self-links are left out. */
+/* Every link in the text, under the title and in the popup is underlined,
+   so that it is told apart without its color: in the text color with a
+   quiet underline, like the citations. The theme's heading self-links are
+   left out. The navigation, in the sidebar and in the top bar of a narrow
+   screen, is known by where it stands and is not underlined; under the
+   pointer or the keyboard's focus it is, so that this too shows without
+   color. */
 .constitution a[href]:not(.anchor),
 .book-menu a[href],
 .book-header a[href] {
@@ -159,16 +154,11 @@
   text-decoration-thickness: 1px;
   text-underline-offset: .18em;
 }
+.book-menu a[href]:not(:hover, :focus-visible),
+.book-header a[href]:not(:hover, :focus-visible) { text-decoration-line: none; }
 .constitution a[href]:not(.anchor):hover,
 .book-menu a[href]:hover,
 .book-header a[href]:hover { color: var(--c-accent); text-decoration-color: currentColor; }
-/* The link back to the full version, on the page of the version for
-   agents. */
-.constitution .revision .back {
-  font-variant: normal;
-  letter-spacing: normal;
-  font-size: .85em;
-}
 /* The info button after the length and its popup. The popup hangs from
    the bottom of the button's box with no gap, its left edge at the
    start of the length, as wide as the length with its button at least, so the
@@ -201,8 +191,8 @@
 .constitution .count-info.open .count-button { opacity: 1; color: var(--c-ink); }
 .constitution .count-button:focus-visible { outline: 2px solid var(--c-accent); border-radius: 50%; }
 /* The popup: the two lengths first, as a table across its width, then
-   a list of notes, smaller and fainter, then the link on a line of its
-   own. */
+   a list of notes, smaller and fainter but no smaller than the items of
+   the list under the title, then the link on a line of its own. */
 .constitution .count-popup {
   display: none;
   position: absolute;
@@ -210,12 +200,10 @@
   top: 100%;
   left: 0;
   min-width: 100%;
-  width: 24em;
+  width: 26em;
   margin-top: .4em;
   padding: .8em 1.1em .9em;
-  font-variant: normal;
-  letter-spacing: normal;
-  font-size: 1em;
+  font-size: 1.1em;
   line-height: 1.45;
   text-align: start;
   color: var(--c-ink);
@@ -230,11 +218,11 @@
   left: 0;
   right: 0;
   bottom: 100%;
-  height: calc(.4em + 1px + 1.6em);
+  height: calc(.4em + 1px + 1.6em / 1.1);
 }
 @media (max-width: 48rem) {
   .constitution ul.revision > .length { position: static; }
-  .constitution .count-popup { top: auto; left: 0; right: 0; width: auto; }
+  .constitution .count-popup { top: auto; left: 0; right: 0; width: auto; padding-inline: .8em; }
 }
 .constitution .count-info:hover .count-popup,
 .constitution .count-info.open .count-popup { display: block; }
@@ -248,7 +236,7 @@
 }
 .constitution .count-row { display: table-row; }
 .constitution .count-row:first-child > span {
-  font-size: .9em;
+  font-size: .92em;
   color: var(--c-muted);
   border-bottom: 1px solid var(--c-rule);
 }
@@ -256,10 +244,13 @@
 .constitution .count-cell { white-space: nowrap; }
 .constitution .count-label { font-weight: var(--c-weight-bold); padding-inline-end: 1em; }
 .constitution .count-cell { text-align: end; padding-inline-start: 1.2em; font-variant-numeric: tabular-nums; }
+@media (max-width: 48rem) {
+  .constitution .count-cell { padding-inline-start: .8em; }
+}
 .constitution .count-notes {
   display: block;
   padding-inline-start: 1.1em;
-  font-size: .9em;
+  font-size: .92em;
   color: var(--c-muted);
 }
 .constitution .count-note { display: list-item; list-style: disc; }
@@ -288,9 +279,9 @@
 /* English ragged right: justified, its word spaces stretch where
    hyphenation does not reach. Chinese justified, as printed. */
 .constitution p { text-align: start; }
-:lang(zh) .constitution p:not(.revision, .revision + p) { text-align: justify; }
+:lang(zh) .constitution p:not(.revision + p) { text-align: justify; }
 :lang(zh) .constitution p { text-indent: 2em; }
-:lang(zh) .constitution :is(li p, .revision, .revision + p) { text-indent: 0; }
+:lang(zh) .constitution :is(li p, .revision + p) { text-indent: 0; }
 
 /* Short last lines: pretty wrapping where the browser has it. */
 .constitution :is(p, li) { text-wrap: pretty; }

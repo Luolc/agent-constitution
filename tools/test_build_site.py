@@ -145,9 +145,10 @@ class PageTest(unittest.TestCase):
                 out = build_site.agent_page(md, labels, "0.6")
                 self.assertTrue(out.startswith(f'+++\ntitle = "{title[2:]}"\nbookHidden = true\n+++\n'
                                                '<div class="constitution">\n'))
-                self.assertIn(f'{title} {{anchor=false}}\n\n<p class="revision">{labels["revision"]} 0.6<br>'
-                              f'<span class="back"><a href="{labels["home"]}">{labels["back"]}</a></span></p>\n', out)
-                text = out.split("</p>\n", 1)[1]
+                self.assertIn(f'{title} {{anchor=false}}\n\n<ul class="revision"><li class="number">'
+                              f'{labels["revision"]} 0.6</li><li class="back"><a href="{labels["home"]}">'
+                              f'{labels["back"]}</a></li></ul>\n', out)
+                text = out.split("</ul>\n", 1)[1]
                 lines = text.split("\n")
                 headings = [line for line in lines if line.startswith("#")]
                 self.assertEqual(len(headings), md.count("\n## "))
