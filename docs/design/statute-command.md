@@ -266,11 +266,14 @@ file. It prints the path of `index.html`.
   anew: it removes the old `.statute/site/` first, but only when that
   directory holds statute's `.gitignore` (below), and otherwise writes
   nothing and fails. Nothing is written outside `.statute/site/`.
-- **Ignored by git.** statute first writes `.statute/site/.gitignore`
-  holding `*`, so git ignores every file there, that one included; in a
-  git repository it then asks `git check-ignore` about a page's path and
-  writes no page unless git ignores it. Outside a git repository there
-  is nothing to commit and nothing to ask.
+- **Ignored by git.** statute writes `.statute/site/.gitignore`
+  holding `*`, so git ignores every file there, that one included.
+  Before anything, in a git repository, it asks `git ls-files` about
+  `.statute/site/`, and when git tracks a file there it writes nothing
+  and fails, naming the file and the way out,
+  `git rm -r --cached .statute/site`. Outside a git repository there is
+  nothing to commit and nothing to ask. This check is not built yet;
+  the built command asks `git check-ignore` about a page's path.
 - **The index** has the four kinds of source
   ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
   sections: global public, global private, local public and local
@@ -294,7 +297,8 @@ file. It prints the path of `index.html`.
   page is the list of its nodes. A citation of a rule is a link to its
   page, and one of the constitution the provision's label, as in the
   compiled `AGENTS.md`. The pages are in the language of
-  `[compile] lang`.
+  `[compile] lang`, the kind of each node included; a status is shown
+  as the rule file writes it, `draft` or `trial`.
 
 ## Why Rust
 
