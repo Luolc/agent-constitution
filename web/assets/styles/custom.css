@@ -334,6 +334,92 @@
    relations and metadata in two columns. */
 .rules .rules-intro { color: var(--c-muted); }
 .rules .rules-group { margin-bottom: .4em; }
+/* The form above the list, in the muted color: the filter, a button
+   that folds open a panel of checkboxes over the list, and the page
+   size; the links to the pages below the list, the current page bold.
+   A superseded or repealed rule's status after its statement. */
+.rules .rules-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .5em 1.5em;
+  color: var(--c-muted);
+  font-size: .9em;
+}
+.rules .rules-filter { position: relative; margin: 0; padding: 0; border: 0; background: none; }
+.rules .rules-filter summary {
+  margin: 0;
+  line-height: inherit;
+  cursor: pointer;
+  padding: .1em .5em;
+  border: 1px solid var(--c-rule);
+  border-radius: .3em;
+  color: var(--c-ink);
+}
+.rules .rules-filter summary:focus-visible { outline: 2px solid var(--c-accent); }
+.rules .rules-filter-panel {
+  position: absolute;
+  z-index: 2;
+  top: 100%;
+  left: 0;
+  margin-top: .4em;
+  padding: .6em 1em .8em;
+  min-width: 16em;
+  color: var(--c-ink);
+  background: var(--c-sidebar);
+  border: 1px solid var(--c-rule);
+  border-radius: .5rem;
+  box-shadow: 0 .25em .9em rgb(0 0 0 / .14);
+}
+.rules .rules-filter fieldset { border: 0; margin: 0 0 .6em; padding: 0; }
+.rules .rules-filter legend { color: var(--c-muted); padding: 0; margin-bottom: .2em; }
+.rules .rules-filter label {
+  display: block;
+  margin-inline-start: calc(var(--indent, 0) * 1.2em);
+  white-space: nowrap;
+}
+.rules .rules-filter input { accent-color: var(--c-accent); }
+.rules .rules-filter button {
+  font: inherit;
+  color: var(--c-paper);
+  background: var(--c-accent);
+  border: 0;
+  border-radius: .3em;
+  padding: .15em .9em;
+  cursor: pointer;
+}
+.rules .rules-filter button:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.rules .rules-size select {
+  font: inherit;
+  color: var(--c-ink);
+  background: var(--c-paper);
+  border: 1px solid var(--c-rule);
+  border-radius: .3em;
+  padding: .1em .3em;
+  margin-inline-start: .3em;
+}
+.rules .rules-size select:focus-visible { outline: 2px solid var(--c-accent); }
+.rules .rules-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .3em 1em;
+  margin-top: 1.5em;
+  font-variant-numeric: tabular-nums;
+}
+.rules .rules-pager a { flex: none; width: auto; text-decoration: none; }
+.rules .rules-pager a[aria-current] { font-weight: var(--c-weight-bold); color: var(--c-ink); }
+.rules h1 .rule-label { color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.rules .rule-status {
+  flex: none;
+  color: var(--c-muted);
+  font-size: .8em;
+  border: 1px solid var(--c-rule);
+  border-radius: .25em;
+  padding: 0 .3em;
+}
+.rules .rules-none { color: var(--c-muted); }
+.book-toc li[style] { padding-inline-start: calc(var(--level, 0) * 1em); }
 .rules a.rule-entry[href] {
   display: flex;
   gap: .8em;
@@ -343,7 +429,7 @@
 }
 .rules a.rule-entry[href]:hover .rule-statement { color: var(--c-accent); }
 .rules .rule-id {
-  flex: 0 0 2em;
+  flex: 0 0 2.6em;
   text-align: end;
   color: var(--c-muted);
   font-variant-numeric: tabular-nums;
@@ -371,7 +457,11 @@
 .rules dl.rule-meta dt { color: var(--c-muted); font-weight: inherit; }
 
 /* The rules under a provision that cites them, on a line of their own,
-   smaller and muted. */
+   smaller and muted: a button of their labels in boxes, or of a count,
+   with a ring holding a plus, as faint as the ring on the counts under
+   the title, that turns to a minus while the list under it is open
+   (layouts/_partials/rules/cites.html). In the list, each rule's label
+   in the muted color before its title. */
 .constitution .cited-by {
   display: block;
   margin: .2em 0 .4em;
@@ -380,6 +470,53 @@
   color: var(--c-muted);
 }
 .constitution p.cited-by { text-align: start; }
+.constitution .cites + .cites { margin-inline-start: 1.2em; }
+.constitution .cites-button {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3em;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.constitution .cites-button:hover,
+.constitution .cites.open .cites-button { color: var(--c-ink); }
+.constitution .cites-button:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; border-radius: .2em; }
+.constitution .cites-box {
+  padding: 0 .3em;
+  border: 1px solid var(--c-rule);
+  border-radius: .25em;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.constitution .cites-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: .7;
+  line-height: 1;
+}
+.constitution .cites-toggle::before { content: "+"; }
+.constitution .cites.open .cites-toggle::before { content: "\2212"; }
+.constitution .cites-list { display: none; margin: .3em 0 .2em; }
+.constitution .cites.open .cites-list { display: block; }
+.constitution .cites-item { display: block; }
+.constitution .cites-label {
+  display: inline-block;
+  min-width: 2.6em;
+  margin-inline-end: .4em;
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
 
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text

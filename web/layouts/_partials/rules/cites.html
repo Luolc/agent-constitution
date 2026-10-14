@@ -1,0 +1,15 @@
+{{- /* The rules under a provision of the home page that cite it, folded:
+  a button that shows them as a row of boxes, each a rule's label, or
+  shows a text in their place, and opens a list under it, each rule's
+  label and title linked to its page (assets/cites.js). Takes (dict "id"
+  the list's id "rules" the rules, as data/rules.json gives them "name"
+  the button's accessible name "text" the button's text, or "" for the
+  boxes). */ -}}
+{{- $boxes := "" }}
+{{- $items := "" }}
+{{- range .rules }}
+  {{- $boxes = printf `%s<span class="cites-box">%s</span>` $boxes .label }}
+  {{- $items = printf `%s<span class="cites-item" role="listitem"><a href="rules/%d/"><span class="cites-label">%s</span>%s</a></span>` $items (int .id) .label (htmlEscape .title) }}
+{{- end }}
+{{- $name := cond (eq .text "") (printf ` aria-label="%s" title="%s"` .name .name) "" }}
+{{- return printf `<span class="cites"><button type="button" class="cites-button" aria-expanded="false" aria-controls="%s"%s>%s<span class="cites-toggle" aria-hidden="true"></span></button><span class="cites-list" id="%s" role="list">%s</span></span>` .id $name (or .text $boxes) .id $items }}

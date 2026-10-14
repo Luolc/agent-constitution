@@ -32,7 +32,7 @@ crates/                   the Rust workspace's crates, one directory
                           each                                         A
   statute/                the statute binary, under development        A
 docs/
-  design/                 this design, one file per part, indexed
+  design/                 this design, one file per topic, indexed
                           by README.md                                 A
     zh/                   its Chinese translation, one file of the
                           same name per file                           A
@@ -128,6 +128,12 @@ crates.io; the binary that compiles and checks the rules grows in it in
 stage B (what it does so far:
 [Rule system](rule-system.md#the-command-and-the-first-version)). Compiling and checking the
 rules, and building the instruction file, stay in stage B.
+
+The design is split into files by topic, so that changes to different
+topics touch different files, as rule 82 (`design-files-by-topic`) asks.
+Planned, not done yet: `rule-system.md` still holds several topics and
+will be split into files of its own, each listed in the index
+([agent-constitution design](README.md)).
 
 Stage B, in the order to build it: `schema/` and the schema checker,
 the rest of `rules/` (filled by migration), the compiler, `examples/`
