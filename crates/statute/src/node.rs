@@ -274,6 +274,10 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
     }
 
     match (raw.status, raw.superseded_by) {
+        (Status::Superseded, _) if raw.kind != Kind::Rule => err(format!(
+            "only a rule can be superseded; a {} cannot have `status = \"superseded\"`",
+            raw.kind.name()
+        )),
         (Status::Superseded, None) => err(
             "`status = \"superseded\"` needs `superseded-by`, the ID of the rule that replaces it"
                 .to_owned(),

@@ -238,6 +238,12 @@ impl Checker<'_> {
                             &file,
                             format!("`{field}` names {id}, which does not exist in this source"),
                         ),
+                        ("requires", Some(Kind::OneOf)) if source.children(id).next().is_none() => {
+                            self.diags.error(
+                                &file,
+                                format!("`requires` names one-of {id}, which has no children yet, so the rule can never be enabled; require a rule, or add a child to the one-of first"),
+                            )
+                        }
                         ("requires", Some(Kind::Domain)) => self.diags.error(
                             &file,
                             format!("`requires` names domain {id}; a domain cannot be required, require a rule or a one-of"),
@@ -380,6 +386,7 @@ impl Checker<'_> {
     fn check_conflicts(&mut self) {
         let source = self.source;
         let mut both_sides = BTreeSet::new();
+        let mut reported = BTreeSet::new();
         for node in source.nodes.values() {
             let Some(rule) = &node.rule else { continue };
             for r in &rule.conflicts {
@@ -391,12 +398,17 @@ impl Checker<'_> {
                     continue;
                 }
                 let file = self.file(node.id);
-                if source.reach([node.id]).contains(&other) {
+                let pair = (node.id.min(other), node.id.max(other));
+                if reported.contains(&pair) {
+                    // Written on both sides and already reported from the other.
+                } else if source.reach([node.id]).contains(&other) {
+                    reported.insert(pair);
                     self.diags.error(
                         &file,
                         format!("conflicts with {other}, which enabling {} brings in along `parent` or `requires`; the two can never be used apart, so remove the conflict or the requirement", node.id),
                     );
                 } else if source.reach([other]).contains(&node.id) {
+                    reported.insert(pair);
                     self.diags.error(
                         &file,
                         format!("conflicts with {other}, which brings in {} along `parent` or `requires`; the two can never be used apart, so remove the conflict or the requirement", node.id),
@@ -422,28 +434,41 @@ impl Checker<'_> {
     /// enabled, since at most one child of a one-of is.
     fn check_one_ofs(&mut self) {
         let source = self.source;
-        for node in source.nodes.values().filter(|n| n.kind == Kind::Rule) {
-            let brought = source.reach([node.id]);
+        // The children of each one-of that a set of nodes holds, for the
+        // one-ofs of which it holds more than one.
+        let clashes = |held: &BTreeSet<Id>| -> BTreeMap<Id, Vec<Id>> {
             let mut by_one_of: BTreeMap<Id, Vec<Id>> = BTreeMap::new();
-            for &id in &brought {
+            for &id in held {
                 if let Some(parent) = source.get(id).and_then(|n| n.parent)
                     && source.get(parent).is_some_and(|p| p.kind == Kind::OneOf)
                 {
                     by_one_of.entry(parent).or_default().push(id);
                 }
             }
-            for (one_of, children) in by_one_of {
-                if children.len() > 1 {
-                    let list: Vec<String> = children.iter().map(Id::to_string).collect();
-                    self.diags.error(
-                        self.file(node.id),
-                        format!(
-                            "rule {} can never be enabled: it brings in {}, children of one-of {one_of}, of which at most one may be enabled",
-                            node.id,
-                            list.join(" and ")
-                        ),
-                    );
+            by_one_of.retain(|_, children| children.len() > 1);
+            by_one_of
+        };
+        for node in source.nodes.values().filter(|n| n.kind == Kind::Rule) {
+            // Reported only on the rule that brings the two together, not
+            // again on every rule that brings that one in.
+            let inherited: BTreeSet<Id> = source
+                .edges(node.id)
+                .into_iter()
+                .flat_map(|next| clashes(&source.reach([next])).into_keys())
+                .collect();
+            for (one_of, children) in clashes(&source.reach([node.id])) {
+                if inherited.contains(&one_of) {
+                    continue;
                 }
+                let list: Vec<String> = children.iter().map(Id::to_string).collect();
+                self.diags.error(
+                    self.file(node.id),
+                    format!(
+                        "rule {} can never be enabled: it brings in {}, children of one-of {one_of}, of which at most one may be enabled",
+                        node.id,
+                        list.join(" and ")
+                    ),
+                );
             }
         }
     }
