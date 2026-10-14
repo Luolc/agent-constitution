@@ -1,0 +1,42 @@
+id = 97
+slug = "one-requirement-per-rule"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["decidable-provisions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Make each rule require one thing"
+zh = "一条规定只要求一件事"
+
+[text.statement]
+en = "Write each rule so that it requires one thing, whose violation can be decided on its own."
+zh = "每条规定只要求一件事，而且这件事是否被违反可以单独判定。"
+
+[text.reason]
+en = '''
+A rule that bundles several requirements cannot be answered with one "was it broken?": its check and its review mix them, and a rule set cannot enable one without the others. Every provision must let a reader tell whether it is violated ({@constitution:decidable-provisions}).
+'''
+zh = '''
+几项要求捆在一条规定里，就没法用一句「违反了没有」来回答：它的检查和审查会把几项混在一起，规则集也没法只启用其中一项。每条条文都要让读者分得清是否被违反 ({@constitution:decidable-provisions})。
+'''
+
+[text.verification]
+en = '''
+A rule requires more than one thing when its statement or verification holds requirements that can be met or broken apart: one can hold while another is broken. Examples, conditions and definitions that serve the one requirement are not further requirements.
+
+Violated when a change adds or rewrites a rule that requires more than one thing.
+'''
+zh = '''
+规定的陈述或验证里有几项可以分别满足、分别违反的要求，也就是一项满足了另一项照样可能被违反，这条规定就要求了不止一件事。为这一项要求服务的例子、条件和定义不算另外的要求。
+
+变更新增或改写的规定要求了不止一件事的，即为违反本规定。
+'''
+
+[translations]
+zh = "fcdcfbe6fae0dce61604acdde690932d465dc8070a6b5f7d3e13a1bd7d5b5424"

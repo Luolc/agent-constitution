@@ -1,0 +1,42 @@
+id = 107
+slug = "trial-to-active-on-evidence"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["decide-yourself.ordinary-rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Make a trial rule active only once it has held up in real work"
+zh = "试用规定在实际工作中站住了才改为生效"
+
+[text.statement]
+en = "Move a trial rule to `active` only once it has been used in real work at least 5 times with no false positive left unresolved in that time."
+zh = "试用规定要在实际工作中用过至少 5 次，且这期间没有留下未解决的误报，才改为 `active`。"
+
+[text.reason]
+en = '''
+Agents, not a person, decide when a rule has settled ({@constitution:decide-yourself.ordinary-rules}); the uses and the false positives are the evidence they decide on.
+'''
+zh = '''
+规定是否已经定型，由 agent 决定，不由人决定 ({@constitution:decide-yourself.ordinary-rules})；用过的次数和出现的误报，就是它们判断的依据。
+'''
+
+[text.verification]
+en = '''
+A use is the rule applied, in review or by its check, to a piece of work that was not made to test the rule. A false positive is a case where the rule was misapplied: it was held against work that complied, or its wording led the reviewer or the check astray; it is resolved once the rule or its check has been fixed. Uses and false positives count when a record shows them: a review, a check's result, the description of a change. The move changes only the status ({@rule:109}).
+
+Violated when a rule is moved from `trial` to `active` while fewer than 5 uses are on record, or while a false positive found in that time is not resolved.
+'''
+zh = '''
+用过一次，指在审查中或由它的检查，把这条规定用在一项不是为测试它而做的工作上。误报，指规定被用错了：拿它去要求一项本来合规的工作，或者它的措辞把审查方或检查带偏了；规定或它的检查改好了，这次误报就算解决了。使用和误报都以记录为准：审查、检查结果、变更的说明。改为生效只改状态 ({@rule:109})。
+
+规定从 `trial` 改为 `active` 时，有记录的使用不到 5 次，或者这期间发现的误报还没有解决的，即为违反本规定。
+'''
+
+[translations]
+zh = "09047f5a4c4d1882ea223be4fe6dd218b9916ee1ef96a86f04c868c7695916cb"

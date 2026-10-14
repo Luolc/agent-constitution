@@ -1,0 +1,42 @@
+id = 104
+slug = "authority-most-specific"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["lower-layers"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Cite in `authority` the most specific provisions the rule refines"
+zh = "`authority` 引用规定所细化的最具体的条文"
+
+[text.statement]
+en = "In `authority`, cite the most specific provisions of the constitution that the rule refines, and never a provision together with one above it."
+zh = "`authority` 引用规定所细化的宪法条文中最具体的那些，不同时引用一条条文和它上级的条文。"
+
+[text.reason]
+en = '''
+`authority` traces a rule to the provisions it refines ({@constitution:lower-layers}): when a provision is amended, the rules that cite it are checked again, and the site lists each rule under the provisions it cites. A provision wider than what the rule refines brings the rule into checks and lists where it does not belong.
+'''
+zh = '''
+`authority` 把规定追溯到它所细化的条文 ({@constitution:lower-layers})：某条条文修正时，引用它的规定要重新核对一遍；站点也把每条规定列在它引用的条文下面。引用的条文比规定实际细化的宽，规定就会被拉进与它无关的核对和列表里。
+'''
+
+[text.verification]
+en = '''
+The most specific provision is the narrowest one that covers what the rule refines: an item rather than its section when the item alone covers it, and a section rather than its article. An article together with a section of it, or a section together with an item of it, names the same ground twice; the build of the constitution warns of such a pair.
+
+Violated when a change adds or rewrites a rule whose `authority` names a provision where a narrower one below it covers what the rule refines, or names a provision together with one above it.
+'''
+zh = '''
+最具体的条文，指能涵盖规定所细化内容的最窄的那一条：某一项单独就能涵盖时引用这一项，不引用它所在的款；能引用款时不引用整条。同时引用一条和它下面的一款，或者一款和它下面的一项，是把同一个依据引了两遍；宪法的构建会对这样的一对给出警告。
+
+变更新增或改写的规定，`authority` 引用的条文下面有更窄的条文就能涵盖规定所细化的内容，或者同时引用了一条条文和它上级的条文，即为违反本规定。
+'''
+
+[translations]
+zh = "9898ae5d69b2ade96130adbe37c6404d76eee4fd7dfd4bfd0389917233551b4c"

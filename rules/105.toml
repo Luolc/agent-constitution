@@ -1,0 +1,42 @@
+id = 105
+slug = "domain-applicability"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions.rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give each domain an applicability"
+zh = "每个 domain 都写适用范围"
+
+[text.statement]
+en = "Give each domain an `[applicability]` that says what it governs, which repositories should enable it and when one need not."
+zh = "每个 domain 都写 `[applicability]`，说明它管什么，哪些仓库应该启用，什么情况下可以不启用。"
+
+[text.reason]
+en = '''
+A competent principal chooses which rules a jurisdiction adopts ({@constitution:division-of-instructions.rules}). A domain's title alone does not say which repositories it is for; the applicability lets whoever writes a rule set decide without reading every rule below it.
+'''
+zh = '''
+一个管辖范围采纳哪些规定，由有权的委托人选 ({@constitution:division-of-instructions.rules})。光看 domain 的标题，看不出它是给哪些仓库用的；有了适用范围，写规则集的人不用把下面的规定逐条读完就能决定。
+'''
+
+[text.verification]
+en = '''
+The applicability is a sentence or two. It names the work the domain governs and the repositories that need it, and says which can leave it off; a condition for enabling it ("enable it wherever agents write a repository's documents") says this too, since a repository where the condition does not hold can leave it off. A subdomain is a domain here.
+
+Violated when a change adds or rewrites a domain without an `[applicability]`, or with one that does not say which repositories should enable it and when one need not.
+'''
+zh = '''
+适用范围写一两句话：说明这个 domain 管的是什么工作，哪些仓库需要它，哪些可以不启用；写出启用的条件 (「agent 要写仓库的文档时就要启用」) 也算说明了这一点，因为条件不成立的仓库可以不启用。这里的 domain 也包括子 domain。
+
+变更新增或改写的 domain 没有 `[applicability]`，或者它没说清哪些仓库应该启用、什么情况下可以不启用的，即为违反本规定。
+'''
+
+[translations]
+zh = "a311023bc0198f97c98081fc4cfd8fb47853378252d4b95546298fa5d3498cbe"

@@ -1,0 +1,42 @@
+id = 109
+slug = "in-place-edit-raises-revision"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions.rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Raise the revision of a rule edited in place"
+zh = "就地修改的规定，revision 加一"
+
+[text.statement]
+en = "When a change to a rule's original text or fields keeps what counts as compliant, edit the rule in place and raise its revision by one."
+zh = "对规定原文或字段的改动没有改变什么算合规的，就地修改这条规定，并把它的 revision 加一。"
+
+[text.reason]
+en = '''
+A rule set's lock file records each rule's revision, and an upgrade shows the rules whose revision moved; a rule that changed with the same revision changes under the rule sets that use it unnoticed ({@constitution:division-of-instructions.rules}).
+'''
+zh = '''
+规则集的锁文件记录每条规定的 revision，升级时列出 revision 变了的规定；规定改了而 revision 没变，用它的规则集就会在不知不觉中被改掉 ({@constitution:division-of-instructions.rules})。
+'''
+
+[text.verification]
+en = '''
+Rewording, a new example, a fix to the rule's check, a move to another parent, and a change of status to `trial`, `active` or `superseded` keep what counts as compliant. The fields are all but `[translations]`. One change raises the revision once, however many edits it holds.
+
+Violated when a change edits a rule's original text or fields, keeping what counts as compliant, and does not raise its revision by exactly one.
+'''
+zh = '''
+改写措辞、新增例子、修正规定的检查、改挂到别的父节点，以及把状态改为 `trial`、`active` 或 `superseded`，都不改变什么算合规。字段指 `[translations]` 以外的全部字段。一项变更不管包含几处修改，revision 只加一次。
+
+变更修改了规定的原文或字段、没有改变什么算合规，而 revision 没有恰好加一的，即为违反本规定。
+'''
+
+[translations]
+zh = "9695637ac38916500ef2ce1a2f54b76fe313164c1063c4d6eaeb094b9ec48fec"

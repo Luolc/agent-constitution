@@ -1,0 +1,42 @@
+id = 110
+slug = "translation-only-keeps-revision"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions.rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep the revision when only a translation changes"
+zh = "只改译文时 revision 不变"
+
+[text.statement]
+en = "When a change to a rule touches only its translations, keep its revision."
+zh = "对规定的改动只涉及译文的，revision 保持不变。"
+
+[text.reason]
+en = '''
+The revision tells the rule sets that use a rule that what they adopted has changed ({@constitution:division-of-instructions.rules}); a translation follows the original and changes nothing in it, and the hash in `[translations]` already records which original it follows.
+'''
+zh = '''
+revision 是告诉使用这条规定的规则集，它们采纳的东西变了 ({@constitution:division-of-instructions.rules})；译文跟随原文，不改变原文的任何内容，`[translations]` 里的哈希也已经记下了它跟随的是哪一版原文。
+'''
+
+[text.verification]
+en = '''
+A translation is the rule's text in a language other than its original, with its hash in `[translations]`. Adding a translation, fixing one, and bringing one up to an original changed earlier are changes to translations only. A lock file that pins each rule by the hash of its file sees such a change as content changed under the same revision, and may warn of it; the warning is expected here.
+
+Violated when a change touches only the translations of a rule and raises its revision.
+'''
+zh = '''
+译文，指规定在原文语言以外的文本，连同它在 `[translations]` 里的哈希。新增译文、修正译文、把译文跟进到此前已改的原文，都只是对译文的改动。按文件哈希锁定每条规定的锁文件，会把这样的改动看作 revision 不变而内容变了，可能给出警告；这种情况下的警告是预期之内的。
+
+变更只涉及某条规定的译文，却提高了它的 revision 的，即为违反本规定。
+'''
+
+[translations]
+zh = "202aedf6de98c4c0b5d2a94c4fe4e15d48f0bffb2c097be3ec42cc24874de538"
