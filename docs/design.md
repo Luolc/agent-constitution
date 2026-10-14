@@ -695,9 +695,10 @@ is a release (rule `must-ask-items`) and not set up.
   dropped, the title goes into the front matter, the revision from
   `index.toml` is set under the title, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. Under
-  the title is a bulleted list, its left edge at the column's: the
-  revision, the length (below), and, when the text has an asterisk, its
-  legend, smaller and fainter than the two items above it: the asterisk,
+  the title is a list without bullets: the revision and the length
+  (below), each centered under the title, and, when the text has an
+  asterisk, its legend, starting at the column's left edge, smaller and
+  fainter than the two lines above it: the asterisk,
   then that the parts marked are background for people (where the
   constitution comes from, how it is organized and how it is amended) and
   that the version for agents, linked, omits them. The asterisk is set small and bold in
@@ -710,8 +711,8 @@ is a release (rule `must-ask-items`) and not set up.
   same way but with its text as is: no anchors, no links, the provisions
   written for human readers only their numbers and a pointer to the full
   version. Its headings carry `{anchor=false}`, so the theme adds no `#`
-  link to them. Under the title is a list like the home page's, its left
-  edge at the column's: the revision, and a link back to the full version.
+  link to them. Under the title is a list like the home page's, both lines
+  centered: the revision, and a link back to the full version.
   The page is hidden from hugo-book's list of pages; the sidebar, the
   language switch (to the other language's version for agents) and the
   color switch are as on the home page, the list of articles linking to
@@ -725,22 +726,23 @@ is a release (rule `must-ask-items`) and not set up.
   button after it opens a popup, on hover or a click or tap; it is a
   disclosure button (`aria-expanded`), reached with the keyboard, and
   Escape closes it (`web/assets/count-info.js`, inlined in `<head>`). The
-  popup hangs from the button with no gap, its left edge at the start of
-  the length and the button inside its width, so the pointer reaches its
-  link without leaving it. The
+  popup hangs from the button with no gap, centered under the length and
+  at least as wide as it, so the pointer reaches its link without leaving
+  it; on a narrow screen it spans the column. The
   popup first says that the length under the title is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
   full version is the generated file without its header line, anchors and
   link definitions included; a token count not made is a dash), the table
-  as wide as the popup; under it, smaller and fainter than the table but
-  no smaller than the items of the list under the title, a bulleted list
+  as wide as the popup; under it, fainter than the table, a bulleted list
   (spans with ARIA list roles): what the version for agents omits, which
   API counted the tokens for which model or why they were not counted (the
   model is `COUNT_MODEL` in `build_site.py`, named in words by
   `COUNT_MODEL_NAME` next to it), and the revision and the abbreviated
   commit of the build (left out outside git); last, on a line
-  of its own, the link to the page of the version for agents. Each page's two versions are counted
+  of its own, the link to the page of the version for agents. The text of
+  the popup is the size of the legend under the title, the numbers of the
+  table a little larger. Each page's two versions are counted
   separately, so a build with a credential makes four calls.
 - Credential: only from the environment, never from a file in this repo,
   in one of two variables. `CONSTITUTION_TOKEN_COUNT_API_KEY` holds an API
@@ -792,10 +794,9 @@ is a release (rule `must-ask-items`) and not set up.
   Centered article headings, bold section and item numbers (bold in the
   Markdown), English text ragged right and Chinese justified, a print
   style without link decoration. Every link in the text, under the title
-  and in the popup is underlined, in the text color like the citations,
-  so that it is told apart without its color; the underline has a
-  contrast of at least 3:1 against the page and the sidebar in both color
-  themes. The navigation (the sidebar and the top bar of a narrow screen)
+  and in the popup is underlined like the citations: the text color with
+  a light underline in the color of the rules, both turning to the accent
+  color under the pointer. The navigation (the sidebar and the top bar of a narrow screen)
   is not underlined, but is under the pointer or the keyboard's focus.
   The sidebar marks no current item: the theme marks one only in its own
   list of pages, which is empty here. The
