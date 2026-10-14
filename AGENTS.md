@@ -94,9 +94,11 @@ search reads content: run the same search on a file where it must match.
 
 The Python tools run with uv: `pyproject.toml` pins limae, pre-commit and
 the Python checkers, `.python-version` the interpreter, and `uv run`
-creates `.venv` from `uv.lock` on first use. Nothing needs to be installed
-on the machine but uv. After changing a pin, run `uv lock` and commit
-`uv.lock`; `uv lock --check` fails when the two disagree.
+creates `.venv` from `uv.lock` on first use. The commit hooks and the
+Python tools need only uv on the machine; the site build needs Hugo and
+the full-history scan gitleaks, both below. After changing a pin, run
+`uv lock` and commit `uv.lock`; `uv lock --check` fails when the two
+disagree.
 
 - `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
   on the staged diff, the Python checkers below, the constitution build
@@ -145,19 +147,18 @@ on the machine but uv. After changing a pin, run `uv lock` and commit
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`. Its
 one job, `check`, scans the full history with gitleaks (pinned by version and
-SHA-256), sets up uv (`uv sync --locked`, which fails on a stale lock),
-runs `uv run pre-commit run --all-files` with the gitleaks hook skipped, so
-the Python checkers, the constitution build check, the tests and both limae
-checks run there too, builds the static site with the pinned Hugo and checks its links, and
-then runs the build check with `--base` and the instruction-only check,
-both against the first parent of the checked-out merge commit on a pull
-request (`docs/design.md`, Checkers), or against the commit before the push
-on a push to `main`. `check` is the required status check on `main`: a merge
-waits for it to pass, and the PR must be up to date with `main`. A PR that
-is behind `main`: run `gh pr update-branch <N>` or merge the latest `main`,
-rerun the checks, let the reviewer recheck the increment, then merge.
-Runners are pinned to `ubuntu-24.04`, and actions by
-commit SHA.
+SHA-256), sets up uv (`uv sync --locked`, which fails on a stale lock), runs
+`uv run pre-commit run --all-files` with the gitleaks hook skipped, so the
+Python checkers, the constitution build check, the tests and both limae checks
+run there too, builds the static site with the pinned Hugo and checks its
+links, and then runs the build check with `--base` and the instruction-only
+check, both against the first parent of the checked-out merge commit on a pull
+request (`docs/design.md`, Checkers), or against the commit before the push on
+a push to `main`. `check` is the required status check on `main`: a merge
+waits for it to pass, and the PR must be up to date with `main`. A PR that is
+behind `main`: run `gh pr update-branch <N>` or merge the latest `main`, rerun
+the checks, let the reviewer recheck the increment, then merge. Runners are
+pinned to `ubuntu-24.04`, and actions by commit SHA.
 
 `.github/workflows/token-count.yml` ("Token count") runs only on pushes to
 `main`. It gets an access token through Workload Identity Federation, builds
