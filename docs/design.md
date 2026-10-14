@@ -743,8 +743,8 @@ alone. CI runs three steps: `uv run count-tokens` (the token
 count, below), `hugo-0.167.0 --source web --cleanDestinationDir
 --panicOnWarning`, and `uv run check-site-anchors site`, the
 link check. The workflow `.github/workflows/pages.yml` publishes the
-site to GitHub Pages at `https://agent-constitution.luolc.com/`, the
-`baseURL` in `web/hugo.toml`.
+site to GitHub Pages at `https://agent-constitution.luolc.com/`, which it
+passes to Hugo as `--baseURL`.
 
 - Publishing: on each push to `main`, and on a manual run, the job
   `build` counts the tokens (below), builds and checks the site as CI
@@ -754,9 +754,12 @@ site to GitHub Pages at `https://agent-constitution.luolc.com/`, the
   setting the variable is the person's yes to publish every later push
   to `main`, and deleting it stops that. The custom domain is set in the
   repository's Pages settings, with the source "GitHub Actions"; a
-  workflow that publishes ignores a `CNAME` file, so there is none. Links
-  between the pages stay relative (`relativeURLs`); the canonical link,
-  the language alternates and `og:url` are absolute, on the domain.
+  workflow that publishes ignores a `CNAME` file, so there is none. In
+  the published build, links between the pages stay relative
+  (`relativeURLs`); the canonical link, the language alternates and
+  `og:url` are absolute, on the domain. `web/hugo.toml` keeps `baseURL`
+  `/`: with an absolute one, the theme adds `integrity` and `crossorigin`
+  to the style sheet link, and a page opened as a file loses its styles.
 - Input: the generated `constitution/constitution.<lang>.md`, not the
   sources: the citations, numbers and anchors are rendered once, by
   `constitution-build`. `web/hugo.toml` mounts them from
