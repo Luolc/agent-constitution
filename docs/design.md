@@ -50,7 +50,7 @@ Non-goals:
 | Static fixtures | The apply step that runs the compiler and installs the output |
 
 The overlay never changes or relaxes the constitution. It chooses which
-general rules it uses (`rules-refine`; see Choosing rules), adds
+general rules it uses (`division-of-instructions.rules`; see Choosing rules), adds
 private rules and fills
 in parameters. It never edits core files; it pins a core version and builds
 against it.
@@ -233,7 +233,15 @@ revision that deletes another adds it:
   `must-ask.means-of-production`;
 - revision 0.24: the article `protection-scope`, whose sections
   `protected-text` and `ordinary-tooling` moved into
-  `amendment-procedure`.
+  `amendment-procedure`;
+- revision 0.28: the section `response-priority` and its items
+  `response-priority.safety-incidents` (its text is now the section
+  `safety-incidents`), `response-priority.productivity-gains` and
+  `response-priority.minor-improvements`;
+- revision 0.30: the section `checks-everywhere`, replaced by
+  `decidable-provisions`;
+- revision 0.33: the section `rules-refine`, whose text is now the item
+  `division-of-instructions.rules`.
 
 The date-prefixed IDs of the earlier flat sources (`20261012-...`) are
 retired as well. A rule may be deleted, and its ID then goes into
@@ -267,7 +275,7 @@ agents, see The version for agents), committed and never edited by hand;
 
 ```text
 constitution/articles/
-  04-boundary-rule/
+  05-boundary-rule/
     article.toml
     01-must-ask.toml
     02-decide-yourself.toml
@@ -285,8 +293,9 @@ constitution/articles/
   one edition starts in a month, so no two share a name; within an
   edition, numbers never change (see Numbering), and a new edition may
   renumber freely.
-- `revision`: a string, the revision within the edition: drafts before
-  the first approval are `0.<n>`, the first approved text of an edition
+- `revision`: a string, the revision within the edition: a draft is
+  `0.<n>`, with `<n>` counting from 1 in every draft (the first
+  edition's and each later one's), the first approved text of an edition
   is `1`, each adopted amendment adds one, and a new edition starts again
   at `1`. The build manifest records it. Within an edition it rises
   exactly when the constitution text changes (Checkers, check 7).
@@ -398,7 +407,7 @@ is written `⟨must-ask⟩` in the table:
 | Citation of an article | `[Art. IV][authority]` | `[第四条][authority]` |
 | Citation of a section | `[Art. IV §1][must-ask]` | `[第四条第一款][must-ask]` |
 | Citation of a list item | `[Art. IV §1(3)][must-ask.capital]` | `[第四条第一款第三项][must-ask.capital]` |
-| Suffix | `§1a`, `(3a)`, `Art. IV §1(3a)` | `第一款之一`, `(三之一)`, `第四条第一款第三项之一` (a is 之一, b is 之二) |
+| Suffix | `§1a`, `(3a)`, `Art. IV §1(3a)` | `第一款之一`, `(三之一)`, `第四条第一款第三项之一` (a is `之一`, b is `之二`) |
 | Repealed section | `-   ⟨…⟩**§3** (repealed November 2026)` | `-   ⟨…⟩**第三款** (2026 年 11 月废止)` |
 | Repealed list item | `    -   ⟨…⟩(**3**) (repealed November 2026)` | `    -   ⟨…⟩(**三**) (2026 年 11 月废止)` |
 | Repealed article | `## ⟨…⟩Article IV (repealed November 2026)`, nothing below it | `## ⟨…⟩第四条 (2026 年 11 月废止)` |
@@ -485,7 +494,7 @@ which differs from the full version in this:
   asterisk after its number, `**§2**<sup class="omitted">*</sup>`, which
   the header line explains.
 - There are no anchors and no link definitions: a citation is its label
-  as plain text (`Art. VII §6`, `第七条第六款`), short where the full
+  as plain text (`Art. VIII §6`, `第八条第六款`), short where the full
   version is short.
 
 ### Rules
@@ -552,7 +561,7 @@ is unique and that none of them is retired in either.
 ### Choosing rules
 
 The general rules are a default set, not obligations on every jurisdiction
-(`rules-refine`): one jurisdiction may need a rule that another has
+(`division-of-instructions.rules`): one jurisdiction may need a rule that another has
 good reason to drop (a repo that stays private on a self-hosted server may
 keep credentials in it on purpose). Open, for the person to decide. Recommended:
 
@@ -570,7 +579,7 @@ keep credentials in it on purpose). Open, for the person to decide. Recommended:
 
 Reasons: defaulting to all means a new rule reaches every jurisdiction without
 anyone remembering to list it, where an opt-in list would go stale as rules
-are added. Leaving a rule out is not a relaxation (`rules-refine`),
+are added. Leaving a rule out is not a relaxation (`division-of-instructions.rules`),
 but naming each one, with its reason, keeps it visible and puts everything a
 jurisdiction dropped in one place. Exclusion per jurisdiction, not per repo, matches how the output is
 built: one file per jurisdiction.
@@ -979,9 +988,8 @@ its inputs and its expected result.
 - Every fixture binds to at least one constitution or rule ID, written
   with its namespace as a rule cites it, and the checker rejects a fixture
   whose IDs do not resolve.
-- Before a release, every fixture runs, all happy and all redline, since
-  `checks-everywhere` requires every check to pass before a
-  release. Static fixtures run in this
+- Before a release, every fixture runs, all happy and all redline, as
+  the rule `fixture-outcomes` requires. Static fixtures run in this
   repo's CI. Behavior fixtures (once they exist) need installed harnesses and
   model credentials, which this repo's CI does not have; they run on the
   private side, and a release needs the record of that run at the commit being
@@ -1070,8 +1078,8 @@ event -> proposal -> rule revision, case, or amendment -> release
   `rule-evolution`,
   each answering what problem, what evidence, why a rule and not a tool fix,
   which IDs, what authority, what could break, how to test and roll back.
-  The priority classes of `response-priority` decide how fast a
-  proposal is handled.
+  A clear productivity gain is adopted under `ordinary-rule-adoption`;
+  minor improvements are batched (`prefer-tooling`).
 - Amendment proposals are pull requests that change `constitution/`; they
   take effect only under `amendment-procedure`.
 - Finding the next work and verifying it (stage D): the interface is two
