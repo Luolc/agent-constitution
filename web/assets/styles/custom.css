@@ -73,20 +73,22 @@
 }
 /* End of palette. */
 
-/* The theme switch shows the name of the current setting. */
+/* The theme switch shows the icon of the current setting, in the color
+   of the text, on a faint ground under the pointer. */
 .theme-toggle {
-  font: inherit;
+  display: flex;
+  padding: .3rem;
   color: var(--c-ink);
   background: none;
-  border: 1px solid var(--c-rule);
+  border: none;
   border-radius: .25rem;
-  padding: .2em .6em;
   cursor: pointer;
 }
-.theme-toggle span { display: none; }
+.theme-toggle:hover { background: var(--gray-100); }
+.theme-toggle .book-icon { display: none; width: 1.1em; height: 1.1em; fill: currentColor; filter: none; }
 :root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .auto,
 :root[data-theme="light"] .theme-toggle .light,
-:root[data-theme="dark"] .theme-toggle .dark { display: inline; }
+:root[data-theme="dark"] .theme-toggle .dark { display: block; }
 
 .constitution {
   font-family: var(--c-font-en);
@@ -345,7 +347,14 @@
   --gray-200: color-mix(in srgb, var(--c-paper) 85%, var(--c-ink));
   --gray-500: var(--c-muted);
 }
-.book-menu .theme-toggle { margin: 0 0 1rem; }
+/* The language switch fills its row, the theme switch at its end. */
+.book-menu .menu-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.book-menu .menu-row .book-languages { flex: 1; margin: 0; }
 body { font-family: var(--c-font-en); }
 :lang(zh) body { font-family: var(--c-font-zh); }
 .book-menu { font-size: .95rem; }
@@ -367,8 +376,8 @@ body { font-family: var(--c-font-en); }
 
 /* The sidebar lists the pages in groups, each named in bold after its
    icon, which takes the color of the text; the current page is in the
-   accent color. The link to the source sits under the site's title, its
-   icon the size of a letter. */
+   accent color. The link to the source sits under the site's title, a
+   clear gap apart from it, its icon the size of a letter. */
 .book-menu a.active { color: var(--c-accent); }
 .book-menu a.menu-group {
   display: flex;
@@ -381,7 +390,7 @@ body { font-family: var(--c-font-en); }
   display: flex;
   align-items: center;
   gap: .4em;
-  margin: -.25rem 0 1rem;
+  margin: .5rem 0 1rem;
   color: var(--c-muted);
 }
 .book-menu .source-link .book-icon { width: 1em; height: 1em; flex: none; }
