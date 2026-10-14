@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Build the constitution and its version for agents from the TOML sources.
 
 The outputs are constitution/constitution.<lang>.md and the version for

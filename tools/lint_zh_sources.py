@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run limae on the Chinese text of the constitution and rule sources.
 
 Every `zh` text in constitution/index.toml, constitution/articles/ and

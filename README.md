@@ -30,11 +30,11 @@ which the commit hooks run; `uv run` creates the environment from
 `uv.lock` the first time. Install the commit hooks once with `uv run
 pre-commit install`.
 
-`uv run tools/build_site.py` builds the constitution into two static web
-pages, English and Chinese, under `site/` (not committed): it counts the
-tokens, runs Hugo and checks the links; `hugo-0.167.0 -s web` alone builds
-the pages without a token count. It needs Hugo at the version the script
-names and the theme submodule (`git submodule update --init`); the setup
-is in the design (Static site).
+`hugo-0.167.0 -s web` builds the constitution into two static web pages,
+English and Chinese, under `site/` (not committed), the tokens not
+counted; `uv run tools/check_site_anchors.py site` checks their links. It
+needs Hugo at that version and the theme submodule (`git submodule update
+--init`); the setup, and the token count, are in the design (Static
+site).
 Look at the pages served, for example with `uv run python -m http.server -d
 site`: opened as files, the language switch leads to a directory listing.
