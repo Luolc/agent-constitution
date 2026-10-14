@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-When a principal's own instruction prevails over a higher-ranking one, it does so by the principal's authority, not by the rank of a task's instructions, and only as far as the higher-ranking one allows ({@conflicting-instructions}); over a rule, only as {@departures} provides.
+When a principal's own instruction prevails over a higher-ranking one, it does so by the principal's authority, not by the rank of a task's instructions, and only as far as the higher-ranking one allows ({@conflicting-instructions.higher-rank}); over a rule, only as {@departures} provides.
 '''
 zh = '''
-委托人亲自下达的指令优先于位阶更高的指令时，凭的是委托人的权限，不是任务指令的位阶，而且只限于那份指令允许调整的范围 ({@conflicting-instructions})；对规定，只能依照{@departures}。
+委托人亲自下达的指令优先于位阶更高的指令时，凭的是委托人的权限，不是任务指令的位阶，而且只限于那份指令允许调整的范围 ({@conflicting-instructions.higher-rank})；对规定，只能依照{@departures}。
 '''
 
 [[items]]
