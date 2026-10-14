@@ -30,8 +30,8 @@ zh = '''
 en = '''
 Before each push to any branch of a public repository ({@rule:51}), the author writes out three texts and gives them to a reviewer, another party than the author:
 
-- the diff of the branch against the branch it will merge into (for example `git diff origin/main...HEAD`);
-- the message of every commit to be pushed (for example `git log --format='%H%n%B' origin/main..HEAD`);
+- the diff of the branch against the branch it will merge into;
+- the message of every commit to be pushed;
 - the title and body of the pull request as they will be posted.
 
 The reviewer reads them for what {@rule:51} keeps out of a public repository, for credentials ({@rule:44}) and for personal information ({@constitution:personal-info}), and answers either that they pass, naming the head commit it read, or with the leaks it found. The author pushes only that head and opens the pull request with that text. After any change to the head or the text, the review is done again before the next push.
@@ -41,8 +41,8 @@ Violated when an agent pushes to a public repository a head that no reviewer pas
 zh = '''
 每次向公开仓库 ({@rule:51}) 的任何分支 push 之前，作者写出三份文本，交给作者以外的另一方，即审查方：
 
-- 这个分支相对于它要合入的分支的 diff (例如 `git diff origin/main...HEAD`)；
-- 每个要推送的 commit 的 message (例如 `git log --format='%H%n%B' origin/main..HEAD`)；
+- 这个分支相对于它要合入的分支的 diff；
+- 每个要推送的 commit 的 message；
 - pull request 将要发出的标题和正文。
 
 审查方在其中查找 {@rule:51} 不许写进公开仓库的内容、凭证 ({@rule:44}) 和个人信息 ({@constitution:personal-info})，然后答复：通过的，写明它读的是哪个 head commit；不通过的，列出发现的泄露项。作者只 push 那个 head，并用那份文字开 pull request。head 或文字改过之后，下一次 push 之前重新预审。
@@ -51,4 +51,4 @@ agent 向公开仓库 push 了没有经审查方通过的 head，或者在那里
 '''
 
 [translations]
-zh = "af3e3a3ade98342de565ff811ff0e0c108ac2caa7820755edc1cb396ef0ef14a"
+zh = "7b077c04ddc2e1ef6ec046a568ca9dcc16135f66bbdc5777efe04aa7f25efc54"
