@@ -35,6 +35,7 @@ import urllib.request
 from pathlib import Path
 
 import check_site_anchors
+import git_env
 from build_constitution import OMITTED_MARK
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -201,7 +202,7 @@ def short_commit() -> str | None:
     """The abbreviated commit the build runs on, or None outside git."""
     try:
         result = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
-                                capture_output=True, text=True)
+                                capture_output=True, text=True, env=git_env.clean())
     except OSError:
         return None
     return result.stdout.strip() if result.returncode == 0 else None
