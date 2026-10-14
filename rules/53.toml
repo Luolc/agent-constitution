@@ -1,0 +1,56 @@
+id = 53
+slug = "checks-before-push"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "evidence"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Run the commit hooks and the touched checks before a push"
+zh = "push 之前运行 commit hook 和改动涉及的检查"
+
+[text.statement]
+en = "Before you push a change, run the commit hooks and the checks the change touches on the version you push, and push only when they all pass."
+zh = "push 一个变更之前，在要 push 的版本上运行 commit hook 和改动涉及的检查，全部通过才 push。"
+
+[text.reason]
+en = '''
+A change pushed for review is put forward as working, and that needs grounds someone else can check ({@constitution:evidence}). The commit hooks and the checks the change touches are the quickest of them; run first, they keep a failure the author could have found from reaching the reviewer and CI. The rest is left to CI, so that one run, on the change itself, is the result everyone cites.
+'''
+zh = '''
+推送去审查的变更，等于声称它能正常工作，这需要别人能够核对的依据 ({@constitution:evidence})。commit hook 和改动涉及的检查是其中最快的一部分；先运行它们，作者本来就能发现的失败就不会落到审查方和 CI 头上。其余的检查交给 CI，这样大家引用的都是 CI 在这个变更上的同一次运行结果。
+'''
+
+[text.verification]
+en = '''
+Before each push of a change, the first and every one after it, the agent runs on the version it pushes:
+
+- the repository's commit hooks;
+- each check of the repository whose inputs the change touches, as the project instructions list the checks.
+
+It pushes only when each of them passes ({@rule:54}). When unsure whether a check is touched, it runs it.
+
+Checks the change does not touch need not run locally: CI runs the full set on the change, and the result of that run on the pushed version is the one the author, the reviewer and whoever merges cite for the full set.
+
+Violated when a change is pushed and a commit hook or a check it touches did not run on the pushed version, or did not pass on it.
+'''
+zh = '''
+每次 push 一个变更之前，第一次和之后的每一次，agent 都在要 push 的版本上运行：
+
+- 仓库的 commit hook；
+- 仓库里输入涉及这次改动的每一项检查，检查以项目说明列出的为准。
+
+每一项都通过了才 push ({@rule:54})。不确定某项检查是否涉及这次改动的，就运行它。
+
+改动不涉及的检查不必在本地运行：CI 会在这个变更上运行全部检查，作者、审查方和合并方说到全部检查时，引用的都是 CI 在所 push 版本上的那次运行结果。
+
+一个变更已经 push，而某个 commit hook 或某项涉及这次改动的检查没有在所 push 的版本上运行，或者没有通过的，即为违反本规定。
+'''
+
+[translations]
+zh = "f38840d88e09c7f4ad8de19853164d545281f49e44b0d9b8e9b2da0a6dc64273"
