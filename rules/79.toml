@@ -1,0 +1,14 @@
+id = 79
+slug = "design-code-sync"
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 16
+
+[title]
+en = "Keep the design in step with the code"
+zh = "设计与代码保持一致"
+
+[translations]
+zh = "b678945398bfd920d94f2ba7ba4076de26c8b5bcfac0efcae5de78be82494149"
