@@ -36,21 +36,21 @@ import argparse
 from pathlib import Path
 import sys
 
-from constitution_base import (
+from constitution_compiler.base import (
   check_base,
   check_revision,
   GitError,
 )
-from constitution_checks import (
+from constitution_compiler.checks import (
   check_ids,
   check_languages,
   check_refs,
   check_structure,
 )
-from constitution_render import (
+from constitution_compiler.render import (
   render,
 )
-from constitution_sources import (
+from constitution_compiler.sources import (
   Errors,
   INDEX,
   load,
@@ -118,9 +118,7 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
     try:
       committed = (root / path).read_bytes()
     except OSError:
-      errors.add(
-        path, 1, 6, "missing; run `uv run tools/build_constitution.py`"
-      )
+      errors.add(path, 1, 6, "missing; run `uv run constitution-build`")
       continue
     built = text.encode("utf-8")
     if committed != built:
@@ -133,7 +131,7 @@ def check_outputs(root: Path, outputs: dict, errors: Errors) -> None:
         path,
         line,
         6,
-        "differs from a fresh build; run `uv run tools/build_constitution.py`",
+        "differs from a fresh build; run `uv run constitution-build`",
       )
 
 
@@ -150,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
   parser.add_argument(
     "--root",
     type=Path,
-    default=Path(__file__).resolve().parent.parent,
+    default=Path(__file__).resolve().parents[4],
     help="repository root (default: the repo this script is in)",
   )
   parser.add_argument(

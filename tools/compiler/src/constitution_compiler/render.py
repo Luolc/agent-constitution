@@ -2,10 +2,10 @@
 
 import re
 
-from constitution_languages import (
+from constitution_compiler.languages import (
   LANGUAGES,
 )
-from constitution_sources import (
+from constitution_compiler.sources import (
   Article,
   Item,
   MARK,

@@ -28,9 +28,9 @@ import tomllib
 import urllib.error
 import urllib.request
 
-import git_env
+from constitution_compiler import git_env
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "web/data/lengths.json"
 KEY_VARIABLE = "CONSTITUTION_TOKEN_COUNT_API_KEY"  # sent as x-api-key
 # A short-lived access token from Workload Identity Federation, sent as

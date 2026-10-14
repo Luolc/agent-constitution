@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-import lint_zh_sources as lzs
+from repo_checks import lint_zh_sources as lzs
 
 INDEX = """\
 status = "draft"

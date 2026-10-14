@@ -27,30 +27,30 @@ repos:
   - repo: local
     hooks:
       # The Python checkers, configured in pyproject.toml, on the whole of
-      # tools/ rather than the staged files.
+      # tools/ (all three workspace members) rather than the staged files.
       - id: ruff-check
         name: ruff check
         entry: uv run --frozen --no-sync ruff check .
         language: system
-        files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
+        files: ^(tools/.*\.(py|toml)|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       - id: ruff-format
         name: ruff format
         entry: uv run --frozen --no-sync ruff format --check .
         language: system
-        files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
+        files: ^(tools/.*\.(py|toml)|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       - id: pydoclint
         name: pydoclint
         entry: uv run --frozen --no-sync pydoclint --config pyproject.toml --quiet tools
         language: system
-        files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
+        files: ^(tools/.*\.(py|toml)|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       - id: basedpyright
         name: basedpyright
         entry: uv run --frozen --no-sync basedpyright
         language: system
-        files: ^(tools/.*\.py|pyproject\.toml|uv\.lock)$
+        files: ^(tools/.*\.(py|toml)|pyproject\.toml|uv\.lock)$
         pass_filenames: false
       # The constitution build: --check validates the sources (the
       # constitution and the rules) and requires the committed outputs to
@@ -58,25 +58,39 @@ repos:
       # against a base commit (--base) runs only in CI.
       - id: constitution
         name: constitution build check
-        entry: uv run --frozen --no-sync tools/build_constitution.py --check
+        entry: uv run --frozen --no-sync constitution-build --check
         language: system
         files: ^(constitution|rules|tools)/
         pass_filenames: false
-      # The tests of lint_zh_sources.py run limae.
-      - id: constitution-tests
-        name: tools tests
-        entry: uv run --frozen --no-sync python -m unittest discover -s tools
+      # The tests of each workspace member, run when it or a member it
+      # depends on changes: the site uses the compiler and web/. The tests of
+      # lint_zh_sources run limae.
+      - id: compiler-tests
+        name: compiler tests
+        entry: uv run --frozen --no-sync python -m unittest discover -s tools/compiler/tests
         language: system
-        files: ^(tools/|pyproject\.toml$|uv\.lock$)
+        files: ^(tools/compiler/|pyproject\.toml$|uv\.lock$)
+        pass_filenames: false
+      - id: site-tests
+        name: site tests
+        entry: uv run --frozen --no-sync python -m unittest discover -s tools/site/tests
+        language: system
+        files: ^(tools/(compiler|site)/|web/|pyproject\.toml$|uv\.lock$)
+        pass_filenames: false
+      - id: checks-tests
+        name: checks tests
+        entry: uv run --frozen --no-sync python -m unittest discover -s tools/checks/tests
+        language: system
+        files: ^(tools/checks/|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
       # The `zh` text of each source, citations replaced by Chinese text
       # shaped like their rendering. Checks only; fix locally with
-      # `uv run tools/lint_zh_sources.py --fix`.
+      # `uv run lint-zh-sources --fix`.
       - id: zh-sources
         name: limae on the zh text of the sources
-        entry: uv run --frozen --no-sync tools/lint_zh_sources.py
+        entry: uv run --frozen --no-sync lint-zh-sources
         language: system
-        files: ^(constitution/(index\.toml|articles/)|rules/|tools/lint_zh_sources\.py$|pyproject\.toml$|uv\.lock$)
+        files: ^(constitution/(index\.toml|articles/)|rules/|tools/checks/src/repo_checks/lint_zh_sources\.py$|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
       # The built Chinese constitution, both versions, with limae's default
       # configuration.

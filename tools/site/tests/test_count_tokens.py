@@ -18,9 +18,9 @@ import unittest
 from unittest import mock
 import urllib.error
 
-import count_tokens
+from constitution_site import count_tokens
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[3]
 KEY = "test-key-not-real"
 TOKEN = "test-token-not-real"
 UNAUTHORIZED = urllib.error.HTTPError(
@@ -105,7 +105,9 @@ class MainTest(unittest.TestCase):
       tempfile.TemporaryDirectory() as tmp,
       mock.patch.dict(count_tokens.os.environ, environ, clear=True),
       mock.patch("urllib.request.urlopen", **urlopen) as opened,
-      mock.patch("count_tokens.short_commit", return_value="abc1234"),
+      mock.patch(
+        "constitution_site.count_tokens.short_commit", return_value="abc1234"
+      ),
       contextlib.redirect_stderr(stderr),
     ):
       out = Path(tmp) / "data/lengths.json"

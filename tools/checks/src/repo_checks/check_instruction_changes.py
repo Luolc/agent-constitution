@@ -17,7 +17,7 @@ import re
 import subprocess
 import sys
 
-import git_env
+from repo_checks import git_env
 
 # Instruction files in any repo: what an agent harness reads as
 # instructions, skills, subagents, commands, hooks or permissions, in any
@@ -108,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
   )
   parser.add_argument(
     "--root",
-    default=str(Path(__file__).resolve().parent.parent),
+    default=str(Path(__file__).resolve().parents[4]),
     help="the repository (default: the repo this script is in)",
   )
   parser.add_argument(

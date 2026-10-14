@@ -12,9 +12,8 @@ import tempfile
 import unittest
 from unittest import mock
 
-import check_instruction_changes as cic
-import git_env
-import test_constitution_base
+from repo_checks import check_instruction_changes as cic
+from repo_checks import git_env
 
 BASE = {
   "AGENTS.md": "agents\n",
@@ -180,12 +179,12 @@ class Change(unittest.TestCase):
 
 
 class HookEnvironment(unittest.TestCase):
-  """The tests and the scripts leave the repository of a git hook alone.
+  """The tests and the script leave the repository of a git hook alone.
 
   They run from a git hook, which in a worktree sets GIT_DIR and
   GIT_INDEX_FILE to the worktree's; they must leave its repository alone.
-  One test of each script that runs git covers its calls and its test
-  helper's.
+  One test of the script covers its git calls and its test helper's; the
+  compiler's tests have the same check for theirs.
   """
 
   def test_repository_of_the_hook_untouched(self):
@@ -223,13 +222,10 @@ class HookEnvironment(unittest.TestCase):
       {"GIT_DIR": str(gitdir), "GIT_INDEX_FILE": str(gitdir / "index")},
     ):
       Change("test_instructions_only_pass").run(result)
-      test_constitution_base.BaseTest("test_main_runs_check_with_base").run(
-        result
-      )
     self.assertEqual((outer / "main/.git/config").read_bytes(), config)
     self.assertEqual((gitdir / "index").read_bytes(), index)
     self.assertTrue(result.wasSuccessful(), result.errors + result.failures)
-    self.assertEqual(result.testsRun, 2)
+    self.assertEqual(result.testsRun, 1)
 
 
 if __name__ == "__main__":

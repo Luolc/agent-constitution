@@ -6,8 +6,8 @@ appears twice on a page, and no list marker leaked into the text as a
 literal `- §` or `- 第` (a sign that the Markdown renderer did not see a
 list item where the build wrote one).
 
-Usage: uv run tools/check_site_anchors.py [<dir>], default site/ of the
-repo this script is in. Errors print as `path: message`; the exit status is 1 on
+Usage: uv run check-site-anchors [<dir>], default site/ of the repo this
+script is in. Errors print as `path: message`; the exit status is 1 on
 any error, also when the directory holds no HTML page.
 """
 
@@ -120,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
   parser.add_argument(
     "dir",
     nargs="?",
-    default=Path(__file__).resolve().parent.parent / "site",
+    default=Path(__file__).resolve().parents[4] / "site",
     type=Path,
     help="the built site (default: site/ of the repo this script is in)",
   )

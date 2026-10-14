@@ -6,8 +6,6 @@ agents.
 
 import unittest
 
-import build_constitution as bc
-import constitution_languages as cl
 from test_constitution_fixture import (
   A,
   ALPHA_ONE,
@@ -21,6 +19,9 @@ from test_constitution_fixture import (
   ZH,
   ZH_AGENT,
 )
+
+from constitution_compiler import build as bc
+from constitution_compiler import languages as cl
 
 
 class RenderTest(Tree):

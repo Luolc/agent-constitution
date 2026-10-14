@@ -51,13 +51,14 @@ jobs:
           "${bindir}/gitleaks" git --redact --no-banner --verbose .
 
       # uv sets up the Python of pyproject.toml and, from uv.lock, the
-      # environment with limae and pre-commit; --locked fails when the lock
-      # no longer matches pyproject.toml. The uv version is the rev of the
+      # environment with the three workspace members under tools/, limae
+      # and pre-commit; --locked fails when the lock no longer matches the
+      # pyproject.toml files. The uv version is the rev of the
       # uv-lock hook in .pre-commit-config.yaml; change both together.
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: "0.13.0"
-      - run: uv sync --locked
+      - run: uv sync --locked --all-packages
 
       # Hugo builds the static site and runs in the tests of its templates.
       # Pinned by version and SHA-256, unpacked outside the checkout under
@@ -90,11 +91,11 @@ jobs:
       # were not counted; Hugo writes site/ (publishDir in web/hugo.toml),
       # failing on any warning; then the link check.
       - name: Token count
-        run: uv run --frozen tools/count_tokens.py
+        run: uv run --frozen count-tokens
       - name: Build the static site
         run: hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning
       - name: Link check
-        run: uv run --frozen tools/check_site_anchors.py site
+        run: uv run --frozen check-site-anchors site
 
       # Numbering against the base: on a pull request the first parent of
       # the checked-out merge commit, which is the tip of the base branch
@@ -115,7 +116,7 @@ jobs:
           fi
           base="$(git rev-parse --verify "${BASE}^{commit}")"
           echo "base: ${base}"
-          uv run --frozen tools/build_constitution.py --check --base "$base"
+          uv run --frozen constitution-build --check --base "$base"
 
       # Instruction files and other files never change together (see
       # docs/design.md, Checkers). Same base as the step above, skipped the
@@ -131,4 +132,4 @@ jobs:
           fi
           base="$(git rev-parse --verify "${BASE}^{commit}")"
           echo "base: ${base}"
-          uv run --frozen tools/check_instruction_changes.py --base "$base"
+          uv run --frozen check-instruction-changes --base "$base"
