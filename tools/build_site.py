@@ -418,8 +418,9 @@ def agent_page(
   """Return the Hugo page of the version for agents.
 
   Its text as agents read it, under a list like the home page's: the
-  revision and a link back to the full version. Hidden from the sidebar's
-  list of pages; its headings get no anchor link from the theme.
+  revision and a link back to the full version. Hidden from the theme's
+  list of pages, since web/hugo.toml names it in the sidebar's menu; its
+  headings get no anchor link from the theme.
 
   Args:
     agent_markdown: The version for agents.

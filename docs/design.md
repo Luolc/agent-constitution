@@ -711,7 +711,7 @@ is a release (rule `must-ask-items`) and not set up.
   the accent color, not a superscript and without opening up the line,
   lowered until its middle sits a little above the middle of an item
   number's parentheses and its top well under the top of the number. The
-  legend and the sidebar's list of articles show it the same way.
+  legend and the table of contents show it the same way.
 - Version for agents: each `constitution/constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, built the
   same way but with its text as is: no anchors, no links, the provisions
@@ -719,10 +719,9 @@ is a release (rule `must-ask-items`) and not set up.
   version. Its headings carry `{anchor=false}`, so the theme adds no `#`
   link to them. Under the title is a list like the home page's, both lines
   centered: the revision, and a link back to the full version.
-  The page is hidden from hugo-book's list of pages; the sidebar, the
-  language switch (to the other language's version for agents) and the
-  color switch are as on the home page, the list of articles linking to
-  the IDs Hugo gives the headings.
+  The sidebar, the language switch (to the other language's version for
+  agents), the color switch and the table of contents are as on the home
+  page, the table of contents linking to the IDs Hugo gives the headings.
 - Length: the second item of the list gives the length of the version
   for agents, bare, which is what takes room in an agent's context: the
   generated file without its header line, in characters in both
@@ -781,8 +780,20 @@ is a release (rule `must-ask-items`) and not set up.
 - Generator: Hugo, a single binary pinned by version in `build_site.py`
   and in CI, with the theme hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
-  switch and the light, dark and auto color themes; the site adds, through
-  the theme's inject partials, the list of articles in the left sidebar, a
+  switch, the light, dark and auto color themes, the sidebar's list of
+  pages and the table of contents at the right. The sidebar lists the
+  pages, not the articles: today the constitution, the home page, with
+  its version for agents under it, both named in `web/hugo.toml`'s menus
+  (the version for agents is the home page's child, which the theme's own
+  list leaves out). The table of contents lists the page's level-2
+  headings, the preamble and the articles (`markup.tableOfContents` in
+  `web/hugo.toml`), under a heading of its own; on a narrow screen the
+  theme hides it behind a button at the right of the top bar, which opens
+  it above the text, as the button at the left opens the sidebar. The
+  site overrides the theme's sidebar (`layouts/_partials/docs/menu.html`)
+  to put a link to the source repository, with GitHub's mark from
+  Octicons (MIT license), between the site's title and the language
+  switch, and adds, through the theme's inject partials, a
   switch for the color theme (follow the system, light, dark; the choice
   kept in `localStorage`, set in `<head>` before the page is drawn), and
   the fonts. A submodule keeps the theme's files out of this repo's
@@ -802,14 +813,14 @@ is a release (rule `must-ask-items`) and not set up.
   style without link decoration. Every link in the text, under the title
   and in the popup is underlined like the citations: the text color with
   a light underline in the color of the rules, both turning to the accent
-  color under the pointer. The navigation (the sidebar and the top bar of a narrow screen)
-  is not underlined, but is under the pointer or the keyboard's focus.
-  The sidebar marks no current item: the theme marks one only in its own
-  list of pages, which is empty here. The
+  color under the pointer. The navigation (the sidebar, the table of
+  contents and the top bar of a narrow screen) is not underlined, but is
+  under the pointer or the keyboard's focus. The sidebar marks the
+  current page in the accent color. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
   so a line keeps about 90 characters in English and 40 in Chinese; the
-  column is centered right of the sidebar. Fonts: EB Garamond and Noto
+  column is centered between the sidebar and the table of contents. Fonts: EB Garamond and Noto
   Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
   fonts, falling back to local serif fonts. The colors are one palette
   block, light and dark; contrast of text on the page and the sidebar is
