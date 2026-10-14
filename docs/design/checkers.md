@@ -91,8 +91,14 @@ their types; `id` is the file name, which has no leading zeros; `revision` is
 a rule's does; `superseded-by` is there exactly when the status is
 `superseded`, `run` and `tools` exactly when `check` is `command`;
 `authority` is a non-empty list of strings, `tools` a list of strings, and
-`requires` and `conflicts` lists of numbers and strings; the title and the three parts have a non-empty text
-in the original's language, and `[translations]` has no key for it. 2: a
+`constitution` a specifier of whole revisions
+([Tracing rules to the constitution](rule-system.md#tracing-rules-to-the-constitution));
+each entry of `requires` and `conflicts` is a number from 1 or a string
+`"<source>:<id>"`, names a node other than the rule itself and is listed
+once; `lang` and the keys of every text are language codes (`en`, `zh`,
+`zh-Hant`); the title and the three parts have a text in the original's
+language, no text is empty, and `[translations]` has no key for the
+original's language. 2: a
 `slug` has the shape of an ID and is unique among the slugs. 3: each `parent` and
 `superseded-by` names a node, the latter a rule other than itself, and
 following the parents never leads back to a node. 4: each language of a
@@ -104,6 +110,15 @@ each `authority` entry, without a namespace, to a provision that is not
 repealed. 7: a node of the base still exists, and stays repealed or
 superseded once it was; a rule of a base from before the rule tree,
 named by a word, lives on as the node whose `slug` is that word.
+
+The relations between the nodes are not checked here but by `statute`
+([The tool and the first version](rule-system.md#the-tool-and-the-first-version)):
+the targets of `requires` and `conflicts` exist and are of the right kind,
+`requires` has no cycle and nothing redundant, a rule conflicts with
+nothing it brings in, and the warnings of
+[Dependencies, one-ofs and packs](rule-system.md#dependencies-one-ofs-and-packs).
+In CI, `crates/statute/tests/real_rules.rs` reads this repo's `rules/`
+with `statute` and fails on any error or warning.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
