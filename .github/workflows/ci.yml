@@ -1,5 +1,6 @@
 # PR gate: full-history secret scan, then pre-commit on all files, which
-# includes the constitution build check and its tests (local hooks), then
+# includes the constitution build check and the tests (local hooks; the
+# tests of the site's templates need Hugo, installed before them), then
 # the static site build with its link check, then the constitution
 # numbering check and the instruction-only check, both against the base
 # commit.
@@ -55,18 +56,11 @@ jobs:
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - run: uv sync --locked
 
-      # The gitleaks hook scans only the staged diff, so CI skips it; the
-      # full-history scan above is the step that counts. The local hooks run
-      # in the environment synced above.
-      - run: uv run --frozen pre-commit run --all-files
-        env:
-          SKIP: gitleaks
-
-      # The static site (docs/design.md, Static site). Hugo is pinned by
-      # version and SHA-256, unpacked outside the checkout under the name
-      # tools/build_site.py calls; change the version in both places. The
-      # script builds both pages and runs the in-page link check.
-      - name: Static site build and link check
+      # Hugo builds the static site and runs in the tests of its templates.
+      # Pinned by version and SHA-256, unpacked outside the checkout under
+      # the name tools/build_site.py calls; change the version in both
+      # places and in token-count.yml.
+      - name: Install Hugo
         env:
           HUGO_VERSION: 0.167.0
           HUGO_SHA256: 4d84519b9f619e6d4c3fb45a50157abeabeb724f859c60605f44c23def6e1169
@@ -79,7 +73,19 @@ jobs:
           echo "${HUGO_SHA256}  ${tarball}" | sha256sum -c -
           tar -xzf "$tarball" -C "$bindir" hugo
           mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
-          PATH="${bindir}:${PATH}" uv run --frozen tools/build_site.py
+          echo "$bindir" >> "$GITHUB_PATH"
+
+      # The gitleaks hook scans only the staged diff, so CI skips it; the
+      # full-history scan above is the step that counts. The local hooks run
+      # in the environment synced above.
+      - run: uv run --frozen pre-commit run --all-files
+        env:
+          SKIP: gitleaks
+
+      # The static site (docs/design.md, Static site): the token count, which
+      # gets no credential here, Hugo and the link check.
+      - name: Static site build and link check
+        run: uv run --frozen tools/build_site.py
 
       # Numbering against the base: on a pull request the first parent of
       # the checked-out merge commit, which is the tip of the base branch

@@ -1,0 +1,56 @@
+{{- /* The pages of one language from the built constitution: its full
+  version, constitution/constitution.<lang>.md, as the home page, and its
+  version for agents, constitution.<lang>.agent.md, as agent/. Each file
+  starts with the build's header line, a blank line and the `# ` title:
+  the header line is dropped, the title becomes the page's, and the
+  layouts set it above the text (layouts/home.html, layouts/page.html).
+  The page's params hold the length of the text the page gives, the file
+  without its header line: its characters, its words split on white space
+  and its SHA-256, which tells whether data/lengths.json counted this
+  text. It runs once for each language of the site. */ -}}
+{{- .EnableAllLanguages }}
+{{- $lang := .Site.Language.Lang }}
+{{- $pages := dict }}
+{{- range $version := slice "" ".agent" }}
+  {{- $file := printf "constitution/constitution.%s%s.md" $lang $version }}
+  {{- $markdown := (resources.Get $file).Content }}
+  {{- $lines := split $markdown "\n" }}
+  {{- if or (lt (len $lines) 3) (not (strings.Contains (index $lines 0) "tools/build_constitution.py")) (not (strings.HasPrefix (index $lines 2) "# ")) }}
+    {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" (path.Base $file) }}
+  {{- end }}
+  {{- $text := delimit (after 1 $lines) "\n" }}
+  {{- $pages = merge $pages (dict (cond (eq $version "") "full" "agent") (dict
+    "title" (strings.TrimPrefix "# " (index $lines 2))
+    "body" (delimit (after 3 $lines) "\n")
+    "length" (dict
+      "characters" (strings.RuneCount $text)
+      "words" (len (findRE `\S+` $text))
+      "sha256" (sha256 $text)
+      "omitted" (strings.Contains $text site.Params.omittedMark)
+    )
+  )) }}
+{{- end }}
+{{- /* The full version's headings carry their anchor, `## <a
+  id="general-provisions"></a>Article I. ...`; it becomes the heading's id,
+  so the table of contents links to it. The version for agents has no
+  anchors; `{anchor=false}` keeps the theme's `#` link off its headings. */ -}}
+{{- $full := $pages.full }}
+{{- .AddPage (dict
+  "kind" "home"
+  "path" "/"
+  "title" $full.title
+  "params" (dict "length" $full.length "agentLength" $pages.agent.length)
+  "content" (dict
+    "mediaType" "text/markdown"
+    "value" (replaceRE `(?m)^(#{2,6}) <a id="([^"]+)"></a>(.*)$` "$1 $3 {#$2}" $full.body)
+  )
+) }}
+{{- .AddPage (dict
+  "path" "agent"
+  "title" $pages.agent.title
+  "params" (dict "bookHidden" true)
+  "content" (dict
+    "mediaType" "text/markdown"
+    "value" (replaceRE `(?m)^(#.*)$` "$1 {anchor=false}" $pages.agent.body)
+  )
+) }}

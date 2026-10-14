@@ -1,9 +1,9 @@
 # Token count on main: exchanges the run's GitHub OIDC token for a
 # short-lived Anthropic access token through Workload Identity Federation,
-# builds the static site with it, and writes the length line of both pages
-# into the job summary and the log (docs/design.md, Static site). The
-# federation rule accepts only pushes to main, so this runs only there. It
-# publishes nothing. A failed exchange or count fails the run.
+# counts the tokens with it, builds the static site, and writes the length
+# line of both pages into the job summary and the log (docs/design.md,
+# Static site). The federation rule accepts only pushes to main, so this
+# runs only there. It publishes nothing. A failed exchange or count fails the run.
 # The four IDs are repository variables, identifiers rather than secrets.
 
 name: Token count

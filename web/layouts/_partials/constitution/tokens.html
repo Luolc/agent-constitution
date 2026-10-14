@@ -1,0 +1,12 @@
+{{- /* The tokens of one version of the page's language from
+  data/lengths.json, or false: without the file, without a count, or when
+  the file counted another text than this build's (its SHA-256 differs).
+  Takes (dict "version" "full" or "agent" "length" the version's length
+  from the page's params). */ -}}
+{{- $tokens := false -}}
+{{- with hugo.Data.lengths -}}
+  {{- with index . site.Language.Lang $.version -}}
+    {{- if eq .sha256 $.length.sha256 }}{{ $tokens = .tokens }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $tokens -}}
