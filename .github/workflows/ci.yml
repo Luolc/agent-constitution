@@ -1,9 +1,9 @@
-# PR gate: full-history secret scan, then pre-commit on all files, which
-# includes the constitution build check and the tests (local hooks; the
-# tests of the site's templates need Hugo, installed before them), then
-# the static site build with its link check, then the constitution
-# numbering check and the instruction-only check, both against the base
-# commit.
+# PR gate: secret scan of the PR's or push's commits, then pre-commit on
+# all files, which includes the constitution build check and the tests
+# (local hooks; the tests of the site's templates need Hugo, installed
+# before them), then the static site build with its link check, then the
+# constitution numbering check and the instruction-only check, both
+# against the base commit.
 # The job name `check` is the required status check.
 
 name: CI
@@ -23,32 +23,35 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read # gitleaks-action lists the commits of the PR
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Full history: the secret scan reads every commit, and a shallow
-          # clone would miss the older ones.
+          # Full history: the secret scan and the checks against the base
+          # commit read commits a shallow clone would miss.
           fetch-depth: 0
           # The site's theme, web/themes/hugo-book.
           submodules: true
 
-      # The pre-commit gitleaks hook scans only the staged diff; CI has no
-      # staged diff, so this step scans the full history. Pinned by version
-      # and SHA-256, unpacked outside the checkout.
-      - name: Secret scan (gitleaks, full history)
+      # The other half of the credential scan the commit hook runs. The hook
+      # scans the staged content, which is the only place a secret can still
+      # be stopped; CI has nothing staged, so it scans the commits of this
+      # pull request or push instead: a commit that skipped the hook, or a
+      # branch pushed from a clone where `pre-commit install` was never run.
+      # The whole history is scanned weekly by gitleaks.yml.
+      #
+      # Pinned to the same version as the `gitleaks` hook in
+      # .pre-commit-config.yaml; the two move together.
+      - name: Secret scan (gitleaks, this PR's or push's commits)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           GITLEAKS_VERSION: 8.30.1
-          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
-        run: |
-          set -euo pipefail
-          bindir="$(mktemp -d)"
-          tarball="${bindir}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          curl -fsSL -o "$tarball" \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum -c -
-          tar -xzf "$tarball" -C "$bindir" gitleaks
-          # Keep --redact: without it a hit prints the secret into the log.
-          "${bindir}/gitleaks" git --redact --no-banner --verbose .
+          # Commenting on the PR would need pull-requests: write; the job
+          # log and the failed check are enough.
+          GITLEAKS_ENABLE_COMMENTS: false
 
       # uv sets up the Python of pyproject.toml and, from uv.lock, the
       # environment with the three workspace members under tools/, limae
@@ -80,8 +83,8 @@ jobs:
           echo "$bindir" >> "$GITHUB_PATH"
 
       # The gitleaks hook scans only the staged diff, so CI skips it; the
-      # full-history scan above is the step that counts. The local hooks run
-      # with --no-sync in the environment synced above.
+      # scan of the commits above is the step that counts. The local hooks
+      # run with --no-sync in the environment synced above.
       - run: uv run --frozen pre-commit run --all-files
         env:
           SKIP: gitleaks
@@ -100,11 +103,11 @@ jobs:
       # Numbering against the base: on a pull request the first parent of
       # the checked-out merge commit, which is the tip of the base branch
       # the PR was merged onto for this run; on a push the commit before it.
-      # The commit hook runs without --base. The full history above makes
-      # both commits available; only a push without a usable `before` (the
-      # first push, or a rewritten history) skips the comparison and says
-      # so. On a pull request a missing base fails the job. The step prints
-      # the base it uses.
+      # The commit hook runs without --base. The full-history checkout above
+      # makes both commits available; only a push without a usable `before`
+      # (the first push, or a rewritten history) skips the comparison and
+      # says so. On a pull request a missing base fails the job. The step
+      # prints the base it uses.
       - name: Constitution numbering against the base commit
         env:
           BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}

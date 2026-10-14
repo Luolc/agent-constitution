@@ -3,7 +3,9 @@
 # the Chinese text, in the sources and in the built file.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
-  # scans the full history, so the two complement each other.
+  # scans the commits of each PR or push, and gitleaks.yml the full history
+  # weekly. The rev is also GITLEAKS_VERSION in ci.yml and gitleaks.yml;
+  # change all three together.
   # --redact is repeated here: inherited arguments are not visible in this
   # file and could be dropped when the rev is bumped.
   - repo: https://github.com/gitleaks/gitleaks
