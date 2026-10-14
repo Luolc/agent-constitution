@@ -1,4 +1,4 @@
-本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。修订号：0.36。语言：中文。标 \* 的部分讲本宪法的由来、编排和修改，默认只对人可见；给 agent 编译的版本 `constitution/constitution.zh.agent.md` 默认不收录它们的正文。
+本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，不要手改；改源文件后重新生成。状态：draft。修订号：0.36。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/constitution.zh.agent.md` 不收录这些部分。
 
 # Agent 宪法 (草案)
 
