@@ -63,7 +63,7 @@ jobs:
       # Hugo builds the static site and runs in the tests of its templates.
       # Pinned by version and SHA-256, unpacked outside the checkout under
       # the versioned name the build step and the tests call; change the
-      # version in all three places and in token-count.yml.
+      # version in all three places and in pages.yml.
       - name: Install Hugo
         env:
           HUGO_VERSION: 0.167.0
