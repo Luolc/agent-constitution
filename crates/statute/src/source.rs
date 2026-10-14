@@ -328,6 +328,66 @@ impl Sources {
                 }
             }
         }
+        self.check_cycles(diags);
+    }
+
+    /// Fails a cycle of requirements that goes through more than one
+    /// source, a parent counting as a requirement; each source has found
+    /// those within it already.
+    fn check_cycles(&self, diags: &mut Diagnostics) {
+        let edges = |key: &Key| -> Vec<Key> {
+            self.parent(key)
+                .into_iter()
+                .chain(self.requires(key))
+                .filter(|k| self.get(k).is_some())
+                .collect()
+        };
+        // 0: not visited, 1: on the path, 2: done.
+        let mut state: HashMap<Key, u8> = HashMap::new();
+        let mut reported = BTreeSet::new();
+        for (start, _) in self.nodes() {
+            if state.contains_key(&start) {
+                continue;
+            }
+            let mut stack: Vec<Vec<Key>> = vec![edges(&start)];
+            let mut path = vec![start.clone()];
+            state.insert(start, 1);
+            while let Some(next) = stack.last_mut() {
+                let Some(key) = next.pop() else {
+                    stack.pop();
+                    if let Some(done) = path.pop() {
+                        state.insert(done, 2);
+                    }
+                    continue;
+                };
+                match state.get(&key) {
+                    Some(1) => {
+                        let pos = path.iter().position(|p| *p == key).unwrap_or(0);
+                        let cycle = &path[pos..];
+                        let first = cycle.iter().min().unwrap_or(&key);
+                        if cycle.iter().any(|k| k.source != key.source)
+                            && reported.insert(first.clone())
+                        {
+                            let shown: Vec<String> =
+                                cycle.iter().chain([&key]).map(Key::to_string).collect();
+                            diags.error(
+                                self.file(first),
+                                format!(
+                                    "the requirements form a cycle across sources (a parent counts as a requirement): {}",
+                                    shown.join(" -> ")
+                                ),
+                            );
+                        }
+                    }
+                    Some(_) => {}
+                    None => {
+                        state.insert(key.clone(), 1);
+                        stack.push(edges(&key));
+                        path.push(key);
+                    }
+                }
+            }
+        }
     }
 
     /// Checks one reference `r` of a node of `source` to another source;

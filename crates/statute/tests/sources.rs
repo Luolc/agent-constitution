@@ -323,3 +323,29 @@ fn the_same_id_in_two_sources_is_two_rules() {
     assert!(!lock.contains("rule = \"L3\""), "{lock}");
     assert!(!lock.contains("rule = \"R2\""), "{lock}");
 }
+
+#[test]
+fn a_cycle_of_requirements_across_sources_fails() {
+    // team:7 and me:4 require each other; both private, so that only the
+    // cycle is wrong.
+    let private = manifest(false, "\"team:7\"").replace(
+        "team = { path = \"team\", public = true }",
+        "team = { path = \"team\", public = false }",
+    );
+    let team = ("team/rules", rule(7, 1, "requires = [\"me:4\"]"));
+    let dir = repo(
+        "cycle",
+        &private,
+        &[
+            team.clone(),
+            ("me/rules", rule(4, 1, "requires = [\"team:7\"]")),
+        ],
+    );
+    fails(
+        &dir,
+        "me/rules/4.toml: error: the requirements form a cycle across sources (a parent counts as a requirement): me:4 -> team:7 -> me:4",
+    );
+    // Without the edge back, it locks.
+    let dir = repo("no-cycle", &private, &[team]);
+    ok(&statute(&dir, &["lock"]));
+}
