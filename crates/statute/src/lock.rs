@@ -1,14 +1,13 @@
-//! The lock file, `statute.lock`: the constitution, the source and every
+//! The lock file, `statute.lock`: the constitution, the sources and every
 //! enabled rule, pinned (`docs/design/rule-sets.md`, Rule sets and the
 //! lock file). Written by statute, never by hand; the same rule set and
-//! source always give the same bytes.
+//! sources always give the same bytes.
 
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::manifest::{RuleRef, SourceSpec};
-use crate::node::Id;
+use crate::manifest::{Key, RuleRef, SourceSpec};
 use crate::project::Project;
 
 pub const FILE: &str = "statute.lock";
@@ -58,26 +57,31 @@ struct Rule<'a> {
     sha256: &'a str,
 }
 
-/// The lock file of a resolved project, rules in order of ID.
+/// The lock file of a resolved project: the sources in order of name,
+/// the rules in order of key.
 pub fn render(project: &Project) -> String {
-    let spec = &project.manifest.source;
+    let m = &project.manifest;
     let lock = Lock {
         constitution: Constitution {
-            at: pin(spec),
-            edition: &project.manifest.edition,
+            at: pin(m.constitution_spec()),
+            edition: &m.edition,
             revision: &project.revision,
         },
-        sources: vec![Source {
-            name: &spec.name,
-            at: pin(spec),
-        }],
+        sources: m
+            .sources
+            .iter()
+            .map(|spec| Source {
+                name: &spec.name,
+                at: pin(spec),
+            })
+            .collect(),
         rules: project
             .resolution
             .enabled
             .keys()
-            .filter_map(|id| project.source.get(*id))
-            .map(|node| Rule {
-                rule: project.source.show(node.id),
+            .filter_map(|key| Some((key, project.sources.get(key)?)))
+            .map(|(key, node)| Rule {
+                rule: key.to_string(),
                 revision: node.revision,
                 sha256: &node.sha256,
             })
@@ -92,8 +96,8 @@ pub fn render(project: &Project) -> String {
 pub struct Locked {
     pub edition: String,
     pub revision: String,
-    /// Each locked rule's revision and SHA-256, by ID.
-    pub rules: BTreeMap<Id, (u64, String)>,
+    /// Each locked rule's revision and SHA-256, by key.
+    pub rules: BTreeMap<Key, (u64, String)>,
 }
 
 #[derive(Deserialize)]
@@ -131,7 +135,7 @@ pub fn read(text: &str) -> Result<Locked, String> {
                 let rule = r.rule.ok_or(
                     "a rule without `rule`, as in a lock file of an earlier format; run `statute lock` to write it anew",
                 )?;
-                Ok((RuleRef::parse(&rule)?.id, (r.revision, r.sha256)))
+                Ok((Key::of(&RuleRef::parse(&rule)?), (r.revision, r.sha256)))
             })
             .collect::<Result<_, String>>()?,
     })
@@ -147,8 +151,8 @@ pub fn current(project: &Project) -> Locked {
             .resolution
             .enabled
             .keys()
-            .filter_map(|id| project.source.get(*id))
-            .map(|n| (n.id, (n.revision, n.sha256.clone())))
+            .filter_map(|key| Some((key, project.sources.get(key)?)))
+            .map(|(key, n)| (key.clone(), (n.revision, n.sha256.clone())))
             .collect(),
     }
 }

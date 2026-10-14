@@ -48,13 +48,70 @@ pub struct RuleRef {
 }
 
 /// How rule `id` of the source named `name` in `[sources]` is shown:
-/// `R42` for the first-party source, `team:7` for another, `42` when the
-/// source has no name, as when the rules of a directory are checked alone.
+/// `R42` for the first-party source, `L12` for the repository's own
+/// rules, `team:7` for another, `42` when the source has no name, as when
+/// the rules of a directory are checked alone.
 pub fn show(name: &str, id: Id) -> String {
     match name {
-        FIRST_PARTY => format!("{FIRST_PARTY}{id}"),
+        FIRST_PARTY | LOCAL => format!("{name}{id}"),
         "" => id.to_string(),
         _ => format!("{name}:{id}"),
+    }
+}
+
+/// A node of a rule set: the name of its source, `L` for the
+/// repository's own rules, and its ID. Ordered as the compiled file
+/// shows the sources: the first-party source, the others by name, then
+/// the repository's own rules.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Key {
+    pub source: String,
+    pub id: Id,
+}
+
+impl Key {
+    pub fn new(source: &str, id: Id) -> Key {
+        Key {
+            source: source.to_owned(),
+            id,
+        }
+    }
+
+    fn rank(&self) -> u8 {
+        match self.source.as_str() {
+            FIRST_PARTY => 0,
+            LOCAL => 2,
+            _ => 1,
+        }
+    }
+
+    /// The key a reference names when its source is the one its form
+    /// says: `R42`, `L12` and `team:7` as written.
+    pub fn of(r: &RuleRef) -> Key {
+        let source = match &r.origin {
+            Origin::FirstParty => FIRST_PARTY,
+            Origin::Local => LOCAL,
+            Origin::Named(name) => name,
+        };
+        Key::new(source, r.id)
+    }
+}
+
+impl Ord for Key {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (self.rank(), &self.source, self.id).cmp(&(other.rank(), &other.source, other.id))
+    }
+}
+
+impl PartialOrd for Key {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl std::fmt::Display for Key {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&show(&self.source, self.id))
     }
 }
 
@@ -125,30 +182,15 @@ impl std::fmt::Display for RuleRef {
 pub struct SourceSpec {
     pub name: String,
     pub path: String,
+    /// Whether anyone may read the source, as the rule set declares it.
+    pub public: bool,
 }
 
 impl SourceSpec {
-    /// The ID `r` names in this source, the rule set's one; else what is
-    /// wrong, to follow the reference as written.
-    pub fn id_of(&self, r: &RuleRef) -> Result<Id, String> {
-        let name = &self.name;
-        match &r.origin {
-            Origin::FirstParty if name == FIRST_PARTY => Ok(r.id),
-            Origin::Named(n) if n == name => Ok(r.id),
-            Origin::Local if matches!(self.path.trim_end_matches('/'), "." | "") => Err(format!(
-                "is a rule of this repository's `rules/`, which is source `{name}` here; write \"{}\"",
-                show(name, r.id)
-            )),
-            Origin::Local => Err(format!(
-                "is one of this repository's own rules, and reading them beside source `{name}` is not supported yet"
-            )),
-            Origin::FirstParty => Err(format!(
-                "is a first-party rule, and [sources] names no `{FIRST_PARTY}`"
-            )),
-            Origin::Named(n) => Err(format!(
-                "names source `{n}`, which [sources] does not define"
-            )),
-        }
+    /// Whether the source is the rule set's own directory, whose `rules/`
+    /// are then the source's rules rather than local ones.
+    pub fn is_here(&self) -> bool {
+        matches!(self.path.trim_end_matches('/'), "." | "")
     }
 }
 
@@ -157,11 +199,15 @@ pub struct Manifest {
     /// The name of the source the constitution comes from.
     pub constitution_source: String,
     pub edition: String,
-    pub source: SourceSpec,
+    /// Whether the repository that holds the rule set is public; the
+    /// visibility of its own rules.
+    pub public: bool,
+    /// The sources of `[sources]`, in order of name.
+    pub sources: Vec<SourceSpec>,
     /// The rules chosen directly, in the order written.
-    pub rules: Vec<Id>,
+    pub rules: Vec<Key>,
     /// The roots of the packs enabled, in the order written.
-    pub packs: Vec<Id>,
+    pub packs: Vec<Key>,
     pub agents_md: Vec<Part>,
     /// The language `compile` writes in.
     pub lang: String,
@@ -171,6 +217,7 @@ pub struct Manifest {
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct RawManifest {
     constitution: RawConstitution,
+    public: Option<bool>,
     #[serde(default)]
     rules: Vec<String>,
     #[serde(default)]
@@ -193,6 +240,7 @@ struct RawSource {
     git: Option<String>,
     tag: Option<String>,
     branch: Option<String>,
+    public: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -202,6 +250,29 @@ struct RawCompile {
     lang: Option<String>,
 }
 
+/// The key a reference of a rule set names among `sources`; else what is
+/// wrong, to follow the reference as written.
+fn key_in(sources: &[SourceSpec], r: &RuleRef) -> Result<Key, String> {
+    let named = |name: &str| sources.iter().any(|s| s.name == name);
+    match &r.origin {
+        Origin::Local => match sources.iter().find(|s| s.is_here()) {
+            Some(here) => Err(format!(
+                "is a rule of this repository's `rules/`, which is source `{}` here; write \"{}\"",
+                here.name,
+                show(&here.name, r.id)
+            )),
+            None => Ok(Key::of(r)),
+        },
+        Origin::FirstParty if !named(FIRST_PARTY) => Err(format!(
+            "is a first-party rule, and [sources] names no `{FIRST_PARTY}`"
+        )),
+        Origin::Named(n) if !named(n) => Err(format!(
+            "names source `{n}`, which [sources] does not define"
+        )),
+        _ => Ok(Key::of(r)),
+    }
+}
+
 impl Manifest {
     /// Reads `statute.toml` from its text. Every problem found is returned,
     /// each a message about the file.
@@ -209,6 +280,15 @@ impl Manifest {
         let raw: RawManifest =
             toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
+        let public = raw.public.unwrap_or_else(|| {
+            errors.push(
+                "`public` is missing; say whether the repository that holds this rule set is public, `public = true` or `public = false`"
+                    .to_owned(),
+            );
+            // Read as private, so that no error about a private source
+            // follows from the guess.
+            false
+        });
 
         let mut sources = Vec::new();
         for (name, s) in &raw.sources {
@@ -222,11 +302,34 @@ impl Manifest {
                 ));
                 continue;
             }
+            let source_public = match (name.as_str(), s.public) {
+                (FIRST_PARTY, Some(false)) => {
+                    errors.push(format!(
+                        "[sources] `{FIRST_PARTY}`: the first-party source is always public; remove `public = false`"
+                    ));
+                    continue;
+                }
+                (FIRST_PARTY, _) => true,
+                (_, Some(p)) => p,
+                (_, None) => {
+                    errors.push(format!(
+                        "[sources] `{name}`: say whether the source is public, `public = true` or `public = false`"
+                    ));
+                    continue;
+                }
+            };
+            if public && !source_public {
+                errors.push(format!(
+                    "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in statute.private.toml, next to statute.toml, which this version of statute does not read yet"
+                ));
+                continue;
+            }
             match (&s.path, &s.git) {
                 (Some(path), None) if s.tag.is_none() && s.branch.is_none() => {
                     sources.push(SourceSpec {
                         name: name.clone(),
                         path: path.clone(),
+                        public: source_public,
                     })
                 }
                 (Some(_), _) => errors.push(format!(
@@ -240,47 +343,51 @@ impl Manifest {
                 )),
             }
         }
-        let source = match (sources.len(), raw.sources.len()) {
-            (1, 1) => sources.pop(),
-            (_, 0) => {
-                errors.push(
-                    "[sources] is empty; name the source of the rules, as in `R = { path = \".\" }`"
-                        .to_owned(),
-                );
-                None
-            }
-            (_, n) if n > 1 => {
-                errors.push(format!(
-                    "[sources] names {n} sources; more than one source is not supported yet"
-                ));
-                None
-            }
-            _ => None,
-        };
-
-        if let Some(source) = &source
-            && raw.constitution.source != source.name
-        {
+        if raw.sources.is_empty() {
+            errors.push(
+                "[sources] is empty; name the source of the rules, as in `R = { path = \".\" }`"
+                    .to_owned(),
+            );
+        }
+        let sources_ok = sources.len() == raw.sources.len();
+        if sources_ok && !sources.iter().any(|s| s.name == raw.constitution.source) {
             errors.push(format!(
                 "`constitution.source = \"{}\"` is not a source named in [sources]",
                 raw.constitution.source
             ));
         }
+        let here: Vec<&str> = sources
+            .iter()
+            .filter(|s| s.is_here())
+            .map(|s| s.name.as_str())
+            .collect();
+        if here.len() > 1 {
+            errors.push(format!(
+                "[sources] {} are all at `.`; one source at most is this repository",
+                here.iter()
+                    .map(|n| format!("`{n}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ));
+        }
 
-        let mut refs = |field: &str, list: &[String]| -> Vec<Id> {
+        let mut refs = |field: &str, list: &[String]| -> Vec<Key> {
             let mut out = Vec::new();
             for entry in list {
-                let id = RuleRef::parse(entry).and_then(|r| match &source {
-                    Some(source) => source.id_of(&r).map_err(|e| format!("`{entry}` {e}")),
-                    // The sources are wrong already; that error is enough.
-                    None => Ok(r.id),
+                let key = RuleRef::parse(entry).and_then(|r| {
+                    if sources_ok {
+                        key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}"))
+                    } else {
+                        // The sources are wrong already; that error is enough.
+                        Ok(Key::of(&r))
+                    }
                 });
-                match id {
+                match key {
                     Err(e) => errors.push(format!("`{field}`: {e}")),
-                    Ok(id) if out.contains(&id) => {
+                    Ok(key) if out.contains(&key) => {
                         errors.push(format!("`{field}` lists `{entry}` twice"))
                     }
-                    Ok(id) => out.push(id),
+                    Ok(key) => out.push(key),
                 }
             }
             out
@@ -304,17 +411,45 @@ impl Manifest {
             seen.push(*part);
         }
 
-        match source {
-            Some(source) if errors.is_empty() => Ok(Manifest {
-                constitution_source: raw.constitution.source,
-                edition: raw.constitution.edition,
-                source,
-                rules,
-                packs,
-                agents_md,
-                lang,
-            }),
-            _ => Err(errors),
+        if !errors.is_empty() {
+            return Err(errors);
+        }
+        Ok(Manifest {
+            constitution_source: raw.constitution.source,
+            edition: raw.constitution.edition,
+            public,
+            sources,
+            rules,
+            packs,
+            agents_md,
+            lang,
+        })
+    }
+
+    /// The key a reference names in this rule set, written as in
+    /// `statute.toml`; else what is wrong.
+    pub fn key(&self, text: &str) -> Result<Key, String> {
+        RuleRef::parse(text)
+            .and_then(|r| key_in(&self.sources, &r).map_err(|e| format!("`{text}` {e}")))
+    }
+
+    /// The source named `name` in `[sources]`.
+    pub fn spec(&self, name: &str) -> Option<&SourceSpec> {
+        self.sources.iter().find(|s| s.name == name)
+    }
+
+    /// The source the constitution comes from.
+    pub fn constitution_spec(&self) -> &SourceSpec {
+        self.spec(&self.constitution_source)
+            .expect("Manifest::parse checks that the constitution's source is named")
+    }
+
+    /// How an entry for `key` is written in `rules` or `packs`: `R42`,
+    /// `team:7`, or the ID alone for one of the repository's own rules.
+    pub fn entry(key: &Key) -> String {
+        match key.source.as_str() {
+            LOCAL => key.id.to_string(),
+            _ => key.to_string(),
         }
     }
 }
@@ -325,6 +460,7 @@ mod tests {
 
     const GOOD: &str = r#"
 constitution = { source = "R", edition = "2026-10" }
+public = false
 rules = ["R42", "R7"]
 packs = ["R3"]
 
@@ -345,15 +481,17 @@ agents-md = ["statement", "reason"]
     fn reads_a_rule_set() {
         let m = Manifest::parse(GOOD).unwrap();
         assert_eq!(m.edition, "2026-10");
+        assert!(!m.public);
         assert_eq!(
-            m.source,
-            SourceSpec {
+            m.sources,
+            [SourceSpec {
                 name: "R".into(),
-                path: ".".into()
-            }
+                path: ".".into(),
+                public: true,
+            }]
         );
-        assert_eq!(m.rules, [42, 7]);
-        assert_eq!(m.packs, [3]);
+        assert_eq!(m.rules, [Key::new("R", 42), Key::new("R", 7)]);
+        assert_eq!(m.packs, [Key::new("R", 3)]);
         assert_eq!(m.agents_md, [Part::Statement, Part::Reason]);
     }
 
@@ -403,10 +541,26 @@ agents-md = ["statement", "reason"]
     fn references_show_with_their_prefix() {
         for text in ["R3", "L12", "team:7"] {
             assert_eq!(RuleRef::parse(text).unwrap().to_string(), text);
+            assert_eq!(Key::of(&RuleRef::parse(text).unwrap()).to_string(), text);
         }
         assert_eq!(RuleRef::parse("local:12").unwrap().to_string(), "L12");
         assert_eq!(show("R", 3), "R3");
         assert_eq!(show("team", 7), "team:7");
+        assert_eq!(show("L", 12), "L12");
+    }
+
+    #[test]
+    fn keys_order_the_first_party_source_first_and_the_local_rules_last() {
+        let mut keys = [
+            Key::new("L", 1),
+            Key::new("team", 2),
+            Key::new("R", 9),
+            Key::new("me", 5),
+            Key::new("R", 3),
+        ];
+        keys.sort();
+        let shown: Vec<String> = keys.iter().map(Key::to_string).collect();
+        assert_eq!(shown, ["R3", "R9", "me:5", "team:2", "L1"]);
     }
 
     #[test]
@@ -420,12 +574,12 @@ agents-md = ["statement", "reason"]
                 ),
             );
         }
-        // Elsewhere, they are a second source.
-        fails_with(
-            &elsewhere().replace("\"R7\"", "\"12\""),
-            "`12` is one of this repository's own rules, and reading them beside source `R` is not supported yet",
-        );
-        assert_eq!(Manifest::parse(&elsewhere()).unwrap().rules, [42, 7]);
+        // Elsewhere, they are the repository's own rules, `L`.
+        for local in ["12", "L12", "local:12"] {
+            let m =
+                Manifest::parse(&elsewhere().replace("\"R7\"", &format!("\"{local}\""))).unwrap();
+            assert_eq!(m.rules, [Key::new("R", 42), Key::new("L", 12)]);
+        }
     }
 
     #[test]
@@ -460,10 +614,11 @@ agents-md = ["statement", "reason"]
             &GOOD
                 .replace("R = {", "team = {")
                 .replace("source = \"R\"", "source = \"team\"")
-                .replace("\"R", "\"team:"),
+                .replace("\"R", "\"team:")
+                .replace("path = \".\" }", "path = \".\", public = false }"),
         )
         .unwrap();
-        assert_eq!(m.rules, [42, 7]);
+        assert_eq!(m.rules, [Key::new("team", 42), Key::new("team", 7)]);
     }
 
     #[test]
@@ -478,13 +633,82 @@ agents-md = ["statement", "reason"]
     }
 
     #[test]
-    fn one_source_only() {
+    fn several_sources() {
+        let m = Manifest::parse(&GOOD.replace(
+            "R = { path = \".\" }",
+            "R = { path = \".\" }\nteam = { path = \"../team\", public = true }\nme = { path = \"../me\", public = false }",
+        ).replace("\"R7\"", "\"team:7\", \"me:4\""))
+        .unwrap();
+        let names: Vec<(&str, bool)> = m
+            .sources
+            .iter()
+            .map(|s| (s.name.as_str(), s.public))
+            .collect();
+        assert_eq!(names, [("R", true), ("me", false), ("team", true)]);
+        assert_eq!(
+            m.rules,
+            [Key::new("R", 42), Key::new("team", 7), Key::new("me", 4)]
+        );
+        // Two sources cannot both be this repository.
         fails_with(
             &GOOD.replace(
                 "R = { path = \".\" }",
-                "R = { path = \".\" }\nteam = { path = \"../team\" }",
+                "R = { path = \".\" }\nteam = { path = \"./\", public = true }",
             ),
-            "more than one source is not supported yet",
+            "[sources] `R`, `team` are all at `.`",
+        );
+    }
+
+    #[test]
+    fn public_is_declared() {
+        fails_with(
+            &GOOD.replace("public = false\n", ""),
+            "`public` is missing; say whether the repository that holds this rule set is public",
+        );
+        assert!(
+            Manifest::parse(&GOOD.replace("public = false", "public = true"))
+                .unwrap()
+                .public
+        );
+        // On every source but `R`, which is always public.
+        let with = |team: &str| {
+            GOOD.replace(
+                "R = { path = \".\" }",
+                &format!("R = {{ path = \".\" }}\nteam = {{ path = \"../team\"{team} }}"),
+            )
+        };
+        fails_with(
+            &with(""),
+            "[sources] `team`: say whether the source is public, `public = true` or `public = false`",
+        );
+        assert!(Manifest::parse(&with(", public = true")).is_ok());
+        fails_with(
+            &GOOD.replace(
+                "R = { path = \".\" }",
+                "R = { path = \".\", public = false }",
+            ),
+            "[sources] `R`: the first-party source is always public; remove `public = false`",
+        );
+        assert!(
+            Manifest::parse(&GOOD.replace(
+                "R = { path = \".\" }",
+                "R = { path = \".\", public = true }"
+            ))
+            .is_ok()
+        );
+    }
+
+    #[test]
+    fn a_public_rule_set_names_no_private_source() {
+        let text = GOOD.replace(
+            "R = { path = \".\" }",
+            "R = { path = \".\" }\nme = { path = \"../me\", public = false }",
+        );
+        // A private repository may name it.
+        assert!(Manifest::parse(&text).is_ok());
+        fails_with(
+            &text.replace("public = false\n", "public = true\n"),
+            "[sources] `me` is private, and this rule set is of a public repository",
         );
     }
 

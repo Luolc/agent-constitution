@@ -487,23 +487,19 @@ fn references_must_exist_and_have_the_right_kind() {
 }
 
 #[test]
-fn references_to_other_sources_are_not_supported_yet() {
-    assert_error(
-        &load(&[domain(1), rule(3, 1, "requires = [\"team:7\"]")]),
-        "3.toml",
-        "\"team:7\", a rule of another source; references to other sources are not supported yet",
-    );
+fn references_to_other_sources_are_left_to_the_rule_set() {
+    // A source read alone cannot tell whether `team:7` exists; the rule
+    // set that names `team` does (`Sources::check`).
+    for r in ["\"team:7\"", "\"R7\""] {
+        let diags = load(&[domain(1), rule(3, 1, &format!("requires = [{r}]"))]);
+        assert!(diags.0.is_empty(), "{r}: {:#?}", diags.0);
+    }
     assert_error(
         &load(&[domain(1), rule(3, 1, "requires = [\"team-7\"]")]),
         "3.toml",
         "is not a reference",
     );
     // A first-party rule is `R7`; the former `ac:7` is no reference.
-    assert_error(
-        &load(&[domain(1), rule(3, 1, "requires = [\"R7\"]")]),
-        "3.toml",
-        "\"R7\", a rule of another source; references to other sources are not supported yet; in a rule of the first-party source itself, write the number, 7",
-    );
     assert_error(
         &load(&[domain(1), rule(3, 1, "requires = [\"ac:7\"]")]),
         "3.toml",

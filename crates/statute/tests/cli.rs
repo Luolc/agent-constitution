@@ -11,7 +11,7 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
 fn manifest(rules: &str) -> String {
     format!(
-        "# The rules of this repository.\nconstitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [{rules}]  # chosen directly\n\n[sources]\nR = {{ path = \".\" }}\n"
+        "# The rules of this repository.\nconstitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\nrules = [{rules}]  # chosen directly\n\n[sources]\nR = {{ path = \".\" }}\n"
     )
 }
 
@@ -649,7 +649,7 @@ fn bare_repo(name: &str) -> PathBuf {
 #[test]
 fn init_writes_a_rule_set_that_locks() {
     let dir = bare_repo("init");
-    let run = statute(&dir, &["init"]);
+    let run = statute(&dir, &["init", "--public"]);
     ok(&run);
     assert_eq!(
         run.stdout,
@@ -657,13 +657,25 @@ fn init_writes_a_rule_set_that_locks() {
     );
     assert_eq!(
         read(&dir, "statute.toml"),
-        "# Written by `statute init`; `statute add` and `statute remove` change the rules.\nconstitution = { source = \"R\", edition = \"2026-10\" }\nrules = []\n\n[sources]\nR = { path = \".\" }\n"
+        "# Written by `statute init`; `statute add` and `statute remove` change the rules.\nconstitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nrules = []\n\n[sources]\nR = { path = \".\" }\n"
     );
     let run = statute(&dir, &["lock"]);
     ok(&run);
     assert_eq!(run.stdout, "wrote statute.lock: 0 rules enabled\n");
     ok(&statute(&dir, &["add", "R3"]));
     assert!(read(&dir, "statute.lock").contains("rule = \"R3\"\n"));
+}
+
+#[test]
+fn init_needs_to_be_told_whether_the_repository_is_public() {
+    let dir = bare_repo("init-public");
+    for args in [&["init"][..], &["init", "--public", "--private"]] {
+        let run = statute(&dir, args);
+        assert_eq!(run.code, 2, "{}", run.stderr);
+        assert!(!dir.join("statute.toml").exists());
+    }
+    ok(&statute(&dir, &["init", "--private"]));
+    assert!(read(&dir, "statute.toml").contains("\npublic = false\n"));
 }
 
 #[test]
@@ -674,7 +686,7 @@ fn init_leaves_an_existing_rule_set_as_it_is() {
     ] {
         let dir = repo(name, &text, &nodes());
         let before = std::fs::read(dir.join("statute.toml")).unwrap();
-        let run = statute(&dir, &["init"]);
+        let run = statute(&dir, &["init", "--private"]);
         assert_eq!(run.code, 1, "{}", run.stdout);
         assert!(
             run.stderr
@@ -695,7 +707,10 @@ fn init_with_a_source_elsewhere() {
         .join("init-elsewhere");
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
-    ok(&statute(&dir, &["init", "--source", "../init-source"]));
+    ok(&statute(
+        &dir,
+        &["init", "--private", "--source", "../init-source"],
+    ));
     assert!(
         read(&dir, "statute.toml").contains("R = { path = \"../init-source\" }\n"),
         "{}",
@@ -717,7 +732,7 @@ fn init_picks_the_edition() {
     .unwrap();
     // A directory without an index.toml is not an edition.
     std::fs::create_dir_all(dir.join("constitution/notes")).unwrap();
-    let run = statute(&dir, &["init"]);
+    let run = statute(&dir, &["init", "--private"]);
     assert_eq!(run.code, 1);
     assert!(
         run.stderr.contains(
@@ -727,7 +742,10 @@ fn init_picks_the_edition() {
         run.stderr
     );
     assert!(!dir.join("statute.toml").exists());
-    ok(&statute(&dir, &["init", "--edition", "2027-04"]));
+    ok(&statute(
+        &dir,
+        &["init", "--private", "--edition", "2027-04"],
+    ));
     assert!(read(&dir, "statute.toml").contains("edition = \"2027-04\""));
 }
 
@@ -741,7 +759,7 @@ fn init_reports_an_edition_it_cannot_read() {
     std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000)).unwrap();
     let blocked = std::fs::metadata(locked.join("index.toml"))
         .is_err_and(|e| e.kind() == std::io::ErrorKind::PermissionDenied);
-    let run = statute(&dir, &["init"]);
+    let run = statute(&dir, &["init", "--private"]);
     std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755)).unwrap();
     // Run as root, the permission does not block, and there is nothing to
     // report.
@@ -761,7 +779,7 @@ fn init_reports_an_edition_it_cannot_read() {
 #[test]
 fn init_writes_nothing_when_the_rule_set_would_not_resolve() {
     let dir = bare_repo("init-unknown-edition");
-    let run = statute(&dir, &["init", "--edition", "2030-01"]);
+    let run = statute(&dir, &["init", "--private", "--edition", "2030-01"]);
     assert_eq!(run.code, 1);
     assert!(
         run.stderr
@@ -772,7 +790,7 @@ fn init_writes_nothing_when_the_rule_set_would_not_resolve() {
     assert!(run.stderr.contains("statute: statute.toml is not written"));
     assert!(!dir.join("statute.toml").exists());
     std::fs::remove_dir_all(dir.join("constitution/2026-10")).unwrap();
-    let run = statute(&dir, &["init"]);
+    let run = statute(&dir, &["init", "--private"]);
     assert_eq!(run.code, 1);
     assert!(
         run.stderr.contains("holds no edition of the constitution"),

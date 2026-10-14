@@ -11,10 +11,11 @@ use serde::Serialize;
 
 use crate::cite::{self, Citation, Labels};
 use crate::lock;
-use crate::manifest::Part;
-use crate::node::{Check, Id, Kind, Node, Ref, Text, file_name};
+use crate::manifest::{Key, Part};
+use crate::node::{self, Check, Kind, Node, Text};
 use crate::project::Project;
 use crate::skill;
+use crate::source::describe;
 
 pub const FILE: &str = "AGENTS.md";
 
@@ -109,36 +110,53 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
 /// declaration cannot be read or names a rule that is not there.
 pub fn compile(project: &Project) -> Result<Output, String> {
     let agents_md = agents_md(project)?;
-    let m = &project.manifest;
-    let mut skills = Vec::new();
-    for s in skill::load(&project.root.join(&m.source.path), &m.source.path)? {
-        if let Some(id) = s.rules.iter().find(|&&id| project.source.get(id).is_none()) {
-            return Err(format!(
-                "{}: `metadata.{}` names rule {id}, which is not in source `{}`",
-                crate::project::shown(&m.source.path, &format!("skills/{}/SKILL.md", s.name)),
-                skill::KEY,
-                m.source.name
-            ));
-        }
-        if s.rules
-            .iter()
-            .any(|id| project.resolution.enabled.contains_key(id))
-        {
+    let mut skills: Vec<(String, PathBuf)> = Vec::new();
+    let mut from: Vec<&str> = Vec::new();
+    for source in project.sources.iter() {
+        for s in skill::load(&project.root.join(&source.path), &source.path)? {
+            let file = crate::project::shown(&source.path, &format!("skills/{}/SKILL.md", s.name));
+            if let Some(id) = s.rules.iter().find(|&&id| source.get(id).is_none()) {
+                return Err(format!(
+                    "{file}: `metadata.{}` names rule {id}, which is not in {}",
+                    skill::KEY,
+                    source.described()
+                ));
+            }
+            if !s.rules.iter().any(|&id| {
+                project
+                    .resolution
+                    .enabled
+                    .contains_key(&Key::new(&source.name, id))
+            }) {
+                continue;
+            }
+            if let Some(i) = skills.iter().position(|(name, _)| *name == s.name) {
+                return Err(format!(
+                    "{file}: skill `{}` of {} has the name of one of {}, and both are needed; one of the sources has to rename its skill",
+                    s.name,
+                    source.described(),
+                    crate::source::describe(from[i])
+                ));
+            }
             skills.push((s.name, s.dir));
+            from.push(&source.name);
         }
     }
+    skills.sort();
     let commands = project
         .resolution
         .enabled
         .keys()
-        .filter_map(|&id| match &project.source.get(id)?.rule.as_ref()?.check {
-            Check::Command { run, tools } => Some(Command {
-                rule: project.source.show(id),
-                run,
-                tools,
-            }),
-            _ => None,
-        })
+        .filter_map(
+            |key| match &project.sources.get(key)?.rule.as_ref()?.check {
+                Check::Command { run, tools } => Some(Command {
+                    rule: key.to_string(),
+                    run,
+                    tools,
+                }),
+                _ => None,
+            },
+        )
         .collect();
     let checks = toml::to_string(&Checks {
         statute: env!("CARGO_PKG_VERSION"),
@@ -350,30 +368,26 @@ fn agents_md(project: &Project) -> Result<String, String> {
     }
 
     let m = &project.manifest;
+    let spec = m.constitution_spec();
     let lang = m.lang.as_str();
     let relative = format!(
         "constitution/{}/generated/constitution.{lang}.agent.md",
         m.edition
     );
-    let constitution = std::fs::read_to_string(project.root.join(&m.source.path).join(&relative))
+    let constitution = std::fs::read_to_string(project.root.join(&spec.path).join(&relative))
         .map_err(|e| {
-        format!(
-            "cannot read {relative} of source `{}`: {e}; `uv run constitution-build` writes it",
-            m.source.name
-        )
-    })?;
+            format!(
+                "cannot read {relative} of source `{}`: {e}; `uv run constitution-build` writes it",
+                spec.name
+            )
+        })?;
 
     let labels = labels(project)?;
 
     let w = words(lang);
     let mut out = String::new();
     let _ = writeln!(out, "{GENERATED}\n");
-    let (edition, revision, name, path) = (
-        &m.edition,
-        &project.revision,
-        &m.source.name,
-        &m.source.path,
-    );
+    let (edition, revision, name, path) = (&m.edition, &project.revision, &spec.name, &spec.path);
     let _ = match lang {
         "zh" => writeln!(
             out,
@@ -388,31 +402,37 @@ fn agents_md(project: &Project) -> Result<String, String> {
     out.push_str("\n\n");
     let _ = writeln!(out, "# {}", w.rules);
 
-    let source = &project.source;
-    let mut domains: Vec<&Node> = source
-        .nodes
-        .values()
-        .filter(|n| n.kind == Kind::Domain)
+    // The domains of the first-party source, then those of the other
+    // sources by name, then those of the repository's own rules.
+    let domains: Vec<Key> = project
+        .sources
+        .nodes()
+        .filter(|(_, n)| n.kind == Kind::Domain)
+        .map(|(key, _)| key)
         .collect();
-    domains.sort_by_key(|n| n.id);
-    for domain in domains {
+    for domain in &domains {
         render(project, &w, &labels, domain, 2, &mut out)?;
     }
     Ok(out)
 }
 
 /// The anchor of a node's heading, its reference with any colon made a
-/// hyphen: `rule-R42`, `rule-team-7`.
-fn anchor(project: &Project, id: Id) -> String {
-    format!("rule-{}", project.source.show(id).replace(':', "-"))
+/// hyphen: `rule-R42`, `rule-L12`, `rule-team-7`.
+fn anchor(key: &Key) -> String {
+    format!("rule-{}", key.to_string().replace(':', "-"))
 }
 
 /// Whether a node appears: a rule when enabled, a one-of or a domain when
 /// something below it does.
-fn shown(project: &Project, node: &Node) -> bool {
-    match node.kind {
-        Kind::Rule => project.resolution.enabled.contains_key(&node.id),
-        Kind::OneOf | Kind::Domain => project.source.children(node.id).any(|c| shown(project, c)),
+fn shown(project: &Project, key: &Key) -> bool {
+    match project.sources.get(key).map(|n| n.kind) {
+        Some(Kind::Rule) => project.resolution.enabled.contains_key(key),
+        Some(Kind::OneOf | Kind::Domain) => project
+            .sources
+            .children(key)
+            .iter()
+            .any(|c| shown(project, c)),
+        None => false,
     }
 }
 
@@ -422,49 +442,46 @@ pub fn labels(project: &Project) -> Result<Labels, String> {
     let m = &project.manifest;
     let articles = project
         .root
-        .join(&m.source.path)
+        .join(&m.constitution_spec().path)
         .join(format!("constitution/{}/articles", m.edition));
     Labels::load(&articles, &m.lang)
 }
 
-/// A rule's text with its citations rendered: a rule as its title, with
-/// `links` a link when it is in the file, else followed by its reference;
-/// a provision as its label, in plain text, as in the constitution's
-/// version for agents.
+/// The text of node `key` with its citations rendered: a rule as its
+/// title, with `links` a link when it is in the file, else followed by
+/// its reference; a provision as its label, in plain text, as in the
+/// constitution's version for agents.
 pub fn cited(
     project: &Project,
     labels: &Labels,
-    node: &Node,
+    key: &Key,
     part: &str,
     text: &str,
     links: bool,
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
     let w = words(lang);
-    let fail = |what: &str| {
-        Err(format!(
-            "{}: {part}: {what}",
-            Path::new("rules").join(file_name(node.id)).display()
-        ))
-    };
+    let fail = |what: &str| Err(format!("{}: {part}: {what}", project.sources.file(key)));
     cite::replace(text, |c| match c {
-        Citation::Rule(id) => match id.parse().ok().and_then(|id| project.source.get(id)) {
-            Some(n) if links && shown(project, n) => Ok(format!(
-                "[{}](#{})",
-                pick(&n.title, n, lang),
-                anchor(project, n.id)
-            )),
-            Some(n) => Ok(format!(
-                "{} ({} {})",
-                pick(&n.title, n, lang),
-                w.rule,
-                project.source.show(n.id)
-            )),
-            None => fail(&format!(
-                "cites `{{@rule:{id}}}`, which is not in source `{}`",
-                project.manifest.source.name
-            )),
-        },
+        Citation::Rule(text) => {
+            let Some(cited) = node::cited_ref(text).map(|r| r.key(&key.source)) else {
+                return fail(&format!(
+                    "cites `{{@rule:{text}}}`, which is not a reference"
+                ));
+            };
+            match project.sources.get(&cited) {
+                Some(n) if links && shown(project, &cited) => Ok(format!(
+                    "[{}](#{})",
+                    pick(&n.title, n, lang),
+                    anchor(&cited)
+                )),
+                Some(n) => Ok(format!("{} ({} {cited})", pick(&n.title, n, lang), w.rule)),
+                None => fail(&format!(
+                    "cites `{{@rule:{text}}}`, which is not in {}",
+                    describe(&cited.source)
+                )),
+            }
+        }
         Citation::Constitution(id) => match labels.get(id) {
             Some(label) => Ok(label.to_string()),
             None => fail(&format!(
@@ -482,25 +499,27 @@ fn render(
     project: &Project,
     w: &Words,
     labels: &Labels,
-    node: &Node,
+    key: &Key,
     level: usize,
     out: &mut String,
 ) -> Result<(), String> {
-    if !shown(project, node) {
+    let Some(node) = project.sources.get(key) else {
+        return Ok(());
+    };
+    if !shown(project, key) {
         return Ok(());
     }
     let lang = project.manifest.lang.as_str();
-    let _ = writeln!(out, "\n<a id=\"{}\"></a>", anchor(project, node.id));
+    let _ = writeln!(out, "\n<a id=\"{}\"></a>", anchor(key));
     let _ = writeln!(
         out,
-        "{} {} ({})",
+        "{} {} ({key})",
         "#".repeat(level.min(DEEPEST)),
         pick(&node.title, node, lang),
-        project.source.show(node.id)
     );
     if let Some(applicability) = &node.applicability {
         let text = pick(applicability, node, lang);
-        let text = cited(project, labels, node, "applicability", text, true)?;
+        let text = cited(project, labels, key, "applicability", text, true)?;
         let _ = writeln!(out, "\n{text}");
     }
     if let Some(rule) = &node.rule {
@@ -510,32 +529,34 @@ fn render(
                 Part::Reason => ("reason", w.reason, &rule.reason),
                 Part::Verification => ("verification", w.verification, &rule.verification),
             };
-            let text = cited(project, labels, node, name, pick(text, node, lang), true)?;
+            let text = cited(project, labels, key, name, pick(text, node, lang), true)?;
             if label.is_empty() {
                 let _ = writeln!(out, "\n{text}");
             } else {
                 let _ = writeln!(out, "\n{label}{text}");
             }
         }
-        let crossing: Vec<String> = rule
-            .requires
-            .iter()
-            .filter_map(|r| match r {
-                Ref::Local(id) => Some(*id),
-                Ref::Foreign { .. } => None,
+        let root = project.sources.root(key);
+        let crossing: Vec<String> = project
+            .sources
+            .requires(key)
+            .into_iter()
+            .filter(|target| project.sources.root(target) != root)
+            .filter_map(|target| {
+                let n = project.sources.get(&target)?;
+                Some(format!(
+                    "[{}](#{})",
+                    pick(&n.title, n, lang),
+                    anchor(&target)
+                ))
             })
-            .filter(|&id| project.source.root(id) != project.source.root(node.id))
-            .filter_map(|id: Id| project.source.get(id))
-            .map(|n| format!("[{}](#{})", pick(&n.title, n, lang), anchor(project, n.id)))
             .collect();
         if !crossing.is_empty() {
             let _ = writeln!(out, "\n{}{}", w.requires, crossing.join(", "));
         }
     }
-    let mut children: Vec<&Node> = project.source.children(node.id).collect();
-    children.sort_by_key(|n| n.id);
-    for child in children {
-        render(project, w, labels, child, level + 1, out)?;
+    for child in project.sources.children(key) {
+        render(project, w, labels, &child, level + 1, out)?;
     }
     Ok(())
 }

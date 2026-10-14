@@ -5,40 +5,40 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::diag::Diagnostics;
-use crate::manifest::{self, Manifest};
-use crate::node::{Id, Kind, Node, Ref, Status};
-use crate::source::Source;
+use crate::manifest::{self, Key, Manifest};
+use crate::node::{Kind, Node, Status};
+use crate::source::{Sources, describe};
 
 /// Why a rule is enabled. A rule may have several reasons.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Reason {
     /// Listed in `rules`.
     Direct,
     /// Inside the pack with this root.
-    Pack(Id),
+    Pack(Key),
     /// The parent, or the rule above a one-of, of this enabled rule.
-    ParentOf(Id),
+    ParentOf(Key),
     /// Listed under `requires` of this enabled rule.
-    RequiredBy(Id),
+    RequiredBy(Key),
 }
 
 #[derive(Debug, Default)]
 pub struct Resolution {
-    /// Every enabled rule, by ID, with the reasons it is enabled.
-    pub enabled: BTreeMap<Id, BTreeSet<Reason>>,
+    /// Every enabled rule, by key, with the reasons it is enabled.
+    pub enabled: BTreeMap<Key, BTreeSet<Reason>>,
 }
 
 /// The rule a node's parent requirement lands on: the parent when it is a
 /// rule, through any one-of to the rule above it, and nothing when the
 /// chain ends at a domain.
-pub fn parent_rule(source: &Source, node: &Node) -> Option<Id> {
-    let mut parent = source.get(node.parent?)?;
+pub fn parent_rule(sources: &Sources, key: &Key) -> Option<Key> {
+    let mut parent = sources.parent(key)?;
     let mut steps = 0;
-    while parent.kind == Kind::OneOf && steps <= source.nodes.len() {
-        parent = source.get(parent.parent?)?;
+    while sources.get(&parent)?.kind == Kind::OneOf && steps <= sources.nodes().count() {
+        parent = sources.parent(&parent)?;
         steps += 1;
     }
-    (parent.kind == Kind::Rule).then_some(parent.id)
+    (sources.get(&parent)?.kind == Kind::Rule).then_some(parent)
 }
 
 fn title(node: &Node) -> &str {
@@ -46,190 +46,195 @@ fn title(node: &Node) -> &str {
 }
 
 /// `R42 (Sync from the lock file first in CI)`.
-pub fn label(source: &Source, id: Id) -> String {
-    match source.get(id) {
-        Some(n) => format!("{} ({})", source.show(id), title(n)),
-        None => source.show(id),
+pub fn label(sources: &Sources, key: &Key) -> String {
+    match sources.get(key) {
+        Some(n) => format!("{key} ({})", title(n)),
+        None => key.to_string(),
     }
 }
 
-/// The labels of `ids`, joined by commas.
-pub fn labels(source: &Source, ids: &[Id]) -> String {
-    ids.iter()
-        .map(|id| label(source, *id))
+/// The labels of `keys`, joined by commas.
+pub fn labels(sources: &Sources, keys: &[Key]) -> String {
+    keys.iter()
+        .map(|k| label(sources, k))
         .collect::<Vec<_>>()
         .join(", ")
 }
 
-/// `ids` as references of `source`, joined by commas.
-pub fn refs(source: &Source, ids: &[Id]) -> String {
-    ids.iter()
-        .map(|id| source.show(*id))
+/// `keys` as references, joined by commas.
+pub fn refs(keys: &[Key]) -> String {
+    keys.iter()
+        .map(Key::to_string)
         .collect::<Vec<_>>()
         .join(", ")
 }
 
-/// Resolves `manifest` against `source`, which has passed its own checks,
-/// for the constitution `revision`. Problems go to `diags`, against
-/// `statute.toml`.
+/// The rules a superseded or repealed node of `key`'s source names in
+/// `superseded-by`, as keys.
+pub fn successors(key: &Key, node: &Node) -> Vec<Key> {
+    node.superseded_by
+        .iter()
+        .map(|id| Key::new(&key.source, *id))
+        .collect()
+}
+
+/// Resolves `manifest` against `sources`, which have passed their own
+/// checks, for the constitution `revision`. Problems go to `diags`,
+/// against `statute.toml`.
 pub fn resolve(
-    source: &Source,
+    sources: &Sources,
     manifest: &Manifest,
     revision: u64,
     diags: &mut Diagnostics,
 ) -> Resolution {
     let file = manifest::FILE;
     let mut res = Resolution::default();
-    let name = &manifest.source.name;
-    let show = |id: Id| source.show(id);
 
-    for &id in &manifest.rules {
-        let Some(node) = source.get(id) else {
+    for key in &manifest.rules {
+        let Some(node) = sources.get(key) else {
             diags.error(
                 file,
                 format!(
-                    "`rules` names {}, which does not exist in source `{name}`",
-                    show(id)
+                    "`rules` names {key}, which does not exist in {}",
+                    describe(&key.source)
                 ),
             );
             continue;
         };
         match node.kind {
             Kind::Rule => {
-                res.enabled.entry(id).or_default().insert(Reason::Direct);
+                res.enabled.entry(key.clone()).or_default().insert(Reason::Direct);
             }
             Kind::Domain => diags.error(
                 file,
-                format!("`rules` names domain {}, which cannot be enabled on its own; to enable every rule under it, move it to `packs`", label(source, id)),
+                format!("`rules` names domain {}, which cannot be enabled on its own; to enable every rule under it, move it to `packs`", label(sources, key)),
             ),
             Kind::OneOf => diags.error(
                 file,
                 format!(
                     "`rules` names one-of {}; a one-of is enabled by choosing one of its children: {}",
-                    label(source, id),
-                    children_list(source, id)
+                    label(sources, key),
+                    children_list(sources, key)
                 ),
             ),
         }
     }
 
-    for &root in &manifest.packs {
-        if source.get(root).is_none() {
+    for root in &manifest.packs {
+        let Some(node) = sources.get(root) else {
             diags.error(
                 file,
                 format!(
-                    "`packs` names {}, which does not exist in source `{name}`",
-                    show(root)
+                    "`packs` names {root}, which does not exist in {}",
+                    describe(&root.source)
                 ),
             );
             continue;
-        }
-        if let Some(node) = source.get(root)
-            && matches!(node.status, Status::Superseded | Status::Repealed)
-        {
-            let what = match node.superseded_by.as_slice() {
+        };
+        if matches!(node.status, Status::Superseded | Status::Repealed) {
+            let next = successors(root, node);
+            let what = match next.as_slice() {
                 [] => "repealed; take it out of `packs`".to_owned(),
                 [next] => format!(
-                    "superseded by {}; replace {} with {} in `packs` (`statute upgrade --replace-superseded` does it)",
-                    label(source, *next),
-                    show(root),
-                    show(*next)
+                    "superseded by {}; replace {root} with {next} in `packs` (`statute upgrade --replace-superseded` does it)",
+                    label(sources, next),
                 ),
                 many => format!(
-                    "superseded by {}; replace {} in `packs` with those of {} that apply",
-                    labels(source, many),
-                    show(root),
-                    refs(source, many)
+                    "superseded by {}; replace {root} in `packs` with those of {} that apply",
+                    labels(sources, many),
+                    refs(many)
                 ),
             };
             diags.warning(
                 file,
                 format!(
                     "pack {} enables nothing: its root is {what}",
-                    label(source, root)
+                    label(sources, root)
                 ),
             );
             continue;
         }
-        let mut stack = vec![root];
-        while let Some(id) = stack.pop() {
-            let Some(node) = source.get(id) else { continue };
+        let mut stack = vec![root.clone()];
+        while let Some(key) = stack.pop() {
+            let Some(node) = sources.get(&key) else {
+                continue;
+            };
             if matches!(node.status, Status::Superseded | Status::Repealed) {
                 continue;
             }
             if node.kind == Kind::Rule {
                 res.enabled
-                    .entry(id)
+                    .entry(key.clone())
                     .or_default()
-                    .insert(Reason::Pack(root));
+                    .insert(Reason::Pack(root.clone()));
             }
             // Into a one-of, only through the child the rule set chose.
             stack.extend(
-                source
-                    .children(id)
-                    .filter(|c| node.kind != Kind::OneOf || manifest.rules.contains(&c.id))
-                    .map(|c| c.id),
+                sources
+                    .children(&key)
+                    .into_iter()
+                    .filter(|c| node.kind != Kind::OneOf || manifest.rules.contains(c)),
             );
         }
     }
 
     // Add what the enabled rules require, until nothing more is added.
-    let mut one_of_requirements: Vec<(Id, Id)> = Vec::new();
-    let mut queue: Vec<Id> = res.enabled.keys().copied().collect();
+    let mut one_of_requirements: Vec<(Key, Key)> = Vec::new();
+    let mut queue: Vec<Key> = res.enabled.keys().cloned().collect();
     let mut done = BTreeSet::new();
-    while let Some(id) = queue.pop() {
-        if !done.insert(id) {
+    while let Some(key) = queue.pop() {
+        if !done.insert(key.clone()) {
             continue;
         }
-        let Some(node) = source.get(id) else { continue };
-        let mut add = |target: Id, reason: Reason, queue: &mut Vec<Id>| {
-            res.enabled.entry(target).or_default().insert(reason);
+        let mut add = |target: Key, reason: Reason, queue: &mut Vec<Key>| {
+            res.enabled
+                .entry(target.clone())
+                .or_default()
+                .insert(reason);
             queue.push(target);
         };
-        if let Some(parent) = parent_rule(source, node) {
-            add(parent, Reason::ParentOf(id), &mut queue);
+        if let Some(parent) = parent_rule(sources, &key) {
+            add(parent, Reason::ParentOf(key.clone()), &mut queue);
         }
-        let Some(rule) = &node.rule else { continue };
-        for r in &rule.requires {
-            let Ref::Local(target) = *r else { continue };
-            match source.get(target).map(|n| n.kind) {
-                Some(Kind::Rule) => add(target, Reason::RequiredBy(id), &mut queue),
-                Some(Kind::OneOf) => one_of_requirements.push((id, target)),
+        for target in sources.requires(&key) {
+            match sources.get(&target).map(|n| n.kind) {
+                Some(Kind::Rule) => add(target, Reason::RequiredBy(key.clone()), &mut queue),
+                Some(Kind::OneOf) => one_of_requirements.push((key.clone(), target)),
                 _ => {}
             }
         }
     }
 
     for (rule, one_of) in one_of_requirements {
-        if !is_enabled(source, &res, one_of) {
+        if !is_enabled(sources, &res, &one_of) {
             diags.error(
                 file,
                 format!(
                     "rule {} requires one-of {}, and the rule set enables none of its children; add one of them to `rules`: {}",
-                    label(source, rule),
-                    label(source, one_of),
-                    children_list(source, one_of)
+                    label(sources, &rule),
+                    label(sources, &one_of),
+                    children_list(sources, &one_of)
                 ),
             );
         }
     }
 
-    for one_of in source.nodes.values().filter(|n| n.kind == Kind::OneOf) {
-        let chosen: Vec<Id> = source
-            .children(one_of.id)
-            .filter(|c| is_enabled(source, &res, c.id))
-            .map(|c| c.id)
+    for (one_of, _) in sources.nodes().filter(|(_, n)| n.kind == Kind::OneOf) {
+        let chosen: Vec<Key> = sources
+            .children(&one_of)
+            .into_iter()
+            .filter(|c| is_enabled(sources, &res, c))
             .collect();
         if chosen.len() > 1 {
             let list: Vec<String> = chosen
                 .iter()
-                .map(|&c| format!("{} ({})", label(source, c), how(source, &res, c)))
+                .map(|c| format!("{} ({})", label(sources, c), how(&res, c)))
                 .collect();
             diags.error(
                 file,
                 format!(
                     "at most one child of one-of {} may be enabled, and the rule set enables {}: {}; keep one",
-                    label(source, one_of.id),
+                    label(sources, &one_of),
                     chosen.len(),
                     list.join(", ")
                 ),
@@ -238,24 +243,28 @@ pub fn resolve(
     }
 
     let mut conflicting = BTreeSet::new();
-    for &id in res.enabled.keys() {
-        let Some(rule) = source.get(id).and_then(|n| n.rule.as_ref()) else {
+    for key in res.enabled.keys() {
+        let Some(rule) = sources.get(key).and_then(|n| n.rule.as_ref()) else {
             continue;
         };
-        for r in &rule.conflicts {
-            let Ref::Local(other) = *r else { continue };
-            if res.enabled.contains_key(&other)
-                && conflicting.insert((id.min(other), id.max(other)))
-            {
+        for other in sources.conflicts(key) {
+            if res.enabled.contains_key(&other) {
+                let pair = if *key < other {
+                    (key.clone(), other.clone())
+                } else {
+                    (other.clone(), key.clone())
+                };
+                if !conflicting.insert(pair) {
+                    continue;
+                }
                 // Two rules of one pack cannot be taken out one at a time.
-                let shared_pack = res.enabled[&id].iter().find_map(|r| match r {
-                    Reason::Pack(p) if res.enabled[&other].contains(r) => Some(*p),
+                let shared_pack = res.enabled[key].iter().find_map(|r| match r {
+                    Reason::Pack(p) if res.enabled[&other].contains(r) => Some(p.clone()),
                     _ => None,
                 });
                 let advice = match shared_pack {
                     Some(p) => format!(
-                        "both are in pack {}, so in place of the pack, list in `rules` the rules of it you want",
-                        show(p)
+                        "both are in pack {p}, so in place of the pack, list in `rules` the rules of it you want"
                     ),
                     None => "take one of them out of the rule set, or the rule that brings it in"
                         .to_owned(),
@@ -263,12 +272,11 @@ pub fn resolve(
                 diags.error(
                     file,
                     format!(
-                        "rules {} ({}) and {} ({}) conflict ({} says so); {advice}",
-                        label(source, id),
-                        how(source, &res, id),
-                        label(source, other),
-                        how(source, &res, other),
-                        show(id)
+                        "rules {} ({}) and {} ({}) conflict ({key} says so); {advice}",
+                        label(sources, key),
+                        how(&res, key),
+                        label(sources, &other),
+                        how(&res, &other),
                     ),
                 );
             }
@@ -278,46 +286,43 @@ pub fn resolve(
                 file,
                 format!(
                     "rule {} is compatible with constitution revisions `{}`, and the rule set rests on revision {revision}; take the rule out or move to a revision it accepts",
-                    label(source, id),
+                    label(sources, key),
                     rule.constitution
                 ),
             );
         }
     }
 
-    for (&id, reasons) in &res.enabled {
-        let Some(node) = source.get(id) else { continue };
+    for (key, reasons) in &res.enabled {
+        let Some(node) = sources.get(key) else {
+            continue;
+        };
+        let next = successors(key, node);
         let what = match node.status {
-            Status::Superseded => format!("superseded by {}", labels(source, &node.superseded_by)),
+            Status::Superseded => format!("superseded by {}", labels(sources, &next)),
             Status::Repealed => "repealed, with nothing in its place".to_owned(),
             _ => continue,
         };
         // A rule listed directly is changed in `rules`; one brought in
         // goes with the rule that brings it in.
-        let advice = match (
-            reasons.contains(&Reason::Direct),
-            node.superseded_by.as_slice(),
-        ) {
-            (true, []) => format!("take {} out of `rules`", show(id)),
+        let advice = match (reasons.contains(&Reason::Direct), next.as_slice()) {
+            (true, []) => format!("take {key} out of `rules`"),
             (true, [next]) => format!(
-                "replace {} with {} in `rules` (`statute upgrade --replace-superseded` does it)",
-                show(id),
-                show(*next)
+                "replace {key} with {next} in `rules` (`statute upgrade --replace-superseded` does it)"
             ),
             (true, many) => format!(
-                "replace {} in `rules` with those of {} that apply",
-                show(id),
-                refs(source, many)
+                "replace {key} in `rules` with those of {} that apply",
+                refs(many)
             ),
             (false, _) => {
                 let by = reasons.iter().find_map(|r| match r {
-                    Reason::ParentOf(b) | Reason::RequiredBy(b) => Some(*b),
+                    Reason::ParentOf(b) | Reason::RequiredBy(b) => Some(b),
                     _ => None,
                 });
                 match by {
                     Some(b) => format!(
                         "it stays as long as {} is enabled, which brings it in",
-                        label(source, b)
+                        label(sources, b)
                     ),
                     None => "it stays as long as what brings it in is enabled".to_owned(),
                 }
@@ -327,8 +332,8 @@ pub fn resolve(
             file,
             format!(
                 "rule {} ({}) is {what}; {advice}",
-                label(source, id),
-                how(source, &res, id)
+                label(sources, key),
+                how(&res, key)
             ),
         );
     }
@@ -338,19 +343,24 @@ pub fn resolve(
 
 /// A rule is enabled when it is in the resolution; a one-of when one of
 /// its children is.
-fn is_enabled(source: &Source, res: &Resolution, id: Id) -> bool {
-    match source.get(id).map(|n| n.kind) {
-        Some(Kind::Rule) => res.enabled.contains_key(&id),
-        Some(Kind::OneOf) => source.children(id).any(|c| is_enabled(source, res, c.id)),
+fn is_enabled(sources: &Sources, res: &Resolution, key: &Key) -> bool {
+    match sources.get(key).map(|n| n.kind) {
+        Some(Kind::Rule) => res.enabled.contains_key(key),
+        Some(Kind::OneOf) => sources
+            .children(key)
+            .iter()
+            .any(|c| is_enabled(sources, res, c)),
         _ => false,
     }
 }
 
-fn children_list(source: &Source, id: Id) -> String {
-    let children: Vec<String> = source
-        .children(id)
-        .filter(|c| !matches!(c.status, Status::Superseded | Status::Repealed))
-        .map(|c| format!("\"{}\" ({})", source.show(c.id), title(c)))
+fn children_list(sources: &Sources, key: &Key) -> String {
+    let children: Vec<String> = sources
+        .children(key)
+        .into_iter()
+        .filter_map(|c| Some((sources.get(&c)?, c)))
+        .filter(|(n, _)| !matches!(n.status, Status::Superseded | Status::Repealed))
+        .map(|(n, c)| format!("\"{}\" ({})", Manifest::entry(&c), title(n)))
         .collect();
     if children.is_empty() {
         "it has none yet".to_owned()
@@ -360,9 +370,9 @@ fn children_list(source: &Source, id: Id) -> String {
 }
 
 /// How a rule came in, in a few words: `listed in rules`, `required by
-/// 12`, and so on.
-pub fn how(source: &Source, res: &Resolution, id: Id) -> String {
-    let Some(reasons) = res.enabled.get(&id) else {
+/// R12`, and so on.
+pub fn how(res: &Resolution, key: &Key) -> String {
+    let Some(reasons) = res.enabled.get(key) else {
         // A one-of child that is itself a one-of.
         return "through a child".to_owned();
     };
@@ -370,9 +380,9 @@ pub fn how(source: &Source, res: &Resolution, id: Id) -> String {
         .iter()
         .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
-            Reason::Pack(root) => format!("in pack {}", source.show(*root)),
-            Reason::ParentOf(child) => format!("parent of {}", source.show(*child)),
-            Reason::RequiredBy(by) => format!("required by {}", source.show(*by)),
+            Reason::Pack(root) => format!("in pack {root}"),
+            Reason::ParentOf(child) => format!("parent of {child}"),
+            Reason::RequiredBy(by) => format!("required by {by}"),
         })
         .collect::<Vec<_>>()
         .join(", ")

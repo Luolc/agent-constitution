@@ -50,7 +50,7 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
     std::fs::create_dir_all(&dir).unwrap();
     let path = repo().canonicalize().unwrap();
     let manifest = format!(
-        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npacks = [{}]\nrules = [{}]\n\n[sources]\nR = {{ path = {:?} }}\n",
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\npacks = [{}]\nrules = [{}]\n\n[sources]\nR = {{ path = {:?} }}\n",
         domains.join(", "),
         named.join(", "),
         path.to_str().unwrap()

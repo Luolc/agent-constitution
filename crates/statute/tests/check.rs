@@ -75,18 +75,25 @@ fn write(dir: &Path, path: &str, text: &str) {
 /// A git repository with the rule set enabling `rules`, committed and
 /// tagged `base`, and locked.
 fn repo(name: &str, rules: &str, command: &str) -> PathBuf {
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+    repo_at(name, "", rules, command)
+}
+
+/// As `repo`, with the rule set and its source in the directory `sub` of
+/// the repository; returns that directory.
+fn repo_at(name: &str, sub: &str, rules: &str, command: &str) -> PathBuf {
+    let top = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("check")
         .join(name);
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).unwrap();
-    git(&dir, &["init", "-q"]);
+    let _ = std::fs::remove_dir_all(&top);
+    std::fs::create_dir_all(&top).unwrap();
+    git(&top, &["init", "-q"]);
+    let dir = top.join(sub);
     write(&dir, "constitution/2026-10/index.toml", INDEX);
     write(
         &dir,
         "statute.toml",
         &format!(
-            "constitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [{rules}]\n\n[sources]\nR = {{ path = \".\" }}\n"
+            "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\nrules = [{rules}]\n\n[sources]\nR = {{ path = \".\" }}\n"
         ),
     );
     for (id, text) in nodes(command) {
@@ -113,9 +120,9 @@ fn repo(name: &str, rules: &str, command: &str) -> PathBuf {
     }
     let lock = statute(&dir, &["lock"], None);
     assert_eq!(lock.code, 0, "{}", lock.stderr);
-    git(&dir, &["add", "-A"]);
-    git(&dir, &["commit", "-qm", "base"]);
-    git(&dir, &["tag", "base"]);
+    git(&top, &["add", "-A"]);
+    git(&top, &["commit", "-qm", "base"]);
+    git(&top, &["tag", "base"]);
     dir
 }
 
@@ -465,6 +472,72 @@ fn r50_a_scan_only_at_push_time_is_a_violation() {
 }
 
 #[test]
+fn r50_reads_the_configuration_at_the_top_of_the_repository() {
+    // The rule set is in a subdirectory; the hooks are configured at the
+    // top, and a configuration next to the rule set is not the
+    // repository's.
+    let dir = repo_at("r50-sub", "sub", "\"R50\"", "true");
+    let top = dir.parent().unwrap();
+    write(
+        top,
+        ".pre-commit-config.yaml",
+        &format!("repos:\n{GITLEAKS_HOOK}"),
+    );
+    let run = statute(&dir, &["check"], None);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    assert!(line(&run, 50).starts_with("pass "), "{}", run.stdout);
+    std::fs::rename(
+        top.join(".pre-commit-config.yaml"),
+        dir.join(".pre-commit-config.yaml"),
+    )
+    .unwrap();
+    let run = statute(&dir, &["check"], None);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 50).starts_with("violation "), "{}", run.stdout);
+}
+
+#[test]
+fn a_built_in_check_is_the_first_party_rules_only() {
+    // The first-party source is in `r/`, so `rules/` holds the
+    // repository's own rules; its rule 50 asks for a built-in check too.
+    let dir = repo("builtin-local", "", "true");
+    let first_party = dir.join("r");
+    std::fs::create_dir_all(&first_party).unwrap();
+    for entry in ["rules", "constitution"] {
+        std::fs::rename(dir.join(entry), first_party.join(entry)).unwrap();
+    }
+    for (id, text) in [
+        domain(1),
+        edit(rule(50, 1, ""), "check = \"review\"", "check = \"builtin\""),
+    ] {
+        write(&dir, &format!("rules/{id}.toml"), &text);
+    }
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R50\", \"50\"]\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    write(
+        &dir,
+        ".pre-commit-config.yaml",
+        &format!("repos:\n{GITLEAKS_HOOK}"),
+    );
+    assert_eq!(statute(&dir, &["lock"], None).code, 0);
+    let run = statute(&dir, &["check"], None);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    assert!(line(&run, 50).starts_with("pass "), "{}", run.stdout);
+    let local = run
+        .stdout
+        .lines()
+        .find(|l| l.contains("  L50 (Rule 50): "))
+        .unwrap_or_else(|| panic!("no line for L50: {}", run.stdout));
+    assert!(
+        local.starts_with("inconclusive  L50 (Rule 50): statute has built-in checks only for rules of the first-party source, `R`, so none for L50"),
+        "{local}"
+    );
+}
+
+#[test]
 fn r50_another_scanner_goes_to_the_reviewer() {
     let config = "repos:\n  - repo: https://example.test/Yelp/detect-secrets\n    rev: v1.5.0\n    hooks:\n      - id: detect-secrets\n";
     let run = r50("other", config);
@@ -546,6 +619,7 @@ case "$*" in
   *"/commits/"*"/pulls") f=pulls ;;
   "api graphql"*) f=graphql ;;
   "pr view"*) f=pr ;;
+  "repo view --json visibility") f=visibility ;;
   *) f=none ;;
 esac
 [ -f "$d/$f" ] || {{ echo "HTTP 404: Not Found ($f)" >&2; exit 1; }}
@@ -762,6 +836,71 @@ fn r61_a_verdict_without_a_full_sha_is_a_violation() {
     );
 }
 
+/// The line of `statute check` on the rule set's `public`.
+fn visibility(run: &Run) -> String {
+    run.stdout
+        .lines()
+        .find(|l| l.contains("  public: "))
+        .unwrap_or_else(|| panic!("no line for the visibility: {}", run.stdout))
+        .to_owned()
+}
+
+#[test]
+fn a_rule_set_that_says_private_in_a_public_repository_is_a_violation() {
+    let dir = repo("visibility", "\"R21\"", "true");
+    let answer = |v: &str| format!("{{\"visibility\":\"{v}\"}}");
+    let run = statute(
+        &dir,
+        &["check"],
+        Some(&fake_gh("public", &[("visibility", &answer("PUBLIC"))])),
+    );
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert_eq!(
+        visibility(&run),
+        "violation     public: statute.toml says `public = false`, and GitHub shows the repository as PUBLIC"
+    );
+    assert!(
+        run.stdout.contains("statute.toml: `public = false`, and anyone can read the repository; write `public = true`"),
+        "{}",
+        run.stdout
+    );
+    let run = statute(
+        &dir,
+        &["check"],
+        Some(&fake_gh("private", &[("visibility", &answer("PRIVATE"))])),
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    assert!(visibility(&run).starts_with("pass "), "{}", run.stdout);
+    // Saying public in a repository GitHub shows as public is right, and
+    // in a private one stricter than needed.
+    let toml = std::fs::read_to_string(dir.join("statute.toml")).unwrap();
+    write(
+        &dir,
+        "statute.toml",
+        &toml.replace("public = false", "public = true"),
+    );
+    for v in ["PUBLIC", "PRIVATE"] {
+        let run = statute(
+            &dir,
+            &["check"],
+            Some(&fake_gh(
+                &format!("declared-{v}"),
+                &[("visibility", &answer(v))],
+            )),
+        );
+        assert_eq!(run.code, 0, "{v}: {}", run.stdout);
+        assert!(visibility(&run).starts_with("pass "), "{v}: {}", run.stdout);
+    }
+    // gh cannot answer.
+    let run = statute(&dir, &["check"], Some(&fake_gh("no-answer", &[])));
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    assert!(
+        visibility(&run).starts_with("inconclusive  public: statute.toml says `public = true`, and GitHub was not asked: gh repo failed"),
+        "{}",
+        run.stdout
+    );
+}
+
 #[test]
 fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
     let dir = repo("gh-missing", "\"R58\", \"R61\", \"R71\"", "true");
@@ -909,8 +1048,13 @@ fn the_rules_are_listed_by_domain() {
     assert!(r20.starts_with("pass "), "{}", run.stdout);
     // Rule 20 passed, so it comes without its reason; rule 21 is for
     // review, so its reason follows it; rule 22 is under domain 2.
+    let visibility = run
+        .stdout
+        .lines()
+        .find(|l| l.contains("  public: statute.toml says `public = false`"))
+        .unwrap_or_else(|| panic!("no line for the visibility: {}", run.stdout));
     let expected = format!(
-        "## R1 (Domain 1)\n\n{r20}\n\n{}\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n\n## R2 (Domain 2)\n\n{}\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n",
+        "## statute.toml\n\n{visibility}\n\n## R1 (Domain 1)\n\n{r20}\n\n{}\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n\n## R2 (Domain 2)\n\n{}\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n",
         line(&run, 21),
         line(&run, 22),
     );
