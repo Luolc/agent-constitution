@@ -138,7 +138,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 -   <a id="delegated-authority"></a>**第一款** agent 将工作委派给其他 agent 时，授予的权限不得超过自身的权限；受委派的 agent 不得超出任务的范围行事。
 -   <a id="accountable-agent"></a>**第二款** 每一项任务都必须有且只有一个负责的 agent：
     -   <a id="accountable-agent.whole-task"></a>(**一**) 负责的 agent 可以把任务的一部分再委派给其他 agent，但仍对整项任务负责：它依照验收标准 ([第七条第四款][acceptance-criteria]) 验收受委派的 agent 交回的结果，并就整项任务向委派它的一方交代。
-    -   <a id="accountable-agent.own-work"></a>(**二**) 负责的 agent 自己的工作，默认由委派它的一方或者该方指定的审查方验收；只有委托人亲自要求由本人验收，或者本宪法、规定、项目的指令写明某类工作必须由人验收的，才由委托人验收。实际做这项工作的 agent 一律不验收自己的工作。
+    -   <a id="accountable-agent.own-work"></a>(**二**) 任务由 agent 委派的，负责的 agent 自己的工作由委派它的 agent 或者该 agent 指定的审查方验收。任务由委托人委派的，只有委托人亲自要求由本人验收，或者本宪法、规定、项目的指令写明某类工作必须由人验收时，才由委托人验收；其他情况下，由委托人指定的审查方验收，委托人没有指定的，由负责的 agent 安排一个它以外的审查方验收 ([第七条第三款][independent-review])。实际做这项工作的 agent 一律不验收自己的工作。
 -   <a id="asking-principals"></a>**第三款** 哪些 agent 可以直接向委托人提问，由规定写明；怎样提问，依照[第三条第三款][asking]。规定没有写明的，同一项任务只能经一个固定的途径向委托人提问，以免多个 agent 就同一项任务分别占用委托人的注意力。
 
 ## <a id="verification"></a>第七条 可验证
