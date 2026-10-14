@@ -106,7 +106,7 @@ pub fn resolve(
         {
             let what = match node.superseded_by {
                 Some(next) => format!(
-                    "superseded by {}; replace {name}:{root} with {name}:{next} in `packs`",
+                    "superseded by {}; replace {name}:{root} with {name}:{next} in `packs` (`statute upgrade --replace-superseded` does it)",
                     label(source, next)
                 ),
                 None => "repealed; take it out of `packs`".to_owned(),
@@ -262,7 +262,9 @@ pub fn resolve(
         // A rule listed directly is changed in `rules`; one brought in
         // goes with the rule that brings it in.
         let advice = match (reasons.contains(&Reason::Direct), node.superseded_by) {
-            (true, Some(next)) => format!("replace {name}:{id} with {name}:{next} in `rules`"),
+            (true, Some(next)) => format!(
+                "replace {name}:{id} with {name}:{next} in `rules` (`statute upgrade --replace-superseded` does it)"
+            ),
             (true, None) => format!("take {name}:{id} out of `rules`"),
             (false, _) => {
                 let by = reasons.iter().find_map(|r| match r {

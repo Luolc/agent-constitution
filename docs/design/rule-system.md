@@ -343,13 +343,30 @@ path = "."
 Upgrading is an explicit step that rewrites the lock file and shows the
 diff of every rule whose revision moved, and of every rule a requirement
 brought in or dropped. When the rule set enables a superseded rule, the
-build warns and names its successor. For a rule listed in `rules`, one
-command replaces the old ID with the new one in the rule set; for a rule
-brought in by another, the warning names the rule that brings it in. An
-enabled repealed rule draws a warning too. These are warnings, not
-errors, since the rule set keeps working as it did. Downstream users do not have to
-follow the supersession chain by hand, and nothing changes under them
-until they upgrade.
+build warns and names its successor. For a rule listed in `rules` or a
+pack root in `packs`, one command, `statute upgrade
+--replace-superseded`, replaces the old ID with the new one in the rule
+set; for a rule brought in by another, the warning names the rule that
+brings it in. An enabled repealed rule draws a warning too. These are
+warnings, not errors, since the rule set keeps working as it did.
+Downstream users do not have to follow the supersession chain by hand.
+
+The promise that nothing changes under a rule set until it upgrades
+holds only where the lock file can keep the old version: a git source,
+locked at a commit. A
+source on disk has no old version to keep: the lock file records each
+rule's SHA-256, and once the rule is edited the file it hashed is gone.
+So `lock` reads a source on disk as it is now, as uv does a path
+dependency, and `upgrade` writes the same lock file and shows what
+changed. For the same reason the first version cannot show the text of
+a change: it lists the constitution's revision, each rule whose revision
+or content moved, and each rule brought in, with why, or dropped. The
+text diff waits for git sources, whose old commit can be read. A rule
+whose content changed while its revision did not draws a warning from
+`lock` and a note on its line from `upgrade`, since an edited rule's
+revision goes up by one ([IDs and revisions](#ids-and-revisions)). The
+two cannot tell a changed translation from a changed original, so either
+draws it.
 
 **Bound to one constitution.** A rule set names the constitution it
 rests on: the repository it comes from, the edition and the revision.
@@ -696,17 +713,22 @@ violated, and 0 otherwise. A built-in check that covers only part of its
 rule, finding nothing, is inconclusive, not a pass, since the rest of
 the rule is still for the reviewer:
 
-- rule 7 (instruction-only-changes) tells instruction files, generated
+- rule 46 (instruction-files-apart) tells instruction files, generated
   files and other files apart with the same path tables as
   `check-instruction-changes`, and is violated by a change that mixes
-  instruction files with other files; whether a generated file changed
-  in meaning, and paths a repository declares in its `AGENTS.md`, are
-  left to the reviewer, and without `--base` there is no change to check;
-- rule 3 (credential-storage) runs the gitleaks on the machine, with
-  `--redact`, on the commits of the change or on the whole history, and
-  is violated by a hit, shown by its place and gitleaks rule only; the
-  rest of the rule, outside the repository, is left to the reviewer, and
-  without gitleaks it is inconclusive.
+  instruction files with other files; files of agent tools the tables do
+  not name, sources of instructions outside them, and paths a repository
+  declares in its `AGENTS.md` are left to the reviewer, and without
+  `--base` there is no change to check;
+- rule 43 (credential-designated-place) runs the gitleaks on the
+  machine, with `--redact`, on the commits of the change or on the whole
+  history, and is violated by a hit, shown by its place and gitleaks rule
+  only; credentials gitleaks does not recognize, and places outside the
+  repository, are left to the reviewer, and without gitleaks it is
+  inconclusive.
+
+The rules these two supersede, 3 and 7, keep their modules, which run
+only for a rule set that still enables them.
 
 For each rule it is handed, the reviewer decides whether the rule is met
 or violated. A violation is fixed. Where the reviewer's decision differs
@@ -849,13 +871,36 @@ the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
-**Built so far**: the commands `lock`, `explain`, `add`, `remove`,
-`compile` (the `AGENTS.md` only) and `check` (built-in checks for rules
-3 and 7), for one source on disk; the other commands exit with status 2 and say
-they are not implemented yet. Inherited rule sets and path segments are
+**Built so far**: the commands `init`, `lock`, `explain`, `add`,
+`remove`, `upgrade`, `compile` (the `AGENTS.md` only) and `check`
+(built-in checks for rules 43 and 46, and for 3 and 7, which they
+supersede), for one source on disk. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
 another source, in `requires` or `conflicts` (`"team:7"`), are reported
 as not supported yet.
+
+**`init`** writes `statute.toml` in the current directory: the
+constitution's source and edition, an empty `rules`, and one source on
+disk named `ac`. `--source <dir>` gives the source's directory, relative
+to the current one, `.` by default. `--edition` names the edition;
+without it, `init` takes the one directory under the source's
+`constitution/` that holds an `index.toml`, and fails when there is none
+or more than one, naming those it found. It resolves the rule set before
+writing it and writes nothing when that fails. It does not write
+`statute.lock`: with no rule enabled there is nothing to pin, and the
+first `add` writes it, replacing a `statute.lock` already there. An
+existing `statute.toml` is left as it is, and `init` exits with status 1.
+
+**`upgrade`** compares the resolution with `statute.lock`, prints what
+changed ([Rule sets and the lock file](#rule-sets-and-the-lock-file)),
+or that the lock file is up to date, and writes the lock file as `lock`
+does. Without a `statute.lock` there is nothing to compare with, and it
+exits with status 1. With `--replace-superseded` it first replaces, in
+`rules` and `packs`, each superseded rule with its successor, following
+the chain to its end, and keeps the rest of the file as written; when
+the successor is listed already, the old entry is only taken out. A
+repealed rule is left for the user to take out. When the changed rule
+set does not resolve, neither file is changed.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that
