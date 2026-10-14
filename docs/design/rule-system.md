@@ -2,15 +2,20 @@
 
 Status: draft. The rules of this repo are written in the
 [Rule file format](rule-format.md#rule-file-format), which
-`constitution-build` checks, and the command reads them and a rule set
-and writes the lock file
-([The command and the first version](statute-command.md#the-command-and-the-first-version));
-the rest is not built yet. This part of the design, in the files below,
-describes how rules are written, numbered, chosen, checked and compiled
-once the rule system is built. Where it differs from what the rest of
-the design says today, the section [What this replaces](#what-this-replaces)
-lists the difference; those sections stay as they are until the work that
-implements this design changes them.
+`constitution-build` checks. The command, `statute`, builds the
+repository level of this design for one source on disk: it writes,
+resolves and upgrades a rule set and its lock file, compiles them into
+an `AGENTS.md` with the skills the enabled rules need, and runs the
+built-in checks. What it builds so far, and what it does not build yet,
+is under
+[The command and the first version](statute-command.md#the-command-and-the-first-version);
+the user level is not built. This part of the design, in the files
+below, describes how rules are written, numbered, chosen, checked and
+compiled, the parts not built yet included. Where it differs from what
+the rest of the design says today, the section
+[What this replaces](#what-this-replaces) lists the difference; those
+sections stay as they are until the work that implements this design
+changes them.
 
 ## Contents
 
@@ -55,10 +60,12 @@ implements this design changes them.
 
 [Rule file format](rule-format.md#rule-file-format) is implemented, and
 [IDs](source-formats.md#ids), [Source formats](source-formats.md) and
-[Rules](rules.md#rules) now describe the rules in it. The rest of this
-design, once implemented, replaces parts of the current design. Those
-sections are not changed now; they will be when the work that implements
-this design lands.
+[Rules](rules.md#rules) now describe the rules in it.
+[Skills](skills.md) says that `statute compile` installs the skills the
+enabled rules need in a repository. The rest of this design, once
+implemented, replaces parts of the current design. Those sections are
+not changed now; they will be when the work that implements this design
+lands.
 
 - [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
@@ -76,13 +83,12 @@ this design lands.
   move to each repository's rule set (with an inherited base), and the
   overlay's apply step becomes the compile command; the overlay keeps the
   personal part and its own rules.
-- [Skills](skills.md): a skill declares the rules it implements
-  and is installed only when one of them is enabled.
-- [Compilation](compilation.md): the output gains skill
-  directories and checks, and the compiled file opens
-  with the repository, edition and revision of the constitution it rests
-  on, and the rules are grouped along the parent tree, not by the article
-  of their first `authority`.
+- [Compilation](compilation.md): `statute compile` already writes a
+  repository's `AGENTS.md`, with the skills and checks next to it
+  ([Compilation and the site](statute-command.md#compilation-and-the-site)).
+  The user-level file is still built by the overlay's compiler, as that
+  section describes, until the rule system builds the user level (see
+  [Open questions](#open-questions)).
 - [Checkers](checkers.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of
   the repo's sources stay.
