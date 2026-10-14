@@ -230,11 +230,10 @@ of `rust-toolchain.toml` (`rustup toolchain install --no-self-update`), runs
 the tests and both limae checks run there too, then runs clippy, the tests
 and the publish dry run of the Rust workspace, counts the tokens (without a
 credential, so they stay uncounted), builds the static site with the pinned
-Hugo and checks its links,
-and then runs the build check with `--base` and the instruction-only check,
-both against the first parent of the checked-out merge commit on a pull
-request (`docs/design/checkers.md`), or against the commit before the push on
-a push to `main`. `check` is the required status check on `main`: a merge
+Hugo and checks its links, and then runs the build check with `--base` and
+the instruction-only check, both against the first parent of the checked-out
+merge commit on a pull request (`docs/design/checkers.md`), or against the
+commit before the push on a push to `main`. `check` is the required status check on `main`: a merge
 waits for it to pass, and the PR must be up to date with `main`. A PR that is
 behind `main`: run `gh pr update-branch <N>` or merge the latest `main`, rerun
 the checks, let the reviewer recheck the increment, then merge. Runners are
