@@ -28,6 +28,10 @@ constitution/
       constitution.zh.md  the constitution in Chinese                  A
       constitution.en.agent.md  the version for agents, English        A
       constitution.zh.agent.md  the version for agents, Chinese        A
+crates/                   the Rust workspace's crates, one directory
+                          each                                         A
+  statute/                the statute binary; today a placeholder
+                          that prints a notice                         A
 docs/
   design/                 this design, one file per part, indexed
                           by README.md                                 A
@@ -102,19 +106,28 @@ pyproject.toml            the workspace root: its members, Python
                           version, pins of limae, pre-commit and the
                           Python checkers, and their configuration     A
 uv.lock                   the workspace's one lock file, written by uv A
+Cargo.toml                the Rust workspace root: its members and
+                          shared package fields                        A
+Cargo.lock                the Rust workspace's lock file, written by
+                          cargo                                        A
+rust-toolchain.toml       the Rust toolchain version, read by rustup
+                          locally and in CI                            A
 .python-version           the Python minor version uv runs tools/ on   A
 .fleet/config.json        issue-tracker metadata for fleet; the
                           toolchain never reads it                     A
 ```
 
-Three stage B pieces start early. `tools/` starts in stage A with the
+Four stage B pieces start early. `tools/` starts in stage A with the
 constitution build: the constitution is itself compiled from one directory
 per article and one file per section (see [Source formats](source-formats.md)). `rules/` starts in stage A too,
 holding the
 concrete practices taken out of the constitution. `skills/` starts in
 stage A as plain directories, each holding a `SKILL.md` with the usual
 skill front matter (`name`, `description`) and no metadata of this
-repo's own. Compiling and checking the
+repo's own. `crates/` starts in stage A with one crate, `statute`, a
+placeholder that only prints a notice: it is published early to hold the
+name on crates.io, and the binary that compiles and checks the rules
+grows in it in stage B. Compiling and checking the
 rules, and building the instruction file, stay in stage B.
 
 Stage B, in the order to build it: `schema/` and the schema checker,
@@ -131,7 +144,7 @@ takes effect as `approving-amendments` says (see [Approving an
 amendment](amendments-and-releases.md#approving-an-amendment)).
 Everything else is an ordinary change under `rule-evolution`
 (`ordinary-tooling`), reviewed and tested like any other:
-`tools/` and `schema/` (compiler, checkers, the fixture-gate runner),
+`tools/`, `crates/` and `schema/` (compiler, checkers, the fixture-gate runner),
 `.github/workflows/`, `fixtures/` and `examples/golden/`. A person's
 attention goes to what the constitution says; the tools are kept honest by
 their unit tests and happy-path end-to-end tests, not by a person reading

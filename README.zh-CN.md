@@ -67,6 +67,7 @@ uv run constitution-build        # the sources into the generated Markdown
 - `constitution/2026-10/` 是 2026-10 版的源文件：`index.toml`，以及 `articles/` 下每条一个目录、每节一个文件，各含中英两种语言。改源文件后用 `uv run constitution-build` 重新构建，不要直接改 `generated/` 里的文件 ([The constitution](docs/design/constitution.md)，[Source formats](docs/design/source-formats.md))。
 - `rules/` 是通用规定，每条一个 TOML 文件，中英两种语言；`skills/` 是通用 skill，每个一个目录，含它的 `SKILL.md`，用英文写。
 - `tools/` 是一个 uv workspace，包含三个 Python 项目：`tools/compiler` (宪法的构建)、`tools/site` (静态网站的检查，见 [Static site](docs/design/static-site.md)) 和 `tools/checks` (本仓对自身改动做的检查)。
+- `crates/` 是一个 Rust workspace，`Cargo.toml` 和 `rust-toolchain.toml` 在仓根。它目前只有一个 crate `crates/statute`，是为了在 crates.io 上占住 `statute` 这个名字而发布的占位版本；编译和检查规定的二进制以后在这里写。
 
 提交钩子 (commit hook) 用 `uv run pre-commit install` 装一次；`uv run pre-commit run --all-files` 跑全部钩子。
 
