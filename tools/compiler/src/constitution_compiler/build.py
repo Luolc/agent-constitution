@@ -32,7 +32,8 @@ Within an edition, and from a draft whatever edition it names, the
 revision rises when the constitution text changes and stays when it
 does not.
 Errors print as `path:line: check N: message`; the exit status is 1 on any
-error.
+error. Warnings print as `path:line: warning: message` and leave the exit
+status alone: a rule whose `authority` names a provision and one above it.
 """
 
 import argparse
@@ -44,6 +45,7 @@ from constitution_compiler.base import (
   GitError,
 )
 from constitution_compiler.checks import (
+  authority_overlaps,
   check_ids,
   check_languages,
   check_refs,
@@ -161,9 +163,11 @@ def main(argv: list[str] | None = None) -> int:
   if args.base and not args.check:
     parser.error("--base needs --check")
   errors, src, outputs = build(args.root)
-  if not errors and args.check:
+  if not errors:
     assert src is not None
-    check_outputs(args.root, src, outputs, errors)
+    sys.stderr.writelines(f"{w}\n" for w in authority_overlaps(src))
+    if args.check:
+      check_outputs(args.root, src, outputs, errors)
   if not errors and args.base:
     assert src is not None
     try:

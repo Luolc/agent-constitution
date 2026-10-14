@@ -37,22 +37,32 @@
   anchors; `{anchor=false}` keeps the theme's `#` link off its headings. */ -}}
 {{- $full := $pages.full }}
 {{- /* Under each provision that rules cite in their `authority`, those
-  rules, linked to their pages (data/rules.json, which
-  content/rules/_content.gotmpl requires): a paragraph after an article's
-  heading, or a line ending the first line of a section or an item, which
-  the style sheet sets on a line of its own. The lengths above are of the
-  text without them. */ -}}
+  rules (data/rules.json, which content/rules/_content.gotmpl requires),
+  folded into a row of their labels that opens a list of them linked to
+  their pages (layouts/_partials/rules/cites.html); an article also gets
+  the count of the rules that cite it or a provision under it, when some
+  cite one under it, which opens the same way. A paragraph after an
+  article's heading, or a line ending the first line of a section or an
+  item, which the style sheet sets on a line of its own. The lengths
+  above are of the text without them. */ -}}
 {{- $body := $full.body }}
 {{- with index (hugo.Data.rules | default dict) $lang }}
-  {{- range $ref, $rules := .citedBy }}
-    {{- $links := slice }}
-    {{- range $rules }}
-      {{- $links = $links | append (printf `<a href="rules/%d/">%s</a>` (int .id) (htmlEscape .title)) }}
+  {{- $citedBy := .citedBy }}
+  {{- $citedWithin := .citedWithin }}
+  {{- range $ref, $_ := merge $citedWithin $citedBy }}
+    {{- $direct := index $citedBy $ref | default slice }}
+    {{- $within := index $citedWithin $ref | default slice }}
+    {{- $line := "" }}
+    {{- with $direct }}
+      {{- $line = partial "rules/cites.html" (dict "id" (printf "cites-%s" $ref) "rules" . "name" (i18n "cited-by" (len .)) "text" "") }}
     {{- end }}
-    {{- $list := replace (printf "%s %s" (i18n "cited-by") (delimit $links ", ")) "$" "$$" }}
+    {{- if gt (len $within) (len $direct) }}
+      {{- $line = printf "%s%s" $line (partial "rules/cites.html" (dict "id" (printf "cites-within-%s" $ref) "rules" $within "name" "" "text" (i18n "cited-within" (len $within)))) }}
+    {{- end }}
+    {{- $line = replace $line "$" "$$" }}
     {{- $anchor := printf `<a id="%s"></a>` (replace $ref "." `\.`) }}
-    {{- $body = replaceRE (printf `(?m)^(#{2,6} %s.*)$` $anchor) (printf `$1%s<p class="cited-by">%s</p>` "\n\n" $list) $body }}
-    {{- $body = replaceRE (printf `(?m)^( *-   %s.*)$` $anchor) (printf `$1 <span class="cited-by">%s</span>` $list) $body }}
+    {{- $body = replaceRE (printf `(?m)^(#{2,6} %s.*)$` $anchor) (printf `$1%s<p class="cited-by">%s</p>` "\n\n" $line) $body }}
+    {{- $body = replaceRE (printf `(?m)^( *-   %s.*)$` $anchor) (printf `$1 <span class="cited-by">%s</span>` $line) $body }}
   {{- end }}
 {{- end }}
 {{- /* In the sidebar, the full version is the edition it belongs to, under

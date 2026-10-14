@@ -123,26 +123,59 @@ site-rules`, `uv run count-tokens` (the token count, below),
   which Hugo reads; the build fails without it, so CI and
   `pages.yml` run it before Hugo. For each language of `index.toml` it
   holds every node of the rule tree along the parent tree, a node's
-  children in order of ID, and, for each provision, the rules that name
-  it in `authority`. A superseded rule has a page but is in no list, not
-  under a provision either. The content adapter
+  children in order of ID, each with its label, `R` and its ID (`R12`),
+  made by `rule_label` in `site_rules.py`, the one place that makes it;
+  the templates read the node's `label`. For each provision it holds the
+  rules that name it in `authority`, and for each article the rules that
+  name it or a provision under it, each rule once, in order of ID. An
+  `authority` that names a provision and one above it (an item and its
+  section or article, a section and its article) counts only the
+  narrower one, so a rule is listed under the most specific provisions it
+  names, and its page lists only those; `constitution-build` warns of
+  such a pair ([Checkers](checkers.md#checkers), check 5). A
+  superseded or repealed rule has a page and is in the list, but not
+  under a provision. The content adapter
   `web/content/rules/_content.gotmpl` makes the list, `rules/`, and a
   page for each node, `rules/<id>/`: the ID, not the `slug`, since the ID
-  never changes. The list (`web/layouts/rules/section.html`) shows 15
-  rules a page (`params.rulesPerPage` in `web/hugo.toml`) along the
-  tree, each rule's statement only, as plain text cut to three lines by
-  the style sheet, after its ID and linked to its page; a rule under
+  never changes. The list (`web/layouts/rules/section.html`) shows the
+  rules along the tree, each rule's statement only, as plain text cut to
+  three lines by the style sheet, after its label and linked to its
+  page, a superseded or repealed rule's status after it; a rule under
   another rule is indented under it. Domains and one-ofs are not listed
-  but head the rules below them, and again at the top of each page. A
-  rule's page (`web/layouts/rules/page.html`) gives its title, for a
-  superseded rule the rules that supersede it, its statement, reason and
-  verification, the provisions it cites (`authority`), linked to their
-  anchors on the home page, its relations (its parent, its requirements
-  and its conflicts, a conflict shown on both rules though written on
-  one) and all its metadata: ID, revision, kind, status, slug, default
-  level, the revisions of the constitution, the check with its command
-  and tools, the language of the original and the translations. A
-  domain's or a one-of's page lists the nodes below it. In the texts,
+  but head the rules below them, a level deeper for each domain or
+  one-of above them (the templates allow a domain under another, which
+  the rule files do not yet), where the group
+  changes and again at the top of each page. Above the list, a filter
+  folds open a checkbox for each status and each domain, applied with its
+  button; a rule is shown when its status and its nearest domain are
+  checked, and checking or unchecking a domain does the same to the
+  domains under it. By default the filter checks the statuses of
+  `params.rulesStatuses` in `web/hugo.toml` and every domain; superseded
+  and repealed rules are in the list but not checked. While every rule is
+  a draft, the default checks draft too, besides active and trial; it
+  leaves once rules reach trial. Beside the filter, a menu sets the page
+  size: 100 by default, `params.rulesPerPage`, or 25, 50 or all; the
+  rules are filtered first and then split into pages. Hugo builds the
+  pages of the default filter; each holds every rule, each rule with all
+  its group headings, those not shown hidden.
+  `web/assets/rules-list.js`, inlined in `<head>`, takes the filter, the
+  size and the page from the address, where the form puts them
+  (`?filter=1&status=draft&domain=14&per=50&page=2`), shows that page's
+  rules and headings, and makes the links to the pages and the table of contents again; without
+  scripts the form is hidden and Hugo's pages stay. The table of
+  contents at the right lists the headings on the page, each indented by
+  its level. A
+  rule's page (`web/layouts/rules/page.html`) gives its label and title,
+  for a superseded rule the rules that supersede it, its statement,
+  reason and verification, the provisions it cites (`authority`), linked
+  to their anchors on the home page, its relations (its parent, its
+  requirements and its conflicts, a conflict shown on both rules though
+  written on one) and all its metadata: ID, revision, kind, status, slug,
+  default level, the revisions of the constitution, the check with its
+  command and tools, the language of the original and the translations.
+  A domain's or a one-of's page lists the nodes below it. A node named on
+  a page shows its label and title; the table of contents lists the
+  page's headings. In the texts,
   `{@constitution:...}` becomes a link to the provision's anchor, labeled
   as the full version labels it, in the language of the text, and
   `{@rule:N}` a link to the rule's page ("rule N", 「规定 N」). A page
@@ -155,17 +188,21 @@ site-rules`, `uv run count-tokens` (the token count, below),
   among the translations. `constitution-build --check` fails on such a
   translation, so only a build from sources that fail that check meets
   one. Under each provision of the home page that a listed rule cites,
-  the home page's content adapter adds a line, "Rules citing this
-  provision:", with the rules' titles linked to their pages: after an
-  article's heading, or at the end of the first line of a section or an
-  item, which the style sheet sets on a line of its own. The lengths are
-  of the text without these lines. The rules' pages have the design's
-  layout and style (`<div class="design rules">`).
-- Length: the second item of the list gives the length of the version
-  for agents, bare, which is what takes room in an agent's context: the
-  generated file without its header line, in characters in both
-  languages, words split on white space (ASCII white space, the only kind
-  the files hold) in English, and tokens as counted for the model
+  the home page's content adapter adds a line: a button that shows the
+  rules' labels as a row of boxes, with a ring holding a plus after them,
+  and opens a list under it of each rule's label and title, linked to its
+  page; a click, or Enter or Space, opens it and closes it again, the
+  button's `aria-expanded` saying which
+  (`web/layouts/_partials/rules/cites.html`, `web/assets/cites.js`). An
+  article that rules cite through a provision under it also gets a
+  button with their count, "N rules cite this article or a provision
+  under it", which opens the list of them all. A provision lists only the
+  rules that name it, not those that name one under it. The line comes
+  after an article's heading, or at the end of the first line of a
+  section or an item, which the style sheet sets on a line of its own;
+  without scripts the lists are open. The lengths are of the text
+  without these lines. The rules' pages have the design's layout and
+  style (`<div class="design rules">`).
   `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
   API (`POST /v1/messages/count_tokens`, standard library only). The
   content adapter counts the characters and words; `count-tokens`
