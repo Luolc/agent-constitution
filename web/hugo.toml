@@ -1,13 +1,14 @@
-# The static site: one page per language, built by tools/build_site.py
-# from constitution/constitution.<lang>.md. See docs/design.md (Static
-# site).
+# The static site: two pages per language, the constitution and its version
+# for agents, built by tools/build_site.py from
+# constitution/constitution.<lang>.md and constitution.<lang>.agent.md. See
+# docs/design.md (Static site).
 baseURL = "/"
 # Relative links, so that site/index.html also opens as a file.
 relativeURLs = true
 title = "Agent Constitution"
 theme = "hugo-book"
 defaultContentLanguage = "en"
-disableKinds = ["taxonomy", "term", "section", "page", "rss", "sitemap", "404"]
+disableKinds = ["taxonomy", "term", "section", "rss", "sitemap", "404"]
 enableRobotsTXT = false
 
 [languages.en]
@@ -21,7 +22,8 @@ enableRobotsTXT = false
   weight = 2
 
 # The content is only this repo's own built constitution; raw HTML is
-# needed for its anchors (<a id="...">) and the wrapper build_site.py adds.
+# needed for its anchors (<a id="...">) and the wrapper and popup
+# build_site.py adds.
 [markup.goldmark.renderer]
   unsafe = true
 

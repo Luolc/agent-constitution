@@ -120,13 +120,96 @@
   letter-spacing: normal;
   font-size: .85em;
 }
-/* The line on the asterisk under the length. */
-.constitution .revision .legend {
+/* The info button after the length and its popup. The popup hangs from
+   the bottom of the button's box with no gap, its right edge just past the
+   button, so the pointer goes straight from the button into it. On a
+   narrow screen it spans the revision line instead, which holds the
+   button, and starts right under the button. A bridge above the popup
+   covers the space between the button and the popup's border and the
+   line beside the button, so a pointer that leaves the button sideways on
+   its way down stays inside; the button sits above the bridge. */
+.constitution .revision { position: relative; }
+.constitution .count-info { position: relative; display: inline-block; }
+.constitution .count-button {
+  font: inherit;
+  font-size: .85em;
+  color: var(--c-muted);
+  background: none;
+  border: 0;
+  padding: .25em;
+  margin-inline-start: .15em;
+  vertical-align: -.2em;
+  line-height: 0;
+  cursor: pointer;
+  position: relative;
+  z-index: 3;
+}
+.constitution .count-button:hover,
+.constitution .count-info.open .count-button { color: var(--c-accent); }
+.constitution .count-button:focus-visible { outline: 2px solid var(--c-accent); border-radius: 50%; }
+.constitution .count-popup {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  top: 100%;
+  right: -.5em;
+  width: 26em;
+  margin-top: .4em;
+  padding: .7em 1em;
+  font-variant: normal;
+  letter-spacing: normal;
+  font-size: .85em;
+  line-height: 1.5;
+  text-align: start;
+  color: var(--c-ink);
+  background: var(--c-sidebar);
+  border: 1px solid var(--c-rule);
+  border-radius: .3rem;
+  box-shadow: 0 .3em 1em color-mix(in srgb, var(--c-ink) 20%, transparent);
+}
+.constitution .count-popup::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: calc(.4em + 1px + 1.6em);
+}
+@media (max-width: 48rem) {
+  .constitution .count-info { position: static; }
+  .constitution .count-popup { top: auto; left: 0; right: 0; width: auto; }
+}
+.constitution .count-info:hover .count-popup,
+.constitution .count-info.open .count-popup { display: block; }
+.constitution .count-info.dismissed .count-popup { display: none; }
+.constitution .count-line { display: block; }
+.constitution .count-line + .count-line { margin-top: .4em; }
+.constitution .count-popup a { color: var(--c-accent); }
+
+/* The link back to the full version, on the page of the version for
+   agents. */
+.constitution .revision .back {
   font-variant: normal;
   letter-spacing: normal;
   font-size: .85em;
 }
-.constitution .revision .legend sup.omitted { font-size: 1.1em; }
+
+/* The legend of the asterisk under the length: the asterisk on the line,
+   in the accent color. */
+.constitution .revision .legend {
+  display: inline-block;
+  max-width: 34em;
+  font-variant: normal;
+  letter-spacing: normal;
+  font-size: .85em;
+  line-height: 1.5;
+  margin-top: .3em;
+  text-wrap: balance;
+}
+.constitution .revision .legend .mark {
+  color: var(--c-accent);
+  font-weight: var(--c-weight-bold);
+}
 /* The draft notice under the title. */
 .constitution .revision + p {
   border-block: 1px solid var(--c-rule);
@@ -174,11 +257,15 @@
 .constitution code { font-size: .85em; }
 
 /* The asterisk after the number of a section or an item that the version
-   for agents leaves out: small, in the accent color, close to the number. */
+   for agents leaves out: small, in the accent color, close to the number,
+   and without opening up the line. Not raised as a superscript: the glyph
+   itself sits at the height of the capitals, so it is lowered a little,
+   which puts its top level with the top of the number. */
 .constitution sup.omitted {
   color: var(--c-accent);
-  font-size: .9em;
+  font-size: .85em;
   font-weight: var(--c-weight-bold);
+  vertical-align: -.15em;
   line-height: 0;
   margin-inline-start: .05em;
 }
