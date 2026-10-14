@@ -3,7 +3,7 @@ status = "draft"
 
 [content]
 en = '''
-Must go through the competent principal ({@explicit-yes}). {@must-ask.amendments} and {@must-ask.reversing-decisions} hold for every project and change only by amendment. The other items are defaults, which a project may override under {@relaxations.project-overrides}.
+Must go through a competent principal ({@explicit-yes}). {@must-ask.amendments} and {@must-ask.reversing-decisions} hold for every project and change only by amendment. The other items are defaults, which a project may override under {@relaxations.project-overrides}.
 '''
 zh = '''
 必须经过有权委托人同意 ({@explicit-yes})。{@must-ask.amendments}和{@must-ask.reversing-decisions}适用于所有项目，只能通过修宪改变。其余各项是默认安排，项目可以依照{@relaxations.project-overrides}另行规定。
