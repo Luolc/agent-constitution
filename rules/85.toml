@@ -1,0 +1,43 @@
+id = 85
+slug = "regression-test-where-the-bug-was"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 83
+requires = [84]
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Put a regression test only in the module where the bug was"
+zh = "回归测试只放在 bug 所在的模块"
+
+[text.statement]
+en = "Put a regression test only with the tests of the module where the bug occurred."
+zh = "回归测试只放在 bug 所在模块的测试里。"
+
+[text.reason]
+en = '''
+A bug shows where it occurred, not that the same mistake lurks in every other module. Assertions that it is absent everywhere else add tests that each cost upkeep and guard against nothing seen ({@constitution:simplicity}), and they tend to multiply after a correction, when the urge to show the mistake will never recur is strongest.
+'''
+zh = '''
+一个 bug 只说明它在哪里发生过，不说明别的每个模块都藏着同样的错误。在其他各处断言它不存在，每多一个测试就多一份维护成本，防的却是谁也没见过的情况 ({@constitution:simplicity})；这类断言往往在被纠正之后成批出现，因为那时最想证明同样的错误不会再犯。
+'''
+
+[text.verification]
+en = '''
+The module where the bug occurred is the one whose code the fix changes; its tests are where that module's tests are kept. A regression test is as {@rule:84} defines it.
+
+Violated when a change adds, for one bug, a regression test or an assertion that the bug or its cause is absent to the tests of a module where the bug did not occur.
+'''
+zh = '''
+bug 所在的模块，是修复改动了其代码的那个模块；它的测试，就是这个模块的测试所在的地方。回归测试的含义见 {@rule:84}。
+
+变更为一个 bug 在它没有发生过的模块的测试里，加入回归测试，或者断言这个 bug 或其起因不存在的，即为违反本规定。
+'''
+
+[translations]
+zh = "4b41c30adfb230425b100932d5efdc440b01e99126d5029c19b8630d27f2aa81"

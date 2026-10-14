@@ -1,0 +1,42 @@
+id = 88
+slug = "comments-say-what-code-cannot"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 83
+authority = ["no-restating", "simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Comment only what the code cannot say"
+zh = "注释只写代码表达不了的东西"
+
+[text.statement]
+en = "Write a comment inside code only to say what the code cannot say for itself, such as why it is done this way."
+zh = "代码里的注释只用来写代码自己表达不了的东西，例如为什么这样做。"
+
+[text.reason]
+en = '''
+A comment that repeats what the code plainly does is a second copy of it ({@constitution:no-restating}): it adds reading and upkeep and nothing else ({@constitution:simplicity}), and once the code changes without it, it is wrong.
+'''
+zh = '''
+注释重复代码明明白白在做的事，就是代码的第二份副本 ({@constitution:no-restating})：它只增加阅读和维护的负担，别无用处 ({@constitution:simplicity})；代码改了而它没改，它就错了。
+'''
+
+[text.verification]
+en = '''
+The rule covers comments inside the code. A doc comment or docstring that states an interface, its parameters, return value and errors, for readers who do not read the body, is documentation and not covered, even where it repeats a signature.
+
+Violated when a change adds a comment inside code that says only what the code next to it says plainly, such as `# add one to the counter` above `count += 1`.
+'''
+zh = '''
+本规定管的是代码内部的注释。说明一个接口、它的参数、返回值和错误的 doc comment 或 docstring，是写给不读函数体的人看的文档，不在本规定之内，即便它重复了函数签名。
+
+变更加入的代码内部注释只说了旁边代码明明白白说了的内容的，例如在 `count += 1` 上面写 `# add one to the counter`，即为违反本规定。
+'''
+
+[translations]
+zh = "ab9e1f5617e4b4aeaf17c01f32e36f1c92130dad6c8456eb8b4ddf77218b311d"

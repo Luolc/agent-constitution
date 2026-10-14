@@ -1,0 +1,42 @@
+id = 95
+slug = "keep-merging-while-main-fails"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep merging while CI on the main branch fails"
+zh = "主分支的 CI 失败时，照常合并别的 pull request"
+
+[text.statement]
+en = "Do not hold back a pull request that is ready to merge only because CI is failing on the main branch."
+zh = "不要仅仅因为主分支上的 CI 正在失败，就扣住一个已经可以合并的 pull request。"
+
+[text.reason]
+en = '''
+A failure on the main branch is handled by whoever merged the change that caused it ({@rule:59}); the rest of the work keeps moving ({@constitution:automation-first.keep-moving}). Holding every merge until the main branch passes again stalls work that has nothing to do with the failure. A release still waits for a commit whose own CI passed on its first attempt ({@rule:58}).
+'''
+zh = '''
+主分支上的失败，由合并了引起它的那项变更的一方处理 ({@rule:59})；其余工作照常推进 ({@constitution:automation-first.keep-moving})。主分支恢复通过之前把所有合并都扣住，会让与这次失败无关的工作停下来。发布仍要等一个自己的 CI 第一次就通过的 commit ({@rule:58})。
+'''
+
+[text.verification]
+en = '''
+A pull request is ready to merge when it meets every condition the repository and the rules set for a merge, such as an approval of its head and the checks a merge waits for. When the failure on the main branch makes the pull request's own required check fail, it is not ready, and this rule asks nothing.
+
+Violated when the agent that would merge such a pull request leaves it unmerged, or tells others to stop merging, giving the failure of CI on the main branch as the only reason.
+'''
+zh = '''
+可以合并，指 pull request 满足仓库和规定为合并设下的全部条件，例如它的 head 已获批准、合并要等的检查都已通过。主分支上的失败导致这个 pull request 自己的必需检查失败的，它就不算可以合并，本规定不作要求。
+
+本该合并这样一个 pull request 的 agent，以主分支上 CI 失败为唯一理由不合并它，或者让别人停止合并的，即为违反本规定。
+'''
+
+[translations]
+zh = "a05dc08bf150cf7f96a6d3c0372954f9e948d7212944c3f10e5ac188b9991178"

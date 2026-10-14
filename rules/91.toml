@@ -1,0 +1,43 @@
+id = 91
+slug = "record-a-put-off-item-at-once"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+requires = [92]
+authority = ["evidence.grounds", "accountable-agent.whole-task"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write an item you put off into its record when you put it off"
+zh = "推迟一项事情时，当场写进它要去的记录"
+
+[text.statement]
+en = "When you put off an item that belongs in a report, a description or another record, write it into that record, at least as a one-line placeholder, at the moment you put it off."
+zh = "推迟一项本该写进报告、说明或其他记录的事情时，在推迟的那一刻就把它写进那份记录，至少写一行占位。"
+
+[text.reason]
+en = '''
+The agent answers for the whole task ({@constitution:accountable-agent.whole-task}), the items it put off included. An intention to add an item later lives only in the agent's context, which can end at any time; the record is what someone else can check ({@constitution:evidence.grounds}).
+'''
+zh = '''
+agent 要为整个任务负责 ({@constitution:accountable-agent.whole-task})，包括它推迟的事情。打算以后再补的事只存在于 agent 的上下文里，而上下文随时可能结束；别人能核对的是那份记录 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+An item is put off when the agent decides, or says, that something it is to report or record will be added later: a follow-up, a check still to run, a correction to a description. Its record is the one it is meant to end up in, such as the task's report, the pull request's description or an issue. The placeholder names the item and its trigger ({@rule:92}).
+
+Violated when an agent puts off such an item and its record does not hold it, or a placeholder for it, by the agent's next step.
+'''
+zh = '''
+推迟，指 agent 决定或者说出：一件它要回报或记录的事，以后再补，例如一条 follow-up、一项还没跑的检查、对说明的一处更正。它要去的记录，是这件事最终该写进的那份，例如任务的报告、pull request 的说明或者一个 issue。占位写明是哪件事以及它的触发点 ({@rule:92})。
+
+agent 推迟了这样一件事，到它的下一步时，那份记录里既没有这件事、也没有它的占位的，即为违反本规定。
+'''
+
+[translations]
+zh = "fb21d37846aa6ca0ba3637e263c79ad0a60ec37eda5b341e374cc9360dad6b54"

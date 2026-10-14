@@ -1,0 +1,42 @@
+id = 94
+slug = "check-sent-text-against-its-file"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 93
+authority = ["discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Check text you sent against the file you sent it from"
+zh = "核对发出的文字时，拿它和发送用的文件比对"
+
+[text.statement]
+en = "When you check text you passed through a shell, compare what arrived with the file you passed it from."
+zh = "核对经 shell 传出去的文字时，拿收到的内容和传出时用的那个文件比对。"
+
+[text.reason]
+en = '''
+A shell that changed the text produces text that still reads well: a value replaced, a code span gone. Reading back only what arrived passes whether or not the text changed, so it does not check that it arrived intact ({@constitution:discriminating-checks}); a comparison with the file it came from catches every change.
+'''
+zh = '''
+被 shell 改过的文字读起来照样通顺：某个值被替换了，某个代码片段不见了。只回读收到的那份，文字改没改都会通过，所以不能证明文字原样到达 ({@constitution:discriminating-checks})；和发送用的文件比对，任何改动都能发现。
+'''
+
+[text.verification]
+en = '''
+The file is the one {@rule:93} has the agent write, kept until the check is done. The comparison is a diff, or another comparison of every character, between that file and the text as the receiving side holds it, such as the body of the pull request as the host returns it.
+
+Violated when an agent states that text it passed through a shell arrived intact, or was checked, without such a comparison.
+'''
+zh = '''
+这个文件就是 {@rule:93} 要求 agent 写的那个，留到核对完成为止。比对指用 diff，或者其他逐字符比较的方法，比较这个文件和接收方保存的文字，例如托管平台返回的 pull request 正文。
+
+agent 说经 shell 传出去的文字原样到达或者已经核对过，却没有做这样的比对的，即为违反本规定。
+'''
+
+[translations]
+zh = "28195eed6835879785dbfadb62a55fd379cdb5bca4a7bf46d128c3247ede8f29"

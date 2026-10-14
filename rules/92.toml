@@ -1,0 +1,42 @@
+id = 92
+slug = "trigger-a-put-off-item-on-a-certain-action"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+authority = ["accountable-agent.whole-task", "evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give an item you put off an owner and a trigger that is certain to happen"
+zh = "推迟的事情要写明由谁接手，触发点放在必然发生的动作上"
+
+[text.statement]
+en = "Give each item you put off or hand on, in its record, who takes it and a trigger that is an action certain to happen, never remembering it."
+zh = "推迟或交出的每件事，都在它的记录里写明由谁接手，以及一个触发点：必然会发生的动作，而不是「记得」。"
+
+[text.reason]
+en = '''
+An item tied to remembering is done only if someone happens to remember, and one with no owner is no one's; tied to an action the work cannot finish without, it comes up when that action does. The responsible agent answers for the whole task ({@constitution:accountable-agent.whole-task}), and an item handed on is handed on only when someone else can check who has it and when it comes due ({@constitution:evidence.grounds}).
+'''
+zh = '''
+系在「记得」上的事，只有碰巧有人记起来才会做；没有接手人的事，就不归任何人。系在工作完成前必然发生的动作上，那个动作一发生，这件事就会被想起。负责的 agent 要为整个任务负责 ({@constitution:accountable-agent.whole-task})；一件事要让别人能核对它归谁、什么时候该做，才算交出去了 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+Who takes it is an agent or person named, or the role of the agent that will hold the work then. A trigger certain to happen is an action the work cannot be finished without: opening or merging the pull request, ending the task, the next release. "Later", "when there is time", "if it comes up again" and an event that may never occur are not.
+
+Violated when the record of an item that an agent put off or handed on names no one to take it, names no trigger, or names a trigger that is not certain to happen.
+'''
+zh = '''
+由谁接手，指点名的 agent 或人，或者届时负责这项工作的那个 agent 的角色。必然发生的触发点，指工作完成前一定会有的动作：开或者合并 pull request、结束任务、下一次发布。「以后」「有空时」「再出现的话」以及可能永远不会发生的事件，都不算。
+
+agent 推迟或交出的事情，其记录没有写明由谁接手、没有写明触发点，或者写的触发点不是必然发生的，即为违反本规定。
+'''
+
+[translations]
+zh = "6e3a75fd5afb67a00d53a0321785e5a85a9c7097e2ed6d0c28f31495c38b181e"
