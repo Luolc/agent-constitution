@@ -1,4 +1,4 @@
-<!-- en-sha256: 16135985485b772d4b4c408da20c9cb7961c95803ac6864624e257c360d9b7d3 -->
+<!-- en-sha256: 1cc4a1841d0e821d80eb820a94301dd93776f0db83788d551459d5ea6be0d128 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -25,7 +25,7 @@ agents-md = ["statement"]
 
 [规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
 
-锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public`；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；以及文件的 SHA-256)：
+锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public` (还没有写入)；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；以及文件的 SHA-256)：
 
 ```toml
 [constitution]

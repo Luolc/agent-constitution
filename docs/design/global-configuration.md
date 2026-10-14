@@ -176,7 +176,7 @@ commit = "<commit>"
 public = true
 ```
 
-Every source but `R` has its `public` there, a source on disk as well.
+Every source but `R` has its `public` there, a source on disk as well; the lock file statute writes today records a source on disk by its `path` alone.
 
 - `lock` keeps the commit the lock file records when the source's
   address and branch or tag are those recorded, so that nothing changes

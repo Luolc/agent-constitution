@@ -57,7 +57,7 @@ public and private rules in one file
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
 each source (its short name, address, the branch or tag it follows,
-commit and, but for `R`, `public`;
+commit and, but for `R`, `public`, which is not written yet;
 [Git sources](global-configuration.md#git-sources)), and each enabled rule,
 whether chosen directly or brought in by a requirement (its reference,
 written as the rule set writes it, `R42` or `team:7`, and `L12` for a
