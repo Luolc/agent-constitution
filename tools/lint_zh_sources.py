@@ -248,7 +248,81 @@ def strip_zh(data: object) -> object:
   return data
 
 
-def main(argv: list[str] | None = None) -> int:  # noqa: C901
+def read_sources(root: Path) -> tuple[list[Text], list[str]]:
+  """Find the `zh` texts of every source file.
+
+  Args:
+    root: The checkout.
+
+  Returns:
+    The texts, and a problem for each file whose texts cannot be found.
+  """
+  all_texts, problems = [], []
+  for pattern in SOURCES:
+    for file in sorted(root.glob(pattern)):
+      found, problem = texts(root, file.relative_to(root))
+      if problem:
+        problems.append(problem)
+      else:
+        all_texts += found
+  return all_texts, problems
+
+
+def place(stdout: str, names: dict[str, Text]) -> list[str]:
+  """Turn limae's findings into findings on the sources.
+
+  Args:
+    stdout: limae's output.
+    names: The name of each file given to limae -> its text.
+
+  Returns:
+    Each finding as `path:line: field: message`.
+  """
+  findings = []
+  for line in stdout.splitlines():
+    m = FINDING.match(line)
+    if m and m.group(1) in names:
+      t = names[m.group(1)]
+      findings.append(
+        f"{t.path}:{t.line + int(m.group(2)) - 1}: {t.field}: {m.group(3)}"
+      )
+  return findings
+
+
+def apply_fixes(root: Path, tmp: str, names: dict[str, Text]) -> list[str]:
+  """Write limae's fixes back to the sources and print each file fixed.
+
+  Args:
+    root: The checkout.
+    tmp: The directory of the files limae fixed.
+    names: The name of each file given to limae -> its text.
+
+  Returns:
+    A problem for each text or file not written.
+  """
+  problems, changed = [], {}
+  for name, t in names.items():
+    fixed = Path(tmp, name).read_text(encoding="utf-8")
+    if fixed.count(PLACEHOLDER) != len(CITATION.findall(t.value)):
+      problems.append(
+        f"{t.path}:{t.line}: {t.field}: limae's fix changed the"
+        " citations; not written"
+      )
+      continue
+    fixed = (
+      t.unmasked(fixed.rstrip("\n")) + t.value[len(t.value.rstrip("\n")) :]
+    )
+    if fixed != t.value:
+      changed.setdefault(t.path, []).append((t, fixed))
+  for path, items in changed.items():
+    if problem := write_back(root, path, items):
+      problems.append(problem)
+    else:
+      print(f"{path}: fixed {len(items)} text(s)")
+  return problems
+
+
+def main(argv: list[str] | None = None) -> int:
   """Check, or with --fix fix, the `zh` texts and print the findings.
 
   Args:
@@ -276,14 +350,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     )
     return 2
 
-  all_texts, problems = [], []
-  for pattern in SOURCES:
-    for file in sorted(args.root.glob(pattern)):
-      found, problem = texts(args.root, file.relative_to(args.root))
-      if problem:
-        problems.append(problem)
-      else:
-        all_texts += found
+  all_texts, problems = read_sources(args.root)
   if problems:
     print("\n".join(problems), file=sys.stderr)
     return 2
@@ -299,14 +366,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
       )
     command = [limae, *(["--fix"] if args.fix else []), *names]
     result = subprocess.run(command, cwd=tmp, capture_output=True, text=True)
-    findings = []
-    for line in result.stdout.splitlines():
-      m = FINDING.match(line)
-      if m and m.group(1) in names:
-        t = names[m.group(1)]
-        findings.append(
-          f"{t.path}:{t.line + int(m.group(2)) - 1}: {t.field}: {m.group(3)}"
-        )
+    findings = place(result.stdout, names)
     if result.returncode not in (0, 1) or (
       result.returncode == 1 and not findings
     ):
@@ -318,29 +378,9 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
       )
       return 2
 
-    if args.fix:
-      changed = {}
-      for name, t in names.items():
-        fixed = Path(tmp, name).read_text(encoding="utf-8")
-        if fixed.count(PLACEHOLDER) != len(CITATION.findall(t.value)):
-          problems.append(
-            f"{t.path}:{t.line}: {t.field}: limae's fix changed the"
-            " citations; not written"
-          )
-          continue
-        fixed = (
-          t.unmasked(fixed.rstrip("\n")) + t.value[len(t.value.rstrip("\n")) :]
-        )
-        if fixed != t.value:
-          changed.setdefault(t.path, []).append((t, fixed))
-      for path, items in changed.items():
-        if problem := write_back(args.root, path, items):
-          problems.append(problem)
-        else:
-          print(f"{path}: fixed {len(items)} text(s)")
-      if problems:
-        print("\n".join(problems), file=sys.stderr)
-        return 2
+    if args.fix and (problems := apply_fixes(args.root, tmp, names)):
+      print("\n".join(problems), file=sys.stderr)
+      return 2
 
   print(
     "\n".join(findings)

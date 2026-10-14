@@ -1,8 +1,11 @@
 # The static site: two pages per language, the constitution and its version
-# for agents, built by tools/build_site.py from
-# constitution/constitution.<lang>.md and constitution.<lang>.agent.md. See
-# docs/design.md (Static site).
+# for agents, made by content/_content.gotmpl from
+# constitution/constitution.<lang>.md and constitution.<lang>.agent.md.
+# `hugo-0.167.0 -s web` builds it into site/; tools/build_site.py counts the
+# tokens first and checks the links after. See docs/design.md (Static
+# site).
 baseURL = "/"
+publishDir = "../site"
 # Relative links, so that site/index.html also opens as a file.
 relativeURLs = true
 title = "Agent Constitution"
@@ -11,15 +14,21 @@ defaultContentLanguage = "en"
 disableKinds = ["taxonomy", "term", "section", "rss", "sitemap", "404"]
 enableRobotsTXT = false
 
+# countWords: whether the lengths give words as well as characters; words
+# are split on white space, which Chinese does not put between them.
 [languages.en]
   label = "English"
   title = "Agent Constitution"
   weight = 1
+  [languages.en.params]
+    countWords = true
 
 [languages.zh]
   label = "中文"
   title = "Agent 宪法"
   weight = 2
+  [languages.zh.params]
+    countWords = false
 
 # The sidebar lists the site's pages in groups, each a top-level entry
 # with the group's name in bold and an icon from assets/icons (BookIcon),
@@ -46,8 +55,8 @@ enableRobotsTXT = false
     BookIcon = "law"
 
 # The content is only this repo's own built constitution; raw HTML is
-# needed for its anchors (<a id="...">) and the wrapper and popup
-# build_site.py adds.
+# needed for its anchors (<a id="...">) and the asterisks
+# (<sup class="omitted">).
 [markup.goldmark.renderer]
   unsafe = true
 
@@ -70,3 +79,31 @@ enableRobotsTXT = false
   BookTranslatedOnly = false
   # Linked in the sidebar, under the site's title.
   SourceRepo = "https://github.com/Luolc/agent-constitution"
+  # The asterisk after a provision the version for agents leaves out, as
+  # tools/constitution_render.py writes it (OMITTED_MARK).
+  omittedMark = '<sup class="omitted">*</sup>'
+  # The model tools/count_tokens.py counts the tokens for, and its name in
+  # the popup on the counts.
+  [params.tokenCount]
+    model = "claude-opus-5-5"
+    name = "Claude Opus 5.5"
+
+# The built constitution comes from constitution/: the two Markdown files
+# of each language as assets, which content/_content.gotmpl reads, and
+# index.toml as data, for the revision and the status. data/lengths.json,
+# written by tools/count_tokens.py and not committed, holds the tokens.
+# A component with a mount of its own loses its default one, so data and
+# assets are mounted again.
+[[module.mounts]]
+  source = "../constitution"
+  target = "assets/constitution"
+  files = ["constitution.*.md"]
+[[module.mounts]]
+  source = "../constitution/index.toml"
+  target = "data/constitution.toml"
+[[module.mounts]]
+  source = "data"
+  target = "data"
+[[module.mounts]]
+  source = "assets"
+  target = "assets"
