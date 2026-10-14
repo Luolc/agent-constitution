@@ -1,4 +1,7 @@
-"""Check 7: the numbering and the revision against a base commit."""
+"""Check 7, numbering: what the base numbered still exists, unmoved.
+
+Also the git access the revision part of check 7 shares.
+"""
 
 from pathlib import Path
 import re
@@ -6,7 +9,7 @@ import subprocess
 import tomllib
 
 from constitution_compiler import git_env
-from constitution_compiler.sources import (
+from constitution_compiler.model import (
   ARTICLE_FILE,
   ARTICLE_NAME,
   ARTICLES,
@@ -417,117 +420,3 @@ class BaseComparison:
           7,
           f"{value} was retired at base {self.ref} and is no longer listed",
         )
-
-
-def revision_key(revision: str) -> tuple[int, int] | None:
-  """Return the sort key of a revision.
-
-  A draft `0.<n>` sorts by its number, before every approved integer
-  revision.
-
-  Args:
-    revision: the revision as written.
-
-  Returns:
-    The key, or None for any other string.
-  """
-  if re.fullmatch(r"0\.[0-9]+", revision):
-    return 0, int(revision[2:])
-  if re.fullmatch(r"[1-9][0-9]*", revision):
-    return int(revision), 0
-  return None
-
-
-def source_text_changed(root: Path, ref: str) -> bool:
-  """Return whether the constitution text differs from the base's.
-
-  The text is the article sources and `index.toml` other than its
-  `revision` line. The files git tracks are compared as they are in the
-  working tree, so the result does not depend on what is committed.
-
-  Args:
-    root: the checkout.
-    ref: the base commit.
-
-  Returns:
-    True when the text changed.
-  """
-  drop = re.compile(r'^revision = ".*"\n', re.MULTILINE)
-  tracked = git(root, "ls-files", "--", str(ARTICLES))
-  paths = {Path(p) for p in tracked.split("\n") if p and (root / p).is_file()}
-  if paths != base_paths(root, ref, ARTICLES):
-    return True
-  if any(
-    (root / p).read_text(encoding="utf-8") != git(root, "show", f"{ref}:{p}")
-    for p in paths
-  ):
-    return True
-  base_index = git(root, "show", f"{ref}:{INDEX}")
-  return drop.sub("", (root / INDEX).read_text(encoding="utf-8")) != drop.sub(
-    "", base_index
-  )
-
-
-def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
-  """Check 7: compare the revision with the base's.
-
-  Within one edition the revision is greater than the base's when the
-  constitution text changed since it, and equal to it when the text did
-  not change. A draft base counts as the same edition whatever edition
-  each names, so renaming the edition a draft prepares does not restart
-  its revisions, and the approved text's revision is greater than the
-  draft's. Not compared: an active base of another edition.
-
-  Args:
-    root: the checkout.
-    ref: the base commit.
-    src: the sources.
-    errors: where errors go.
-  """
-  try:
-    git(root, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}")
-  except GitError:
-    return  # check_base reports it
-  if INDEX not in base_paths(root, ref, INDEX):
-    return
-  try:
-    base = tomllib.loads(git(root, "show", f"{ref}:{INDEX}"))
-  except tomllib.TOMLDecodeError:
-    return  # check_base reports it
-  revision, base_revision = (
-    src.index.data["revision"],
-    str(base.get("revision")),
-  )
-  if base.get("status") == "active" and src.index.data.get(
-    "edition"
-  ) != base.get("edition"):
-    return
-  line = src.index.line("revision =")
-  key, base_key = revision_key(revision), revision_key(base_revision)
-  if key is None:
-    errors.add(
-      INDEX,
-      line,
-      7,
-      f"revision {revision} is neither `0.<n>` nor a whole number from 1",
-    )
-  elif base_key is None:
-    return
-  elif source_text_changed(root, ref):
-    if key <= base_key:
-      errors.add(
-        INDEX,
-        line,
-        7,
-        f"the constitution text changed since base {ref}"
-        f" but revision {revision} is not greater"
-        f" than the base's {base_revision}",
-      )
-  elif revision != base_revision:
-    errors.add(
-      INDEX,
-      line,
-      7,
-      f"revision {revision} differs from revision {base_revision}"
-      f" at base {ref} but the constitution text did not change",
-    )
