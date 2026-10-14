@@ -198,8 +198,7 @@ fn r46_unmixed_change_goes_to_the_reviewer() {
     assert!(l.contains("(0 instruction, 1 other, 1 generated)"), "{l}");
     assert!(l.contains("files of other agent tools, sources of instructions outside the path tables, and paths the repository declares in its AGENTS.md are for the reviewer"), "{l}");
     assert!(
-        run.stdout
-            .contains("For the reviewer:\n\n## R46 (Rule 46) (inconclusive)\n\nReason: Because.\n"),
+        run.stdout.contains(&format!("{l}\n\nReason: Because.\n")),
         "{}",
         run.stdout
     );
@@ -885,8 +884,35 @@ fn a_rule_without_a_check_goes_to_the_reviewer() {
     // compiled AGENTS.md.
     assert!(!run.stdout.contains("{@"), "{}", run.stdout);
     assert!(
-        run.stdout.contains("## R21 (Rule 21) (review)\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n"),
+        run.stdout.contains(&format!("{}\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n", line(&run, 21))),
         "{}",
         run.stdout
     );
+}
+
+#[test]
+fn the_rules_are_listed_by_domain() {
+    let dir = repo("by-domain", "\"R20\", \"R21\"", "true");
+    for (id, text) in [domain(2), rule(22, 2, "")] {
+        write(&dir, &format!("rules/{id}.toml"), &text);
+    }
+    let manifest = std::fs::read_to_string(dir.join("statute.toml")).unwrap();
+    write(
+        &dir,
+        "statute.toml",
+        &manifest.replace("\"R21\"]", "\"R21\", \"R22\"]"),
+    );
+    assert_eq!(statute(&dir, &["lock"], None).code, 0);
+    let run = statute(&dir, &["check"], None);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    let r20 = line(&run, 20);
+    assert!(r20.starts_with("pass "), "{}", run.stdout);
+    // Rule 20 passed, so it comes without its reason; rule 21 is for
+    // review, so its reason follows it; rule 22 is under domain 2.
+    let expected = format!(
+        "## R1 (Domain 1)\n\n{r20}\n\n{}\n\nReason: Because of Art. IV §1 and Rule 20 (rule R20).\n\nVerification: Violated when the thing is not done.\n\n## R2 (Domain 2)\n\n{}\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n",
+        line(&run, 21),
+        line(&run, 22),
+    );
+    assert_eq!(run.stdout, expected);
 }

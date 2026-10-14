@@ -88,13 +88,14 @@ statute check         # list the enabled rules for review
 ```
 
 Most rules cannot be decided by a script, so the work is reviewed rule
-by rule. The reviewer runs `statute check` to get the list: one line per
-enabled rule, `review` for a rule no script can decide, which is most of
-them, and `pass`, `violation` or `inconclusive` for the few a script
-checks; then the reason and the verification of each rule that is for
-review or inconclusive. The reviewer goes through the list domain by
-domain and rule by rule. It exits with status 1 on a violation. It may
-run in CI as well, but not as a commit hook: a check may be slow.
+by rule. The reviewer runs `statute check` to get the list, grouped by domain:
+one line per enabled rule, `review` for a rule no script can decide,
+which is most of them, and `pass`, `violation` or `inconclusive` for the
+few a script checks; each rule that is for review or inconclusive is
+followed by its reason and verification. The reviewer goes through the
+list domain by domain and rule by rule. `statute check` exits with
+status 1 on a violation. It may run in CI as well, but not as a commit
+hook: a check may be slow.
 `statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in
 [The command and the first version](docs/design/rule-system.md#the-command-and-the-first-version).
