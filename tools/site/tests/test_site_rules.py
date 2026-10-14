@@ -7,6 +7,7 @@ provisions of an `authority`, and the rules under each provision and
 within each article.
 """
 
+from dataclasses import replace
 import json
 from pathlib import Path
 import tempfile
@@ -93,6 +94,16 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       zh[6]["authority"], [{"ref": "one-a.x", "label": "第一条第一款第一项"}]
     )
+
+  def test_listed_only_in_force(self):
+    errors = Errors()
+    src = load(self.root, errors)
+    assert src is not None, errors
+    rule = next(n for n in src.nodes if n.id == 5)
+    self.assertTrue(site_rules.listed(rule))
+    for status in ("superseded", "repealed"):
+      with self.subTest(status):
+        self.assertFalse(site_rules.listed(replace(rule, status=status)))
 
   def test_label(self):
     for lang in ("en", "zh"):

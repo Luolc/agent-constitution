@@ -133,8 +133,8 @@ site-rules`, `uv run count-tokens` (the token count, below),
   narrower one, so a rule is listed under the most specific provisions it
   names, and its page lists only those; `constitution-build` warns of
   such a pair ([Checkers](checkers.md#checkers), check 5). A
-  superseded rule has a page and is in the list, but not under a
-  provision. The content adapter
+  superseded or repealed rule has a page and is in the list, but not
+  under a provision. The content adapter
   `web/content/rules/_content.gotmpl` makes the list, `rules/`, and a
   page for each node, `rules/<id>/`: the ID, not the `slug`, since the ID
   never changes. The list (`web/layouts/rules/section.html`) shows the

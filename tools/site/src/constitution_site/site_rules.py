@@ -11,7 +11,8 @@ links, relative to the rule's page; the other side of each conflict; and,
 for each provision of the constitution, the rules whose `authority` names
 it, and for each article, the rules that name it or a provision under it.
 An `authority` that names a provision and one above it counts only the
-narrower one. A superseded rule is not listed under the provisions.
+narrower one. A superseded or repealed rule is not listed under the
+provisions.
 
 Errors print as `path:line: check 1: message`, as constitution-build
 prints them; the exit status is 1 when the sources cannot be read.
@@ -71,8 +72,8 @@ def specific(authority: list[str], src: Sources) -> list[str]:
 def listed(node: Node) -> bool:
   """Tell whether the node is listed under the provisions it cites.
 
-  A rule that is not superseded is; the list of the rules shows every
-  rule, and its filter chooses the statuses.
+  A rule in force is, neither superseded nor repealed; the list of the
+  rules shows every rule, and its filter chooses the statuses.
 
   Args:
     node: the node.
@@ -80,7 +81,7 @@ def listed(node: Node) -> bool:
   Returns:
     True when it is listed under them.
   """
-  return node.kind == "rule" and node.status != "superseded"
+  return node.kind == "rule" and node.status not in ("superseded", "repealed")
 
 
 def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
