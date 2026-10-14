@@ -217,6 +217,32 @@ INFO_ICON = (
 NO_ANCHOR = " {anchor=false}"
 
 
+# The title and the edition in parentheses after it.
+TITLE = re.compile(r"# (.*) (\([^()]*\))")
+
+
+def heading(title: str) -> str:
+  """Return the `# ` title line as the page's heading.
+
+  The name and the edition in parentheses are each kept on one line, so
+  a narrow screen breaks the title only before the parenthesis; the theme
+  adds no `#` link.
+
+  Args:
+    title: The `# ` title line.
+
+  Returns:
+    The heading line.
+  """
+  return (
+    TITLE.sub(
+      r'# <span class="nobreak">\1</span> <span class="nobreak">\2</span>',
+      title,
+    )
+    + NO_ANCHOR
+  )
+
+
 def split(markdown: str) -> tuple[str, list[str]]:
   """Split a built constitution into its `# ` title and the lines after it.
 
@@ -405,7 +431,7 @@ def page(
       front(title),
       '<div class="constitution">',
       "",
-      title,
+      heading(title),
       "",
       revision_list,
       body,
@@ -466,7 +492,7 @@ def agent_page(
       front(title, "bookHidden = true"),
       '<div class="constitution">',
       "",
-      title + NO_ANCHOR,
+      heading(title),
       "",
       revision_list,
       *rest,

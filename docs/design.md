@@ -418,7 +418,7 @@ is written `⟨must-ask⟩` in the table:
 
 | Item | en | zh |
 | --- | --- | --- |
-| Title | `# Agent Constitution (2026-10 edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
+| Title | `# Agent Constitution (2026-10 Edition)`, the `edition` | `# Agent 宪法 (2026-10 版)` |
 | Article heading | `## ⟨authority⟩Article IV. <Title>` | `## ⟨authority⟩第四条 <标题>` |
 | Section | `-   ⟨must-ask⟩**§1** <content>` | `-   ⟨must-ask⟩**第一款** <content>` |
 | List item | `    -   ⟨must-ask.capital⟩(**3**) <content>` | `    -   ⟨must-ask.capital⟩(**三**) <content>` |
@@ -714,7 +714,11 @@ is a release (rule `must-ask-items`) and not set up.
   sources: the citations, numbers and anchors are rendered once, by
   `build_constitution.py`. `build_site.py` turns each into the home page of
   its language in a temporary content directory: the header line is
-  dropped, the title goes into the front matter, the revision from
+  dropped, the title goes into the front matter and stays the heading,
+  without the theme's `#` link, its name and its parenthesis each kept on
+  one line so that a narrow screen breaks it only before the parenthesis
+  (on a desktop window 1400 pixels wide it fits on one line), the
+  revision from
   `index.toml` is set under the title, followed by `(draft)` (`(草案)`)
   while its `status` is `draft`, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. Under

@@ -73,7 +73,7 @@ class PageTest(unittest.TestCase):
           )
         )
         self.assertIn(
-          f'{title}\n\n<ul class="revision"><li '
+          f'{build_site.heading(title)}\n\n<ul class="revision"><li '
           f'class="number">{labels["revision"]} 0.6</li>',
           out,
         )
@@ -88,6 +88,24 @@ class PageTest(unittest.TestCase):
         assert anchor is not None
         self.assertIn(f" {{#{anchor[1]}}}\n", out)
         self.assertNotIn("## <a id=", out)
+
+  def test_heading(self):
+    """The title breaks only before the parenthesis and has no `#` link."""
+    cases = [
+      (
+        "# Agent Constitution (2026-10 Edition)",
+        '# <span class="nobreak">Agent Constitution</span>'
+        ' <span class="nobreak">(2026-10 Edition)</span> {anchor=false}',
+      ),
+      (
+        "# Agent 宪法 (2026-10 版)",
+        '# <span class="nobreak">Agent 宪法</span>'
+        ' <span class="nobreak">(2026-10 版)</span> {anchor=false}',
+      ),
+    ]
+    for title, line in cases:
+      with self.subTest(title=title):
+        self.assertEqual(build_site.heading(title), line)
 
   def test_other_first_line(self):
     with self.assertRaises(ValueError):
@@ -316,7 +334,7 @@ class PageTest(unittest.TestCase):
           )
         )
         self.assertIn(
-          f'{title} {{anchor=false}}\n\n<ul class="revision"><li '
+          f'{build_site.heading(title)}\n\n<ul class="revision"><li '
           'class="number">'
           f'{labels["revision"]} 0.6</li><li class="back"><a '
           f'href="{labels["home"]}">'
