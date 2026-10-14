@@ -1,5 +1,10 @@
-{{- /* Under the language switch: the color theme, cycling through
-  following the system, light and dark (assets/theme.js). */ -}}
-<button type="button" class="theme-toggle" aria-label="{{ i18n "theme-switch" }}">
-  <span class="auto">{{ i18n "theme-auto" }}</span><span class="light">{{ i18n "theme-light" }}</span><span class="dark">{{ i18n "theme-dark" }}</span>
+{{- /* At the right end of the language switch's row: the color theme,
+  cycling through following the system, light and dark (assets/theme.js).
+  An icon shows the current setting; its name and the next one are the
+  button's title and accessible name, set by the script from the data
+  attributes, the setting following the system until it has run. */ -}}
+<button type="button" class="theme-toggle" title="{{ i18n "theme-auto" }}" aria-label="{{ i18n "theme-auto" }}" data-auto="{{ i18n "theme-auto" }}" data-light="{{ i18n "theme-light" }}" data-dark="{{ i18n "theme-dark" }}">
+  <svg class="book-icon auto" aria-hidden="true">{{ partial "docs/icon" "device-desktop" }}</svg>
+  <svg class="book-icon light" aria-hidden="true">{{ partial "docs/icon" "sun" }}</svg>
+  <svg class="book-icon dark" aria-hidden="true">{{ partial "docs/icon" "moon" }}</svg>
 </button>
