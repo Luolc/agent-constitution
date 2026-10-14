@@ -93,19 +93,23 @@ search reads content: run the same search on a file where it must match.
 ## Checks
 
 The Python tools run with uv: `pyproject.toml` pins limae, pre-commit and
-the Python checkers, `.python-version` the interpreter, and `uv run`
-creates `.venv` from `uv.lock` on first use. The commit hooks and the
-Python tools need only uv on the machine; the site build needs Hugo and
-the full-history scan gitleaks, both below. After changing a pin, run
-`uv lock` and commit `uv.lock`; `uv lock --check` fails when the two
-disagree.
+the Python checkers, `.python-version` the interpreter, and `uv.lock`
+locks them. After cloning, run `uv sync` once to create `.venv`, then
+install the hooks with `uv run pre-commit install`. The hooks run the
+tools with `uv run --frozen --no-sync`: they never create, sync or change
+`.venv` or `uv.lock`, so a hook fails when `.venv` is missing or stale;
+run `uv sync` again then. The commit hooks and the Python tools need only
+uv on the machine; the site build needs Hugo and the full-history scan
+gitleaks, both below. After changing a pin, run `uv sync`, which updates
+`uv.lock` and `.venv`, and commit `uv.lock`; the `uv-lock` hook fails
+when the two disagree.
 
 - `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
-  on the staged diff, the Python checkers below, the constitution build
-  check, the tests, `tools/lint_zh_sources.py` and limae on
+  on the staged diff, `uv-lock` (`uv.lock` matches `pyproject.toml`), the
+  Python checkers below, the constitution build check, the tests,
+  `tools/lint_zh_sources.py` and limae on
   `constitution/constitution.zh.md` and
-  `constitution/constitution.zh.agent.md`. Install the hooks once after
-  cloning with `uv run pre-commit install`.
+  `constitution/constitution.zh.agent.md`.
 - The Python checkers, configured in `pyproject.toml`, each a commit hook:
   `uv run ruff check .`, `uv run ruff format --check .` (`uv run ruff
   format .` to apply), `uv run pydoclint --config pyproject.toml --quiet
@@ -147,12 +151,13 @@ disagree.
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`. Its
 one job, `check`, scans the full history with gitleaks (pinned by version and
-SHA-256), sets up uv (`uv sync --locked`, which fails on a stale lock), runs
-`uv run pre-commit run --all-files` with the gitleaks hook skipped, so the
-Python checkers, the constitution build check, the tests and both limae checks
-run there too, builds the static site with the pinned Hugo and checks its
-links, and then runs the build check with `--base` and the instruction-only
-check, both against the first parent of the checked-out merge commit on a pull
+SHA-256), sets up uv at the version of the `uv-lock` hook's rev and syncs (`uv
+sync --locked`, which fails on a stale lock), runs `uv run pre-commit run
+--all-files` with the gitleaks hook skipped, so `uv-lock`, the Python
+checkers, the constitution build check, the tests and both limae checks run
+there too, builds the static site with the pinned Hugo and checks its links,
+and then runs the build check with `--base` and the instruction-only check,
+both against the first parent of the checked-out merge commit on a pull
 request (`docs/design.md`, Checkers), or against the commit before the push on
 a push to `main`. `check` is the required status check on `main`: a merge
 waits for it to pass, and the PR must be up to date with `main`. A PR that is
