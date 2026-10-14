@@ -119,10 +119,12 @@ in any of these places:
   ([Subdomains](#subdomains));
 - a `{@rule:...}` citation in its title or any part of its text.
 
-The message names the rule, the field and both sources:
+The message names the rule, the field, the kind of node it names and
+both sources:
 
 ```text
 rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`; a public rule may name only rules of public sources
+rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`; a public rule may name only rules of public sources
 ```
 
 The check reads the sources' declarations; it does not need the private

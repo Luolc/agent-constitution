@@ -1,4 +1,4 @@
-<!-- en-sha256: 6233b5371d449bcab85dfc398245872e0ccc120280154b0500ba5b439ad3c9a2 -->
+<!-- en-sha256: 5746dfa0b4889caf789f7ce75825d80153d3c75ffcd3a7486fe9b1b564b12d60 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -62,10 +62,11 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 - `parent`，它可以指向另一个规定源的领域 (见[子领域](#subdomains))；
 - 标题或正文任何一部分里的 `{@rule:...}` 引用。
 
-报错写明是哪条规定、哪个字段、两边各是哪个规定源：
+报错写明是哪条规定、哪个字段、指向的是哪种节点，以及两边各是哪个规定源：
 
 ```text
 rules/12.toml: error: `requires` names "me:4", a rule of the private source `me`; a public rule may name only rules of public sources
+rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`; a public rule may name only rules of public sources
 ```
 
 这项检查只读各规定源的声明，用不到私有规定源的文件，所以能在公开仓库的 CI 里跑，那里读不到私有规定源。
