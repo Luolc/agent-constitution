@@ -23,7 +23,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="terms.compiled-instructions"></a>(**十**)<sup class="omitted">*</sup> **编译出的指令** (compiled instructions)：从本宪法和所采用的规定编译出来、供 agent 阅读的指令文件。
 -   <a id="text-and-sources"></a>**第二款**<sup class="omitted">*</sup> 本宪法以源文本保存，默认放在 `constitution/` 目录下：一条一个目录，一款一个文件，款下的项写在该文件里。每条、每款、每项都有永久的 ID，各语言的正文并列写在同一份源文本里。agent 读到的版本，一种语言一份，由源文本编译而来；修改只改源文本，不改编译产物。同一版内 ([第一条第三款第一项][editions.edition])，编号只增不删，废止的条文保留原位 ([第十一条第八款][stable-numbers])。本宪法自我说明：只读本宪法，就能知道它怎样产生、日后应当修改哪里 ([第一条第八款][amending])。
 -   <a id="editions"></a>**第三款**<sup class="omitted">*</sup> 每一版以年月命名，沿用按通过年份称呼宪法的做法，如中国的 1954 年宪法、1982 年宪法和法国的 1958 年宪法。版与版内修正案之分，类似瑞士联邦宪法的全面修订与部分修订。
-    -   <a id="editions.edition"></a>(**一**) **版** (edition) 指本宪法经批准的一份完整文本。每一版以本宪法的有权委托人 ([第四条第一款][principals]) 批准它生效的年月命名 (例如「2026-10 版」)，标题写明这个名字；同一个月内不制定两版。
+    -   <a id="editions.edition"></a>(**一**) **版** (edition) 指本宪法经批准的一份完整文本。每一版以本宪法的有权委托人 ([第四条第一款第二项][principals.competent]) 批准它生效的年月命名 (例如「2026-10 版」)，标题写明这个名字；同一个月内不制定两版。
     -   <a id="editions.in-force"></a>(**二**) 最近一次批准的那一版是**现行版**，即适用的文本。
     -   <a id="editions.draft"></a>(**三**) **草案**是为下一版准备的文本，标题写它准备成为的那一版的名字，修订号旁注明「草案」。那一版如果在其他月份批准，就以批准的月份命名：提请批准的文本写这个名字，改名属于制定新的一版 ([第十一条第九款][new-editions])，不另算一次修正案。第一版批准之前，只有草案。草案可以试行：项目的有权委托人可以决定在该项目中采用草案，采用期间，草案在该项目中适用；已有现行版的，由草案代替现行版。试行不等于批准，草案仍可随时修改。
     -   <a id="editions.revision"></a>(**四**) 同一版内，**修订号** (revision) 从一起算，每有一次修正案生效就加一 ([第十一条第六款][revision-count])，编号永不更改 ([第十一条第八款][stable-numbers])。草案的修订号写作 0.*n*；每份草案的 *n* 都从一起算，同样逐次加一。
@@ -173,6 +173,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 [editions.edition]: #editions.edition
 [stable-numbers]: #stable-numbers
 [amending]: #amending
+[principals.competent]: #principals.competent
 [new-editions]: #new-editions
 [revision-count]: #revision-count
 [layer-conflicts]: #layer-conflicts
