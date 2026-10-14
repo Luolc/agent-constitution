@@ -18,7 +18,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/site-zh-dark.png">
-  <img src=".github/assets/site-zh-light.png" width="900" alt="网站上的中文宪法：标题、修订号与草案说明、序言，右侧是各条的目录">
+  <img src=".github/assets/site-zh-light.png" width="900" alt="网站上的中文宪法：标题、修订号、序言，左侧是设计各篇，右侧是各条的目录">
 </picture>
 
 </div>
@@ -35,7 +35,7 @@ AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难�
 
 这三样与一份私有 overlay (存放某个用户自己的取值和规定) 一起，编译成 Claude Code、Codex 和 Grok 读的指令文件。
 
-如果你在好几个仓库里用 coding agent，希望它们都遵守同一套原则，规定可以按需选用、可以检查，本仓就适合你。本仓还是草案：宪法已经写好，能构建成 Markdown；规定体系和它的编译器已经设计，还没有实现。
+如果你在好几个仓库里用 coding agent，希望它们都遵守同一套原则，规定可以按需选用、可以检查，本仓就适合你。宪法已是现行版，能构建成 Markdown；规定体系和它的编译器已经设计，还没有实现。
 
 ## 快速开始
 
