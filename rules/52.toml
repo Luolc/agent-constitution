@@ -1,0 +1,54 @@
+id = 52
+slug = "public-push-pre-review"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["safety", "sensitive-info", "must-ask.irreversible-effects", "independent-review"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Have a reviewer read what goes to a public repository before the push"
+zh = "向公开仓库 push 之前，先由审查方预审要推送的内容"
+
+[text.statement]
+en = "Before you push to a public repository, have a reviewer read the diff, the commit messages and the pull request text for private material, and push only the head that reviewer passed."
+zh = "向公开仓库 push 之前，先让审查方读 diff、commit message 和 pull request 的文字，查有没有私有内容，只 push 审查方通过的那个 head。"
+
+[text.reason]
+en = '''
+A credential or private detail pushed to a public repository leaks ({@constitution:sensitive-info}) and cannot be withdrawn ({@constitution:must-ask.irreversible-effects}), so it has to be caught before the push. Another party than the author reads it, since an author tends to miss what they wrote themselves ({@constitution:independent-review.another-party}), and what is pushed must be exactly what was read ({@constitution:independent-review.reviewed-version}).
+'''
+zh = '''
+推送到公开仓库的凭证或私有细节就泄露了 ({@constitution:sensitive-info})，而且无法撤回 ({@constitution:must-ask.irreversible-effects})，所以必须在 push 之前发现。由作者以外的另一方来读，因为作者往往看不出自己写的问题 ({@constitution:independent-review.another-party})；推送的必须正是读过的那个版本 ({@constitution:independent-review.reviewed-version})。
+'''
+
+[text.verification]
+en = '''
+Before each push to any branch of a public repository ({@rule:51}), the author writes out three texts and gives them to a reviewer, another party than the author:
+
+- the diff of the branch against the branch it will merge into (for example `git diff origin/main...HEAD`);
+- the message of every commit to be pushed (for example `git log --format='%H%n%B' origin/main..HEAD`);
+- the title and body of the pull request as they will be posted.
+
+The reviewer reads them for what {@rule:51} keeps out of a public repository, for credentials ({@rule:44}) and for personal information ({@constitution:personal-info}), and answers either that they pass, naming the head commit it read, or with the leaks it found. The author pushes only that head and opens the pull request with that text. After any change to the head or the text, the review is done again before the next push.
+
+Violated when an agent pushes to a public repository a head that no reviewer passed, or opens a pull request there with a title or body that the reviewer did not read.
+'''
+zh = '''
+每次向公开仓库 ({@rule:51}) 的任何分支 push 之前，作者写出三份文本，交给作者以外的另一方，即审查方：
+
+- 这个分支相对于它要合入的分支的 diff (例如 `git diff origin/main...HEAD`)；
+- 每个要推送的 commit 的 message (例如 `git log --format='%H%n%B' origin/main..HEAD`)；
+- pull request 将要发出的标题和正文。
+
+审查方在其中查找 {@rule:51} 不许写进公开仓库的内容、凭证 ({@rule:44}) 和个人信息 ({@constitution:personal-info})，然后答复：通过的，写明它读的是哪个 head commit；不通过的，列出发现的泄露项。作者只 push 那个 head，并用那份文字开 pull request。head 或文字改过之后，下一次 push 之前重新预审。
+
+agent 向公开仓库 push 了没有经审查方通过的 head，或者在那里开 pull request 时用了审查方没有读过的标题或正文的，即为违反本规定。
+'''
+
+[translations]
+zh = "af3e3a3ade98342de565ff811ff0e0c108ac2caa7820755edc1cb396ef0ef14a"
