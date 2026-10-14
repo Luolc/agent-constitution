@@ -123,10 +123,10 @@ status = "draft"
 
 [items.content]
 en = '''
-**Amendment**: a change to the text of this constitution ({@proposing-amendments}).
+**Amendment**: a change to the text of this constitution ({@protected-text}).
 '''
 zh = '''
-**修正案** (amendment)：对本宪法正文的修改 ({@proposing-amendments})。
+**修正案** (amendment)：对本宪法正文的修改 ({@protected-text})。
 '''
 
 [[items]]
