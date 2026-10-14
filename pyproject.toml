@@ -23,7 +23,7 @@ repo-checks = { workspace = true }
 [dependency-groups]
 dev = [
     "basedpyright==1.40.1",
-    "limae==0.13.3",
+    "limae==0.13.4",
     "pre-commit==4.6.2",
     "pydoclint==0.11.0",
     "ruff==0.16.10",
