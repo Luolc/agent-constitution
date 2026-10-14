@@ -366,20 +366,38 @@ class Doc:
   data: dict
   text: str
 
-  def line(self, *needles: str) -> int:
-    """Return the first line holding the first needle found, else 1.
+  def line(self, *needles: str, start: int = 1) -> int:
+    """Return the first line holding the first needle found, else start.
 
     Args:
       *needles: the strings to look for, in order.
+      start: the line to search from, from 1.
 
     Returns:
       The line number, from 1.
     """
+    lines = self.text.split("\n")
     for needle in needles:
-      for n, line in enumerate(self.text.split("\n"), start=1):
+      for n, line in enumerate(lines[start - 1 :], start=start):
         if needle in line:
           return n
-    return 1
+    return start
+
+  def item_line(self, n: int) -> int:
+    """Return the line of the n-th `[[items]]` header, else 1.
+
+    Args:
+      n: the item's index, from 0.
+
+    Returns:
+      The line number, from 1.
+    """
+    headers = [
+      k
+      for k, line in enumerate(self.text.split("\n"), start=1)
+      if line.strip() == "[[items]]"
+    ]
+    return headers[n] if n < len(headers) else 1
 
 
 @dataclass
@@ -611,6 +629,7 @@ def check_keys(
   languages: list[str] | None,
   errors: Errors,
   where: str = "",
+  start: int = 1,
 ) -> bool:
   """Check that the table has the schema's keys, no others, of their types.
 
@@ -624,6 +643,7 @@ def check_keys(
     languages: the languages of index.toml, or None before they are known.
     errors: where errors go.
     where: the table's name in messages, "" for the file's top level.
+    start: the table's first line, where the search for its keys begins.
 
   Returns:
     True when clean.
@@ -635,10 +655,10 @@ def check_keys(
     name = key.rstrip("?")
     if name not in table:
       if not optional:
-        errors.add(doc.path, 1, 1, f"{label}lacks `{name}`")
+        errors.add(doc.path, start, 1, f"{label}lacks `{name}`")
       continue
     value = table[name]
-    line = doc.line(f"[{name}]", f"{name} =")
+    line = doc.line(f"[{name}]", f"{name} =", start=start)
     if kind == LANG:
       if not isinstance(value, dict) or not all(
         isinstance(v, str) for v in value.values()
@@ -668,7 +688,7 @@ def check_keys(
   for name in table.keys() - {k.rstrip("?") for k in schema}:
     errors.add(
       doc.path,
-      doc.line(f"[{name}]", f"{name} ="),
+      doc.line(f"[{name}]", f"{name} =", start=start),
       1,
       f"{label}unknown key `{name}`",
     )
@@ -692,7 +712,12 @@ def strip_texts(table: dict, schema: dict) -> None:
 
 
 def check_repealed(
-  doc: Doc, table: dict, status: str | None, errors: Errors, where: str = ""
+  doc: Doc,
+  table: dict,
+  status: str | None,
+  errors: Errors,
+  where: str = "",
+  start: int = 1,
 ) -> None:
   """Check that `repealed` is a year-month, there when the status says so.
 
@@ -705,10 +730,11 @@ def check_repealed(
     status: its status, None for an article.
     errors: where errors go.
     where: the table's name in messages, "" for the file's top level.
+    start: the table's first line, where the search for its keys begins.
   """
   label = f"`{where}` " if where else ""
   value = table.get("repealed")
-  line = doc.line("repealed =")
+  line = doc.line("repealed =", start=start)
   if value is not None and not MONTH.fullmatch(value):
     errors.add(
       doc.path, line, 1, f"{label}`repealed` must be `YYYY-MM`, got `{value}`"
@@ -716,7 +742,7 @@ def check_repealed(
   if status == "repealed" and value is None:
     errors.add(
       doc.path,
-      doc.line("status ="),
+      doc.line("status =", start=start),
       1,
       f"{label}status is repealed but there is no `repealed` date",
     )
@@ -795,37 +821,38 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
         f"`id` must be `{expected}`, as in the name `{name}`",
       )
 
-  def status_of(doc: Doc, table: dict, what: str) -> str:
+  def status_of(doc: Doc, table: dict, what: str, start: int = 1) -> str:
     status = table["status"]
+    line = doc.line("status =", start=start)
     if status not in STATUS:
       errors.add(
         doc.path,
-        doc.line("status ="),
+        line,
         1,
         f"{what} `status` must be one of {STATUS}",
       )
     elif index_status == "draft" and status != "draft":
       errors.add(
         doc.path,
-        doc.line("status ="),
+        line,
         1,
         f"{what} is {status} while index.toml is draft",
       )
     elif index_status == "active" and what != "rule" and status == "draft":
       errors.add(
         doc.path,
-        doc.line("status ="),
+        line,
         1,
         f"{what} is draft while index.toml is active",
       )
     return status
 
-  def omitted(doc: Doc, table: dict, what: str) -> bool:
+  def omitted(doc: Doc, table: dict, what: str, start: int = 1) -> bool:
     audience = table.get("audience")
     if audience not in (None, MAINTAINERS):
       errors.add(
         doc.path,
-        doc.line("audience ="),
+        doc.line("audience =", start=start),
         1,
         f"{what} `audience` must be `{MAINTAINERS}`",
       )
@@ -947,20 +974,21 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
       )
       for n, item in enumerate(d.get("items", [])):
         where = f"items[{n}]"
+        start = doc.item_line(n)
         if not isinstance(item, dict) or not check_keys(
-          doc, item, ITEM_SCHEMA, languages, errors, where
+          doc, item, ITEM_SCHEMA, languages, errors, where, start
         ):
           continue
         strip_texts(item, ITEM_SCHEMA)
         if not NUMBER.fullmatch(item["number"]):
           errors.add(
             path,
-            doc.line(f'number = "{item["number"]}"'),
+            doc.line("number =", start=start),
             1,
             f"`{where}` `number` `{item['number']}` is not {NUMBER_SHAPE}",
           )
-        status = status_of(doc, item, f"`{where}`")
-        check_repealed(doc, item, status, errors, where)
+        status = status_of(doc, item, f"`{where}`", start)
+        check_repealed(doc, item, status, errors, where, start)
         section.items.append(
           Item(
             item["id"],
@@ -969,7 +997,7 @@ def load(root: Path, errors: Errors) -> Sources | None:  # noqa: C901
             item.get("repealed"),
             item["content"],
             section,
-            omitted(doc, item, f"`{where}`"),
+            omitted(doc, item, f"`{where}`", start),
           )
         )
       sections.append(section)

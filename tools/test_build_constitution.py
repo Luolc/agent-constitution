@@ -809,7 +809,10 @@ class CheckTest(Tree):
       'number = "1"\nstatus = "draft"\n',
       'number = "1"\n',
     )
-    self.assertFails(1, f"{A}/01-alpha-one.toml:1", "`items[0]` lacks `status`")
+    # The line of the item's `[[items]]` header.
+    self.assertFails(
+      1, f"{A}/01-alpha-one.toml:12", "`items[0]` lacks `status`"
+    )
 
   def test_1_languages_differ(self):
     self.edit(f"{B}/article.toml", 'zh = "第二"', 'fr = "Deuxième"')
@@ -915,9 +918,10 @@ class CheckTest(Tree):
       'number = "2"\nstatus = "draft"',
       'number = "2"\nstatus = "active"',
     )
+    # The item's own `status`, not the section's on line 2.
     self.assertFails(
       1,
-      f"{A}/01-alpha-one.toml:2",
+      f"{A}/01-alpha-one.toml:28",
       "`items[1]` is active while index.toml is draft",
     )
 
