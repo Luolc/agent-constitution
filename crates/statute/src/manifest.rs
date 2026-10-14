@@ -247,11 +247,105 @@ struct RawSource {
     scope: Option<String>,
 }
 
+/// `statute.private.toml`.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawPrivate {
+    base: String,
+    #[serde(default)]
+    rules: Vec<String>,
+    #[serde(default)]
+    sources: BTreeMap<String, RawSource>,
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct RawCompile {
     agents_md: Option<Vec<Part>>,
     lang: Option<String>,
+}
+
+/// The sources of a `[sources]` table, each problem in `errors`.
+/// `public_rule_set` is the `public` of `statute.toml`, which names no
+/// private source when it is true; `None` for the table of
+/// `statute.private.toml`, which may.
+fn read_sources(
+    raw: &BTreeMap<String, RawSource>,
+    public_rule_set: Option<bool>,
+    errors: &mut Vec<String>,
+) -> Vec<SourceSpec> {
+    let mut sources = Vec::new();
+    for (name, s) in raw {
+        if let Some(why) = reserved(name) {
+            errors.push(format!("[sources] {why}"));
+            continue;
+        }
+        if name != FIRST_PARTY && !node::is_slug(name) {
+            errors.push(format!(
+                "[sources] `{name}`: a source's short name is `{FIRST_PARTY}`, for the first-party source, or lowercase words joined by hyphens, as in `team`"
+            ));
+            continue;
+        }
+        let source_public = match (name.as_str(), s.public) {
+            (FIRST_PARTY, Some(false)) => {
+                errors.push(format!(
+                    "[sources] `{FIRST_PARTY}`: the first-party source is always public; remove `public = false`"
+                ));
+                continue;
+            }
+            (FIRST_PARTY, _) => true,
+            (_, Some(p)) => p,
+            (_, None) => {
+                errors.push(format!(
+                    "[sources] `{name}`: say whether the source is public, `public = true` or `public = false`"
+                ));
+                continue;
+            }
+        };
+        let local = match (name.as_str(), s.scope.as_deref()) {
+            (_, None | Some("global")) => false,
+            (FIRST_PARTY, Some("local")) => {
+                errors.push(format!(
+                    "[sources] `{FIRST_PARTY}`: the first-party source is global; remove `scope = \"local\"`"
+                ));
+                continue;
+            }
+            (_, Some("local")) => true,
+            (_, Some(other)) => {
+                errors.push(format!(
+                    "[sources] `{name}`: `scope = \"{other}\"` is neither \"global\" nor \"local\""
+                ));
+                continue;
+            }
+        };
+        if public_rule_set == Some(true) && !source_public {
+            errors.push(format!(
+                "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in {}, next to statute.toml",
+                crate::private::MANIFEST
+            ));
+            continue;
+        }
+        match (&s.path, &s.git) {
+            (Some(path), None) if s.tag.is_none() && s.branch.is_none() => {
+                sources.push(SourceSpec {
+                    name: name.clone(),
+                    path: path.clone(),
+                    public: source_public,
+                    local,
+                })
+            }
+            (Some(_), _) => errors.push(format!(
+                "[sources] `{name}`: a source is either `path` or `git` with `tag` or `branch`, not both"
+            )),
+            (None, Some(_)) => errors.push(format!(
+                "[sources] `{name}`: git sources are not supported yet; use a source on disk, `{name} = {{ path = \"<dir>\" }}`"
+            )),
+            (None, None) => errors.push(format!(
+                "[sources] `{name}`: give the source's `path`, as in `{name} = {{ path = \".\" }}`"
+            )),
+        }
+    }
+    sources
 }
 
 /// The key a reference of a rule set names among `sources`; else what is
@@ -294,76 +388,7 @@ impl Manifest {
             false
         });
 
-        let mut sources = Vec::new();
-        for (name, s) in &raw.sources {
-            if let Some(why) = reserved(name) {
-                errors.push(format!("[sources] {why}"));
-                continue;
-            }
-            if name != FIRST_PARTY && !node::is_slug(name) {
-                errors.push(format!(
-                    "[sources] `{name}`: a source's short name is `{FIRST_PARTY}`, for the first-party source, or lowercase words joined by hyphens, as in `team`"
-                ));
-                continue;
-            }
-            let source_public = match (name.as_str(), s.public) {
-                (FIRST_PARTY, Some(false)) => {
-                    errors.push(format!(
-                        "[sources] `{FIRST_PARTY}`: the first-party source is always public; remove `public = false`"
-                    ));
-                    continue;
-                }
-                (FIRST_PARTY, _) => true,
-                (_, Some(p)) => p,
-                (_, None) => {
-                    errors.push(format!(
-                        "[sources] `{name}`: say whether the source is public, `public = true` or `public = false`"
-                    ));
-                    continue;
-                }
-            };
-            let local = match (name.as_str(), s.scope.as_deref()) {
-                (_, None | Some("global")) => false,
-                (FIRST_PARTY, Some("local")) => {
-                    errors.push(format!(
-                        "[sources] `{FIRST_PARTY}`: the first-party source is global; remove `scope = \"local\"`"
-                    ));
-                    continue;
-                }
-                (_, Some("local")) => true,
-                (_, Some(other)) => {
-                    errors.push(format!(
-                        "[sources] `{name}`: `scope = \"{other}\"` is neither \"global\" nor \"local\""
-                    ));
-                    continue;
-                }
-            };
-            if public && !source_public {
-                errors.push(format!(
-                    "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in statute.private.toml, next to statute.toml, which this version of statute does not read yet"
-                ));
-                continue;
-            }
-            match (&s.path, &s.git) {
-                (Some(path), None) if s.tag.is_none() && s.branch.is_none() => {
-                    sources.push(SourceSpec {
-                        name: name.clone(),
-                        path: path.clone(),
-                        public: source_public,
-                        local,
-                    })
-                }
-                (Some(_), _) => errors.push(format!(
-                    "[sources] `{name}`: a source is either `path` or `git` with `tag` or `branch`, not both"
-                )),
-                (None, Some(_)) => errors.push(format!(
-                    "[sources] `{name}`: git sources are not supported yet; use a source on disk, `{name} = {{ path = \"<dir>\" }}`"
-                )),
-                (None, None) => errors.push(format!(
-                    "[sources] `{name}`: give the source's `path`, as in `{name} = {{ path = \".\" }}`"
-                )),
-            }
-        }
+        let sources = read_sources(&raw.sources, Some(public), &mut errors);
         if raw.sources.is_empty() {
             errors.push(
                 "[sources] is empty; name the source of the rules, as in `R = { path = \".\" }`"
@@ -444,6 +469,69 @@ impl Manifest {
             packs,
             agents_md,
             lang,
+        })
+    }
+
+    /// The rule set with the private layer of `statute.private.toml`, from
+    /// its text, added: its sources and its rules after those of
+    /// `statute.toml` (`docs/design/rule-sources.md`, Private rules in a
+    /// public repository). Every problem found is returned.
+    pub fn with_private(&self, text: &str) -> Result<Manifest, Vec<String>> {
+        let raw: RawPrivate =
+            toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
+        let mut errors = Vec::new();
+        if !self.public {
+            errors.push(format!(
+                "{} is for a public repository; in a private one (`public = false`), statute.toml names every source and rule",
+                crate::private::MANIFEST
+            ));
+        }
+        if raw.base != FILE {
+            errors.push(format!(
+                "`base = \"{}\"`: the private layer adds to the rule set next to it, `base = \"{FILE}\"`",
+                raw.base
+            ));
+        }
+        let mut sources = self.sources.clone();
+        for spec in read_sources(&raw.sources, None, &mut errors) {
+            if self.spec(&spec.name).is_some() {
+                errors.push(format!(
+                    "[sources] `{}` is named in {FILE} already",
+                    spec.name
+                ));
+            } else {
+                sources.push(spec);
+            }
+        }
+        sources.sort_by(|a, b| a.name.cmp(&b.name));
+        if sources.iter().filter(|s| s.is_here()).count() > 1 {
+            errors.push(
+                "[sources] a source at `.` is this repository, which statute.toml names already"
+                    .to_owned(),
+            );
+        }
+        let mut rules = self.rules.clone();
+        for entry in &raw.rules {
+            match RuleRef::parse(entry)
+                .and_then(|r| key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}")))
+            {
+                Err(e) => errors.push(format!("`rules`: {e}")),
+                Ok(key) if self.rules.contains(&key) => errors.push(format!(
+                    "`rules` lists `{entry}`, which {FILE} lists already"
+                )),
+                Ok(key) if rules.contains(&key) => {
+                    errors.push(format!("`rules` lists `{entry}` twice"))
+                }
+                Ok(key) => rules.push(key),
+            }
+        }
+        if !errors.is_empty() {
+            return Err(errors);
+        }
+        Ok(Manifest {
+            sources,
+            rules,
+            ..self.clone()
         })
     }
 
