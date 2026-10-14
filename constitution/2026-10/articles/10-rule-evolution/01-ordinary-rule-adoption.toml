@@ -1,5 +1,5 @@
 id = "ordinary-rule-adoption"
-status = "draft"
+status = "active"
 
 [content]
 en = '''
@@ -12,7 +12,7 @@ agent 可以自行提出、审查和采纳普通规定、skill 和判例，不�
 [[items]]
 id = "conditions"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -25,7 +25,7 @@ zh = '''
 [[items]]
 id = "productivity-gains"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

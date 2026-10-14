@@ -1,5 +1,5 @@
 id = "text-and-sources"
-status = "draft"
+status = "active"
 audience = "maintainers"
 
 [content]
@@ -13,7 +13,7 @@ zh = '''
 [[items]]
 id = "sources"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -26,7 +26,7 @@ zh = '''
 [[items]]
 id = "ids"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -39,7 +39,7 @@ zh = '''
 [[items]]
 id = "languages"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -52,7 +52,7 @@ zh = '''
 [[items]]
 id = "compiled"
 number = "4"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -65,7 +65,7 @@ agent 读到的版本，一种语言一份，由源文本编译而来；修改�
 [[items]]
 id = "numbers"
 number = "5"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -78,7 +78,7 @@ zh = '''
 [[items]]
 id = "self-explaining"
 number = "6"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

@@ -1,5 +1,5 @@
 id = "revision-count"
-status = "draft"
+status = "active"
 audience = "maintainers"
 
 [content]
@@ -13,7 +13,7 @@ zh = '''
 [[items]]
 id = "increment"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -26,7 +26,7 @@ zh = '''
 [[items]]
 id = "lower-ranking"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

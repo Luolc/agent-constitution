@@ -1,5 +1,5 @@
 id = "equal-languages"
-status = "draft"
+status = "active"
 audience = "maintainers"
 
 [content]
@@ -13,7 +13,7 @@ zh = '''
 [[items]]
 id = "standing"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -26,7 +26,7 @@ zh = '''
 [[items]]
 id = "language-changes"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -39,7 +39,7 @@ zh = '''
 [[items]]
 id = "differences"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

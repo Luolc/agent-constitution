@@ -1,5 +1,5 @@
 id = "division-of-instructions"
-status = "draft"
+status = "active"
 
 [content]
 en = '''
@@ -12,7 +12,7 @@ zh = '''
 [[items]]
 id = "rules"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -25,7 +25,7 @@ zh = '''
 [[items]]
 id = "project-instructions"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -38,7 +38,7 @@ zh = '''
 [[items]]
 id = "task-instructions"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
