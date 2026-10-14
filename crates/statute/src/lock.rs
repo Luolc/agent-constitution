@@ -49,12 +49,16 @@ fn pin(spec: &SourceSpec) -> Pin<'_> {
     Pin { path: &spec.path }
 }
 
-/// A rule, named as the rule set names it (`R42`, `team:7`).
+/// A rule, named as the rule set names it (`R42`, `team:7`), and the
+/// rule that overrides it, if one does.
 #[derive(Serialize)]
+#[serde(rename_all = "kebab-case")]
 struct Rule<'a> {
     rule: String,
     revision: u64,
     sha256: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    overridden_by: Option<String>,
 }
 
 /// The lock file of a resolved project: the sources in order of name,
@@ -84,6 +88,7 @@ pub fn render(project: &Project) -> String {
                 rule: key.to_string(),
                 revision: node.revision,
                 sha256: &node.sha256,
+                overridden_by: project.resolution.overridden.get(key).map(Key::to_string),
             })
             .collect(),
     };

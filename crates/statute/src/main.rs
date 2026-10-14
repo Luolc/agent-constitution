@@ -448,13 +448,19 @@ fn report_changes(old: &lock::Locked, project: &Project) {
         ));
     }
     for (key, (revision, sha256)) in &new.rules {
+        // An overridden rule that changed asks whether the override still
+        // holds.
+        let still = match project.resolution.overridden.get(key) {
+            Some(by) => format!("; {by} overrides it, so check that the override still holds"),
+            None => String::new(),
+        };
         match old.rules.get(key) {
             Some((was, _)) if was != revision => line(format!(
-                "changed: rule {}: revision {was} -> {revision}",
+                "changed: rule {}: revision {was} -> {revision}{still}",
                 label(sources, key)
             )),
             Some((_, was)) if was != sha256 => line(format!(
-                "changed: rule {}: content changed, still revision {revision}; {RAISE_REVISION}",
+                "changed: rule {}: content changed, still revision {revision}; {RAISE_REVISION}{still}",
                 label(sources, key)
             )),
             Some(_) => {}
@@ -486,6 +492,7 @@ fn why(project: &Project, key: &Key) -> String {
             Reason::Pack(root) => format!("in pack {}", label(sources, root)),
             Reason::ParentOf(c) => format!("the parent of {}", label(sources, c)),
             Reason::RequiredBy(b) => format!("required by {}", label(sources, b)),
+            Reason::OverriddenBy(b) => format!("overridden by {}", label(sources, b)),
         })
         .collect::<Vec<_>>()
         .join("; ")
@@ -644,7 +651,20 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
         );
         return Err(());
     }
-    println!("rule {} is enabled:", label(sources, &key));
+    let res = &project.resolution;
+    if res.overridden.contains_key(&key) {
+        println!(
+            "rule {} is overridden by {}, which stands in its place; it counts as enabled:",
+            label(sources, &key),
+            label(sources, &res.standing(&key))
+        );
+    } else {
+        println!("rule {} is enabled:", label(sources, &key));
+    }
+    let chain: Vec<String> = res.chain(&key).iter().map(|k| label(sources, k)).collect();
+    if !chain.is_empty() {
+        println!("- it overrides {}", chain.join(", which overrides "));
+    }
     let mut out = String::new();
     reasons(&project, &key, 0, &mut vec![key.clone()], &mut out);
     print!("{out}");
@@ -680,6 +700,13 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
             Reason::RequiredBy(by) => {
                 out.push_str(&format!(
                     "{indent}- required by {}, which is enabled:\n",
+                    label(sources, by)
+                ));
+                by
+            }
+            Reason::OverriddenBy(by) => {
+                out.push_str(&format!(
+                    "{indent}- overridden by {}, which stands in its place and is enabled:\n",
                     label(sources, by)
                 ));
                 by

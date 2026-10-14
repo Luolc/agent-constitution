@@ -184,6 +184,9 @@ pub struct SourceSpec {
     pub path: String,
     /// Whether anyone may read the source, as the rule set declares it.
     pub public: bool,
+    /// `scope = "local"`: the rules are this repository's, as those of
+    /// its own `rules/` are, and rank with them for overrides.
+    pub local: bool,
 }
 
 impl SourceSpec {
@@ -241,6 +244,7 @@ struct RawSource {
     tag: Option<String>,
     branch: Option<String>,
     public: Option<bool>,
+    scope: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -318,6 +322,22 @@ impl Manifest {
                     continue;
                 }
             };
+            let local = match (name.as_str(), s.scope.as_deref()) {
+                (_, None | Some("global")) => false,
+                (FIRST_PARTY, Some("local")) => {
+                    errors.push(format!(
+                        "[sources] `{FIRST_PARTY}`: the first-party source is global; remove `scope = \"local\"`"
+                    ));
+                    continue;
+                }
+                (_, Some("local")) => true,
+                (_, Some(other)) => {
+                    errors.push(format!(
+                        "[sources] `{name}`: `scope = \"{other}\"` is neither \"global\" nor \"local\""
+                    ));
+                    continue;
+                }
+            };
             if public && !source_public {
                 errors.push(format!(
                     "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in statute.private.toml, next to statute.toml, which this version of statute does not read yet"
@@ -330,6 +350,7 @@ impl Manifest {
                         name: name.clone(),
                         path: path.clone(),
                         public: source_public,
+                        local,
                     })
                 }
                 (Some(_), _) => errors.push(format!(
@@ -488,6 +509,7 @@ agents-md = ["statement", "reason"]
                 name: "R".into(),
                 path: ".".into(),
                 public: true,
+                local: false,
             }]
         );
         assert_eq!(m.rules, [Key::new("R", 42), Key::new("R", 7)]);
@@ -695,6 +717,33 @@ agents-md = ["statement", "reason"]
                 "R = { path = \".\", public = true }"
             ))
             .is_ok()
+        );
+    }
+
+    #[test]
+    fn scope_is_global_or_local() {
+        let with = |scope: &str| {
+            GOOD.replace(
+                "R = { path = \".\" }",
+                &format!(
+                    "R = {{ path = \".\" }}\nhere = {{ path = \"../here\", public = false{scope} }}"
+                ),
+            )
+        };
+        let local = |text: &str| Manifest::parse(text).unwrap().spec("here").unwrap().local;
+        assert!(!local(&with("")));
+        assert!(!local(&with(", scope = \"global\"")));
+        assert!(local(&with(", scope = \"local\"")));
+        fails_with(
+            &with(", scope = \"repo\""),
+            "[sources] `here`: `scope = \"repo\"` is neither \"global\" nor \"local\"",
+        );
+        fails_with(
+            &GOOD.replace(
+                "R = { path = \".\" }",
+                "R = { path = \".\", scope = \"local\" }",
+            ),
+            "[sources] `R`: the first-party source is global",
         );
     }
 

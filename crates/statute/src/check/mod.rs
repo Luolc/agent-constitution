@@ -90,7 +90,8 @@ impl Context<'_> {
     }
 }
 
-/// The checks of every enabled rule, in order of key. A built-in check
+/// The checks of every enabled rule that is not overridden, in order of
+/// key. A built-in check
 /// belongs to a rule of the first-party source; a rule of another source
 /// with `check = "builtin"` has none in statute.
 pub fn run(project: &Project, ctx: &Context) -> Vec<(Key, Report)> {
@@ -98,6 +99,7 @@ pub fn run(project: &Project, ctx: &Context) -> Vec<(Key, Report)> {
         .resolution
         .enabled
         .keys()
+        .filter(|key| project.resolution.in_force(key))
         .filter_map(|key| {
             let rule = project.sources.get(key)?.rule.as_ref()?;
             let first_party = key.source == FIRST_PARTY;

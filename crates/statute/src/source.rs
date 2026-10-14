@@ -24,6 +24,9 @@ pub struct Source {
     pub path: String,
     /// Whether anyone may read it, as the rule set declares it.
     pub public: bool,
+    /// Whether its rules are the repository's own: `L`, or a source with
+    /// `scope = "local"`.
+    pub local: bool,
 }
 
 impl Source {
@@ -271,11 +274,46 @@ impl Sources {
     }
 
     /// The top of the tree above a node: its domain, or the highest node
-    /// above it that its source has.
+    /// above it that its source has. A rule that overrides another stands
+    /// in that one's place.
     pub fn root(&self, key: &Key) -> Key {
+        let key = self.place(key);
         match self.source(&key.source) {
             Some(s) => Key::new(&s.name, s.root(key.id)),
-            None => key.clone(),
+            None => key,
+        }
+    }
+
+    /// The rule a rule overrides.
+    pub fn overrides(&self, key: &Key) -> Option<Key> {
+        Some(self.get(key)?.overrides.as_ref()?.key(&key.source))
+    }
+
+    /// Where a node stands in the tree: its own place, or for a rule that
+    /// overrides another, through any chain of overrides, the place of
+    /// the last rule overridden.
+    pub fn place(&self, key: &Key) -> Key {
+        let mut at = key.clone();
+        // Ranks only go down along a chain, so it has at most three links.
+        for _ in 0..3 {
+            match self.overrides(&at) {
+                Some(next) if self.get(&next).is_some() => at = next,
+                _ => break,
+            }
+        }
+        at
+    }
+
+    /// The rank of a source for overrides: the first-party source 1, the
+    /// other global sources 2, the repository's own rules 3
+    /// (`docs/design/rule-sources.md`, Overrides).
+    pub fn rank(&self, name: &str) -> u8 {
+        if name == FIRST_PARTY {
+            1
+        } else if name == LOCAL || self.source(name).is_some_and(|s| s.local) {
+            3
+        } else {
+            2
         }
     }
 
@@ -305,6 +343,19 @@ impl Sources {
                             );
                         }
                     }
+                }
+                if let Some(r) = &node.overrides {
+                    let what = format!("`overrides` names {}", show_ref(r));
+                    self.check_ref(
+                        source,
+                        r,
+                        &what,
+                        &file,
+                        diags,
+                        |(target_source, target), file, diags| {
+                            self.check_override(source, &what, target_source, target, file, diags)
+                        },
+                    );
                 }
                 let mut texts: Vec<&node::Text> = vec![&node.title];
                 texts.extend(&node.applicability);
@@ -336,7 +387,7 @@ impl Sources {
     /// those within it already.
     fn check_cycles(&self, diags: &mut Diagnostics) {
         let edges = |key: &Key| -> Vec<Key> {
-            self.parent(key)
+            self.parent(&self.place(key))
                 .into_iter()
                 .chain(self.requires(key))
                 .filter(|k| self.get(k).is_some())
@@ -387,6 +438,41 @@ impl Sources {
                     }
                 }
             }
+        }
+    }
+
+    /// Checks that a rule of `source` may override `target`, a node of
+    /// `target_source`: a rule, of a lower rank.
+    fn check_override(
+        &self,
+        source: &Source,
+        what: &str,
+        target_source: &Source,
+        target: &Node,
+        file: &str,
+        diags: &mut Diagnostics,
+    ) {
+        if target.kind != Kind::Rule {
+            diags.error(
+                file,
+                format!(
+                    "{what}, a {}; only a rule can be overridden: in place of a one-of's child, choose another child, and propose to its source one it lacks",
+                    target.kind.name()
+                ),
+            );
+            return;
+        }
+        let (from, to) = (self.rank(&source.name), self.rank(&target_source.name));
+        if from <= to {
+            diags.error(
+                file,
+                format!(
+                    "{what}, a rule of {}, which {} {}; a rule may override only a rule of a lower rank: the first-party source, then the other global sources, then this repository's own rules and the sources with `scope = \"local\"`",
+                    target_source.described(),
+                    if from == to { "ranks with" } else { "ranks above" },
+                    source.described()
+                ),
+            );
         }
     }
 
@@ -734,7 +820,9 @@ impl Checker<'_> {
 
     fn check_crossing_requirements(&mut self) {
         let source = self.source;
-        for node in source.nodes.values() {
+        // A rule that overrides another stands in another source's tree,
+        // which this source cannot see.
+        for node in source.nodes.values().filter(|n| n.overrides.is_none()) {
             let Some(rule) = &node.rule else { continue };
             for r in &rule.requires {
                 let Ref::Local(target) = *r else { continue };
