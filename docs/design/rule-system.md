@@ -238,7 +238,9 @@ author of any language. A translation gives the title and all three parts
 in its language, and its key in `[translations]` records which original it
 follows. That hash is the SHA-256 of the original-language values of
 `title`, `text.statement`, `text.reason` and `text.verification`, in this
-order, as the TOML parser returns them, encoded in UTF-8 and joined with
+order, as the TOML parser returns them (before the build drops the
+newlines next to the quotes of a multi-line string, see
+[Source formats](source-formats.md)), encoded in UTF-8 and joined with
 one NUL byte (0x00) between each two; for a domain or a one-of it is the
 hash of the title alone. When the original changes and a translation's
 hash no longer matches, the check fails and prints the new hash, as
@@ -268,7 +270,9 @@ ac = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
 agents-md = ["statement"]
 ```
 
-`[compile]` sets what the compiled `AGENTS.md` carries of each rule:
+The rule set names the constitution's source and edition; the revision
+is the one at the commit of that source the lock file pins, and the lock
+file records it. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
 by default only `statement`; adding `reason` or `verification` puts those
 parts in as well ([Compilation and the site](#compilation-and-the-site)).
 
@@ -464,9 +468,10 @@ service. It sits under the uv rule and requires the one-of "CI service",
 satisfied by any of its children, such as a GitHub Actions rule.
 
 **Domains.** A domain is a node at the top of the tree, such as Python,
-CI, Git or security. It has an ID and a title and nothing else, has no
-parent, and cannot be enabled on its own. When any rule below it is
-enabled, the domain appears in the compiled output as a heading. Domains
+CI, Git or security. Besides its ID and title it has only the few fields
+every node has ([Rule file format](#rule-file-format)), and no text or
+check; it has no parent and cannot be enabled on its own. When any rule
+below it is enabled, the domain appears in the compiled output as a heading. Domains
 do not nest: a finer grouping is a rule or a one-of under the domain.
 
 **One-ofs.** A one-of is a node of the parent tree of which at most one
@@ -522,14 +527,15 @@ without one it requires, the tool adds the missing rule, as a package
 manager adds a dependency: the rule set lists only the rules chosen
 directly, the lock file records the ones brought in, and an upgrade's
 diff shows them. This applies equally to a parent that counts as a
-requirement. The one case that fails is a requirement of a one-of when
-the rule set has enabled none of its children: the tool cannot choose for
+requirement. Among missing requirements, the one case that fails is a
+requirement of a one-of when the rule set has enabled none of its
+children: the tool cannot choose for
 the user, so it fails and lists the children to choose from.
 
 Packs: a pack is a subtree, named by its root, and a rule set can enable
-it as a whole. When the subtree holds a one-of, enabling the pack requires
-the rule set to name one child for each one-of in it; the build fails
-otherwise.
+it as a whole. A one-of in the pack of which the rule set names no child
+contributes nothing, like any one-of with no child enabled; the build
+fails only when an enabled rule requires that one-of, as above.
 
 ## Tracing rules to the constitution
 
