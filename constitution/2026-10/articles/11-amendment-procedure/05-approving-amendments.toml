@@ -1,5 +1,5 @@
 id = "approving-amendments"
-status = "draft"
+status = "active"
 audience = "maintainers"
 
 [content]
@@ -13,7 +13,7 @@ zh = '''
 [[items]]
 id = "draft-amendments"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -26,7 +26,7 @@ zh = '''
 [[items]]
 id = "edition-amendments"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -39,7 +39,7 @@ zh = '''
 [[items]]
 id = "what-counts"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

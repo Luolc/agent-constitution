@@ -1,5 +1,5 @@
 id = "content-scope"
-status = "draft"
+status = "active"
 audience = "maintainers"
 
 [content]
@@ -13,7 +13,7 @@ zh = '''
 [[items]]
 id = "tests"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -26,7 +26,7 @@ zh = '''
 [[items]]
 id = "classes"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -39,7 +39,7 @@ zh = '''
 [[items]]
 id = "examples"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -52,7 +52,7 @@ zh = '''
 [[items]]
 id = "drafting"
 number = "4"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

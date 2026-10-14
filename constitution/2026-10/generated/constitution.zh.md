@@ -1,8 +1,6 @@
-本文件由 `uv run constitution-build` 从 `constitution/2026-10/index.toml` 和 `constitution/2026-10/articles/` 生成，不要手改；改源文件后重新生成。修订号：0.60 (草案)。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/2026-10/generated/constitution.zh.agent.md` 不收录这些部分。
+本文件由 `uv run constitution-build` 从 `constitution/2026-10/index.toml` 和 `constitution/2026-10/articles/` 生成，不要手改；改源文件后重新生成。修订号：1。语言：中文。\* 写给人看的背景：本宪法的由来、结构和修改方式。agent 版 `constitution/2026-10/generated/constitution.zh.agent.md` 不收录这些部分。
 
 # Agent 宪法 (2026-10 版)
-
-**本文本是草案，可以试行，但尚未定稿，随时可能修改。** 依照[第十一条][amendment-procedure]批准之后，才成为正式的一版。
 
 ## 序言<sup class="omitted">*</sup>
 
@@ -227,7 +225,6 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="stable-numbers.draft"></a>(**五**) 草案中新增的条文按顺序编号，其后的条文依次重新编号。
 -   <a id="new-editions"></a>**第九款**<sup class="omitted">*</sup> 制定新的一版 ([第一条第三款第五项][editions.new-edition]) 本身是一次修宪，按[第十一条第五款][approving-amendments]的要求批准：经批准的草案成为现行版，此前已有现行版的，由它取代。
 
-[amendment-procedure]: #amendment-procedure
 [principals]: #principals
 [division-of-instructions.rules]: #division-of-instructions.rules
 [rule-evolution]: #rule-evolution
@@ -248,6 +245,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
 [lower-layers]: #lower-layers
 [undetermined]: #undetermined
 [highest-layer]: #highest-layer
+[amendment-procedure]: #amendment-procedure
 [text-and-sources.sources]: #text-and-sources.sources
 [personal-info]: #personal-info
 [exceptions.constitution]: #exceptions.constitution

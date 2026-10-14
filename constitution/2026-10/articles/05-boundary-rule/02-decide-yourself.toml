@@ -1,5 +1,5 @@
 id = "decide-yourself"
-status = "draft"
+status = "active"
 
 [content]
 en = '''
@@ -12,7 +12,7 @@ zh = '''
 [[items]]
 id = "next-task"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -25,7 +25,7 @@ zh = '''
 [[items]]
 id = "splitting-work"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -38,7 +38,7 @@ zh = '''
 [[items]]
 id = "routine-changes"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -51,7 +51,7 @@ zh = '''
 [[items]]
 id = "changing-approach"
 number = "4"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -64,7 +64,7 @@ zh = '''
 [[items]]
 id = "own-mistakes"
 number = "5"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -77,7 +77,7 @@ zh = '''
 [[items]]
 id = "answered-questions"
 number = "6"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -90,7 +90,7 @@ zh = '''
 [[items]]
 id = "ordinary-rules"
 number = "7"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
