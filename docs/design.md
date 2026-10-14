@@ -699,7 +699,8 @@ is a release (rule `must-ask-items`) and not set up.
   `build_constitution.py`. `build_site.py` turns each into the home page of
   its language in a temporary content directory: the header line is
   dropped, the title goes into the front matter, the revision from
-  `index.toml` is set under the title, and the text is wrapped in
+  `index.toml` is set under the title, followed by `(draft)` (`(草案)`)
+  while its `status` is `draft`, and the text is wrapped in
   `<div class="constitution">`, the root the style sheet hangs on. Under
   the title is a list without bullets: the revision and the length
   (below), each centered under the title, and, when the text has an
