@@ -400,13 +400,31 @@ Bazel.
 
 **Monorepos.** A rule set may be split by path into segments, each
 naming a directory and the rules for it. Exclusion is checked within each
-segment, and the compiler writes each segment's instruction file into its
-directory, so one part of a monorepo can use uv and another Bazel. This
-depends on how each agent reads instruction files in subdirectories,
-which differs between agents and has not been measured here. The first
-thing to check when this is implemented is, for each supported agent,
-whether it reads the instruction file of a subdirectory it works in; the
-segment design is fixed only after that.
+segment, so one part of a monorepo can use uv and another Bazel. What
+the agents do with instruction files in subdirectories was measured on
+2026-10-14, in non-interactive mode only (Claude Code 2.1.296, Codex
+0.159.3, Grok 1.0.50; Grok's project instructions load only in a trusted
+folder):
+
+- With the working directory in the subdirectory, all three load that
+  subdirectory's instruction file at the start.
+- With the working directory at the repository root and a file in the
+  subdirectory being changed, only Claude Code loads the subdirectory's
+  `CLAUDE.md` by itself, when it touches a file there. Codex and Grok
+  load nothing; the model has to go and read the file, and in the runs
+  here it did. In both runs where Grok read the subdirectory's file
+  before the root's, it followed the root's on a conflict, against its
+  documentation.
+- By default, Claude Code reads `AGENTS.md` only when no `CLAUDE.md` is
+  in the working directory or above it (a setting can make it read both;
+  not tested).
+
+So a segment cannot rely on its own directory's instruction file being
+read. The compiler writes every segment's rules into the instruction
+file at the repository root, and each such rule says which directory it
+applies to; the compiled output of one repository uses one file name. A
+subdirectory file may repeat a segment, but nothing depends on it being
+read.
 
 **Where it lives.** The design follows a package manager such as uv: a
 source is like a package index, a rule set like a project manifest, the
@@ -679,7 +697,8 @@ TOML file has this value") would keep needing one more case, "or", and
 check is code, of one of two kinds, and there is no third.
 
 **Our rules: Rust.** The checks of the rules in this repo are in the
-tool's crate ([The tool and the first version](#the-tool-and-the-first-version)),
+tool's crate
+([The tool and the first version](#the-tool-and-the-first-version)),
 with one module per rule, named for the rule's ID (`r42.rs` for
 rule 42), the way ruff and clippy implement each lint as a function. The
 rule's text and metadata stay in `rules/42.toml`, so the person writing a
@@ -687,9 +706,11 @@ rule and the one writing its check each change their own file; the
 module's test cases sit next to the check, in the crate. Common
 operations, such as reading a key from a TOML file, are ordinary helper
 functions in the same crate; an operation becomes a helper on its third
-repetition, not before (`simplicity`). The crate builds into one binary,
-released with the rules, so a downstream user installs one binary and has
-every check, with no scripts to deploy.
+repetition, not before (`simplicity`). The crate builds into one binary, so a
+downstream user installs one binary and has every check, with no scripts
+to deploy. The crate is published to crates.io with its own version, and
+publishing it is a release; the rules are released with tags of the
+repository ([Releases and versions](amendments-and-releases.md#releases-and-versions)).
 
 A check that needs the state of GitHub, of a pull request or of a CI
 run, reads it through the `gh` on the machine, run in the repository,
@@ -701,8 +722,9 @@ GitHub, a call that fails and one that has not answered within 60 s
 missing tool. What such a check looks at comes from the repository
 itself: the pull requests are those GitHub associates with `HEAD` (the
 one that merged it into the default branch, or else the open and merged
-ones that hold it), and a release is a tag on `HEAD`. A commit not pushed yet has no pull request,
-and a `HEAD` without a tag no release, and both are inconclusive.
+ones that hold it), and a release is a tag on `HEAD`. A commit not
+pushed yet has no pull request, and a `HEAD` without a tag no release,
+and both are inconclusive.
 
 When a rule is superseded, its successor gets a new module, copied from
 the old one and changed as needed. The old module stays in the code,
@@ -1080,9 +1102,9 @@ this design lands.
 - How versions are resolved across sources in detail: how the ranges
   that sources declare for each other are matched against tags and
   branches, and what the build reports when they disagree.
-- Path segments for monorepos, settled once it has been measured whether
-  each supported agent reads the instruction file of a subdirectory it
-  works in.
+- Path segments for monorepos: how an agent behaves in interactive mode,
+  which was not measured, and the syntax with which a rule in the root
+  file names the directory it applies to.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
 - The tool's final name, chosen before its first real release. `statute`
