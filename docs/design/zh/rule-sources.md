@@ -1,4 +1,4 @@
-<!-- en-sha256: f007dee537430aa7136694b4f8964ef8fa3996913bebc5df5022785c8aab01b4 -->
+<!-- en-sha256: ecce287e3f405aa44502c566ac212f2b08ce40719b3586303cba249688e6345a -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -47,7 +47,7 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 
 ## <a id="public-or-not"></a>公开与否
 
-可见性靠声明，不靠查询：规定清单为自己、为每个规定源写明 `public = true` 或 `public = false`。要是构建时去托管平台查 (GitHub 上仓库的 visibility)，构建就离不开网络和账号，同样的输入在两台机器上也可能得出不同结果；要是按规定源放在哪来猜 (`R` 公开，其余都私有)，一个团队公开的规定源就成了私有的，公开规定也就不能引用它的规定了。
+可见性靠声明，读规定清单时不去查询：规定清单为自己、为每个规定源写明 `public = true` 或 `public = false`。要是构建时去托管平台查 (GitHub 上仓库的 visibility)，构建就离不开网络和账号，同样的输入在两台机器上也可能得出不同结果；要是按规定源放在哪来猜 (`R` 公开，其余都私有)，一个团队公开的规定源就成了私有的，公开规定也就不能引用它的规定了。
 
 声明错了，只有一个方向危险。私有仓库声明了 `public = true`，检查比需要的严，但什么也不会泄漏。公开仓库声明了 `public = false`，就可能把私有规定写进谁都能读的文件。所以 `statute check` 有一项内置检查，在能查的时候把声明和托管平台对一对，像[检查](rule-checks.md#checks) 里的内置检查那样通过 `gh` 查：规定清单写的是 `public = false`，而仓库的 visibility 是 `PUBLIC`，就失败；`gh` 答不上来时，报告说无法判断。
 

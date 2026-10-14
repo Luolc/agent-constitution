@@ -84,7 +84,7 @@ team = { git = "example.test/our-team/rules", branch = "main", public = true }
 
 ## Public or not
 
-Visibility is declared, not looked up: the rule set says `public = true`
+Visibility is declared, not looked up when the rule set is read: it says `public = true`
 or `public = false`, for itself and for each source. Reading it from the host at build time (GitHub's visibility of
 the repository) would make the build need the network and an account,
 and give two machines different results for the same inputs; guessing

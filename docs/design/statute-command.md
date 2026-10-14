@@ -198,7 +198,8 @@ Inherited rule sets, path segments and git sources are not built.
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,
 an empty `rules`, and one source on disk, the first-party source `R`.
-`public` is what `--public` or `--private` says, or else what `gh`
+`public` is what `--public` or `--private` says (one of them at most),
+or else what `gh`
 shows for the repository, as in
 [Public or not](rule-sources.md#public-or-not). `--source <dir>` gives the source's directory, relative
 to the current one, `.` by default. `--edition` names the edition;
