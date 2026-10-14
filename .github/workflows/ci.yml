@@ -14,8 +14,11 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Every main commit needs a result of its own, so each one gets its own
+  # group: a shared group would cancel a pending run when a newer one
+  # arrives. On a PR branch, a newer push cancels the older run.
+  group: ci-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
