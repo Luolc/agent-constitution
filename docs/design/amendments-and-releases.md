@@ -45,7 +45,7 @@ keeps the edition in force and a draft of the next one is settled by
   succeeded on its first attempt. A rerun that turned green does not
   qualify; tag a later commit that passed the first time.
 - Pushing a release tag makes a version available. By default a release
-  is an item of `must-ask`, added by rule 9 (`must-ask-items`), and needs a
+  is an item of `must-ask`, added by rule 32 (`release-must-ask`), and needs a
   person's yes; a project may move it under
   `relaxations.project-overrides`.
 - The crates under `crates/` are published to crates.io, each with its
