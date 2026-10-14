@@ -839,15 +839,25 @@ link check. Only the build exists here; publishing it is a release (rule
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
   switch, the light, dark and auto color themes, the sidebar's list of
   pages and the table of contents at the right. The sidebar lists the
-  pages, not the articles: today the constitution, the home page, with
-  its version for agents under it, both named in `web/hugo.toml`'s menus
-  (the version for agents is the home page's child, which the content
-  adapter hides from the theme's own list with `bookHidden`). The table
-  of contents lists the page's level-2
-  headings, the preamble and the articles (`markup.tableOfContents` in
-  `web/hugo.toml`), under a heading of its own; on a narrow screen the
-  theme hides it behind a button at the right of the top bar, which opens
-  it above the text, as the button at the left opens the sidebar. The
+  pages, not the articles, in groups named in `web/hugo.toml`'s menus:
+  each group a top-level entry, its name in bold after an icon of its own
+  from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
+  pages as children. Today there is one group, the constitution, the home
+  page, with the scales (`law`). The version for agents is not listed, as
+  it is not meant for people to read; the home page links it (the legend
+  and the popup on the length), and the content adapter hides it from the
+  theme's own list with `bookHidden`. The table of contents lists the
+  page's level-2 headings, the preamble and the articles
+  (`markup.tableOfContents` in `web/hugo.toml`), under a heading of its
+  own; on a narrow screen the theme hides it behind a button at the right
+  of the top bar, which opens it above the text, as the button at the
+  left opens the sidebar. It marks the article the reader is in
+  (`aria-current`), set by `web/assets/toc-current.js`, inlined in
+  `<head>`: the last heading above a line at 30% of the window's height,
+  or the last one once the end of the text is in view, watched with
+  `IntersectionObserver`, which every current browser has; nothing is
+  read on scroll. CSS alone (`scroll-target-group` and `:target-current`)
+  did this only in Chromium when read (2026-10-13). The
   site overrides the theme's sidebar (`layouts/_partials/docs/menu.html`)
   to put a link to the source repository, with GitHub's mark from
   Octicons (MIT license), between the site's title and the language
@@ -874,7 +884,10 @@ link check. Only the build exists here; publishing it is a release (rule
   color under the pointer. The navigation (the sidebar, the table of
   contents and the top bar of a narrow screen) is not underlined, but is
   under the pointer or the keyboard's focus. The sidebar marks the
-  current page in the accent color. The
+  current page in the accent color. The table of contents is set apart
+  from the text, muted along a thin rule; its current article is bold, in
+  the accent color, with a bar over the rule, so it does not rest on the
+  color alone. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
   so a line keeps about 90 characters in English and 40 in Chinese where

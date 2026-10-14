@@ -8,7 +8,7 @@
 {{- else }}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap">
 {{- end }}
-{{- range slice "theme.js" "count-info.js" }}
+{{- range slice "theme.js" "count-info.js" "toc-current.js" }}
 {{- with resources.Get . | resources.Minify }}
 <script>{{ .Content | safeJS }}</script>
 {{- end }}
