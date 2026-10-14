@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 /// The label of every article, section and item of one edition, by
 /// citation, as the constitution's version for agents writes them:
 /// `Art. IV §1(2)` for `principals.competent`.
-pub struct Labels(BTreeMap<String, String>);
+pub struct Labels(pub BTreeMap<String, String>);
 
 impl Labels {
     /// Reads the numbers from the edition's sources, `articles` its
