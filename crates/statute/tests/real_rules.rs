@@ -28,13 +28,13 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
         .nodes
         .values()
         .filter(|n| n.kind == Kind::Domain)
-        .map(|n| format!("\"ac:{}\"", n.id))
+        .map(|n| format!("\"R{}\"", n.id))
         .collect();
     let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("real-rules");
     std::fs::create_dir_all(&dir).unwrap();
     let path = repo().canonicalize().unwrap();
     let manifest = format!(
-        "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nac = {{ path = {:?} }}\n",
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npacks = [{}]\n\n[sources]\nR = {{ path = {:?} }}\n",
         domains.join(", "),
         path.to_str().unwrap()
     );

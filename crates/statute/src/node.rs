@@ -183,7 +183,7 @@ fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
-fn is_slug(s: &str) -> bool {
+pub fn is_slug(s: &str) -> bool {
     !s.is_empty()
         && s.split('-').all(|w| {
             !w.is_empty()
@@ -206,16 +206,23 @@ fn parse_ref(raw: RawRef) -> Result<Ref, String> {
         RawRef::Number(n) if n >= 1 => Ok(Ref::Local(n as Id)),
         RawRef::Number(n) => Err(format!("{n} is not an ID; IDs start at 1")),
         RawRef::Name(s) => {
-            let parsed = s.split_once(':').and_then(|(source, id)| {
-                let id = id_from_file_name(&format!("{id}.toml"))?;
-                is_slug(source).then(|| Ref::Foreign {
-                    source: source.to_owned(),
+            use crate::manifest::{FIRST_PARTY, Origin, RuleRef};
+            match RuleRef::parse(&s) {
+                Ok(RuleRef {
+                    origin: Origin::FirstParty,
                     id,
-                })
-            });
-            parsed.ok_or_else(|| {
-                format!("`{s}` is not a reference: write a number for a node of this source, or `\"<source>:<id>\"` for one of another")
-            })
+                }) => Ok(Ref::Foreign {
+                    source: FIRST_PARTY.to_owned(),
+                    id,
+                }),
+                Ok(RuleRef {
+                    origin: Origin::Named(source),
+                    id,
+                }) => Ok(Ref::Foreign { source, id }),
+                _ => Err(format!(
+                    "`{s}` is not a reference: write a number for a node of this source, `\"{FIRST_PARTY}<id>\"` for a first-party rule, or `\"<source>:<id>\"` for one of another source"
+                )),
+            }
         }
     }
 }
@@ -568,6 +575,6 @@ fn check_languages(
 pub fn show_ref(r: &Ref) -> String {
     match r {
         Ref::Local(id) => id.to_string(),
-        Ref::Foreign { source, id } => format!("\"{source}:{id}\""),
+        Ref::Foreign { source, id } => format!("\"{}\"", crate::manifest::show(source, *id)),
     }
 }

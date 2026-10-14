@@ -68,11 +68,12 @@ impl Project {
         };
 
         let source_root = root.join(&manifest.source.path);
-        let (source, more) = Source::load(
+        let (mut source, more) = Source::load(
             &source_root.join("rules"),
             &shown(&manifest.source.path, "rules"),
         );
         diags.0.extend(more.0);
+        source.name = manifest.source.name.clone();
 
         let index_name = shown(
             &manifest.source.path,

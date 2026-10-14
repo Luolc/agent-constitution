@@ -82,7 +82,7 @@ fn repo(name: &str, rules: &str, command: &str) -> PathBuf {
         &dir,
         "statute.toml",
         &format!(
-            "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\nrules = [{rules}]\n\n[sources]\nac = {{ path = \".\" }}\n"
+            "constitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [{rules}]\n\n[sources]\nR = {{ path = \".\" }}\n"
         ),
     );
     for (id, text) in nodes(command) {
@@ -141,7 +141,7 @@ fn statute(dir: &Path, args: &[&str], path: Option<&str>) -> Run {
 fn line(run: &Run, id: u64) -> String {
     run.stdout
         .lines()
-        .find(|l| l.contains(&format!("  {id} (Rule {id}): ")))
+        .find(|l| l.contains(&format!("  R{id} (Rule {id}): ")))
         .unwrap_or_else(|| panic!("no line for rule {id}: {}", run.stdout))
         .to_owned()
 }
@@ -150,7 +150,7 @@ fn line(run: &Run, id: u64) -> String {
 
 #[test]
 fn r46_mixed_change_is_a_violation() {
-    let dir = repo("r46-mixed", "\"ac:46\"", "true");
+    let dir = repo("r46-mixed", "\"R46\"", "true");
     change(&dir, &["AGENTS.md", "tools/build.py"]);
     let run = statute(&dir, &["check", "--base", "base"], None);
     assert_eq!(run.code, 1, "{}", run.stdout);
@@ -171,7 +171,7 @@ fn r46_mixed_change_is_a_violation() {
 
 #[test]
 fn r46_unmixed_change_goes_to_the_reviewer() {
-    let dir = repo("r46-other", "\"ac:46\"", "true");
+    let dir = repo("r46-other", "\"R46\"", "true");
     change(
         &dir,
         &[
@@ -187,7 +187,7 @@ fn r46_unmixed_change_goes_to_the_reviewer() {
     assert!(l.contains("files of other agent tools, sources of instructions outside the path tables, and paths the repository declares in its AGENTS.md are for the reviewer"), "{l}");
     assert!(
         run.stdout
-            .contains("For the reviewer:\n\n## 46 (Rule 46) (inconclusive)\n\nReason: Because.\n"),
+            .contains("For the reviewer:\n\n## R46 (Rule 46) (inconclusive)\n\nReason: Because.\n"),
         "{}",
         run.stdout
     );
@@ -195,7 +195,7 @@ fn r46_unmixed_change_goes_to_the_reviewer() {
 
 #[test]
 fn r46_without_a_base_is_inconclusive() {
-    let dir = repo("r46-no-base", "\"ac:46\"", "true");
+    let dir = repo("r46-no-base", "\"R46\"", "true");
     let run = statute(&dir, &["check"], None);
     assert_eq!(run.code, 0);
     assert!(
@@ -246,7 +246,7 @@ fn r46_agrees_with_check_instruction_changes() {
     ];
     let mut seen = (0, 0);
     for (name, files) in cases {
-        let dir = repo(&format!("r46-parity-{name}"), "\"ac:46\"", "true");
+        let dir = repo(&format!("r46-parity-{name}"), "\"R46\"", "true");
         change(&dir, files);
         let ours = statute(&dir, &["check", "--base", "base"], None);
         let python = Command::new("uv")
@@ -287,7 +287,7 @@ fn r46_agrees_with_check_instruction_changes() {
     assert!(seen.0 > 0 && seen.1 > 0, "{seen:?}");
     // A rename is a removal and an addition: AGENTS.md to docs/agents.md
     // mixes the two in both.
-    let dir = repo("r46-parity-rename", "\"ac:46\"", "true");
+    let dir = repo("r46-parity-rename", "\"R46\"", "true");
     git(&dir, &["mv", "AGENTS.md", "docs/agents.md"]);
     git(&dir, &["commit", "-qm", "rename"]);
     let ours = statute(&dir, &["check", "--base", "base"], None);
@@ -324,7 +324,7 @@ fn fake_gitleaks(name: &str, exit: i32, stdout: &str) -> String {
 
 #[test]
 fn r43_a_leak_is_a_violation_with_its_place_only() {
-    let dir = repo("r43-leak", "\"ac:43\"", "true");
+    let dir = repo("r43-leak", "\"R43\"", "true");
     let report = r#"[{"File":"cfg.txt","StartLine":1,"RuleID":"github-pat","Commit":"abc123","Secret":"REDACTED","Match":"REDACTED"}]"#;
     let run = statute(&dir, &["check"], Some(&fake_gitleaks("leak", 3, report)));
     assert_eq!(run.code, 1, "{}", run.stdout);
@@ -340,7 +340,7 @@ fn r43_a_leak_is_a_violation_with_its_place_only() {
 
 #[test]
 fn r43_no_leak_goes_to_the_reviewer() {
-    let dir = repo("r43-clean", "\"ac:43\"", "true");
+    let dir = repo("r43-clean", "\"R43\"", "true");
     let run = statute(&dir, &["check"], Some(&fake_gitleaks("clean", 0, "[]")));
     assert_eq!(run.code, 0, "{}", run.stdout);
     let l = line(&run, 43);
@@ -350,7 +350,7 @@ fn r43_no_leak_goes_to_the_reviewer() {
 
 #[test]
 fn r43_without_gitleaks_or_with_its_error_is_inconclusive() {
-    let dir = repo("r43-missing", "\"ac:43\"", "true");
+    let dir = repo("r43-missing", "\"R43\"", "true");
     // Asked without --redact, the fake exits 9: an error, not a leak.
     let run = statute(&dir, &["check"], Some(&fake_gitleaks("error", 1, "")));
     assert_eq!(run.code, 0);
@@ -384,7 +384,7 @@ fn r43_with_the_real_gitleaks() {
         eprintln!("gitleaks is not installed; this test checks nothing here");
         return;
     }
-    let dir = repo("r43-real", "\"ac:43\"", "true");
+    let dir = repo("r43-real", "\"R43\"", "true");
     let run = statute(&dir, &["check"], None);
     assert!(
         line(&run, 43).starts_with("inconclusive "),
@@ -424,7 +424,7 @@ const GITLEAKS_HOOK: &str = "  - repo: https://github.com/gitleaks/gitleaks\n   
 
 /// Runs `statute check` with rule 50 on a pre-commit configuration.
 fn r50(name: &str, config: &str) -> Run {
-    let dir = repo(&format!("r50-{name}"), "\"ac:50\"", "true");
+    let dir = repo(&format!("r50-{name}"), "\"R50\"", "true");
     write(&dir, ".pre-commit-config.yaml", config);
     statute(&dir, &["check"], None)
 }
@@ -600,7 +600,7 @@ fn answers<'a>(owned: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a st
 
 #[test]
 fn r58_a_tagged_commit_green_on_its_first_attempt_passes() {
-    let dir = repo("r58-pass", "\"ac:58\"", "true");
+    let dir = repo("r58-pass", "\"R58\"", "true");
     git(&dir, &["tag", "v1"]);
     let path = fake_gh("r58-pass", &answers(&ci(1, "success")));
     let run = statute(&dir, &["check"], Some(&path));
@@ -616,7 +616,7 @@ fn r58_a_tagged_commit_green_on_its_first_attempt_passes() {
 
 #[test]
 fn r58_a_tagged_commit_green_only_on_a_rerun_is_a_violation() {
-    let dir = repo("r58-rerun", "\"ac:58\"", "true");
+    let dir = repo("r58-rerun", "\"R58\"", "true");
     let path = fake_gh("r58-rerun", &answers(&ci(2, "success")));
     let run = statute(&dir, &["check"], Some(&path));
     assert_eq!(run.code, 1, "{}", run.stdout);
@@ -632,7 +632,7 @@ fn r58_a_tagged_commit_green_only_on_a_rerun_is_a_violation() {
 
 #[test]
 fn r71_a_pull_request_never_set_to_merge_automatically_goes_to_the_reviewer() {
-    let dir = repo("r71-clean", "\"ac:71\"", "true");
+    let dir = repo("r71-clean", "\"R71\"", "true");
     let path = fake_gh(
         "r71-clean",
         &[
@@ -655,7 +655,7 @@ fn r71_a_pull_request_never_set_to_merge_automatically_goes_to_the_reviewer() {
 
 #[test]
 fn r71_auto_merge_is_a_violation() {
-    let dir = repo("r71-auto", "\"ac:71\"", "true");
+    let dir = repo("r71-auto", "\"R71\"", "true");
     let path = fake_gh(
         "r71-auto",
         &[
@@ -705,7 +705,7 @@ fn r61_answers(dir: &Path, comments: &[&str]) -> Vec<(&'static str, String)> {
 
 #[test]
 fn r61_verdicts_naming_a_commit_go_to_the_reviewer() {
-    let dir = repo("r61-named", "\"ac:61\"", "true");
+    let dir = repo("r61-named", "\"R61\"", "true");
     let sha = head(&dir);
     let owned = r61_answers(
         &dir,
@@ -732,7 +732,7 @@ fn r61_verdicts_naming_a_commit_go_to_the_reviewer() {
 
 #[test]
 fn r61_a_verdict_without_a_full_sha_is_a_violation() {
-    let dir = repo("r61-unnamed", "\"ac:61\"", "true");
+    let dir = repo("r61-unnamed", "\"R61\"", "true");
     let short = &head(&dir)[..7];
     let owned = r61_answers(&dir, &[&format!("Verdict: LGTM\nReviewed head: {short}\n")]);
     let run = statute(
@@ -753,7 +753,7 @@ fn r61_a_verdict_without_a_full_sha_is_a_violation() {
 
 #[test]
 fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
-    let dir = repo("gh-missing", "\"ac:58\", \"ac:61\", \"ac:71\"", "true");
+    let dir = repo("gh-missing", "\"R58\", \"R61\", \"R71\"", "true");
     // git on PATH, gh not.
     let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("check")
@@ -788,7 +788,7 @@ fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
 
 #[test]
 fn rules_3_and_7_run_their_own_checks() {
-    let dir = repo("superseded", "\"ac:3\", \"ac:7\"", "true");
+    let dir = repo("superseded", "\"R3\", \"R7\"", "true");
     let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("check")
         .join("git-only");
@@ -811,12 +811,12 @@ fn rules_3_and_7_run_their_own_checks() {
 
 #[test]
 fn a_command_passes_on_0_and_is_violated_on_1() {
-    let dir = repo("command-pass", "\"ac:20\"", "exit 0");
+    let dir = repo("command-pass", "\"R20\"", "exit 0");
     let run = statute(&dir, &["check"], None);
     assert_eq!(run.code, 0);
     assert!(line(&run, 20).starts_with("pass "), "{}", run.stdout);
     let findings = r#"echo '[{"location": "a.txt:3", "reason": "no newline at the end"}]'; exit 1"#;
-    let dir = repo("command-violation", "\"ac:20\"", findings);
+    let dir = repo("command-violation", "\"R20\"", findings);
     let run = statute(&dir, &["check"], None);
     assert_eq!(run.code, 1);
     assert!(line(&run, 20).starts_with("violation "), "{}", run.stdout);
@@ -837,7 +837,7 @@ fn a_command_that_cannot_decide_is_inconclusive() {
             "is not the JSON list of findings",
         ),
     ] {
-        let dir = repo(&format!("command-{name}"), "\"ac:20\"", command);
+        let dir = repo(&format!("command-{name}"), "\"R20\"", command);
         let run = statute(&dir, &["check"], None);
         assert_eq!(run.code, 0, "{name}");
         let l = line(&run, 20);
@@ -846,7 +846,7 @@ fn a_command_that_cannot_decide_is_inconclusive() {
             "{name}: {l}"
         );
     }
-    let dir = repo("command-tool", "\"ac:20\"", "exit 0");
+    let dir = repo("command-tool", "\"R20\"", "exit 0");
     let rule = dir.join("rules/20.toml");
     let text = std::fs::read_to_string(&rule).unwrap();
     std::fs::write(
@@ -857,7 +857,7 @@ fn a_command_that_cannot_decide_is_inconclusive() {
     assert_eq!(statute(&dir, &["lock"], None).code, 0);
     let run = statute(&dir, &["check"], None);
     assert!(
-        line(&run, 20).contains("inconclusive  20 (Rule 20): not installed: no-such-tool"),
+        line(&run, 20).contains("inconclusive  R20 (Rule 20): not installed: no-such-tool"),
         "{}",
         run.stdout
     );
@@ -865,12 +865,12 @@ fn a_command_that_cannot_decide_is_inconclusive() {
 
 #[test]
 fn a_rule_without_a_check_goes_to_the_reviewer() {
-    let dir = repo("review", "\"ac:21\"", "true");
+    let dir = repo("review", "\"R21\"", "true");
     let run = statute(&dir, &["check"], None);
     assert_eq!(run.code, 0);
     assert!(line(&run, 21).starts_with("review "), "{}", run.stdout);
     assert!(
-        run.stdout.contains("## 21 (Rule 21) (review)\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n"),
+        run.stdout.contains("## R21 (Rule 21) (review)\n\nReason: Because.\n\nVerification: Violated when the thing is not done.\n"),
         "{}",
         run.stdout
     );

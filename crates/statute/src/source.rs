@@ -11,6 +11,9 @@ use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
 #[derive(Debug, Default)]
 pub struct Source {
     pub nodes: BTreeMap<Id, Node>,
+    /// The source's name in the rule set, which its rules are shown with
+    /// (`manifest::show`); empty when the directory is read alone.
+    pub name: String,
 }
 
 impl Source {
@@ -103,6 +106,11 @@ impl Source {
         }
         .run();
         (source, diags)
+    }
+
+    /// How rule `id` of this source is shown: `R42`, `team:7`, or `42`.
+    pub fn show(&self, id: Id) -> String {
+        crate::manifest::show(&self.name, id)
     }
 
     pub fn get(&self, id: Id) -> Option<&Node> {
