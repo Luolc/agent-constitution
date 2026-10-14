@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Amendments to the edition in force, and opening a new edition ({@approving-amendments}).
+Amendments to the edition in force, and opening a new edition ({@approving-amendments}); the yes covers the exact text that is to take effect.
 '''
 zh = '''
-对现行版的修正案，以及开新的一版 ({@approving-amendments})。
+对现行版的修正案，以及开新的一版 ({@approving-amendments})；同意针对的是将要生效的那份文本。
 '''
 
 [[items]]
