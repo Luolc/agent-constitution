@@ -741,9 +741,21 @@ version for agents under `agent/` (`site/agent/index.html`,
 alone. CI runs three steps: `uv run count-tokens` (the token
 count, below), `hugo-0.167.0 --source web --cleanDestinationDir
 --panicOnWarning`, and `uv run check-site-anchors site`, the
-link check. Only the build exists here; publishing it is a release (rule
-`must-ask-items`) and not set up.
+link check. The workflow `.github/workflows/pages.yml` publishes the
+site to GitHub Pages at `https://agent-constitution.luolc.com/`, the
+`baseURL` in `web/hugo.toml`.
 
+- Publishing: on each push to `main`, and on a manual run, the job
+  `build` counts the tokens (below), builds and checks the site as CI
+  does and uploads it; the job `deploy` publishes it, but only when the
+  repository is public and its variable `PAGES_DEPLOY` is `true`, and is
+  skipped otherwise. Publishing is a release (rule `must-ask-items`):
+  setting the variable is the person's yes to publish every later push
+  to `main`, and deleting it stops that. The custom domain is set in the
+  repository's Pages settings, with the source "GitHub Actions"; a
+  workflow that publishes ignores a `CNAME` file, so there is none. Links
+  between the pages stay relative (`relativeURLs`); the canonical link,
+  the language alternates and `og:url` are absolute, on the domain.
 - Input: the generated `constitution/constitution.<lang>.md`, not the
   sources: the citations, numbers and anchors are rendered once, by
   `constitution-build`. `web/hugo.toml` mounts them from
@@ -835,8 +847,9 @@ link check. Only the build exists here; publishing it is a release (rule
   stalls for 10 seconds, the page says the tokens were not counted and the
   build goes on; with `count-tokens --require-tokens` the count fails
   instead and writes no file. The
-  workflow `.github/workflows/token-count.yml` runs on each push to `main`,
-  the only event the federation rule accepts: it asks GitHub for the run's
+  job `build` of `.github/workflows/pages.yml` runs only on `main`, the
+  only ref the federation rule accepts, and in no environment, which would
+  change the token's subject: it asks GitHub for the run's
   OIDC token (audience `https://api.anthropic.com`), exchanges it for an
   access token with the IDs of the federation rule, organization, service
   account and workspace, which are repository variables
@@ -845,9 +858,8 @@ link check. Only the build exists here; publishing it is a release (rule
   not secrets), counts the tokens with `--require-tokens`, builds and
   checks the site as CI does, and writes the length line of both pages
   into the job summary and into the log, which,
-  unlike the summary, the API can read. It publishes nothing; a failed
-  exchange or count fails the run. The future Pages workflow will get its
-  token the same way. The CI on pull requests gets no credential,
+  unlike the summary, the API can read. A failed exchange or count fails
+  the run, and nothing is published. The CI on pull requests gets no credential,
   and neither does a pull request from a fork. A local build that wants the
   count sets the key variable for that one command, reading the key from
   the maintainer's secret store. So the pages of one commit differ with

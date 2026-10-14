@@ -4,7 +4,8 @@
 # `hugo-0.167.0 -s web` builds it into site/, with the tokens that
 # `uv run count-tokens` counted, if any; `uv run check-site-anchors site`
 # checks the links (both in tools/site). See docs/design.md (Static site).
-baseURL = "/"
+# Where .github/workflows/pages.yml publishes the site.
+baseURL = "https://agent-constitution.luolc.com/"
 publishDir = "../site"
 # Relative links, so that site/index.html also opens as a file.
 relativeURLs = true

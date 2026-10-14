@@ -1,29 +1,40 @@
-# Token count on main: exchanges the run's GitHub OIDC token for a
+# The static site on main: exchanges the run's GitHub OIDC token for a
 # short-lived Anthropic access token through Workload Identity Federation,
-# counts the tokens with it, builds the static site, and writes the length
-# line of both pages into the job summary and the log (docs/design.md,
-# Static site). The federation rule accepts only pushes to main, so this
-# runs only there. It publishes nothing. A failed exchange or count fails
-# the run.
+# counts the tokens with it, builds and checks the site, writes the length
+# line of both pages into the job summary and the log, and publishes the
+# site to GitHub Pages (docs/design.md, Static site). The federation rule
+# accepts only runs on main, so this runs only there. A failed exchange,
+# count, build or link check fails the run and publishes nothing.
 # The four IDs are repository variables, identifiers rather than secrets.
 
-name: Token count
+name: Pages
 
 on:
   push:
     branches: [main]
+  # To publish main again, for example right after Pages is turned on;
+  # on another branch the run is skipped.
+  workflow_dispatch:
 
 concurrency:
-  group: token-count
-  cancel-in-progress: true
+  # Pages refuses a deployment while another is in progress, so the runs
+  # queue and one in progress is never cancelled; a queued one is replaced
+  # by a newer one, which leaves the site on the newest commit.
+  group: pages
+  cancel-in-progress: false
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
-  count:
+  # No environment here: the federation rule matches the subject of a run
+  # on main, which an environment would replace with its own.
+  build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -124,3 +135,24 @@ jobs:
               echo "- \`${page}\`, version for agents: ${line}"
             done
           } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+
+  # Publishes only when the repository is public and the repository
+  # variable PAGES_DEPLOY is `true`, which is set once Pages is turned on;
+  # otherwise the job is skipped, not failed.
+  deploy:
+    if: github.event.repository.visibility == 'public' && vars.PAGES_DEPLOY == 'true'
+    needs: [build]
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
