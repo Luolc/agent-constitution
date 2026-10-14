@@ -16,9 +16,9 @@ Installed copies of instructions, skills and agent tool settings are never edite
 When unsure whether something is a guard, or an installed copy, treat it as one.
 '''
 zh = '''
-防护机制、权限、hook 或分支保护拦下某个动作时，agent 改走经过审查的途径达到同一目的，例如对源文件提 pull request；这条途径对它不开放的，向分派这项工作的一方 (agent 或人) 报告被拦下的情况。agent 不设法绕开：不切换到更宽松的权限模式，不修改文件权限，不覆盖受保护的文件，不跳过 hook，不关闭防护机制。
+防护机制、权限、hook 或分支保护拦下某个动作时，agent 改走经过审查的途径达到同一目的，例如对源文件提 pull request；这条途径对它不开放的，向这项工作的交办方 (agent 或人) 报告受阻的情况。agent 不设法绕开：不切换到更宽松的权限模式，不修改文件权限，不覆盖受保护的文件，不跳过 hook，不关闭防护机制。
 
-指令、skill 和 agent 工具的配置，已安装的副本一律不就地修改：改动写进源文件，经过审查，再从源文件重新安装。
+指令、skill 和 agent 工具的配置，已安装的副本一律不就地修改：改动写入源文件，经过审查，再从源文件重新安装。
 
-拿不准某样东西是不是防护机制、是不是已安装的副本的，按是处理。
+不确定某一对象是否属于防护机制或已安装的副本的，按属于处理。
 '''
