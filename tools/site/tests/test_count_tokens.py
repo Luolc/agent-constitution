@@ -101,6 +101,13 @@ class CountTokensTest(unittest.TestCase):
         self.assertEqual(stderr, f"token count: {shown}; tokens not counted\n")
 
 
+class CommitShaTest(unittest.TestCase):
+  """commit_sha in this repo's checkout."""
+
+  def test_full_sha(self):
+    self.assertRegex(count_tokens.commit_sha() or "", r"^[0-9a-f]{40}$")
+
+
 class MainTest(unittest.TestCase):
   """main on this repo's built constitution, the API mocked."""
 

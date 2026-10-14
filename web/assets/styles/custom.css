@@ -431,7 +431,7 @@ body { font-family: var(--c-font-en); }
     top: 0;
     inset-inline-end: 0;
     z-index: 2;
-    padding: .75rem 1rem;
+    padding: .5rem;
     background: var(--c-paper);
     border-end-start-radius: .5rem;
   }
