@@ -1,0 +1,13 @@
+id = 16
+slug = "documentation"
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Documentation"
+zh = "文档"
+
+[translations]
+zh = "c205924de0fe636ccdde4ed616fef66f75b78e98b03620637965c033fd161141"

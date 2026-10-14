@@ -1,0 +1,52 @@
+id = 21
+slug = "design-translation"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["no-restating", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "A translation of the design records the original it follows"
+zh = "设计的译文记下它所依据的原文"
+
+[text.statement]
+en = "When the design is translated, keep one translation file for each original file, record in it the SHA-256 of the original it follows, keep the original's headings and anchors, and carry each change to the original into the translation in the same change."
+zh = "设计有译文的，每份原文文件对应一份译文文件，译文里记下它所依据的原文的 SHA-256，保留原文的标题结构和锚点；对原文的每一处修改，在同一个变更里带进译文。"
+
+[text.reason]
+en = '''
+The original is the one source and the translation a copy of it ({@constitution:no-restating}); a recorded hash lets a check tell a translation that follows the original from one left behind, and fails as soon as the original changes ({@constitution:discriminating-checks}).
+'''
+zh = '''
+原文是唯一的来源，译文是它的一份副本 ({@constitution:no-restating})；记下哈希，检查就能分清跟上了原文的译文和落在后面的译文，原文一改就失败 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
+en = '''
+- The translations sit in a directory of their own, for example `docs/design/zh/`, under the same file names as the originals, and the two directories hold the same files. A change that adds a design file adds its translation.
+- Each translation records the SHA-256 of its original file as it is now, for example on its first line as `<!-- en-sha256: <hex> -->`.
+- Its headings have the original's levels and order, and each carries the anchor of the original heading, so a link to `#<anchor>` works in both languages; a relative link out of the translation's directory is adjusted for it.
+- The translation says what the original says, clause by clause, not word by word, and uses the terms of the translated constitution, one term for one concept throughout.
+
+Where the repository has a check for the first three points (in this repository, `uv run check-design-translation`), it runs in CI; the fourth is judged in review, reading the translation against the original.
+
+Violated when an original and its translation differ in files, hash, headings or anchors, or in meaning.
+'''
+zh = '''
+- 译文放在自己的目录里，例如 `docs/design/zh/`，文件名与原文相同，两个目录里的文件一一对应。新增设计文件的变更同时新增它的译文。
+- 每份译文记下原文文件当前的 SHA-256，例如在第一行写 `<!-- en-sha256: <hex> -->`。
+- 译文标题的层级和顺序与原文相同，每个标题都带原文标题的锚点，这样指向 `#<anchor>` 的链接在两种语言里都有效；指出译文目录的相对链接按译文所在目录调整。
+- 译文按句意逐条译出原文的意思，不逐字对译；术语用宪法译本里的说法，同一个概念全文只用一个词。
+
+仓库如果有检查前三点的程序 (本仓库是 `uv run check-design-translation`)，它在 CI 里运行；第四点由审查对照原文阅读译文来判断。
+
+原文与译文在文件、哈希、标题或锚点上对不上，或者意思不一致的，即为违反本规定。
+'''
+
+[translations]
+zh = "be0f36fa5815125f8b6439ddc10e2204294a3b1d3e2809e6ad57b1ec3e604acf"

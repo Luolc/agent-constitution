@@ -1,0 +1,50 @@
+id = 20
+slug = "design-links"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Link to the one place a fact is written"
+zh = "链接到事实所在的那一处"
+
+[text.statement]
+en = "In the design, write each fact in one place and link to it from elsewhere: cite the constitution or a rule by ID without restating it, and link to another section of the design instead of describing it again."
+zh = "设计里每个事实只写在一处，别处链接过去：引用宪法或规定只写 ID，不复述其内容；讲到设计的另一节，就链接到那一节，不再描述一遍。"
+
+[text.reason]
+en = '''
+A fact written in two places drifts apart in one of them, and the reader cannot tell which to trust ({@constitution:no-restating}).
+'''
+zh = '''
+一个事实写在两处，迟早有一处会走样，读者也分不清该信哪一处 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+- The design cites a provision of the constitution or a rule by its ID, as narrowly as the point allows (an item rather than its section), and does not repeat its text.
+- A link to another design file is relative, and its anchor names a heading that exists. Its text is that heading's text, the file's title, or the title and the heading together.
+- The same fact is not stated twice, in one file or across files, and no two places of the design contradict each other.
+
+Where the repository has a check that every relative link of the design leads to a file, it runs in CI; whether an anchor exists, whether a link's text fits and whether a fact is repeated are judged in review.
+
+Violated when the design restates a cited provision, repeats or contradicts a fact written elsewhere in the design, or has a link that leads nowhere or whose text is none of the above.
+'''
+zh = '''
+- 设计引用宪法条文或规定时写它的 ID，按所说的内容尽量引得窄 (能引到项就不引整款)，不重复其原文。
+- 指向另一份设计文件的链接用相对路径，锚点指向确实存在的标题；链接文字是那个标题的文字、那份文件的标题，或者文件标题加上那个标题。
+- 同一个事实不在一个文件里或不同文件间写两遍，设计里也没有两处互相矛盾。
+
+仓库如果有检查设计里每个相对链接都指向某个文件，这项检查在 CI 里运行；锚点是否存在、链接文字是否相符、事实是否重复，由审查判断。
+
+设计复述了所引用的条文，重复或违背了设计别处写的事实，或者有指向不存在之处、或文字不符合上述要求的链接，即为违反本规定。
+'''
+
+[translations]
+zh = "58e3034ad39748df62f3c0fe62fba22b640920ad8170af63574bc3cb7fb7a119"
