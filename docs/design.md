@@ -133,8 +133,15 @@ skills/
 schema/                   schemas for the rules, fixtures and the
                           overlay manifest                             B
 tools/
-  build_constitution.py   builds and checks the constitution           A
-  test_build_constitution.py   its tests                               A
+  build_constitution.py   builds and checks the constitution, from the
+                          modules below                                A
+  constitution_sources.py   the sources' data model, check 1           A
+  constitution_checks.py  checks 2 to 5                                A
+  constitution_languages.py   what differs between languages           A
+  constitution_render.py  renders the constitution                     A
+  constitution_base.py    check 7, against a base commit               A
+  test_constitution_*.py  their tests: render, checks, base, and the
+                          shared test tree (fixture)                   A
   build_site.py           builds the static site with Hugo              A
   check_site_anchors.py   checks the built site's in-page links         A
   test_build_site.py      tests of both                                 A
@@ -282,9 +289,9 @@ content carries over.
 
 ### Constitution
 
-The constitution is compiled by `tools/build_constitution.py` (Python
-standard library only, run with `uv run` in the environment of
-`pyproject.toml`) from `constitution/index.toml` and one directory per
+The constitution is compiled by `tools/build_constitution.py` and the
+`tools/constitution_*.py` modules it calls (Python standard library only,
+run with `uv run` in the environment of `pyproject.toml`) from `constitution/index.toml` and one directory per
 article under `constitution/articles/`. It writes two files for each
 language in `index.toml`, `constitution/constitution.<lang>.md` (the full
 version) and `constitution/constitution.<lang>.agent.md` (the version for
@@ -938,7 +945,7 @@ first one that finds errors, printing all of that one's errors:
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
-(`tools/test_build_constitution.py`). Checks 1 to 6 and the tests run as
+(`tools/test_constitution_checks.py`, `tools/test_constitution_base.py`). Checks 1 to 6 and the tests run as
 commit hooks and in CI; check 7 runs in CI only, on a pull request
 against the tip of the base branch the checked-out merge commit was made
 on (its first parent), on a push to `main` against the commit before the
