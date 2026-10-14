@@ -7,6 +7,9 @@
 //! The rest of the rule, credentials kept out of messages, logs and
 //! command lines and never passed between agents, is outside the
 //! repository; so a scan with no hit is inconclusive, not a pass.
+//!
+//! Superseded by rule 43 (`r43.rs`); kept for a rule set that still
+//! enables rule 3, and run only for it.
 
 use serde::Deserialize;
 
