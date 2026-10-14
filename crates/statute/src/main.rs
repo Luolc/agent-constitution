@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
@@ -215,6 +215,11 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let dir = path.parent().unwrap_or(Path::new(""));
     if let Some(why) = private::claude_md(dir, both.is_some()) {
         eprintln!("{}: warning: {why}", dir.join("CLAUDE.md").display());
+    }
+    if both.is_some() {
+        for nested in private::nested_agents_md(root) {
+            eprintln!("{}: warning: {}", nested.display(), private::NESTED);
+        }
     }
     Ok(())
 }
@@ -486,6 +491,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
             report_changes(&old, &next);
             write_both(
                 root,
+                false,
                 (manifest::FILE, lock::FILE),
                 &original,
                 &changed,
@@ -877,6 +883,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     }
     write_both(
         root,
+        private,
         (file, lock_file),
         &original,
         &changed,
@@ -901,11 +908,12 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
 }
 
 /// Writes a changed rule set, `files.0`, and its lock file, `files.1`,
-/// so that the two stay in step: both go to temporary files first, then
-/// each is renamed into place, and if the lock file cannot be, the rule
-/// set is put back.
+/// so that the two stay in step: both go to temporary files first (for
+/// the `private` layer, where git ignores them), then each is renamed
+/// into place, and if the lock file cannot be, the rule set is put back.
 fn write_both(
     root: &Path,
+    private: bool,
     files: (&str, &str),
     original: &str,
     changed: &str,
@@ -914,8 +922,19 @@ fn write_both(
     let (manifest_file, lock_file) = files;
     let manifest_path = root.join(manifest_file);
     let lock_path = root.join(lock_file);
-    let manifest_tmp = root.join(format!("{manifest_file}.tmp"));
-    let lock_tmp = root.join(format!("{lock_file}.tmp"));
+    let tmp = |file: &str| {
+        root.join(if private {
+            private::staged(file)
+        } else {
+            PathBuf::from(format!("{file}.tmp"))
+        })
+    };
+    let manifest_tmp = tmp(manifest_file);
+    let lock_tmp = tmp(lock_file);
+    if private && let Err(e) = std::fs::create_dir_all(root.join(private::DIR)) {
+        eprintln!("{}: error: cannot write: {e}", private::DIR);
+        return Err(());
+    }
     let unchanged = || {
         let _ = std::fs::remove_file(&manifest_tmp);
         let _ = std::fs::remove_file(&lock_tmp);

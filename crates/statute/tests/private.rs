@@ -263,7 +263,7 @@ fn nothing_private_is_written_unless_git_ignores_it() {
         &run,
         "CLAUDE.local.md, AGENTS.override.md: git must ignore these links through .git/info/exclude, not a .gitignore (Grok skips an instruction file a .gitignore matches), so nothing private is written; add these lines to .git/info/exclude: /CLAUDE.local.md, /AGENTS.override.md",
     );
-    assert!(!dir.join(".statute").exists());
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
     assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
 }
 
@@ -312,7 +312,7 @@ fn the_full_text_fits_what_codex_reads() {
         &run,
         "more than the 32768 that Codex reads of a project's instruction files",
     );
-    assert!(!dir.join(".statute").exists());
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
 }
 
 #[test]
@@ -324,7 +324,7 @@ fn a_claude_md_is_not_needed() {
     let run = statute(&dir, &["compile"]);
     ok(&run);
     assert!(
-        run.stderr.contains("CLAUDE.md: warning: Claude Code now reads AGENTS.md itself, so CLAUDE.md is not needed to point to it. Here CLAUDE.local.md gives it the full text, public and private, in place of AGENTS.md, and it reads CLAUDE.md as well, so that its content comes on top of the rules (for a link to AGENTS.md, the public rules twice). Consider deleting it; statute neither deletes nor renames it (a migration will rename it to a legacy copy, after asking)."),
+        run.stderr.contains("CLAUDE.md: warning: Claude Code now reads AGENTS.md itself, so CLAUDE.md is not needed to point to it. Here CLAUDE.local.md gives it the full text, public and private, in place of AGENTS.md, and it reads CLAUDE.md as well (for a link to AGENTS.md, the public rules twice). Consider deleting it; statute neither deletes nor renames it (a migration will rename it to a legacy copy, after asking)."),
         "{}",
         run.stderr
     );
@@ -339,8 +339,134 @@ fn a_claude_md_is_not_needed() {
         "{}",
         run.stderr
     );
+    // A plain file warns as a link does.
+    std::fs::remove_file(dir.join("CLAUDE.md")).unwrap();
+    write(&dir, "CLAUDE.md", "mine\n");
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(
+        run.stderr
+            .contains("CLAUDE.md: warning: Claude Code now reads AGENTS.md itself"),
+        "{}",
+        run.stderr
+    );
     std::fs::remove_file(dir.join("CLAUDE.md")).unwrap();
     let run = statute(&dir, &["compile"]);
     ok(&run);
     assert!(!run.stderr.contains("warning"), "{}", run.stderr);
+}
+
+#[test]
+fn an_agents_md_below_the_top_is_not_loaded() {
+    let dir = ignoring("nested");
+    set_up(&dir);
+    write(&dir, "sub/AGENTS.md", "mine\n");
+    write(&dir, "sub/deeper/AGENTS.md", "mine\n");
+    write(&dir, "untracked/AGENTS.md", "mine\n");
+    git(&dir, &["add", "sub"]);
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    let warnings: Vec<&str> = run
+        .stderr
+        .lines()
+        .filter(|l| l.contains("warning"))
+        .collect();
+    assert_eq!(
+        warnings,
+        [
+            "sub/AGENTS.md: warning: Claude Code does not load an AGENTS.md below the top of the repository while CLAUDE.local.md is there; move its rules into statute's rules",
+            "sub/deeper/AGENTS.md: warning: Claude Code does not load an AGENTS.md below the top of the repository while CLAUDE.local.md is there; move its rules into statute's rules",
+        ]
+    );
+    // Without a private layer, there is no CLAUDE.local.md.
+    std::fs::remove_file(dir.join("statute.private.toml")).unwrap();
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(!run.stderr.contains("warning"), "{}", run.stderr);
+}
+
+#[test]
+fn a_negated_pattern_does_not_ignore() {
+    let dir = repo("negation");
+    write(
+        &dir,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n/.statute/*\n!/.statute/AGENTS.full.md\n",
+    );
+    write(&dir, ".git/info/exclude", EXCLUDE);
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        ".statute/AGENTS.full.md: git does not ignore it, so nothing private is written; add `/.statute` to the repository's .gitignore",
+    );
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    // Without the negation, it is ignored.
+    write(
+        &dir,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n/.statute/*\n",
+    );
+    ok(&statute(&dir, &["compile"]));
+    assert!(dir.join(".statute/AGENTS.full.md").exists());
+}
+
+#[test]
+fn the_staged_files_are_ignored_too() {
+    // The rule set and the lock file ignored, `.statute/` not.
+    let dir = repo("staged");
+    write(
+        &dir,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n",
+    );
+    ok(&statute(&dir, &["init", "--public", "--source", "r"]));
+    write(&dir, "statute.private.toml", PRIVATE);
+    let run = statute(&dir, &["add", "--private", "me:4"]);
+    fails_with(
+        &run,
+        ".statute/statute.private.toml.tmp: git does not ignore it, so nothing private is written; add `/.statute` to the repository's .gitignore",
+    );
+    assert!(!dir.join(".statute").exists());
+    // With it ignored, the files are staged there and renamed away.
+    write(&dir, ".gitignore", GITIGNORE);
+    ok(&statute(&dir, &["add", "--private", "me:4"]));
+    assert!(read(&dir, "statute.private.toml").contains("me:4"));
+    assert_eq!(std::fs::read_dir(dir.join(".statute")).unwrap().count(), 0);
+}
+
+#[test]
+fn a_worktree_names_the_clones_exclude_file() {
+    let dir = repo("worktree");
+    write(&dir, ".gitignore", GITIGNORE);
+    git(&dir, &["add", "."]);
+    git(
+        &dir,
+        &[
+            "-c",
+            "user.name=Example",
+            "-c",
+            "user.email=example@example.test",
+            "commit",
+            "-q",
+            "-m",
+            "rules",
+        ],
+    );
+    let tree = dir.with_file_name("worktree-tree");
+    let _ = std::fs::remove_dir_all(&tree);
+    git(&dir, &["worktree", "add", "-q", tree.to_str().unwrap()]);
+    set_up(&tree);
+    let run = statute(&tree, &["compile"]);
+    let exclude = dir.join(".git/info/exclude");
+    fails_with(
+        &run,
+        &format!(
+            "add these lines to {}: /CLAUDE.local.md, /AGENTS.override.md",
+            exclude.display()
+        ),
+    );
+    // The lines in the clone's exclude file hold for the worktree.
+    write(&dir, ".git/info/exclude", EXCLUDE);
+    ok(&statute(&tree, &["compile"]));
 }

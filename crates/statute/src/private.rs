@@ -25,6 +25,13 @@ pub const LINKS: [&str; 2] = ["CLAUDE.local.md", "AGENTS.override.md"];
 /// The most of a project's instruction files Codex reads by default.
 pub const MAX_BYTES: usize = 32 * 1024;
 
+/// Where `add --private` and `remove --private` stage a changed `file`
+/// before renaming it into place: in the private output's directory, so
+/// that git ignores it as well.
+pub fn staged(file: &str) -> PathBuf {
+    Path::new(DIR).join(format!("{file}.tmp"))
+}
+
 /// The full text, relative to the directory of `statute.toml`.
 pub fn full() -> PathBuf {
     Path::new(DIR).join(FULL)
@@ -54,7 +61,9 @@ pub enum Ignored {
 }
 
 /// Asks git how it ignores `path`, relative to `root`; an error when git
-/// cannot tell, as outside a git repository.
+/// cannot tell, as outside a git repository. A path whose last matching
+/// pattern is a negation, `!`, is not ignored, though git names that
+/// pattern and exits 0 for it.
 pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
     let out = Command::new("git")
         .arg("-C")
@@ -67,8 +76,15 @@ pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
         Some(0) => {
             // `<source>:<line>:<pattern>\t<path>`.
             let text = String::from_utf8_lossy(&out.stdout);
-            let source = text.split(':').next().unwrap_or("");
-            if Path::new(source)
+            let match_ = text.split('\t').next().unwrap_or("");
+            let mut fields = match_.splitn(3, ':');
+            let source = fields.next().unwrap_or("");
+            if fields
+                .nth(1)
+                .is_some_and(|pattern| pattern.starts_with('!'))
+            {
+                Ok(Ignored::No)
+            } else if Path::new(source)
                 .file_name()
                 .is_some_and(|n| n == ".gitignore")
             {
@@ -86,10 +102,18 @@ pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
     }
 }
 
-/// Fails unless git ignores the private layer's rule set and lock file.
-/// Asked before either is written.
+/// Fails unless git ignores the private layer's rule set and lock file,
+/// and where they are staged. Asked before any of them is written.
 pub fn check_ignored_files(root: &Path) -> Result<(), String> {
-    check_paths(root, &[PathBuf::from(MANIFEST), PathBuf::from(LOCK)])
+    check_paths(
+        root,
+        &[
+            PathBuf::from(MANIFEST),
+            PathBuf::from(LOCK),
+            staged(MANIFEST),
+            staged(LOCK),
+        ],
+    )
 }
 
 /// Fails unless git ignores each of the private layer's files, the links
@@ -119,15 +143,19 @@ fn check_paths(root: &Path, files: &[PathBuf]) -> Result<(), String> {
 }
 
 fn check_links(root: &Path) -> Result<(), String> {
-    // The lines of `.git/info/exclude` are relative to the top of the
-    // work tree.
-    let prefix = Command::new("git")
-        .arg("-C")
-        .arg(root)
-        .args(["rev-parse", "--show-prefix"])
-        .output()
-        .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
-        .unwrap_or_default();
+    let git = |args: &[&str]| {
+        Command::new("git")
+            .arg("-C")
+            .arg(root)
+            .args(args)
+            .output()
+            .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
+            .unwrap_or_default()
+    };
+    // The lines of the exclude file are relative to the top of the work
+    // tree; in a worktree, the file is the clone's.
+    let prefix = git(&["rev-parse", "--show-prefix"]);
+    let exclude = git(&["rev-parse", "--git-path", "info/exclude"]);
     let mut missing = Vec::new();
     for link in LINKS {
         match ignored(root, Path::new(link))? {
@@ -137,7 +165,7 @@ fn check_links(root: &Path) -> Result<(), String> {
     }
     if !missing.is_empty() {
         return Err(format!(
-            "{}: git must ignore these links through .git/info/exclude, not a .gitignore (Grok skips an instruction file a .gitignore matches), so nothing private is written; add these lines to .git/info/exclude: {}",
+            "{}: git must ignore these links through {exclude}, not a .gitignore (Grok skips an instruction file a .gitignore matches), so nothing private is written; add these lines to {exclude}: {}",
             LINKS.join(", "),
             missing.join(", ")
         ));
@@ -194,13 +222,35 @@ fn symlink(_: &Path, _: &Path) -> std::io::Result<()> {
     ))
 }
 
+/// The `AGENTS.md` files git tracks below `root`, other than the one at
+/// `root`: Claude Code does not load them while `CLAUDE.local.md` is
+/// there.
+pub fn nested_agents_md(root: &Path) -> Vec<PathBuf> {
+    let Ok(out) = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["ls-files", "-z", "--", ":(glob)**/AGENTS.md"])
+        .output()
+    else {
+        return Vec::new();
+    };
+    String::from_utf8_lossy(&out.stdout)
+        .split('\0')
+        .filter(|p| !p.is_empty() && *p != "AGENTS.md")
+        .map(PathBuf::from)
+        .collect()
+}
+
+/// What to say about each of `nested_agents_md`.
+pub const NESTED: &str = "Claude Code does not load an AGENTS.md below the top of the repository while CLAUDE.local.md is there; move its rules into statute's rules";
+
 /// What to say about a `CLAUDE.md` in `dir`, a file or a link to
 /// `AGENTS.md`, if there is one; `private` when the private layer is
 /// compiled too, so that `CLAUDE.local.md` takes the place of `AGENTS.md`.
 pub fn claude_md(dir: &Path, private: bool) -> Option<String> {
     dir.join("CLAUDE.md").symlink_metadata().ok()?;
     let twice = if private {
-        " Here CLAUDE.local.md gives it the full text, public and private, in place of AGENTS.md, and it reads CLAUDE.md as well, so that its content comes on top of the rules (for a link to AGENTS.md, the public rules twice)."
+        " Here CLAUDE.local.md gives it the full text, public and private, in place of AGENTS.md, and it reads CLAUDE.md as well (for a link to AGENTS.md, the public rules twice)."
     } else {
         ""
     };
