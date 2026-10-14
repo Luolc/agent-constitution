@@ -19,9 +19,10 @@ design.
 
 The scripts under `tools/` run with [uv](https://docs.astral.sh/uv/):
 `pyproject.toml` sets the Python version and pins limae, which they
-call, and pre-commit; `uv run` creates the environment from `uv.lock` the
-first time. Install the commit hooks once with `uv run pre-commit
-install`.
+call, pre-commit and the Python checkers (ruff, pydoclint, basedpyright),
+which the commit hooks run; `uv run` creates the environment from
+`uv.lock` the first time. Install the commit hooks once with `uv run
+pre-commit install`.
 
 `uv run tools/build_site.py` builds the constitution into two static web
 pages, English and Chinese, under `site/` (not committed). It needs Hugo
