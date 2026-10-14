@@ -9,7 +9,7 @@ zh = "转告的同意，对照委托人本人的原消息核实"
 
 [content]
 en = '''
-This rule sets how a relayed yes is verified and where the result is recorded ({@constitution:explicit-yes}). It covers messages between agents: the agent that relays a principal's yes, and the acting agent that relies on it.
+This rule sets how a relayed yes is verified and where the result is recorded ({@constitution:explicit-yes.rules}). It covers messages between agents: the agent that relays a principal's yes, and the acting agent that relies on it.
 
 The relaying agent sends, with the yes, a reference to the principal's original message by which the acting agent can find it: a link to the message, or the conversation it was sent in and its time. A summary or a quotation of the message is not a reference.
 
@@ -26,7 +26,7 @@ The acting agent records the reference and the result of each check in the recor
 When unsure whether a check holds, treat it as failed.
 '''
 zh = '''
-本规定写明转告的同意怎样核实、核实结果记在哪里 ({@constitution:explicit-yes})。它适用于 agent 之间的消息：转告委托人同意的 agent，以及凭这一同意执行动作的 agent。
+本规定写明转告的同意怎样核实、核实结果记在哪里 ({@constitution:explicit-yes.rules})。它适用于 agent 之间的消息：转告委托人同意的 agent，以及凭这一同意执行动作的 agent。
 
 转告的 agent 连同同意一起，附上委托人原消息的引用，让执行的 agent 能据此找到原消息：消息的链接，或者原消息所在的会话和发送时间。对原消息的概述或者摘引不构成引用。
 
