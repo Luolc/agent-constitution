@@ -11,16 +11,16 @@ use statute::source::Source;
 mod common;
 use common::{domain, edit, one_of, rule, source};
 
-/// The rule set enabling `rules` and `packs` of source `ac`.
+/// The rule set enabling `rules` and `packs` of source `R`.
 fn manifest(rules: &[u64], packs: &[u64]) -> Manifest {
     let list = |ids: &[u64]| {
         ids.iter()
-            .map(|id| format!("\"ac:{id}\""))
+            .map(|id| format!("\"R{id}\""))
             .collect::<Vec<_>>()
             .join(", ")
     };
     Manifest::parse(&format!(
-        "constitution = {{ source = \"ac\", edition = \"2026-10\" }}\nrules = [{}]\npacks = [{}]\n\n[sources]\nac = {{ path = \".\" }}\n",
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\nrules = [{}]\npacks = [{}]\n\n[sources]\nR = {{ path = \".\" }}\n",
         list(rules),
         list(packs)
     ))
@@ -145,7 +145,7 @@ fn a_required_one_of_needs_a_chosen_child() {
         &[5],
         &[],
         1,
-        "rule 5 (Rule 5) requires one-of 2 (One-of 2), and the rule set enables none of its children; add one of them to `rules`: \"ac:3\" (Rule 3), \"ac:4\" (Rule 4)",
+        "rule R5 (Rule 5) requires one-of R2 (One-of 2), and the rule set enables none of its children; add one of them to `rules`: \"R3\" (Rule 3), \"R4\" (Rule 4)",
     );
 }
 
@@ -180,9 +180,9 @@ fn at_most_one_child_of_a_one_of() {
         &[3, 4],
         &[],
         1,
-        "at most one child of one-of 2 (One-of 2) may be enabled, and the rule set enables 2: 3 (Rule 3) (listed in `rules`), 4 (Rule 4) (listed in `rules`); keep one",
+        "at most one child of one-of R2 (One-of 2) may be enabled, and the rule set enables 2: R3 (Rule 3) (listed in `rules`), R4 (Rule 4) (listed in `rules`); keep one",
     );
-    fails(&s, &[3, 5], &[], 1, "4 (Rule 4) (required by 5)");
+    fails(&s, &[3, 5], &[], 1, "R4 (Rule 4) (required by R5)");
 }
 
 // Conflicts.
@@ -201,11 +201,11 @@ fn conflicting_rules_are_not_enabled_together() {
         &[2, 3],
         &[],
         1,
-        "rules 3 (Rule 3) (listed in `rules`) and 2 (Rule 2) (listed in `rules`) conflict (3 says so)",
+        "rules R3 (Rule 3) (listed in `rules`) and R2 (Rule 2) (listed in `rules`) conflict (R3 says so)",
     );
     // Declared on 3 only; the conflict is found from either side, here
     // with 2 brought in by 4.
-    fails(&s, &[4, 3], &[], 1, "2 (Rule 2) (required by 4)");
+    fails(&s, &[4, 3], &[], 1, "R2 (Rule 2) (required by R4)");
 }
 
 // The constitution's revision.
@@ -226,7 +226,7 @@ fn every_rule_accepts_the_revision() {
         &[2],
         &[],
         1,
-        "rule 2 (Rule 2) is compatible with constitution revisions `>=2,<4`, and the rule set rests on revision 1",
+        "rule R2 (Rule 2) is compatible with constitution revisions `>=2,<4`, and the rule set rests on revision 1",
     );
     fails(&s, &[2], &[], 4, "rests on revision 4");
 }
@@ -238,7 +238,7 @@ fn a_rule_brought_in_must_accept_the_revision_too() {
         edit(rule(2, 1, ""), ">=1", ">=2"),
         rule(3, 2, ""),
     ]);
-    fails(&s, &[3], &[], 1, "rule 2 (Rule 2) is compatible");
+    fails(&s, &[3], &[], 1, "rule R2 (Rule 2) is compatible");
 }
 
 // Packs.
@@ -300,28 +300,22 @@ fn rules_name_rules_that_exist() {
         &[42],
         &[],
         1,
-        "`rules` names ac:42, which does not exist in source `ac`",
+        "`rules` names R42, which does not exist in source `R`",
     );
-    fails(
-        &s,
-        &[],
-        &[42],
-        1,
-        "`packs` names ac:42, which does not exist",
-    );
+    fails(&s, &[], &[42], 1, "`packs` names R42, which does not exist");
     fails(
         &s,
         &[1],
         &[],
         1,
-        "`rules` names domain 1 (Domain 1), which cannot be enabled on its own; to enable every rule under it, move it to `packs`",
+        "`rules` names domain R1 (Domain 1), which cannot be enabled on its own; to enable every rule under it, move it to `packs`",
     );
     fails(
         &s,
         &[4],
         &[],
         1,
-        "`rules` names one-of 4 (One-of 4); a one-of is enabled by choosing one of its children: \"ac:5\" (Rule 5), \"ac:6\" (Rule 6)",
+        "`rules` names one-of R4 (One-of 4); a one-of is enabled by choosing one of its children: \"R5\" (Rule 5), \"R6\" (Rule 6)",
     );
 }
 
@@ -331,7 +325,7 @@ fn a_superseded_rule_is_a_warning_naming_its_successor() {
     warns(
         &s,
         &[8],
-        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `rules` (`statute upgrade --replace-superseded` does it)",
+        "rule R8 (Rule 8) (listed in `rules`) is superseded by R2 (Rule 2); replace R8 with R2 in `rules` (`statute upgrade --replace-superseded` does it)",
     );
 }
 
@@ -350,14 +344,14 @@ fn a_rule_split_in_two_is_a_warning_naming_both() {
     warns(
         &s,
         &[8],
-        "rule 8 (Rule 8) (listed in `rules`) is superseded by 2 (Rule 2), 3 (Rule 3); replace ac:8 in `rules` with those of ac:2, ac:3 that apply",
+        "rule R8 (Rule 8) (listed in `rules`) is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 in `rules` with those of R2, R3 that apply",
     );
     let (_, diags) = run(&s, &[], &[8], 1);
     let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
     assert_eq!(
         warnings,
         [
-            "statute.toml: warning: pack 8 (Rule 8) enables nothing: its root is superseded by 2 (Rule 2), 3 (Rule 3); replace ac:8 in `packs` with those of ac:2, ac:3 that apply"
+            "statute.toml: warning: pack R8 (Rule 8) enables nothing: its root is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 in `packs` with those of R2, R3 that apply"
         ]
     );
 }
@@ -372,7 +366,7 @@ fn a_repealed_rule_is_a_warning() {
             "status = \"repealed\"",
         ),
     ]);
-    warns(&s, &[2], "rule 2 (Rule 2) (listed in `rules`) is repealed");
+    warns(&s, &[2], "rule R2 (Rule 2) (listed in `rules`) is repealed");
     // Left out of a pack.
     assert!(ids(&enabled(&s, &[], &[1])).is_empty());
 }
@@ -395,7 +389,7 @@ fn a_superseded_rule_brought_in_names_what_brings_it_in() {
     warns(
         &s,
         &[9],
-        "rule 8 (Rule 8) (parent of 9) is superseded by 2 (Rule 2); it stays as long as 9 (Rule 9) is enabled, which brings it in",
+        "rule R8 (Rule 8) (parent of R9) is superseded by R2 (Rule 2); it stays as long as R9 (Rule 9) is enabled, which brings it in",
     );
     let (_, diags) = run(&s, &[9], &[], 1);
     assert!(
@@ -414,7 +408,7 @@ fn a_pack_whose_root_is_superseded_warns() {
     assert_eq!(
         warnings,
         [
-            "statute.toml: warning: pack 8 (Rule 8) enables nothing: its root is superseded by 2 (Rule 2); replace ac:8 with ac:2 in `packs` (`statute upgrade --replace-superseded` does it)"
+            "statute.toml: warning: pack R8 (Rule 8) enables nothing: its root is superseded by R2 (Rule 2); replace R8 with R2 in `packs` (`statute upgrade --replace-superseded` does it)"
         ]
     );
 }
@@ -427,8 +421,8 @@ fn conflicting_rules_of_one_pack_are_listed_one_by_one() {
         &[],
         &[1],
         1,
-        "both are in pack 1, so in place of the pack, list in `rules` the rules of it you want",
+        "both are in pack R1, so in place of the pack, list in `rules` the rules of it you want",
     );
     // With one of them listed directly as well, the advice stays the same.
-    fails(&s, &[2], &[1], 1, "both are in pack 1");
+    fails(&s, &[2], &[1], 1, "both are in pack R1");
 }

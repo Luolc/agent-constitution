@@ -6,8 +6,8 @@ use toml_edit::{Array, DocumentMut, Item, Value};
 
 use statute::diag::Diagnostics;
 use statute::lock;
-use statute::manifest::{self, Manifest};
-use statute::node::{Id, Kind, Status, id_from_file_name};
+use statute::manifest::{self, Manifest, RuleRef, SourceSpec, show};
+use statute::node::{Id, Kind, Status};
 use statute::project::Project;
 use statute::resolve::{Reason, label, refs};
 
@@ -27,12 +27,12 @@ enum Command {
     Lock,
     /// Say why a rule is enabled, along the chain that brings it in.
     Explain {
-        /// The rule, as `ac:42` or `42`.
+        /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
         rule: String,
     },
     /// Enable a rule (or a pack) in statute.toml and update statute.lock.
     Add {
-        /// The rule, as `ac:42` or `42`.
+        /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
         rule: String,
         /// Enable the pack rooted at this node, in `packs`.
         #[arg(long)]
@@ -40,7 +40,7 @@ enum Command {
     },
     /// Take a rule (or a pack) out of statute.toml and update statute.lock.
     Remove {
-        /// The rule, as `ac:42` or `42`.
+        /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
         rule: String,
         /// Take the pack out of `packs`.
         #[arg(long)]
@@ -160,6 +160,9 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
         .filter(|(_, r)| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review))
         .collect();
     if !for_reviewer.is_empty() {
+        let labels = statute::compile::labels(&project).map_err(|e| {
+            eprintln!("statute: error: {e}");
+        })?;
         println!("\nFor the reviewer:");
         for (id, report) in for_reviewer {
             let Some(node) = source.get(*id) else {
@@ -167,15 +170,16 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
             };
             let Some(rule) = &node.rule else { continue };
             let lang = &project.manifest.lang;
+            let text = |part: &str, text| {
+                let text = statute::compile::pick(text, node, lang);
+                statute::compile::cited(&project, &labels, node, part, text, false)
+                    .map_err(|e| eprintln!("statute: error: {e}"))
+            };
+            let reason = text("reason", &rule.reason)?;
+            let verification = text("verification", &rule.verification)?;
             println!("\n## {} ({})\n", label(source, *id), report.outcome.name());
-            println!(
-                "Reason: {}\n",
-                statute::compile::pick(&rule.reason, node, lang)
-            );
-            println!(
-                "Verification: {}",
-                statute::compile::pick(&rule.verification, node, lang)
-            );
+            println!("Reason: {reason}\n");
+            println!("Verification: {verification}");
         }
     }
     if reports.iter().any(|(_, r)| r.outcome == Outcome::Violation) {
@@ -186,7 +190,7 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
 }
 
 /// The source's name in the rule set `init` writes.
-const INIT_SOURCE: &str = "ac";
+const INIT_SOURCE: &str = manifest::FIRST_PARTY;
 
 /// Writes a new `statute.toml` that rests on the constitution of `source`
 /// and enables no rule, after trying that it resolves. An existing file is
@@ -244,7 +248,7 @@ fn init(root: &Path, source: &str, edition: Option<String>) -> Result<(), ()> {
         "wrote {}: edition {edition} of the constitution, source `{INIT_SOURCE}` at {source}",
         manifest::FILE
     );
-    println!("`statute add {INIT_SOURCE}:<id>` enables a rule");
+    println!("`statute add {INIT_SOURCE}<id>` enables a rule");
     Ok(())
 }
 
@@ -301,10 +305,9 @@ fn lock_command(root: &Path) -> Result<(), ()> {
         .ok()
         .and_then(|text| lock::read(&text).ok())
     {
-        let name = &project.manifest.source.name;
         for (id, revision) in same_revision_new_content(&old, &project) {
             eprintln!(
-                "{}: warning: rule {name}:{} changed since {} and is still at revision {revision}; {}",
+                "{}: warning: rule {} changed since {} and is still at revision {revision}; {}",
                 statute::project::shown(
                     &project.manifest.source.path,
                     &format!("rules/{}", statute::node::file_name(id))
@@ -488,22 +491,16 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
     let mut doc: DocumentMut = original
         .parse()
         .map_err(|e| eprintln!("{}: error: {e}", manifest::FILE))?;
-    let name = &project.manifest.source.name;
+    let spec = &project.manifest.source;
+    let show = |id: Id| show(&spec.name, id);
     let mut lines = Vec::new();
     for field in ["rules", "packs"] {
         let Some(list) = doc.get_mut(field).and_then(Item::as_array_mut) else {
             continue;
         };
-        // Manifest::parse has already checked that each entry is
-        // `<source>:<id>` with the one source.
-        let ids: Vec<Option<Id>> = list
-            .iter()
-            .map(|v| {
-                v.as_str()
-                    .and_then(|s| s.split_once(':'))
-                    .and_then(|(_, n)| id_from_file_name(&format!("{n}.toml")))
-            })
-            .collect();
+        // Manifest::parse has already checked that each entry names a
+        // rule of the one source.
+        let ids: Vec<Option<Id>> = list.iter().map(|v| listed_id(v, spec)).collect();
         // The IDs listed once this pass is done, so that two rules with
         // one successor do not both become it.
         let mut listed = ids.clone();
@@ -514,8 +511,9 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
                 [new] => *new,
                 many => {
                     lines.push(format!(
-                        "left {name}:{old} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
-                        refs(name, many)
+                        "left {} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
+                        show(old),
+                        refs(&project.source, many)
                     ));
                     continue;
                 }
@@ -531,17 +529,21 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
                     first.decor_mut().set_prefix(prefix);
                 }
                 lines.push(format!(
-                    "took {name}:{old} out of `{field}`: superseded by {name}:{new}, which it lists already"
+                    "took {} out of `{field}`: superseded by {}, which it lists already",
+                    show(old),
+                    show(new)
                 ));
             } else {
                 let decor = list.get(i).map(|v| v.decor().clone());
-                list.replace(i, format!("{name}:{new}"));
+                list.replace(i, show(new));
                 listed.push(Some(new));
                 if let (Some(decor), Some(v)) = (decor, list.get_mut(i)) {
                     *v.decor_mut() = decor;
                 }
                 lines.push(format!(
-                    "replaced {name}:{old} with {name}:{new} in `{field}`"
+                    "replaced {} with {} in `{field}`",
+                    show(old),
+                    show(new)
                 ));
             }
         }
@@ -554,32 +556,29 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
     Ok(Some((original, changed, lines)))
 }
 
-/// The ID a command-line reference names: `42`, or `<source>:42` with the
-/// rule set's source.
-fn parse_ref(text: &str, source: &str) -> Result<Id, ()> {
-    let (name, id) = text.split_once(':').unwrap_or((source, text));
-    match id_from_file_name(&format!("{id}.toml")) {
-        Some(id) if name == source => Ok(id),
-        Some(_) => {
-            eprintln!(
-                "statute: error: `{text}` names source `{name}`; the rule set's source is `{source}`"
-            );
-            Err(())
-        }
-        None => {
-            eprintln!("statute: error: `{text}` is not a rule ID; write `42` or `{source}:42`");
-            Err(())
-        }
-    }
+/// The ID a command-line reference names in the rule set's source,
+/// written as in `statute.toml`.
+fn parse_ref(text: &str, source: &SourceSpec) -> Result<Id, ()> {
+    RuleRef::parse(text)
+        .and_then(|r| source.id_of(&r).map_err(|e| format!("`{text}` {e}")))
+        .map_err(|e| eprintln!("statute: error: {e}"))
+}
+
+/// The ID an entry of `rules` or `packs` names, when it is a reference to
+/// a rule of `source`.
+fn listed_id(value: &Value, source: &SourceSpec) -> Option<Id> {
+    let r = RuleRef::parse(value.as_str()?).ok()?;
+    source.id_of(&r).ok()
 }
 
 fn explain(root: &Path, text: &str) -> Result<(), ()> {
     let project = load(root)?;
-    let id = parse_ref(text, &project.manifest.source.name)?;
+    let id = parse_ref(text, &project.manifest.source)?;
     let source = &project.source;
     let Some(node) = source.get(id) else {
         eprintln!(
-            "statute: error: {id} does not exist in source `{}`",
+            "statute: error: {} does not exist in source `{}`",
+            source.show(id),
             project.manifest.source.name
         );
         return Err(());
@@ -680,9 +679,8 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
             eprintln!("{}: error: {e}", manifest::FILE);
         }
     })?;
-    let name = &manifest.source.name;
-    let id = parse_ref(text, name)?;
-    let entry = format!("{name}:{id}");
+    let id = parse_ref(text, &manifest.source)?;
+    let entry = show(&manifest.source.name, id);
     let field = if pack { "packs" } else { "rules" };
 
     let mut doc: DocumentMut = original
@@ -694,13 +692,10 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
         .as_array_mut()
         .ok_or_else(|| eprintln!("{}: error: `{field}` is not a list", manifest::FILE))?;
     // Entries of the list that name this ID; Manifest::parse has already
-    // checked that each is `<source>:<id>` with the one source.
-    let position = list.iter().position(|v| {
-        v.as_str()
-            .and_then(|s| s.split_once(':'))
-            .and_then(|(_, n)| id_from_file_name(&format!("{n}.toml")))
-            == Some(id)
-    });
+    // checked that each names a rule of the one source.
+    let position = list
+        .iter()
+        .position(|v| listed_id(v, &manifest.source) == Some(id));
     match (adding, position) {
         (true, Some(_)) => {
             println!("{entry} is already in `{field}`");
