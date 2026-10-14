@@ -100,7 +100,8 @@ once; `lang` and the keys of every text are language codes (`en`, `zh`,
 language, no text is empty, and `[translations]` has no key for the
 original's language. 2: a
 `slug` has the shape of an ID and is unique among the slugs. 3: each `parent` and
-`superseded-by` names a node, the latter a rule other than itself, and
+each entry of `superseded-by` names a node, the latter a rule other
+than itself, and
 following the parents never leads back to a node. 4: each language of a
 text cites what the original cites, every translated language has the
 title and the three parts and a hash in `[translations]`, and each hash is

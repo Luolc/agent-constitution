@@ -44,7 +44,10 @@ class SiteRulesTest(unittest.TestCase):
     nodes = self.nodes("en")
     listed = [i for i, n in nodes.items() if n["listed"]]
     self.assertEqual(listed, [3, 5, 6])
-    self.assertEqual(nodes[4]["supersededBy"], {"id": 5, "title": "Rule 5"})
+    self.assertEqual(
+      nodes[4]["supersededBy"],
+      [{"id": 5, "title": "Rule 5"}, {"id": 6, "title": "Rule 6"}],
+    )
     self.assertEqual(nodes[4]["text"]["statement"], "Old.")
     # The superseded rule 4 also names `one`; only 3 and 5 are under it.
     cited = self.data["en"]["citedBy"]
@@ -62,7 +65,7 @@ class SiteRulesTest(unittest.TestCase):
         self.assertEqual(zh[node_id]["shown"], "en")
         self.assertEqual(zh[node_id]["translations"], [])
         self.assertEqual(zh[node_id]["title"], f"Rule {node_id}")
-    self.assertEqual(zh[5]["supersededBy"], None)
+    self.assertEqual(zh[5]["supersededBy"], [])
     self.assertEqual(zh[3]["parent"], {"id": 2, "title": "组 2"})
 
   def test_citations_are_links(self):

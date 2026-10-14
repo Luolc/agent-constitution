@@ -57,7 +57,8 @@ NODE_SCHEMAS = {
   "rule": NODE_SCHEMA
   | {
     "parent": int,
-    "superseded-by?": int,
+    # One rule ID or a list of them; `Reader.successors` checks it.
+    "superseded-by?": object,
     "requires?": list,
     "conflicts?": list,
     "authority": list,
