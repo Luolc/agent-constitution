@@ -828,18 +828,21 @@ one reviewer takes all of them or several take a group each, and how the
 groups are formed, is set in the rule set.
 
 In the first version, `statute check` lists the enabled rules of the
-repository for review and runs the checks of those that have one; with `--base <ref>` it checks the change
-`git diff <ref>...HEAD`. It prints one line per rule, its outcome
-(`pass`, `violation`, `inconclusive`, or `review` for a rule without an
-automatic check) and a note, with the findings below, and then, for the
-reviewer, the reason and the verification of each rule that is
-inconclusive or for review, with their citations rendered as in the
+repository for review and runs the checks of those that have one; with
+`--base <ref>` it checks the change `git diff <ref>...HEAD`. It groups
+the rules by domain, the domains and the rules in each in order of ID,
+under a heading with the domain's reference and title (`## R13
+(Security)`). Each rule has a line with its outcome (`pass`,
+`violation`, `inconclusive`, or `review` for a rule without an
+automatic check), its reference and title, and a note, with the findings
+below; a rule that is inconclusive or for review is followed by its
+reason and verification, with their citations rendered as in the
 compiled `AGENTS.md`, a cited rule always as its title and reference
 (`Title (rule R42)`), since the output has no anchors to link to. It
-exits with status 1 when a rule is
-violated, and 0 otherwise. A built-in check that covers only part of its
-rule, finding nothing, is inconclusive, not a pass, since the rest of
-the rule is still for the reviewer. The built-in checks:
+exits with status 1 when a rule is violated, and 0 otherwise. A
+built-in check that covers only part of its rule, finding nothing, is
+inconclusive, not a pass, since the rest of the rule is still for the
+reviewer. The built-in checks:
 
 - rule 46 (instruction-files-apart) tells instruction files, generated
   files and other files apart with the same path tables as
@@ -890,9 +893,9 @@ The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
 only for a rule set that still enables them.
 
 The reviewer runs `statute check`, and CI may run it too. It is not a
-commit hook: some checks scan the whole history or
-ask the forge over the network and can be slow, and a commit hook holds
-only checks that take seconds.
+commit hook: some checks scan the whole history or ask the forge over
+the network and can be slow, and a commit hook holds only checks that
+take seconds.
 
 For each rule it is handed, the reviewer decides whether the rule is met
 or violated. A violation is fixed. Where the reviewer's decision differs
@@ -1018,8 +1021,8 @@ In the directory of the `AGENTS.md`, `statute compile` also writes:
   `run` and `tools`. The file changes with statute's version.
 
 Each file starts with a comment that statute wrote it (`<!-- ... -->`
-in the `AGENTS.md`, `# ...` in `statute-checks.toml`). Before writing anything,
-the command checks every place it would write, and when one holds
+in the `AGENTS.md`, `# ...` in `statute-checks.toml`). Before writing
+anything, the command checks every place it would write, and when one holds
 something it did not write (a file without that first line, a skill
 directory without `.statute-generated`, a `.claude/skills/<name>` that
 is not its link), it writes nothing at all and fails. When a skill is to
@@ -1064,9 +1067,8 @@ be published anew. The rule set is `statute.toml`, the lock file
 - `lock`: resolve the rule set into the lock file;
 - `compile`: write the compiled output
   ([Compilation and the site](#compilation-and-the-site));
-- `check`: list the enabled rules for review, with the outcome of those a
-  script checks
-  ([Checks](#checks));
+- `check`: list the enabled rules for review by domain, with the outcome
+  of those a script checks ([Checks](#checks));
 - `upgrade`: move the sources and the constitution to newer versions
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file));
 - `explain`: say why a rule is enabled and which rules require it.
