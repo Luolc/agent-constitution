@@ -36,10 +36,11 @@ the whole design.
   amendment, releases and versions.
 - [Fleet and migration](fleet-and-migration.md): relation to fleet and
   migrating from the hand-written guide.
-- [Rule system](rule-system.md): the planned rule system (numbered
-  rules, sources and references, rule sets and lock files, dependencies,
-  checks and the review loop), not built yet, and which parts above it
-  will replace; its topics are in the four files below.
+- [Rule system](rule-system.md): the rule system (numbered rules,
+  sources and references, rule sets and lock files, dependencies, checks
+  and the review loop), built so far in part at the repository level,
+  for one source, and which parts above it will replace; its topics are in the
+  four files below.
 - [Rule format](rule-format.md): what one rule holds, IDs and
   revisions, the rule file format, rules and skills, and tracing rules
   to the constitution.
