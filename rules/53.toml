@@ -1,8 +1,8 @@
 id = 53
 slug = "checks-before-push"
-revision = 3
+revision = 4
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 15
 authority = ["evidence"]

@@ -1,0 +1,49 @@
+id = 81
+slug = "design-lag-marked"
+revision = 2
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 79
+requires = [19]
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Let the code and the design change apart, and mark where they differ"
+zh = "代码和设计可以先后修改，不一致之处要标明"
+
+[text.statement]
+en = "Change the code and the design in either order, and mark each point where they differ: the design marks a part not built yet as {@rule:19} asks, and a change to the code that runs ahead of the design says so in its description and leaves a follow-up to update the design."
+zh = "代码和设计先改哪个都可以，但每一处不一致都要标明：设计里尚未构建的部分，按 {@rule:19} 标明；代码走在设计前面的变更，在说明里写明这一点，并留下更新设计的 follow-up。"
+
+[text.reason]
+en = '''
+A design is often written before the code that builds it, and when the work has to move fast the code goes first; holding either to the other's change would slow both. What must not happen is that a reader takes a design that has not caught up for fact ({@constitution:evidence.facts}), so each difference is marked where a reader meets it.
+'''
+zh = '''
+设计常常先于实现它的代码写出来；要快速推进时，代码也会先行。要求两者必须在同一个变更里改，哪一边都会被拖慢。不能发生的是读者把还没跟上的设计当作事实 ({@constitution:evidence.facts})，所以每一处不一致都在读者会看到的地方标明。
+'''
+
+[text.verification]
+en = '''
+Code here is every file of the repository other than the design, instruction files included.
+
+- Design ahead of the code: the design marks what is not built yet as {@rule:19} asks.
+- Code ahead of the design: the description of the change to the code names the sections of the design that no longer match it, and the follow-up that will update them, for example an issue or a pull request; the follow-up is open when the change is merged.
+
+Violated when a merged change to the code leaves a section of the design describing the repository as it was before the change, and its description does not name that section, names no follow-up, or names one that is not open when the change is merged.
+'''
+zh = '''
+这里的代码，指仓库里设计以外的所有文件，包括指令文件。
+
+- 设计走在代码前面：设计按 {@rule:19} 标明尚未构建的内容。
+- 代码走在设计前面：代码变更的说明写明设计里哪些章节已经与它不符，以及由哪个 follow-up 来更新它们，例如一个 issue 或一个 pull request；变更合入时，这个 follow-up 已经建好、尚未关闭。
+
+已合入的代码变更留下某一节设计仍按变更之前的样子描述仓库，而它的说明没有写出这一节、没有指明 follow-up，或者指明的 follow-up 在变更合入时并未处于打开状态的，即为违反本规定。
+'''
+
+[translations]
+zh = "51acc76e4bf277d5672df9fd211d35d876285e7e654b566353a31273989d3826"

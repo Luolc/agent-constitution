@@ -298,3 +298,31 @@ def check_node_authority(
         5,
         f"authority cites {found}",
       )
+
+
+def authority_overlaps(src: Sources) -> list[str]:
+  """Warn of each node whose `authority` names a provision and one above it.
+
+  The narrower provision says where the node belongs; the wider one adds
+  nothing. Not an error: the build goes on. A superseded or repealed
+  node is not in force and is left alone.
+
+  Args:
+    src: the sources.
+
+  Returns:
+    The warnings, `path:line: warning: message`, one per pair.
+  """
+  warnings = []
+  for n in src.nodes:
+    if n.status in ("superseded", "repealed"):
+      continue
+    for ref in n.authority:
+      for above in src.ancestors.get(ref, ()):
+        if above in n.authority:
+          line = n.doc.line("authority =")
+          warnings.append(
+            f"{n.doc.path}:{line}: warning: rule {n.id}: authority names"
+            f" both {above} and {ref}, which is under it"
+          )
+  return warnings

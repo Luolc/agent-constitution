@@ -1,8 +1,8 @@
 id = 64
 slug = "review-round-limit"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 14
 authority = ["accountable-agent.whole-task", "accountable-agent.own-work", "decide-yourself.changing-approach", "asking"]

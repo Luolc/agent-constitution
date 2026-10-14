@@ -1,4 +1,4 @@
-<!-- en-sha256: 75889e3a0e53b6fe3b3e28b6959fcf511bcfca8d97fa64ef1a96c14a2c6ac649 -->
+<!-- en-sha256: bc2a9be0bedf3f2dd8d44cce6c1ed99cc72f2e89525f3b3a0a963c44f798c82a -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -27,7 +27,7 @@
 2. ID：每个 ID 格式正确；条和款的 ID 在整部宪法里唯一，项的 ID 在所在的款里唯一。
 3. 结构：编号在各自的范围内唯一；废止的条只含废止的款。
 4. 语言：在每个文本表里，每种语言引用的 ID 集合都与默认语言的相同。
-5. 引用：每个 `{@...}` 和每个 `authority` 条目都能解析；目标已废止 (废止的款里的项也算废止) 是错误；宪法只引用自身，不带命名空间；规定用 `constitution:` 或 `rule:` 引用。
+5. 引用：每个 `{@...}` 和每个 `authority` 条目都能解析；目标已废止 (废止的款里的项也算废止) 是错误；宪法只引用自身，不带命名空间；规定用 `constitution:` 或 `rule:` 引用。没有被取代、也没有废止的规定，`authority` 同时写了一个条款和它上面的条款 (项和它所在的款或条，款和它所在的条) 不算错误：各项检查通过后，无论带不带 `--check`，构建都会对每一对这样的条款打印一条警告，`path:line: warning: rule <id>: authority names both <above> and <below>, which is under it`，退出码不受影响。
 6. 重新构建的结果与提交入库的 `constitution.<lang>.md` 和 `constitution.<lang>.agent.md` 逐字节相同 (只在 `--check` 下)。
 7. 对照基准提交核对编号 (只在 `--check --base <git-ref>` 下，用 `git show` 读取)：基准的 `index.toml` 是 `active` 时，状态没有退回 `draft`，当前的 `edition` 与基准的相同或是更晚的月份；与基准相同时，基准中的每一条、每一款和每一项，按 ID 对应，都仍然存在且编号不变，款仍在同一条的目录里，项仍在同一款里；已废止的仍然废止；基准 parent 树上的每个节点都仍然存在。每个错误都说明属于哪一种：版不晚于基准、消失、改号、移到别的条、不再废止。基准的文件在基准自己的版目录里找，它的名字可能与当前的不同。基准是 `draft`、还没有版目录或条目录，或者 `edition` 早于当前的，就跳过比较，并打印一条说明。
 
@@ -35,7 +35,7 @@
 
 规定是[规定文件格式](rule-system.md#rule-file-format) 所定格式的 parent 树节点，各在一个 `rules/<id>.toml` 里，按编号的大小读入。上面的检查对它们是这样做的。检查 1：键按节点的 `kind` 一个不多、一个不少，类型正确；`id` 就是文件名，文件名不补零；`revision` 不小于 1；`kind`、`status`、`level`、`check` 取各自允许的值 (只有规定可以是 `superseded`)，状态与 `index.toml` 的关系同规定一样；`superseded-by` 恰好在状态为 `superseded` 时出现，`run` 和 `tools` 恰好在 `check` 为 `command` 时出现；`authority` 是非空的字符串列表，`tools` 是字符串列表，`constitution` 是只含整数修订号的版本说明符 ([从规定追溯到宪法](rule-system.md#tracing-rules-to-the-constitution))，其中的修订号都不超过 18446744073709551615 (2^64 − 1，statute 能读的最大值)；`requires` 和 `conflicts` 的每一项是不小于 1 的数字或 `"<source>:<id>"` 形式的字符串，指向规定自身以外的节点，并且只列一次；`lang` 和每段文本的键都是语言代码 (`en`、`zh`、`zh-Hant`)；标题和正文三部分都有原文语言的文本，没有一段文本是空的，`[translations]` 里没有原文语言的键。检查 2：`slug` 符合 ID 的格式，在所有 slug 之间唯一。检查 3：每个 `parent` 和 `superseded-by` 的每一项都指向一个节点，后者指向本身以外的一条规定；顺着 parent 往上走，不会回到走过的节点。检查 4：文本的每种语言引用的与原文相同；每种译文语言都有标题和正文三部分，`[translations]` 里也有它的哈希，并且每个哈希都等于原文现在的哈希，不等时错误信息会打印新的哈希。检查 5：带数字的 `{@rule:<id>}` 解析到一个没有废止的节点；`authority` 的每一项不带命名空间，解析到一个没有废止的条文。检查 7：基准里的节点仍然存在，已经废止或被取代的仍然如此；基准早于 parent 树、规定以单词命名的，由 `slug` 等于那个单词的节点承接。
 
-节点之间的关系不在这里查，由 `statute` 查 ([工具与第一版](rule-system.md#the-tool-and-the-first-version))：`requires` 和 `conflicts` 指向的节点存在、种类对，`requires` 不成环、没有多余的项，规定不与它带入的节点冲突，以及[依赖、one-of 与规定包](rule-system.md#dependencies-one-ofs-and-packs) 所说的 warning。CI 里由 `crates/statute/tests/real_rules.rs` 用 `statute` 读本仓的 `rules/`，有任何 error 或 warning 都失败。
+节点之间的关系不在这里查，由 `statute` 查 ([命令与第一版](rule-system.md#the-command-and-the-first-version))：`requires` 和 `conflicts` 指向的节点存在、种类对，`requires` 不成环、没有多余的项，规定不与它带入的节点冲突，以及[依赖、one-of 与规定包](rule-system.md#dependencies-one-ofs-and-packs) 所说的 warning。CI 里由 `crates/statute/tests/real_rules.rs` 用 `statute` 读本仓的 `rules/`，有任何 error 或 warning 都失败。
 
 每项检查都有一个让它失败的测试和一个通过的对照；编号检查在一个临时的 git 仓库上测试 (`tools/compiler` 的 `tests/test_constitution_checks.py`、`tests/test_constitution_base.py`，以及针对 parent 树的 `tests/test_rule_tree.py`)。检查 1 至 6 和这些测试作为提交钩子运行，也在 CI 里运行；检查 7 只在 CI 里运行：在 pull request 上，对照检出的合并提交所基于的那个基准分支的末端 (即它的第一个父提交)；在推送到 `main` 时，对照推送前的那个提交。
 

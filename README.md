@@ -24,12 +24,13 @@ drift out of step with the code, and mix principles, practices and
 procedures together. This repo writes them the way laws are written. A
 short constitution holds the principles and says who may decide what;
 numbered rules refine it, one requirement each, with a way to tell
-whether it was broken; and a tool, `statute`, compiles the rules a
-repository chooses into its AGENTS.md and runs their checks.
+whether it was broken; and a command, `statute`, compiles the rules a
+repository chooses into its AGENTS.md and, at review, lists the rules
+the reviewer goes through.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/architecture-dark.svg">
-  <img src=".github/assets/architecture.svg" alt="How Agent Constitution fits together: the constitution is refined by rules; a repository chooses rules in statute.toml, pinned in statute.lock; statute compiles them into AGENTS.md and writes the checks and hooks; agents work and review under them; a gap no rule covers becomes a trial rule.">
+  <img src=".github/assets/architecture.svg" alt="How Agent Constitution fits together: the constitution is refined by rules; a repository chooses rules in statute.toml, pinned in statute.lock; statute compiles them into AGENTS.md and gives, with statute check, the list of rules to review; agents work under them, and a reviewer goes through the list by domain and rule; a gap no rule covers becomes a trial rule.">
 </picture>
 
 ## The constitution
@@ -55,18 +56,17 @@ Chinese translation. Its ID is a number, never reused; its text is a
 statement, a reason and a verification, short enough to be checked. Rules
 hang under domains such as security, collaboration, verification and
 documentation, and each one cites the provisions of the constitution it
-refines. The rules written while the constitution was a draft are
-`draft`. A convention that agents write down when they find a gap no rule
-covers starts as a `trial` rule, and becomes `active` once it has held up
-in real work. A rule is never deleted: it is
-superseded or repealed.
+refines. A rule starts as `trial`, and so does a
+convention that agents write down when they find a gap no rule covers;
+it becomes `active` once it has held up in real work. A rule is never
+deleted: it is superseded or repealed.
 
 The format, the rule tree, packs and the review loop are in
 [Rule system](docs/design/rule-system.md).
 
-## statute
+## command: statute
 
-`statute` is the rule system's tool, in Rust, in
+`statute` is the rule system's command, in Rust, in
 [`crates/statute`](crates/statute/). It is under development: it reads
 rules from a source on disk, a checkout of this repo, and its release on
 crates.io is still a placeholder. Build it from a clone:
@@ -82,18 +82,22 @@ Then, in the repository the agents work in, with the clone next to it:
 statute init --source ../agent-constitution  # write statute.toml
 statute add 43        # enable rule 43, and write statute.lock
 statute lock          # resolve statute.toml again after editing it by hand
-statute compile       # write AGENTS.md, the skills, the checks and statute-hooks.yaml
-statute check         # run the checks of the enabled rules
+statute compile       # write AGENTS.md, the skills and the checks
+statute check         # list the enabled rules for review
 ```
 
-`statute check` prints one line per rule: `pass`, `violation`,
-`inconclusive`, or `review` for a rule no script can decide, and then,
-for the reviewer, the reason and the verification of each rule that is
-inconclusive or for review. It exits with
-status 1 on a violation. `statute-hooks.yaml` runs it as a pre-commit
-hook. `statute explain <id>` says why a rule is enabled, and `statute
+Most rules cannot be decided by a script, so the work is reviewed rule
+by rule. The reviewer runs `statute check` to get the list, grouped by domain:
+one line per enabled rule, `review` for a rule no script can decide,
+which is most of them, and `pass`, `violation` or `inconclusive` for the
+few a script checks; each rule that is for review or inconclusive is
+followed by its reason and verification. The reviewer goes through the
+list domain by domain and rule by rule. `statute check` exits with
+status 1 on a violation. It may run in CI as well, but not as a commit
+hook: a check may be slow.
+`statute explain <id>` says why a rule is enabled, and `statute
 --help` lists the rest. What is built so far is in
-[The tool and the first version](docs/design/rule-system.md#the-tool-and-the-first-version).
+[The command and the first version](docs/design/rule-system.md#the-command-and-the-first-version).
 
 ## Development
 

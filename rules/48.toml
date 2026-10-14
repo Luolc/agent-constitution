@@ -1,8 +1,8 @@
 id = 48
 slug = "instructions-take-effect-first"
-revision = 2
+revision = 4
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 15
 authority = ["separate-instruction-changes"]
@@ -15,32 +15,32 @@ en = "Merge the change to the instructions first"
 zh = "修改指令的变更先合入"
 
 [text.statement]
-en = "When work needs a change to instructions, merge that change first and do the rest of the work under the new instructions; the change of its own that updates the design next to it ({@rule:18}) may come before or after."
-zh = "工作需要修改指令的，先合入修改指令的变更，其余的工作再按新指令进行；按 {@rule:18} 紧挨着它单独修改设计的那个变更，先后均可。"
+en = "When work needs a change to instructions, merge that change first and the changes it affects after it, under the new instructions; the design is not instructions and is outside this order."
+zh = "工作需要修改指令的，先合入修改指令的变更，受它影响的其他变更再按新指令合入；设计不是指令，不受这个先后限制。"
 
 [text.reason]
 en = '''
-Work proceeds under new instructions only once the change to them is in effect ({@constitution:separate-instruction-changes}).
+Work proceeds under new instructions only once the change to them is in effect ({@constitution:separate-instruction-changes}). The design describes and explains; it directs no agent, so the order does not bind it.
 '''
 zh = '''
-修改指令的变更生效之后，工作才能按新的指令进行 ({@constitution:separate-instruction-changes})。
+修改指令的变更生效之后，工作才能按新的指令进行 ({@constitution:separate-instruction-changes})。设计是描述和解释，不指示 agent，所以这个先后不约束它。
 '''
 
 [text.verification]
 en = '''
-When work needs both a change to instruction files and changes to other files, which {@rule:46} keeps in two changes, the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
+When work needs both a change to instruction files and changes to other files, which {@rule:46} keeps in two changes, the change to the instructions is merged and takes effect first, and the changes it affects are merged after it, done under the new instructions.
 
-One change is outside this order: the change of its own in which the design follows the change to the instructions, which {@rule:18} lets be merged before or after it. A change that holds anything besides that change to the design is part of the rest of the work.
+A change to the design alone may be merged before or after the change to the instructions. A change that holds anything besides the design is one of the changes the instructions affect.
 
-Violated when a change with the rest of the work is merged before the change to the instructions is in effect.
+Violated when a change that the change to the instructions affects, other than a change to the design alone, is merged before the change to the instructions is in effect.
 '''
 zh = '''
-工作既要修改指令文件、又要修改其他文件，按 {@rule:46} 分成两个变更的，修改指令的变更先合入并生效，其余的工作再按新指令进行。
+工作既要修改指令文件、又要修改其他文件，按 {@rule:46} 分成两个变更的，修改指令的变更先合入并生效，受它影响的其他变更再按新指令进行、在它之后合入。
 
-只有一个变更不受这个先后限制：按 {@rule:18} 紧挨着修改指令的变更、单独修改设计的那个变更，在它之前或之后合入均可。变更里除了这处设计修改还有别的内容的，仍属于其余的工作。
+只改设计的变更，在修改指令的变更之前或之后合入均可。变更里除了设计还有别的内容的，仍属于受指令影响的变更。
 
-做其余工作的变更在修改指令的变更生效之前合入的，即为违反本规定。
+受修改指令的变更影响、且不只改设计的变更，在修改指令的变更生效之前合入的，即为违反本规定。
 '''
 
 [translations]
-zh = "68fd74a88d58f8243ae76aa8681393f00392d92977b024e209b213da447260ed"
+zh = "06bfb8761f1548beda50c22f666cecca6a79ae9b31cbc820f0c4eeff338aa46d"

@@ -1,8 +1,8 @@
 id = 28
 slug = "worker-stays-in-task"
-revision = 2
+revision = 3
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 78
 authority = ["delegated-authority", "accountable-agent", "delivered-tasks"]

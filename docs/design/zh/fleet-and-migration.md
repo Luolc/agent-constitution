@@ -1,4 +1,4 @@
-<!-- en-sha256: f75c0725082a7fb2d61c88f59e04c9cf4775f9e6229c50fec2ffa6b1270e1e9c -->
+<!-- en-sha256: 49fa878e25aed7b00ffbb474955399299397be28b630362601c9e02406d8038d -->
 # fleet 与迁移
 
 ## <a id="relation-to-fleet"></a>与 fleet 的关系
@@ -16,3 +16,5 @@
 5. 逐节对比编译出的文件和手写的指南，把每一处有意为之的差异记下来。
 6. 现有的每一处仓库级覆盖，要么改成一条 `relaxes:` 声明，要么删掉，由人决定。
 7. 切换：overlay 的 apply 步骤用编译出的文件替换手写的那份；加载验证通过；手写的源文件不再使用。
+
+[规定源](rule-sources.md#cutover-from-the-hand-written-guide) 把第 3 步的去处「私有规定」按范围和可见性再分开，把第 6 步改为覆盖和 one-of，并写明第 7 步什么时候可以做。

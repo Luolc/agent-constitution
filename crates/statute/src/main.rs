@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::process::ExitCode;
 
@@ -58,14 +59,15 @@ enum Command {
         edition: Option<String>,
     },
     /// Write AGENTS.md from the constitution and the locked rule set, and
-    /// next to it the skills, the checks and the hook configuration.
+    /// next to it the skills and the checks.
     Compile {
         /// Write here instead of AGENTS.md next to statute.toml; the other
         /// files go next to it.
         #[arg(long)]
         output: Option<std::path::PathBuf>,
     },
-    /// Run the checks of the enabled rules; exits 1 on a violation.
+    /// List the enabled rules for review by domain, with the outcome of
+    /// those a script checks; exits 1 on a violation.
     Check {
         /// Check the change since this git ref (`git diff <base>...HEAD`).
         #[arg(long)]
@@ -144,42 +146,50 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     let project = load(root)?;
     let reports = statute::check::run(&project, &Context { root, base });
     let source = &project.source;
-    for (id, report) in &reports {
-        println!(
-            "{:<12}  {}: {}",
-            report.outcome.name(),
-            label(source, *id),
-            report.note
-        );
-        for f in &report.findings {
-            println!("{:<12}    {}: {}", "", f.location, f.reason);
-        }
-    }
-    let for_reviewer: Vec<_> = reports
-        .iter()
-        .filter(|(_, r)| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review))
-        .collect();
-    if !for_reviewer.is_empty() {
-        let labels = statute::compile::labels(&project).map_err(|e| {
+    let for_reviewer =
+        |r: &statute::check::Report| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review);
+    // The labels are read only when a rule's text is printed.
+    let labels = if reports.iter().any(|(_, r)| for_reviewer(r)) {
+        Some(statute::compile::labels(&project).map_err(|e| {
             eprintln!("statute: error: {e}");
-        })?;
-        println!("\nFor the reviewer:");
-        for (id, report) in for_reviewer {
-            let Some(node) = source.get(*id) else {
+        })?)
+    } else {
+        None
+    };
+    let mut by_domain: BTreeMap<Id, Vec<_>> = BTreeMap::new();
+    for entry in &reports {
+        by_domain
+            .entry(source.root(entry.0))
+            .or_default()
+            .push(entry);
+    }
+    for (i, (domain, entries)) in by_domain.iter().enumerate() {
+        let gap = if i == 0 { "" } else { "\n" };
+        println!("{gap}## {}", label(source, *domain));
+        for (id, report) in entries {
+            println!(
+                "\n{:<12}  {}: {}",
+                report.outcome.name(),
+                label(source, *id),
+                report.note
+            );
+            for f in &report.findings {
+                println!("{:<12}    {}: {}", "", f.location, f.reason);
+            }
+            let (true, Some(labels), Some(node)) = (for_reviewer(report), &labels, source.get(*id))
+            else {
                 continue;
             };
             let Some(rule) = &node.rule else { continue };
             let lang = &project.manifest.lang;
             let text = |part: &str, text| {
                 let text = statute::compile::pick(text, node, lang);
-                statute::compile::cited(&project, &labels, node, part, text, false)
+                statute::compile::cited(&project, labels, node, part, text, false)
                     .map_err(|e| eprintln!("statute: error: {e}"))
             };
             let reason = text("reason", &rule.reason)?;
             let verification = text("verification", &rule.verification)?;
-            println!("\n## {} ({})\n", label(source, *id), report.outcome.name());
-            println!("Reason: {reason}\n");
-            println!("Verification: {verification}");
+            println!("\nReason: {reason}\n\nVerification: {verification}");
         }
     }
     if reports.iter().any(|(_, r)| r.outcome == Outcome::Violation) {

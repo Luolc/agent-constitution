@@ -1,8 +1,8 @@
 id = 60
 slug = "reviewer-changes-nothing"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 14
 authority = ["independent-review.another-party"]

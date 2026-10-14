@@ -1,8 +1,8 @@
 id = 50
 slug = "commit-hook-credential-scan"
-revision = 3
+revision = 4
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 77
 authority = ["sensitive-info"]

@@ -1,8 +1,8 @@
 id = 66
 slug = "waiters-exit-when-gone"
-revision = 2
+revision = 3
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 13
 authority = ["decency.legitimate-means"]

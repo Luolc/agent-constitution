@@ -1,8 +1,8 @@
 id = 56
 slug = "description-read-back"
-revision = 2
+revision = 3
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 15
 authority = ["evidence.facts", "independent-review.reviewed-version"]

@@ -1,8 +1,8 @@
 id = 19
 slug = "built-planned-open"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 authority = ["evidence.facts"]

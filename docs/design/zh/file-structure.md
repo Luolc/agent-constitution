@@ -1,4 +1,4 @@
-<!-- en-sha256: eed54477979699b205e180df06b233da9dd192e0473139f46161158018445547 -->
+<!-- en-sha256: c4fad55c9c81a81e4db71c05b39094af7ffca6620b3daa686e6e20221e58d0ce -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -26,7 +26,7 @@ constitution/
 crates/                   Rust workspace 的各个 crate，每个一个目录    A
   statute/                statute 二进制，正在开发                     A
 docs/
-  design/                 本设计，一部分一个文件，
+  design/                 本设计，一个主题一个文件，
                           由 README.md 索引                            A
     zh/                   本设计的中文译文，每个文件一份同名译文       A
   pilot/                  本仓试用 statute：规定集、锁文件和编译输出，
@@ -101,7 +101,9 @@ rust-toolchain.toml       Rust 工具链的版本，本地和 CI 里的 rustup
                           工具链从不读它                               A
 ```
 
-有四项阶段 B 的内容提前开始。`tools/` 随宪法的构建在阶段 A 开始：宪法本身就是从一条一个目录、一款一个文件的源文件编译出来的 (见[源文件格式](source-formats.md))。`rules/` 也在阶段 A 开始，放从宪法中移出的具体做法。`skills/` 在阶段 A 只是普通的目录，每个目录放一个 `SKILL.md`，带通常的 skill front matter (`name`、`description`)，不带本仓自己的元数据。`crates/` 在阶段 A 开始，只有一个 crate `statute`，它的第一个版本是占位版本，提前发布是为了在 crates.io 上占住这个名字；编译和检查规定的二进制在阶段 B 里在这个 crate 中写出来 (目前能做什么，见[规定体系](rule-system.md#the-tool-and-the-first-version))。编译和检查规定、构建指令文件，仍留在阶段 B。
+有四项阶段 B 的内容提前开始。`tools/` 随宪法的构建在阶段 A 开始：宪法本身就是从一条一个目录、一款一个文件的源文件编译出来的 (见[源文件格式](source-formats.md))。`rules/` 也在阶段 A 开始，放从宪法中移出的具体做法。`skills/` 在阶段 A 只是普通的目录，每个目录放一个 `SKILL.md`，带通常的 skill front matter (`name`、`description`)，不带本仓自己的元数据。`crates/` 在阶段 A 开始，只有一个 crate `statute`，它的第一个版本是占位版本，提前发布是为了在 crates.io 上占住这个名字；编译和检查规定的二进制在阶段 B 里在这个 crate 中写出来 (目前能做什么，见[规定体系](rule-system.md#the-command-and-the-first-version))。编译和检查规定、构建指令文件，仍留在阶段 B。
+
+设计按主题拆成多个文件，使改不同主题的变更改的是不同的文件，这是规定 82 (`design-files-by-topic`) 的要求。计划中、尚未完成：`rule-system.md` 仍装着几个主题，将拆成各自的文件，每个都列进索引 ([agent-constitution 设计](README.md))。
 
 阶段 B 按下面的顺序实现：`schema/` 和 schema 检查程序，`rules/` 的其余部分 (由迁移填充)，编译器，`examples/` 和漂移检查，引用检查程序和放宽检查程序，私有词扫描程序，`fixtures/static/` 和 fixture 检查，最后是加载验证。每一步单独就能用。
 

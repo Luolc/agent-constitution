@@ -45,7 +45,12 @@ first one that finds errors, printing all of that one's errors:
 5. References: each `{@...}` and each `authority` entry resolves; a
    repealed target (an item of a repealed section counts as repealed) is an
    error; the constitution cites only itself, without a namespace; a rule
-   cites with `constitution:` or `rule:`.
+   cites with `constitution:` or `rule:`. A rule, neither superseded nor
+   repealed, whose `authority` names a provision and one above it (an item and its section or article, a
+   section and its article) is not an error: once the checks pass, the
+   build, with or without `--check`, prints a warning for each such pair,
+   `path:line: warning: rule <id>: authority names both <above> and
+   <below>, which is under it`, and its exit status stays as it was.
 6. A fresh build equals the committed `constitution.<lang>.md` and
    `constitution.<lang>.agent.md` files byte for byte (only under
    `--check`).
@@ -114,7 +119,7 @@ superseded once it was; a rule of a base from before the rule tree,
 named by a word, lives on as the node whose `slug` is that word.
 
 The relations between the nodes are not checked here but by `statute`
-([The tool and the first version](rule-system.md#the-tool-and-the-first-version)):
+([The command and the first version](rule-system.md#the-command-and-the-first-version)):
 the targets of `requires` and `conflicts` exist and are of the right kind,
 `requires` has no cycle and nothing redundant, a rule conflicts with
 nothing it brings in, and the warnings of

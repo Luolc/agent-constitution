@@ -8,8 +8,11 @@
 {{- else }}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap">
 {{- end }}
-{{- range slice "theme.js" "count-info.js" "toc-current.js" }}
+{{- range slice "theme.js" "count-info.js" "cites.js" "rules-list.js" "toc-current.js" }}
 {{- with resources.Get . | resources.Minify }}
 <script>{{ .Content | safeJS }}</script>
 {{- end }}
 {{- end }}
+{{- /* Without scripts, the lists of the rules under the provisions
+  are open, since nothing could open them (assets/cites.js). */}}
+<noscript><style>.cites-list { display: block; } .cites-toggle { display: none; }</style></noscript>

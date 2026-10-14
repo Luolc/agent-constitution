@@ -3,12 +3,12 @@
 Repo-specific notes for coding agents working on agent-constitution.
 
 This repo holds the constitution for coding agents, the general rule
-library and skills, and (later) the toolchain that compiles them, together
+library and skills, and (later) the command that compiles them, together
 with a private overlay, into the one instruction file the agents read. The
 2026-10 edition of the constitution is in force. Today the repo has the
 constitution and the general rules as TOML sources, the design, the script
-that builds the constitution and the first version of the rule tool, the
-Rust crate `statute`, which is still under development.
+that builds the constitution and the first version of that command,
+`statute`, a Rust crate still under development.
 
 ## Language
 
@@ -87,8 +87,8 @@ Checkers).
 - `crates/<name>/`: the crates of the Rust workspace (root `Cargo.toml` and
   `Cargo.lock`; `rust-toolchain.toml` pins the toolchain). `crates/statute`
   compiles a constitution and the chosen rules into `AGENTS.md`; which
-  commands are built so far is in `docs/design/rule-system.md`, The tool
-  and the first version. The
+  commands are built so far is in `docs/design/rule-system.md`, The
+  command and the first version. The
   release on crates.io, 0.0.1, is still a placeholder
   (`crates/statute/README.md`). Publishing a crate is a release
   (`docs/design/amendments-and-releases.md`).
@@ -99,13 +99,14 @@ Checkers).
   pages of the constitution, the design and the rules, in both languages,
   into `site/`, which is never committed
   (`docs/design/static-site.md`).
-- `docs/design/`: the one design, one file per part, indexed by
-  `docs/design/README.md`, with its Chinese translation in
-  `docs/design/zh/` (Language, above); a new file is listed in the
-  README and translated in the same PR. A PR that changes how the repo
-  works (layout, source formats, compilation, checkers, releases) updates
-  the section it touches in the same PR. There are no other design or
-  decision files.
+- `docs/design/`: the one design, one file per topic (`rules/82.toml`),
+  indexed by `docs/design/README.md`, with its Chinese translation in
+  `docs/design/zh/` (Language, above); a new file is listed in the README
+  and translated in the same PR. The code and the design may change in
+  either order, and each place where they differ is marked
+  (`rules/81.toml`): the design marks what is not built yet, and a PR
+  whose code runs ahead of the design names the sections it leaves behind
+  and an open follow-up. There are no other design or decision files.
 - The full directory plan, with what belongs to which stage, is in
   `docs/design/file-structure.md`. Do not create a reserved directory
   before its stage.

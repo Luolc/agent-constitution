@@ -4,6 +4,8 @@ The format of docs/design/rule-system.md (Rule file format). Each check
 fails on a broken node and passes on its control, the tree as set up.
 """
 
+import contextlib
+import io
 from pathlib import Path
 import tomllib
 
@@ -17,6 +19,7 @@ from test_constitution_fixture import (
 )
 
 from constitution_compiler import build as bc
+from constitution_compiler import checks as cc
 
 # Shared with statute's tests (crates/statute/tests/superseded_by.rs).
 CASES = Path(__file__).parent / "superseded_by_cases.toml"
@@ -221,6 +224,11 @@ class FormatTest(Tree):
     self.assertError(
       1, "rules/2.toml", "a domain is trial while index.toml is draft"
     )
+
+  def test_trial_under_an_active_index(self):
+    self.activate()
+    self.edit("rules/2.toml", 'status = "active"', 'status = "trial"')
+    self.assertEqual(self.errors(), [])
 
   def test_command_check(self):
     self.edit(
@@ -440,6 +448,56 @@ class ReferenceTest(Tree):
     self.activate()
     self.edit("rules/3.toml", 'status = "active"', 'status = "repealed"')
     self.assertError(5, "rules/10.toml", "cites repealed rule:3")
+
+
+class AuthorityOverlapTest(Tree):
+  """The warning on an `authority` that names a provision and one above it.
+
+  Attributes:
+    WARNING: the warning on the tree as set up, whose rule 10 names
+      `alpha` and its item `alpha-one.money`.
+  """
+
+  WARNING = (
+    "rules/10.toml:8: warning: rule 10: authority names both alpha and"
+    " alpha-one.money, which is under it"
+  )
+
+  def run_main(self):
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err):
+      status = bc.main(["--root", str(self.root)])
+    return status, err.getvalue().splitlines()
+
+  def test_item_under_its_article_warns_without_failing(self):
+    self.assertEqual(self.run_main(), (0, [self.WARNING]))
+
+  def test_item_under_its_section_warns(self):
+    self.edit("rules/10.toml", '"alpha",', '"alpha-one",')
+    _, src, _ = bc.build(self.root)
+    assert src is not None
+    self.assertEqual(
+      cc.authority_overlaps(src),
+      [
+        "rules/10.toml:8: warning: rule 10: authority names both alpha-one"
+        " and alpha-one.money, which is under it"
+      ],
+    )
+
+  def test_superseded_rule_does_not_warn(self):
+    """Rule 11 names the same pair as rule 10 but is superseded."""
+    self.write("rules/11.toml", SupersededTest.SUPERSEDED)
+    self.activate()
+    self.edit(
+      "rules/11.toml",
+      'status = "draft"',
+      'status = "superseded"\nsuperseded-by = 10',
+    )
+    self.assertEqual(self.run_main(), (0, [self.WARNING]))
+
+  def test_provisions_apart_do_not_warn(self):
+    self.edit("rules/10.toml", '"alpha",', '"beta",')
+    self.assertEqual(self.run_main(), (0, []))
 
 
 class NodeBaseTest(Tree):
