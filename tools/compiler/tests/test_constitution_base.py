@@ -109,14 +109,14 @@ class BaseTest(Tree):
   def test_renumbered_article_and_item(self):
     self.commit_base()
     self.edit(f"{A}/01-alpha-one.toml", 'number = "2"', 'number = "3"')
-    self.move(B, "constitution/articles/03-beta")
+    self.move(B, "constitution/2026-10/articles/03-beta")
     errors, _ = self.base_errors()
     self.assertEqual(
       errors,
       [
         f"{A}/01-alpha-one.toml:27: check 7: item alpha-one.machines was "
         "renumbered from 2 to 3 since base HEAD",
-        "constitution/articles/03-beta/article.toml:1: check 7:"
+        "constitution/2026-10/articles/03-beta/article.toml:1: check 7:"
         " article beta was renumbered from 2 to 3 since base HEAD",
       ],
     )
@@ -237,7 +237,7 @@ class BaseTest(Tree):
   def test_back_to_draft(self):
     self.commit_base()
     self.edit(
-      "constitution/index.toml", 'status = "active"', 'status = "draft"'
+      "constitution/2026-10/index.toml", 'status = "active"', 'status = "draft"'
     )
     for name in SECTIONS + ["rules/rule.toml"]:
       self.edit(name, 'status = "active"', 'status = "draft"', -1)
@@ -245,7 +245,7 @@ class BaseTest(Tree):
     self.assertEqual(
       errors,
       [
-        "constitution/index.toml:1: check 7:"
+        "constitution/2026-10/index.toml:1: check 7:"
         " status went back to draft from active at base HEAD"
       ],
     )
@@ -268,7 +268,9 @@ class BaseTest(Tree):
     self.commit_base()
     self.move(f"{B}/01a-beta-two.toml", f"{B}/02-beta-two.toml")
     self.edit(
-      "constitution/index.toml", 'edition = "2026-10"', 'edition = "2027-03"'
+      "constitution/2026-10/index.toml",
+      'edition = "2026-10"',
+      'edition = "2027-03"',
     )
     errors, note = self.base_errors()
     self.assertEqual(errors, [])
@@ -281,13 +283,15 @@ class BaseTest(Tree):
   def test_earlier_edition(self):
     self.commit_base()
     self.edit(
-      "constitution/index.toml", 'edition = "2026-10"', 'edition = "2026-09"'
+      "constitution/2026-10/index.toml",
+      'edition = "2026-10"',
+      'edition = "2026-09"',
     )
     self.assertEqual(
       self.base_errors(),
       (
         [
-          "constitution/index.toml:2: check 7:"
+          "constitution/2026-10/index.toml:2: check 7:"
           " edition 2026-09 is not later than edition 2026-10 at base HEAD"
         ],
         "",
@@ -312,7 +316,9 @@ class BaseTest(Tree):
 
   def set_revision(self, old, new):
     self.edit(
-      "constitution/index.toml", f'revision = "{old}"', f'revision = "{new}"'
+      "constitution/2026-10/index.toml",
+      f'revision = "{old}"',
+      f'revision = "{new}"',
     )
 
   def test_text_change_with_higher_revision_passes(self):
@@ -327,7 +333,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed "
+        "constitution/2026-10/index.toml:3: check 7: the constitution text"
+        " changed "
         "since base HEAD"
         " but revision 1 is not greater than the base's 1"
       ],
@@ -342,7 +349,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed "
+        "constitution/2026-10/index.toml:3: check 7: the constitution text"
+        " changed "
         "since base HEAD"
         " but revision 1 is not greater than the base's 2"
       ],
@@ -354,7 +362,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: revision 2 differs from revision "
+        "constitution/2026-10/index.toml:3: check 7: revision 2 differs from"
+        " revision "
         "1 at base HEAD"
         " but the constitution text did not change"
       ],
@@ -367,7 +376,7 @@ class BaseTest(Tree):
   def test_index_text_change_counts(self):
     self.commit_base()
     self.edit(
-      "constitution/index.toml",
+      "constitution/2026-10/index.toml",
       'en = "Test Constitution"',
       'en = "The Constitution"',
     )
@@ -389,7 +398,7 @@ class BaseTest(Tree):
   def test_changes_outside_the_constitution_text_are_ignored(self):
     self.commit_base()
     self.edit("rules/rule.toml", 'en = "A rule"', 'en = "A changed rule"')
-    self.write("constitution/constitution.en.md", "changed\n")
+    self.write("constitution/2026-10/generated/constitution.en.md", "changed\n")
     self.assertEqual(self.revision_check(), [])
 
   def test_draft_base_text_change_needs_higher_revision(self):
@@ -398,7 +407,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed "
+        "constitution/2026-10/index.toml:3: check 7: the constitution text"
+        " changed "
         "since base HEAD"
         " but revision 0.2 is not greater than the base's 0.2"
       ],
@@ -412,7 +422,9 @@ class BaseTest(Tree):
     self.assertEqual(len(self.revision_check()), 1)
 
   def test_draft_revisions_compare_by_number(self):
-    self.edit("constitution/index.toml", 'revision = "0.2"', 'revision = "0.9"')
+    self.edit(
+      "constitution/2026-10/index.toml", 'revision = "0.2"', 'revision = "0.9"'
+    )
     self.commit_base(active=False)
     self.change_text()
     self.set_revision("0.9", "0.10")
@@ -432,13 +444,15 @@ class BaseTest(Tree):
     self.commit_base(active=False)
     self.change_text()
     self.edit(
-      "constitution/index.toml", 'edition = "2026-10"', 'edition = "2027-03"'
+      "constitution/2026-10/index.toml",
+      'edition = "2026-10"',
+      'edition = "2027-03"',
     )
     self.set_revision("5", "1")
     self.assertEqual(self.revision_check(), [])
 
   def name_edition(self, edition):
-    index = self.root / "constitution/index.toml"
+    index = self.root / "constitution/2026-10/index.toml"
     text = re.sub(r'edition = ".*"\n', "", index.read_text(encoding="utf-8"))
     index.write_text(
       text.replace("revision =", f'edition = "{edition}"\nrevision ='),
@@ -453,7 +467,8 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed "
+        "constitution/2026-10/index.toml:3: check 7: the constitution text"
+        " changed "
         "since base HEAD"
         " but revision 0.2 is not greater than the base's 0.2"
       ],
@@ -466,14 +481,15 @@ class BaseTest(Tree):
     self.name_edition("2026-10")
     self.commit_base(active=False)
     self.edit(
-      "constitution/index.toml", 'status = "draft"', 'status = "active"'
+      "constitution/2026-10/index.toml", 'status = "draft"', 'status = "active"'
     )
     for name in SECTIONS + ["rules/rule.toml"]:
       self.edit(name, 'status = "draft"', 'status = "active"', -1)
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: the constitution text changed "
+        "constitution/2026-10/index.toml:3: check 7: the constitution text"
+        " changed "
         "since base HEAD"
         " but revision 0.2 is not greater than the base's 0.2"
       ],
@@ -488,19 +504,20 @@ class BaseTest(Tree):
     self.assertEqual(
       self.revision_check(),
       [
-        "constitution/index.toml:3: check 7: revision 0.x is neither `0.<n>` "
+        "constitution/2026-10/index.toml:3: check 7: revision 0.x is neither"
+        " `0.<n>` "
         "nor a whole number from 1"
       ],
     )
 
   def test_base_without_edition(self):
     self.activate()
-    self.edit("constitution/index.toml", 'edition = "2026-10"\n', "")
+    self.edit("constitution/2026-10/index.toml", 'edition = "2026-10"\n', "")
     self.git("init", "-q")
     self.git("add", "-A")
     self.git("commit", "-q", "-m", "base")
     self.edit(
-      "constitution/index.toml",
+      "constitution/2026-10/index.toml",
       'revision = "1"',
       'edition = "2026-10"\nrevision = "1"',
     )
@@ -508,7 +525,7 @@ class BaseTest(Tree):
       self.base_errors(),
       (
         [
-          "constitution/index.toml:2: check 7:"
+          "constitution/2026-10/index.toml:2: check 7:"
           " edition 2026-10 is not later than edition None at base HEAD"
         ],
         "",
@@ -517,9 +534,13 @@ class BaseTest(Tree):
 
   def test_non_ascii_digit_revision_is_not_compared(self):
     self.activate()
-    self.edit("constitution/index.toml", 'revision = "1"', 'revision = "²"')
+    self.edit(
+      "constitution/2026-10/index.toml", 'revision = "1"', 'revision = "²"'
+    )
     self.commit_base(active=False)
-    self.edit("constitution/index.toml", 'revision = "²"', 'revision = "1"')
+    self.edit(
+      "constitution/2026-10/index.toml", 'revision = "²"', 'revision = "1"'
+    )
     self.assertEqual(self.base_errors(), ([], ""))
 
   def test_draft_base_skips(self):
@@ -532,13 +553,13 @@ class BaseTest(Tree):
   def test_base_without_article_directories_skips(self):
     self.activate()
     self.git("init", "-q")
-    self.git("add", "constitution/index.toml")
-    self.git("commit", "-q", "-m", "old layout")
+    self.git("add", "constitution/2026-10/index.toml")
+    self.git("commit", "-q", "-m", "no articles")
     errors, note = self.base_errors()
     self.assertEqual(errors, [])
     self.assertEqual(
       note,
-      "base HEAD has no constitution/articles/<NN>-<id>/article.toml;"
+      "base HEAD has no constitution/2026-10/articles/<NN>-<id>/article.toml;"
       " numbering not compared",
     )
 
@@ -551,7 +572,9 @@ class BaseTest(Tree):
     errors, note = self.base_errors()
     self.assertEqual(errors, [])
     self.assertEqual(
-      note, "base HEAD has no constitution/index.toml; numbering not compared"
+      note,
+      "base HEAD has no constitution/<YYYY-MM>/index.toml;"
+      " numbering not compared",
     )
 
   def test_unreadable_base_file(self):
@@ -563,7 +586,7 @@ class BaseTest(Tree):
         "-C",
         str(self.root),
         "rev-parse",
-        "HEAD:constitution/index.toml",
+        "HEAD:constitution/2026-10/index.toml",
       ],
       check=True,
       capture_output=True,
@@ -576,31 +599,34 @@ class BaseTest(Tree):
         bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1
       )
     self.assertIn(
-      "check 7: `git show HEAD:constitution/index.toml` failed:", err.getvalue()
+      "check 7: `git show HEAD:constitution/2026-10/index.toml` failed:",
+      err.getvalue(),
     )
 
-  def move_to_edition_dir(self):
-    """Move the sources into an edition directory and rebuild.
+  def move_edition_dir(self):
+    """Move the edition directory to another name and rebuild.
 
     Returns:
-      The directory, relative to the root.
+      The new directory, relative to the root.
     """
-    new = self.to_edition_dir()
+    new = "constitution/2026-11"
+    self.move("constitution/2026-10", new)
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
     self.git("add", "-A")
     return new
 
-  def test_moved_to_edition_dir_passes(self):
-    """A base in the older layout, the same text in an edition directory."""
+  def test_moved_edition_dir_passes(self):
+    """The same text in another edition directory than the base's."""
     self.commit_base()
-    self.move_to_edition_dir()
+    self.move_edition_dir()
     self.assertEqual(
       bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 0
     )
 
   def test_moved_and_changed_needs_higher_revision(self):
+    """A changed word in a moved edition directory needs a higher revision."""
     self.commit_base()
-    new = self.move_to_edition_dir()
+    new = self.move_edition_dir()
     self.edit(
       f"{new}/articles/01-alpha/article.toml", 'en = "First"', 'en = "Fist"'
     )
@@ -613,8 +639,9 @@ class BaseTest(Tree):
     )
 
   def test_moved_and_renumbered(self):
+    """A section renumbered in a moved edition directory is reported."""
     self.commit_base()
-    new = self.move_to_edition_dir()
+    new = self.move_edition_dir()
     self.move(
       f"{new}/articles/02-beta/01a-beta-two.toml",
       f"{new}/articles/02-beta/02-beta-two.toml",
@@ -636,7 +663,8 @@ class BaseTest(Tree):
     self.assertEqual(
       errors,
       [
-        "constitution/index.toml:1: check 7: base `no-such-ref` is not a commit"
+        "constitution/2026-10/index.toml:1: check 7: base `no-such-ref` is not"
+        " a commit"
       ],
     )
 

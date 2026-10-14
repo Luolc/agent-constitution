@@ -35,7 +35,7 @@ enableRobotsTXT = false
 # with the group's name in bold and an icon from assets/icons (BookIcon),
 # its pages as children. Today there is one group, the constitution, which
 # links the home page; under it, its editions newest first, each entry
-# added by content/_content.gotmpl from constitution/index.toml. Its
+# added by content/_content.gotmpl from its index.toml. Its
 # version for agents is not listed, as it is not meant for people to read,
 # and is linked from the home page. The icon is the scales of Octicons'
 # `law` (MIT license), as is GitHub's mark beside the source link.
@@ -91,23 +91,18 @@ enableRobotsTXT = false
     model = "claude-opus-5-5"
     name = "Claude Opus 5.5"
 
-# The built constitution comes from constitution/: index.toml, for the
-# revision and the status, and the two Markdown files of each language,
-# all as assets, which layouts/_partials/constitution/source.html finds by
-# name in the edition directory (or in constitution/ itself in the older
-# layout). data/lengths.json, written by count-tokens and not committed,
-# holds the tokens.
+# The built constitution comes from its edition directory,
+# constitution/<YYYY-MM>/: index.toml, for the revision and the status,
+# and the two Markdown files of each language in generated/, all as
+# assets, which layouts/_partials/constitution/source.html finds by name.
+# data/lengths.json, written by count-tokens and not committed, holds the
+# tokens.
 # A component with a mount of its own loses its default one, so data and
 # assets are mounted again.
 [[module.mounts]]
   source = "../constitution"
   target = "assets/constitution"
-  files = [
-    "index.toml",
-    "constitution.*.md",
-    "*/index.toml",
-    "*/generated/constitution.*.md",
-  ]
+  files = ["*/index.toml", "*/generated/constitution.*.md"]
 [[module.mounts]]
   source = "data"
   target = "data"

@@ -1,8 +1,7 @@
 {{- /* One file of the built constitution by its name, index.toml or
   constitution.<lang>[.agent].md. hugo.toml mounts them from constitution/:
   index.toml from the edition directory, constitution/<YYYY-MM>/, and the
-  Markdown files from its generated/, or both from constitution/ itself in
-  the older layout. */ -}}
+  Markdown files from its generated/. */ -}}
 {{- $found := resources.Match (printf "constitution/**%s" .) }}
 {{- if ne (len $found) 1 }}
   {{- errorf "constitution/: %d files named %s, not one" (len $found) . }}

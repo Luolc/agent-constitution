@@ -25,11 +25,14 @@ passes to Hugo as `--baseURL`.
   `og:url` are absolute, on the domain. `web/hugo.toml` keeps `baseURL`
   `/`: with an absolute one, the theme adds `integrity` and `crossorigin`
   to the style sheet link, and a page opened as a file loses its styles.
-- Input: the generated `constitution/constitution.<lang>.md`, not the
+- Input: the generated `constitution.<lang>.md` in the edition
+  directory's `generated/` ([The constitution](constitution.md)), not the
   sources: the citations, numbers and anchors are rendered once, by
-  `constitution-build`. `web/hugo.toml` mounts them from
-  `constitution/` as assets and `constitution/index.toml` as data; Python
-  writes no page. The content adapter `web/content/_content.gotmpl` makes
+  `constitution-build`. `web/hugo.toml` mounts them and the edition
+  directory's `index.toml` from `constitution/` as assets, and the partial
+  `web/layouts/_partials/constitution/source.html` finds each by name,
+  failing the build unless exactly one file matches; Python writes no
+  page. The content adapter `web/content/_content.gotmpl` makes
   each into the home page of its language: the header line is dropped,
   the title becomes the page's, each heading's anchor (`## <a
   id="general-provisions"></a>Article I. ...`) becomes the heading's id,
@@ -57,7 +60,7 @@ passes to Hugo as `--baseURL`.
   lowered until its middle sits a little above the middle of an item
   number's parentheses and its top well under the top of the number. The
   legend and the table of contents show it the same way.
-- Version for agents: each `constitution/constitution.<lang>.agent.md`
+- Version for agents: each generated `constitution.<lang>.agent.md`
   becomes the page `agent/` under the home page of its language, made by
   the same content adapter (layout `web/layouts/page.html`) but with its
   text as is: no anchors, no links, the provisions
@@ -151,7 +154,7 @@ passes to Hugo as `--baseURL`.
   pages as children. Today there is one group, the constitution, the home
   page, with the scales (`law`). Under it are its editions, newest first:
   the content adapter adds each page's entry to the menu, named from
-  `constitution/index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
+  `index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
   by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
   edition's year and month, negated. Today that is the one edition, the
   home page; a page per edition, once there are several, is not built

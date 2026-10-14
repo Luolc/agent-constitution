@@ -42,7 +42,7 @@ MAINTAINERS = "maintainers"
 
 
 class LayoutError(Exception):
-  """The checkout has more than one edition directory."""
+  """The checkout or commit has no edition directory, or more than one."""
 
 
 @dataclass(frozen=True)
@@ -50,8 +50,7 @@ class Layout:
   """Where the constitution sources and the generated files are.
 
   The sources are in an edition directory, `constitution/<YYYY-MM>/`, and
-  the generated files in its `generated/`. In the older layout both are
-  in `constitution/` itself.
+  the generated files in its `generated/`.
 
   Attributes:
     dir: the directory holding index.toml and articles/.
@@ -84,21 +83,20 @@ class Layout:
     Returns:
       The path, relative to the checkout.
     """
-    generated = self.dir if self.dir == CONSTITUTION else self.dir / "generated"
-    return generated / f"constitution.{name}.md"
+    return self.dir / "generated" / f"constitution.{name}.md"
 
   @classmethod
-  def find(cls, files: Iterable[Path]) -> Layout:
+  def find(cls, files: Iterable[Path]) -> Layout | None:
     """Return the layout of a checkout or a commit from its files.
 
     The edition directory is the one directory under `constitution/`
-    that holds an index.toml; with none, the older layout.
+    that holds an index.toml.
 
     Args:
       files: paths relative to the checkout.
 
     Returns:
-      The layout.
+      The layout, or None when no directory holds an index.toml.
 
     Raises:
       LayoutError: when more than one directory holds an index.toml.
@@ -114,7 +112,7 @@ class Layout:
       raise LayoutError(
         "more than one edition directory: " + ", ".join(map(str, dirs))
       )
-    return cls(dirs[0] if dirs else CONSTITUTION)
+    return cls(dirs[0]) if dirs else None
 
   @classmethod
   def of(cls, root: Path) -> Layout:
@@ -125,10 +123,18 @@ class Layout:
 
     Returns:
       The layout.
+
+    Raises:
+      LayoutError: when not exactly one directory holds an index.toml.
     """
-    return cls.find(
+    layout = cls.find(
       p.relative_to(root) for p in root.glob(f"{CONSTITUTION}/*/{INDEX_FILE}")
     )
+    if layout is None:
+      raise LayoutError(
+        f"no edition directory, {CONSTITUTION}/<YYYY-MM>/ with its {INDEX_FILE}"
+      )
+    return layout
 
 
 # A text in every language of index.toml: language -> text.

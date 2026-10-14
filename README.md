@@ -14,9 +14,10 @@ them to install through configuration. How they are installed is not
 decided yet.
 
 The constitution is kept in English and Chinese, both built from the same
-sources: [English](constitution/constitution.en.md),
-[中文](constitution/constitution.zh.md). The sources are TOML files under
-`constitution/articles/`, one directory per article and one file per
+sources: [English](constitution/2026-10/generated/constitution.en.md),
+[中文](constitution/2026-10/generated/constitution.zh.md). The sources are
+TOML files under `constitution/2026-10/articles/`, one directory per
+article and one file per
 section, each holding both languages; edit them and rebuild, never the two
 generated files. The general rules under `rules/` are TOML files of the
 same kind, one per rule. The format, the IDs and the numbering are in the

@@ -1,14 +1,13 @@
 """Run limae on the Chinese text of the constitution and rule sources.
 
 Every `zh` text in index.toml and articles/ of the constitution's
-edition directory, constitution/<YYYY-MM>/ (constitution/ itself in the
-older layout), and in rules/ goes to limae (Chinese Markdown typography)
-as a Markdown file of its own, with its default configuration. Each
-citation `{@...}` is first replaced by PLACEHOLDER, Chinese text shaped
-like the rendering of a constitution citation (`第十条`), so limae judges
-the spacing around it as it will read once built, and is put back
-afterwards. A rule citation gets the same placeholder until its rendering
-is set.
+edition directory, constitution/<YYYY-MM>/, and in rules/ goes to limae
+(Chinese Markdown typography) as a Markdown file of its own, with its
+default configuration. Each citation `{@...}` is first replaced by
+PLACEHOLDER, Chinese text shaped like the rendering of a constitution
+citation (`第十条`), so limae judges the spacing around it as it will read
+once built, and is put back afterwards. A rule citation gets the same
+placeholder until its rendering is set.
 
 limae is the one installed in this interpreter's environment, the version
 uv.lock pins, never one found on PATH.
@@ -31,8 +30,6 @@ import tempfile
 import tomllib
 
 SOURCES = [
-  "constitution/index.toml",
-  "constitution/articles/*/*.toml",
   "constitution/*/index.toml",
   "constitution/*/articles/*/*.toml",
   "rules/*.toml",

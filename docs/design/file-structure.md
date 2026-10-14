@@ -9,17 +9,20 @@ Directories for C and D are reserved, not created.
 README.md
 AGENTS.md                 repo rules for agents working here           A
 constitution/
-  index.toml              status, edition, revision, languages, title,
+  <YYYY-MM>/              the edition directory, today 2026-10
+                          (constitution.md)                            A
+    index.toml            status, edition, revision, languages, title,
                           front                                        A
-  articles/
-    <NN>-<id>/            one directory per article, numbered          A
-      article.toml        the article: title, intro                    A
-      <NN>[a-z]-<id>.toml one section per file, numbered: status,
+    articles/
+      <NN>-<id>/          one directory per article, numbered          A
+        article.toml      the article: title, intro                    A
+        <NN>[a-z]-<id>.toml one section per file, numbered: status,
                           text in every language, list items           A
-  constitution.en.md      generated: the constitution in English       A
-  constitution.zh.md      generated: the constitution in Chinese       A
-  constitution.en.agent.md  generated: the version for agents, English A
-  constitution.zh.agent.md  generated: the version for agents, Chinese A
+    generated/            built from the sources, committed            A
+      constitution.en.md  the constitution in English                  A
+      constitution.zh.md  the constitution in Chinese                  A
+      constitution.en.agent.md  the version for agents, English        A
+      constitution.zh.agent.md  the version for agents, Chinese        A
 docs/
   design/                 this design, one file per part, indexed
                           by README.md                                 A
@@ -111,7 +114,7 @@ verification. Each step is usable on its own.
 
 What the amendment article protects is the text of the constitution
 (`protected-text`); in the core that is the sources under
-`constitution/` (`index.toml` and `articles/`) and the wording
+the edition directory (`index.toml` and `articles/`) and the wording
 of the files built from them. A change to the text is an amendment and
 takes effect as `approving-amendments` says (see [Approving an
 amendment](amendments-and-releases.md#approving-an-amendment)).

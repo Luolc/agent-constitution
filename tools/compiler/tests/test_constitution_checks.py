@@ -105,19 +105,19 @@ class CheckTest(Tree):
     )
 
   def test_1_bad_article_directory_name(self):
-    self.move(B, "constitution/articles/2-beta")
+    self.move(B, "constitution/2026-10/articles/2-beta")
     self.assertFails(
       1,
-      "constitution/articles/2-beta:1",
+      "constitution/2026-10/articles/2-beta:1",
       "article directory name is not two digits from 01, a hyphen and the ID "
       "(04-<id>)",
     )
 
   def test_1_article_number_has_no_suffix(self):
-    self.move(B, "constitution/articles/01a-beta")
+    self.move(B, "constitution/2026-10/articles/01a-beta")
     self.assertFails(
       1,
-      "constitution/articles/01a-beta:1",
+      "constitution/2026-10/articles/01a-beta:1",
       "article directory name is not two digits from 01, a hyphen and the ID "
       "(04-<id>)",
     )
@@ -133,31 +133,33 @@ class CheckTest(Tree):
     )
 
   def test_1_misplaced_files(self):
-    self.write("constitution/articles/gamma.toml", BETA)
-    self.write("constitution/sections/gamma-one.toml", BETA_ONE)
+    self.write("constitution/2026-10/articles/gamma.toml", BETA)
+    self.write("constitution/2026-10/sections/gamma-one.toml", BETA_ONE)
     self.write(f"{B}/notes.md", "x\n")
     self.write(f"{B}/old/01-beta-three.toml", BETA_ONE)
     self.assertEqual(
       self.errors(),
       [
-        "constitution/sections:1: check 1: sections belong in their article's "
+        "constitution/2026-10/sections:1: check 1: sections belong in their"
+        " article's "
         "directory,"
-        " constitution/articles/<NN>-<id>/<NN>[a-z]-<id>.toml",
+        " constitution/2026-10/articles/<NN>-<id>/<NN>[a-z]-<id>.toml",
         f"{B}/notes.md:1: check 1: not a section file; an article's directory "
         "holds only its"
         " article.toml and <NN>[a-z]-<id>.toml section files",
         f"{B}/old:1: check 1: not a section file; an article's directory holds "
         "only its"
         " article.toml and <NN>[a-z]-<id>.toml section files",
-        "constitution/articles/gamma.toml:1: check 1: not an article "
+        "constitution/2026-10/articles/gamma.toml:1: check 1: not an article "
         "directory; an article is"
-        " constitution/articles/<NN>-<id>/ with its article.toml and section "
+        " constitution/2026-10/articles/<NN>-<id>/ with its article.toml and"
+        " section "
         "files",
       ],
     )
 
   def test_hidden_files_are_skipped(self):
-    self.write("constitution/articles/.DS_Store", "x")
+    self.write("constitution/2026-10/articles/.DS_Store", "x")
     self.write(f"{B}/.01-beta-one.toml.swp", "x")
     self.assertEqual(self.errors(), [])
 
@@ -208,7 +210,7 @@ class CheckTest(Tree):
     )
 
   def test_1_edition(self):
-    index = "constitution/index.toml"
+    index = "constitution/2026-10/index.toml"
     for bad in ("2026-13", "2026-10-20"):
       self.edit(index, 'edition = "2026-10"', f'edition = "{bad}"')
       self.assertFails(
@@ -274,12 +276,12 @@ class CheckTest(Tree):
 
   def test_2_id_format(self):
     self.write(
-      "constitution/articles/03-Gamma/article.toml",
+      "constitution/2026-10/articles/03-Gamma/article.toml",
       BETA.replace('"beta"', '"Gamma"'),
     )
     self.assertFails(
       2,
-      "constitution/articles/03-Gamma/article.toml:1",
+      "constitution/2026-10/articles/03-Gamma/article.toml:1",
       "`Gamma` is not an ID: lowercase words joined by hyphens",
     )
 
@@ -341,10 +343,10 @@ class CheckTest(Tree):
     )
 
   def test_3_duplicate_article_number(self):
-    self.move(B, "constitution/articles/01-beta")
+    self.move(B, "constitution/2026-10/articles/01-beta")
     self.assertFails(
       3,
-      "constitution/articles/01-beta/article.toml:1",
+      "constitution/2026-10/articles/01-beta/article.toml:1",
       f"article number 1 is already used at {A}/article.toml:1",
     )
 
@@ -367,14 +369,18 @@ class CheckTest(Tree):
 
   def test_4_reference_set(self):
     self.edit(
-      "constitution/index.toml", "序言引用{@beta}。", "序言引用{@alpha}。"
+      "constitution/2026-10/index.toml",
+      "序言引用{@beta}。",
+      "序言引用{@alpha}。",
     )
     self.assertEqual(
       self.errors(),
       [
-        "constitution/index.toml:12: check 4: en `front` cites beta; zh does "
+        "constitution/2026-10/index.toml:12: check 4: en `front` cites beta;"
+        " zh does "
         "not",
-        "constitution/index.toml:15: check 4: zh `front` cites alpha; en does "
+        "constitution/2026-10/index.toml:15: check 4: zh `front` cites alpha;"
+        " en does "
         "not",
       ],
     )
@@ -473,11 +479,20 @@ class CheckTest(Tree):
       "authority cites undefined constitution:alpha-one.cash",
     )
 
+  def test_1_no_edition_directory(self):
+    (self.root / "constitution/2026-10/index.toml").unlink()
+    self.assertFails(
+      1,
+      "constitution:1",
+      "no edition directory, constitution/<YYYY-MM>/ with its index.toml",
+    )
+
   def test_1_two_edition_directories(self):
-    new = self.to_edition_dir()
     self.write(
       "constitution/2027-03/index.toml",
-      (self.root / new / "index.toml").read_text(encoding="utf-8"),
+      (self.root / "constitution/2026-10/index.toml").read_text(
+        encoding="utf-8"
+      ),
     )
     self.assertFails(
       1,
@@ -496,7 +511,7 @@ class CheckTest(Tree):
 
   def test_6_stale_output(self):
     self.assertEqual(bc.main(["--root", str(self.root)]), 0)
-    path = self.root / "constitution/constitution.en.md"
+    path = self.root / "constitution/2026-10/generated/constitution.en.md"
     path.write_bytes(path.read_bytes().replace(b"Money.", b"Money!"))
     errors = cm.Errors()
     _, src, outputs = bc.build(self.root)
@@ -505,7 +520,8 @@ class CheckTest(Tree):
     self.assertEqual(
       errors,
       [
-        "constitution/constitution.en.md:12: check 6: differs from a"
+        "constitution/2026-10/generated/constitution.en.md:12: check 6:"
+        " differs from a"
         " fresh build; run `uv run constitution-build`"
       ],
     )

@@ -92,7 +92,7 @@ def check_revision(root: Path, ref: str, src: Sources, errors: Errors) -> None:
   except GitError:
     return  # check_base reports it
   layout = base_layout(root, ref)
-  if layout.index not in base_paths(root, ref, layout.index):
+  if layout is None:
     return
   try:
     base = tomllib.loads(git(root, "show", f"{ref}:{layout.index}"))

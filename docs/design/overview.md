@@ -59,7 +59,7 @@ reads Chinese much faster than English, and that review is the one place
 where a person's attention matters most. A Chinese version also helps
 readers of the public repo. English stays the default: it is what a public
 reader can be assumed to read, and it is the first language in
-`constitution/index.toml`.
+the constitution's `index.toml`.
 
 Why the rest stays English: skills are installed as they are and tools are
 code; one language there means one text to keep correct. The compiled

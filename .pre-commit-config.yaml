@@ -92,7 +92,7 @@ repos:
         name: limae on the zh text of the sources
         entry: uv run --frozen --no-sync lint-zh-sources
         language: system
-        files: ^(constitution/([^/]+/)?(index\.toml|articles/)|rules/|tools/checks/src/repo_checks/lint_zh_sources\.py$|pyproject\.toml$|uv\.lock$)
+        files: ^(constitution/[^/]+/(index\.toml|articles/)|rules/|tools/checks/src/repo_checks/lint_zh_sources\.py$|pyproject\.toml$|uv\.lock$)
         pass_filenames: false
       # The built Chinese constitution, both versions, with limae's default
       # configuration.
@@ -102,4 +102,4 @@ repos:
         name: limae on the built Chinese constitution
         entry: uv run --frozen --no-sync limae
         language: system
-        files: ^constitution/([^/]+/generated/)?constitution\.zh(\.agent)?\.md$
+        files: ^constitution/[^/]+/generated/constitution\.zh(\.agent)?\.md$
