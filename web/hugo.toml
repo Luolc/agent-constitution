@@ -33,10 +33,11 @@ enableRobotsTXT = false
 # The sidebar lists the site's pages in groups, each a top-level entry
 # with the group's name in bold and an icon from assets/icons (BookIcon),
 # its pages as children. Today there is one group, the constitution, which
-# is the home page; its version for agents is not listed, as it is not
-# meant for people to read, and is linked from the home page. The icon is
-# the scales of Octicons' `law` (MIT license), as is GitHub's mark beside
-# the source link.
+# links the home page; under it, its editions newest first, each entry
+# added by content/_content.gotmpl from constitution/index.toml. Its
+# version for agents is not listed, as it is not meant for people to read,
+# and is linked from the home page. The icon is the scales of Octicons'
+# `law` (MIT license), as is GitHub's mark beside the source link.
 [[languages.en.menus.before]]
   identifier = "constitution"
   name = "Constitution"

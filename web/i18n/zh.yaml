@@ -4,6 +4,8 @@ theme-light: "配色：浅色"
 theme-dark: "配色：深色"
 source-link: "源代码"
 toc-heading: "本页目录"
+# 左栏「宪法」下的一版 (content/_content.gotmpl)。
+edition: "{{ .edition }} 版"
 # 标题下的几行和长度弹层 (layouts/home.html、layouts/page.html)。
 revision: "修订号"
 draft: "(草案)"
