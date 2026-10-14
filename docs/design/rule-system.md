@@ -13,6 +13,7 @@ this design changes them.
 - [What one rule holds](#what-one-rule-holds)
 - [IDs and revisions](#ids-and-revisions)
 - [Rule sets and the lock file](#rule-sets-and-the-lock-file)
+- [Sources and references](#sources-and-references)
 - [Rules and skills](#rules-and-skills)
 - [Dependencies, choices and packs](#dependencies-choices-and-packs)
 - [Tracing rules to the constitution](#tracing-rules-to-the-constitution)
@@ -30,7 +31,8 @@ this design changes them.
   (`division-of-instructions.rules`), with a way to tell whether it is
   violated.
 - **Source**: a repository that holds rules. This repo is one; a team
-  that writes its own rules keeps them in a source of its own.
+  that writes its own rules keeps them in a source of its own (see
+  [Sources and references](#sources-and-references)).
 - **Rule set**: the rules one repository has chosen, written as a
   configuration file that lists rule IDs and packs; it may inherit another
   rule set.
@@ -38,7 +40,7 @@ this design changes them.
   exclusive alternatives (see
   [Dependencies, choices and packs](#dependencies-choices-and-packs)).
 - **Lock file**: written next to the rule set; it pins the revision of
-  every chosen rule and the commit of every source.
+  every chosen rule and resolves every source to an exact commit.
 - **Check**: the code that decides, for one rule, whether a repository, a
   change or a record complies.
 - **Reviewer**: an agent that judges what the checks could not settle.
@@ -70,7 +72,8 @@ question: does it change what counts as compliant?
   compliant stays compliant, and what was a violation stays one.
 - If it does, the change gets a new ID. The old rule is marked
   superseded, names the rule that supersedes it, and stays in the source
-  for good.
+  for good. Only a rule of the same source can supersede it (see
+  [Sources and references](#sources-and-references)).
 
 The ID of a rule therefore always means the same requirement. The revision
 is a number per rule, counted from 1; it has nothing to do with the
@@ -132,6 +135,59 @@ that a person who clones the repository, CI and a cloud agent cannot read
 user-level files, and each repository pins its own versions and upgrades
 on its own schedule.
 
+## Sources and references
+
+A rule is found by its source and its ID. The commit is not part of
+that identity.
+
+**Naming a source.** A rule set gives each source a short local name, in
+a `[sources]` table:
+
+```toml
+[sources]
+ac = "github.com/Luolc/agent-constitution"
+team = "example.test/their-team/rules"
+```
+
+A reference is the name, a colon and the rule's ID: `ac:42`, `team:7`.
+The name means something only inside the file that defines it, so two
+rule sets may use `ac` for different sources. When a source moves to
+another address, one line of the rule set changes and no reference does.
+A source that references rules of other sources has its own `[sources]`
+table in the same shape, and its names need not agree with those of any
+rule set that uses it. The build matches sources by address, not by
+name: the `ac` of one file and the `core` of another are the same source
+when both point to the same address.
+
+**Versions sit on the source.** The rule set says which tag or branch of
+a source to follow; the lock file resolves it to an exact commit. This is
+how `pyproject.toml` and `uv.lock` divide the work: the manifest states a
+range, the lock file records the exact version. A reference carries no
+commit, for two reasons. Upgrading would mean editing every reference.
+And if two rules of one source were pinned to different commits, a
+`requires` or `conflicts` between them would point at a rule that
+differs from the one that was chosen. So a rule set takes one version of
+each source.
+
+**Dependencies across sources.** A rule of one source may list a rule of
+another under `requires`, such as `ac:12`. The source of the requiring
+rule then declares, in its `[sources]` table, which versions of that
+other source it works with, as a range. At compile time the build looks
+for one version of each source that every declaration accepts. The tag
+or branch the rule set itself follows counts as one of the declarations.
+If there is no such version, the build fails and names the declarations
+that disagree.
+
+**Supersession stays inside a source.** Only a source can supersede its
+own rules. Another source cannot declare that its rule replaces ours. It
+can recommend the replacement in the text of its own rule; whether to
+switch is decided by the user, in the user's rule set.
+
+**Finding public rules.** Nobody has to run a central server for this.
+An index repository can list the known public sources, as Homebrew lists
+its taps, and the full list on the website can be built from that index.
+This comes late and is not part of the first version.
+
 ## Rules and skills
 
 A rule says what must be so; a skill says how to get there: steps,
@@ -159,7 +215,9 @@ Rules are related in two ways, and the tree has a second kind of node:
 - `requires`: enabling rule A requires another rule B, or a choice
   (below). A rule may require several, and the requirements form a
   directed acyclic graph. A rule that says how to run checks through uv
-  requires the rule that has uv manage the project's dependencies.
+  requires the rule that has uv manage the project's dependencies. A
+  rule of another source may be required too; see
+  [Sources and references](#sources-and-references).
 
 One parent is not enough on its own because many rules span domains: "in
 CI, run `uv sync --locked` first" depends both on uv and on the CI
@@ -382,14 +440,16 @@ implements this design lands.
 
 - At what token count the compiled `AGENTS.md` is split into several
   files, and along which subtrees.
-- How a rule's source is written in an ID, for example `ac:42` for a rule
-  of this repo and `myteam:7` for one of a downstream team.
 - The format of the lock file.
+- The index of public sources: its format, who may add to it, and when
+  it is built.
 - Whether a domain at the top of the tree is a rule of its own or only a
   heading.
 - The concrete fields and commands of the package-manager model
   ([Rule sets and the lock file](#rule-sets-and-the-lock-file)), settled
-  when it is implemented.
+  when it is implemented; this includes how a tag or branch and a version
+  range are written in a rule set and in a source's declaration of the
+  versions it needs.
 - Where a rule whose default level is the user level is chosen, where it
   is locked and where it is compiled to.
 - When a rule set enables a rule without one it `requires`, whether the
