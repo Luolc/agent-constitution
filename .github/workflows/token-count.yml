@@ -46,6 +46,10 @@ jobs:
           mv "${bindir}/hugo" "${bindir}/hugo-${HUGO_VERSION}"
           echo "$bindir" >> "$GITHUB_PATH"
 
+      # As in ci.yml: the Python of pyproject.toml, environment from uv.lock.
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv sync --locked
+
       # The JWT and the access token live only in this step's shell and in
       # files under a private temporary directory: never echoed, never put
       # on a command line or into GITHUB_ENV, masked as soon as they exist.
@@ -98,7 +102,7 @@ jobs:
           fi
           echo "::add-mask::${CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN}"
           export CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
-          python3 tools/build_site.py --require-tokens
+          uv run --frozen tools/build_site.py --require-tokens
 
       # The length line under the title of each built page, in the job
       # summary and in the log, which, unlike the summary, the API can read.

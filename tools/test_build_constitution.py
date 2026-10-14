@@ -784,7 +784,7 @@ class CheckTest(Tree):
         errors = bc.Errors()
         bc.check_outputs(self.root, bc.build(self.root)[2], errors)
         self.assertEqual(errors, ["constitution/constitution.en.md:12: check 6: differs from a"
-                                  " fresh build; run tools/build_constitution.py"])
+                                  " fresh build; run `uv run tools/build_constitution.py`"])
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(bc.main(["--root", str(self.root), "--check"]), 1)
 

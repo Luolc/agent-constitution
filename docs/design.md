@@ -147,6 +147,9 @@ web/                      the static site's Hugo project: hugo.toml,
 site/                     built static site, not committed             A
 .github/workflows/        CI                                           A
 .pre-commit-config.yaml   commit hooks                                 A
+pyproject.toml            the Python environment of tools/: Python
+                          version, limae and pre-commit pins           A
+uv.lock                   its lock file, written by uv                 A
 .fleet/config.json        issue-tracker metadata for fleet; the
                           toolchain never reads it                     A
 ```
@@ -268,7 +271,8 @@ content carries over.
 ### Constitution
 
 The constitution is compiled by `tools/build_constitution.py` (Python
-standard library only) from `constitution/index.toml` and one directory per
+standard library only, run with `uv run` in the environment of
+`pyproject.toml`) from `constitution/index.toml` and one directory per
 article under `constitution/articles/`. It writes two files for each
 language in `index.toml`, `constitution/constitution.<lang>.md` (the full
 version) and `constitution/constitution.<lang>.agent.md` (the version for
@@ -685,7 +689,7 @@ this repo.
 The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
-`site/zh/agent/index.html`), built by `python3 tools/build_site.py`. Only the build exists here; publishing it
+`site/zh/agent/index.html`), built by `uv run tools/build_site.py`. Only the build exists here; publishing it
 is a release (rule `must-ask-items`) and not set up.
 
 - Input: the generated `constitution/constitution.<lang>.md`, not the
