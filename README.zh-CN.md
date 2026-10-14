@@ -67,7 +67,7 @@ uv run python -m http.server -d site
 
 ## 开发
 
-本仓的目录结构、源文件格式、检查和发布都写在[设计文档](docs/design/README.md) 里 (英文)；命令见 [AGENTS.md](AGENTS.md) 的 Checks 一节。简单说：
+本仓的目录结构、源文件格式、检查和发布都写在[设计文档里](docs/design/README.md) (英文)；命令见 [AGENTS.md](AGENTS.md) 的 Checks 一节。简单说：
 
 - `constitution/2026-10/` 是 2026-10 版的源文件：`index.toml`，以及 `articles/` 下每条一个目录、每节一个文件，各含中英两种语言。改源文件后用 `uv run constitution-build` 重新构建，不要直接改 `generated/` 里的文件 ([The constitution](docs/design/constitution.md)，[Source formats](docs/design/source-formats.md))。
 - `rules/` 是通用规定，每条一个 TOML 文件，中英两种语言；`skills/` 是通用 skill，每个一个目录，含它的 `SKILL.md`，用英文写。
