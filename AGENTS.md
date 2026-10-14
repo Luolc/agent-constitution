@@ -106,7 +106,10 @@ search reads content: run the same search on a file where it must match.
   stale generated file; `--check --base <git-ref>` also fails when a
   numbered provision of an active base commit is gone, renumbered or moved,
   or a rule of that base is gone without being retired (a draft base is
-  skipped with a note); `--root <dir>` runs it on another
+  skipped with a note for this part). Within one edition, a draft base
+  included, it also fails when the revision in `index.toml` is not greater
+  than the base's although the constitution text changed, or differs from
+  it although the text did not; `--root <dir>` runs it on another
   checkout.
 - `python3 tools/check_instruction_changes.py --base origin/main`: fails
   when the branch changes instruction files (the path table at the top of
@@ -139,7 +142,10 @@ then runs the build check with `--base` and the instruction-only check,
 both against the first parent of the checked-out merge commit on a pull
 request (`docs/design.md`, Checkers), or against the commit before the push
 on a push to `main`. `check` is the required status check on `main`: a merge
-waits for it to pass. Runners are pinned to `ubuntu-24.04`, and actions by
+waits for it to pass, and the PR must be up to date with `main`. A PR that
+is behind `main`: run `gh pr update-branch <N>` or merge the latest `main`,
+rerun the checks, let the reviewer recheck the increment, then merge.
+Runners are pinned to `ubuntu-24.04`, and actions by
 commit SHA.
 
 `.github/workflows/token-count.yml` ("Token count") runs only on pushes to
