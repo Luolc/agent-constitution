@@ -42,7 +42,7 @@ tells an agent to read `.statute/AGENTS.full.md` when it exists, the
 public and private rules together, which the private layer compiles to
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
 not built yet). Each domain is a heading of level two, a subdomain one of
-level three ([Subdomains](rule-sources.md#subdomains); not built yet),
+level three ([Subdomains](rule-sources.md#subdomains)),
 and each level of the tree one level deeper, down to level six, where
 deeper levels stay;
 a one-of none of whose children is enabled does not appear. The
@@ -119,15 +119,18 @@ before its directory, and the `AGENTS.md` is written last.
 
 A `CLAUDE.md` at the top of the repository, a file or a link to
 `AGENTS.md`, draws a warning on every `statute compile`, with or without
-a private layer: it is no longer needed, since Claude Code reads
-`AGENTS.md` when there is no `CLAUDE.md`
+a private layer. The warning asks whether to delete it, and says why in
+a few short sentences: Claude Code reads `AGENTS.md` itself when there
+is no `CLAUDE.md`
 ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
-Monorepos), and with the private output it makes Claude Code read the
-public rules twice
-([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
-The warning says to delete it, and that a migration will rename it to a
-legacy copy, asking the user first. statute neither deletes nor renames
-it. Not built yet.
+Monorepos), so a `CLAUDE.md` is not needed to point to it; with the
+private output, where `CLAUDE.local.md` gives Claude Code the full text
+in place of `AGENTS.md`, Claude Code reads a `CLAUDE.md` as well, so its
+content comes on top of the rules, the public rules twice for a link to
+`AGENTS.md` ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)),
+a sentence the warning leaves out without a private layer; and a
+migration will rename it to a legacy copy, asking the user first.
+statute neither deletes nor renames it. Not built yet.
 
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).
@@ -186,9 +189,10 @@ with which rules may cite which in `requires`, `conflicts`, `overrides`
 and `{@rule:...}`, and the check of `public` against GitHub
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, except the check of the private layer of a public
-repository, which comes with `statute.private.toml`. Inherited rule
+repository, which comes with `statute.private.toml`, and so are
+subdomains and a rule's `parent` in another source. Inherited rule
 sets, path segments and git sources are not built, nor
-`statute.private.toml` and its output, and subdomains.
+`statute.private.toml` and its output.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,

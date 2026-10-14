@@ -359,7 +359,7 @@ check; it cannot be enabled on its own. When any rule
 below it is enabled, the domain appears in the compiled output as a heading. A
 domain may sit under a domain that has no parent, as a subdomain, so
 domains nest two levels deep and no deeper
-([Subdomains](rule-sources.md#subdomains); not built yet); a finer
+([Subdomains](rule-sources.md#subdomains)); a finer
 grouping is a rule or a one-of under the domain.
 
 **One-ofs.** A one-of is a node of the parent tree of which at most one

@@ -190,9 +190,11 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - Grok reads both `AGENTS.md` and `CLAUDE.local.md`, so it reads the
   public rules twice. They are the same rules and do not contradict
   each other; the repetition is accepted.
-- A repository with a `CLAUDE.md` (a link to `AGENTS.md`, say) makes
-  Claude Code read it as well as `CLAUDE.local.md`, so the public rules
-  come twice there too; `statute compile` warns of a `CLAUDE.md`
+- A repository with a `CLAUDE.md` makes Claude Code read it as well as
+  `CLAUDE.local.md`, so its content comes on top of the full text: the
+  public rules twice when it is a link to `AGENTS.md` or a copy of it,
+  and otherwise text that may not agree with the rules; `statute
+  compile` warns of a `CLAUDE.md`
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 - OpenCode has no local file name of a repository. It reads the full
   text when its global configuration lists `.statute/AGENTS.full.md`
@@ -545,5 +547,4 @@ marking what is not built:
   override.
 
 Building the rest replaces what the tools do today: statute fails
-`base`, a domain with a `parent`, a rule whose `parent` names another
-source and a git source, and does not read `statute.private.toml`.
+`base` and a git source, and does not read `statute.private.toml`.

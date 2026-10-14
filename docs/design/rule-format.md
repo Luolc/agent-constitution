@@ -167,7 +167,7 @@ The fields:
   rule and one-of has one, except a rule with `overrides`; a domain has
   none, or, as a subdomain, a domain of the same source that has none
   ([Subdomains](rule-sources.md#subdomains)). The build accepts both
-  ([Checkers](checkers.md#checkers)); statute does not yet.
+  ([Checkers](checkers.md#checkers)), and so does statute.
 - `overrides` (optional, a rule only): the rule of another source that
   this rule takes the place of in a rule set that enables it, written as
   `requires` writes one (`"R200"`); a rule with it has no `parent`

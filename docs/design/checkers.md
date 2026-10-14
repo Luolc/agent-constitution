@@ -142,8 +142,8 @@ of the same source here and fails, with a note to write the number for a
 `parent`. What needs another source is statute's: the reference
 direction, the ranks of an override, an override by the private layer
 of a public repository, and whether a `parent` in another source exists.
-Of these, the reference direction in `requires`, `conflicts`,
-`overrides` and `{@rule:...}` and the ranks of an override are built.
+Of these, all are built but the check of an override by the private
+layer, which comes with `statute.private.toml`.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
