@@ -10,7 +10,7 @@ position. What each one proves, and what it does not:
 | Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name in [Source formats](source-formats.md), [The constitution](constitution.md) and [Rules](rules.md#rules); each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
-| Chinese typography (`lint-zh-sources`; limae on `constitution.zh.md`, `constitution.zh.agent.md` and `docs/design/zh/*.md`) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Chinese typography (`lint-zh-sources`; limae on every Markdown file of the repo) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text gets limae's rules too, which mostly find nothing there |
 | Design translation (`check-design-translation`) | `docs/design/zh/` holds a file for each of `docs/design/` and no other; each starts with the SHA-256 of the English file as it is now, then its title, and has the English file's headings, in the same order and at the same levels, each with the English heading's anchor; every relative link of the design, in either language, leads to a file or directory of the repo | That the translation says what the English says, or that it was brought up to date when its hash line was |
 | Python code (`ruff check`, `ruff format --check`, `pydoclint`, `basedpyright`, configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
@@ -168,14 +168,17 @@ only until stage B sets it (a rule's title, which may start or end in
 Latin letters). With `--fix` it writes limae's fixes back in place,
 changing no other byte, and parses the file again to make sure.
 The commit hook and CI only check; the fix is run by hand. The limae hook
-on `constitution.zh.md` and `constitution.zh.agent.md` in the edition
-directory's `generated/`
-checks what exists only after the build: section and item numbers,
-headings, the text around a rendered citation. A finding there is fixed in the source or in the build script,
-never in the generated file. The rules have no built text yet, so the
-source check is what covers their Chinese. The same hook checks the
-design's translation, `docs/design/zh/*.md`, where a finding is fixed in
-the file itself.
+runs on every Markdown file of the repo except the theme under `web/themes/`,
+English files included, where limae mostly finds nothing. On
+`constitution.zh.md` and `constitution.zh.agent.md` in the edition
+directory's `generated/` it checks what exists only after the build: section
+and item numbers, headings, the text around a rendered citation. A finding
+there is fixed in the source or in the build script, never in the generated
+file. The rules have no built text yet, so the
+source check is what covers their Chinese. A finding in any other
+Markdown file is fixed in the file itself. A false positive is passed
+over on its line with a `<!-- limae-disable-next-line <rule> -->` comment
+above it, never by switching the rule off for the repo.
 
 The private-term scan prints only position and class, never the matched
 text. In CI it runs the generic classes only; the term list is injected at

@@ -1,8 +1,7 @@
-{{- /* hugo-book's menu-hugo, with a group that folds (`collapse` in its menu params). */ -}}
-{{/*
-  This is template for hugo menus, accepts Page and Menu as context
-  https://gohugo.io/variables/menus/
-*/}}
+{{- /* hugo-book's menu-hugo (accepts Page and Menu as context), with a
+  group that folds when `collapse` is set in its menu params: the theme's
+  checkbox, label and chevron of its file tree, checked (open) when the
+  current page is in the group. */ -}}
 {{- if .Menu -}}
   {{- template "book-menu-hugo" . -}}
 {{- end -}}
@@ -19,9 +18,6 @@
   {{- end -}}
   <li>
     {{- $isRemote := default (urls.Parse .URL).IsAbs .Params.bookNewTab -}}
-    {{- /* A group with `collapse` set folds, by the theme's own checkbox
-      and chevron (the filetree's); it is open when the current page is
-      in it. */ -}}
     {{- $fold := and .Params.collapse .Children -}}
     {{- if $fold }}
     {{- $id := printf "menu-%s" .Identifier }}
