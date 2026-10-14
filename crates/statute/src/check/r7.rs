@@ -6,6 +6,9 @@
 //! meaning, and paths a repository declares as instructions in its own
 //! `AGENTS.md`, are for the reviewer. So a change it finds nothing wrong
 //! with is inconclusive, not a pass.
+//!
+//! Superseded by rule 46 (`r46.rs`); kept for a rule set that still
+//! enables rule 7, and run only for it.
 
 use regex::RegexSet;
 
