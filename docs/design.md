@@ -846,18 +846,18 @@ link check. Only the build exists here; publishing it is a release (rule
   page, with the scales (`law`). The version for agents is not listed, as
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
-  theme's own list with `bookHidden`. The table of contents lists the page's level-2
-  headings, the preamble and the articles (`markup.tableOfContents` in
-  `web/hugo.toml`), under a heading of its own; on a narrow screen the
-  theme hides it behind a button at the right of the top bar, which opens
-  it above the text, as the button at the left opens the sidebar. It marks
-  the article the reader is in (`aria-current`), set by
-  `web/assets/toc-current.js`, inlined in `<head>`: the last heading above
-  a line at 30% of the window's height, or the last one once the end of
-  the text is in view, watched with `IntersectionObserver`, which every
-  current browser has; nothing is read on scroll. CSS alone
-  (`scroll-target-group` and `:target-current`) did this only in Chromium
-  when read (2026-10-13). The
+  theme's own list with `bookHidden`. The table of contents lists the
+  page's level-2 headings, the preamble and the articles
+  (`markup.tableOfContents` in `web/hugo.toml`), under a heading of its
+  own; on a narrow screen the theme hides it behind a button at the right
+  of the top bar, which opens it above the text, as the button at the
+  left opens the sidebar. It marks the article the reader is in
+  (`aria-current`), set by `web/assets/toc-current.js`, inlined in
+  `<head>`: the last heading above a line at 30% of the window's height,
+  or the last one once the end of the text is in view, watched with
+  `IntersectionObserver`, which every current browser has; nothing is
+  read on scroll. CSS alone (`scroll-target-group` and `:target-current`)
+  did this only in Chromium when read (2026-10-13). The
   site overrides the theme's sidebar (`layouts/_partials/docs/menu.html`)
   to put a link to the source repository, with GitHub's mark from
   Octicons (MIT license), between the site's title and the language
