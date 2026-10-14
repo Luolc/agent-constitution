@@ -1,0 +1,42 @@
+id = 57
+slug = "changes-through-pull-requests"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["independent-review.another-party", "independent-review.reviewed-version"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Bring changes into the main branch only through reviewed pull requests"
+zh = "变更只经审查过的 pull request 进入主分支"
+
+[text.statement]
+en = "Make every non-trivial change on a branch of its own and bring it into the main branch only through a reviewed pull request."
+zh = "每个非琐碎的变更都在它自己的分支上做，只经审查过的 pull request 进入主分支。"
+
+[text.reason]
+en = '''
+A change takes effect only after another party has reviewed it ({@constitution:independent-review.another-party}), and what takes effect is exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}). A pull request from a branch of its own is where that review is held and where the reviewed version is recorded; a change that reaches the main branch any other way skips both.
+'''
+zh = '''
+变更要先由另一方审查才能生效 ({@constitution:independent-review.another-party})，生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})。从单独的分支发出的 pull request，就是进行这次审查、记下审查过的版本的地方；以其他方式进入主分支的变更把两者都绕过了。
+'''
+
+[text.verification]
+en = '''
+The main branch is the branch a repository's work is merged into, often `main`. A change is trivial only where the jurisdiction names that kind of change as one that may go into the main branch without a pull request; every other change is non-trivial. When unsure, treat a change as non-trivial.
+
+Violated when a non-trivial change reaches the main branch other than by merging a reviewed pull request from a branch of its own.
+'''
+zh = '''
+主分支是仓库的工作合入的分支，通常是 `main`。只有法域明确列为可以不经 pull request 进入主分支的那类变更才算琐碎，其余变更都算非琐碎。拿不准的，按非琐碎处理。
+
+非琐碎的变更不是经合并一个来自它自己分支、已审查的 pull request 进入主分支的，即为违反本规定。
+'''
+
+[translations]
+zh = "701c6b30c11c1d3f33594fc9e4d75e5a363ba068e60516d357338e8677bfb15d"
