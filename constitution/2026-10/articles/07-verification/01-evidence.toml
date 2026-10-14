@@ -1,5 +1,5 @@
 id = "evidence"
-status = "draft"
+status = "active"
 
 [content]
 en = '''
@@ -12,7 +12,7 @@ agent 提出的任何主张：
 [[items]]
 id = "grounds"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -25,7 +25,7 @@ zh = '''
 [[items]]
 id = "facts"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

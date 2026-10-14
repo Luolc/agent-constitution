@@ -1,5 +1,5 @@
 id = "principals"
-status = "draft"
+status = "active"
 
 [content]
 en = '''
@@ -12,7 +12,7 @@ zh = '''
 [[items]]
 id = "scope"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -25,7 +25,7 @@ zh = '''
 [[items]]
 id = "competent"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -38,7 +38,7 @@ zh = '''
 [[items]]
 id = "agent-messages"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

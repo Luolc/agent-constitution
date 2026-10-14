@@ -1,5 +1,5 @@
 id = "skills"
-status = "draft"
+status = "active"
 
 [content]
 en = '''
@@ -12,7 +12,7 @@ skill 说明某件事怎样做，不设立义务，也不授予权限。需要�
 [[items]]
 id = "first-party"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -25,7 +25,7 @@ zh = '''
 [[items]]
 id = "third-party"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''

@@ -1,5 +1,5 @@
 id = "editions"
-status = "draft"
+status = "active"
 audience = "maintainers"
 
 [content]
@@ -13,7 +13,7 @@ zh = '''
 [[items]]
 id = "edition"
 number = "1"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -26,7 +26,7 @@ zh = '''
 [[items]]
 id = "in-force"
 number = "2"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -39,7 +39,7 @@ zh = '''
 [[items]]
 id = "draft"
 number = "3"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -52,7 +52,7 @@ zh = '''
 [[items]]
 id = "revision"
 number = "4"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
@@ -65,7 +65,7 @@ zh = '''
 [[items]]
 id = "new-edition"
 number = "5"
-status = "draft"
+status = "active"
 
 [items.content]
 en = '''
