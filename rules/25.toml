@@ -1,11 +1,11 @@
 id = 25
 slug = "fixtures-for-both-outcomes"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 15
-authority = ["verification", "discriminating-checks"]
+authority = ["discriminating-checks"]
 constitution = ">=1"
 level = "project"
 check = "review"

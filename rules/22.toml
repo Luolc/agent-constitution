@@ -1,11 +1,11 @@
 id = 22
 slug = "credential-presence-check"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "sensitive-info", "evidence"]
+authority = ["sensitive-info", "evidence"]
 constitution = ">=1"
 level = "project"
 check = "review"

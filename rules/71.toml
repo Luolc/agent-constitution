@@ -1,6 +1,6 @@
 id = 71
 slug = "no-automatic-merge"
-revision = 2
+revision = 3
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-Setting a change to merge automatically is any setting that merges it later without someone deciding at that moment, for example a pull request's auto-merge. The rule binds every agent, the author and whoever merges alike. Whoever merges does it by hand when they decide to; that includes a merge command that fails when the change has moved from the approved version.
+Setting a change to merge automatically is any setting that merges it later without someone deciding at that moment, for example a code host's setting that merges a change once its checks pass. The rule binds every agent, the author and whoever merges alike. Whoever merges does it by hand when they decide to; that includes a merge command that fails when the change has moved from the approved version.
 
 Violated when an agent sets a change to merge automatically.
 '''
 zh = '''
-设为自动合并，是指任何让变更日后在没有人当场决定的情况下被合并的设置，例如 pull request 的 auto-merge。本规定约束每一个 agent，作者和合并的一方都一样。合并的一方在决定合并时亲手合并；使用变更一离开批准的版本就失败的合并命令，也算亲手合并。
+设为自动合并，是指任何让变更日后在没有人当场决定的情况下被合并的设置，例如代码托管平台上那种检查一通过就自动合并变更的设置。本规定约束每一个 agent，作者和合并的一方都一样。合并的一方在决定合并时亲手合并；使用变更一离开批准的版本就失败的合并命令，也算亲手合并。
 
 有 agent 把变更设为自动合并的，即为违反本规定。
 '''
 
 [translations]
-zh = "8def068ec28c90db25978973ee60e8762c828ef394cd2272a8ebb3b4f1bb5669"
+zh = "159b834ac89d400fb0dd97563b011954d461fa7196a3ff6dd33184b5f5be3735"

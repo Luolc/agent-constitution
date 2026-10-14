@@ -1,11 +1,11 @@
 id = 37
 slug = "credential-leak-report"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "leaks"]
+authority = ["leaks"]
 constitution = ">=1"
 level = "project"
 check = "review"

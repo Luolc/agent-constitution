@@ -137,10 +137,11 @@ checked-out merge commit was made on (its first parent), on a push to
 `main` against the commit before the push.
 
 The revision part is only as good as that base. The required check `check`
-is strict: a pull request must be up to date with `main` before it merges,
-so its CI run has seen the revision of every amendment merged before it,
-and two amendments cannot both take the same revision. The push run on
-`main` applies the same test to each merge commit as a backstop; if it
+is not strict: a pull request may merge while it is behind `main`, so its
+CI run may not have seen an amendment merged after it last ran, and two
+amendments can both pass with the same revision. The pull request run
+cannot rule this out; the push run on `main`, which applies the same test
+to each merge commit against the commit before it, is what finds it. If it
 turns red on a repeated revision, the one who merged opens a correcting
 amendment that gives the text a revision of its own. Revisions already
 repeated in history stay; each push is judged on its own commit.
