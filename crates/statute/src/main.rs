@@ -99,11 +99,7 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
     std::fs::write(root.join(lock::FILE), lock::render(project)).map_err(|e| {
         eprintln!("{}: error: cannot write: {e}", lock::FILE);
     })?;
-    println!(
-        "wrote {}: {} rules enabled",
-        lock::FILE,
-        project.resolution.enabled.len()
-    );
+    print_locked(project);
     Ok(())
 }
 
@@ -285,9 +281,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
         );
         return Err(());
     };
-    std::fs::write(&path, &changed).map_err(|e| {
-        eprintln!("{}: error: cannot write: {e}", manifest::FILE);
-    })?;
+    write_both(root, &original, &changed, &project)?;
     if adding {
         println!("added {entry} to `{field}`");
     } else {
@@ -296,5 +290,59 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool) -> Result<(), ()> {
             println!("{entry} is still enabled; `statute explain {entry}` says why");
         }
     }
-    write_lock(root, &project)
+    print_locked(&project);
+    Ok(())
+}
+
+/// Writes the changed `statute.toml` and its lock file so that the two
+/// stay in step: both go to temporary files first, then each is renamed
+/// into place, and if the lock file cannot be, the rule set is put back.
+fn write_both(root: &Path, original: &str, changed: &str, project: &Project) -> Result<(), ()> {
+    let manifest_path = root.join(manifest::FILE);
+    let lock_path = root.join(lock::FILE);
+    let manifest_tmp = root.join(format!("{}.tmp", manifest::FILE));
+    let lock_tmp = root.join(format!("{}.tmp", lock::FILE));
+    let unchanged = || {
+        let _ = std::fs::remove_file(&manifest_tmp);
+        let _ = std::fs::remove_file(&lock_tmp);
+        eprintln!(
+            "statute: {} and {} are left unchanged",
+            manifest::FILE,
+            lock::FILE
+        );
+    };
+    let staged = std::fs::write(&lock_tmp, lock::render(project))
+        .map_err(|e| (lock::FILE, e))
+        .and_then(|()| std::fs::write(&manifest_tmp, changed).map_err(|e| (manifest::FILE, e)))
+        .and_then(|()| {
+            std::fs::rename(&manifest_tmp, &manifest_path).map_err(|e| (manifest::FILE, e))
+        });
+    if let Err((file, e)) = staged {
+        eprintln!("{file}: error: cannot write: {e}");
+        unchanged();
+        return Err(());
+    }
+    if let Err(e) = std::fs::rename(&lock_tmp, &lock_path) {
+        eprintln!("{}: error: cannot write: {e}", lock::FILE);
+        if let Err(e) = std::fs::write(&manifest_path, original) {
+            eprintln!(
+                "{}: error: cannot put back the rule set as it was: {e}; {} does not match it",
+                manifest::FILE,
+                lock::FILE
+            );
+            let _ = std::fs::remove_file(&lock_tmp);
+            return Err(());
+        }
+        unchanged();
+        return Err(());
+    }
+    Ok(())
+}
+
+fn print_locked(project: &Project) {
+    println!(
+        "wrote {}: {} rules enabled",
+        lock::FILE,
+        project.resolution.enabled.len()
+    );
 }

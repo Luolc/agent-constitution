@@ -221,7 +221,8 @@ The fields:
   given by two more fields, `run`, the command line, and `tools`, the list
   of tools it needs (`["uv"]`). `review`: there is no automatic check, and
   the rule goes straight to the reviewer.
-- `[title]`: a short title.
+- `[title]`: a short title, on one line (a multi-line string may end in a
+  newline).
 - `[text.statement]`, `[text.reason]` and `[text.verification]`: the three
   parts of the text ([What one rule holds](#what-one-rule-holds)).
 - `[translations]` (optional): one key per translated language, never the
@@ -243,8 +244,10 @@ follows. That hash is the SHA-256 of the original-language values of
 `title`, `text.statement`, `text.reason` and `text.verification`, in this
 order, as the TOML parser returns them (before the build drops the
 newlines next to the quotes of a multi-line string, see
-[Source formats](source-formats.md)), encoded in UTF-8 and joined with
-one NUL byte (0x00) between each two; for a domain or a one-of it is the
+[Source formats](source-formats.md)), with each CRLF line end of the file
+taken as LF, so that a file checked out with either hashes the same (a
+`\r\n` written as an escape is not a line end and stays), encoded in
+UTF-8 and joined with one NUL byte (0x00) between each two; for a domain or a one-of it is the
 hash of the title alone. When the original changes and a translation's
 hash no longer matches, the check fails and prints the new hash, as
 `check-design-translation` does for the design. Compiled into a language,
@@ -558,7 +561,12 @@ The build checks these constraints:
   a particular rule. The number of such requirements has no hard limit;
   the build warns about them.
 - At most one child of a one-of is enabled in a rule set or path segment,
-  and no two enabled rules conflict.
+  and no two enabled rules conflict. A rule that brings in two children of
+  one one-of, along `parent` or `requires`, could never be enabled, and
+  the build fails on it; so it does on a rule that requires a one-of with
+  no children yet.
+- A rule that requires a superseded or repealed rule draws a warning,
+  which names the successor when there is one.
 
 **Missing requirements are added.** When a rule set enables a rule
 without one it requires, the tool adds the missing rule, as a package
@@ -780,7 +788,8 @@ which try the whole process on real work.
 for one source on disk; the other commands exit with status 2 and say
 they are not implemented yet. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
-another source are reported as not supported yet.
+another source, in `requires` or `conflicts` (`"team:7"`), are reported
+as not supported yet.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that

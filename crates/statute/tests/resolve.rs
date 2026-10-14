@@ -361,12 +361,14 @@ fn a_superseded_rule_brought_in_names_what_brings_it_in() {
             "status = \"superseded\"",
         ),
     ];
-    nodes.push(rule(9, 1, "requires = [8]"));
+    // Under the superseded rule: a requirement of it would draw a warning
+    // of the source already.
+    nodes.push(rule(9, 8, ""));
     let s = source(&nodes);
     warns(
         &s,
         &[9],
-        "rule 8 (Rule 8) (required by 9) is superseded by 2 (Rule 2); it stays as long as 9 (Rule 9) is enabled, which brings it in",
+        "rule 8 (Rule 8) (parent of 9) is superseded by 2 (Rule 2); it stays as long as 9 (Rule 9) is enabled, which brings it in",
     );
     let (_, diags) = run(&s, &[9], &[], 1);
     assert!(
