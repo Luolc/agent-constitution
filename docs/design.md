@@ -294,12 +294,13 @@ content carries over.
 
 The constitution is compiled by `tools/build_constitution.py` and the
 `tools/constitution_*.py` modules it calls (Python standard library only,
-run with `uv run` in the environment of `pyproject.toml`) from `constitution/index.toml` and one directory per
-article under `constitution/articles/`. It writes two files for each
-language in `index.toml`, `constitution/constitution.<lang>.md` (the full
-version) and `constitution/constitution.<lang>.agent.md` (the version for
-agents, see The version for agents), committed and never edited by hand;
-`--check` writes nothing and runs the checks under Checkers.
+run with `uv run` in the environment of `pyproject.toml`) from
+`constitution/index.toml` and one directory per article under
+`constitution/articles/`. It writes two files for each language in
+`index.toml`, `constitution/constitution.<lang>.md` (the full version) and
+`constitution/constitution.<lang>.agent.md` (the version for agents, see
+The version for agents), committed and never edited by hand; `--check`
+writes nothing and runs the checks under Checkers.
 
 ```text
 constitution/articles/
@@ -971,11 +972,11 @@ first one that finds errors, printing all of that one's errors:
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
-(`tools/test_constitution_checks.py`, `tools/test_constitution_base.py`). Checks 1 to 6 and the tests run as
-commit hooks and in CI; check 7 runs in CI only, on a pull request
-against the tip of the base branch the checked-out merge commit was made
-on (its first parent), on a push to `main` against the commit before the
-push.
+(`tools/test_constitution_checks.py`, `tools/test_constitution_base.py`).
+Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
+CI only, on a pull request against the tip of the base branch the
+checked-out merge commit was made on (its first parent), on a push to
+`main` against the commit before the push.
 
 The revision part is only as good as that base. The required check `check`
 is strict: a pull request must be up to date with `main` before it merges,
