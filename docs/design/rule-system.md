@@ -1,15 +1,16 @@
 # Rule system
 
 Status: draft. The rules of this repo are written in the
-[Rule file format](rule-format.md#rule-file-format), which `constitution-build` checks,
-and the command reads them and a rule set and writes the lock file
-([The command and the first version](statute-command.md#the-command-and-the-first-version)); the
-rest is not built yet. This part of the design, in the files below,
-describes how rules are written,
-numbered, chosen, checked and compiled once the rule system is built. Where it differs from what the rest of the design says
-today, the section [What this replaces](#what-this-replaces) lists the
-difference; those sections stay as they are until the work that implements
-this design changes them.
+[Rule file format](rule-format.md#rule-file-format), which
+`constitution-build` checks, and the command reads them and a rule set
+and writes the lock file
+([The command and the first version](statute-command.md#the-command-and-the-first-version));
+the rest is not built yet. This part of the design, in the files below,
+describes how rules are written, numbered, chosen, checked and compiled
+once the rule system is built. Where it differs from what the rest of
+the design says today, the section [What this replaces](#what-this-replaces)
+lists the difference; those sections stay as they are until the work that
+implements this design changes them.
 
 ## Contents
 

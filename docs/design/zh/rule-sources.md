@@ -1,4 +1,4 @@
-<!-- en-sha256: 83aff20dd823c252c67ce366738e892644b8433fb81cfd9ef98bd94f422809ff -->
+<!-- en-sha256: fcab03f75c695d57d58852fafd8176e366cfa86c73f2d5c469d543fdaa792698 -->
 # 规定源
 
 状态：草案，尚未实现。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。标着「默认，待定」的各点是推荐做法，人另有决定之前照它办。这一部分与[规定体系](rule-system.md) 现在的写法不一致的地方，列在[它改变什么](#what-this-changes) 一节。
@@ -200,10 +200,10 @@ parent = 104
 
 这一部分实现以后，会替换[规定体系](rule-system.md) 里的下列说法；在实现它的工作改动这些说法之前，它们保持原样：
 
-- 依赖、one-of 与规定包，领域一段：「领域不嵌套」改为[子领域](#subdomains) 的两级。
-- 规定文件格式：`parent` 可以指向另一个规定源的领域，领域可以有 `parent`，规定可以用 `overrides` 代替 `parent`。
-- 规定清单与锁文件：规定清单多了 `public`，规定源多了 `public` 和 `scope`，公开仓库多了 `statute.private.toml` 及其锁文件和输出，规定清单多了 `base` 和 `[compile]` 里的 `output`，锁文件里的规定可以有 `overridden-by`。
-- 编译与网站：「跨子树的依赖渲染成一个链接」改为：要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为链接。
-- 命令与第一版，切换一段：切换改为[切换](#cutover-from-the-hand-written-guide) 一节说的那种，整体切换，不先切某一个主题。
+- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)，领域一段：「领域不嵌套」改为[子领域](#subdomains) 的两级。
+- [规定文件格式](rule-format.md#rule-file-format)：`parent` 可以指向另一个规定源的领域，领域可以有 `parent`，规定可以用 `overrides` 代替 `parent`。
+- [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：规定清单多了 `public`，规定源多了 `public` 和 `scope`，公开仓库多了 `statute.private.toml` 及其锁文件和输出，规定清单多了 `base` 和 `[compile]` 里的 `output`，锁文件里的规定可以有 `overridden-by`。
+- [编译与网站](statute-command.md#compilation-and-the-site)：「跨子树的依赖渲染成一个链接」改为：要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为链接。
+- [命令与第一版](statute-command.md#the-command-and-the-first-version)，切换一段：切换改为[切换](#cutover-from-the-hand-written-guide) 一节说的那种，整体切换，不先切某一个主题。
 
 设计的其他部分里：[选用规定](rules.md#choosing-rules) 中「要修改一条规定，overlay 先去掉它，再加一条私有规定替代」改为覆盖。

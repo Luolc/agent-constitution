@@ -1,4 +1,4 @@
-<!-- en-sha256: d09ac1c974635577207f0df14e50202fcb1cba53051ebd1d6684c01b3d581fa2 -->
+<!-- en-sha256: e718257a4903fb28896d66b9c1ae4a7c88b85cd3889ffedd9ab0c39f501762bb -->
 # 规定体系
 
 状态：草案。本仓的规定已经按[规定文件格式](rule-format.md#rule-file-format) 编写，由 `constitution-build` 检查，命令也能读取它们和规定清单、写出锁文件 ([命令与第一版](statute-command.md#the-command-and-the-first-version))；其余部分还没有实现。设计的这一部分由下面几个文件组成，描述规定体系建成之后，规定怎样编写、编号、选用、检查和编译。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
