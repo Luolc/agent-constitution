@@ -1,11 +1,11 @@
 id = 35
 slug = "usage-quotas-must-ask"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 14
-authority = ["boundary-rule", "must-ask.capital"]
+authority = ["must-ask.capital"]
 constitution = ">=1"
 level = "project"
 check = "review"

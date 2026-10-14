@@ -1,11 +1,11 @@
 id = 32
 slug = "release-must-ask"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 14
-authority = ["boundary-rule", "must-ask", "list-defaults"]
+authority = ["must-ask", "list-defaults"]
 constitution = ">=1"
 level = "project"
 check = "review"

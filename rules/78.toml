@@ -1,0 +1,13 @@
+id = 78
+slug = "fleet"
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Fleet"
+zh = "Fleet"
+
+[translations]
+zh = "2bb4f92ced331c66b26c0388e4cf20e4ee5965cf24f3283f1c3633befbf0c4a1"
