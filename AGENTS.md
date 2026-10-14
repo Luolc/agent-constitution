@@ -53,7 +53,7 @@ punctuation.
 - `web/`: the Hugo project of the static site (config, layouts, style
   sheet), with the theme hugo-book as a submodule at
   `web/themes/hugo-book`; run `git submodule update --init` once after
-  cloning. `tools/build_site.py` builds the two pages into `site/`, which
+  cloning. `tools/build_site.py` builds the four pages into `site/`, which
   is never committed (`docs/design.md`, Static site).
 - `docs/design.md`: the one design doc. A PR that changes how the repo
   works (layout, source formats, compilation, checkers, releases) updates
@@ -121,9 +121,11 @@ search reads content: run the same search on a file where it must match.
   either built Chinese file is fixed in the sources or the build script,
   never in that file.
 - `python3 tools/build_site.py`: builds the static site into `site/`,
-  English at `site/index.html` and Chinese at `site/zh/index.html`, then
+  English at `site/index.html` and Chinese at `site/zh/index.html`, each
+  with the version for agents at `agent/` below it, then
   runs `tools/check_site_anchors.py` on it (every in-page link has its
-  target, no id repeats, no list marker leaked into the text). It calls
+  target, every link to another page leads to a file of the site, no id
+  repeats, no list marker leaked into the text). It calls
   the binary `hugo-0.167.0`, the version CI pins; it is not a commit hook.
   To look at the pages, serve them: `python3 -m http.server -d site`.
 - `gitleaks git --redact --no-banner --verbose .`: the full-history scan
