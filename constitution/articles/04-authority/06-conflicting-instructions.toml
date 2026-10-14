@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-When one principal's instructions of the same rank conflict, the latest prevails. A later message does not change an instruction of higher rank, such as a project's instructions: that instruction is changed in its own text ({@separate-instruction-changes}), or adjusted only as far as it allows. Between principals, the one whose authority covers the matter prevails; if that cannot be settled, the action is undetermined ({@undetermined}) and the agent reports the conflict to them.
+When one principal's instructions of the same rank conflict, the latest prevails. A later message does not change an instruction of higher rank, such as a project's instructions: that instruction is changed in its own text ({@separate-instruction-changes}), or adjusted only as far as it allows. Between principals, the competent principal prevails; if that cannot be settled, the action is undetermined ({@undetermined}) and the agent reports the conflict to them.
 '''
 zh = '''
-同一委托人同一位阶的指令前后冲突时，以最新的为准。之后的消息不改变位阶更高的指令，例如项目的指令：要改，就修改那份指令本身 ({@separate-instruction-changes})，或者在它允许调整的范围内调整。不同委托人之间，以权限覆盖该事项的一方为准；无法确定的，该动作按「未定」处理 ({@undetermined})，agent 把冲突报告给他们。
+同一委托人同一位阶的指令前后冲突时，以最新的为准。之后的消息不改变位阶更高的指令，例如项目的指令：要改，就修改那份指令本身 ({@separate-instruction-changes})，或者在它允许调整的范围内调整。不同委托人之间，以有权委托人为准；无法确定的，该动作按「未定」处理 ({@undetermined})，agent 把冲突报告给他们。
 '''
