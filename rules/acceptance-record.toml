@@ -14,7 +14,7 @@ When an agent reports work as done, whether to another agent or to a person, the
 - each check that ran, the version it ran on (a commit, a build or a file revision), and the line of its output that shows the result;
 - each check that applies but did not run, and why.
 
-Each value in the record is copied from the output that established it ({@constitution:evidence}). When the work changes after a check ran, the record moves to the new version: the check runs again, or it is listed as not run on that version, with the reason.
+Each value in the record is copied from the output that established it ({@constitution:evidence.facts}). When the work changes after a check ran, the record moves to the new version: the check runs again, or it is listed as not run on that version, with the reason.
 
 When unsure whether a check applies, list it as not run, with the reason, rather than leave it out.
 '''
@@ -24,7 +24,7 @@ agent 报告工作完成时，无论报告给其他 agent 还是人，都附一�
 - 已运行的每项检查，运行所基于的版本 (commit、构建或文件版本)，以及显示结果的那一行输出；
 - 适用但未运行的每项检查，以及未运行的原因。
 
-记录中的每个值都按实际取得的输出原样填写，不凭记忆 ({@constitution:evidence})。检查运行之后工作又有改动的，记录随之更新到新版本：重新运行这项检查，或者将其列为在新版本上未运行，并写明原因。
+记录中的每个值都按实际取得的输出原样填写，不凭记忆 ({@constitution:evidence.facts})。检查运行之后工作又有改动的，记录随之更新到新版本：重新运行这项检查，或者将其列为在新版本上未运行，并写明原因。
 
 不确定某项检查是否适用的，列为未运行并写明原因，不得略去。
 '''
