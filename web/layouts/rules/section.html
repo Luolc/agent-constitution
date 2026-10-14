@@ -1,0 +1,30 @@
+{{- /* The list of the rules, rulesPerPage of them a page, in the order
+  of the parent tree: each rule that is not superseded, its statement
+  only, as plain text cut to a few lines by the style sheet, linked to its
+  page and marked with its ID; a rule under another rule is indented
+  under it. Domains and one-ofs are not listed but head the rules below
+  them: a heading where a rule's domain or one-of differs from the rule's
+  before it, and on each page above its first rule. */ -}}
+{{ define "main" }}
+<article class="markdown book-article"><div class="design rules">
+{{ printf "# %s {anchor=false}" .Title | .RenderString }}
+<p class="rules-intro">{{ i18n "rules-intro" }}</p>
+{{- $pager := .Paginate (where .Pages "Params.rule.listed" true) site.Params.rulesPerPage }}
+{{- $previous := slice }}
+{{- range $pager.Pages }}
+  {{- $rule := .Params.rule }}
+  {{- range $i, $group := $rule.groups }}
+    {{- if or (ge $i (len $previous)) (ne (index $previous $i).id $group.id) }}
+<h{{ add $i 2 }} class="rules-group"><a href="{{ (site.GetPage (printf "/rules/%d" (int $group.id))).RelPermalink }}">{{ $group.title }}</a></h{{ add $i 2 }}>
+    {{- end }}
+  {{- end }}
+  {{- $previous = $rule.groups }}
+  {{- $statement := $rule.text.statement | $.RenderString | plainify | htmlUnescape }}
+<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth (len $rule.groups))) | safeCSS }}"><span class="rule-id">{{ $rule.id }}</span><span class="rule-statement" lang="{{ $rule.shown }}">{{ $statement }}</span></a>
+{{- end }}
+{{- if gt $pager.TotalPages 1 }}
+{{ partial "docs/pagination" . }}
+{{- end }}
+</div>
+</article>
+{{ end }}

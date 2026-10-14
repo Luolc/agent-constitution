@@ -1,0 +1,127 @@
+"""Tests for site-rules, the data of the rules' pages.
+
+On the made-up checkout of site_fixture: the order along the parent tree,
+which rules the lists show, the language each node is shown in, the
+citations as links, conflicts on both sides and the rules under each
+provision.
+"""
+
+import json
+from pathlib import Path
+import tempfile
+import unittest
+
+import site_fixture
+
+from constitution_compiler.model import Errors
+from constitution_compiler.read import load
+from constitution_site import site_rules
+
+
+class SiteRulesTest(unittest.TestCase):
+  def setUp(self):
+    tmp = tempfile.TemporaryDirectory()
+    self.addCleanup(tmp.cleanup)
+    self.root = Path(tmp.name)
+    site_fixture.write(self.root)
+    errors = Errors()
+    src = load(self.root, errors)
+    assert src is not None, errors
+    self.data = site_rules.site_data(src)
+
+  def nodes(self, lang):
+    return {n["id"]: n for n in self.data[lang]["nodes"]}
+
+  def test_tree_order(self):
+    order = [(n["id"], n["depth"]) for n in self.data["en"]["nodes"]]
+    self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (4, 1), (5, 1), (6, 2)])
+    nodes = self.nodes("en")
+    self.assertEqual([g["id"] for g in nodes[3]["groups"]], [1, 2])
+    self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
+    self.assertEqual(nodes[5]["children"], [{"id": 6, "title": "Rule 6"}])
+
+  def test_superseded_has_a_page_but_is_not_listed(self):
+    nodes = self.nodes("en")
+    listed = [i for i, n in nodes.items() if n["listed"]]
+    self.assertEqual(listed, [3, 5, 6])
+    self.assertEqual(nodes[4]["supersededBy"], {"id": 5, "title": "Rule 5"})
+    self.assertEqual(nodes[4]["text"]["statement"], "Old.")
+    # The superseded rule 4 also names `one`; only 3 and 5 are under it.
+    cited = self.data["en"]["citedBy"]
+    self.assertEqual([r["id"] for r in cited["one"]], [3, 5])
+    self.assertEqual([r["id"] for r in cited["one-a.x"]], [6])
+
+  def test_shown_language(self):
+    zh = self.nodes("zh")
+    self.assertEqual((zh[3]["shown"], zh[3]["title"]), ("zh", "规定 3"))
+    self.assertEqual(zh[3]["translations"], ["zh"])
+    self.assertEqual(zh[1]["title"], "组 1")
+    # A translation of an older original is shown as none is.
+    for node_id in (4, 5):
+      with self.subTest(node_id):
+        self.assertEqual(zh[node_id]["shown"], "en")
+        self.assertEqual(zh[node_id]["translations"], [])
+        self.assertEqual(zh[node_id]["title"], f"Rule {node_id}")
+    self.assertEqual(zh[5]["supersededBy"], None)
+    self.assertEqual(zh[3]["parent"], {"id": 2, "title": "组 2"})
+
+  def test_citations_are_links(self):
+    en, zh = self.nodes("en"), self.nodes("zh")
+    self.assertEqual(
+      en[3]["text"]["statement"],
+      "See [Art. I §1](../../#one-a) and [rule 6](../6/).",
+    )
+    self.assertEqual(
+      zh[3]["text"]["statement"],
+      "见[第一条第一款](../../#one-a)和[规定 6](../6/)。",
+    )
+    # An English text on a Chinese page keeps English labels.
+    self.assertEqual(
+      zh[6]["text"]["statement"],
+      "Under five, see [Art. I §1(1)](../../#one-a.x).",
+    )
+    self.assertEqual(
+      zh[3]["authority"],
+      [
+        {"ref": "one", "label": "第一条"},
+        {"ref": "one-a", "label": "第一条第一款"},
+      ],
+    )
+
+  def test_conflicts_on_both_sides(self):
+    nodes = self.nodes("en")
+    self.assertEqual(
+      nodes[5]["conflicts"], [{"id": 3, "title": "Rule 3"}, {"ref": "team:7"}]
+    )
+    self.assertEqual(nodes[3]["conflicts"], [{"id": 5, "title": "Rule 5"}])
+    self.assertEqual(nodes[5]["requires"], [{"id": 3, "title": "Rule 3"}])
+    self.assertEqual(nodes[6]["conflicts"], [])
+
+  def test_metadata(self):
+    rule = self.nodes("en")[3]
+    for field, value in (
+      ("revision", 2),
+      ("kind", "rule"),
+      ("status", "active"),
+      ("lang", "en"),
+      ("level", "project"),
+      ("constitution", ">=1"),
+      ("check", "review"),
+    ):
+      self.assertEqual(rule[field], value)
+    self.assertEqual(self.nodes("en")[1]["text"], {})
+
+  def test_main_writes_the_file(self):
+    out = self.root / "web/data/rules.json"
+    self.assertEqual(
+      site_rules.main(["--root", str(self.root), "--out", str(out)]), 0
+    )
+    self.assertEqual(json.loads(out.read_text(encoding="utf-8")), self.data)
+    (self.root / "rules/6.toml").write_text("id = 6\n", encoding="utf-8")
+    self.assertEqual(
+      site_rules.main(["--root", str(self.root), "--out", str(out)]), 1
+    )
+
+
+if __name__ == "__main__":
+  unittest.main()

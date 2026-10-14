@@ -1,0 +1,60 @@
+{{- /* The page of one node of the rule tree (content/rules/_content.gotmpl):
+  its title; for a superseded rule, the rule that supersedes it; a note
+  when the text is not in the page's language; a rule's statement, reason
+  and verification, their citations linked; the provisions of the
+  constitution it cites; its relations; and all its metadata. A domain or
+  a one-of has no text, and lists the nodes below it. */ -}}
+{{ define "main" }}
+{{- $rule := .Params.rule }}
+{{- $lang := site.Language.Lang }}
+<article class="markdown book-article"><div class="design rules rule">
+<h1 lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</h1>
+{{- with $rule.supersededBy }}
+<p class="rule-note superseded">{{ i18n "rule-superseded-by" (dict "rule" (partial "rules/link.html" .)) | safeHTML }}</p>
+{{- end }}
+{{- if ne $rule.shown $lang }}
+<p class="rule-note untranslated">{{ i18n "rule-untranslated" (dict "lang" (partial "rules/language.html" $rule.shown)) }}</p>
+{{- end }}
+{{- with $rule.text }}
+<div class="rule-text" lang="{{ $rule.shown }}">
+<div class="statement">{{ .statement | $.RenderString (dict "display" "block") }}</div>
+<h2>{{ i18n "rule-reason" }}</h2>
+{{ .reason | $.RenderString (dict "display" "block") }}
+<h2>{{ i18n "rule-verification" }}</h2>
+{{ .verification | $.RenderString (dict "display" "block") }}
+</div>
+{{- end }}
+{{- with $rule.authority }}
+<h2>{{ i18n "rule-authority" }}</h2>
+<ul class="rule-authority">
+  {{- range . }}
+<li><a href="../../#{{ .ref }}">{{ .label }}</a> <code>{{ .ref }}</code></li>
+  {{- end }}
+</ul>
+{{- end }}
+<h2>{{ i18n "rule-relations" }}</h2>
+<dl class="rule-meta">
+{{- range slice "parent" "children" "requires" "conflicts" }}
+  {{- $value := index $rule . }}
+  {{- if or $value (and (eq $rule.kind "rule") (ne . "children")) }}
+<dt>{{ i18n (printf "rule-%s" .) }}</dt>
+<dd>{{ with $value }}{{ range $i, $node := (cond (reflect.IsSlice .) . (slice .)) }}{{ if $i }}<br>{{ end }}{{ partial "rules/link.html" $node }}{{ end }}{{ else }}{{ i18n "rule-none" }}{{ end }}</dd>
+  {{- end }}
+{{- end }}
+</dl>
+<h2>{{ i18n "rule-metadata" }}</h2>
+<dl class="rule-meta">
+<dt>{{ i18n "rule-id" }}</dt><dd><code>{{ $rule.id }}</code></dd>
+{{- range $field := slice "revision" "kind" "status" "slug" "level" "constitution" "check" "run" "tools" }}
+  {{- with index $rule $field }}
+<dt>{{ i18n (printf "rule-%s" $field) }}</dt><dd><code>{{ if reflect.IsSlice . }}{{ delimit . ", " }}{{ else }}{{ . }}{{ end }}</code></dd>
+  {{- end }}
+{{- end }}
+<dt>{{ i18n "rule-lang" }}</dt><dd>{{ partial "rules/language.html" $rule.lang }} <code>{{ $rule.lang }}</code></dd>
+<dt>{{ i18n "rule-translations" }}</dt><dd>
+  {{- range $i, $code := $rule.translations }}{{ if $i }}, {{ end }}{{ partial "rules/language.html" $code }} <code>{{ $code }}</code>{{ else }}{{ i18n "rule-none" }}{{ end -}}
+</dd>
+</dl>
+</div>
+</article>
+{{ end }}
