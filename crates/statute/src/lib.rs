@@ -11,6 +11,7 @@ pub mod node;
 pub mod private;
 pub mod project;
 pub mod resolve;
+pub mod site;
 pub mod skill;
 pub mod source;
 pub mod specifier;

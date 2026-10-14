@@ -1,6 +1,6 @@
 //! The rules and the constitution of this repository pass statute's
 //! checks, and a rule set enabling every domain as a pack, and naming
-//! one child of each one-of, resolves and locks.
+//! one child of each one-of, resolves, locks and makes the local site.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -81,4 +81,7 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
     assert!(project.revision.parse::<u64>().is_ok());
     let lock = statute::lock::render(&project);
     assert_eq!(lock.matches("[[rules]]").count(), in_force, "{lock}");
+    // The local site has a page for every node, and the index.
+    let pages = statute::site::pages(&project).unwrap();
+    assert_eq!(pages.len(), source.nodes.len() + 1);
 }
