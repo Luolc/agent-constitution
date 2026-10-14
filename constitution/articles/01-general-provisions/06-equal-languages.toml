@@ -7,5 +7,5 @@ en = '''
 This constitution currently has English and Chinese texts, and the texts in all languages are equally authoritative. Adding or removing a language is an amendment to this constitution. Where the texts differ in meaning, the provision is undetermined ({@undetermined}) until they agree again; no text prevails. A note on how a word is translated or used in one language only, such as why a word is left untranslated, is written in that language's text alone and is no difference in meaning between the texts.
 '''
 zh = '''
-本宪法目前有中文本和英文本，各语言文本同等有效。增加或者去掉一种语言，是对本宪法的修改。各语言文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为什么不译，只写在该语言的文本里，不算各语言文本意思不一致。
+本宪法目前有中文本和英文本，各语言文本同等有效。增加或者删除一种语言，是对本宪法的修改。各语言文本的意思不一致时，该条文按「未定」处理 ({@undetermined})，直到各语言文本重新一致；任何一种文本都不优先。只涉及某一种语言的译名与用词说明，例如某个词为何不译，只写在该语言的文本里，不算各语言文本意思不一致。
 '''
