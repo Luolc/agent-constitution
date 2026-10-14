@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-Decide yourself; never route to a principal.
+Decided by the agent itself, by default without going to a principal.
 '''
 zh = '''
-自己决定，不得交给委托人。
+由 agent 自己决定，默认不交给委托人。
 '''
 
 [[items]]
