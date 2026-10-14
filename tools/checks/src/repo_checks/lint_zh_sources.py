@@ -344,7 +344,7 @@ def main(argv: list[str] | None = None) -> int:
   parser.add_argument(
     "--root",
     type=Path,
-    default=Path(__file__).resolve().parent.parent,
+    default=Path(__file__).resolve().parents[4],
     help="the checkout (default: the repo this script is in)",
   )
   args = parser.parse_args(argv)
@@ -352,7 +352,7 @@ def main(argv: list[str] | None = None) -> int:
   if not limae.is_file():
     print(
       f"limae is not installed in this Python environment ({limae.parent});"
-      " run this script with `uv run`, which installs the version uv.lock"
+      " run `uv run lint-zh-sources`, which installs the version uv.lock"
       " pins",
       file=sys.stderr,
     )

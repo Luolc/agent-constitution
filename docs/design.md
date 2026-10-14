@@ -132,21 +132,35 @@ skills/
                           template files beside it, installed as is    A
 schema/                   schemas for the rules, fixtures and the
                           overlay manifest                             B
-tools/
-  build_constitution.py   builds and checks the constitution, from the
+tools/                    a uv workspace, one Python project each:
+  compiler/               the constitution compiler, package
+                          constitution_compiler, command
+                          constitution-build                           A
+    src/constitution_compiler/
+      build.py            builds and checks the constitution, from the
                           modules below                                A
-  constitution_sources.py   the sources' data model, check 1           A
-  constitution_checks.py  checks 2 to 5                                A
-  constitution_languages.py   what differs between languages           A
-  constitution_render.py  renders the constitution                     A
-  constitution_base.py    check 7, against a base commit               A
-  test_constitution_*.py  their tests: render, checks, base, and the
-                          shared test tree (fixture)                   A
-  count_tokens.py         counts the tokens the static site shows       A
-  check_site_anchors.py   checks the built site's in-page links         A
-  test_count_tokens.py    its tests                                     A
-  test_check_site_anchors.py   its tests                                A
-  test_site.py            tests of the site's Hugo templates            A
+      sources.py          the sources' data model, check 1             A
+      checks.py           checks 2 to 5                                A
+      languages.py        what differs between languages               A
+      render.py           renders the constitution                     A
+      base.py             check 7, against a base commit               A
+    tests/                render, checks, base, and the shared test
+                          tree (test_constitution_fixture.py)          A
+  site/                   package constitution_site, depends on the
+                          compiler                                     A
+    src/constitution_site/
+      count_tokens.py     counts the tokens the static site shows
+                          (count-tokens)                               A
+      check_site_anchors.py   checks the built site's links
+                          (check-site-anchors)                         A
+    tests/                their tests, and test_site.py, the tests of
+                          the site's Hugo templates                    A
+  checks/                 package repo_checks, this repo's own checks  A
+    src/repo_checks/
+      check_instruction_changes.py   instruction files apart
+                          (check-instruction-changes)                  A
+      lint_zh_sources.py  limae on the zh sources (lint-zh-sources)    A
+    tests/                their tests                                  A
   <others>                compiler, checkers, private-term scanner     B
 examples/
   overlay/                a fictional private overlay                  B
@@ -164,10 +178,10 @@ web/                      the static site's Hugo project: hugo.toml,
 site/                     built static site, not committed             A
 .github/workflows/        CI                                           A
 .pre-commit-config.yaml   commit hooks                                 A
-pyproject.toml            the Python environment of tools/: Python
+pyproject.toml            the workspace root: its members, Python
                           version, pins of limae, pre-commit and the
                           Python checkers, and their configuration     A
-uv.lock                   its lock file, written by uv                 A
+uv.lock                   the workspace's one lock file, written by uv A
 .python-version           the Python minor version uv runs tools/ on   A
 .fleet/config.json        issue-tracker metadata for fleet; the
                           toolchain never reads it                     A
@@ -292,9 +306,8 @@ content carries over.
 
 ### Constitution
 
-The constitution is compiled by `tools/build_constitution.py` and the
-`tools/constitution_*.py` modules it calls (Python standard library only,
-run with `uv run` in the environment of `pyproject.toml`) from
+The constitution is compiled by `uv run constitution-build`, the
+workspace member `tools/compiler` (Python standard library only), from
 `constitution/index.toml` and one directory per article under
 `constitution/articles/`. It writes two files for each language in
 `index.toml`, `constitution/constitution.<lang>.md` (the full version) and
@@ -719,15 +732,15 @@ The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
 `site/zh/agent/index.html`). Hugo builds them, `hugo-0.167.0 -s web`
-alone. CI runs three steps: `uv run tools/count_tokens.py` (the token
+alone. CI runs three steps: `uv run count-tokens` (the token
 count, below), `hugo-0.167.0 --source web --cleanDestinationDir
---panicOnWarning`, and `uv run tools/check_site_anchors.py site`, the
+--panicOnWarning`, and `uv run check-site-anchors site`, the
 link check. Only the build exists here; publishing it is a release (rule
 `must-ask-items`) and not set up.
 
 - Input: the generated `constitution/constitution.<lang>.md`, not the
   sources: the citations, numbers and anchors are rendered once, by
-  `build_constitution.py`. `web/hugo.toml` mounts them from
+  `constitution-build`. `web/hugo.toml` mounts them from
   `constitution/` as assets and `constitution/index.toml` as data; Python
   writes no page. The content adapter `web/content/_content.gotmpl` makes
   each into the home page of its language: the header line is dropped,
@@ -775,7 +788,7 @@ link check. Only the build exists here; publishing it is a release (rule
   the files hold) in English, and tokens as counted for the model
   `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
   API (`POST /v1/messages/count_tokens`, standard library only). The
-  content adapter counts the characters and words; `tools/count_tokens.py`
+  content adapter counts the characters and words; `count-tokens`
   counts the tokens and writes them to `web/data/lengths.json` (not
   committed), with the SHA-256 of each text it counted and the abbreviated
   commit it ran on. The site shows a token count, and the commit, only
@@ -814,7 +827,7 @@ link check. Only the build exists here; publishing it is a release (rule
   page; a failure prints one line with the HTTP status or the exception's
   class. Without a credential, or when the call fails or a connect or read
   stalls for 10 seconds, the page says the tokens were not counted and the
-  build goes on; with `count_tokens.py --require-tokens` the count fails
+  build goes on; with `count-tokens --require-tokens` the count fails
   instead and writes no file. The
   workflow `.github/workflows/token-count.yml` runs on each push to `main`,
   the only event the federation rule accepts: it asks GitHub for the run's
@@ -834,7 +847,8 @@ link check. Only the build exists here; publishing it is a release (rule
   the maintainer's secret store. So the pages of one commit differ with
   and without a credential, in that line and the popup only.
 - Generator: Hugo, a single binary pinned by version in the workflows
-  and in `tools/test_site.py`, which writes to `site/` (`publishDir`),
+  and in `tools/site/tests/test_site.py`, which writes to `site/`
+  (`publishDir`),
   with the theme hugo-book (MIT license) as a git submodule at
   `web/themes/hugo-book`, pinned to a commit. The theme gives the language
   switch, the light, dark and auto color themes, the sidebar's list of
@@ -907,7 +921,7 @@ link check. Only the build exists here; publishing it is a release (rule
   is not a commit hook, and the tests of the templates
   (`test_site.py`, which builds a made-up constitution) are skipped
   without it, except in CI; CI installs Hugo before the tests, builds the
-  site on every pull request and push and runs `check_site_anchors.py` on
+  site on every pull request and push and runs `check-site-anchors` on
   it.
 
 ## Checkers
@@ -917,10 +931,10 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`build_constitution.py --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
-| Instruction-only changes (`check_instruction_changes.py --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
-| Static site (`hugo-0.167.0 --panicOnWarning`, then `check_site_anchors.py`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
-| Chinese typography (`lint_zh_sources.py`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
+| Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name above; each ID is well formed and unique in its namespace, and no rule uses a retired ID; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone without being retired; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
+| Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
+| Chinese typography (`lint-zh-sources`; limae on `constitution.zh.md` and `constitution.zh.agent.md`) | Every `zh` text of the constitution and rule sources, and both versions of the built Chinese constitution, pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text is not checked |
 | Python code (`ruff check`, `ruff format --check`, `pydoclint`, `basedpyright`, configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
@@ -991,7 +1005,8 @@ first one that finds errors, printing all of that one's errors:
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
-(`tools/test_constitution_checks.py`, `tools/test_constitution_base.py`).
+(`tests/test_constitution_checks.py`, `tests/test_constitution_base.py`
+of `tools/compiler`).
 Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
 CI only, on a pull request against the tip of the base branch the
 checked-out merge commit was made on (its first parent), on a push to
@@ -1006,7 +1021,7 @@ turns red on a repeated revision, the one who merged opens a correcting
 amendment that gives the text a revision of its own. Revisions already
 repeated in history stay; each push is judged on its own commit.
 
-The instruction-only check (`tools/check_instruction_changes.py`) keeps
+The instruction-only check (`check-instruction-changes`) keeps
 the changes that an agent reads as instructions apart from all others, so
 each can be reviewed and reverted on its own. Which paths are instruction
 files, which are generated and which are other files is one table at the
@@ -1022,15 +1037,17 @@ several changes at once is checked as one.
 
 Another repo runs the same check in its own CI: it fetches this repo at a
 pinned tag and commit SHA, as an overlay pins the core (Releases and
-versions), and runs `python3 <core>/tools/check_instruction_changes.py
---root . --base <base>` in its checkout. The generic part always applies.
+versions), and runs `PYTHONPATH=<core>/tools/checks/src python3 -m
+repo_checks.check_instruction_changes --root . --base <base>` in its
+checkout: the script needs only the standard library, so that repo needs
+neither uv nor this workspace. The generic part always applies.
 The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
 either option replaces this repo's own part and generated files.
 
 Chinese typography is checked twice, with limae and its default
-configuration. `tools/lint_zh_sources.py` hands every `zh` text of
+configuration. `lint-zh-sources` hands every `zh` text of
 `constitution/index.toml`, `constitution/articles/` and `rules/` to limae
 as a Markdown file of its own and prints each finding as `path:line:
 field: <message>`, the field being the TOML table, with an item's ID

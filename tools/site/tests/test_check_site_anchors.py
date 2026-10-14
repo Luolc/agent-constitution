@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-import check_site_anchors
+from constitution_site import check_site_anchors
 
 GOOD = """<html><body>
 <nav><a href="#%e5%ba%8f%e8%a8%80">序言</a></nav>

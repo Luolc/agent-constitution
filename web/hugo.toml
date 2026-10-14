@@ -2,8 +2,8 @@
 # for agents, made by content/_content.gotmpl from
 # constitution/constitution.<lang>.md and constitution.<lang>.agent.md.
 # `hugo-0.167.0 -s web` builds it into site/, with the tokens that
-# tools/count_tokens.py counted, if any; tools/check_site_anchors.py checks
-# the links. See docs/design.md (Static site).
+# `uv run count-tokens` counted, if any; `uv run check-site-anchors site`
+# checks the links (both in tools/site). See docs/design.md (Static site).
 baseURL = "/"
 publishDir = "../site"
 # Relative links, so that site/index.html also opens as a file.
@@ -80,9 +80,10 @@ enableRobotsTXT = false
   # Linked in the sidebar, under the site's title.
   SourceRepo = "https://github.com/Luolc/agent-constitution"
   # The asterisk after a provision the version for agents leaves out, as
-  # tools/constitution_render.py writes it (OMITTED_MARK).
+  # the compiler writes it (OMITTED_MARK in
+  # tools/compiler/src/constitution_compiler/render.py).
   omittedMark = '<sup class="omitted">*</sup>'
-  # The model tools/count_tokens.py counts the tokens for, and its name in
+  # The model count-tokens counts the tokens for, and its name in
   # the popup on the counts.
   [params.tokenCount]
     model = "claude-opus-5-5"
@@ -91,7 +92,7 @@ enableRobotsTXT = false
 # The built constitution comes from constitution/: the two Markdown files
 # of each language as assets, which content/_content.gotmpl reads, and
 # index.toml as data, for the revision and the status. data/lengths.json,
-# written by tools/count_tokens.py and not committed, holds the tokens.
+# written by count-tokens and not committed, holds the tokens.
 # A component with a mount of its own loses its default one, so data and
 # assets are mounted again.
 [[module.mounts]]

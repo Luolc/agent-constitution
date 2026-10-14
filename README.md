@@ -23,16 +23,19 @@ same kind, one per rule. The format, the IDs and the numbering are in the
 design. The general skills are under `skills/`, one directory per skill
 with its `SKILL.md`, in English.
 
-The scripts under `tools/` run with [uv](https://docs.astral.sh/uv/):
-`pyproject.toml` sets the Python version and pins limae, which they
-call, pre-commit and the Python checkers (ruff, pydoclint, basedpyright),
-which the commit hooks run; `uv run` creates the environment from
-`uv.lock` the first time. Install the commit hooks once with `uv run
-pre-commit install`.
+The tools under `tools/` are a [uv](https://docs.astral.sh/uv/)
+workspace of three Python projects: `tools/compiler` (the constitution
+build, `uv run constitution-build`), `tools/site` (the token count and
+the link check of the static site) and `tools/checks` (the checks this
+repo runs on its own changes). The root `pyproject.toml` sets the Python
+version and pins limae, which they call, pre-commit and the Python
+checkers (ruff, pydoclint, basedpyright), which the commit hooks run;
+`uv sync` installs all of it into `.venv` from `uv.lock`. Install the
+commit hooks once with `uv run pre-commit install`.
 
 `hugo-0.167.0 -s web` builds the constitution into two static web pages,
 English and Chinese, under `site/` (not committed), the tokens not
-counted; `uv run tools/check_site_anchors.py site` checks their links. It
+counted; `uv run check-site-anchors site` checks their links. It
 needs Hugo at that version and the theme submodule (`git submodule update
 --init`); the setup, and the token count, are in the design (Static
 site).

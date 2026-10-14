@@ -6,7 +6,7 @@ Checkers).
 
 import re
 
-from constitution_sources import (
+from constitution_compiler.sources import (
   citations,
   Doc,
   Errors,

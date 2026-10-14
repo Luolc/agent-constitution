@@ -13,7 +13,7 @@ import re
 import tomllib
 from typing import Any, NamedTuple
 
-from constitution_languages import (
+from constitution_compiler.languages import (
   LANGUAGES,
 )
 
@@ -584,7 +584,7 @@ def load_index(root: Path, errors: Errors) -> Doc | None:
         index.line("languages ="),
         1,
         f"no rendering for language `{lang}`;"
-        " add it to LANGUAGES in constitution_languages.py",
+        " add it to LANGUAGES in constitution_compiler/languages.py",
       )
   index_status = index.data["status"]
   if index_status not in INDEX_STATUS:
