@@ -259,6 +259,7 @@ passes to Hugo as `--baseURL`.
   text's full lines: EB Garamond's letters are narrower than `ch`; the
   usual 75 reads too narrow for this text) and 40 in Chinese where the
   window has room for it. Three columns would leave the text under
+  <!-- limae-disable-next-line zh-typography-6 -->
   about 65 characters a line in English below 70rem (1120px), so there
   the table of contents goes behind the theme's top-bar button, floating
   at the top right, which opens it over the text at the right edge; the

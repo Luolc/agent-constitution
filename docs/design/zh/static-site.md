@@ -1,4 +1,4 @@
-<!-- en-sha256: e918a0582b114c8d1f59ab9230c8b322e7b9829ecd1d303db992ee068d203837 -->
+<!-- en-sha256: ef20c6511975de1e2b6215f1f8486c886febe0089bc94347b43117ed13cee04b -->
 # 静态网站
 
 构建出的宪法也发布成静态网页，英文在 `site/index.html`，中文在 `site/zh/index.html`，各自的 agent 版在下面的 `agent/` 里 (`site/agent/index.html`、`site/zh/agent/index.html`)；本设计也发布在 `design/` 下 (`site/design/index.html`、`site/zh/design/index.html`)。页面由 Hugo 构建，只需 `hugo-0.167.0 -s web` 一条命令。CI 运行三步：`uv run count-tokens` (统计 token，见下文)、`hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning`，以及链接检查 `uv run check-site-anchors site`。工作流 `.github/workflows/pages.yml` 把网站发布到 GitHub Pages 上的 `https://agent-constitution.luolc.com/`，并把这个地址作为 `--baseURL` 传给 Hugo。
