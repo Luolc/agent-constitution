@@ -15,8 +15,8 @@ en = "Give an item you put off an owner and a trigger that is certain to happen"
 zh = "推迟的事情要写明由谁接手，触发点放在必然发生的动作上"
 
 [text.statement]
-en = "Give each item you put off, in its record, who takes it and a trigger that is an action certain to happen, never remembering it."
-zh = "推迟的每件事，都在它的记录里写明由谁接手，以及一个触发点：必然会发生的动作，而不是「记得」。"
+en = "Give each item you put off or hand on, in its record, who takes it and a trigger that is an action certain to happen, never remembering it."
+zh = "推迟或交出的每件事，都在它的记录里写明由谁接手，以及一个触发点：必然会发生的动作，而不是「记得」。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ agent 推迟或交出的事情，其记录没有写明由谁接手、没有写�
 '''
 
 [translations]
-zh = "51ed7e0b7107ec2f193d93e4ef53361751553071662ba7bfa847975ec2f9b6d5"
+zh = "6e3a75fd5afb67a00d53a0321785e5a85a9c7097e2ed6d0c28f31495c38b181e"

@@ -15,8 +15,8 @@ en = "Write no test for input that is plainly unreasonable"
 zh = "不为明显不合理的输入写测试"
 
 [text.statement]
-en = "Test the expected path and the boundaries the requirements set, and write no test of what code does with input that is plainly unreasonable."
-zh = "测试正常路径和需求规定的边界，不为代码怎样处理明显不合理的输入写测试。"
+en = "Write no test of what code does with input that is plainly unreasonable."
+zh = "不为代码怎样处理明显不合理的输入写测试。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "a9a19137b50c5fe7a9e00d79b3c036decbe3dfca3ee20615f0c1d8f7a8be178d"
+zh = "f1fc4350929b2e1031e9a6cdab4fa28d6567156055d48a137fa9f0de06628e77"

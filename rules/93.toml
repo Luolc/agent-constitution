@@ -15,8 +15,8 @@ en = "Pass text through a shell only from a file written with a quoted heredoc"
 zh = "经 shell 传递的文字，先用 quoted heredoc 写进文件，再从文件传"
 
 [text.statement]
-en = "Write any text you pass to a command through a shell into a file with a quoted heredoc first, and pass the file."
-zh = "经 shell 传给命令的文字，先用 quoted heredoc 写进文件，再把这个文件传过去。"
+en = "Write a message, a body or a commit message that you pass to a command through a shell into a file with a quoted heredoc first, and pass the file."
+zh = "经 shell 传给命令的消息、正文或 commit message，先用 quoted heredoc 写进文件，再把这个文件传过去。"
 
 [text.reason]
 en = '''
@@ -39,4 +39,4 @@ agent 把这样的文字作为字面量直接写在命令行里传给命令的 (
 '''
 
 [translations]
-zh = "7835f552042fbb00b578faaec44fc2c8197d5e608a43a27fbb871e434ee5c3aa"
+zh = "12ef0dd3a4bc342cb47525282edaeedac2c9470376455ac8304a2b731bb00a6d"

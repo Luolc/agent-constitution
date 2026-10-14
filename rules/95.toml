@@ -5,7 +5,7 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
-authority = ["safety-before-speed", "automation-first.keep-moving"]
+authority = ["automation-first.keep-moving"]
 constitution = ">=1"
 level = "project"
 check = "review"
@@ -20,10 +20,10 @@ zh = "不要仅仅因为主分支上的 CI 正在失败，就扣住一个已经�
 
 [text.reason]
 en = '''
-A failure on the main branch is handled by whoever merged the change that caused it ({@rule:59}); only what it affects stops, and the rest of the work keeps moving ({@constitution:safety-before-speed}, {@constitution:automation-first.keep-moving}). Holding every merge until the main branch passes again stalls work that has nothing to do with the failure. A release still waits for a commit whose own CI passed on its first attempt ({@rule:58}).
+A failure on the main branch is handled by whoever merged the change that caused it ({@rule:59}); the rest of the work keeps moving ({@constitution:automation-first.keep-moving}). Holding every merge until the main branch passes again stalls work that has nothing to do with the failure. A release still waits for a commit whose own CI passed on its first attempt ({@rule:58}).
 '''
 zh = '''
-主分支上的失败，由合并了引起它的那项变更的一方处理 ({@rule:59})；只停下受影响的部分，其余工作照常推进 ({@constitution:safety-before-speed}，{@constitution:automation-first.keep-moving})。主分支恢复通过之前把所有合并都扣住，会让与这次失败无关的工作停下来。发布仍要等一个自己的 CI 第一次就通过的 commit ({@rule:58})。
+主分支上的失败，由合并了引起它的那项变更的一方处理 ({@rule:59})；其余工作照常推进 ({@constitution:automation-first.keep-moving})。主分支恢复通过之前把所有合并都扣住，会让与这次失败无关的工作停下来。发布仍要等一个自己的 CI 第一次就通过的 commit ({@rule:58})。
 '''
 
 [text.verification]
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "dfb9c8766a995c814a14b5838bc7b32439b02e5b4d74506be0fca974b8d006f3"
+zh = "a05dc08bf150cf7f96a6d3c0372954f9e948d7212944c3f10e5ac188b9991178"
