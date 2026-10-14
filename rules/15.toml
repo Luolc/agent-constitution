@@ -14,7 +14,7 @@ en = '''
 Covers how agents show that work is done and checks passed: acceptance records, fixtures, checks before a push, reading CI, and keeping instruction changes apart. Enable it wherever agents change a repository that has checks or CI.
 '''
 zh = '''
-管 agent 怎样证明活做完了、检查过了：验收记录、测试数据、push 前的检查、怎样读 CI，以及把指令改动单独提交。agent 修改的仓库只要有检查或 CI，就要启用。
+管 agent 怎样证明活做完了、检查过了：验收记录、fixture、push 前的检查、怎样读 CI，以及把指令改动单独提交。agent 修改的仓库只要有检查或 CI，就要启用。
 '''
 
 [translations]

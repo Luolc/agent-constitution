@@ -11,11 +11,11 @@ zh = "安全"
 
 [applicability]
 en = '''
-Keeps credentials in their place and out of every output, private details out of public repositories, and load and lasting processes off shared machines, and sends an agent that a guard blocks along the reviewed route. Enable it wherever agents work.
+Keeps credentials in their place and out of every output, private details out of public repositories, load off shared machines, and every lasting process or waiting loop with a way to stop, and sends an agent that a guard blocks along the reviewed route. Enable it wherever agents work.
 '''
 zh = '''
-管凭证放在指定的地方、不出现在任何输出里，私密信息不进公开仓库，共享机器上不留负载和长期运行的进程，agent 被拦住时走审查过的途径。凡有 agent 工作的地方都要启用。
+管凭证放在指定的地方、不出现在任何输出里，私密信息不进公开仓库，共享机器上不起负载，长期运行的进程和等待的循环都有办法停下，agent 被拦住时走审查过的途径。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "ba3fbad922f16bb83731f71f06fb3199772e15b6395a76c7e3573f73bf100847"
+zh = "a6859b3d3a6872f144a49fb378cbb738f0f33dbb61be8c3fae0d0cc34e110453"
