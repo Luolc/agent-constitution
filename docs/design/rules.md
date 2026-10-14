@@ -42,8 +42,10 @@ keep credentials in it on purpose). Open, for the person to decide. Recommended:
   declaration (below), where the constitution permits it. It does not leave
   rules out of the compiled file, because one compiled file serves all of a
   jurisdiction's repos.
-- To change a rule rather than drop it, the overlay leaves it out and adds a
-  private rule in its place.
+- To change a rule rather than drop it, a rule of the overlay overrides it
+  ([Overrides](rule-sources.md#overrides)). In a public repository the
+  private layer only adds rules and overrides none; there the change is a
+  public local rule, or a proposal to the rule's source.
 - The constitution cannot be left out or relaxed this way.
 
 Reasons: defaulting to all means a new rule reaches every jurisdiction without

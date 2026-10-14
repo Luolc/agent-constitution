@@ -127,6 +127,18 @@ nothing it brings in, and the warnings of
 In CI, `crates/statute/tests/real_rules.rs` reads this repo's `rules/`
 with `statute` and fails on any error or warning.
 
+[Rule sources](rule-sources.md) divides its checks the same way, and
+none is built yet; until then check 1 fails a domain with a `parent`
+and a rule with `overrides`. The build will accept `overrides` on a rule,
+a `parent` on a domain and a rule's `parent` in another source, and check
+what one source shows: each field's type; a domain's `parent` is the
+number of a domain of the same source that has no parent; a rule has
+`parent` or `overrides`, never both; and `overrides` names a rule of
+another source (`"R200"`, `"team:7"`), never a number, which would name
+a node of the same source. What needs another source is statute's: the
+reference direction, the ranks of an override, an override by the
+private layer of a public repository, and a `parent` in another source.
+
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
 (`tests/test_constitution_checks.py`, `tests/test_constitution_base.py`
