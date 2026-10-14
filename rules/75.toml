@@ -1,0 +1,46 @@
+id = 75
+slug = "repository-text-claims-no-more-than-the-description"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 16
+authority = ["evidence.grounds", "decency.no-hallucination"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Claim nothing in the repository more strongly than the description's grounds"
+zh = "仓库里的说法不强于描述给出的依据"
+
+[text.statement]
+en = "Never state a claim in the text a change writes into a repository more strongly than the grounds the change's pull request description gives for it."
+zh = "变更写进仓库的正文里的说法，不得比这个变更的 pull request 描述为它给出的依据说得更强。"
+
+[text.reason]
+en = '''
+A claim comes with grounds that someone else can check ({@constitution:evidence.grounds}), and agents say so when they are unsure ({@constitution:decency.no-hallucination}). The description of a pull request is read once, at review; the repository text is read for as long as it stays. A qualification that lives only in the description is lost when the change merges, and the repository is left with what reads as a first-hand fact.
+'''
+zh = '''
+主张要附上别人能够核对的依据 ({@constitution:evidence.grounds})，agent 不确定的，要说明不确定 ({@constitution:decency.no-hallucination})。pull request 的描述只在审查时读一次；仓库的正文只要还在，就一直有人读。只写在描述里的限定，变更一合入就丢了，仓库里剩下的读起来像是亲眼所见的事实。
+'''
+
+[text.verification]
+en = '''
+The grounds of a claim include how it is known: seen first-hand, measured, relayed by someone, inferred, as of a date, on one machine. When the description qualifies a claim this way, for example "relayed, not seen", "measured once" or "as read on <date>", the same claim in the repository text carries the same qualification, at the claim or in a note the claim links to. The repository text also says no more than those grounds bear, for example "always" where the description reports one run, or a general statement where the description checked one case.
+
+Both directions count: a qualification stated in the description and missing from the repository text, and a claim stated more strongly in the repository text than the grounds the description gives, including a claim the description itself overstates. A claim the description neither qualifies nor gives grounds for is outside this rule; it needs its own grounds ({@constitution:evidence.grounds}).
+
+Violated when the repository text of a change states a claim that the description qualifies or gives grounds for without a qualification the description gives it, or more strongly than those grounds.
+'''
+zh = '''
+一个说法的依据包括它是怎样得知的：亲眼所见、实测、某人转述、推断、截至某个日期、在某一台机器上。描述这样限定了一个说法的，例如「转述，未亲见」「只测了一次」「<日期> 读取」，仓库正文里的同一个说法也带上同样的限定，写在说法所在处，或者写在说法链接到的注释里。仓库正文的说法也不超出这些依据所能支撑的，例如描述只报告了一次运行，正文却写「总是」；描述只核对了一种情况，正文却写成普遍的结论。
+
+两个方向都算：描述里写了的限定，仓库正文里没有；仓库正文里的说法，比描述给出的依据说得更强，包括描述本身就说过头的说法。描述既没有限定、也没有给出依据的说法，不在本规定之内；它需要自己的依据 ({@constitution:evidence.grounds})。
+
+变更的仓库正文陈述一个描述限定过或给出过依据的说法，却没带描述给它的限定，或者说得比这些依据更强的，即为违反本规定。
+'''
+
+[translations]
+zh = "411e3fe951853ad8ab2c4d97607e923561e8a89b5b19fe9ed1ce82484ae2d7ae"
