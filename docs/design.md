@@ -784,8 +784,8 @@ is a release (rule `must-ask-items`) and not set up.
   pages and the table of contents at the right. The sidebar lists the
   pages, not the articles: today the constitution, the home page, with
   its version for agents under it, both named in `web/hugo.toml`'s menus
-  (the version for agents is the home page's child, which the theme's own
-  list leaves out). The table of contents lists the page's level-2
+  (the version for agents is the home page's child, which `build_site.py`
+  hides from the theme's own list with `bookHidden`). The table of contents lists the page's level-2
   headings, the preamble and the articles (`markup.tableOfContents` in
   `web/hugo.toml`), under a heading of its own; on a narrow screen the
   theme hides it behind a button at the right of the top bar, which opens
@@ -819,8 +819,10 @@ is a release (rule `must-ask-items`) and not set up.
   current page in the accent color. The
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
-  so a line keeps about 90 characters in English and 40 in Chinese; the
-  column is centered between the sidebar and the table of contents. Fonts: EB Garamond and Noto
+  so a line keeps about 90 characters in English and 40 in Chinese where
+  the window has room for it; between hugo-book's breakpoint (56rem) and
+  about 1100px, where both side columns are shown, the column is
+  narrower. It is centered between the sidebar and the table of contents. Fonts: EB Garamond and Noto
   Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
   fonts, falling back to local serif fonts. The colors are one palette
   block, light and dark; contrast of text on the page and the sidebar is
