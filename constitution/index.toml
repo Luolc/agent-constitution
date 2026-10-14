@@ -1,6 +1,6 @@
 status = "draft"
 edition = "2026-10"
-revision = "0.39"
+revision = "0.40"
 languages = ["en", "zh"]
 
 [title]
@@ -9,14 +9,14 @@ zh = "Agent 宪法"
 
 [front]
 en = '''
-**Draft. No one has approved this text and it is not in force;** it binds no one until approved under {@amendment-procedure}.
+**This is a draft. It may be used on a trial basis, but it is not final and may change at any time;** it becomes an edition only once approved under {@amendment-procedure}.
 
 ## Preamble
 
 As they evolve, instruction files for agents, such as AGENTS.md, tend to grow longer and harder to read, contradict themselves, drift out of step with the code, and mix principles, practices and procedures together. This is a very common and deep-rooted problem in coding with AI agents today, and the community does not yet have an accepted good mechanism for solving it. It bears on the self-evolution of agents and the development of AI coding, and is an important and serious problem that needs to be solved. To this end, this constitution and the texts of lower rank borrow from human legal systems what suits agents, above all the conventions for drafting and amending statutes, the relation of higher law to lower law, and the processes of enforcement, adjudication and amendment. In terms, file structure and arrangement they follow human law as closely as they can, to make the most of the legal context and priors that agents acquire in pretraining, so that agents update and obey these provisions as efficiently and as rigorously as possible.
 '''
 zh = '''
-**本文本是草案，未经任何人批准，尚未生效；** 依照{@amendment-procedure}批准之前，对任何人都没有约束力。
+**本文本是草案，可以试行，但尚未定稿，随时可能修改。** 依照{@amendment-procedure}批准之后，才成为正式的一版。
 
 ## 序言
 
