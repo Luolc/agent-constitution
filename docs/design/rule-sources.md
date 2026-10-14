@@ -11,7 +11,7 @@ the hand-written guide is moved into rules and retired. It builds on
 and the tree, one-ofs and packs those of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 The other parts of the design that this one changes already describe it,
-each marking it as not built; [What this changes](#what-this-changes)
+each marking what is not built yet; [What this changes](#what-this-changes)
 lists them, and what the tools do today that building the rest
 replaces.
 
@@ -193,8 +193,10 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - A repository with a `CLAUDE.md` makes Claude Code read it as well as
   `CLAUDE.local.md`, so its content comes on top of the full text: the
   public rules twice when it is a link to `AGENTS.md` or a copy of it,
-  and otherwise text that may not agree with the rules; `statute
-  compile` warns of a `CLAUDE.md`
+  and otherwise text that may not agree with the rules. Grok, which
+  reads every instruction file of a directory, then gets the public
+  rules a third time from such a link. `statute compile` warns of a
+  `CLAUDE.md`
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 - OpenCode has no local file name of a repository. It reads the full
   text when its global configuration lists `.statute/AGENTS.full.md`

@@ -1,7 +1,7 @@
-<!-- en-sha256: a82025164812c89f28c8826d9646948e4bc23d8c92edf712d2ef28f89a50b40b -->
+<!-- en-sha256: d850d63fa6c1ad1d771d1540a7a99a22d8ecd8d10b0059e274cc1e643c6ca657 -->
 # 规定源
 
-状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
+状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
 
 ## <a id="contents"></a>目录
 
@@ -103,7 +103,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - Claude Code 读 `CLAUDE.local.md`，而且只要有这个文件就不再读 `AGENTS.md`，所以它只读全文。
 - Codex 和 Pi 读 `AGENTS.override.md`，用它代替同一目录下的 `AGENTS.md`，所以它们只读全文。
 - Grok 既读 `AGENTS.md` 也读 `CLAUDE.local.md`，所以公开规定它会读两遍。两遍是同样的规定，互不矛盾；这样的重复可以接受。
-- 仓库里有 `CLAUDE.md` 时，Claude Code 除了 `CLAUDE.local.md` 也会读它，于是它的内容叠在全文之上：它是指向 `AGENTS.md` 的软链或 `AGENTS.md` 的副本时，公开规定读两遍；否则多出来的文字可能与规定不一致；`statute compile` 遇到 `CLAUDE.md` 会给出 warning ([编译与网站](statute-command.md#compilation-and-the-site))。
+- 仓库里有 `CLAUDE.md` 时，Claude Code 除了 `CLAUDE.local.md` 也会读它，于是它的内容叠在全文之上：它是指向 `AGENTS.md` 的软链或 `AGENTS.md` 的副本时，公开规定读两遍；否则多出来的文字可能与规定不一致。Grok 读一个目录里的所有指令文件，有这样的软链时，公开规定它会读第三遍。`statute compile` 遇到 `CLAUDE.md` 会给出 warning ([编译与网站](statute-command.md#compilation-and-the-site))。
 - OpenCode 没有仓库层的本地文件名。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.full.md` 时，它在 `AGENTS.md` 之外还读全文，所以公开规定它也读两遍；那是机器的配置，不归 statute 管。
 - 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.full.md` 时读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。全文里不写这一行。
 

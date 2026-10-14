@@ -185,8 +185,8 @@ with a note to write `R12`. A rule names a rule of another source in
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
 is not read yet. Of [Rule sources](rule-sources.md), `public` is built,
-with which rules may cite which in `requires`, `conflicts`, `overrides`
-and `{@rule:...}`, and the check of `public` against GitHub
+with which rules may cite which in `requires`, `conflicts`,
+`overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, except the check of the private layer of a public
 repository, which comes with `statute.private.toml`, and so are

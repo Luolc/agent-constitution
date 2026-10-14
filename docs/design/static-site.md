@@ -154,7 +154,8 @@ site-rules`, `uv run count-tokens` (the token count, below),
   since it shows only the rules of a checked domain; without scripts it
   appears under the heading before it. This repo has no such node yet;
   the pull request that first adds one fixes the list, and the
-  first-party source overrides nothing. By default the filter checks the statuses of
+  first-party source overrides nothing. By default the filter checks
+  the statuses of
   `params.rulesStatuses` in `web/hugo.toml` and every domain; superseded
   and repealed rules are in the list but not checked, and so are draft
   ones. Beside the filter, a menu sets the page size: 100 by default,

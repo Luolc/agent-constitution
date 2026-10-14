@@ -1,4 +1,4 @@
-<!-- en-sha256: 17a5aa6ecc33f4d8c7be9ff4f2a6c89cc0f7fb651ba059396847ed0693141087 -->
+<!-- en-sha256: 04ad9e45fdf3eceb19bc98ce486859683f6a8ad55142a8f343a15e7c36e1a97c -->
 # 规定检查与审查
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
