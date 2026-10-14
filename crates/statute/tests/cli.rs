@@ -295,11 +295,125 @@ fn remove_that_would_break_the_rule_set_changes_nothing() {
 #[test]
 fn commands_not_written_yet_exit_2() {
     let dir = repo("later", &manifest("\"ac:3\""), &nodes());
-    for command in ["init", "upgrade"] {
-        let run = statute(&dir, &[command]);
-        assert_eq!(run.code, 2, "{command}");
-        assert_eq!(run.stderr, "statute: this command is not implemented yet\n");
+    let run = statute(&dir, &["upgrade"]);
+    assert_eq!(run.code, 2);
+    assert_eq!(run.stderr, "statute: this command is not implemented yet\n");
+}
+
+/// A repository with a source but no rule set yet.
+fn bare_repo(name: &str) -> PathBuf {
+    let dir = repo(name, "", &nodes());
+    std::fs::remove_file(dir.join("statute.toml")).unwrap();
+    dir
+}
+
+#[test]
+fn init_writes_a_rule_set_that_locks() {
+    let dir = bare_repo("init");
+    let run = statute(&dir, &["init"]);
+    ok(&run);
+    assert_eq!(
+        run.stdout,
+        "wrote statute.toml: edition 2026-10 of the constitution, source `ac` at .\n`statute add ac:<id>` enables a rule\n"
+    );
+    assert_eq!(
+        read(&dir, "statute.toml"),
+        "# Written by `statute init`; `statute add` and `statute remove` change the rules.\nconstitution = { source = \"ac\", edition = \"2026-10\" }\nrules = []\n\n[sources]\nac = { path = \".\" }\n"
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert_eq!(run.stdout, "wrote statute.lock: 0 rules enabled\n");
+    ok(&statute(&dir, &["add", "ac:3"]));
+    assert!(read(&dir, "statute.lock").contains("id = 3\n"));
+}
+
+#[test]
+fn init_leaves_an_existing_rule_set_as_it_is() {
+    for (name, text) in [
+        ("init-exists", manifest("\"ac:3\"")),
+        ("init-exists-broken", "not a rule set\n".to_owned()),
+    ] {
+        let dir = repo(name, &text, &nodes());
+        let before = std::fs::read(dir.join("statute.toml")).unwrap();
+        let run = statute(&dir, &["init"]);
+        assert_eq!(run.code, 1, "{}", run.stdout);
+        assert!(
+            run.stderr
+                .contains("statute.toml: error: already exists, so it is left as it is"),
+            "{}",
+            run.stderr
+        );
+        assert_eq!(std::fs::read(dir.join("statute.toml")).unwrap(), before);
+        assert!(!dir.join("statute.lock").exists());
     }
+}
+
+#[test]
+fn init_with_a_source_elsewhere() {
+    let source = bare_repo("init-source");
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("cli")
+        .join("init-elsewhere");
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    ok(&statute(&dir, &["init", "--source", "../init-source"]));
+    assert!(
+        read(&dir, "statute.toml").contains("ac = { path = \"../init-source\" }\n"),
+        "{}",
+        read(&dir, "statute.toml")
+    );
+    ok(&statute(&dir, &["add", "ac:3"]));
+    assert!(!source.join("statute.lock").exists());
+    assert!(dir.join("statute.lock").exists());
+}
+
+#[test]
+fn init_picks_the_edition() {
+    let dir = bare_repo("init-editions");
+    std::fs::create_dir_all(dir.join("constitution/2027-04")).unwrap();
+    std::fs::write(
+        dir.join("constitution/2027-04/index.toml"),
+        "edition = \"2027-04\"\nrevision = \"1\"\n",
+    )
+    .unwrap();
+    // A directory without an index.toml is not an edition.
+    std::fs::create_dir_all(dir.join("constitution/notes")).unwrap();
+    let run = statute(&dir, &["init"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr.contains(
+            "constitution: error: holds editions 2026-10, 2027-04; choose one with --edition"
+        ),
+        "{}",
+        run.stderr
+    );
+    assert!(!dir.join("statute.toml").exists());
+    ok(&statute(&dir, &["init", "--edition", "2027-04"]));
+    assert!(read(&dir, "statute.toml").contains("edition = \"2027-04\""));
+}
+
+#[test]
+fn init_writes_nothing_when_the_rule_set_would_not_resolve() {
+    let dir = bare_repo("init-unknown-edition");
+    let run = statute(&dir, &["init", "--edition", "2030-01"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr
+            .contains("cannot read the constitution of edition `2030-01`"),
+        "{}",
+        run.stderr
+    );
+    assert!(run.stderr.contains("statute: statute.toml is not written"));
+    assert!(!dir.join("statute.toml").exists());
+    std::fs::remove_dir_all(dir.join("constitution/2026-10")).unwrap();
+    let run = statute(&dir, &["init"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr.contains("holds no edition of the constitution"),
+        "{}",
+        run.stderr
+    );
+    assert!(!dir.join("statute.toml").exists());
 }
 
 #[test]
