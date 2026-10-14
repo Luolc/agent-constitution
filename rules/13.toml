@@ -1,6 +1,6 @@
 id = 13
 slug = "security"
-revision = 3
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -11,11 +11,11 @@ zh = "安全"
 
 [applicability]
 en = '''
-Keeps credentials in their place and out of every output, private details out of public repositories, load off shared machines, and every lasting process or waiting loop with a way to stop, and sends an agent that a guard blocks along the reviewed route. Enable it wherever agents work.
+Keeps credentials in their place and out of every output, private details out of public repositories, load off shared machines, text passed through a shell out of its reach, and every lasting process or waiting loop with a way to stop, and sends an agent that a guard blocks along the reviewed route. Enable it wherever agents work.
 '''
 zh = '''
-管凭证放在指定的地方、不出现在任何输出里，私密信息不进公开仓库，共享机器上不起负载，长期运行的进程和等待的循环都有办法停下，agent 被拦住时走审查过的途径。凡有 agent 工作的地方都要启用。
+管凭证放在指定的地方、不出现在任何输出里，私密信息不进公开仓库，共享机器上不起负载，经 shell 传递的文字不被 shell 改动，长期运行的进程和等待的循环都有办法停下，agent 被拦住时走审查过的途径。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "a6859b3d3a6872f144a49fb378cbb738f0f33dbb61be8c3fae0d0cc34e110453"
+zh = "4140aa14763f256d0853554532dcd9d836ecd34adfe62925e23813ee23a1a548"

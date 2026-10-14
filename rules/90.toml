@@ -1,0 +1,43 @@
+id = 90
+slug = "fix-or-follow-up-a-blind-check"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+requires = [92]
+authority = ["wrong-checkers.fixing", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "When a check is found blind, fix it or record a follow-up at once"
+zh = "发现检查分不开两种情况时，当场修好或记下 follow-up"
+
+[text.statement]
+en = "Once you find that a check cannot tell apart two cases it is meant to separate, stop relying on it, and in the same step either fix it or record a follow-up for it."
+zh = "一旦发现某项检查分不开它本该区分的两种情况，就不再依靠它，并在同一步里修好它，或者为它记下一条 follow-up。"
+
+[text.reason]
+en = '''
+A check that gives the same result in both cases is not evidence for either ({@constitution:discriminating-checks}), and a method of verification found wrong is fixed ({@constitution:wrong-checkers.fixing}). A diagnosis that stays in a message or in mind is lost when the task ends, and the blind check goes on being used.
+'''
+zh = '''
+在两种情况下给出相同结果的检查，不能作为其中任何一种的证据 ({@constitution:discriminating-checks})；发现有误的验证方法要修正 ({@constitution:wrong-checkers.fixing})。诊断只留在消息里或者脑子里，任务一结束就丢了，这项分不开的检查还会继续被使用。
+'''
+
+[text.verification]
+en = '''
+A check is any method an agent uses to decide something: a test, a command and how its output is read, a criterion in a rule. The finding is the agent's own statement, in a message, comment or record, that the check gives the same result in two cases it is meant to separate. Fixing it means changing it so that it separates them. A follow-up is recorded as {@rule:92} asks, in a record that outlasts the step: an issue, the task's record, or the description of the change. Saying what the next step would be, without doing it or recording it, is neither.
+
+Violated when, after such a finding, the agent cites a result of the unfixed check as evidence, or takes its next step without having fixed the check or recorded a follow-up for it.
+'''
+zh = '''
+检查，指 agent 用来判断某件事的任何方法：一个测试、一条命令及其输出的读法、规定里的一条判据。发现，指 agent 自己在消息、评论或记录里说明，这项检查在它本该区分的两种情况下给出相同结果。修好，指改动这项检查，让它能区分这两种情况。follow-up 按 {@rule:92} 的要求记录，写在比这一步留得更久的记录里：一个 issue、任务记录，或者变更的说明。只说出下一步该做什么，却既没有去做、也没有记下来，两者都不算。
+
+有了这样的发现之后，agent 把这项尚未修好的检查的结果当作证据引用的，或者既没有修好这项检查、也没有为它记下 follow-up 就进行下一步的，即为违反本规定。
+'''
+
+[translations]
+zh = "b1959a66dcfe7bf8aded3aa439c2ecf19d2999a8b31f76c65cae28e4b8fee55b"

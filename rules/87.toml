@@ -1,0 +1,42 @@
+id = 87
+slug = "no-history-in-comments"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 83
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write no history in a code comment"
+zh = "代码注释不写历史"
+
+[text.statement]
+en = "Write no history in a code comment: not what was tried, reverted or discussed, nor why another way was not taken."
+zh = "代码注释不写历史：不写试过什么、revert 过什么、讨论过什么，也不写为什么没有采用另一种做法。"
+
+[text.reason]
+en = '''
+How the code came to be is already recorded where it happened: in the commit messages, the pull requests and the decision records. Written again in a comment, it is a second copy of a fact that belongs in one place ({@constitution:no-restating}), and it reads as true of the code long after the code has moved on.
+'''
+zh = '''
+代码是怎样变成现在这样的，在发生的地方已经有记录：commit message、pull request 和决策记录。再写进注释，就成了本该只写在一处的事实的第二份副本 ({@constitution:no-restating})；代码早已改过之后，读者还会把它当作对代码的描述。
+'''
+
+[text.verification]
+en = '''
+History is what a comment says about earlier versions of the code or about how it was decided: an approach tried and dropped, a revert, a review discussion, who asked for the change, or why an alternative was rejected. A comment that says why the code is as it is now, in terms of the code and its requirements, is not history, even when the reason was found by trying.
+
+Violated when a change adds a code comment, a docstring included, that holds history.
+'''
+zh = '''
+历史，指注释里关于代码早先版本或者决定经过的内容：试过又放弃的做法、一次 revert、审查中的讨论、谁要求做这项改动、为什么否决了另一种方案。注释用代码本身和它的需求说明代码为什么是现在这样，不算历史，即便这个原因是试出来的。
+
+变更加入的代码注释 (包括 docstring) 含有历史的，即为违反本规定。
+'''
+
+[translations]
+zh = "c623a0b893625ff6fbea321699f7c8ddcc773981cf4e1cf3762eb0cb3ecf95b5"

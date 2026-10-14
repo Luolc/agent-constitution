@@ -1,0 +1,42 @@
+id = 84
+slug = "regression-test-for-an-occurred-bug"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 83
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write a regression test only for a bug that occurred"
+zh = "只为真实发生过的 bug 写回归测试"
+
+[text.statement]
+en = "Write a regression test only for a bug that actually occurred."
+zh = "回归测试只为真实发生过的 bug 而写。"
+
+[text.reason]
+en = '''
+Every test is code that is run, read and kept up for as long as it stays, so each one must be indispensable ({@constitution:simplicity}). A test against a failure that has happened guards against something known to happen; one against a failure only imagined adds that cost for a risk no one has seen.
+'''
+zh = '''
+每个测试都是代码，只要留在仓库里就要运行、阅读和维护，所以每个测试都必须不可或缺 ({@constitution:simplicity})。针对已经发生过的故障写的测试，防的是确实会发生的事；针对只是设想出来的故障写的测试，为一个谁也没见过的风险付出同样的代价。
+'''
+
+[text.verification]
+en = '''
+A regression test is one whose purpose is to keep a past failure from coming back, as its name, its comments or the description of the change that adds it say. The bug occurred when a record shows it: an issue, a report, a failing run, or the change that fixes it. A test of the behavior a change adds or changes ({@rule:89}) is not a regression test.
+
+Violated when a change adds a regression test for a failure that no record shows to have occurred.
+'''
+zh = '''
+回归测试，指目的是防止过去的某个故障再次出现的测试，这一点由它的名字、注释，或者加入它的那项变更的说明表明。bug 真实发生过，指有记录可以证明：一个 issue、一份报告、一次失败的运行，或者修复它的那项变更。测试一项变更新增或改动的行为 ({@rule:89}) 的测试，不是回归测试。
+
+变更加入的回归测试所针对的故障，没有任何记录证明它发生过的，即为违反本规定。
+'''
+
+[translations]
+zh = "6f79a2bd7d813930cd1531a0eda356d17e3c27f1098921cf2a540ea247a7dc3b"

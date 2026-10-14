@@ -1,0 +1,42 @@
+id = 89
+slug = "test-new-and-changed-behavior"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 83
+authority = ["evidence.grounds", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Test the behavior a change adds or changes"
+zh = "为变更新增或改动的行为配上测试"
+
+[text.statement]
+en = "When a change adds behavior to code or changes its behavior, add or change in the same change a test that checks the new behavior."
+zh = "变更为代码新增了行为或改动了行为的，在同一项变更里新增或修改一个测试，检查新的行为。"
+
+[text.reason]
+en = '''
+That the code now does what the change claims needs grounds that someone else can check ({@constitution:evidence.grounds}), and a test is such grounds only if it would catch the old behavior ({@constitution:discriminating-checks}). Without one, the next change can undo the behavior with every check still passing.
+'''
+zh = '''
+说代码现在做到了变更声称的事，需要别人能核对的依据 ({@constitution:evidence.grounds})；一个测试只有在旧行为下会失败，才算这样的依据 ({@constitution:discriminating-checks})。没有这样的测试，下一项变更可能把这个行为改回去，所有检查却照样通过。
+'''
+
+[text.verification]
+en = '''
+Behavior is what code does that its callers or users can observe. A change that keeps behavior, such as a refactoring or a change to comments, documents or formatting only, adds none. A test checks the new behavior when it passes with the change and would fail on the code before it; a test that passes both before and after the change does not.
+
+Violated when a merged change adds or changes behavior of code and the same change adds or changes no test that checks the new behavior.
+'''
+zh = '''
+行为，指代码做的、调用方或用户能观察到的事。不改变行为的变更，例如重构，或者只改注释、文档、格式的变更，没有新增行为。一个测试检查了新的行为，指它在变更之后通过、在变更之前的代码上会失败；变更前后都通过的测试不算。
+
+已合入的变更新增或改动了代码的行为，同一项变更却没有新增或修改一个检查新行为的测试的，即为违反本规定。
+'''
+
+[translations]
+zh = "ff234bfae209760e3f03f23dcbd875f456fab38e704f08bdf717b0d8bf033999"

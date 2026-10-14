@@ -1,0 +1,42 @@
+id = 93
+slug = "pass-shell-text-from-a-quoted-heredoc-file"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 13
+authority = ["secure-authoring", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Pass text through a shell only from a file written with a quoted heredoc"
+zh = "经 shell 传递的文字，先用 quoted heredoc 写进文件，再从文件传"
+
+[text.statement]
+en = "Write any text you pass to a command through a shell into a file with a quoted heredoc first, and pass the file."
+zh = "经 shell 传给命令的文字，先用 quoted heredoc 写进文件，再把这个文件传过去。"
+
+[text.reason]
+en = '''
+Inside double quotes the shell expands `$` and backticks, so a code span in Markdown runs as a command and a value in the text is replaced by whatever the shell finds, with no error. Text quoted from others can carry a command that way, which is a flaw others can exploit ({@constitution:secure-authoring}), and a changed number in a report states a fact that was never looked up ({@constitution:evidence.facts}). Single quotes break on the first apostrophe. A heredoc with a quoted delimiter passes every character as written, whatever the text holds, so there is one way for every text and no case to judge.
+'''
+zh = '''
+在双引号里，shell 会展开 `$` 和反引号，于是 Markdown 里的代码片段会被当作命令执行，文字里的值会被 shell 找到的东西替换，而且不报错。别人的文字被引用进来时，也可能这样夹带一条命令，这是别人可以利用的漏洞 ({@constitution:secure-authoring})；报告里的数字被改掉，说出的就是一个从没查过的事实 ({@constitution:evidence.facts})。单引号遇到第一个撇号就断开了。定界符加了引号的 heredoc，不管文字里有什么，每个字符都照原样传过去，所以所有文字都用同一种写法，不需要逐个判断。
+'''
+
+[text.verification]
+en = '''
+The text covered is prose for people or agents: a message to an agent, the body of a pull request, issue or comment, and a commit message, whatever its length. A title of one line, flags, paths and identifiers are not covered. A quoted heredoc is one whose delimiter is quoted, as in `<<'EOF'`. Passing the file means the command reads it, for example through `--body-file`, `-F` or `"$(cat <file>)"`.
+
+Violated when an agent passes such text to a command as a literal in the command line, in any quoting, or writes it with a heredoc whose delimiter is not quoted, or pipes a heredoc into the command without writing it to a file.
+'''
+zh = '''
+本规定管的文字，是写给人或 agent 读的成段文字：发给 agent 的消息，pull request、issue 或评论的正文，以及 commit message，不论长短。一行的标题、命令选项、路径和标识符不在其内。quoted heredoc 指定界符加了引号的 heredoc，例如 `<<'EOF'`。把文件传过去，指让命令读这个文件，例如通过 `--body-file`、`-F` 或者 `"$(cat <file>)"`。
+
+agent 把这样的文字作为字面量直接写在命令行里传给命令的 (不论用哪种引号)，用定界符没加引号的 heredoc 来写的，或者不写进文件、直接把 heredoc 接到命令上的，即为违反本规定。
+'''
+
+[translations]
+zh = "7835f552042fbb00b578faaec44fc2c8197d5e608a43a27fbb871e434ee5c3aa"

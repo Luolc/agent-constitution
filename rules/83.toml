@@ -1,0 +1,21 @@
+id = 83
+slug = "code"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Code"
+zh = "代码"
+
+[applicability]
+en = '''
+Covers how agents write code: which tests a change brings with it and what its comments say. Enable it in a repository where agents write or change code; a repository that holds only documents does not need it.
+'''
+zh = '''
+管 agent 怎样写代码：一项变更要带上哪些测试，代码注释写什么。agent 在仓库里写代码或改代码，就要启用；只放文档的仓库不需要。
+'''
+
+[translations]
+zh = "d94d843baed7f4906c14ee87cad74227c5779e62e0b7a668a08b19be7234f846"
