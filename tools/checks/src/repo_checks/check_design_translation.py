@@ -14,9 +14,13 @@ docs/design/zh/*.md, one file of the same name for each. Checked:
   English heading's anchor, `## <a id="checks"></a>检查`, the anchor
   GitHub and Hugo give the English heading. Links to `#<anchor>` thus work
   in both languages. Lines in fenced code blocks are not headings.
+- Every relative link of the design, in English and in the translation,
+  leads to a file or directory of the repo, resolved from the file's own
+  directory: the site turns a link out of docs/design/ into one to
+  GitHub, which would otherwise lead nowhere.
 
-Without docs/design/zh/ there is no translation yet: the check says so
-and passes.
+Without docs/design/zh/ there is no translation yet: the check says so,
+checks the English links only and passes when they lead somewhere.
 
 Usage: uv run check-design-translation [--root <dir>]. Errors print as
 `path:line: message`; the exit status is 1 on any error.
@@ -34,6 +38,8 @@ HASH_LINE = re.compile(r"^<!-- en-sha256: ([0-9a-f]{64}) -->$")
 HEADING = re.compile(r"^(#{1,6}) +(.*?) *#* *$")
 ANCHOR = re.compile(r'^<a id="([^"]+)"></a>')
 FENCE = re.compile(r"^ {0,3}(```|~~~)")
+CODE_SPAN = re.compile(r"`[^`]*`")
+LINK = re.compile(r"\]\(([^)\s]+)")
 
 
 def slug(heading: str) -> str:
@@ -49,6 +55,28 @@ def slug(heading: str) -> str:
   return text.replace(" ", "-")
 
 
+def prose(text: str) -> list[tuple[int, str]]:
+  """Return the lines of a Markdown file outside fenced code blocks.
+
+  Args:
+    text: The file.
+
+  Returns:
+    Each line's number and text.
+  """
+  lines = []
+  fence = ""
+  for number, line in enumerate(text.splitlines(), 1):
+    if m := FENCE.match(line):
+      if not fence:
+        fence = m.group(1)
+      elif m.group(1) == fence:
+        fence = ""
+    elif not fence:
+      lines.append((number, line))
+  return lines
+
+
 def headings(text: str) -> list[tuple[int, int, str]]:
   """Return the headings of a Markdown file outside fenced code blocks.
 
@@ -58,18 +86,35 @@ def headings(text: str) -> list[tuple[int, int, str]]:
   Returns:
     Each heading's line number, level and text.
   """
-  found = []
-  fence = ""
-  for number, line in enumerate(text.splitlines(), 1):
-    if m := FENCE.match(line):
-      if not fence:
-        fence = m.group(1)
-      elif m.group(1) == fence:
-        fence = ""
-      continue
-    if not fence and (m := HEADING.match(line)):
-      found.append((number, len(m.group(1)), m.group(2)))
-  return found
+  return [
+    (number, len(m.group(1)), m.group(2))
+    for number, line in prose(text)
+    if (m := HEADING.match(line))
+  ]
+
+
+def check_links(root: Path, path: Path) -> list[str]:
+  """Check that each relative link of a design file leads to a file.
+
+  Links in code spans and fenced code blocks are not links.
+
+  Args:
+    root: The checkout.
+    path: The file, relative to the checkout.
+
+  Returns:
+    The errors as `path:line: message`.
+  """
+  errors = []
+  for number, line in prose((root / path).read_text(encoding="utf-8")):
+    for target in LINK.findall(CODE_SPAN.sub("", line)):
+      target = target.split("#")[0]
+      if not target or re.match(r"^[a-z][a-z0-9+.-]*:", target):
+        continue
+      resolved = (root / path.parent / target).resolve()
+      if not resolved.is_relative_to(root.resolve()) or not resolved.exists():
+        errors.append(f"{path}:{number}: link {target} leads to no file")
+  return errors
 
 
 def english_anchors(text: str) -> list[tuple[int, str]]:
@@ -206,9 +251,11 @@ def check(root: Path) -> tuple[list[str], str | None]:
     The errors as `path:line: message`, and a note when there is no
     translation to check.
   """
-  if not (root / TRANSLATION).is_dir():
-    return [], f"{TRANSLATION}/ does not exist: no translation to check"
   english = {p.name for p in (root / DESIGN).glob("*.md")}
+  links = [e for n in sorted(english) for e in check_links(root, DESIGN / n)]
+  if not (root / TRANSLATION).is_dir():
+    note = f"{TRANSLATION}/ does not exist: no translation to check"
+    return links, None if links else note
   translated = {p.name for p in (root / TRANSLATION).glob("*.md")}
   errors = [
     f"{TRANSLATION / name}: missing, the translation of {DESIGN / name}"
@@ -218,13 +265,15 @@ def check(root: Path) -> tuple[list[str], str | None]:
     f"{TRANSLATION / name}: no English file {DESIGN / name}"
     for name in sorted(translated - english)
   ]
+  for name in sorted(translated):
+    errors += check_links(root, TRANSLATION / name)
   for name in sorted(english & translated):
     for line, message in check_file(
       (root / DESIGN / name).read_text(encoding="utf-8"),
       (root / TRANSLATION / name).read_text(encoding="utf-8"),
     ):
       errors.append(f"{TRANSLATION / name}:{line}: {message}")
-  return errors, None
+  return links + errors, None
 
 
 def main(argv: list[str] | None = None) -> int:

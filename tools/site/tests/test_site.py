@@ -253,6 +253,11 @@ class SiteTest(unittest.TestCase):
         for href in (readme, "#part-a", github, home):
           self.assertIn(f'href="{href}"', raw[page])
 
+  def test_design_file_not_listed(self):
+    """A file of the design that the README does not list fails the build."""
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.build(design=dict(DESIGN, **{"two.md": "# Two\n"}))
+
   def test_design_link_to_no_page(self):
     """A link to a file of the design that has no page fails the build."""
     design = dict(DESIGN, **{"one.md": DESIGN["one.md"] + "[x](two.md)\n"})

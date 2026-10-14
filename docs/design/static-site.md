@@ -109,7 +109,8 @@ passes to Hugo as `--baseURL`.
   page of that language; to any
   other file of the repo, to the file on GitHub (`params.SourceRepo`,
   `/blob/main/`). The fragment is kept. A link to a design file without a
-  page, or one that leads out of the repo, fails the build. Links on the
+  page, or one that leads out of the repo, fails the build; a link to a
+  file that does not exist is left to the design translation check. Links on the
   constitution's pages, and absolute ones and fragments alone everywhere,
   are left as written.
 - Length: the second item of the list gives the length of the version

@@ -132,6 +132,30 @@ class CheckTest(unittest.TestCase):
         self.assertEqual(cdt.main(["--root", str(root)]), 0)
       self.assertEqual(out.getvalue(), "docs/design/zh/ matches docs/design/\n")
 
+  def test_links(self):
+    """A relative link must lead to a file, from its own file's directory."""
+    with tempfile.TemporaryDirectory() as tmp:
+      root = Path(tmp)
+      design = root / "docs/design"
+      (design / "zh").mkdir(parents=True)
+      english = ENGLISH + "\n[a](../../AGENTS.md#x), `[b](nowhere.md)`\n"
+      (design / "one.md").write_text(english)
+      (design / "zh/one.md").write_text(
+        translate(english) + "\n[a](../../AGENTS.md), [one](one.md#x)\n"
+      )
+      self.assertEqual(
+        cdt.check(root)[0][:2],
+        [
+          "docs/design/one.md:15: link ../../AGENTS.md leads to no file",
+          "docs/design/zh/one.md:16: link ../../AGENTS.md leads to no file",
+        ],
+      )
+      (root / "AGENTS.md").write_text("")
+      self.assertEqual(
+        cdt.check(root)[0],
+        ["docs/design/zh/one.md:16: link ../../AGENTS.md leads to no file"],
+      )
+
 
 if __name__ == "__main__":
   unittest.main()

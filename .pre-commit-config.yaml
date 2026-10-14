@@ -97,8 +97,9 @@ repos:
         pass_filenames: false
       # The Chinese translation of the design against the English: the same
       # files, each up to date with its English file by SHA-256, and the
-      # same headings with the same anchors. Passes while docs/design/zh/
-      # does not exist.
+      # same headings with the same anchors, and every relative link of
+      # the design leading to a file of the repo. Without docs/design/zh/
+      # only the English links are checked.
       - id: design-translation
         name: design translation in step with the English
         entry: uv run --frozen --no-sync check-design-translation

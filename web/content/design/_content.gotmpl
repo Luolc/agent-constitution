@@ -16,13 +16,18 @@
 {{- $lang := .Site.Language.Lang }}
 {{- $readme := partial "design/source.html" (dict "name" "README.md" "lang" $lang) }}
 {{- $contents := findRESubmatch `(?m)^- \[([^\]]+)\]\(([\w-]+)\.md\)` $readme.text.Content }}
-{{- $english := resources.Match "design/*.md" }}
-{{- if ne (len $contents) (sub (len $english) 1) }}
-  {{- errorf "docs/design/README.md lists %d files, docs/design/ has %d besides it" (len $contents) (sub (len $english) 1) }}
-{{- end }}
 {{- $files := slice (slice "" "README") }}
+{{- $listed := slice "README" }}
 {{- range $contents }}
   {{- $files = $files | append (slice (index . 1) (index . 2)) }}
+  {{- $listed = $listed | append (index . 2) }}
+{{- end }}
+{{- $english := slice }}
+{{- range resources.Match "design/*.md" }}
+  {{- $english = $english | append (strings.TrimSuffix ".md" (path.Base .Name)) }}
+{{- end }}
+{{- if not (eq (sort $listed) (sort $english)) }}
+  {{- errorf "docs/design/README.md lists %v besides itself, docs/design/ has %v" (after 1 $listed) $english }}
 {{- end }}
 {{- range $i, $file := $files }}
   {{- $name := index $file 1 }}
