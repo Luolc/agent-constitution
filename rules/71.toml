@@ -1,0 +1,42 @@
+id = 71
+slug = "no-automatic-merge"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 14
+authority = ["independent-review.reviewed-version"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Never set a change to merge automatically"
+zh = "不把变更设为自动合并"
+
+[text.statement]
+en = "Never set a change to merge automatically."
+zh = "不把变更设为自动合并。"
+
+[text.reason]
+en = '''
+What takes effect must be exactly the version that was reviewed ({@constitution:independent-review.reviewed-version}). An automatic merge goes through at whatever version first meets its conditions, reviewed or not, and skips what whoever merges does just before merging: checking that the version in front of them is the approved one and reading the change's record once more.
+'''
+zh = '''
+生效的必须正是审查过的那个版本 ({@constitution:independent-review.reviewed-version})。自动合并是哪个版本先满足条件就合并哪个，不管它审查过没有，还跳过了合并的一方在合并前要做的事：核对眼前的版本是不是批准过的那个，再读一遍变更的记录。
+'''
+
+[text.verification]
+en = '''
+Setting a change to merge automatically is any setting that merges it later without someone deciding at that moment, for example a pull request's auto-merge. The rule binds every agent, the author and whoever merges alike. Whoever merges does it by hand when they decide to; that includes a merge command that fails when the change has moved from the approved version.
+
+Violated when an agent sets a change to merge automatically.
+'''
+zh = '''
+设为自动合并，是指任何让变更日后在没有人当场决定的情况下被合并的设置，例如 pull request 的 auto-merge。本规定约束每一个 agent，作者和合并的一方都一样。合并的一方在决定合并时亲手合并；使用变更一离开批准的版本就失败的合并命令，也算亲手合并。
+
+有 agent 把变更设为自动合并的，即为违反本规定。
+'''
+
+[translations]
+zh = "8def068ec28c90db25978973ee60e8762c828ef394cd2272a8ebb3b4f1bb5669"

@@ -5,7 +5,7 @@ kind = "rule"
 status = "draft"
 lang = "en"
 parent = 14
-authority = ["accountable-agent.whole-task", "decide-yourself.changing-approach", "asking"]
+authority = ["accountable-agent.whole-task", "accountable-agent.own-work", "decide-yourself.changing-approach", "asking"]
 constitution = ">=1"
 level = "project"
 check = "review"
@@ -15,28 +15,32 @@ en = "After three review rounds without approval, let the responsible agent deci
 zh = "审查三轮仍未批准，交负责的 agent 决定"
 
 [text.statement]
-en = "After three review rounds without approval, start no further round unless the agent responsible for the work decides to give one; when it does not, that agent puts the matter to a principal."
-zh = "审查三轮仍未批准的，只有负责这项工作的 agent 决定再给一轮，才开始新的一轮；它不再给的，由它把问题交给委托人。"
+en = "After three review rounds without approval, start no further round unless the agent responsible for the work decides to give one."
+zh = "审查三轮仍未批准的，只有负责这项工作的 agent 决定再给一轮，才开始新的一轮。"
 
 [text.reason]
 en = '''
-A review that has not converged in three rounds is unlikely to converge by going on the same way. The agent responsible for the work answers for the whole task ({@constitution:accountable-agent.whole-task}) and decides whether to change approach ({@constitution:decide-yourself.changing-approach}); what needs a principal's decision goes to a principal ({@constitution:asking}).
+A review that has not converged in three rounds is unlikely to converge by going on the same way. The agent responsible for the work answers for the whole task ({@constitution:accountable-agent.whole-task}) and decides whether to change approach or abandon the attempt ({@constitution:decide-yourself.changing-approach}); what needs a principal's decision goes to a principal ({@constitution:asking}).
 '''
 zh = '''
-审查三轮还没有收敛，照原样继续下去多半也收敛不了。负责这项工作的 agent 对整个任务负责 ({@constitution:accountable-agent.whole-task})，由它决定要不要改变做法 ({@constitution:decide-yourself.changing-approach})；需要委托人决定的，交给委托人 ({@constitution:asking})。
+审查三轮还没有收敛，照原样继续下去多半也收敛不了。负责这项工作的 agent 对整个任务负责 ({@constitution:accountable-agent.whole-task})，由它决定要不要改变做法或者放弃这次尝试 ({@constitution:decide-yourself.changing-approach})；需要委托人决定的，交给委托人 ({@constitution:asking})。
 '''
 
 [text.verification]
 en = '''
-A round is one verdict of the reviewer on one version of the change, together with the author's answers to it; the rounds are counted from the first verdict. After the third verdict without approval, neither the author nor the reviewer starts a fourth round on their own: they tell the agent responsible for the work. That agent either gives one more round, for example when the remaining findings are converging without disagreement, or puts the matter to a principal, for example when author and reviewer disagree about a serious finding; after each further round without approval it decides again.
+A round is one verdict of the reviewer on one version of the change, together with the author's answers to it; the rounds are counted from the first verdict. After the third verdict without approval, neither the author nor the reviewer starts a fourth round on their own: they tell the agent responsible for the work. That agent decides, for example to give one more round when the remaining findings are converging without disagreement, to change approach or abandon the attempt, or to put the matter to a principal when author and reviewer disagree about a serious finding; after each further round without approval it decides again.
 
-Violated when a fourth or later round of a review begins without the agent responsible for the work having decided that there is one.
+Where the agent responsible for the work is the author, the decision falls to whoever accepts its work under {@constitution:accountable-agent.own-work}, never to the author itself.
+
+Violated when a fourth or later round of a review begins without the one who decides under this rule having decided that there is one.
 '''
 zh = '''
-一轮是审查方对变更的一个版本给出的一份 verdict，加上作者对它的答复；轮数从第一份 verdict 算起。第三份 verdict 仍未批准的，作者和审查方都不自行开始第四轮，而是告诉负责这项工作的 agent。这个 agent 或者再给一轮，例如剩下的审查意见正在收敛、没有分歧时；或者把问题交给委托人，例如作者和审查方对一条严重的审查意见有分歧时。此后每多一轮仍未批准，都由它再决定一次。
+一轮是审查方对变更的一个版本给出的一份 verdict，加上作者对它的答复；轮数从第一份 verdict 算起。第三份 verdict 仍未批准的，作者和审查方都不自行开始第四轮，而是告诉负责这项工作的 agent，由它决定，例如剩下的审查意见正在收敛、没有分歧时再给一轮，改变做法或者放弃这次尝试，或者在作者和审查方对一条严重的审查意见有分歧时把问题交给委托人；此后每多一轮仍未批准，都由它再决定一次。
 
-审查的第四轮或之后的某一轮，在负责这项工作的 agent 没有决定给这一轮的情况下就开始了的，即为违反本规定。
+负责这项工作的 agent 就是作者的，由按{@constitution:accountable-agent.own-work}验收它的工作的一方决定，不由作者自己决定。
+
+审查的第四轮或之后的某一轮，在按本规定作决定的一方没有决定给这一轮的情况下就开始了的，即为违反本规定。
 '''
 
 [translations]
-zh = "0a8c2577d8a31560451bc5bb2bb5417b3208dff4bee1d2937c340ddeea730f29"
+zh = "5015b342951de8132e7b4d0c76754e58b69d39b8798714fc3310d247410a29d9"
