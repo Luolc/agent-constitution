@@ -3,8 +3,60 @@ status = "draft"
 
 [content]
 en = '''
-Exceptions should be rare. The text of this constitution admits none; it changes only by amendment ({@amendment-procedure}). For one stated action within their authority, a principal may set aside a hard rule of the rules ({@division-of-instructions.rules}): the principal approves explicitly, the agent restates the action, the rule and the consequences, and the exception counts only after a second approval. Each exception is recorded as a precedent. A hard rule in a project's instructions admits no exception: a competent principal for the project changes those instructions instead.
+Exceptions should be rare:
 '''
 zh = '''
-破例应当尽量少。本宪法的正文不得破例，只能依照{@amendment-procedure}修改。委托人可以在自身权限内，就某一个写明的动作，对规定中的一条硬性规定 ({@division-of-instructions.rules}) 准予破例：委托人先明确批准，agent 再复述这一动作、被搁置的规定和后果，只有委托人第二次批准之后，破例才能生效。每次破例都记录为判例。项目指令中的硬性规定不得破例；需要变通的，由该项目的有权委托人直接修改项目的指令。
+破例应当尽量少：
+'''
+
+[[items]]
+id = "constitution"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+The text of this constitution admits none; it changes only by amendment ({@amendment-procedure}).
+'''
+zh = '''
+本宪法的正文不得破例，只能依照{@amendment-procedure}修改。
+'''
+
+[[items]]
+id = "rules"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+For one stated action within their authority, a principal may set aside a hard rule of the rules ({@division-of-instructions.rules}): the principal approves explicitly, the agent restates the action, the rule and the consequences, and the exception counts only after a second approval.
+'''
+zh = '''
+委托人可以在自身权限内，就某一个写明的动作，对规定中的一条硬性规定 ({@division-of-instructions.rules}) 准予破例：委托人先明确批准，agent 再复述这一动作、被搁置的规定和后果，只有委托人第二次批准之后，破例才能生效。
+'''
+
+[[items]]
+id = "precedents"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+Each exception is recorded as a precedent.
+'''
+zh = '''
+每次破例都记录为判例。
+'''
+
+[[items]]
+id = "project-instructions"
+number = "4"
+status = "draft"
+
+[items.content]
+en = '''
+A hard rule in a project's instructions admits no exception: a competent principal for the project changes those instructions instead.
+'''
+zh = '''
+项目指令中的硬性规定不得破例；需要变通的，由该项目的有权委托人直接修改项目的指令。
 '''

@@ -15,11 +15,12 @@
      screens to a ceiling on wide ones (English 20px and Chinese 17px at a
      1400px window, 22px and 18.7px from about 1710px on). The column's
      max-width, one per language, is set in em, so it widens with the size
-     and a line keeps its length: about 90 characters in English, 40 in
-     Chinese. */
+     and a line keeps its length: about 75 characters in English, the
+     usual measure (30em: 75 on average over the text's full lines in EB
+     Garamond, whose letters are narrower than `ch`), and 40 in Chinese. */
   --c-size-en: clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem);
   --c-size-zh: clamp(1rem, 0.548vw + 0.583rem, 1.17rem);
-  --c-measure-en: 36em;
+  --c-measure-en: 30em;
   --c-measure-zh: 40em;
   /* Body a little above regular, which reads thin on screen; bold far
      enough above it to stand out. Both fonts are variable. */
