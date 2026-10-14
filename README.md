@@ -56,11 +56,10 @@ Chinese translation. Its ID is a number, never reused; its text is a
 statement, a reason and a verification, short enough to be checked. Rules
 hang under domains such as security, collaboration, verification and
 documentation, and each one cites the provisions of the constitution it
-refines. The rules written while the constitution was a draft are
-`draft`. A convention that agents write down when they find a gap no rule
-covers starts as a `trial` rule, and becomes `active` once it has held up
-in real work. A rule is never deleted: it is
-superseded or repealed.
+refines. A rule starts as `trial`, and so does a
+convention that agents write down when they find a gap no rule covers;
+it becomes `active` once it has held up in real work. A rule is never
+deleted: it is superseded or repealed.
 
 The format, the rule tree, packs and the review loop are in
 [Rule system](docs/design/rule-system.md).
