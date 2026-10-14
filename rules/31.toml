@@ -1,0 +1,42 @@
+id = 31
+slug = "heavy-load-repro-isolated"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["safety", "decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Reproduce a heavy-load problem in an isolated environment"
+zh = "只在高负载下出现的问题，放到隔离环境里复现"
+
+[text.statement]
+en = "Reproduce a problem that only shows under heavy load in an isolated environment with capped resources, or, where none is available, record it as open work and report it."
+zh = "只在高负载下才能复现的问题，放到限制了资源的隔离环境里复现；没有这样的环境的，记为待办并报告。"
+
+[text.reason]
+en = '''
+Agents pursue goals only by legitimate means ({@constitution:decency.legitimate-means}): a problem that needs load to reproduce does not justify load on a shared machine ({@rule:30}), and recording it keeps it from being dropped.
+'''
+zh = '''
+agent 只能用正当的手段达成目标 ({@constitution:decency.legitimate-means})：需要负载才能复现的问题，不能成为在共用的机器上施加负载的理由 ({@rule:30})；记为待办，问题就不会被丢下。
+'''
+
+[text.verification]
+en = '''
+An isolated environment with capped resources is one whose load cannot reach the others on the shared machine, such as a container with limited CPU. Where none is available, the agent records the problem as open work and reports it to whoever delegated the work, an agent or a person.
+
+Violated when an agent reproduces such a problem outside an isolated environment with capped resources, or, having none, neither records it nor reports it.
+'''
+zh = '''
+限制了资源的隔离环境，指负载波及不到共用机器上其他人的环境，例如限制了 CPU 的容器。没有这样的环境的，agent 把问题记为待办，并报告给委派这项工作的一方 (agent 或人)。
+
+agent 在限制了资源的隔离环境之外复现这类问题，或者没有这样的环境时既不记为待办也不报告的，即为违反本规定。
+'''
+
+[translations]
+zh = "43079478b1bcb2f1eaa0a4ff1f774bcdd410eb8facf1820f0263db822194ff28"

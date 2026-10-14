@@ -1,0 +1,46 @@
+id = 22
+slug = "credential-presence-check"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 13
+authority = ["safety", "sensitive-info", "evidence"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Confirm a credential is in place by its presence only"
+zh = "确认凭证已就位，只看它是否存在"
+
+[text.statement]
+en = "To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status."
+zh = "要确认凭证已经就位，只检查它是否存在，必要时再检查长度，也只报告这一状态。"
+
+[text.reason]
+en = '''
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}), and a test of presence needs nothing of its value. Presence does not show that a credential works, so a report of presence does not claim that it does ({@constitution:evidence}).
+'''
+zh = '''
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})，而检查它是否存在用不到它的值。凭证存在不等于凭证可用，所以报告凭证存在时，不能说成凭证可用 ({@constitution:evidence})。
+'''
+
+[text.verification]
+en = '''
+The test prints whether the credential is set, and its length where that helps, never the value. The report says that presence was checked, not that the credential works; that is checked as {@rule:23} describes.
+
+When unsure whether a way of testing could print the value, use one that plainly cannot.
+
+Violated when a presence test prints any part of the value, or its report claims more than presence.
+'''
+zh = '''
+检查只打印凭证是否已设置，必要时再打印长度，不打印值。报告写明检查的是凭证是否存在，不说凭证可用；凭证是否可用按{@rule:23}检查。
+
+不确定某种检查写法是否会打印出值的，换一种明显不会打印的写法。
+
+存在性检查打印出了值的任何部分，或者报告的内容超出了凭证是否存在的，即为违反本规定。
+'''
+
+[translations]
+zh = "d7c29d44d3df9771ebe0de59747f57b52bd25390130addade85215a02eaedd8f"

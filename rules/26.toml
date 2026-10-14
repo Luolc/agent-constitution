@@ -1,0 +1,46 @@
+id = 26
+slug = "fixture-runs"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["verification", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Run the fixtures a change touches, and all of them for a release"
+zh = "变更运行相关的 fixture，发布运行全部 fixture"
+
+[text.statement]
+en = "Run, for a change, the fixtures bound to what it touches, and for a release, all of them."
+zh = "单个变更运行与其相关的 fixture，发布时运行全部 fixture。"
+
+[text.reason]
+en = '''
+A fixture shows that a check discriminates only when it runs on the version in question ({@constitution:discriminating-checks}), and a release puts everything it holds into effect at once.
+'''
+zh = '''
+fixture 只有在要验证的那个版本上运行，才能证明检查有区分力 ({@constitution:discriminating-checks})；而一次发布会让它包含的全部内容同时生效。
+'''
+
+[text.verification]
+en = '''
+A fixture is bound to what a change touches when it tests a provision or code that the change modifies.
+
+When unsure whether a fixture is bound to what a change touches, run it.
+
+Violated when a change skips a fixture bound to what it touches, or a release skips any fixture.
+'''
+zh = '''
+fixture 测的条文或代码被某个变更修改了，这个 fixture 就与该变更相关。
+
+不确定某个 fixture 是否与变更相关的，运行它。
+
+变更没有运行与其相关的 fixture，或者发布时漏掉了任何一个 fixture 的，即为违反本规定。
+'''
+
+[translations]
+zh = "79e08888ef144faa266fe4c66784d67d5ee4a2fd0811eedcdc2bbeafb14c9818"

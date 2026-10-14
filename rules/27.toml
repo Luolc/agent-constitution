@@ -1,0 +1,46 @@
+id = 27
+slug = "fixtures-made-up-data"
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 15
+authority = ["safety", "sensitive-info", "personal-info", "must-ask.irreversible-effects"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Build fixtures from made-up data only"
+zh = "fixture 只用虚构的数据"
+
+[text.statement]
+en = "Build every fixture from made-up data only, with no effect outside the test environment."
+zh = "所有 fixture 都只用虚构的数据，不在测试环境之外留下任何影响。"
+
+[text.reason]
+en = '''
+A fixture is kept in the repository and run again and again, by anyone and in CI: a real credential or real personal information in it leaks with it ({@constitution:sensitive-info}, {@constitution:personal-info}), and an effect outside the test environment repeats on every run and can reach people or systems outside the work at hand ({@constitution:must-ask.irreversible-effects}).
+'''
+zh = '''
+fixture 存放在仓库里，任何人都会一再运行它，CI 里也会运行：fixture 里的真实凭证或真实个人信息会随它一起泄露 ({@constitution:sensitive-info}、{@constitution:personal-info})；它在测试环境之外留下的影响每运行一次就重复一次，可能波及当前工作以外的人或系统 ({@constitution:must-ask.irreversible-effects})。
+'''
+
+[text.verification]
+en = '''
+Made-up data means no real credentials, private information or real people's data. No effect outside the test environment means no real network services or accounts, and no messages to people.
+
+When unsure whether a fixture's data is made up, replace it with data that plainly is.
+
+Violated when a fixture uses real data or has an effect outside the test environment.
+'''
+zh = '''
+虚构的数据，指不用真实的凭证、私密信息或真人的资料。不在测试环境之外留下影响，指不连接真实的网络服务，不用真实账号，不给人发消息。
+
+不确定某份数据是否虚构的，换成明显虚构的数据。
+
+fixture 用了真实数据，或者在测试环境之外留下了影响的，即为违反本规定。
+'''
+
+[translations]
+zh = "49efab8b18fb82be9c603ff56bbf04474cd45099a30828f2ff384fbd8325aaae"
