@@ -21,19 +21,54 @@ enableRobotsTXT = false
   title = "Agent 宪法"
   weight = 2
 
+# The sidebar lists the site's pages: the constitution, which is the home
+# page, with its version for agents under it. The names are short, the
+# site's title standing above them.
+[[languages.en.menus.before]]
+  identifier = "constitution"
+  name = "Constitution"
+  pageRef = "/"
+  weight = 1
+[[languages.en.menus.before]]
+  parent = "constitution"
+  title = "The version agents read"
+  name = "Agent version"
+  pageRef = "/agent"
+  weight = 1
+[[languages.zh.menus.before]]
+  identifier = "constitution"
+  name = "宪法"
+  pageRef = "/"
+  weight = 1
+[[languages.zh.menus.before]]
+  parent = "constitution"
+  title = "agent 读到的版本"
+  name = "agent 版"
+  pageRef = "/agent"
+  weight = 1
+
 # The content is only this repo's own built constitution; raw HTML is
 # needed for its anchors (<a id="...">) and the wrapper and popup
 # build_site.py adds.
 [markup.goldmark.renderer]
   unsafe = true
 
+# The table of contents at the right lists the articles and the preamble,
+# the level-2 headings under the page's `#` title.
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 2
+
 [params]
   BookTheme = "auto"
-  # The menu root is the home page, which has no child pages: the
-  # sidebar holds only the switches and the articles.
+  # The menu root is the home page; its one child, the version for
+  # agents, is hidden from the theme's list of pages and named in the
+  # menu above instead.
   BookSection = "/"
-  BookToC = false
+  BookToC = true
   BookSearch = false
   BookComments = false
   BookServiceWorker = false
   BookTranslatedOnly = false
+  # Linked in the sidebar, under the site's title.
+  SourceRepo = "https://github.com/Luolc/agent-constitution"
