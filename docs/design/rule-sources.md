@@ -43,14 +43,18 @@ give four kinds:
 - **Global private** is a source the rule set names in `[sources]`, with
   `public = false`: a private git repository, or a directory on disk.
 - **Local public** is the repository's own `rules/` when the repository
-  is public.
+  is public. The exception is a repository that is itself the
+  first-party source, `R = { path = "." }` as this one: its `rules/` are
+  first-party, `R12`
+  ([Sources and references](rule-system.md#sources-and-references)).
 - **Local private** is the repository's own `rules/` when the repository
   is private. A public repository keeps its private rules in a source
   outside it, named with `scope = "local"`, as in
   [Private rules in a public repository](#private-rules-in-a-public-repository).
 
 Every rule, of whichever kind, is self-contained: it cites other rules
-only through `requires`, `conflicts`, `overrides` and `{@rule:...}`, and
+only through `parent`, `requires`, `conflicts`, `overrides` and
+`{@rule:...}`, and
 the constitution only through `authority` and `{@constitution:...}`. A
 rule that has to point to the hand-written guide, or to any text that is
 not a rule or the constitution, has not been migrated yet
@@ -221,10 +225,17 @@ rule is enabled:
 - The overridden rule counts as enabled for every requirement on it and
   for its one-of, so a rule that requires `R12` is satisfied, and `R12`'s
   siblings under a one-of stay excluded. Its own requirements are not
-  brought in; the overriding rule's are.
+  brought in; the overriding rule's are. Its parent is the exception:
+  when that is a rule, directly or through a one-of, it still counts as
+  a requirement of the overriding rule, which stands in its place.
+- Conflicts declared on the overridden rule, or by other rules against
+  it, do not apply; the overriding rule's conflicts do.
 - Its children stay as they are and are rendered under the overriding
   rule's heading.
 - Its check does not run; the overriding rule's does.
+- An override applies where the overriding rule is enabled: in a rule
+  set split into path segments, in the segments that enable it, and
+  nowhere else.
 - Two enabled rules that override the same rule fail the build, naming
   both.
 - An overriding rule whose target is not enabled by anything is compiled
@@ -291,7 +302,9 @@ parent = 104
   rather than under one of their own. The reference direction applies:
   a public rule's parent is a public domain.
 - Enabling a domain as a pack enables its subdomains' rules; a subdomain
-  may be the root of a pack of its own.
+  may be the root of a pack of its own. A pack is a subtree of one
+  source: it does not reach the rules of another source hung under its
+  domains, which a rule set enables by listing them in `rules`.
 
 **Rendering.** In the compiled `AGENTS.md`, a domain is a heading of
 level two and a subdomain one of level three; each level of the tree
@@ -373,7 +386,7 @@ becomes an override, a child of a one-of, or is removed.
    and `statute compile` succeed for it, the private rule set included.
    The compiled output has been compared with the guide section by
    section, and every difference is recorded as intended.
-4. Load verification ([Checkers](checkers.md)) passes on the compiled
+4. [Load verification](checkers.md#load-verification) passes on the compiled
    output.
 
 Then one change on the private side installs the compiled output in
