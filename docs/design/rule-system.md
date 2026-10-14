@@ -2,11 +2,11 @@
 
 Status: draft. The rules of this repo are written in the
 [Rule file format](rule-format.md#rule-file-format), which
-`constitution-build` checks. The command, `statute`, builds the
-repository level of this design for one source on disk: it writes,
+`constitution-build` checks. The command, `statute`, builds part of
+the repository level of this design, for one source on disk: it writes,
 resolves and upgrades a rule set and its lock file, compiles them into
 an `AGENTS.md` with the skills the enabled rules need, and runs the
-built-in checks. What it builds so far, and what it does not build yet,
+checks. What it builds so far, and what it does not build yet,
 is under
 [The command and the first version](statute-command.md#the-command-and-the-first-version);
 the user level is not built. This part of the design, in the files
@@ -86,9 +86,10 @@ lands.
 - [Compilation](compilation.md): `statute compile` already writes a
   repository's `AGENTS.md`, with the skills and checks next to it
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
-  The user-level file is still built by the overlay's compiler, as that
-  section describes, until the rule system builds the user level (see
-  [Open questions](#open-questions)).
+  Compilation still describes the planned compiler of the user-level
+  file, whose rules are grouped by the article of their first
+  `authority`; it changes when the rule system builds the user level
+  (see [Open questions](#open-questions)).
 - [Checkers](checkers.md#checkers): the rule checks run by the Rust
   binary, and their three outcomes, are added; the existing checkers of
   the repo's sources stay.

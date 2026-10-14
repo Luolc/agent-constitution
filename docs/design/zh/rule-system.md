@@ -1,7 +1,7 @@
-<!-- en-sha256: 0916a7b41962812d15a4fa71594cc61e710e2527e37cdbfea812ee2432419644 -->
+<!-- en-sha256: a774eb61dba0e34795b705d7209dcdaea66f70a2d4fdc0bb5e24791f62535fdb -->
 # 规定体系
 
-状态：草案。本仓的规定已经按[规定文件格式](rule-format.md#rule-file-format) 编写，由 `constitution-build` 检查。命令 `statute` 已经实现了本设计的仓库级部分，只支持磁盘上的一个规定源：它能写出、解析和升级规定清单及其锁文件，把它们编译成一份 `AGENTS.md`，连同启用的规定需要的 skill 一起写出，还能运行内置检查。目前实现了什么、还没实现什么，见[命令与第一版](statute-command.md#the-command-and-the-first-version)；用户级还没有实现。设计的这一部分由下面几个文件组成，描述规定怎样编写、编号、选用、检查和编译，包括还没实现的部分。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
+状态：草案。本仓的规定已经按[规定文件格式](rule-format.md#rule-file-format) 编写，由 `constitution-build` 检查。命令 `statute` 已经实现了本设计仓库级的一部分，只支持磁盘上的一个规定源：它能写出、解析和升级规定清单及其锁文件，把它们编译成一份 `AGENTS.md`，连同启用的规定需要的 skill 一起写出，还能运行检查。目前实现了什么、还没实现什么，见[命令与第一版](statute-command.md#the-command-and-the-first-version)；用户级还没有实现。设计的这一部分由下面几个文件组成，描述规定怎样编写、编号、选用、检查和编译，包括还没实现的部分。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
 
 ## <a id="contents"></a>目录
 
@@ -31,7 +31,7 @@
 - [选用规定](rules.md#choosing-rules)：带锁文件、在其中列出规定 (按 ID 或规定包) 的规定清单，取代「默认使用全部通用规定，再点名排除」。规定清单属于一个仓库，可以继承一份基础规定清单，由后者接管法域的那部分职能。每份规定清单还写明它依据的宪法 (见[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
 - [放宽声明](rules.md#relaxation-declarations)：规定清单不用某条规定，或者在 one-of 里选了另一个子节点，都不需要放宽。`adjustable` 的值和 `relaxes:` 声明是否保持原样，在实现本设计时决定。
 - [概览](overview.md)：「每个法域自己选用哪些通用规定」这项目标和私有 overlay 选用规定的职责，移到每个仓库的规定清单 (连同继承的基础清单)，overlay 的 apply 步骤变成编译命令；overlay 保留与个人相关的部分和它自己的规定。
-- [编译](compilation.md)：`statute compile` 已经能写出仓库的 `AGENTS.md`，并在旁边写出 skill 和检查 ([编译与网站](statute-command.md#compilation-and-the-site))。用户级的文件仍由 overlay 的编译器按那一节的描述构建，直到规定体系实现了用户级 (见[待决问题](#open-questions))。
+- [编译](compilation.md)：`statute compile` 已经能写出仓库的 `AGENTS.md`，并在旁边写出 skill 和检查 ([编译与网站](statute-command.md#compilation-and-the-site))。[编译](compilation.md) 描述的仍是计划中用户级文件的编译器，其中规定按第一个 `authority` 所在的条分组；等规定体系实现了用户级再改 (见[待决问题](#open-questions))。
 - [检查程序](checkers.md#checkers)：增加由 Rust 二进制文件运行的规定检查及其三种结果；本仓源文件现有的检查程序保留。
 
 ## <a id="open-questions"></a>待决问题

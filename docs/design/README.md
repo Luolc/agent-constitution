@@ -38,8 +38,8 @@ the whole design.
   migrating from the hand-written guide.
 - [Rule system](rule-system.md): the rule system (numbered rules,
   sources and references, rule sets and lock files, dependencies, checks
-  and the review loop), built so far at the repository level for one
-  source, and which parts above it will replace; its topics are in the
+  and the review loop), built so far in part at the repository level,
+  for one source, and which parts above it will replace; its topics are in the
   four files below.
 - [Rule format](rule-format.md): what one rule holds, IDs and
   revisions, the rule file format, rules and skills, and tracing rules
