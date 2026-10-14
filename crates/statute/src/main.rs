@@ -54,8 +54,12 @@ enum Command {
         #[arg(long)]
         output: Option<std::path::PathBuf>,
     },
-    /// Run the checks of the enabled rules (not implemented yet).
-    Check,
+    /// Run the checks of the enabled rules; exits 1 on a violation.
+    Check {
+        /// Check the change since this git ref (`git diff <base>...HEAD`).
+        #[arg(long)]
+        base: Option<String>,
+    },
     /// Move the sources and the constitution to newer versions (not
     /// implemented yet).
     Upgrade,
@@ -75,7 +79,8 @@ fn main() -> ExitCode {
         Command::Add { rule, pack } => edit(root, &rule, pack, true),
         Command::Remove { rule, pack } => edit(root, &rule, pack, false),
         Command::Compile { output } => compile(root, output.as_deref()),
-        Command::Init | Command::Check | Command::Upgrade => {
+        Command::Check { base } => check(root, base.as_deref()),
+        Command::Init | Command::Upgrade => {
             eprintln!("statute: this command is not implemented yet");
             return ExitCode::from(NOT_IMPLEMENTED);
         }
@@ -128,6 +133,52 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     })?;
     println!("wrote {}", path.display());
     Ok(())
+}
+
+fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
+    use statute::check::{Context, Outcome};
+    let project = load(root)?;
+    let reports = statute::check::run(&project, &Context { root, base });
+    let source = &project.source;
+    for (id, report) in &reports {
+        println!(
+            "{:<12}  {}: {}",
+            report.outcome.name(),
+            label(source, *id),
+            report.note
+        );
+        for f in &report.findings {
+            println!("{:<12}    {}: {}", "", f.location, f.reason);
+        }
+    }
+    let for_reviewer: Vec<_> = reports
+        .iter()
+        .filter(|(_, r)| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review))
+        .collect();
+    if !for_reviewer.is_empty() {
+        println!("\nFor the reviewer:");
+        for (id, report) in for_reviewer {
+            let Some(node) = source.get(*id) else {
+                continue;
+            };
+            let Some(rule) = &node.rule else { continue };
+            let lang = &project.manifest.lang;
+            println!("\n## {} ({})\n", label(source, *id), report.outcome.name());
+            println!(
+                "Reason: {}\n",
+                statute::compile::pick(&rule.reason, node, lang)
+            );
+            println!(
+                "Verification: {}",
+                statute::compile::pick(&rule.verification, node, lang)
+            );
+        }
+    }
+    if reports.iter().any(|(_, r)| r.outcome == Outcome::Violation) {
+        Err(())
+    } else {
+        Ok(())
+    }
 }
 
 fn lock_command(root: &Path) -> Result<(), ()> {

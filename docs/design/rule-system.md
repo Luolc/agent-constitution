@@ -659,7 +659,14 @@ needs (for example, uv or Go). The contract:
 - exit code 0: the rule is met; 1: it is violated; anything else: the
   check could not decide;
 - standard output: JSON giving, for each finding, the location and the
-  reason.
+  reason, as a list of objects `{"location": ..., "reason": ...}`.
+
+The command runs with `sh -c` in the directory of the rule set; when a
+change is checked, `STATUTE_BASE` holds the git ref it starts from. A
+tool of `tools` that is not on `PATH`, a command that after 10 minutes
+has not exited and closed its output (what it started is stopped with
+it), an output longer than 1 MiB, and an exit status of 1 whose output
+is not that list are inconclusive.
 
 A rule without an automatic check (`check = "review"`) is allowed; it
 goes straight to the reviewer (below).
@@ -677,6 +684,29 @@ reason and verification, which the compiled `AGENTS.md` leaves out by
 default ([Compilation and the site](#compilation-and-the-site)). Whether
 one reviewer takes all of them or several take a group each, and how the
 groups are formed, is set in the rule set.
+
+In the first version, `statute check` runs the checks of the enabled
+rules of the repository; with `--base <ref>` it checks the change
+`git diff <ref>...HEAD`. It prints one line per rule, its outcome
+(`pass`, `violation`, `inconclusive`, or `review` for a rule without an
+automatic check) and a note, with the findings below, and then, for the
+reviewer, the reason and the verification of each rule that is
+inconclusive or for review. It exits with status 1 when a rule is
+violated, and 0 otherwise. A built-in check that covers only part of its
+rule, finding nothing, is inconclusive, not a pass, since the rest of
+the rule is still for the reviewer:
+
+- rule 7 (instruction-only-changes) tells instruction files, generated
+  files and other files apart with the same path tables as
+  `check-instruction-changes`, and is violated by a change that mixes
+  instruction files with other files; whether a generated file changed
+  in meaning, and paths a repository declares in its `AGENTS.md`, are
+  left to the reviewer, and without `--base` there is no change to check;
+- rule 3 (credential-storage) runs the gitleaks on the machine, with
+  `--redact`, on the commits of the change or on the whole history, and
+  is violated by a hit, shown by its place and gitleaks rule only; the
+  rest of the rule, outside the repository, is left to the reviewer, and
+  without gitleaks it is inconclusive.
 
 For each rule it is handed, the reviewer decides whether the rule is met
 or violated. A violation is fixed. Where the reviewer's decision differs
@@ -807,8 +837,9 @@ the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
 
-**Built so far**: the commands `lock`, `explain`, `add`, `remove` and
-`compile` (the `AGENTS.md` only), for one source on disk; the other commands exit with status 2 and say
+**Built so far**: the commands `lock`, `explain`, `add`, `remove`,
+`compile` (the `AGENTS.md` only) and `check` (built-in checks for rules
+3 and 7), for one source on disk; the other commands exit with status 2 and say
 they are not implemented yet. Inherited rule sets and path segments are
 not built; a git source, more than one source and a reference to
 another source, in `requires` or `conflicts` (`"team:7"`), are reported
