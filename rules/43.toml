@@ -1,6 +1,6 @@
 id = 43
 slug = "credential-designated-place"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -30,6 +30,8 @@ zh = '''
 en = '''
 A credential (password, API key, token, private key, recovery phrase) is stored only where it is designated in the jurisdiction, for example a secret manager, or local environment files kept out of version control. A repository is such a place only where it is designated explicitly in the jurisdiction, for example a private repository on a self-hosted service whose workflow keeps credentials in it; otherwise a repository holds at most a reference to where the value lives.
 
+Where the jurisdiction designates a repository explicitly, a scan of that repository for credentials cannot decide this rule, since a credential found there may be where it belongs; review decides it.
+
 When unsure whether a place is designated, treat it as not designated: keep the credential out, and ask a principal with authority over the jurisdiction.
 
 Violated when a credential is stored anywhere else.
@@ -37,10 +39,12 @@ Violated when a credential is stored anywhere else.
 zh = '''
 凭证 (密码、API key、token、私钥、助记词) 只存放在法域内指定的地方，例如密钥管理器，或者不纳入版本控制的本地环境变量文件。代码仓库只有在法域内明确指定的情况下，才属于存放凭证的地方，例如部署在自托管服务上的私有仓库，按其工作流程本就将凭证存放在仓库中；否则仓库里最多存放一个指向凭证所在位置的引用。
 
+法域明确指定某个仓库存放凭证的，扫描那个仓库里的凭证不能判定是否违反本规定，因为扫到的凭证可能本就存放在指定的地方；由审查判定。
+
 不确定某个地方是否经过指定的，按未指定处理：不在那里存放凭证，并询问对该法域有权限的委托人。
 
 凭证存放在其他地方的，即为违反本规定。
 '''
 
 [translations]
-zh = "30c9a5511e6ff00b9922e3a974ed30996dbd296c97445a21539ccf1c30d47928"
+zh = "a81d8dedc9aa81980c4acfacc2cefd9df7183c4031cb5dd6dfdecfd38e921f64"
