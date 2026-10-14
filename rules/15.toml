@@ -1,0 +1,13 @@
+id = 15
+slug = "verification"
+revision = 1
+kind = "domain"
+status = "draft"
+lang = "en"
+
+[title]
+en = "Verification"
+zh = "验证"
+
+[translations]
+zh = "7140f4f19dec525960aabacb5741a125876c7d85f8cfa9c899cc8880651ddf61"

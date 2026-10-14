@@ -1,13 +1,32 @@
-id = "instruction-only-changes"
+id = 7
+slug = "instruction-only-changes"
+revision = 1
+kind = "rule"
 status = "draft"
-scope = "all"
-authority = ["constitution:separate-instruction-changes", "constitution:discriminating-checks"]
+lang = "en"
+parent = 15
+authority = ["separate-instruction-changes", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
 
 [title]
 en = "Change instructions in a change of their own"
 zh = "修改指令单独成一个变更"
 
-[content]
+[text.statement]
+en = "Change instruction files in a change of their own, never together with changes to other files; a generated file goes with the side that changed it."
+zh = "修改指令文件要单独成一个变更，不与其他文件的修改放在同一个变更里；生成文件归入使它发生变化的那一方。"
+
+[text.reason]
+en = '''
+A single change that both altered the instructions binding agents and did work they govern would let an agent rewrite the provisions that bind it and so get around them ({@constitution:separate-instruction-changes}).
+'''
+zh = '''
+一个变更如果既修改约束 agent 的指令、又做这些指令管辖的工作，agent 就可以借这个变更改写约束自己的条文，从而绕开它们 ({@constitution:separate-instruction-changes})。
+'''
+
+[text.verification]
 en = '''
 Instruction files are the files that direct or constrain agents:
 
@@ -48,3 +67,6 @@ CI 已证明与构建结果一致的生成文件，不单独归类，归入使�
 
 不确定某个文件是否属于指令文件的，按属于处理。
 '''
+
+[translations]
+zh = "3393733cc3c5ab6a0b240507571e65e561a7b51a57614d59fca22527fa3e0061"
