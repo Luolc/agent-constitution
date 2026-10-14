@@ -891,9 +891,13 @@ link check. Only the build exists here; publishing it is a release (rule
   text size grows with the window
   between a floor and a ceiling (`clamp()`), and the column is set in em,
   so a line keeps about 90 characters in English and 40 in Chinese where
-  the window has room for it; between hugo-book's breakpoint (56rem) and
-  about 1100px, where both side columns are shown, the column is
-  narrower. It is centered between the sidebar and the table of contents. Fonts: EB Garamond and Noto
+  the window has room for it. Three columns would leave the text under
+  about 65 characters a line in English below 70rem (1120px), so there
+  the table of contents goes behind the theme's top-bar button, floating
+  at the top right, which opens it over the text at the right edge; the
+  sidebar stays down to hugo-book's breakpoint (56rem), below which the
+  theme hides it too. The column is centered between the sidebar and the
+  table of contents. Fonts: EB Garamond and Noto
   Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
   fonts, falling back to local serif fonts. The colors are one palette
   block, light and dark; contrast of text on the page and the sidebar is
