@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-A principal may deliver a task to an agent through a means set up in advance: by a direct request, or through a setup the principal made or approved in advance that starts the task. A task delivered this way authorizes the work it describes, within that principal's authority. No task authorizes an item listed in {@must-ask}. A task started automatically, on a schedule or on a condition, has only the authority of whoever set it up:
+A task may be delivered to an agent through a means set up in advance. It comes from a principal's direct request, or from a setup the principal made or approved in advance that starts it. A task delivered this way authorizes the work it describes, within that principal's authority. No task authorizes an item listed in {@must-ask}. A task started automatically, on a schedule or on a condition, has only the authority of whoever set it up:
 '''
 zh = '''
-委托人可以经事先设定的途径向 agent 交付任务：直接提出请求，或者事先作出、批准一项设定，由它发起任务。这样交付的任务，在该委托人的权限范围内，授权 agent 做任务所描述的工作。任何任务都不构成对{@must-ask}所列事项的授权。定时或者按条件自动发起的任务，权限以设立它的一方为限：
+任务可以经事先设定的途径交付给 agent。它来自委托人的直接请求，或者来自委托人事先作出、批准的一项设定，由该设定发起。这样交付的任务，在该委托人的权限范围内，授权 agent 做任务所描述的工作。任何任务都不构成对{@must-ask}所列事项的授权。定时或者按条件自动发起的任务，权限以设立它的一方为限：
 '''
 
 [[items]]
