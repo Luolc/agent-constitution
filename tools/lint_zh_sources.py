@@ -9,6 +9,9 @@ constitution citation (`第十条`), so limae judges the spacing around it as
 it will read once built, and is put back afterwards. A rule citation gets
 the same placeholder until its rendering is set.
 
+limae is the one installed in this interpreter's environment, the version
+uv.lock pins, never one found on PATH.
+
 Without --fix nothing is written. With --fix limae fixes what it can and
 each changed text is written back in place; no other byte of the file
 changes, which is checked by parsing the file again. Findings print as
@@ -20,9 +23,9 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import tomllib
 
@@ -142,10 +145,14 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
     path: The file, relative to the checkout.
 
   Returns:
-    The texts, and an error when one of them is in a form this script
-    cannot write back, else None.
+    The texts, and an error when the file is not valid TOML or one of
+    them is in a form this script cannot write back, else None.
   """
   source = (root / path).read_text(encoding="utf-8")
+  try:
+    data = tomllib.loads(source)
+  except tomllib.TOMLDecodeError as e:
+    return [], f"{path}:1: not valid TOML: {e}"
   found = []
   for m in BASIC.finditer(source):
     value = tomllib.loads(f"v = {m.group(0)[5:]}")["v"]
@@ -173,7 +180,7 @@ def texts(root: Path, path: Path) -> tuple[list[Text], str | None]:
       )
     )
   found.sort(key=lambda t: t.start)
-  parsed = sorted(value for _, value in zh_leaves(tomllib.loads(source)))
+  parsed = sorted(value for _, value in zh_leaves(data))
   if parsed != sorted(t.value for t in found):
     return (
       found,
@@ -342,10 +349,12 @@ def main(argv: list[str] | None = None) -> int:
     help="the checkout (default: the repo this script is in)",
   )
   args = parser.parse_args(argv)
-  limae = shutil.which("limae")
-  if limae is None:
+  limae = Path(sysconfig.get_path("scripts")) / "limae"
+  if not limae.is_file():
     print(
-      "limae is not on PATH; run this script with `uv run`, which installs it",
+      f"limae is not installed in this Python environment ({limae.parent});"
+      " run this script with `uv run`, which installs the version uv.lock"
+      " pins",
       file=sys.stderr,
     )
     return 2

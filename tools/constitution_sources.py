@@ -484,7 +484,7 @@ def check_keys(
       errors.add(
         doc.path, line, 1, f"{label}`{name}` must be a {kind.__name__}"
       )
-  for name in table.keys() - {k.rstrip("?") for k in schema}:
+  for name in sorted(table.keys() - {k.rstrip("?") for k in schema}):
     errors.add(
       doc.path,
       doc.line(f"[{name}]", f"{name} =", start=start),

@@ -5,6 +5,10 @@ Each check fails on a broken tree and passes on its control.
 
 import contextlib
 import io
+import os
+from pathlib import Path
+import subprocess
+import sys
 import unittest
 
 import build_constitution as bc
@@ -40,6 +44,30 @@ class CheckTest(Tree):
     self.assertIn(f"{B}/01-beta-one.toml:1: check 1: lacks `status`", errors)
     self.assertIn(
       f"{B}/01-beta-one.toml:2: check 1: unknown key `state`", errors
+    )
+
+  def test_1_unknown_keys_in_sorted_order(self):
+    """The order does not depend on the hash seed of the run."""
+    self.edit(
+      f"{B}/01-beta-one.toml",
+      'status = "draft"',
+      'zeta = 1\nalpha = 2\nstatus = "draft"',
+    )
+    script = Path(__file__).with_name("build_constitution.py")
+    runs = {
+      subprocess.run(
+        [sys.executable, str(script), "--root", str(self.root), "--check"],
+        capture_output=True,
+        text=True,
+        env=os.environ | {"PYTHONHASHSEED": str(seed)},
+      ).stderr
+      for seed in range(10)
+    }
+    self.assertEqual(len(runs), 1, runs)
+    lines = runs.pop().splitlines()
+    self.assertEqual(
+      [line.split(": ", 2)[2] for line in lines if "unknown key" in line],
+      ["unknown key `alpha`", "unknown key `zeta`"],
     )
 
   def test_1_number_field_is_gone(self):
