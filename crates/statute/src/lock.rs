@@ -1,6 +1,6 @@
 //! The lock file, `statute.lock`: the constitution, the source and every
 //! enabled rule, pinned (`docs/design/rule-system.md`, Rule sets and the
-//! lock file). Written by the tool, never by hand; the same rule set and
+//! lock file). Written by statute, never by hand; the same rule set and
 //! source always give the same bytes.
 
 use std::collections::BTreeMap;

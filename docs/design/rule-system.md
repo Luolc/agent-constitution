@@ -2,8 +2,8 @@
 
 Status: draft. The rules of this repo are written in the
 [Rule file format](#rule-file-format), which `constitution-build` checks,
-and the tool reads them and a rule set and writes the lock file
-([The tool and the first version](#the-tool-and-the-first-version)); the
+and the command reads them and a rule set and writes the lock file
+([The command and the first version](#the-command-and-the-first-version)); the
 rest is not built yet. This document describes how rules are written,
 numbered, chosen, checked and compiled once the rule system is built. Where it differs from what the rest of the design says
 today, the section [What this replaces](#what-this-replaces) lists the
@@ -25,7 +25,7 @@ this design changes them.
 - [Outcomes and the review loop](#outcomes-and-the-review-loop)
 - [Trial rules](#trial-rules)
 - [Compilation and the site](#compilation-and-the-site)
-- [The tool and the first version](#the-tool-and-the-first-version)
+- [The command and the first version](#the-command-and-the-first-version)
 - [Why Rust](#why-rust)
 - [What this replaces](#what-this-replaces)
 - [Open questions](#open-questions)
@@ -265,8 +265,8 @@ each enabled rule, the revision in use and the commit of the source it came
 from, so the same rule set and lock file always build the same output.
 
 The rule set is `statute.toml` and the lock file `statute.lock`, at the
-root of the repository (named for the tool,
-[The tool and the first version](#the-tool-and-the-first-version)). The
+root of the repository (named for the command,
+[The command and the first version](#the-command-and-the-first-version)). The
 rule set lists only the rules chosen directly:
 
 ```toml
@@ -297,7 +297,7 @@ parts in as well ([Compilation and the site](#compilation-and-the-site)).
 `lang` in `[compile]` names the language it is written in, `en` by
 default.
 
-The lock file is TOML, written by the tool and never edited by hand. It
+The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
 each source (its short name, address and commit), and each enabled rule,
 whether chosen directly or brought in by a requirement (its reference,
@@ -439,7 +439,7 @@ source is like a package index, a rule set like a project manifest, the
 lock file like a lock file, compiling like a sync, and the user-level
 cache like a package cache. The repository holds the rule set, the lock
 file and the compiled output; an upgrade is one command in the repository
-and shows up as a pull request. The user level holds only the tool, a
+and shows up as a pull request. The user level holds only the command, a
 cache of the sources, and a thin personal layer for what concerns the
 person, not the project: the language of replies, reading messages as
 speech-to-text, where credentials are kept, how directories are laid out
@@ -450,7 +450,7 @@ machine at the user level), and the user can change it. The reason is
 that a person who clones the repository, CI and a cloud agent cannot read
 user-level files, and each repository pins its own versions and upgrades
 on its own schedule. The first version builds the repository level only
-([The tool and the first version](#the-tool-and-the-first-version)).
+([The command and the first version](#the-command-and-the-first-version)).
 
 ## Sources and references
 
@@ -469,7 +469,7 @@ team = { git = "example.test/their-team/rules", branch = "main" }
 The key `R` is reserved for the first-party source: this repo, which
 publishes the constitution and the general rules. A rule set declares
 it as it declares any other source, with the tag or the path to read,
-since a source the tool knew by itself would need a built-in address
+since a source the command knew by itself would need a built-in address
 and version. Every other source has a short name of lowercase words
 joined by hyphens, which the rule set chooses. `L` and `local` are
 reserved for the repository's own rules (below), and `ac`, the
@@ -647,7 +647,7 @@ cannot be used together, one of them gets `conflicts = [ID]`. The relation
 is symmetric and written on one side only: on the rule that came later,
 the one being added or changed when the conflict was found, and never on
 the one that was already there. Across sources it can only be written on
-one's own side anyway. The tool derives the other side, and both the
+one's own side anyway. statute derives the other side, and both the
 build check and the site show the conflict on both rules. A conflict
 written on both sides draws a warning, not an error. The reasons: a fact
 is written in one place (`no-restating`), and another source's files
@@ -683,13 +683,13 @@ The build checks these constraints:
   which names the successors when there are any.
 
 **Missing requirements are added.** When a rule set enables a rule
-without one it requires, the tool adds the missing rule, as a package
+without one it requires, statute adds the missing rule, as a package
 manager adds a dependency: the rule set lists only the rules chosen
 directly, the lock file records the ones brought in, and an upgrade's
 diff shows them. This applies equally to a parent that counts as a
 requirement. Among missing requirements, the one case that fails is a
 requirement of a one-of when the rule set has enabled none of its
-children: the tool cannot choose for
+children: statute cannot choose for
 the user, so it fails and lists the children to choose from.
 
 Packs: a pack is a subtree, named by its root, and a rule set can enable
@@ -746,8 +746,8 @@ TOML file has this value") would keep needing one more case, "or", and
 check is code, of one of two kinds, and there is no third.
 
 **Our rules: Rust.** The checks of the rules in this repo are in the
-tool's crate
-([The tool and the first version](#the-tool-and-the-first-version)),
+command's crate
+([The command and the first version](#the-command-and-the-first-version)),
 with one module per rule, named for the rule's ID (`r42.rs` for
 rule 42), the way ruff and clippy implement each lint as a function. The
 rule's text and metadata stay in `rules/42.toml`, so the person writing a
@@ -876,6 +876,11 @@ the rule is still for the reviewer. The built-in checks:
 The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
 only for a rule set that still enables them.
 
+`statute check` runs in CI and, before each push, by the agent that
+pushes. It is not a commit hook: some checks scan the whole history or
+ask the forge over the network and can be slow, and a commit hook holds
+only checks that take seconds.
+
 For each rule it is handed, the reviewer decides whether the rule is met
 or violated. A violation is fixed. Where the reviewer's decision differs
 from the check's, the check was wrong:
@@ -936,11 +941,10 @@ and a rule set with its lock file, and writes:
   file over it is split along domains;
 - the skill directories the enabled rules need;
 - the version of the check binary to install, and the external commands
-  of the enabled rules;
-- the hook configuration that runs the checks.
+  of the enabled rules.
 
 `statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
-another file with `--output`, and the other three next to it (below),
+another file with `--output`, and the other two next to it (below),
 and only when the lock file is what `statute lock` would write now. The
 `AGENTS.md` holds, in
 this order: a comment that the file is generated; a line with the
@@ -987,15 +991,10 @@ In the directory of the `AGENTS.md`, `statute compile` also writes:
   as `statute = "<version>"`, the binary whose built-in checks the
   rules use, and one `[[commands]]` table per enabled rule with
   `check = "command"`, ordered by ID, with its `rule` (`"R42"`),
-  `run` and `tools`. The file changes with statute's version;
-- `statute-hooks.yaml`: a pre-commit configuration with one local hook
-  that runs `statute check` (`language: system`, so `statute` must be
-  on `PATH`). It leaves the repository's `.pre-commit-config.yaml` as it
-  is: run it with `pre-commit run --config statute-hooks.yaml`, or copy
-  its hook into the repository's own configuration.
+  `run` and `tools`. The file changes with statute's version.
 
 Each file starts with a comment that statute wrote it (`<!-- ... -->`
-in the `AGENTS.md`, `# ...` in the other two). Before writing anything,
+in the `AGENTS.md`, `# ...` in `statute-checks.toml`). Before writing anything,
 the command checks every place it would write, and when one holds
 something it did not write (a file without that first line, a skill
 directory without `.statute-generated`, a `.claude/skills/<name>` that
@@ -1013,10 +1012,10 @@ finishes it. The order makes that work: a skill's
 `.statute-generated` is written before its files, a link is removed
 before its directory, and the `AGENTS.md` is written last.
 
-Compiling, checking and upgrading a rule set are one command-line tool
-([The tool and the first version](#the-tool-and-the-first-version)).
+Compiling, checking and upgrading a rule set are one command
+([The command and the first version](#the-command-and-the-first-version)).
 The constitution's compiler stays in Python for now
-([Compilation](compilation.md)) and moves into that tool later.
+([Compilation](compilation.md)) and moves into that command later.
 
 **The public site** lists every rule that is not superseded, so that
 people can choose from the full list. Its "Rules" section is a list,
@@ -1029,9 +1028,9 @@ its metadata. A rule of this repo is shown as `R42` there too. A
 superseded rule keeps its page, so links to it keep
 working, but it is left out of the lists by default.
 
-## The tool and the first version
+## The command and the first version
 
-**The tool.** The rule system's tool is written in Rust (see
+**The command.** The rule system's command is written in Rust (see
 [Why Rust](#why-rust)) and grows in the crate `crates/statute`
 ([File structure](file-structure.md)). The first version is that one
 crate. Its name, `statute`, is held on crates.io by a placeholder release
@@ -1147,7 +1146,7 @@ this design lands.
 - [Skills](skills.md): a skill declares the rules it implements
   and is installed only when one of them is enabled.
 - [Compilation](compilation.md): the output gains skill
-  directories, checks and hook configuration, and the compiled file opens
+  directories and checks, and the compiled file opens
   with the repository, edition and revision of the constitution it rests
   on, and the rules are grouped along the parent tree, not by the article
   of their first `authority`.
@@ -1167,6 +1166,6 @@ this design lands.
   file names the directory it applies to.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
-- The tool's final name, chosen before its first real release. `statute`
+- The command's final name, chosen before its first real release. `statute`
   is held by a placeholder release; another name would be published
   anew.

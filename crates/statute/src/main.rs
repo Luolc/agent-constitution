@@ -58,7 +58,7 @@ enum Command {
         edition: Option<String>,
     },
     /// Write AGENTS.md from the constitution and the locked rule set, and
-    /// next to it the skills, the checks and the hook configuration.
+    /// next to it the skills and the checks.
     Compile {
         /// Write here instead of AGENTS.md next to statute.toml; the other
         /// files go next to it.

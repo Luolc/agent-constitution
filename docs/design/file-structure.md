@@ -126,7 +126,7 @@ repo's own. `crates/` starts in stage A with one crate, `statute`, whose
 first release, a placeholder, was published early to hold the name on
 crates.io; the binary that compiles and checks the rules grows in it in
 stage B (what it does so far:
-[Rule system](rule-system.md#the-tool-and-the-first-version)). Compiling and checking the
+[Rule system](rule-system.md#the-command-and-the-first-version)). Compiling and checking the
 rules, and building the instruction file, stay in stage B.
 
 Stage B, in the order to build it: `schema/` and the schema checker,

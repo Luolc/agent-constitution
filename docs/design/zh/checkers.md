@@ -1,4 +1,4 @@
-<!-- en-sha256: 75889e3a0e53b6fe3b3e28b6959fcf511bcfca8d97fa64ef1a96c14a2c6ac649 -->
+<!-- en-sha256: 9c299bd82bf5e732a375eeb8ede08507bceeeb77aaccbb679bb72eac865b9b84 -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -35,7 +35,7 @@
 
 规定是[规定文件格式](rule-system.md#rule-file-format) 所定格式的 parent 树节点，各在一个 `rules/<id>.toml` 里，按编号的大小读入。上面的检查对它们是这样做的。检查 1：键按节点的 `kind` 一个不多、一个不少，类型正确；`id` 就是文件名，文件名不补零；`revision` 不小于 1；`kind`、`status`、`level`、`check` 取各自允许的值 (只有规定可以是 `superseded`)，状态与 `index.toml` 的关系同规定一样；`superseded-by` 恰好在状态为 `superseded` 时出现，`run` 和 `tools` 恰好在 `check` 为 `command` 时出现；`authority` 是非空的字符串列表，`tools` 是字符串列表，`constitution` 是只含整数修订号的版本说明符 ([从规定追溯到宪法](rule-system.md#tracing-rules-to-the-constitution))，其中的修订号都不超过 18446744073709551615 (2^64 − 1，statute 能读的最大值)；`requires` 和 `conflicts` 的每一项是不小于 1 的数字或 `"<source>:<id>"` 形式的字符串，指向规定自身以外的节点，并且只列一次；`lang` 和每段文本的键都是语言代码 (`en`、`zh`、`zh-Hant`)；标题和正文三部分都有原文语言的文本，没有一段文本是空的，`[translations]` 里没有原文语言的键。检查 2：`slug` 符合 ID 的格式，在所有 slug 之间唯一。检查 3：每个 `parent` 和 `superseded-by` 的每一项都指向一个节点，后者指向本身以外的一条规定；顺着 parent 往上走，不会回到走过的节点。检查 4：文本的每种语言引用的与原文相同；每种译文语言都有标题和正文三部分，`[translations]` 里也有它的哈希，并且每个哈希都等于原文现在的哈希，不等时错误信息会打印新的哈希。检查 5：带数字的 `{@rule:<id>}` 解析到一个没有废止的节点；`authority` 的每一项不带命名空间，解析到一个没有废止的条文。检查 7：基准里的节点仍然存在，已经废止或被取代的仍然如此；基准早于 parent 树、规定以单词命名的，由 `slug` 等于那个单词的节点承接。
 
-节点之间的关系不在这里查，由 `statute` 查 ([工具与第一版](rule-system.md#the-tool-and-the-first-version))：`requires` 和 `conflicts` 指向的节点存在、种类对，`requires` 不成环、没有多余的项，规定不与它带入的节点冲突，以及[依赖、one-of 与规定包](rule-system.md#dependencies-one-ofs-and-packs) 所说的 warning。CI 里由 `crates/statute/tests/real_rules.rs` 用 `statute` 读本仓的 `rules/`，有任何 error 或 warning 都失败。
+节点之间的关系不在这里查，由 `statute` 查 ([命令与第一版](rule-system.md#the-command-and-the-first-version))：`requires` 和 `conflicts` 指向的节点存在、种类对，`requires` 不成环、没有多余的项，规定不与它带入的节点冲突，以及[依赖、one-of 与规定包](rule-system.md#dependencies-one-ofs-and-packs) 所说的 warning。CI 里由 `crates/statute/tests/real_rules.rs` 用 `statute` 读本仓的 `rules/`，有任何 error 或 warning 都失败。
 
 每项检查都有一个让它失败的测试和一个通过的对照；编号检查在一个临时的 git 仓库上测试 (`tools/compiler` 的 `tests/test_constitution_checks.py`、`tests/test_constitution_base.py`，以及针对 parent 树的 `tests/test_rule_tree.py`)。检查 1 至 6 和这些测试作为提交钩子运行，也在 CI 里运行；检查 7 只在 CI 里运行：在 pull request 上，对照检出的合并提交所基于的那个基准分支的末端 (即它的第一个父提交)；在推送到 `main` 时，对照推送前的那个提交。
 
