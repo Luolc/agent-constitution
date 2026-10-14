@@ -1,7 +1,7 @@
 # Commit hooks: secret scan, lock check, Python lint, format, docstring
 # and type checks, constitution build check and its tests, the design
-# translation check, and limae on the Chinese text, in the sources, in
-# the built file and in the design's translation.
+# translation check, and limae on the Chinese text in the sources and on
+# every Markdown file of the repo.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the commits of each PR or push, and gitleaks.yml the full history
@@ -106,12 +106,18 @@ repos:
         language: system
         files: ^(docs/design/|tools/checks/src/repo_checks/check_design_translation\.py$)
         pass_filenames: false
-      # The built Chinese constitution, both versions, and the Chinese
-      # translation of the design, with limae's default configuration.
+      # Every Markdown file of the repo (the built Chinese constitution, the
+      # design and its translation, the READMEs), with limae's default
+      # configuration. It reports little on English text, which is
+      # no reason to leave the English files out. The theme under web/ is a
+      # third party's submodule.
       # Rule switches go in a limae.toml, never in args: --disable and
       # --enable make limae skip its configuration file.
+      # A false positive is passed over on its line with a
+      # `<!-- limae-disable-next-line <rule> -->` comment, not here.
       - id: limae
-        name: limae on the built Chinese constitution and the design's translation
+        name: limae on the Markdown files
         entry: uv run --frozen --no-sync limae
         language: system
-        files: ^(constitution/[^/]+/generated/constitution\.zh(\.agent)?\.md|docs/design/zh/[^/]+\.md)$
+        files: \.md$
+        exclude: ^web/themes/
