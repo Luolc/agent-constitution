@@ -1,0 +1,42 @@
+id = 100
+slug = "public-rule-names-no-private-rule"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Let a public rule name no private rule"
+zh = "公开规定不点名私有规定"
+
+[text.statement]
+en = "In a rule of a public source, name no rule of a private source, in `requires`, `conflicts`, `overrides`, `parent` or a `{@rule:...}` citation."
+zh = "公开来源的规定，不在 `requires`、`conflicts`、`overrides`、`parent` 或 `{@rule:...}` 引用里点名私有来源的规定。"
+
+[text.reason]
+en = '''
+A public rule's text is published; a rule it names that nobody can read is a dangling reference at best, and at worst publishes the private source's name and address ({@constitution:sensitive-info}).
+'''
+zh = '''
+公开规定的正文是公开发布的；它点名一条谁也读不到的规定，好的情况是一个悬空的引用，坏的情况是把私有来源的名字和地址公开了出去 ({@constitution:sensitive-info})。
+'''
+
+[text.verification]
+en = '''
+A source is public or private as the rule set declares it. A private rule may name a public one. Where the build of a rule set checks this, the check runs in CI.
+
+Violated when a rule of a public source names a rule of a private source in one of these places.
+'''
+zh = '''
+来源是公开还是私有，以规则集的声明为准。私有规定可以点名公开规定。规则集的构建检查这一点的，这项检查在 CI 里运行。
+
+公开来源的规定在上述任一处点名了私有来源的规定，即为违反本规定。
+'''
+
+[translations]
+zh = "abb4635ca7026fd2aaf560a96b43fc72ef96ded80025effe52a91841ed9cd363"

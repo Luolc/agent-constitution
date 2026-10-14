@@ -1,0 +1,42 @@
+id = 103
+slug = "conflicting-practices-as-one-of"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["decidable-provisions", "simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write conflicting practices as children of a one-of"
+zh = "互相冲突的做法写成 one-of 的子节点"
+
+[text.statement]
+en = "When repositories have good reasons to work in ways that cannot hold together, write each way as a child of a one-of, not as an exception in one rule for the repositories that work otherwise."
+zh = "仓库有正当理由采用互不相容的做法时，把每种做法写成一个 one-of 的子节点，不在一条规定里为做法不同的仓库加例外。"
+
+[text.reason]
+en = '''
+A rule patched with an exception for each repository that works otherwise gathers conditions that each reader weighs differently ({@constitution:decidable-provisions}); a one-of keeps each way a plain rule, and a rule set picks the one it follows without relaxing or overriding anything ({@constitution:simplicity}).
+'''
+zh = '''
+为做法不同的仓库一个个加例外，规定里的条件会越积越多，每个读者掂量得都不一样 ({@constitution:decidable-provisions})；写成 one-of，每种做法都是一条简单的规定，规则集选它要遵循的那一条就行，不用放宽或覆盖任何规定 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+An exception here is a clause that lifts the requirement for repositories that chose to work another way ("do A, except where the code goes first"), not a condition under which the requirement does not arise at all (a repository without Python, say), nor a relaxation that the constitution permits and the rule leaves room for ({@constitution:relaxations}). Rules that hold whichever child is chosen stand beside the one-of, not inside a child.
+
+Violated when a change adds or rewrites a rule with an exception for repositories that chose another way, instead of a one-of with a child for each way.
+'''
+zh = '''
+这里的例外，指为选择了另一种做法的仓库免除要求的条款 (「做 A，代码先行的仓库除外」)，不是要求根本不会出现的条件 (比如仓库里没有 Python)，也不是宪法允许、规定为它留了余地的放宽 ({@constitution:relaxations})。不管选哪个子节点都成立的规定，放在 one-of 旁边，不放进某个子节点里。
+
+变更新增或改写的规定为选择了另一种做法的仓库加了例外，而没有写成每种做法各占一个子节点的 one-of 的，即为违反本规定。
+'''
+
+[translations]
+zh = "05c94e1168359de5276c643df10e7304505cc850b2bcfae0bcc16883156036d2"

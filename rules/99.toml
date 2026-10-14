@@ -1,0 +1,42 @@
+id = 99
+slug = "self-contained-rule"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions.rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep a rule self-contained"
+zh = "规定要自成一体"
+
+[text.statement]
+en = "Make a rule stand on its own: name other rules only through `parent`, `requires`, `conflicts`, `overrides` and `{@rule:...}` citations, the constitution only through `authority` and `{@constitution:...}` citations, and no other text as part of what it requires."
+zh = "规定要自成一体：提到别的规定只通过 `parent`、`requires`、`conflicts`、`overrides` 和 `{@rule:...}` 引用，提到宪法只通过 `authority` 和 `{@constitution:...}` 引用，不把任何别的文字当作它要求的一部分。"
+
+[text.reason]
+en = '''
+A rule is compiled, with the rules it names and the constitution, into the instructions of every repository whose rule set enables it ({@constitution:division-of-instructions.rules}). A guide, a document or another repository it points to does not come with it, may change without it, and may not be readable there.
+'''
+zh = '''
+规定会连同它点名的规定和宪法一起，编译进每个启用它的仓库的指令里 ({@constitution:division-of-instructions.rules})。它所指向的指南、文档或别的仓库不会跟着过去，可能脱离它自己改掉，在那里也未必读得到。
+'''
+
+[text.verification]
+en = '''
+The text of the rule does not send the reader elsewhere for part of its requirement: no "as the guide says", no item number of another body of instructions, no file or address outside its source's rules and the constitution. A tool, a command or a file named as the object of the requirement (the repository's commit hook configuration, say) is not such a pointer.
+
+Violated when a change adds or rewrites a rule that refers to text other than rules and the constitution for part of what it requires, or names a rule or a provision other than through these fields and citations.
+'''
+zh = '''
+规定的正文不让读者到别处去找它的一部分要求：不写「按指南所说」，不写另一套指令的条号，不指向它所在来源的规定和宪法之外的文件或地址。作为要求对象被点名的工具、命令或文件 (比如仓库的 commit hook 配置) 不算这种指向。
+
+变更新增或改写的规定，有一部分要求要到规定和宪法以外的文字里去找，或者不通过上述字段和引用而以别的方式点名规定或条文的，即为违反本规定。
+'''
+
+[translations]
+zh = "8cebb61a022c993d8db31f24b0e8e7c1ae384a099d4427d7fbb5166610a1000e"

@@ -1,0 +1,42 @@
+id = 108
+slug = "new-id-when-compliance-changes"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions.rules"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give a change to what complies a new ID"
+zh = "改变合规标准的改动用新 ID"
+
+[text.statement]
+en = "When a change to a rule changes what counts as compliant, write the new requirement as a rule with a new ID, and mark the old rule superseded, naming the rules that take its place."
+zh = "对规定的改动改变了什么算合规的，把新要求写成一条新 ID 的规定，把旧规定标为已被取代，并写明取代它的规定。"
+
+[text.reason]
+en = '''
+A rule set enables a rule by its ID and pins its revision. An ID whose requirement changed under it would bind repositories to a requirement that the principal who adopted the rule did not choose ({@constitution:division-of-instructions.rules}), and every citation of it would come to mean something else.
+'''
+zh = '''
+规则集按 ID 启用规定，并锁定它的 revision。ID 不变而要求变了，仓库就会被绑到采纳这条规定的委托人并没有选过的要求上 ({@constitution:division-of-instructions.rules})，所有引用它的地方意思也都跟着变了。
+'''
+
+[text.verification]
+en = '''
+What counts as compliant changes when some work that complied with the old text violates the new one, or the reverse. The old rule keeps its file and its text, with `status = "superseded"` and `superseded-by` naming the rule or rules of its own source that take its place. No rule is deleted and no ID reused.
+
+Violated when a change alters what counts as compliant under a rule and keeps its ID, deletes a rule, reuses an ID, or marks a rule superseded without naming the rules that take its place.
+'''
+zh = '''
+有某项工作按旧文合规、按新文违反，或者反过来，什么算合规就变了。旧规定保留文件和原文，写 `status = "superseded"`，并用 `superseded-by` 写明同一来源里取代它的一条或几条规定。规定一律不删，ID 一律不复用。
+
+变更改变了某条规定下什么算合规却保留了它的 ID，删除了规定，复用了 ID，或者把规定标为已被取代却没写明取代它的规定，即为违反本规定。
+'''
+
+[translations]
+zh = "06a456b6624e80331b2ea669550364bad23dcfbb96e0e9f346a6ed27ec58b39a"

@@ -1,0 +1,42 @@
+id = 101
+slug = "public-rule-states-the-principle"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["division-of-instructions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "In a public rule, state the principle and leave the values to the layers below"
+zh = "公开规定写原则，具体取值留给下层"
+
+[text.statement]
+en = "In a rule of a public source, state the principle, and leave to the layers below the concrete values that its users may choose differently."
+zh = "公开来源的规定只写原则，使用者可能各自选得不同的具体取值留给下层。"
+
+[text.reason]
+en = '''
+A value one user chose, written into a public rule, leaves every other user to override the rule to set their own, and so to lose its later changes; a principle lets them add their values as rules of their own beside it. What holds for one project only is not written into a rule ({@constitution:division-of-instructions}).
+'''
+zh = '''
+把某个使用者选定的取值写进公开规定，其他使用者要设自己的值就只能覆盖这条规定，也就跟不上它以后的改动；只写原则，他们就能把自己的取值写成另外的规定，与它并存。只对一个项目成立的东西不写进规定 ({@constitution:division-of-instructions})。
+'''
+
+[text.verification]
+en = '''
+A concrete value is one a user could set otherwise and still meet the principle: where directories go on a machine, say, or the language pull request descriptions are written in. Such a value appears in a public rule only as an example, marked as one, so that the rule still holds with the example removed, or as a parameter the rule marks as adjustable ({@constitution:relaxations.adjustable-rules}).
+
+Violated when a change adds or rewrites a public rule whose requirement rests on a value its users could choose otherwise without breaking its principle, and that it does not mark as adjustable.
+'''
+zh = '''
+具体取值，指使用者换一个值照样符合原则的那种值：比如机器上的目录放在哪里，PR 描述用什么语言写。这样的值在公开规定里只能作为例子出现，并注明是例子，去掉例子规定照样成立；或者作为规定标明可调的参数出现 ({@constitution:relaxations.adjustable-rules})。
+
+变更新增或改写的公开规定，其要求依赖于一个使用者换掉也不违背原则、又没有标明可调的取值的，即为违反本规定。
+'''
+
+[translations]
+zh = "2548494202bd721567991e374522e63c6dd7386a0c24ce5dd7f8366931df38ff"
