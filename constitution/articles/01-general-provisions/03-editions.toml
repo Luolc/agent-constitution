@@ -17,10 +17,10 @@ status = "draft"
 
 [items.content]
 en = '''
-An **edition** is one approved text of this constitution as a whole. It is named by the year and month in which the competent principal for this constitution ({@principals}) approved it (for example, the 2026-10 edition), and the title carries that name; no two editions open in the same month.
+An **edition** is one approved text of this constitution as a whole. It is named by the year and month in which the competent principal for this constitution ({@principals.competent}) approved it (for example, the 2026-10 edition), and the title carries that name; no two editions open in the same month.
 '''
 zh = '''
-**版** (edition) 指本宪法经批准的一份完整文本。每一版以本宪法的有权委托人 ({@principals}) 批准它生效的年月命名 (例如「2026-10 版」)，标题写明这个名字；同一个月内不制定两版。
+**版** (edition) 指本宪法经批准的一份完整文本。每一版以本宪法的有权委托人 ({@principals.competent}) 批准它生效的年月命名 (例如「2026-10 版」)，标题写明这个名字；同一个月内不制定两版。
 '''
 
 [[items]]
