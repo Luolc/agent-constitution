@@ -29,11 +29,11 @@ AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难�
 
 现行的是 2026-10 版，共十一条，讲安全、agent 依谁的授权行事、委托、验证、规定的位阶与演进，以及宪法本身怎样修改。宪法不提任何命令或工具，所以下面的规定怎么变，它都不用跟着变。
 
-宪法有英文和中文，每种语言各有两个版本：全文，以及给 agent 读的精简版，省去只写给人看的部分。可以在 **[网站](https://agent-constitution.luolc.com/zh/)** 上读，也可以看仓库里的 [`constitution/2026-10/generated/`](constitution/2026-10/generated/)。源文件是 TOML，每节一个文件，在 [`constitution/2026-10/`](constitution/2026-10/) 下；编号和修改的规矩见 [宪法](docs/design/zh/constitution.md)。
+宪法分全文和给 agent 读的精简版，精简版省去只写给人看的部分。可以在 **[网站](https://agent-constitution.luolc.com/zh/)** 上读，也可以看仓库里的 [`constitution/2026-10/generated/`](constitution/2026-10/generated/)。源文件是 TOML，每节一个文件，在 [`constitution/2026-10/`](constitution/2026-10/) 下；编号和修改的规矩见 [宪法](docs/design/zh/constitution.md)。
 
 ## 规定
 
-每条规定是一个文件 [`rules/<id>.toml`](rules/)，用英文写，附中文译文。规定的 ID 是数字，永不复用；正文分要求、理由和判定方法三部分，都写得够短，能够检查。规定挂在 domain 下面，例如安全、协作、验证、文档，每条都注明它细化的是宪法的哪些条款。规定先是 `trial` (试行) 状态，agent 发现某件事没有规定覆盖、动手写下的约定也一样，在实际工作中站住了脚，再转为 `active`。规定从不删除，只会被取代 (superseded) 或废止 (repealed)。
+每条规定是一个文件 [`rules/<id>.toml`](rules/)。规定的 ID 是数字，永不复用；正文分要求、理由和判定方法三部分，都写得够短，能够检查。规定挂在 domain 下面，例如安全、协作、验证、文档，每条都注明它细化的是宪法的哪些条款。规定先是 `trial` (试行) 状态，agent 发现某件事没有规定覆盖、动手写下的约定也一样，在实际工作中站住了脚，再转为 `active`。规定从不删除，只会被取代 (superseded) 或废止 (repealed)。
 
 文件格式、规定树、规定包和审查循环见 [规定体系](docs/design/zh/rule-system.md)。
 
@@ -49,14 +49,14 @@ cargo install --path agent-constitution/crates/statute
 然后在 agent 工作的那个仓库里 (这里假定克隆的目录就在它旁边)：
 
 ```sh
-statute init --source ../agent-constitution --public  # 写出 statute.toml；私有仓库用 --private
+statute init --source ../agent-constitution  # 写出 statute.toml；是否公开按 GitHub 显示的写，也可以用 --public / --private 指定
 statute add R43       # 启用规定 43，并写出 statute.lock
 statute lock          # 手改 statute.toml 之后重新解析
 statute compile       # 写出 AGENTS.md、skill 和检查
 statute check         # 列出已启用的规定，供审查
 ```
 
-大多数规定没法用脚本判定，所以工作要逐条规定地审。审查方运行 `statute check` 拿到按 domain 分组的清单：每条启用的规定一行，脚本判定不了的是 `review`，这占大多数；少数有脚本检查的，结果是 `pass`、`violation` 或 `inconclusive`；结果为 `review` 或 `inconclusive` 的规定后面紧跟它的理由和判定方法。审查方按 domain、按规定逐项过这份清单。有规定被违反时，`statute check` 的退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/statute-command.md#the-command-and-the-first-version)。
+大多数规定没法用脚本判定，所以工作要逐条规定地审：审查方运行 `statute check`，拿到按 domain 分组的已启用规定，脚本判定不了的标 `review`，再逐条过。有脚本检查的规定结果是 `pass`、`violation` 或 `inconclusive`，有规定被违反时 `statute check` 的退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/statute-command.md#the-command-and-the-first-version)。
 
 ## 开发
 

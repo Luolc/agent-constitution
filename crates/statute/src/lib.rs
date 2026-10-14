@@ -8,6 +8,7 @@ pub mod diag;
 pub mod lock;
 pub mod manifest;
 pub mod node;
+pub mod private;
 pub mod project;
 pub mod resolve;
 pub mod skill;

@@ -666,16 +666,97 @@ fn init_writes_a_rule_set_that_locks() {
     assert!(read(&dir, "statute.lock").contains("rule = \"R3\"\n"));
 }
 
-#[test]
-fn init_needs_to_be_told_whether_the_repository_is_public() {
-    let dir = bare_repo("init-public");
-    for args in [&["init"][..], &["init", "--public", "--private"]] {
-        let run = statute(&dir, args);
-        assert_eq!(run.code, 2, "{}", run.stderr);
-        assert!(!dir.join("statute.toml").exists());
+/// `statute init` with a fake gh first on `PATH`, which answers
+/// `repo view --json visibility` with `visibility`, or fails as gh does
+/// without a GitHub remote when it is `None`.
+fn init_asking(dir: &Path, args: &[&str], visibility: Option<&str>) -> Run {
+    let bin = dir.with_file_name(format!("{}-gh", dir.file_name().unwrap().to_string_lossy()));
+    let _ = std::fs::remove_dir_all(&bin);
+    std::fs::create_dir_all(&bin).unwrap();
+    let answer = match visibility {
+        Some(v) => format!("echo '{{\"visibility\":\"{v}\"}}'"),
+        None => "echo 'none of the git remotes configured for this repository point to a known GitHub host' >&2; exit 1".to_owned(),
+    };
+    let script = bin.join("gh");
+    std::fs::write(
+        &script,
+        format!("#!/bin/sh\n[ \"$*\" = 'repo view --json visibility' ] || exit 9\n{answer}\n"),
+    )
+    .unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
     }
-    ok(&statute(&dir, &["init", "--private"]));
-    assert!(read(&dir, "statute.toml").contains("\npublic = false\n"));
+    let _ = std::fs::remove_file(dir.join("statute.toml"));
+    let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+        .args(args)
+        .current_dir(dir)
+        .env(
+            "PATH",
+            format!("{}:{}", bin.display(), std::env::var("PATH").unwrap()),
+        )
+        .output()
+        .unwrap();
+    Run {
+        code: out.status.code().unwrap(),
+        stdout: String::from_utf8(out.stdout).unwrap(),
+        stderr: String::from_utf8(out.stderr).unwrap(),
+    }
+}
+
+#[test]
+fn init_asks_github_whether_the_repository_is_public() {
+    let dir = bare_repo("init-public");
+    let public = |dir: &Path| read(dir, "statute.toml").contains("\npublic = true\n");
+    let run = init_asking(&dir, &["init"], Some("PUBLIC"));
+    ok(&run);
+    assert!(public(&dir));
+    assert!(
+        run.stdout
+            .contains("`public = true`: GitHub shows the repository as PUBLIC\n"),
+        "{}",
+        run.stdout
+    );
+    let run = init_asking(&dir, &["init"], Some("PRIVATE"));
+    ok(&run);
+    assert!(!public(&dir));
+    assert!(
+        run.stdout
+            .contains("`public = false`: GitHub shows the repository as PRIVATE\n"),
+        "{}",
+        run.stdout
+    );
+    // INTERNAL, and no answer: public, the safe side, with a warning.
+    let run = init_asking(&dir, &["init"], Some("INTERNAL"));
+    ok(&run);
+    assert!(public(&dir));
+    assert_eq!(
+        run.stderr,
+        "statute.toml: warning: `public = true`: GitHub shows the repository as INTERNAL, which everyone in its enterprise can read, so nothing private is compiled into the committed AGENTS.md; if it is to be private, write `public = false`, as `statute init --private` does\n"
+    );
+    let run = init_asking(&dir, &["init"], None);
+    ok(&run);
+    assert!(public(&dir));
+    assert!(
+        run.stderr.starts_with("statute.toml: warning: `public = true`: GitHub could not tell whether the repository is public (gh repo failed (exit status: 1): none of the git remotes"),
+        "{}",
+        run.stderr
+    );
+    // --public and --private are not asked about: the fake exits 9 for
+    // any other call, and here would answer the other way.
+    let run = init_asking(&dir, &["init", "--public"], Some("PRIVATE"));
+    ok(&run);
+    assert!(public(&dir));
+    assert!(!run.stdout.contains("GitHub"), "{}", run.stdout);
+    let run = init_asking(&dir, &["init", "--private"], Some("PUBLIC"));
+    ok(&run);
+    assert!(!public(&dir));
+    assert!(run.stderr.is_empty(), "{}", run.stderr);
+    // Not both.
+    let run = init_asking(&dir, &["init", "--public", "--private"], Some("PUBLIC"));
+    assert_eq!(run.code, 2, "{}", run.stderr);
+    assert!(!dir.join("statute.toml").exists());
 }
 
 #[test]

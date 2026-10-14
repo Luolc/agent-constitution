@@ -8,6 +8,7 @@ use serde::Deserialize;
 
 use crate::diag::Diagnostics;
 use crate::manifest::{self, LOCAL, Manifest};
+use crate::private;
 use crate::resolve::{self, Resolution};
 use crate::source::{Source, Sources};
 
@@ -69,7 +70,76 @@ impl Project {
                 return (None, diags);
             }
         };
+        Project::from_manifest(root, manifest, diags)
+    }
 
+    /// The private layer of the public `project`, read from
+    /// `statute.private.toml` next to it, with the public rule set: `None`
+    /// and no finding when there is no such file. It fails when a rule
+    /// that only it enables overrides one that the public rule set
+    /// enables (`docs/design/rule-sources.md`, Overrides). Its findings
+    /// leave out those of `given`, the public rule set's.
+    pub fn load_private(project: &Project, given: &Diagnostics) -> (Option<Project>, Diagnostics) {
+        let root = &project.root;
+        let mut diags = Diagnostics::default();
+        match std::fs::read_to_string(root.join(private::MANIFEST)) {
+            Ok(text) => Project::with_private(project, given, &text),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => (None, diags),
+            Err(e) => {
+                diags.error(private::MANIFEST, format!("cannot read: {e}"));
+                (None, diags)
+            }
+        }
+    }
+
+    /// As `load_private`, with the text of `statute.private.toml` given.
+    pub fn with_private(
+        project: &Project,
+        given: &Diagnostics,
+        text: &str,
+    ) -> (Option<Project>, Diagnostics) {
+        let root = &project.root;
+        let mut diags = Diagnostics::default();
+        let manifest = match project.manifest.with_private(text) {
+            Ok(m) => m,
+            Err(errors) => {
+                for e in errors {
+                    diags.error(private::MANIFEST, e);
+                }
+                return (None, diags);
+            }
+        };
+        let (combined, mut diags) = Project::from_manifest(root, manifest, diags);
+        diags.0.retain(|d| !given.0.contains(d));
+        let Some(combined) = combined else {
+            return (None, diags);
+        };
+        let public = &project.resolution.enabled;
+        for (target, by) in &combined.resolution.overridden {
+            if public.contains_key(target) && !public.contains_key(by) {
+                diags.error(
+                    private::MANIFEST,
+                    format!(
+                        "`{by}` overrides \"{target}\", a rule of the public rule set `{}`; in a public repository (`public = true`), `{}` may only add rules",
+                        manifest::FILE,
+                        private::MANIFEST
+                    ),
+                );
+            }
+        }
+        if diags.has_errors() {
+            return (None, diags);
+        }
+        (Some(combined), diags)
+    }
+
+    /// The project of a rule set read already, its findings added to
+    /// `diags`.
+    fn from_manifest(
+        root: &Path,
+        manifest: Manifest,
+        mut diags: Diagnostics,
+    ) -> (Option<Project>, Diagnostics) {
         let mut list = Vec::new();
         for spec in &manifest.sources {
             let (mut source, more) = Source::load(

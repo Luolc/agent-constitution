@@ -137,6 +137,16 @@ struct Visibility {
     visibility: String,
 }
 
+/// The visibility GitHub shows for the repository at `root`, `PUBLIC`,
+/// `PRIVATE` or `INTERNAL`, as `gh repo view` gives it; or why gh could
+/// not tell.
+pub fn github_visibility(root: &Path) -> Result<String, String> {
+    let ctx = Context { root, base: None };
+    github::gh::<Visibility>(&ctx, &["repo", "view", "--json", "visibility"])
+        .map(|answer| answer.visibility)
+        .map_err(|report| report.note)
+}
+
 /// Compares the rule set's `public` with the repository's visibility on
 /// GitHub (`docs/design/rule-sources.md`, Public or not): a rule set that
 /// says private in a repository GitHub shows as public is a violation,
@@ -144,14 +154,15 @@ struct Visibility {
 pub fn visibility(project: &Project, ctx: &Context) -> Report {
     let declared = project.manifest.public;
     let said = format!("statute.toml says `public = {declared}`");
-    let answer: Visibility = match github::gh(ctx, &["repo", "view", "--json", "visibility"]) {
-        Ok(answer) => answer,
-        Err(mut report) => {
-            report.note = format!("{said}, and GitHub was not asked: {}", report.note);
-            return report;
+    let on_github = match github_visibility(ctx.root) {
+        Ok(on_github) => on_github,
+        Err(why) => {
+            return Report::new(
+                Outcome::Inconclusive,
+                format!("{said}, and GitHub was not asked: {why}"),
+            );
         }
     };
-    let on_github = answer.visibility;
     match (declared, on_github.as_str()) {
         (false, "PUBLIC") => Report {
             outcome: Outcome::Violation,
