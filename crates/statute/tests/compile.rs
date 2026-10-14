@@ -582,7 +582,7 @@ fn a_skill_naming_a_missing_rule_fails() {
 }
 
 #[test]
-fn the_checks_and_the_hooks_are_written_next_to_agents_md() {
+fn the_checks_are_written_next_to_agents_md() {
     let dir = repo("checks", &manifest(""));
     // Rule 5 (enabled) and rule 6 (not) run a command; rule 3 is reviewed.
     for (id, parent) in [(5, 4), (6, 4)] {
@@ -607,15 +607,6 @@ fn the_checks_and_the_hooks_are_written_next_to_agents_md() {
             statute::compile::GENERATED_HASH,
             env!("CARGO_PKG_VERSION")
         )
-    );
-    let hooks = std::fs::read_to_string(dir.join("sub/statute-hooks.yaml")).unwrap();
-    assert!(
-        hooks.starts_with(statute::compile::GENERATED_HASH),
-        "{hooks}"
-    );
-    assert!(
-        hooks.contains("        entry: statute check\n        language: system\n"),
-        "{hooks}"
     );
     assert!(!dir.join("statute-checks.toml").exists());
     // Without a command, the list is empty.
@@ -693,15 +684,10 @@ fn compile_writes_nothing_where_something_is_not_its_own() {
     const NOT_OURS: &str = "not written by statute, so it is left as it is and nothing is written";
     const NOT_A_DIRECTORY: &str = "not a directory but a link or a file, so nothing is written; statute writes one link per skill in .claude/skills";
     type Place = fn(&Path);
-    let cases: [(&str, Place, &str); 7] = [
+    let cases: [(&str, Place, &str); 6] = [
         (
             "checks-file",
             |d| std::fs::write(d.join("statute-checks.toml"), "mine\n").unwrap(),
-            NOT_OURS,
-        ),
-        (
-            "hooks-file",
-            |d| std::fs::write(d.join("statute-hooks.yaml"), "mine\n").unwrap(),
             NOT_OURS,
         ),
         (
