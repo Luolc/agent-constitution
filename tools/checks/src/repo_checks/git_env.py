@@ -5,6 +5,10 @@ and they win over `git -C <dir>`: a git run from a hook on another
 directory, a temporary repository in a test for one, acts on the repository
 of the commit instead. Every git these tools start passes `env=clean()`
 and finds its repository from `-C`.
+
+A copy of this file is tools/compiler/src/constitution_compiler/git_env.py
+so that the two workspace members do not depend on each other; keep the
+two copies equal.
 """
 
 import functools
