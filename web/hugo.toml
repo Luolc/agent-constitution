@@ -30,31 +30,29 @@ enableRobotsTXT = false
   [languages.zh.params]
     countWords = false
 
-# The sidebar lists the site's pages: the constitution, which is the home
-# page, with its version for agents under it. The names are short, the
-# site's title standing above them.
+# The sidebar lists the site's pages in groups, each a top-level entry
+# with the group's name in bold and an icon from assets/icons (BookIcon),
+# its pages as children. Today there is one group, the constitution, which
+# is the home page; its version for agents is not listed, as it is not
+# meant for people to read, and is linked from the home page. The icon is
+# the scales of Octicons' `law` (MIT license), as is GitHub's mark beside
+# the source link.
 [[languages.en.menus.before]]
   identifier = "constitution"
   name = "Constitution"
   pageRef = "/"
   weight = 1
-[[languages.en.menus.before]]
-  parent = "constitution"
-  title = "The version agents read"
-  name = "Agent version"
-  pageRef = "/agent"
-  weight = 1
+  [languages.en.menus.before.params]
+    class = "menu-group"
+    BookIcon = "law"
 [[languages.zh.menus.before]]
   identifier = "constitution"
   name = "宪法"
   pageRef = "/"
   weight = 1
-[[languages.zh.menus.before]]
-  parent = "constitution"
-  title = "agent 读到的版本"
-  name = "agent 版"
-  pageRef = "/agent"
-  weight = 1
+  [languages.zh.menus.before.params]
+    class = "menu-group"
+    BookIcon = "law"
 
 # The content is only this repo's own built constitution; raw HTML is
 # needed for its anchors (<a id="...">) and the asterisks
@@ -71,8 +69,8 @@ enableRobotsTXT = false
 [params]
   BookTheme = "auto"
   # The menu root is the home page; its one child, the version for
-  # agents, is hidden from the theme's list of pages and named in the
-  # menu above instead.
+  # agents, is hidden from the theme's list of pages, which the menu
+  # above replaces.
   BookSection = "/"
   BookToC = true
   BookSearch = false
