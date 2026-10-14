@@ -192,8 +192,8 @@ AGENTS.override.md -> .statute/AGENTS.full.md
   each other; the repetition is accepted.
 - A repository with a `CLAUDE.md` (a link to `AGENTS.md`, say) makes
   Claude Code read it as well as `CLAUDE.local.md`, so the public rules
-  come twice there too. `statute compile` warns when it finds one, with
-  a note that the link `CLAUDE.md` can go.
+  come twice there too; `statute compile` warns of a `CLAUDE.md`
+  ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 - OpenCode has no local file name of a repository. It reads the full
   text when its global configuration lists `.statute/AGENTS.full.md`
   under `instructions`, in addition to `AGENTS.md`, so it too reads the

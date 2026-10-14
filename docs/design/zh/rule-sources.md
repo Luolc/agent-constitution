@@ -1,4 +1,4 @@
-<!-- en-sha256: 5746dfa0b4889caf789f7ce75825d80153d3c75ffcd3a7486fe9b1b564b12d60 -->
+<!-- en-sha256: e331ea66fcb147c26ed1abe71bcb4689d2f5c76a0a5c3f5ca2029f334e9746ee -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明尚未实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -103,7 +103,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - Claude Code 读 `CLAUDE.local.md`，而且只要有这个文件就不再读 `AGENTS.md`，所以它只读全文。
 - Codex 和 Pi 读 `AGENTS.override.md`，用它代替同一目录下的 `AGENTS.md`，所以它们只读全文。
 - Grok 既读 `AGENTS.md` 也读 `CLAUDE.local.md`，所以公开规定它会读两遍。两遍是同样的规定，互不矛盾；这样的重复可以接受。
-- 仓库里有 `CLAUDE.md` 时 (比如指向 `AGENTS.md` 的软链)，Claude Code 除了 `CLAUDE.local.md` 也会读它，公开规定同样读两遍。`statute compile` 发现这种情况时给出 warning，提示可以删掉 `CLAUDE.md` 这个软链。
+- 仓库里有 `CLAUDE.md` 时 (比如指向 `AGENTS.md` 的软链)，Claude Code 除了 `CLAUDE.local.md` 也会读它，公开规定同样读两遍；`statute compile` 遇到 `CLAUDE.md` 会给出 warning ([编译与网站](statute-command.md#compilation-and-the-site))。
 - OpenCode 没有仓库层的本地文件名。它的全局配置在 `instructions` 里列出 `.statute/AGENTS.full.md` 时，它在 `AGENTS.md` 之外还读全文，所以公开规定它也读两遍；那是机器的配置，不归 statute 管。
 - 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.full.md` 时读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。全文里不写这一行。
 

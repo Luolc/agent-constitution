@@ -117,6 +117,18 @@ finishes it. The order makes that work: a skill's
 `.statute-generated` is written before its files, a link is removed
 before its directory, and the `AGENTS.md` is written last.
 
+A `CLAUDE.md` at the top of the repository, a file or a link to
+`AGENTS.md`, draws a warning on every `statute compile`, with or without
+a private layer: it is no longer needed, since Claude Code reads
+`AGENTS.md` when there is no `CLAUDE.md`
+([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
+Monorepos), and with the private output it makes Claude Code read the
+public rules twice
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+The warning says to delete it, and that a migration will rename it to a
+legacy copy, asking the user first. statute neither deletes nor renames
+it. Not built yet.
+
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).
 The constitution's compiler stays in Python for now
