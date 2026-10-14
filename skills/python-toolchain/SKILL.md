@@ -10,9 +10,9 @@ and the like) into pre-commit and CI so that each tool's version is
 written in one place, the repo's `uv.lock`, and the hooks never change the
 environment behind your back.
 
-Scope: the Python checks only. Hooks for other files (secret scanners,
-Markdown linters, prettier and other hooks from external repos) stay as
-they are.
+Scope: the Python checks, and (point 5) how Python scripts are run.
+Hooks for other files (secret scanners, Markdown linters, prettier and
+other hooks from external repos) stay as they are.
 
 ## The setup
 
@@ -174,16 +174,17 @@ Run these when you set this up or change it, in a clean checkout.
   test; the tool missing from it is. The other arm: the same command
   with `--no-sync` taken out of the hooks passes, and `.venv/bin/<tool>`
   is there. In a workspace, a bare `uv run` syncs only the root project
-  and does not install the members' dependencies, so a hook that needs
-  one fails without `--no-sync` too; use `--all-packages` in place of
-  `--no-sync` for this arm.
+  and what it depends on, so a hook that needs the dependency of a member
+  the root does not depend on fails without `--no-sync` too; use
+  `--all-packages` in place of `--no-sync` for this arm.
 - `uv-lock` takes effect: add a dependency to `pyproject.toml` without
   running `uv lock`. The `uv-lock` hook fails with `files were modified
   by this hook` and `uv.lock` is rewritten; stage it and the next run
   passes.
 - The widened `uv-lock` `files:` takes effect (workspace): with
   `--all-files` the root `pyproject.toml` is always in the file set, so
-  that run cannot tell. Change only a member's `pyproject.toml` and run
+  that run cannot tell. Add a dependency to a member's `pyproject.toml`,
+  change nothing else, and run
   `pre-commit run uv-lock --files <member>/pyproject.toml`: the widened
   hook reports `Failed`, the default one `(no files to check)Skipped`.
 
