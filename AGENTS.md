@@ -169,17 +169,20 @@ when the two disagree.
   the tokens are left uncounted, and with `--require-tokens` it fails
   instead (`docs/design.md`, Static site, Credential).
 - `gitleaks git --redact --no-banner --verbose .`: the full-history scan
-  that CI runs. Keep `--redact`; without it a hit prints the secret.
+  that `gitleaks.yml` runs weekly. Keep `--redact`; without it a hit
+  prints the secret.
 
 ## CI
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to `main`. Its
-one job, `check`, scans the full history with gitleaks (pinned by version and
-SHA-256), sets up uv at the version of the `uv-lock` hook's rev and syncs (`uv
-sync --locked --all-packages`, which fails on a stale lock), runs `uv run
-pre-commit run --all-files` with the gitleaks hook skipped, so `uv-lock`, the
-Python checkers, the constitution build check, the tests and both limae checks
-run there too, counts the tokens (without a credential, so they stay
+one job, `check`, scans the commits of the pull request or push with the
+official gitleaks action (gitleaks at the version of the `gitleaks` hook's
+rev; the full history is left to `gitleaks.yml`, below), sets up uv at the
+version of the `uv-lock` hook's rev and syncs (`uv sync --locked
+--all-packages`, which fails on a stale lock), runs `uv run pre-commit run
+--all-files` with the gitleaks hook skipped, so `uv-lock`, the Python
+checkers, the constitution build check, the tests and both limae checks run
+there too, counts the tokens (without a credential, so they stay
 uncounted), builds the static site with the pinned Hugo and checks its links,
 and then runs the build check with `--base` and the instruction-only check,
 both against the first parent of the checked-out merge commit on a pull
@@ -201,6 +204,10 @@ when the repository is public and the repository variable `PAGES_DEPLOY` is
 variable is a person's decision (`docs/design.md`, Static site). It is not a
 required check, and it goes red when the token exchange, the count, the Hugo
 build, the link check or the deployment fails.
+
+`.github/workflows/gitleaks.yml` scans the full history with the same action
+and gitleaks version, once a week and on a manual run. It finds an old secret
+that a newer gitleaks rule recognizes, and it is not a required check.
 
 ## Fleet
 
