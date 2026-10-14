@@ -458,6 +458,8 @@ class _Reader:
     before = len(self.errors)
     status = self.node_fields(doc, kind, path)
     texts = [("title", d["title"])]
+    if "applicability" in d:
+      texts.append(("applicability", d["applicability"]))
     if kind == "rule":
       self.rule_fields(doc)
       texts += [(f"text.{p}", d["text"][p]) for p in PARTS]
@@ -482,6 +484,7 @@ class _Reader:
         successors(d),
         d.get("authority", []),
         d["title"],
+        d.get("applicability", {}),
         {p: d["text"][p] for p in PARTS} if kind == "rule" else {},
         d.get("translations", {}),
         original,

@@ -1,4 +1,4 @@
-<!-- en-sha256: a1b139a0ae22c2515fd918e4ddbabb08e0e59d13df2883b0c03a639f00e46b72 -->
+<!-- en-sha256: dc2d121d719376b3bd7141f6cbba5777f2ddc76b9e1328579d752eaeefbe24f0 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -130,7 +130,7 @@ statute 不论在哪里提到一条规定，都用同一种写法：提示信息
 
 只有 parent 不够，因为许多规定横跨几个领域：「在 CI 里先运行 `uv sync --locked`」既依赖 uv，也依赖 CI 服务。它放在 uv 那条规定下面，并依赖 one-of「CI 服务」，这个 one-of 的任何一个子节点 (例如一条关于 GitHub Actions 的规定) 都能满足它。
 
-**领域。** 领域是树顶层的节点，例如 Python、CI、Git 或安全。除了 ID 和标题，它只有每个节点都有的那几个字段 ([规定文件格式](rule-format.md#rule-file-format))，没有正文和检查；它不能单独启用。它下面有任何一条规定启用时，它就作为标题出现在编译输出里。一个领域可以挂在一个没有 parent 的领域下面，成为子领域，所以领域最多嵌套两级 (见[子领域](rule-sources.md#subdomains)；尚未实现)；更细的分组用领域下面的规定或 one-of。
+**领域。** 领域是树顶层的节点，例如 Python、CI、Git 或安全。除了 ID 和标题，它只有每个节点都有的那几个字段，以及可选的 applicability，用一两句话说明它适用于哪些仓库 ([规定文件格式](rule-format.md#rule-file-format))，没有正文和检查；它不能单独启用。它下面有任何一条规定启用时，它就作为标题出现在编译输出里。一个领域可以挂在一个没有 parent 的领域下面，成为子领域，所以领域最多嵌套两级 (见[子领域](rule-sources.md#subdomains)；尚未实现)；更细的分组用领域下面的规定或 one-of。
 
 **one-of。** one-of 是 parent 树上的一种节点，在一份规定清单 (或者它的一个路径分段) 里，它的子节点至多启用一个。一个都不启用也可以，比如完全不用 Python 的仓库；这里的 one-of 从不表示「恰好一个」。Python 下的 one-of「Python 包管理器」有 uv、Poetry 和 Bazel 三个子节点。one-of 有 ID，增加一个 one-of 和增加一条规定一样要经过审查。依赖 one-of 的规定，只要它的任何一个子节点启用，就算满足。
 

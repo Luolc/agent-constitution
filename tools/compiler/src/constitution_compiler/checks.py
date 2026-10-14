@@ -201,7 +201,11 @@ def check_translations(node: Node, errors: Errors) -> None:
     errors: where errors go.
   """
   doc = node.doc
-  texts = {"title": node.title} | {f"text.{p}": t for p, t in node.text.items()}
+  texts = (
+    {"title": node.title}
+    | ({"applicability": node.applicability} if node.applicability else {})
+    | {f"text.{p}": t for p, t in node.text.items()}
+  )
   for field, table in texts.items():
     for lang in sorted(set(table) - {node.lang} ^ set(node.translations)):
       errors.add(

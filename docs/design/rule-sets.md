@@ -351,7 +351,8 @@ satisfied by any of its children, such as a GitHub Actions rule.
 
 **Domains.** A domain is a node at the top of the tree, such as Python,
 CI, Git or security. Besides its ID and title it has only the few fields
-every node has ([Rule file format](rule-format.md#rule-file-format)), and no text or
+every node has and an optional applicability, a sentence or two on which
+repositories it is for ([Rule file format](rule-format.md#rule-file-format)), and no text or
 check; it cannot be enabled on its own. When any rule
 below it is enabled, the domain appears in the compiled output as a heading. A
 domain may sit under a domain that has no parent, as a subdomain, so

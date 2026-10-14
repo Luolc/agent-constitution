@@ -132,6 +132,13 @@ lang = "en"
 
 [title]
 en = "Python"
+
+[applicability]
+en = '''
+How Python code is written, tested and packaged. Enable it in a
+repository that holds Python code; a repository with none does not need
+it.
+'''
 ```
 
 The fields:
@@ -192,6 +199,14 @@ The fields:
   the rule goes straight to the reviewer.
 - `[title]`: a short title, on one line (a multi-line string may end in a
   newline).
+- `[applicability]` (optional, a domain only): a sentence or two on what
+  the domain governs, which repositories should enable it and when one
+  need not. It may cite rules (`{@rule:<id>}`) and provisions as a rule's
+  text does ([IDs](source-formats.md#ids)). The compiled `AGENTS.md`
+  gives it under the domain's heading
+  ([Compilation and the site](statute-command.md#compilation-and-the-site)),
+  and the site under the title of the domain's page
+  ([Static site](static-site.md)).
 - `[text.statement]`, `[text.reason]` and `[text.verification]`: the three
   parts of the text ([What one rule holds](#what-one-rule-holds)).
 - `[translations]` (optional): one key per translated language, never the
@@ -200,16 +215,17 @@ The fields:
 
 A domain and a one-of have only `id`, `slug`, `revision`, `kind`,
 `status`, `lang`, `parent` (a one-of always, a domain only as a
-subdomain), `[title]` and, when the title
-is translated, `[translations]`. They have no text, check or other
-metadata.
+subdomain), `[title]`, `[applicability]` (a domain only, and optional)
+and, when they are translated, `[translations]`. They have no text,
+check or other metadata.
 
-**Languages.** Each text, `[title]` and the three parts, is a table whose
+**Languages.** Each text, `[title]`, `[applicability]` and the three parts, is a table whose
 keys are language codes, as in [Source formats](source-formats.md). The
 key `lang` names is required; every other language is an optional
 translation. A rule may therefore be written in one language only, by an
-author of any language. A translation gives the title and all three parts
-in its language, and its key in `[translations]` records which original it
+author of any language. A translation gives every text of the node
+(the title and all three parts of a rule; the title and any
+applicability of a domain) in its language, and its key in `[translations]` records which original it
 follows. That hash is the SHA-256 of the original-language values of
 `title`, `text.statement`, `text.reason` and `text.verification`, in this
 order, as the TOML parser returns them (before the build drops the
@@ -217,8 +233,10 @@ newlines next to the quotes of a multi-line string, see
 [Source formats](source-formats.md)), with each CRLF line end of the file
 taken as LF, so that a file checked out with either hashes the same (a
 `\r\n` written as an escape is not a line end and stays), encoded in
-UTF-8 and joined with one NUL byte (0x00) between each two; for a domain or a one-of it is the
-hash of the title alone. When the original changes and a translation's
+UTF-8 and joined with one NUL byte (0x00) between each two; for a domain
+with an applicability it is the hash of `title` and `applicability`,
+joined the same way, and for any other domain or a one-of the hash of
+the title alone. When the original changes and a translation's
 hash no longer matches, the check fails and prints the new hash, as
 `check-design-translation` does for the design. Compiled into a language,
 a rule uses its translation into that language when it has one, and its
