@@ -49,6 +49,23 @@ def render(lang: str, src: Sources, agent: bool = False) -> str:
   return _Renderer(lang, src, agent).text()
 
 
+def labels(lang: str, src: Sources) -> dict[str, str]:
+  """Return how the full version labels a citation of each provision.
+
+  The site gives a rule's citations of the constitution these labels
+  (tools/site).
+
+  Args:
+    lang: the language.
+    src: the sources.
+
+  Returns:
+    The label of each article, section and item, by citation:
+    `Art. IV §1(2)` for `principals.competent`.
+  """
+  return _Renderer(lang, src, False).labels
+
+
 class _Renderer:
   """The rendering of one language and version, with its number tables."""
 

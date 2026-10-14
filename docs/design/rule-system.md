@@ -766,8 +766,8 @@ The constitution's compiler stays in Python for now
 
 **The public site** lists every rule that is not superseded, so that
 people can choose from the full list. Its "Rules" section is a list,
-ordered along the parent tree, of 10 to 20 rules a page, each showing
-only its statement, cut short when it is long. Each rule has a page of
+ordered along the parent tree, of 15 rules a page
+([Static site](static-site.md)), each showing only its statement, cut short when it is long. Each rule has a page of
 its own with its reason and verification, its check, its requirements and
 conflicts (both sides of each conflict), the provisions of the
 constitution it cites, and all its metadata. A superseded rule keeps its

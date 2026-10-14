@@ -108,10 +108,13 @@ jobs:
       - name: Rust package check
         run: cargo publish --dry-run --locked -p statute
 
-      # The static site (docs/design/static-site.md) in three steps. The
-      # token count gets no credential here, so the pages say the tokens
-      # were not counted; Hugo writes site/ (publishDir in web/hugo.toml),
-      # failing on any warning; then the link check.
+      # The static site (docs/design/static-site.md) in four steps. The
+      # rules' data, web/data/rules.json, without which Hugo fails; the
+      # token count, which gets no credential here, so the pages say the
+      # tokens were not counted; Hugo writes site/ (publishDir in
+      # web/hugo.toml), failing on any warning; then the link check.
+      - name: Rule data
+        run: uv run --frozen site-rules
       - name: Token count
         run: uv run --frozen count-tokens
       - name: Build the static site
