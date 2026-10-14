@@ -1,0 +1,42 @@
+id = 122
+slug = "design-cites-by-id"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Cite the constitution and rules in the design by ID"
+zh = "设计里按 ID 引用宪法和规定"
+
+[text.statement]
+en = "In the design, cite the constitution or a rule by its ID without restating it."
+zh = "设计里引用宪法或规定只写 ID，不复述其内容。"
+
+[text.reason]
+en = '''
+A provision restated in the design drifts apart from its source when one of them changes, and the reader cannot tell which to trust ({@constitution:no-restating}).
+'''
+zh = '''
+设计里复述的条文，一旦哪一边改了就会与原文走样，读者也分不清该信哪一处 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+The design cites a provision of the constitution or a rule by its ID, as narrowly as the point allows (an item rather than its section), and does not repeat its text. Whether it does is judged in review.
+
+Violated when the design restates a cited provision.
+'''
+zh = '''
+设计引用宪法条文或规定时写它的 ID，按所说的内容尽量引得窄 (能引到项就不引整款)，不重复其原文。是否做到，由审查判断。
+
+设计复述了所引用的条文，即为违反本规定。
+'''
+
+[translations]
+zh = "0d82ea8fabb9a6f1a7f64da925be6a05e4a397c8b73e9fa14d360b043c5e74ea"

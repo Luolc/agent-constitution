@@ -1,8 +1,9 @@
 id = 20
 slug = "design-links"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [122, 123, 124]
 lang = "en"
 parent = 16
 authority = ["no-restating"]

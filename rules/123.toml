@@ -1,0 +1,48 @@
+id = 123
+slug = "design-link-form"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Make each link between design files lead to its heading"
+zh = "设计文件之间的链接要指向实有的标题"
+
+[text.statement]
+en = "In the design, link to another design file by a relative link to a heading that exists, with that heading's text, the file's title, or both as its text."
+zh = "设计里链接另一份设计文件，用相对路径链接到确实存在的标题，链接文字是那个标题的文字、那份文件的标题，或者两者都写。"
+
+[text.reason]
+en = '''
+A link is how the design points to the one place a fact is written ({@constitution:no-restating}); one that leads nowhere, or whose text names something else, loses the reader on the way there.
+'''
+zh = '''
+设计靠链接指向事实所在的那一处 ({@constitution:no-restating})；链接指向不存在之处，或者链接文字说的是别的东西，读者就找不到那里。
+'''
+
+[text.verification]
+en = '''
+- A link to another design file is relative, and its anchor names a heading that exists.
+- Its text is that heading's text, the file's title, or the title and the heading together.
+
+Where the repository has a check that every relative link of the design leads to a file, it runs in CI; whether an anchor exists and whether a link's text fits are judged in review.
+
+Violated when the design has a link that leads nowhere or whose text is none of the above.
+'''
+zh = '''
+- 指向另一份设计文件的链接用相对路径，锚点指向确实存在的标题。
+- 链接文字是那个标题的文字、那份文件的标题，或者文件标题加上那个标题。
+
+仓库如果有检查设计里每个相对链接都指向某个文件，这项检查在 CI 里运行；锚点是否存在、链接文字是否相符，由审查判断。
+
+设计里有指向不存在之处、或文字不符合上述要求的链接，即为违反本规定。
+'''
+
+[translations]
+zh = "8636c801d9f80dae708bdc55073f3c96cf2981bea24e10ef97391b074a8f8fc2"

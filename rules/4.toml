@@ -1,8 +1,9 @@
 id = 4
 slug = "find-next-work"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [116, 117, 118, 119, 120, 121]
 lang = "en"
 parent = 14
 authority = ["automation-first.keep-moving", "delivered-tasks"]
