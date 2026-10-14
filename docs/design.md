@@ -50,7 +50,7 @@ Non-goals:
 | --- | --- |
 | The constitution | Local parameters: the values the rules leave open (machines, model names, secret-store layout, lists of repos) |
 | General rules, a default set each jurisdiction chooses from | Private rules: rules that only make sense on that user's stack |
-| General skills | Private skills (for example the orchestra skill) |
+| General skills | Private skills (tools and workflows specific to that user) |
 | Compiler, checkers, private-term scanner | Provenance: the casebook of incidents and decisions, with dates and sources |
 | A fictional example overlay and its golden output | The private term list the scanner reads at run time |
 | Static fixtures | The apply step that runs the compiler and installs the output |
@@ -684,7 +684,7 @@ language, `constitution.<lang>.agent.md` (it does not read the
 constitution sources) and each rule's block in that
 language. Output: one file, installed by the overlay as
 the user-level instruction file that all three harnesses read through
-symlinks (`~/.agents/AGENTS.md` in the current setup), plus a build
+symlinks (a file in the home directory), plus a build
 manifest. Nothing else.
 
 Overlay layout:
@@ -723,8 +723,8 @@ The compiler is a deterministic concatenation, no model involved:
 
 Roles: there is one output for everyone. The core has no role sections. The
 overlay contributes, as a private rule, the one or two sentences that tell
-an agent how to tell whether it runs under fleet or as an orchestra, and
-which skill an orchestra reads.
+an agent how to tell whether it runs under fleet or under another way of
+working, and which skill, if any, that way of working reads.
 
 Wiring on the private side, as currently planned (how the content is
 installed is not decided yet): the overlay's apply step fetches the pinned core
