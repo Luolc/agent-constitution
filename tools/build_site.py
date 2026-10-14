@@ -35,8 +35,8 @@ import tomllib
 import urllib.error
 import urllib.request
 
-from build_constitution import OMITTED_MARK
 import check_site_anchors
+from constitution_render import OMITTED_MARK
 import git_env
 
 ROOT = Path(__file__).resolve().parent.parent
