@@ -4,10 +4,10 @@ Repo-specific notes for coding agents working on agent-constitution.
 
 This repo holds the constitution for coding agents, the general rule
 library and skills, and (later) the toolchain that compiles them, together
-with a private overlay, into the one instruction file the agents read. It is
-in draft: today it has the constitution and the general rules as TOML
-sources, the design and the script that builds the constitution; the rule
-compiler is not written yet.
+with a private overlay, into the one instruction file the agents read. The
+2026-10 edition of the constitution is in force. Today the repo has the
+constitution and the general rules as TOML sources, the design and the script
+that builds the constitution; the rule compiler is not written yet.
 
 ## Language
 
