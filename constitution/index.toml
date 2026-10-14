@@ -1,6 +1,6 @@
 status = "draft"
 edition = "2026-10"
-revision = "0.40"
+revision = "0.41"
 languages = ["en", "zh"]
 
 [title]
