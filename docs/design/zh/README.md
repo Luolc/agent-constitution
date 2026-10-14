@@ -1,4 +1,4 @@
-<!-- en-sha256: 3442744245164c438d78b4c5d6070763d0257101512c49a9597d10dad269b2f4 -->
+<!-- en-sha256: 4d06e975a7c9672b33597fdab87e7b4b0bfc48cec5bcad569ac015860619e5f9 -->
 # agent-constitution 设计
 
 状态：草案。这是本仓唯一的一份设计，由下面列出的几个文件组成。宪法本身从它的版目录 `constitution/2026-10/` 下的 `index.toml` 和 `articles/` 构建成两个版本：[英文版](../../../constitution/2026-10/generated/constitution.en.md)、[中文版](../../../constitution/2026-10/generated/constitution.zh.md)；本设计只按 ID 引用宪法 (见[源文件格式的 ID 一节](source-formats.md#ids))，从不复述它的内容。
@@ -21,3 +21,4 @@
 - [修正案与发布](amendments-and-releases.md)：批准修正案、发布与版本号。
 - [fleet 与迁移](fleet-and-migration.md)：与 fleet 的关系，以及怎样从手写的指南迁移过来。
 - [规定体系](rule-system.md)：计划中的规定体系 (规定编号、规定源与引用、规定清单与锁文件、依赖、检查与审查回路)，尚未实现，以及它将取代上面哪些部分。
+- [规定源](rule-sources.md)：四类规定源 (全局或本仓、公开或私有)、哪些规定可以引用哪些、覆盖、子领域，以及从手写的指南切换过来；尚未实现。

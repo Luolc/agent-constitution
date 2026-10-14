@@ -40,3 +40,6 @@ the whole design.
   rules, sources and references, rule sets and lock files, dependencies,
   checks and the review loop), not built yet, and which parts above it
   will replace.
+- [Rule sources](rule-sources.md): the four kinds of source (global or
+  local, public or private), which may cite which, overrides,
+  subdomains and the cutover from the hand-written guide; not built yet.
