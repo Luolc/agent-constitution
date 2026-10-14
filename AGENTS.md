@@ -141,9 +141,9 @@ when the two disagree.
   on the staged diff, `uv-lock` (`uv.lock` matches `pyproject.toml`), the
   Python checkers below, the constitution build check, the tests of each
   member, `check-design-translation`, `lint-zh-sources` and limae on
-  `constitution/2026-10/generated/constitution.zh.md`,
-  `constitution/2026-10/generated/constitution.zh.agent.md` and
-  `docs/design/zh/*.md`.
+  every Markdown file of the repo except `web/themes/`. A limae false
+  positive on a line is passed over with a `<!-- limae-disable-next-line
+  <rule> -->` comment above it, not by switching the rule off.
 - The Python checkers, configured in `pyproject.toml`, each a commit hook:
   `uv run ruff check .`, `uv run ruff format --check .` (`uv run ruff
   format .` to apply), `uv run pydoclint --config pyproject.toml --quiet
@@ -170,8 +170,8 @@ when the two disagree.
 - `uv run lint-zh-sources`: runs limae on the `zh` text of the
   constitution and rule sources and prints `file:line: field: finding`;
   `--fix` writes limae's fixes back into the sources. A limae finding in
-  either built Chinese file is fixed in the sources or the build script,
-  never in that file.
+  a built file (the four under `generated/`) is fixed in the sources or the
+  build script, never in that file.
 - `uv run check-design-translation`: fails when `docs/design/zh/` and
   `docs/design/` do not hold the same files, a translation's hash line
   is not its English file's SHA-256 now, a heading's level or anchor
