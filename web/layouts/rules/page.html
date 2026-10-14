@@ -3,12 +3,14 @@
   when the text is not in the page's language; a rule's statement, reason
   and verification, their citations linked; the provisions of the
   constitution it cites; its relations; and all its metadata. A domain or
-  a one-of has no text, and lists the nodes below it. */ -}}
+  a one-of has no text, and lists the nodes below it. The title starts
+  with the node's label; the table of contents at the right lists the
+  headings below it. */ -}}
 {{ define "main" }}
 {{- $rule := .Params.rule }}
 {{- $lang := site.Language.Lang }}
 <article class="markdown book-article"><div class="design rules rule">
-<h1 lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</h1>
+<h1><span class="rule-label">{{ $rule.label }}</span> <span lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</span></h1>
 {{- with $rule.supersededBy }}
   {{- $links := slice }}
   {{- range . }}{{ $links = $links | append (partial "rules/link.html" .) }}{{ end }}
@@ -20,21 +22,21 @@
 {{- with $rule.text }}
 <div class="rule-text" lang="{{ $rule.shown }}">
 <div class="statement">{{ .statement | $.RenderString (dict "display" "block") }}</div>
-<h2>{{ i18n "rule-reason" }}</h2>
+<h2 id="reason">{{ i18n "rule-reason" }}</h2>
 {{ .reason | $.RenderString (dict "display" "block") }}
-<h2>{{ i18n "rule-verification" }}</h2>
+<h2 id="verification">{{ i18n "rule-verification" }}</h2>
 {{ .verification | $.RenderString (dict "display" "block") }}
 </div>
 {{- end }}
 {{- with $rule.authority }}
-<h2>{{ i18n "rule-authority" }}</h2>
+<h2 id="authority">{{ i18n "rule-authority" }}</h2>
 <ul class="rule-authority">
   {{- range . }}
 <li><a href="../../#{{ .ref }}">{{ .label }}</a> <code>{{ .ref }}</code></li>
   {{- end }}
 </ul>
 {{- end }}
-<h2>{{ i18n "rule-relations" }}</h2>
+<h2 id="relations">{{ i18n "rule-relations" }}</h2>
 <dl class="rule-meta">
 {{- range slice "parent" "children" "requires" "conflicts" }}
   {{- $value := index $rule . }}
@@ -44,7 +46,7 @@
   {{- end }}
 {{- end }}
 </dl>
-<h2>{{ i18n "rule-metadata" }}</h2>
+<h2 id="metadata">{{ i18n "rule-metadata" }}</h2>
 <dl class="rule-meta">
 <dt>{{ i18n "rule-id" }}</dt><dd><code>{{ $rule.id }}</code></dd>
 {{- range $field := slice "revision" "kind" "status" "slug" "level" "constitution" "check" "run" "tools" }}
@@ -59,4 +61,17 @@
 </dl>
 </div>
 </article>
+{{ end }}
+
+{{- /* The table of contents: the page's headings, as above. */ -}}
+{{ define "toc" }}
+{{ partial "docs/inject/toc-before" . }}
+{{- $rule := .Params.rule }}
+<nav id="TableOfContents"><ul>
+{{- range slice "reason" "verification" "authority" "relations" "metadata" }}
+  {{- if or (and $rule.text (in (slice "reason" "verification") .)) (and $rule.authority (eq . "authority")) (in (slice "relations" "metadata") .) }}
+<li><a href="#{{ . }}">{{ i18n (printf "rule-%s" .) }}</a></li>
+  {{- end }}
+{{- end }}
+</ul></nav>
 {{ end }}

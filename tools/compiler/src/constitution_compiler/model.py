@@ -280,7 +280,7 @@ class Section:
   Attributes:
     doc: its file.
     id: its ID.
-    article: the number of its article.
+    article: the ID of its article.
     number: its number, from the file name.
     status: draft, active or repealed.
     repealed: the month it was repealed, if it was.
@@ -396,6 +396,21 @@ class Sources:
       | {s.id for s in self.sections}
       | {i.ref for i in self.items}
     )
+
+  @cached_property
+  def ancestors(self) -> dict[str, tuple[str, ...]]:
+    """Return the provisions above each provision.
+
+    Returns:
+      For each citation of a section, its article; for each item, its
+      section and its article; nearest first.
+    """
+    above: dict[str, tuple[str, ...]] = {}
+    for s in self.sections:
+      above[s.id] = (s.article,)
+      for i in s.items:
+        above[i.ref] = (s.id, s.article)
+    return above
 
   @cached_property
   def repealed(self) -> set[str]:

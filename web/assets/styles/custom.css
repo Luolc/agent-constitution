@@ -334,6 +334,34 @@
    relations and metadata in two columns. */
 .rules .rules-intro { color: var(--c-muted); }
 .rules .rules-group { margin-bottom: .4em; }
+/* A rule's repeated group headings show only where it starts a page
+   (layouts/rules/section.html). */
+.rules .rule-item:not(.first) .rules-group.repeat { display: none; }
+/* The page size above the list, and the links to the pages below it,
+   in the muted color, the current page bold. */
+.rules .rules-size { color: var(--c-muted); font-size: .9em; }
+.rules .rules-size select {
+  font: inherit;
+  color: var(--c-ink);
+  background: var(--c-paper);
+  border: 1px solid var(--c-rule);
+  border-radius: .3em;
+  padding: .1em .3em;
+  margin-inline-start: .3em;
+}
+.rules .rules-size select:focus-visible { outline: 2px solid var(--c-accent); }
+.rules .rules-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .3em 1em;
+  margin-top: 1.5em;
+  font-variant-numeric: tabular-nums;
+}
+.rules .rules-pager a { flex: none; width: auto; text-decoration: none; }
+.rules .rules-pager a[aria-current] { font-weight: var(--c-weight-bold); color: var(--c-ink); }
+.rules h1 .rule-label { color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.book-toc li.toc-sub { padding-inline-start: 1em; }
 .rules a.rule-entry[href] {
   display: flex;
   gap: .8em;
@@ -343,7 +371,7 @@
 }
 .rules a.rule-entry[href]:hover .rule-statement { color: var(--c-accent); }
 .rules .rule-id {
-  flex: 0 0 2em;
+  flex: 0 0 2.6em;
   text-align: end;
   color: var(--c-muted);
   font-variant-numeric: tabular-nums;
@@ -371,7 +399,11 @@
 .rules dl.rule-meta dt { color: var(--c-muted); font-weight: inherit; }
 
 /* The rules under a provision that cites them, on a line of their own,
-   smaller and muted. */
+   smaller and muted: a button of their labels in boxes, or of a count,
+   with a ring holding a plus, as faint as the ring on the counts under
+   the title, that turns to a minus while the list under it is open
+   (layouts/_partials/rules/cites.html). In the list, each rule's label
+   in the muted color before its title. */
 .constitution .cited-by {
   display: block;
   margin: .2em 0 .4em;
@@ -380,6 +412,53 @@
   color: var(--c-muted);
 }
 .constitution p.cited-by { text-align: start; }
+.constitution .cites + .cites { margin-inline-start: 1.2em; }
+.constitution .cites-button {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3em;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.constitution .cites-button:hover,
+.constitution .cites.open .cites-button { color: var(--c-ink); }
+.constitution .cites-button:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; border-radius: .2em; }
+.constitution .cites-box {
+  padding: 0 .3em;
+  border: 1px solid var(--c-rule);
+  border-radius: .25em;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.constitution .cites-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: .7;
+  line-height: 1;
+}
+.constitution .cites-toggle::before { content: "+"; }
+.constitution .cites.open .cites-toggle::before { content: "\2212"; }
+.constitution .cites-list { display: none; margin: .3em 0 .2em; }
+.constitution .cites.open .cites-list { display: block; }
+.constitution .cites-item { display: block; }
+.constitution .cites-label {
+  display: inline-block;
+  min-width: 2.6em;
+  margin-inline-end: .4em;
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
 
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text

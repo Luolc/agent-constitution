@@ -15,13 +15,13 @@
   "kind" "section"
   "path" "."
   "title" (i18n "rules")
-  "params" (dict "bookHidden" true "BookToC" false)
+  "params" (dict "bookHidden" true)
 ) }}
 {{- range $i, $node := $data.nodes }}
   {{- $.AddPage (dict
     "path" (string $node.id)
     "title" $node.title
     "weight" (add $i 1)
-    "params" (dict "rule" $node "bookHidden" true "BookToC" false)
+    "params" (dict "rule" $node "bookHidden" true)
   ) }}
 {{- end }}

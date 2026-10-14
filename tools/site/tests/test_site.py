@@ -7,9 +7,10 @@ from data/lengths.json only when it counted the same text. A made-up
 design gets its pages, in the sidebar's design group, with its links
 rewritten for the site and the English text where a translation is
 missing. The rules of site_fixture, through site-rules, get their list,
-paginated and without the superseded rule, a page each and a line under
-each provision they cite. The template tests need hugo-0.167.0 and are
-skipped without it, except in CI.
+paginated and without the superseded rule, a page each, both with a table
+of contents, and a folded line under each provision they cite. The
+template tests need hugo-0.167.0 and are skipped without it, except in
+CI.
 """
 
 import hashlib
@@ -77,6 +78,13 @@ DESIGN["zh/one.md"] = (
 INDEX = (
   'status = "draft"\nedition = "2026-10"\nrevision = "0.6"\n'
   'languages = ["en", "zh"]\n'
+)
+
+
+# A group heading of the list of the rules: its level, whether it repeats
+# its group for a rule that may start a page, the group and its id.
+HEADING = re.compile(
+  r'<h(\d) class="rules-group( repeat)?" data-group="(\d+)"( id="[^"]*")?>'
 )
 
 
@@ -323,21 +331,39 @@ class SiteTest(unittest.TestCase):
     """The list shows the rules not superseded, under their groups."""
     raw = self.build(raw=True)
     pages = {p: visible(t) for p, t in raw.items()}
+    page = raw["rules/index.html"]
     self.assertIn(
-      "Superseded rules are not listed. Group 1 Group 2 3 See Art. I §1 and"
-      " rule 6. 5 New. 6 Under five, see Art. I §1(1).",
+      "Superseded rules are not listed. Rules per page 25 50 100 All Group 1"
+      " Group 2 R3 See Art. I §1 and rule 6.",
       pages["rules/index.html"],
     )
-    entries = re.findall(
-      r'class="rule-entry" href="([^"]+)"', raw["rules/index.html"]
-    )
+    entries = re.findall(r'class="rule-entry" href="([^"]+)"', page)
     self.assertEqual(entries, ["../rules/3/", "../rules/5/", "../rules/6/"])
     self.assertIn(
-      "组 1 组 2 3 见第一条第一款和规定 6。 5 New.",
-      pages["zh/rules/index.html"],
+      "组 1 组 2 R3 见第一条第一款和规定 6。", pages["zh/rules/index.html"]
     )
+    self.assertIn('style="--indent: 1"><span class="rule-id">R6', page)
+    # Each rule after the first repeats its group, hidden and without an id
+    # unless it starts a page; all three are on the one page.
+    self.assertEqual(
+      HEADING.findall(page),
+      [
+        ("2", "", "1", ' id="group-1"'),
+        ("3", "", "2", ' id="group-2"'),
+        ("2", " repeat", "1", ""),
+        ("2", " repeat", "1", ""),
+      ],
+    )
+    self.assertEqual(page.count('<div class="rule-item">'), 2)
+    self.assertIn('<div class="rule-item first">', page)
     self.assertIn(
-      'style="--indent: 1"><span class="rule-id">6', raw["rules/index.html"]
+      '<form class="rules-size" action="../rules/" method="get" hidden>', page
+    )
+    self.assertIn('<option value="100" selected>', page)
+    self.assertIn(
+      '<nav id="TableOfContents"><ul>\n<li><a href="#group-1">Group 1</a></li>'
+      '\n<li class="toc-sub"><a href="#group-2">Group 2</a></li>\n</ul></nav>',
+      page,
     )
     self.assertIn(
       "Constitution 2026-10 Edition (draft) Rules Design", pages["index.html"]
@@ -345,14 +371,37 @@ class SiteTest(unittest.TestCase):
     self.assertIn("宪法 2026-10 版 (草案) 规定 设计", pages["zh/index.html"])
 
   def test_rules_list_pages(self):
-    """Each page of the list heads its first rule with the rule's groups."""
-    pages = self.build(per_page=2)
-    self.assertIn("Group 1 Group 2 3 See", pages["rules/index.html"])
-    self.assertNotIn("Under five", pages["rules/index.html"])
-    self.assertIn(
-      "Superseded rules are not listed. Group 1 6 Under five",
-      pages["rules/page/2/index.html"],
+    """Every page holds every rule, those of other pages hidden.
+
+    Each page of the list heads its first rule with the rule's groups, and
+    its table of contents lists those shown.
+    """
+    raw = self.build(raw=True, per_page=2)
+    one, two = raw["rules/index.html"], raw["rules/page/2/index.html"]
+    for page in (one, two):
+      self.assertEqual(
+        re.findall(r'class="rule-entry" href="[^"]*/(\d)/"', page),
+        ["3", "5", "6"],
+      )
+    self.assertIn('data-size="2" data-first="0"', one)
+    self.assertIn('data-size="2" data-first="2"', two)
+    self.assertEqual(one.count('<div class="rule-item" hidden>'), 1)
+    self.assertEqual(two.count('<div class="rule-item" hidden>'), 2)
+    self.assertIn('<div class="rule-item first">', two)
+    # On page 2, rule 6's repeated group is the one shown, with the id.
+    self.assertEqual(
+      HEADING.findall(two),
+      [
+        ("2", "", "1", ""),
+        ("3", "", "2", ""),
+        ("2", " repeat", "1", ""),
+        ("2", " repeat", "1", ' id="group-1"'),
+      ],
     )
+    self.assertIn('<li><a href="#group-1">Group 1</a></li>\n</ul>', two)
+    self.assertNotIn("#group-2", two)
+    self.assertIn('<a href="../rules/page/2/">2</a>', one)
+    self.assertIn('<a aria-current="page">2</a>', two)
 
   def test_rule_pages(self):
     """Every node has a page; a superseded rule's names its successors."""
@@ -362,33 +411,44 @@ class SiteTest(unittest.TestCase):
       for node_id in range(1, 7):
         self.assertIn(f"{lang}rules/{node_id}/index.html", pages)
     self.assertIn(
-      "Rule 4 Superseded by 5. Rule 5 , 6. Rule 6 . Old. Reason Why.",
+      "R4 Rule 4 Superseded by R5 Rule 5 , R6 Rule 6 . Old. Reason Why.",
       pages["rules/4/index.html"],
     )
     # The successors joined as each language writes a list.
     self.assertIn("</a>, <a", raw["rules/4/index.html"])
     self.assertIn("</a>、<a", raw["zh/rules/4/index.html"])
     self.assertNotIn("Superseded by", pages["rules/5/index.html"])
+    # Rule 3 names `one` and `one-a`, under it: only `one-a` is listed.
     self.assertIn(
-      "Rule 3 See Art. I §1 and rule 6 . Reason Why. Verification Violated when"
-      " not. Provisions of the constitution it cites Art. I one Art. I §1 one-a"
-      " Relations Parent 2. Group 2 Requires none Conflicts with 5. Rule 5"
+      "R3 Rule 3 See Art. I §1 and rule 6 . Reason Why. Verification Violated"
+      " when not. Provisions of the constitution it cites Art. I §1 one-a"
+      " Relations Parent R2 Group 2 Requires none Conflicts with R5 Rule 5"
       " Metadata ID 3 Revision 2 Kind rule Status active Default level project"
       " Constitution revisions >=1 Check review Original language English en"
-      " Translations Chinese zh",
+      " Translations Chinese zh On this page Reason Verification Provisions of"
+      " the constitution it cites Relations Metadata",
       pages["rules/3/index.html"],
     )
-    for href in ("../../#one-a", "../6/", "../../#one", "../2/", "../5/"):
+    self.assertIn(
+      '<h1><span class="rule-label">R3</span> <span lang="en">Rule 3</span>',
+      raw["rules/3/index.html"],
+    )
+    for href in ("../../#one-a", "../6/", "../2/", "../5/", "#metadata"):
       self.assertIn(f'href="{href}"', raw["rules/3/index.html"])
     self.assertIn(
-      "Conflicts with 3. Rule 3 team:7", pages["rules/5/index.html"]
+      "Conflicts with R3 Rule 3 team:7", pages["rules/5/index.html"]
     )
     self.assertIn(
-      "Group 1 Relations Below it 2. Group 2 4. Rule 4 5. Rule 5",
+      "R1 Group 1 Relations Below it R2 Group 2 R4 Rule 4 R5 Rule 5"
+      " Metadata ID 1",
       pages["rules/1/index.html"],
     )
+    # A domain has no text: its contents list only the headings it has.
     self.assertIn(
-      "规定 3 见 第一条第一款 和 规定 6 。 理由 为何。",
+      "On this page Relations Metadata", pages["rules/1/index.html"]
+    )
+    self.assertIn(
+      "R3 规定 3 见 第一条第一款 和 规定 6 。 理由 为何。",
       pages["zh/rules/3/index.html"],
     )
     # Rule 4's translation follows an older original: shown as none is.
@@ -417,17 +477,38 @@ class SiteTest(unittest.TestCase):
         self.assertIn(f'href="{href}" class="menu-group{mark}"', raw[page])
 
   def test_rules_under_provisions(self):
-    """Under each provision, the rules not superseded that cite it."""
+    """Under each provision, the rules not superseded that cite it, folded.
+
+    Rule 3 names `one` and `one-a`, under it, so it is under `one-a`
+    alone; the article also counts the rules that cite a provision under
+    it, which the section, with nothing under it cited, does not.
+    """
     raw = self.build(raw=True)
     pages = {p: visible(t) for p, t in raw.items()}
     self.assertIn(
-      "Article One * Rules citing this provision: Rule 3 , Rule 5 One two"
-      " three. §1 Section. Rules citing this provision: Rule 3 On this page",
+      "Article One * R5 R5 Rule 5 3 rules cite this article or a provision"
+      " under it R3 Rule 3 R5 Rule 5 R6 Rule 6 One two three. §1 Section. R3"
+      " R3 Rule 3 On this page",
       pages["index.html"],
     )
-    self.assertIn('<a href="rules/3/">Rule 3</a>', raw["index.html"])
-    self.assertIn("引用本条款的规定： 规定 3 , Rule 5", pages["zh/index.html"])
-    self.assertNotIn("citing", pages["agent/index.html"])
+    page = raw["index.html"]
+    self.assertIn(
+      '<button type="button" class="cites-button" aria-expanded="false"'
+      ' aria-controls="cites-one-a" aria-label="Rules citing this provision:'
+      ' 1" title="Rules citing this provision: 1"><span class="cites-box">R3'
+      '</span><span class="cites-toggle" aria-hidden="true"></span></button>'
+      '<span class="cites-list" id="cites-one-a" role="list">',
+      page,
+    )
+    self.assertIn(
+      '<a href="rules/3/"><span class="cites-label">R3</span>Rule 3</a>', page
+    )
+    self.assertEqual(page.count('aria-controls="cites-within-'), 1)
+    self.assertIn('id="cites-within-one"', page)
+    self.assertNotIn('id="cites-within-one-a"', page)
+    self.assertIn("本条及其下各款、项共被 3 条规定引用", pages["zh/index.html"])
+    self.assertNotIn('class="cites"', raw["agent/index.html"])
+    self.assertIn('class="cites"', raw["zh/index.html"])
 
   def test_no_rules_data(self):
     """Without data/rules.json the build fails."""

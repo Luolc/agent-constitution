@@ -56,4 +56,12 @@ rule-lang: "原文语言"
 rule-translations: "译文"
 language-en: "英文"
 language-zh: "中文"
-cited-by: "引用本条款的规定："
+# 条款下引用它的规定、本条及其下各款和项的规定，二者的按钮 (content/_content.gotmpl)。
+cited-by: "引用本条款的规定：{{ .Count }} 条"
+cited-within: "本条及其下各款、项共被 {{ .Count }} 条规定引用"
+# 规定列表和它的控件 (layouts/rules/section.html)。
+rules-per-page: "每页条数"
+rules-all: "全部"
+rules-previous: "上一页"
+rules-next: "下一页"
+rules-pages: "列表的页码"

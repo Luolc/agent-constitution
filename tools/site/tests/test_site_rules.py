@@ -2,8 +2,9 @@
 
 On the made-up checkout of site_fixture: the order along the parent tree,
 which rules the lists show, the language each node is shown in, the
-citations as links, conflicts on both sides and the rules under each
-provision.
+citations as links, conflicts on both sides, the labels, the narrowest
+provisions of an `authority`, and the rules under each provision and
+within each article.
 """
 
 import json
@@ -38,7 +39,9 @@ class SiteRulesTest(unittest.TestCase):
     nodes = self.nodes("en")
     self.assertEqual([g["id"] for g in nodes[3]["groups"]], [1, 2])
     self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
-    self.assertEqual(nodes[5]["children"], [{"id": 6, "title": "Rule 6"}])
+    self.assertEqual(
+      nodes[5]["children"], [{"id": 6, "label": "R6", "title": "Rule 6"}]
+    )
 
   def test_superseded_has_a_page_but_is_not_listed(self):
     nodes = self.nodes("en")
@@ -46,12 +49,15 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(listed, [3, 5, 6])
     self.assertEqual(
       nodes[4]["supersededBy"],
-      [{"id": 5, "title": "Rule 5"}, {"id": 6, "title": "Rule 6"}],
+      [
+        {"id": 5, "label": "R5", "title": "Rule 5"},
+        {"id": 6, "label": "R6", "title": "Rule 6"},
+      ],
     )
     self.assertEqual(nodes[4]["text"]["statement"], "Old.")
-    # The superseded rule 4 also names `one`; only 3 and 5 are under it.
+    # The superseded rule 4 also names `one`; only 5 is under it.
     cited = self.data["en"]["citedBy"]
-    self.assertEqual([r["id"] for r in cited["one"]], [3, 5])
+    self.assertEqual([r["id"] for r in cited["one"]], [5])
     self.assertEqual([r["id"] for r in cited["one-a.x"]], [6])
 
   def test_shown_language(self):
@@ -66,7 +72,7 @@ class SiteRulesTest(unittest.TestCase):
         self.assertEqual(zh[node_id]["translations"], [])
         self.assertEqual(zh[node_id]["title"], f"Rule {node_id}")
     self.assertEqual(zh[5]["supersededBy"], [])
-    self.assertEqual(zh[3]["parent"], {"id": 2, "title": "组 2"})
+    self.assertEqual(zh[3]["parent"], {"id": 2, "label": "R2", "title": "组 2"})
 
   def test_citations_are_links(self):
     en, zh = self.nodes("en"), self.nodes("zh")
@@ -84,20 +90,53 @@ class SiteRulesTest(unittest.TestCase):
       "Under five, see [Art. I §1(1)](../../#one-a.x).",
     )
     self.assertEqual(
-      zh[3]["authority"],
+      zh[6]["authority"], [{"ref": "one-a.x", "label": "第一条第一款第一项"}]
+    )
+
+  def test_label(self):
+    for lang in ("en", "zh"):
+      nodes = self.nodes(lang)
+      self.assertEqual(
+        [n["label"] for n in nodes.values()],
+        ["R1", "R2", "R3", "R4", "R5", "R6"],
+      )
+      self.assertEqual(nodes[3]["groups"][1]["label"], "R2")
+    self.assertEqual(site_rules.rule_label(12), "R12")
+
+  def test_authority_keeps_the_narrowest(self):
+    """Rule 3 names `one` and `one-a`, under it; rule 5 names `one` alone."""
+    nodes = self.nodes("en")
+    self.assertEqual([a["ref"] for a in nodes[3]["authority"]], ["one-a"])
+    self.assertEqual([a["ref"] for a in nodes[5]["authority"]], ["one"])
+    cited = self.data["en"]["citedBy"]
+    self.assertEqual([r["id"] for r in cited["one-a"]], [3])
+    self.assertNotIn(3, [r["id"] for r in cited["one"]])
+
+  def test_cited_within_an_article(self):
+    """An article counts the rules that cite it or a provision under it."""
+    within = self.data["zh"]["citedWithin"]
+    self.assertEqual(list(within), ["one"])
+    self.assertEqual(
+      within["one"],
       [
-        {"ref": "one", "label": "第一条"},
-        {"ref": "one-a", "label": "第一条第一款"},
+        {"id": 3, "label": "R3", "title": "规定 3"},
+        {"id": 5, "label": "R5", "title": "Rule 5"},
+        {"id": 6, "label": "R6", "title": "Rule 6"},
       ],
     )
 
   def test_conflicts_on_both_sides(self):
     nodes = self.nodes("en")
     self.assertEqual(
-      nodes[5]["conflicts"], [{"id": 3, "title": "Rule 3"}, {"ref": "team:7"}]
+      nodes[5]["conflicts"],
+      [{"id": 3, "label": "R3", "title": "Rule 3"}, {"ref": "team:7"}],
     )
-    self.assertEqual(nodes[3]["conflicts"], [{"id": 5, "title": "Rule 5"}])
-    self.assertEqual(nodes[5]["requires"], [{"id": 3, "title": "Rule 3"}])
+    self.assertEqual(
+      nodes[3]["conflicts"], [{"id": 5, "label": "R5", "title": "Rule 5"}]
+    )
+    self.assertEqual(
+      nodes[5]["requires"], [{"id": 3, "label": "R3", "title": "Rule 3"}]
+    )
     self.assertEqual(nodes[6]["conflicts"], [])
 
   def test_metadata(self):

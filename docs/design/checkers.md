@@ -45,7 +45,12 @@ first one that finds errors, printing all of that one's errors:
 5. References: each `{@...}` and each `authority` entry resolves; a
    repealed target (an item of a repealed section counts as repealed) is an
    error; the constitution cites only itself, without a namespace; a rule
-   cites with `constitution:` or `rule:`.
+   cites with `constitution:` or `rule:`. A rule whose `authority` names a
+   provision and one above it (an item and its section or article, a
+   section and its article) is not an error: once the checks pass, the
+   build, with or without `--check`, prints a warning for each such pair,
+   `path:line: warning: rule <id>: authority names both <above> and
+   <below>, which is under it`, and its exit status stays as it was.
 6. A fresh build equals the committed `constitution.<lang>.md` and
    `constitution.<lang>.agent.md` files byte for byte (only under
    `--check`).

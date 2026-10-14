@@ -34,7 +34,7 @@
     }, { rootMargin: "100000px 0px -70% 0px" });
     headings.forEach(function (heading) { line.observe(heading); });
     var end = document.createElement("div");
-    headings[0].parentElement.append(end);
+    (headings[0].closest("article") || headings[0].parentElement).append(end);
     new IntersectionObserver(function (entries) {
       atEnd = entries[entries.length - 1].isIntersecting;
       mark();

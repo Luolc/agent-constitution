@@ -59,4 +59,15 @@ rule-lang: "Original language"
 rule-translations: "Translations"
 language-en: "English"
 language-zh: "Chinese"
-cited-by: "Rules citing this provision:"
+# The button over the rules citing a provision, and over those citing an
+# article or a provision under it (content/_content.gotmpl).
+cited-by: "Rules citing this provision: {{ .Count }}"
+cited-within:
+  one: "{{ .Count }} rule cites this article or a provision under it"
+  other: "{{ .Count }} rules cite this article or a provision under it"
+# The list of the rules and its control (layouts/rules/section.html).
+rules-per-page: "Rules per page"
+rules-all: "All"
+rules-previous: "Previous page"
+rules-next: "Next page"
+rules-pages: "Pages of the list"

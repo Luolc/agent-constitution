@@ -1,30 +1,87 @@
-{{- /* The list of the rules, rulesPerPage of them a page, in the order
-  of the parent tree: each rule that is not superseded, its statement
-  only, as plain text cut to a few lines by the style sheet, linked to its
-  page and marked with its ID; a rule under another rule is indented
-  under it. Domains and one-ofs are not listed but head the rules below
-  them: a heading where a rule's domain or one-of differs from the rule's
-  before it, and on each page above its first rule. */ -}}
+{{- /* The list of the rules, in the order of the parent tree: each rule
+  that is not superseded, its statement only, as plain text cut to a few
+  lines by the style sheet, linked to its page and marked with its label;
+  a rule under another rule is indented under it. Domains and one-ofs are
+  not listed but head the rules below them: a heading where a rule's
+  domain or one-of differs from the rule's before it, and on each page
+  above its first rule. Every page holds every rule, those of other pages
+  hidden, so that assets/rules-list.js can show another page size,
+  chosen in the form above the list, without a page of its own: each
+  rule after the first carries its groups' headings once more, shown
+  only when it starts a page. Without scripts, the pages are Hugo's,
+  rulesPerPage rules each, and the form stays hidden. A heading shown
+  has the id `group-<id>`, which the table of contents at the right
+  links. */ -}}
 {{ define "main" }}
+{{- $all := where .Pages "Params.rule.listed" true }}
+{{- $size := site.Params.rulesPerPage }}
+{{- $pager := .Paginate $all $size }}
+{{- $first := mul (sub $pager.PageNumber 1) $size }}
+{{- $end := add $first $size }}
 <article class="markdown book-article"><div class="design rules">
 {{ printf "# %s {anchor=false}" .Title | .RenderString }}
 <p class="rules-intro">{{ i18n "rules-intro" }}</p>
-{{- $pager := .Paginate (where .Pages "Params.rule.listed" true) site.Params.rulesPerPage }}
+<form class="rules-size" action="{{ .RelPermalink }}" method="get" hidden>
+<label>{{ i18n "rules-per-page" }} <select name="per">
+  {{- range slice "25" "50" "100" "all" }}
+<option value="{{ . }}"{{ if eq . (string $size) }} selected{{ end }}>{{ if eq . "all" }}{{ i18n "rules-all" }}{{ else }}{{ . }}{{ end }}</option>
+  {{- end }}
+</select></label>
+</form>
+<div class="rules-list" data-size="{{ $size }}" data-first="{{ $first }}">
 {{- $previous := slice }}
-{{- range $pager.Pages }}
+{{- range $i, $page := $all }}
   {{- $rule := .Params.rule }}
-  {{- range $i, $group := $rule.groups }}
-    {{- if or (ge $i (len $previous)) (ne (index $previous $i).id $group.id) }}
-<h{{ add $i 2 }} class="rules-group"><a href="{{ (site.GetPage (printf "/rules/%d" (int $group.id))).RelPermalink }}">{{ $group.title }}</a></h{{ add $i 2 }}>
-    {{- end }}
+  {{- $on := and (ge $i $first) (lt $i $end) }}
+<div class="rule-item{{ if eq $i $first }} first{{ end }}"{{ if not $on }} hidden{{ end }}>
+  {{- range $j, $group := $rule.groups }}
+    {{- $new := or (ge $j (len $previous)) (ne (index $previous $j).id $group.id) }}
+    {{- $shown := cond $new $on (eq $i $first) }}
+<h{{ add $j 2 }} class="rules-group{{ if not $new }} repeat{{ end }}" data-group="{{ $group.id }}"{{ if $shown }} id="group-{{ $group.id }}"{{ end }}><a href="{{ (site.GetPage (printf "/rules/%d" (int $group.id))).RelPermalink }}">{{ $group.title }}</a></h{{ add $j 2 }}>
   {{- end }}
   {{- $previous = $rule.groups }}
   {{- $statement := $rule.text.statement | $.RenderString | plainify | htmlUnescape }}
-<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth (len $rule.groups))) | safeCSS }}"><span class="rule-id">{{ $rule.id }}</span><span class="rule-statement" lang="{{ $rule.shown }}">{{ $statement }}</span></a>
-{{- end }}
-{{- if gt $pager.TotalPages 1 }}
-{{ partial "docs/pagination" . }}
+<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth (len $rule.groups))) | safeCSS }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-statement" lang="{{ $rule.shown }}">{{ $statement }}</span></a>
+</div>
 {{- end }}
 </div>
+<nav class="rules-pager" aria-label="{{ i18n "rules-pages" }}" data-previous="{{ i18n "rules-previous" }}" data-next="{{ i18n "rules-next" }}">
+{{- if gt $pager.TotalPages 1 }}
+  {{- with $pager.Prev }}
+<a href="{{ .URL }}" rel="prev" aria-label="{{ i18n "rules-previous" }}">‹</a>
+  {{- end }}
+  {{- range $pager.Pagers }}
+    {{- if eq .PageNumber $pager.PageNumber }}
+<a aria-current="page">{{ .PageNumber }}</a>
+    {{- else }}
+<a href="{{ .URL }}">{{ .PageNumber }}</a>
+    {{- end }}
+  {{- end }}
+  {{- with $pager.Next }}
+<a href="{{ .URL }}" rel="next" aria-label="{{ i18n "rules-next" }}">›</a>
+  {{- end }}
+{{- end }}
+</nav>
+</div>
 </article>
+{{ end }}
+
+{{- /* The table of contents: the headings shown on this page, a one-of's
+  under its domain's; assets/rules-list.js makes it again for another
+  page. */ -}}
+{{ define "toc" }}
+{{ partial "docs/inject/toc-before" . }}
+{{- $size := site.Params.rulesPerPage }}
+{{- $first := mul (sub .Paginator.PageNumber 1) $size }}
+{{- $seen := dict }}
+<nav id="TableOfContents"><ul>
+{{- range first $size (after $first (where .Pages "Params.rule.listed" true)) }}
+  {{- range $j, $group := .Params.rule.groups }}
+    {{- if not (index $seen (string $group.id)) }}
+      {{- $seen = merge $seen (dict (string $group.id) true) }}
+<li{{ if $j }} class="toc-sub"{{ end }}><a href="#group-{{ $group.id }}">{{ $group.title }}</a></li>
+    {{- end }}
+  {{- end }}
+{{- end }}
+</ul></nav>
 {{ end }}

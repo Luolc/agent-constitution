@@ -8,7 +8,9 @@ with its texts in that language where it has a translation that follows
 its original, else in the original; the citations in the texts as Markdown
 links, relative to the rule's page; the other side of each conflict; and,
 for each provision of the constitution, the rules whose `authority` names
-it. A superseded rule has a page but is in no list.
+it, and for each article, the rules that name it or a provision under it.
+An `authority` that names a provision and one above it counts only the
+narrower one. A superseded rule has a page but is in no list.
 
 Errors print as `path:line: check 1: message`, as constitution-build
 prints them; the exit status is 1 when the sources cannot be read.
@@ -37,6 +39,32 @@ RULE_LINK = "../{id}/"
 RULE_LABEL = {"en": "rule {id}", "zh": "规定 {id}"}
 # Each node keeps these fields of its file as they are, when it has them.
 FIELDS = ("revision", "level", "constitution", "check", "run", "tools")
+
+
+def rule_label(node_id: int) -> str:
+  """Return the label the site gives a node of the rule tree: `R12`.
+
+  Args:
+    node_id: the node's ID.
+
+  Returns:
+    The label.
+  """
+  return f"R{node_id}"
+
+
+def specific(authority: list[str], src: Sources) -> list[str]:
+  """Return an `authority` without the provisions it names something under.
+
+  Args:
+    authority: the provisions, as the node names them.
+    src: the sources.
+
+  Returns:
+    The provisions no other of them is under, in their order.
+  """
+  above = {a for ref in authority for a in src.ancestors.get(ref, ())}
+  return [ref for ref in authority if ref not in above]
 
 
 def listed(node: Node) -> bool:
@@ -126,11 +154,15 @@ class _Language:
       target: its ID, or a reference to a node of another source.
 
     Returns:
-      Its ID and title, or the reference alone.
+      Its ID, label and title, or the reference alone.
     """
     if isinstance(target, str):
       return {"ref": target}
-    return {"id": target, "title": self.title(target)}
+    return {
+      "id": target,
+      "label": rule_label(target),
+      "title": self.title(target),
+    }
 
   def links(self, text: str, text_lang: str) -> str:
     """Return a text with each citation as a Markdown link.
@@ -176,10 +208,11 @@ class _Language:
     while ancestor is not None:
       parent = self.nodes[ancestor]
       if parent.kind != "rule":
-        groups.insert(0, {"id": parent.id, "title": self.title(parent.id)})
+        groups.insert(0, self.ref(parent.id))
       ancestor = parent.parent
     return {
       "id": node.id,
+      "label": rule_label(node.id),
       "slug": node.slug,
       "kind": node.kind,
       "status": node.status,
@@ -206,7 +239,7 @@ class _Language:
       "conflicts": [self.ref(t) for t in conflicts],
       "authority": [
         {"ref": ref, "label": self.labels[self.lang].get(ref, ref)}
-        for ref in node.authority
+        for ref in specific(node.authority, self.src)
       ],
     } | {field: data[field] for field in FIELDS if field in data}
 
@@ -218,8 +251,10 @@ def site_data(src: Sources) -> dict[str, Any]:
     src: the sources.
 
   Returns:
-    For each language, its nodes in tree order and, for each provision
-    a listed rule names in `authority`, those rules' IDs.
+    For each language, its nodes in tree order; for each provision a
+    listed rule names in `authority`, those rules (`citedBy`); and for
+    each article that or a provision under it names, those rules
+    (`citedWithin`); each list in order of ID, without repeats.
   """
   order = tree_order(src.nodes)
   # A conflict is written on one side; the pages show it on both.
@@ -229,11 +264,19 @@ def site_data(src: Sources) -> dict[str, Any]:
       conflicts[n.id].append(target)
       if isinstance(target, int):
         conflicts[target].append(n.id)
+  articles = {a.id for a in src.articles}
   cited: dict[str, list[int]] = defaultdict(list)
+  within: dict[str, list[int]] = defaultdict(list)
   for n, _ in order:
     if listed(n):
-      for ref in n.authority:
+      refs = specific(n.authority, src)
+      for ref in refs:
         cited[ref].append(n.id)
+      for article in sorted(
+        {r for ref in refs for r in (ref, *src.ancestors.get(ref, ()))}
+        & articles
+      ):
+        within[article].append(n.id)
   data: dict[str, Any] = {}
   for lang in src.languages:
     language = _Language(lang, src)
@@ -243,7 +286,12 @@ def site_data(src: Sources) -> dict[str, Any]:
         for n, depth in order
       ],
       "citedBy": {
-        ref: [language.ref(i) for i in ids] for ref, ids in cited.items()
+        ref: [language.ref(i) for i in sorted(ids)]
+        for ref, ids in cited.items()
+      },
+      "citedWithin": {
+        ref: [language.ref(i) for i in sorted(ids)]
+        for ref, ids in within.items()
       },
     }
   return data
