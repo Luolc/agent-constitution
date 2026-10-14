@@ -1,11 +1,11 @@
 id = 33
 slug = "downtime-must-ask"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 14
-authority = ["boundary-rule", "must-ask", "list-defaults", "relaxations.project-overrides"]
+authority = ["must-ask", "list-defaults", "relaxations.project-overrides"]
 constitution = ">=1"
 level = "project"
 check = "review"

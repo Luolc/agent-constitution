@@ -1,6 +1,6 @@
 id = 21
 slug = "design-translation"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -33,7 +33,7 @@ en = '''
 - Its headings have the original's levels and order, and each carries the anchor of the original heading, so a link to `#<anchor>` works in both languages; a relative link out of the translation's directory is adjusted for it.
 - The translation says what the original says, clause by clause, not word by word, and uses the terms of the translated constitution, one term for one concept throughout.
 
-Where the repository has a check for the first three points (in this repository, `uv run check-design-translation`), it runs in CI; the fourth is judged in review, reading the translation against the original.
+Where the repository has a check for the first three points, it runs in CI; the fourth is judged in review, reading the translation against the original.
 
 Violated when an original and its translation differ in files, hash, headings or anchors, or in meaning.
 '''
@@ -43,10 +43,10 @@ zh = '''
 - 译文标题的层级和顺序与原文相同，每个标题都带原文标题的锚点，这样指向 `#<anchor>` 的链接在两种语言里都有效；指出译文目录的相对链接按译文所在目录调整。
 - 译文按句意逐条译出原文的意思，不逐字对译；术语用宪法译本里的说法，同一个概念全文只用一个词。
 
-仓库如果有检查前三点的程序 (本仓库是 `uv run check-design-translation`)，它在 CI 里运行；第四点由审查对照原文阅读译文来判断。
+仓库如果有检查前三点的程序，它在 CI 里运行；第四点由审查对照原文阅读译文来判断。
 
 原文与译文在文件、哈希、标题或锚点上对不上，或者意思不一致的，即为违反本规定。
 '''
 
 [translations]
-zh = "be0f36fa5815125f8b6439ddc10e2204294a3b1d3e2809e6ad57b1ec3e604acf"
+zh = "ddf6c3742bed8233d6ea83b9ab9119a1f4686929a40b869d76073d7bdfe31650"

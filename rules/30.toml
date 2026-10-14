@@ -1,11 +1,11 @@
 id = 30
 slug = "no-load-generators"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
 parent = 13
-authority = ["safety", "decency.legitimate-means"]
+authority = ["decency.legitimate-means"]
 constitution = ">=1"
 level = "project"
 check = "review"
