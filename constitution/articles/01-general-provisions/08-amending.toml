@@ -4,8 +4,8 @@ audience = "maintainers"
 
 [content]
 en = '''
-This text changes only by amendment under {@amendment-procedure}: the change is made in the sources ({@text-and-sources}) and takes effect with the approval {@approving-amendments} requires.
+This text changes only by amendment ({@amendment-procedure}).
 '''
 zh = '''
-本宪法只能依照{@amendment-procedure}以修正案修改：改动落在源文本上 ({@text-and-sources})，经{@approving-amendments}所要求的批准后生效。
+本宪法只能以修正案修改 ({@amendment-procedure})。
 '''
