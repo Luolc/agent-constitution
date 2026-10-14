@@ -3,8 +3,47 @@ status = "draft"
 
 [content]
 en = '''
-Once the first edition ({@editions.edition}) is approved, the edition in force and the draft of the next edition are kept side by side: the edition in force is the text that applies, except in a project that uses the draft on a trial basis, where the draft applies ({@editions.draft}); the next edition is prepared in the draft. How the two are kept is set by the rules. In a project that uses the draft on a trial basis, an amendment to the draft that relaxes {@must-ask} or {@explicit-yes}, weakens {@safety}, or narrows this sentence applies there only once a competent principal for the project explicitly approves it ({@explicit-yes}).
+The edition in force and the draft:
 '''
 zh = '''
-第一版 ({@editions.edition}) 经批准以后，现行版与下一版的草案并行维护：适用的是现行版；试行草案的项目，适用草案 ({@editions.draft})；草案用来准备下一版。两者怎样保存，由规定写明。试行草案的项目中，放宽{@must-ask}或者{@explicit-yes}、削弱{@safety}，或者缩小本句适用范围的草案修正案，须经该项目的有权委托人明确同意 ({@explicit-yes})，才在该项目中适用。
+现行版与草案：
+'''
+
+[[items]]
+id = "side-by-side"
+number = "1"
+status = "draft"
+
+[items.content]
+en = '''
+Once the first edition ({@editions.edition}) is approved, the edition in force and the draft of the next edition are kept side by side: the edition in force is the text that applies, except in a project that uses the draft on a trial basis, where the draft applies ({@editions.draft}); the next edition is prepared in the draft.
+'''
+zh = '''
+第一版 ({@editions.edition}) 经批准以后，现行版与下一版的草案并行维护：适用的是现行版；试行草案的项目，适用草案 ({@editions.draft})；草案用来准备下一版。
+'''
+
+[[items]]
+id = "keeping"
+number = "2"
+status = "draft"
+
+[items.content]
+en = '''
+How the two are kept is set by the rules.
+'''
+zh = '''
+两者怎样保存，由规定写明。
+'''
+
+[[items]]
+id = "trial-safeguards"
+number = "3"
+status = "draft"
+
+[items.content]
+en = '''
+In a project that uses the draft on a trial basis, an amendment to the draft that relaxes {@must-ask} or {@explicit-yes}, weakens {@safety}, or narrows this item applies there only once a competent principal for the project explicitly approves it ({@explicit-yes}).
+'''
+zh = '''
+试行草案的项目中，放宽{@must-ask}或者{@explicit-yes}、削弱{@safety}，或者缩小本项适用范围的草案修正案，须经该项目的有权委托人明确同意 ({@explicit-yes})，才在该项目中适用。
 '''
