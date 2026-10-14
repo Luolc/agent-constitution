@@ -114,6 +114,15 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         eprintln!("statute: error: {e}");
     })?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
+    if let Ok(existing) = std::fs::read(&path)
+        && !existing.starts_with(format!("{}\n", statute::compile::GENERATED).as_bytes())
+    {
+        eprintln!(
+            "{}: error: not written by statute, so it is left as it is; write elsewhere with --output, or move the file away first",
+            path.display()
+        );
+        return Err(());
+    }
     std::fs::write(&path, text).map_err(|e| {
         eprintln!("{}: error: cannot write: {e}", path.display());
     })?;
