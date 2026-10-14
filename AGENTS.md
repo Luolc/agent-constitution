@@ -53,7 +53,7 @@ punctuation.
 - `web/`: the Hugo project of the static site (config, layouts, style
   sheet), with the theme hugo-book as a submodule at
   `web/themes/hugo-book`; run `git submodule update --init` once after
-  cloning. `tools/build_site.py` builds the four pages into `site/`, which
+  cloning. `hugo-0.167.0 -s web` builds the four pages into `site/`, which
   is never committed (`docs/design.md`, Static site).
 - `docs/design.md`: the one design doc. A PR that changes how the repo
   works (layout, source formats, compilation, checkers, releases) updates
@@ -136,15 +136,23 @@ when the two disagree.
   `--fix` writes limae's fixes back into the sources. A limae finding in
   either built Chinese file is fixed in the sources or the build script,
   never in that file.
-- `uv run tools/build_site.py`: builds the static site into `site/`,
-  English at `site/index.html` and Chinese at `site/zh/index.html`, each
-  with the version for agents at `agent/` below it, then
-  runs `tools/check_site_anchors.py` on it (every in-page link has its
-  target, every link to another page leads to a file of the site, no id
-  repeats, no list marker leaked into the text). It calls
-  the binary `hugo-0.167.0`, the version CI pins; it is not a commit hook.
+- `hugo-0.167.0 -s web`: builds the static site into `site/`, English at
+  `site/index.html` and Chinese at `site/zh/index.html`, each with the
+  version for agents at `agent/` below it; `hugo-0.167.0` is the version
+  CI pins, and the build is not a commit hook. The pages say the tokens
+  were not counted unless `web/data/lengths.json` counted the same text.
   To look at the pages, serve them: `uv run python -m http.server -d
   site`.
+- `uv run tools/check_site_anchors.py site`: the link check on the built
+  site (every in-page link has its target, every link to another page
+  leads to a file of the site, no id repeats, no list marker leaked into
+  the text).
+- `uv run tools/count_tokens.py`: counts the tokens of the four texts and
+  writes `web/data/lengths.json` (not committed), which the next Hugo
+  build reads. It needs `CONSTITUTION_TOKEN_COUNT_API_KEY` or
+  `CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN` in the environment; without one
+  the tokens are left uncounted, and with `--require-tokens` it fails
+  instead (`docs/design.md`, Static site, Credential).
 - `gitleaks git --redact --no-banner --verbose .`: the full-history scan
   that CI runs. Keep `--redact`; without it a hit prints the secret.
 
@@ -156,7 +164,8 @@ SHA-256), sets up uv at the version of the `uv-lock` hook's rev and syncs (`uv
 sync --locked`, which fails on a stale lock), runs `uv run pre-commit run
 --all-files` with the gitleaks hook skipped, so `uv-lock`, the Python
 checkers, the constitution build check, the tests and both limae checks run
-there too, builds the static site with the pinned Hugo and checks its links,
+there too, counts the tokens (without a credential, so they stay uncounted),
+builds the static site with the pinned Hugo and checks its links,
 and then runs the build check with `--base` and the instruction-only check,
 both against the first parent of the checked-out merge commit on a pull
 request (`docs/design.md`, Checkers), or against the commit before the push on
@@ -167,8 +176,9 @@ the checks, let the reviewer recheck the increment, then merge. Runners are
 pinned to `ubuntu-24.04`, and actions by commit SHA.
 
 `.github/workflows/token-count.yml` ("Token count") runs only on pushes to
-`main`. It gets an access token through Workload Identity Federation, builds
-the site with `--require-tokens`, and writes the length lines of the two
+`main`. It gets an access token through Workload Identity Federation, counts
+the tokens with `count_tokens.py --require-tokens`, builds the site, and
+writes the length lines of the two
 pages to the job summary and the log; it publishes nothing. It is not a
 required check, and it goes red when the token exchange or the count fails
 (`docs/design.md`, Static site, Credential).
