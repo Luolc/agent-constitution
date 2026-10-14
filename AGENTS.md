@@ -12,7 +12,7 @@ compiler is not written yet.
 ## Language
 
 Everything in this repo is English: code, comments, docs, commit messages,
-PR titles and bodies. The one exception is the `zh` text of a bilingual
+PR titles and bodies. One exception is the `zh` text of a bilingual
 source: the constitution and rule sources are TOML files whose text tables
 have one key per language, `en` and `zh` (format in
 `docs/design/source-formats.md`). Write the `zh` text in plain, natural
@@ -24,6 +24,17 @@ and colons; half-width parentheses, with one space outside and none inside,
 as in `第二款 (见第三条)`.
 Code, paths, commands and IDs stay as they are, with half-width
 punctuation.
+
+The other exception is the Chinese translation of the design,
+`docs/design/zh/<name>.md`, one file per English `docs/design/<name>.md`,
+written like the `zh` text above. The English file is the
+source: a PR that changes it carries the change into the translation and
+updates the translation's first line, `<!-- en-sha256: <hex> -->`, to
+the English file's SHA-256, which `uv run check-design-translation`
+prints. Each heading below the title starts with the English heading's
+anchor (`## <a id="checks"></a>检查`), and a link out of `docs/design/`
+takes one more `../` than in the English (`docs/design/checkers.md`,
+Checkers).
 
 ## Layout and docs
 
@@ -67,10 +78,13 @@ punctuation.
 - `web/`: the Hugo project of the static site (config, layouts, style
   sheet), with the theme hugo-book as a submodule at
   `web/themes/hugo-book`; run `git submodule update --init` once after
-  cloning. `hugo-0.167.0 -s web` builds the four pages into `site/`, which
-  is never committed (`docs/design/static-site.md`).
+  cloning. `hugo-0.167.0 -s web` builds the constitution's pages and the
+  design's, in both languages, into `site/`, which is never committed
+  (`docs/design/static-site.md`).
 - `docs/design/`: the one design, one file per part, indexed by
-  `docs/design/README.md`. A PR that changes how the repo
+  `docs/design/README.md`, with its Chinese translation in
+  `docs/design/zh/` (Language, above); a new file is listed in the
+  README and translated in the same PR. A PR that changes how the repo
   works (layout, source formats, compilation, checkers, releases) updates
   the section it touches in the same PR. There are no other design or
   decision files.
@@ -126,9 +140,10 @@ when the two disagree.
 - `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
   on the staged diff, `uv-lock` (`uv.lock` matches `pyproject.toml`), the
   Python checkers below, the constitution build check, the tests of each
-  member, `lint-zh-sources` and limae on
-  `constitution/2026-10/generated/constitution.zh.md` and
-  `constitution/2026-10/generated/constitution.zh.agent.md`.
+  member, `check-design-translation`, `lint-zh-sources` and limae on
+  `constitution/2026-10/generated/constitution.zh.md`,
+  `constitution/2026-10/generated/constitution.zh.agent.md` and
+  `docs/design/zh/*.md`.
 - The Python checkers, configured in `pyproject.toml`, each a commit hook:
   `uv run ruff check .`, `uv run ruff format --check .` (`uv run ruff
   format .` to apply), `uv run pydoclint --config pyproject.toml --quiet
@@ -157,10 +172,17 @@ when the two disagree.
   `--fix` writes limae's fixes back into the sources. A limae finding in
   either built Chinese file is fixed in the sources or the build script,
   never in that file.
+- `uv run check-design-translation`: fails when `docs/design/zh/` and
+  `docs/design/` do not hold the same files, a translation's hash line
+  is not its English file's SHA-256 now, a heading's level or anchor
+  differs from the English one's, or a relative link of the design leads
+  to no file of the repo; it prints the new hash. Run it after any change
+  to `docs/design/`.
 - `hugo-0.167.0 -s web`: builds the static site into `site/`, English at
   `site/index.html` and Chinese at `site/zh/index.html`, each with the
-  version for agents at `agent/` below it; `hugo-0.167.0` is the version
-  CI pins, and the build is not a commit hook. The pages say the tokens
+  version for agents at `agent/` and the design at `design/` below it;
+  `hugo-0.167.0` is the version CI pins, and the build is not a commit
+  hook. The pages say the tokens
   were not counted unless `web/data/lengths.json` counted the same text.
   To look at the pages, serve them: `uv run python -m http.server -d
   site`.
