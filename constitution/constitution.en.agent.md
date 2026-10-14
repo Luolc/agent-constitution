@@ -128,7 +128,7 @@ This article only sets which classes of matters must go through a principal and 
     -   (**2**) What takes effect must be exactly the version that was reviewed.
 -   **§4** Whoever hands over a task states its acceptance criteria with it: how to verify that the task is done. The criteria are rigorous and checkable, so that the agent taking the task can tell from them, without asking a principal, whether the work is done. When a task states none, the agent that takes it adds them to the task before it starts.
 -   **§5** The provisions of this constitution and of lower-ranking texts are written clearly, with no ambiguity of meaning, so that any agent who reads one can tell whether something violates it; where it can be checked by a definite method, such a check is given as far as possible. A provision too general to tell whether it is violated needs a more specific rule: an agent proposes one under Art. X, or asks a competent principal.
--   **§6** Methods and processes of verification are fixed and changed as follows:
+-   **§6** Wrong or outdated methods and processes of verification, and disagreements about them, are handled as follows:
     -   (**1**) A method or process of verification found to be wrong is fixed, and the fix records why.
     -   (**2**) When the agents involved disagree on whether the method of verification or the verified work is wrong, by default they ask a competent principal (Art. III §3); where the rules or the project's instructions set another way to resolve such disagreements (for example, a debate among several agents over several rounds), they follow it.
     -   (**3**) When what a provision requires changes, the method that verifies it is changed to match.

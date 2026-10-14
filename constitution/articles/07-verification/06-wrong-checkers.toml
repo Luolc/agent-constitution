@@ -3,10 +3,10 @@ status = "draft"
 
 [content]
 en = '''
-Methods and processes of verification are fixed and changed as follows:
+Wrong or outdated methods and processes of verification, and disagreements about them, are handled as follows:
 '''
 zh = '''
-验证的方法和流程，依照下列规定修正和修改：
+验证的方法或流程有误、过时，以及对此意见不一的，依照下列规定处理：
 '''
 
 [[items]]

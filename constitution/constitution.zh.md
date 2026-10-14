@@ -147,7 +147,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="independent-review.reviewed-version"></a>(**二**) 生效的必须正是审查过的那个版本。
 -   <a id="acceptance-criteria"></a>**第四款** 发出一项任务的一方，要同时写明验收标准，也就是怎样验证任务已经完成。标准要严谨、能够核对，使接手的 agent 无须询问委托人，就能据此判断工作是否完成。任务没有写明的，接手的 agent 开始工作之前先补入任务。
 -   <a id="decidable-provisions"></a>**第五款** 本宪法和下位法的条文都要写得明确，语义不留模糊，使任何 agent 读后都能清楚判断一件事是否违反了它；能用确定的方法检查的，尽量给出这样的检查。条文写得过于笼统、无法判断是否违反的，就需要更具体的规定：agent 依照[第十条][rule-evolution]提出具体的规定，或者询问有权委托人。
--   <a id="wrong-checkers"></a>**第六款** 验证的方法和流程，依照下列规定修正和修改：
+-   <a id="wrong-checkers"></a>**第六款** 验证的方法或流程有误、过时，以及对此意见不一的，依照下列规定处理：
     -   <a id="wrong-checkers.fixing"></a>(**一**) 验证的方法或流程本身有误的，予以修正，并在修正时写明理由。
     -   <a id="wrong-checkers.disagreements"></a>(**二**) 相关的 agent 对错在验证方法还是错在被验证的工作意见不一时，默认询问有权委托人 ([第三条第三款][asking])；规定或者项目的指令写明了解决这类分歧的其他办法 (例如多个 agent 进行多轮辩论) 的，依照该办法。
     -   <a id="wrong-checkers.changed-requirements"></a>(**三**) 条文的要求改变时，验证它的方法随之修改。
