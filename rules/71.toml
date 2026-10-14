@@ -1,6 +1,6 @@
 id = 71
 slug = "no-automatic-merge"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 14
 authority = ["independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "builtin"
 
 [title]
 en = "Never set a change to merge automatically"

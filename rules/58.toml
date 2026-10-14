@@ -1,6 +1,6 @@
 id = 58
 slug = "release-first-green-commit"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 14
 authority = ["discriminating-checks", "evidence.facts"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "builtin"
 
 [title]
 en = "Release only a commit whose CI on the main branch passed on the first attempt"

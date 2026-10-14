@@ -1,6 +1,6 @@
 id = 61
 slug = "verdict-names-version"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 14
 authority = ["independent-review.reviewed-version", "evidence.facts"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "builtin"
 
 [title]
 en = "Name the reviewed version in the verdict"
