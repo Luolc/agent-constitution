@@ -62,13 +62,15 @@ pub fn edit(node: (u64, String), from: &str, to: &str) -> (u64, String) {
     (node.0, node.1.replacen(from, to, 1))
 }
 
-/// A source from the given nodes, which must pass their checks.
+/// The first-party source `R` from the given nodes, which must pass
+/// their checks.
 pub fn source(nodes: &[(u64, String)]) -> statute::source::Source {
     let files = nodes
         .iter()
         .map(|(id, text)| (format!("rules/{id}.toml"), text.clone().into_bytes()))
         .collect();
-    let (source, diags) = statute::source::Source::from_files(files);
+    let (mut source, diags) = statute::source::Source::from_files(files);
+    source.name = "R".to_owned();
     assert!(
         diags.0.is_empty(),
         "the fixture has findings: {:#?}",
