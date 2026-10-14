@@ -13,6 +13,70 @@ package = false
 
 [dependency-groups]
 dev = [
+    "basedpyright==1.40.1",
     "limae==0.13.3",
     "pre-commit==4.6.2",
+    "pydoclint==0.11.0",
+    "ruff==0.16.10",
 ]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 80
+indent-width = 2
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+src = ["tools"]
+
+[tool.ruff.lint]
+select = [
+    "B",
+    "BLE",
+    "C",
+    "D",
+    "D401",
+    "D417",
+    "E",
+    "F",
+    "I",
+    "ISC001",
+    "N",
+    "PLW0129",
+    "W",
+    "W505",
+    "RUF008",
+    "UP",
+    "SIM",
+]
+ignore = ["D105"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+order-by-type = false
+extra-standard-library = ["typing_extensions"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 80
+
+[tool.ruff.lint.per-file-ignores]
+"tools/test_*.py" = ["D1"]
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.14"
+typeCheckingMode = "standard"
+include = ["tools"]
+
+[tool.pydoclint]
+style = "google"
+allow-init-docstring = true
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
+skip-checking-short-docstrings = false
