@@ -30,13 +30,13 @@ zh = '''
 en = '''
 When work needs both a change to instruction files and changes to other files, which {@rule:46} keeps in two changes, the change to the instructions is merged and takes effect first, and the rest of the work is then done under the new instructions.
 
-Violated when the rest of the work is merged before the change to the instructions it needs is in effect.
+Violated when, of the two changes, the rest of the work is merged before the change to the instructions is in effect.
 '''
 zh = '''
 工作既要修改指令文件、又要修改其他文件，按 {@rule:46} 分成两个变更的，修改指令的变更先合入并生效，其余的工作再按新指令进行。
 
-其余的工作在它所需的指令修改生效之前合入的，即为违反本规定。
+两个变更中，其余的工作在修改指令的变更生效之前合入的，即为违反本规定。
 '''
 
 [translations]
-zh = "46e273f5a783effdf382040332f918e3e7eaea8b987dfd17795410b1c42fc461"
+zh = "bfc53bb8a2f0688329114c0d749b042f0d104d1a7955113b238ee4556f7c3876"
