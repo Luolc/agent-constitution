@@ -3,8 +3,8 @@ status = "draft"
 
 [content]
 en = '''
-When an agent hands work to another agent, the authority it hands over must not exceed its own. The agent that takes the work must not widen its task.
+When an agent delegates work to another agent, the authority it grants must not exceed its own; the delegated agent must not act beyond the scope of its task.
 '''
 zh = '''
-agent 把工作交给别的 agent 时，交出的权限不得超过自己的权限。接手的 agent 不得扩大任务范围。
+agent 将工作委派给其他 agent 时，授予的权限不得超过自身的权限；受委派的 agent 不得超出任务的范围行事。
 '''
