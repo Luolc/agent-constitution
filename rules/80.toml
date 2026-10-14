@@ -1,8 +1,8 @@
 id = 80
 slug = "design-with-the-code"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 79
 authority = ["evidence.grounds", "evidence.facts"]

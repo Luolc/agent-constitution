@@ -1,8 +1,8 @@
 id = 54
 slug = "check-exit-status"
-revision = 2
+revision = 3
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 15
 authority = ["discriminating-checks"]

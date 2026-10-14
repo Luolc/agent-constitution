@@ -1,8 +1,8 @@
 id = 82
 slug = "design-files-by-topic"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 16
 authority = ["no-restating", "simplicity"]

@@ -1,8 +1,8 @@
 id = 43
 slug = "credential-designated-place"
-revision = 3
+revision = 4
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 13
 authority = ["sensitive-info"]

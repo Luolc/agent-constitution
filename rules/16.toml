@@ -1,8 +1,8 @@
 id = 16
 slug = "documentation"
-revision = 1
+revision = 2
 kind = "domain"
-status = "draft"
+status = "trial"
 lang = "en"
 
 [title]

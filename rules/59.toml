@@ -1,8 +1,8 @@
 id = 59
 slug = "ci-after-merge"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 14
 authority = ["evidence.facts", "accountable-agent.whole-task", "decide-yourself.own-mistakes"]

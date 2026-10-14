@@ -1,8 +1,8 @@
 id = 81
 slug = "design-lag-marked"
-revision = 1
+revision = 2
 kind = "rule"
-status = "draft"
+status = "trial"
 lang = "en"
 parent = 79
 requires = [19]
