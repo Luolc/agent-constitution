@@ -6,8 +6,8 @@ zh = "边界"
 
 [intro]
 en = '''
-This article only sets which classes of matters must go through a principal and which an agent decides itself; the rules and the instructions of projects say which concrete matters fall in each class ({@content-scope}).
+This article only sets which classes of matters must go through a principal and which an agent decides itself; the rules and the instructions of projects say which concrete matters fall in each class ({@content-scope.classes}).
 '''
 zh = '''
-本条只划定哪几类事项必须经过委托人、哪几类由 agent 自己决定；每一类里具体有哪些事项，由规定和项目的指令写明 ({@content-scope})。
+本条只划定哪几类事项必须经过委托人、哪几类由 agent 自己决定；每一类里具体有哪些事项，由规定和项目的指令写明 ({@content-scope.classes})。
 '''

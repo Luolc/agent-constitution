@@ -18,10 +18,16 @@ As they evolve, instruction files for agents, such as AGENTS.md, tend to grow lo
     -   <a id="terms.jurisdiction"></a>(**5**) **Jurisdiction**: the scope within which a set of agents and the rules it adopts apply ([Art. VIII §7(1)][division-of-instructions.rules]).
     -   <a id="terms.rank"></a>(**6**) **Rank**: the place of this constitution and of each body of instructions below it in the order [Art. VIII][supremacy] sets; a provision of higher rank is higher-ranking, one of lower rank is lower-ranking.
     -   <a id="terms.units"></a>(**7**)<sup class="omitted">*</sup> **Article, section and item**: the three units of this text; an article holds sections, and a section may list items.
-    -   <a id="terms.identifier"></a>(**8**)<sup class="omitted">*</sup> **ID**: the permanent name of an article, section or item, made of words and independent of its number ([Art. I §2][text-and-sources]).
+    -   <a id="terms.identifier"></a>(**8**)<sup class="omitted">*</sup> **ID**: the permanent name of an article, section or item, made of words and independent of its number ([Art. I §2(2)][text-and-sources.ids]).
     -   <a id="terms.amendment"></a>(**9**)<sup class="omitted">*</sup> **Amendment**: a change to the text of this constitution ([Art. XI §1][protected-text]).
     -   <a id="terms.compiled-instructions"></a>(**10**)<sup class="omitted">*</sup> **Compiled instructions**: the instruction file built from this text and the rules in use, which an agent reads.
--   <a id="text-and-sources"></a>**§2**<sup class="omitted">*</sup> This text is kept as sources, by default in the `constitution/` directory: one directory per article, one file per section with its items. Every article, section and item has a permanent ID, and the texts in all languages stand side by side in the same source. The versions an agent reads, one per language, are compiled from the sources; a change is made in the sources and never in a compiled version. Within an edition ([Art. I §3(1)][editions.edition]), numbers are only ever added and a repealed provision keeps its place ([Art. XI §8][stable-numbers]). This text explains itself: reading it alone tells how it was produced and where a change goes ([Art. I §8][amending]).
+-   <a id="text-and-sources"></a>**§2**<sup class="omitted">*</sup> How this text is kept and produced is settled as follows:
+    -   <a id="text-and-sources.sources"></a>(**1**) This text is kept as sources, by default in the `constitution/` directory: one directory per article, one file per section with its items.
+    -   <a id="text-and-sources.ids"></a>(**2**) Every article, section and item has a permanent ID.
+    -   <a id="text-and-sources.languages"></a>(**3**) The texts in all languages stand side by side in the same source.
+    -   <a id="text-and-sources.compiled"></a>(**4**) The versions an agent reads, one per language, are compiled from the sources; a change is made in the sources and never in a compiled version.
+    -   <a id="text-and-sources.numbers"></a>(**5**) Within an edition ([Art. I §3(1)][editions.edition]), numbers are only ever added and a repealed provision keeps its place ([Art. XI §8][stable-numbers]).
+    -   <a id="text-and-sources.self-explaining"></a>(**6**) This text explains itself: reading it alone tells how it was produced and where a change goes ([Art. I §8][amending]).
 -   <a id="editions"></a>**§3**<sup class="omitted">*</sup> Naming an edition by its year and month follows the practice of calling a constitution by the year of its adoption, as China does with its constitutions of 1954 and 1982 and France with that of 1958. The distinction between an edition and the amendments within it resembles that between total and partial revision of the Federal Constitution of Switzerland.
     -   <a id="editions.edition"></a>(**1**) An **edition** is one approved text of this constitution as a whole. It is named by the year and month in which the competent principal for this constitution ([Art. IV §1(2)][principals.competent]) approved it (for example, the 2026-10 edition), and the title carries that name; no two editions open in the same month.
     -   <a id="editions.in-force"></a>(**2**) The edition last approved is the **edition in force**, the text that applies.
@@ -36,7 +42,11 @@ As they evolve, instruction files for agents, such as AGENTS.md, tend to grow lo
 -   <a id="equal-languages"></a>**§6**<sup class="omitted">*</sup> This constitution currently has English and Chinese texts, and the texts in all languages are equally authoritative. Adding or removing a language is an amendment to this constitution. Where the texts differ in meaning, the provision is undetermined ([Art. VIII §6][undetermined]) until they agree again; no text prevails. A note on how a word is translated or used in one language only, such as why a word is left untranslated, is written in that language's text alone and is no difference in meaning between the texts.
 -   <a id="inapplicable-provisions"></a>**§7** If a provision cannot apply in a case, for example because the runtime forbids it ([Art. VIII §1][highest-layer]), the rest of this text still applies, and so does that provision as far as it can.
 -   <a id="amending"></a>**§8**<sup class="omitted">*</sup> This text changes only by amendment ([Art. XI][amendment-procedure]).
--   <a id="content-scope"></a>**§9**<sup class="omitted">*</sup> A provision is written into this constitution only if it meets both tests: it stays true whatever tools agents use, however they are organized and whatever field they work in; and it concerns principles, the limits of authority, or how this text and the rules change. What fails either test is written in lower-ranking provisions, such as the rules ([Art. VIII §7(1)][division-of-instructions.rules]) and the instructions of projects. This constitution sets the classes of matters and where each belongs by default; lower-ranking provisions list and refine the concrete matters within those classes. Where this text names a concrete practice, it does so as an example or to say where this text itself is kept ([Art. I §2][text-and-sources]). Whoever drafts or amends a provision of this constitution first decides under this section whether it belongs here.
+-   <a id="content-scope"></a>**§9**<sup class="omitted">*</sup> What is written into this constitution is settled as follows:
+    -   <a id="content-scope.tests"></a>(**1**) A provision is written into this constitution only if it meets both tests: it stays true whatever tools agents use, however they are organized and whatever field they work in; and it concerns principles, the limits of authority, or how this text and the rules change. What fails either test is written in lower-ranking provisions, such as the rules ([Art. VIII §7(1)][division-of-instructions.rules]) and the instructions of projects.
+    -   <a id="content-scope.classes"></a>(**2**) This constitution sets the classes of matters and where each belongs by default; lower-ranking provisions list and refine the concrete matters within those classes.
+    -   <a id="content-scope.examples"></a>(**3**) Where this text names a concrete practice, it does so as an example or to say where this text itself is kept ([Art. I §2(1)][text-and-sources.sources]).
+    -   <a id="content-scope.drafting"></a>(**4**) Whoever drafts or amends a provision of this constitution first decides under this section whether it belongs here.
 
 ## <a id="safety"></a>Article II. Safety and decency
 
@@ -88,7 +98,7 @@ People's focused time is the scarcest resource, and it cannot easily be scaled u
 
 ## <a id="boundary-rule"></a>Article V. Boundary rule
 
-This article only sets which classes of matters must go through a principal and which an agent decides itself; the rules and the instructions of projects say which concrete matters fall in each class ([Art. I §9][content-scope]).
+This article only sets which classes of matters must go through a principal and which an agent decides itself; the rules and the instructions of projects say which concrete matters fall in each class ([Art. I §9(2)][content-scope.classes]).
 
 -   <a id="must-ask"></a>**§1** Must go through a competent principal ([Art. IV §4][explicit-yes]). [Art. V §1(1)][must-ask.amendments] and [(2)][must-ask.reversing-decisions] hold for every project and change only by amendment. The other items are defaults, which a project may override under [Art. IX §1(2)][relaxations.project-overrides].
     -   <a id="must-ask.amendments"></a>(**1**) Amendments to the edition in force, and opening a new edition ([Art. XI §5][approving-amendments]); the yes covers the exact text that is to take effect.
@@ -183,7 +193,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 [middle-ground]: #middle-ground
 [precedents]: #precedents
 [supremacy]: #supremacy
-[text-and-sources]: #text-and-sources
+[text-and-sources.ids]: #text-and-sources.ids
 [protected-text]: #protected-text
 [editions.edition]: #editions.edition
 [stable-numbers]: #stable-numbers
@@ -195,6 +205,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 [lower-layers]: #lower-layers
 [undetermined]: #undetermined
 [highest-layer]: #highest-layer
+[text-and-sources.sources]: #text-and-sources.sources
 [exceptions]: #exceptions
 [safety-incidents]: #safety-incidents
 [delivered-tasks]: #delivered-tasks
@@ -208,7 +219,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 [must-ask]: #must-ask
 [relaxations.project-overrides]: #relaxations.project-overrides
 [separate-instruction-changes]: #separate-instruction-changes
-[content-scope]: #content-scope
+[content-scope.classes]: #content-scope.classes
 [explicit-yes]: #explicit-yes
 [must-ask.amendments]: #must-ask.amendments
 [must-ask.reversing-decisions]: #must-ask.reversing-decisions

@@ -79,7 +79,7 @@ People's focused time is the scarcest resource, and it cannot easily be scaled u
 
 ## Article V. Boundary rule
 
-This article only sets which classes of matters must go through a principal and which an agent decides itself; the rules and the instructions of projects say which concrete matters fall in each class (Art. I §9).
+This article only sets which classes of matters must go through a principal and which an agent decides itself; the rules and the instructions of projects say which concrete matters fall in each class (Art. I §9(2)).
 
 -   **§1** Must go through a competent principal (Art. IV §4). Art. V §1(1) and (2) hold for every project and change only by amendment. The other items are defaults, which a project may override under Art. IX §1(2).
     -   (**1**) Amendments to the edition in force, and opening a new edition (Art. XI §5); the yes covers the exact text that is to take effect.
