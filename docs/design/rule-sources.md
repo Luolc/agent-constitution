@@ -413,7 +413,7 @@ that implements it changes them:
 - Compilation and the site: "a requirement that crosses subtrees is
   rendered as a link" becomes one that leads out of the requiring
   rule's nearest domain, subdomain included.
-- The tool and the first version, Moving over: the switch is the one of
+- The command and the first version, Moving over: the switch is the one of
   [Cutover](#cutover-from-the-hand-written-guide), whole, not one topic first.
 
 And in the rest of the design: [Choosing rules](rules.md#choosing-rules),

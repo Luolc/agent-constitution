@@ -2,7 +2,7 @@
 //! and the site) into `AGENTS.md`, the constitution's version for agents
 //! and then the enabled rules along the parent tree, with the citations in
 //! their text rendered; and, next to it, the skills the enabled rules
-//! need, the checks to install and the hook configuration that runs them.
+//! need and the checks to install.
 
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
@@ -23,18 +23,14 @@ pub const FILE: &str = "AGENTS.md";
 pub const GENERATED: &str =
     "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->";
 
-/// The first line of the other files `compile` writes, as a comment of
-/// TOML and YAML, and the content of the marker in a skill directory.
+/// The first line of the other file `compile` writes, as a TOML
+/// comment, and the content of the marker in a skill directory.
 pub const GENERATED_HASH: &str =
     "# Written by statute from statute.toml and statute.lock; do not edit by hand.";
 
 /// The check binary's version and the external commands of the enabled
 /// rules, next to `AGENTS.md`.
 pub const CHECKS: &str = "statute-checks.toml";
-
-/// A pre-commit configuration that runs `statute check`, next to
-/// `AGENTS.md`.
-pub const HOOKS: &str = "statute-hooks.yaml";
 
 /// Where the skills go, below the directory of `AGENTS.md`.
 pub const SKILLS: &str = ".agents/skills";
@@ -45,22 +41,10 @@ pub const LINKS: &str = ".claude/skills";
 /// The file in a skill directory that says statute wrote it.
 pub const MARKER: &str = ".statute-generated";
 
-const HOOKS_BODY: &str = "repos:
-  - repo: local
-    hooks:
-      - id: statute-check
-        name: statute check
-        entry: statute check
-        language: system
-        pass_filenames: false
-        always_run: true
-";
-
 /// Everything `compile` writes, before it is written.
 pub struct Output {
     pub agents_md: String,
     pub checks: String,
-    pub hooks: String,
     /// The skills to install, sorted by name: the name and the skill's
     /// directory in the source.
     pub skills: Vec<(String, PathBuf)>,
@@ -164,7 +148,6 @@ pub fn compile(project: &Project) -> Result<Output, String> {
     Ok(Output {
         agents_md,
         checks: format!("{GENERATED_HASH}\n\n{checks}"),
-        hooks: format!("{GENERATED_HASH}\n\n{HOOKS_BODY}"),
         skills,
     })
 }
@@ -184,7 +167,6 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
     let files = [
         (agents_md.to_path_buf(), &output.agents_md, GENERATED),
         (dir.join(CHECKS), &output.checks, GENERATED_HASH),
-        (dir.join(HOOKS), &output.hooks, GENERATED_HASH),
     ];
     let refuse = |path: &Path| {
         Err(format!(

@@ -119,7 +119,7 @@ superseded once it was; a rule of a base from before the rule tree,
 named by a word, lives on as the node whose `slug` is that word.
 
 The relations between the nodes are not checked here but by `statute`
-([The tool and the first version](rule-system.md#the-tool-and-the-first-version)):
+([The command and the first version](rule-system.md#the-command-and-the-first-version)):
 the targets of `requires` and `conflicts` exist and are of the right kind,
 `requires` has no cycle and nothing redundant, a rule conflicts with
 nothing it brings in, and the warnings of
