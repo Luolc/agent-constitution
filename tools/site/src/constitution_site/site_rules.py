@@ -157,7 +157,9 @@ class _Language:
 
     return MARK.sub(link, text)
 
-  def node(self, node: Node, depth: int, conflicts: list) -> dict[str, object]:
+  def node(
+    self, node: Node, depth: int, conflicts: list[int | str]
+  ) -> dict[str, object]:
     """Return what the pages show of one node.
 
     Args:
@@ -223,7 +225,7 @@ def site_data(src: Sources) -> dict[str, Any]:
   """
   order = tree_order(src.nodes)
   # A conflict is written on one side; the pages show it on both.
-  conflicts: dict[int, list] = defaultdict(list)
+  conflicts: dict[int, list[int | str]] = defaultdict(list)
   for n in src.nodes:
     for target in n.doc.data.get("conflicts", []):
       conflicts[n.id].append(target)

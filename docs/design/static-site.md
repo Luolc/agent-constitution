@@ -4,16 +4,17 @@ The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
 `site/zh/agent/index.html`), and so is this design, under `design/`
-(`site/design/index.html`, `site/zh/design/index.html`), and so are
-the rules, under `rules/` (`site/rules/index.html`,
+(`site/design/index.html`, `site/zh/design/index.html`), and so are the
+rules, under `rules/` (`site/rules/index.html`,
 `site/zh/rules/index.html`). Hugo builds them with `hugo-0.167.0 -s
 web`, once `uv run site-rules` has written the rules' data (Rules,
 below). CI runs four steps on every pull request and push: `uv run
 site-rules`, `uv run count-tokens` (the token count, below),
 `hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning`, and
-`uv run check-site-anchors site`, the link check. The workflow `.github/workflows/pages.yml` publishes the
-site to GitHub Pages at `https://agent-constitution.luolc.com/`, which it
-passes to Hugo as `--baseURL`.
+`uv run check-site-anchors site`, the link check. The workflow
+`.github/workflows/pages.yml` publishes the site to GitHub Pages at
+`https://agent-constitution.luolc.com/`, which it passes to Hugo as
+`--baseURL`.
 
 - Publishing: on each push to `main`, and on a manual run, the job
   `build` counts the tokens (below), builds and checks the site as CI
@@ -36,8 +37,9 @@ passes to Hugo as `--baseURL`.
   directory's `index.toml` from `constitution/` as assets, and the partial
   `web/layouts/_partials/constitution/source.html` finds each by name,
   failing the build unless exactly one file matches; Python writes no
-  page, only the data of the rules' pages (Rules, below). The content adapter `web/content/_content.gotmpl` makes
-  each into the home page of its language: the header line is dropped,
+  page, only the data of the rules' pages (Rules, below). The content
+  adapter `web/content/_content.gotmpl` makes each into the home page of
+  its language: the header line is dropped,
   the title becomes the page's, each heading's anchor (`## <a
   id="general-provisions"></a>Article I. ...`) becomes the heading's id,
   so the table of contents links to it, and the page gets the lengths
@@ -258,8 +260,8 @@ passes to Hugo as `--baseURL`.
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
   theme's own list with `bookHidden`, as it hides the design's pages,
-  which the menu lists, and the rules' pages. The table of contents lists the
-  page's level-2 headings, the preamble and the articles
+  which the menu lists, and the rules' pages. The table of contents
+  lists the page's level-2 headings, the preamble and the articles
   (`markup.tableOfContents` in `web/hugo.toml`), under a heading of its
   own; on a narrow screen the theme hides it behind a button at the right
   of the top bar, which opens it above the text, as the button at the
