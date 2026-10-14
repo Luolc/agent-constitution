@@ -16,10 +16,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Once the first edition ({@editions.edition}) is approved, the edition in force and the draft of the next edition are kept side by side: the edition in force is the text that applies, except in a project that uses the draft on a trial basis, where the draft applies ({@editions.draft}); the next edition is prepared in the draft.
+Once the first edition ({@editions.edition}) is approved, the edition in force is the text that applies, except in a project that uses a draft on a trial basis, where the draft applies ({@editions.draft}). A draft of the next edition is opened only when the next edition is to be prepared; until then there is only the edition in force, and an amendment to it takes effect once approved under {@approving-amendments.edition-amendments}, incrementing its revision number ({@revision-count.increment}).
 '''
 zh = '''
-第一版 ({@editions.edition}) 经批准以后，现行版与下一版的草案并行维护：适用的是现行版；试行草案的项目，适用草案 ({@editions.draft})；草案用来准备下一版。
+第一版 ({@editions.edition}) 经批准以后，适用的是现行版；试行草案的项目，适用草案 ({@editions.draft})。需要准备下一版时，才开始起草下一版的草案；在此之前只有现行版，对现行版的修改依照{@approving-amendments.edition-amendments}经批准后生效，修订号加一 ({@revision-count.increment})。
 '''
 
 [[items]]
@@ -29,10 +29,10 @@ status = "draft"
 
 [items.content]
 en = '''
-How the two are kept is set by the rules.
+The edition in force and a draft are kept as {@text-and-sources.sources} provides.
 '''
 zh = '''
-两者怎样保存，由规定写明。
+现行版与草案怎样保存，依照{@text-and-sources.sources}的规定。
 '''
 
 [[items]]

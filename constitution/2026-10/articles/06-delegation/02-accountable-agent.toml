@@ -29,8 +29,8 @@ status = "draft"
 
 [items.content]
 en = '''
-The responsible agent's own work is accepted by whoever delegated the task to it, not by the agent itself.
+Where an agent delegated the task, the responsible agent's own work is accepted by that agent or by a reviewer it names. Where a principal delegated the task, the principal accepts the work only on asking in person to accept it, or where this constitution, the rules or the project's instructions require a person to accept that kind of work; otherwise a reviewer the principal names accepts it, or, if the principal names none, a reviewer other than the responsible agent, arranged by it ({@independent-review}). The agent that did the work never accepts its own work.
 '''
 zh = '''
-负责的 agent 自己的工作，由委派它的一方验收，不由它自己验收。
+任务由 agent 委派的，负责的 agent 自己的工作由委派它的 agent 或者该 agent 指定的审查方验收。任务由委托人委派的，只有委托人亲自要求由本人验收，或者本宪法、规定、项目的指令写明某类工作必须由人验收时，才由委托人验收；其他情况下，由委托人指定的审查方验收，委托人没有指定的，由负责的 agent 安排一个它以外的审查方验收 ({@independent-review})。实际做这项工作的 agent 一律不验收自己的工作。
 '''

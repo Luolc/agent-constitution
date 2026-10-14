@@ -56,10 +56,10 @@ status = "draft"
 
 [items.content]
 en = '''
-Within an edition, the **revision number** counts from one and rises by one with each amendment that takes effect ({@revision-count.increment}), and numbers never change ({@stable-numbers}). A draft's revision number is written 0.*n*; in every draft, *n* counts from one and rises in the same way.
+Within an edition, the **revision number** of the text as approved is 1, and it rises by one with each amendment that takes effect after that ({@revision-count.increment}); numbers never change ({@stable-numbers}). A draft's revision number is written 0.*n*; in every draft, *n* counts from one and rises in the same way.
 '''
 zh = '''
-同一版内，**修订号** (revision) 从一起算，每有一次修正案生效就加一 ({@revision-count.increment})，编号永不更改 ({@stable-numbers})。草案的修订号写作 0.*n*；每份草案的 *n* 都从一起算，同样逐次加一。
+同一版内，经批准生效的文本**修订号** (revision) 为 1，此后每有一次修正案生效就加一 ({@revision-count.increment})；编号永不更改 ({@stable-numbers})。草案的修订号写作 0.*n*；每份草案的 *n* 都从一起算，同样逐次加一。
 '''
 
 [[items]]
