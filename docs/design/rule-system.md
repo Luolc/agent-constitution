@@ -572,8 +572,9 @@ TOML file has this value") would keep needing one more case, "or", and
 "unless", until it became a language of its own that nobody reads well. A
 check is code, of one of two kinds, and there is no third.
 
-**Our rules: Rust.** The checks of the rules in this repo are one Rust
-crate, with one module per rule, named for the rule's ID (`r42.rs` for
+**Our rules: Rust.** The checks of the rules in this repo are in the
+tool's crate ([The tool and the first version](#the-tool-and-the-first-version)),
+with one module per rule, named for the rule's ID (`r42.rs` for
 rule 42), the way ruff and clippy implement each lint as a function. The
 rule's text and metadata stay in `rules/42.toml`, so the person writing a
 rule and the one writing its check each change their own file; the
@@ -697,12 +698,14 @@ default.
 ## The tool and the first version
 
 **The tool.** The rule system's tool is written in Rust (see
-[Why Rust](#why-rust)) and lives in `crates/` at the root of the repo,
-where Rust projects keep their crates, not in `tools/`, which is the uv
-workspace of the Python projects. The first version is one crate. Its
-working name is `statute`, which may change before the first release:
-the rule set is `statute.toml`, the lock file `statute.lock`, and the
-commands are:
+[Why Rust](#why-rust)) and grows in the crate `crates/statute`, which today
+is a placeholder that only prints a notice
+([File structure](file-structure.md)). The first version is that one
+crate. Its name, `statute`, is held on crates.io by a placeholder release
+([Releases and versions](amendments-and-releases.md#releases-and-versions));
+it may still change before the first real release, and another name would
+be published anew. The rule set is `statute.toml`, the lock file
+`statute.lock`, and the commands are:
 
 - `init`: write a new rule set;
 - `add` and `remove`: enable a rule or take it out of the rule set, and
@@ -787,8 +790,6 @@ implementation follows.
   move to each repository's rule set (with an inherited base), and the
   overlay's apply step becomes the compile command; the overlay keeps the
   personal part and its own rules.
-- [File structure](file-structure.md): the directory `crates/` is added
-  at the root for the tool's crate.
 - [Skills](skills.md): a skill declares the rules it implements
   and is installed only when one of them is enabled.
 - [Compilation](compilation.md): the output gains skill
@@ -812,4 +813,6 @@ implementation follows.
   works in.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
-- The tool's final name, chosen before its first release.
+- The tool's final name, chosen before its first real release. `statute`
+  is held by a placeholder release; another name would be published
+  anew.
