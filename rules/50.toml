@@ -1,6 +1,6 @@
 id = 50
 slug = "commit-hook-credential-scan"
-revision = 1
+revision = 2
 kind = "rule"
 status = "draft"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 13
 authority = ["safety", "sensitive-info"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "builtin"
 
 [title]
 en = "Scan the staged changes for credentials in the commit hooks"
