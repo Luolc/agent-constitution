@@ -1,6 +1,6 @@
-本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，是给 agent 的版本，不收写给人读的条款的正文；不要手改，改源文件后重新生成。修订号：0.36 (草案)。语言：中文。
+本文件由 `tools/build_constitution.py` 从 `constitution/index.toml` 和 `constitution/articles/` 生成，是给 agent 的版本，不收写给人读的条款的正文；不要手改，改源文件后重新生成。修订号：0.37 (草案)。语言：中文。
 
-# Agent 宪法 (草案)
+# Agent 宪法 (2026-10 版)
 
 这是本宪法给 agent 读的版本，本宪法现为草案，尚未生效；不含序言；写给人读、讲本宪法怎样编排和修改的条款不收正文，只留一句「见完整版」；修改本宪法或编译它的工具时，先读完整版 `constitution/constitution.zh.md`。
 
