@@ -1,6 +1,6 @@
 id = 17
 slug = "one-design"
-revision = 1
+revision = 2
 kind = "rule"
 status = "superseded"
 superseded-by = 82
