@@ -100,8 +100,8 @@ of a user or team agrees on are written once. A repository adds to the
 base, leaves rules out, and picks among the alternatives of a choice. The
 jurisdiction of the current design (`division-of-instructions.rules`) is
 then the owner of a base rule set that its repositories inherit; the
-rule set of a single repository replaces the one compiled file per
-jurisdiction. Exclusion is checked per rule set, so one repository can
+rule set and compiled output of each repository replace the one rule
+choice and compiled file per jurisdiction. Exclusion is checked per rule set, so one repository can
 use uv for its Python packages and another Bazel.
 
 **Monorepos.** A rule set may be split by path into segments, each
@@ -123,7 +123,7 @@ and shows up as a pull request. The user level holds only the tool, a
 cache of the sources, and a thin personal layer for what concerns the
 person, not the project: the language of replies, reading messages as
 speech-to-text, where credentials are kept, how directories are laid out
-on the machine. That layer is the private overlay already in the design.
+on the machine. That layer takes over the personal part of the private overlay already in the design.
 Each rule declares a default level (project rules at the repository level,
 rules about the person or the machine at the user level), and the user can
 change it. The reason is that a person who clones the repository, CI and a
@@ -188,7 +188,10 @@ The build checks these constraints:
 - No cycle, in the tree or in the requirements.
 - A rule's parent, when it is a rule, counts as one of its requirements:
   enabling a rule requires enabling its parent, and the parent is not
-  written again under `requires`.
+  written again under `requires`. When the parent is a choice, the
+  requirement passes through it to the choice's own parent: enabling uv
+  under "Python package manager" still requires the rule above that
+  choice. A choice counts as enabled when one of its children is.
 - No redundant requirement: if A requires B and B requires C, A does not
   also list C.
 - A requirement that crosses to another subtree should name a choice, not
@@ -296,7 +299,7 @@ and a rule set with its lock file, and writes:
 
 - an `AGENTS.md`, with the chosen rules in nested blocks along the parent
   tree, one heading level per level of the tree; a subtree whose root is
-  not enabled contributes nothing, since none of its rules can be enabled
+  not enabled (for a choice: none of its children is) contributes nothing, since none of its rules can be enabled
   without it, and a requirement that crosses subtrees is rendered as a
   link.
   Once the file's length passes a token threshold, measured with
@@ -342,9 +345,10 @@ implements this design lands.
 - [Rules](rules.md#rules): no rule is deleted any more, so
   `rules/retired-ids.txt` is no longer needed; a rule is superseded or
   repealed instead. `status` gains `trial` and `superseded`, and the
-  fields `supersedes`, a per-rule revision, `parent`, `requires` and
-  `conflicts` are added; choices become a kind of node in the parent tree. The verification method is part of each
-  rule's text, and its check is code (see [Checks](#checks)).
+  fields `supersedes`, a per-rule revision, `parent`, `requires`,
+  `conflicts` and a default level (repository or user) are added; choices
+  become a kind of node in the parent tree. The verification method is part
+  of each rule's text, and its check is code (see [Checks](#checks)).
 - [Choosing rules](rules.md#choosing-rules): a rule set with a lock
   file, in which rules are listed (by ID or pack), replaces "every general
   rule by default, with named exclusions". The rule set belongs to a
@@ -356,6 +360,11 @@ implements this design lands.
   choice, needs no relaxation. Whether `adjustable` values and the
   `relaxes:` declarations stay as they are is decided when this design is
   implemented.
+- [Overview](overview.md): the goal "each jurisdiction chooses which
+  general rules it uses" and the private overlay's job of choosing them
+  move to each repository's rule set (with an inherited base), and the
+  overlay's apply step becomes the compile command; the overlay keeps the
+  personal part and its own rules.
 - [Skills](skills.md): a skill declares the rules it implements
   and is installed only when one of them is chosen.
 - [Compilation](compilation.md): the output gains skill
