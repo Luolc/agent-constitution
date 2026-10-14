@@ -14,7 +14,9 @@ format, the IDs and the statuses are in
   title, and the rest of the rendering is set in stage B.
 - A rule about messages or notices says whom it covers: agent to agent,
   agent to person, or both.
-- While the constitution is a draft, every rule is `draft` too.
+- While the constitution is a draft, every rule is `draft` too; once it is
+  active, a new rule starts as `trial`
+  ([Trial rules](rule-system.md#trial-rules)).
 - `adjustable` (optional): the values in this rule that a lower-ranking text may
   change under `relaxations.adjustable-rules`, each with its default, for
   example `adjustable = ["wait_hours=24"]`. A rule without it cannot be
