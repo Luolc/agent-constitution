@@ -25,7 +25,8 @@ from test_constitution_fixture import (
 from constitution_compiler import base as cb
 from constitution_compiler import build as bc
 from constitution_compiler import git_env
-from constitution_compiler import sources as cs
+from constitution_compiler import model as cm
+from constitution_compiler import revision as crv
 
 
 class BaseTest(Tree):
@@ -72,7 +73,7 @@ class BaseTest(Tree):
     errors, src, _ = bc.build(self.root)
     self.assertEqual(errors, [])
     assert src is not None
-    cb.check_revision(self.root, "HEAD", src, errors)
+    crv.check_revision(self.root, "HEAD", src, errors)
     return errors
 
   def test_control_passes(self):
@@ -422,7 +423,7 @@ class BaseTest(Tree):
 
   def test_draft_revisions_sort_below_whole_numbers(self):
     revisions = ("0.2", "0.9", "0.10", "1", "2", "10")
-    keys = [k for r in revisions if (k := cb.revision_key(r)) is not None]
+    keys = [k for r in revisions if (k := crv.revision_key(r)) is not None]
     self.assertEqual(keys, sorted(keys))
     self.assertEqual(len(set(keys)), 6)
 
@@ -558,7 +559,7 @@ class BaseTest(Tree):
     """A file the base lists but git cannot read fails check 7."""
     self.commit_base()
     blob = subprocess.run(
-      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{cs.INDEX}"],
+      ["git", "-C", str(self.root), "rev-parse", f"HEAD:{cm.INDEX}"],
       check=True,
       capture_output=True,
       text=True,
@@ -570,7 +571,7 @@ class BaseTest(Tree):
         bc.main(["--root", str(self.root), "--check", "--base", "HEAD"]), 1
       )
     self.assertIn(
-      f"check 7: `git show HEAD:{cs.INDEX}` failed:", err.getvalue()
+      f"check 7: `git show HEAD:{cm.INDEX}` failed:", err.getvalue()
     )
 
   def test_unknown_base(self):

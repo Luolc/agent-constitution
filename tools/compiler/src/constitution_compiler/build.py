@@ -38,7 +38,6 @@ import sys
 
 from constitution_compiler.base import (
   check_base,
-  check_revision,
   GitError,
 )
 from constitution_compiler.checks import (
@@ -47,14 +46,19 @@ from constitution_compiler.checks import (
   check_refs,
   check_structure,
 )
+from constitution_compiler.model import (
+  Errors,
+  INDEX,
+  Sources,
+)
+from constitution_compiler.read import (
+  load,
+)
 from constitution_compiler.render import (
   render,
 )
-from constitution_compiler.sources import (
-  Errors,
-  INDEX,
-  load,
-  Sources,
+from constitution_compiler.revision import (
+  check_revision,
 )
 
 AGENT = ".agent"  # after the language in the name of the version for agents

@@ -195,8 +195,8 @@ pinned to `ubuntu-24.04`, and actions by commit SHA.
 the tokens with `count-tokens --require-tokens`, builds the site and checks
 its links, and writes the length lines of the two pages to the job summary and
 the log; it publishes nothing. It is not a required check, and it goes red
-when the token exchange or the count fails (`docs/design.md`, Static site,
-Credential).
+when the token exchange, the count, the Hugo build or the link check fails
+(`docs/design.md`, Static site, Credential).
 
 ## Fleet
 
