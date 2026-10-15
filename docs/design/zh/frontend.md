@@ -1,4 +1,4 @@
-<!-- en-sha256: 52f87517bf20f24fec971b4b79588f412cdce90bfa90c4d77f213fe21ab92bbf -->
+<!-- en-sha256: 42c35407fec7b3c28f059fc73bee13a606be11082c7b5a028cc34991060fa519 -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -13,10 +13,13 @@
 - [间距、圆角和阴影](#space-radius-and-shadow)。
 - [图标](#icons)：只用一套图标库 Lucide，以及现有图标换成什么。
 - [动效](#motion)：时长、缓动和减弱动效。
+- [交互与无障碍](#interaction-and-accessibility)：点击区域的大小、只在能悬停的设备上用 hover、给辅助技术的名称和状态、不靠脚本也能用的页面。
 - [组件](#components)：tag、筛选器、规定树、one-of、弹出层、侧边栏和按钮。
+- [不做的事](#not-done)：页面上永远不做的事。
 - [截图与审查](#screenshots-and-review)：改动页面的 pull request 附什么、CI 跑什么、审查方核什么。
 - [现状](#status)：哪些已经实现，以及这里的设计取代什么。
 - [待定问题](#open-questions)。
+- [出处](#sources)：本文参考的外部规范。
 
 ## <a id="design-tokens"></a>设计 token
 
@@ -68,6 +71,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - `text` 在象限 tag 上：不低于 4.5 (最低 6.10)。
 - hover 底色相对它所在的表面：不低于 1.2，这样在 light 模式下也看得出变化 (`bg-hover` 在页面上 light 1.24、dark 1.36；`bg-panel-hover` 在面板上 1.24 和 1.36)。
 - `accent` 在 `bg-selected` 上：不低于 4.5 (light 4.80，dark 4.92)。
+- 任何状态都不让其中文字的对比度低于 4.5。`text-muted` 只在 `bg-hover` 上够 (light 4.69，dark 4.77)；在 `bg-panel-hover`、`bg-active` 和 `bg-selected` 上降到 3.67 到 4.48 之间，所以在这些底色上，弱化的标号和 tag 的字改用 `text`。`accent` 在 `bg-active` 上低于 4.5 (light 4.31，dark 4.04)，所以按下的项文字用 `text`。
 
 焦点框是 `2px` 的 `accent`，画在元素外 (偏移 `2px`)，只在键盘获得焦点时显示 (`:focus-visible`)，所有控件都一样。
 
@@ -81,6 +85,8 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | `measure` | `36em` | `40em` |
 | `line-height-text` | `1.65` | `1.9` |
 | `line-height-ui` | `1.4` | `1.5` |
+
+正文字号不小于 16px：上面的下限英文是 18px，中文是 16px。英文一行约 90 个字符，多于多数指南给的 45 到 75 个；为什么这份文字这样更好读，见[静态网站](static-site.md)。需要比较的数字 (同一列里、上下行之间) 用等宽数字，在表格里靠末端对齐。
 
 其余字号都相对正文字号，以 em 为单位：
 
@@ -131,8 +137,10 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 | Token | Light | Dark | 用途 |
 | --- | --- | --- | --- |
-| `shadow-raised` | `0 1px 2px rgb(0 0 0 / 0.08)` | `0 1px 2px rgb(0 0 0 / 0.30)` | 立在页面上的控件。 |
-| `shadow-popover` | `0 0.25rem 0.9rem rgb(0 0 0 / 0.14)` | `0 0.25rem 0.9rem rgb(0 0 0 / 0.45)` | 弹出层和筛选器的面板。 |
+| `shadow-raised` | `0 1px 1px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08)` | `0 1px 1px rgb(0 0 0 / 0.25), 0 1px 3px rgb(0 0 0 / 0.30)` | 立在页面上的控件。 |
+| `shadow-popover` | `0 1px 2px rgb(0 0 0 / 0.08), 0 0.25rem 0.9rem rgb(0 0 0 / 0.14)` | `0 1px 2px rgb(0 0 0 / 0.30), 0 0.25rem 0.9rem rgb(0 0 0 / 0.45)` | 弹出层和筛选器的面板。 |
+
+每种阴影都有两层：近的一层勾出边缘，远的一层把它托起来。放在页面上的框用边框或阴影，二者只用其一；弹出层两者都用，因为它压在颜色相同的文字上方。圆角框套在另一个圆角框里时，里面的圆角不大于外面的。
 
 断点沿用网站现在的，以 rem 为单位：`22.5rem` (最窄的手机)、`48rem` (弹出层占满整栏)、`56rem` (侧边栏收到按钮后面) 和 `70rem` (目录收到按钮后面)。
 
@@ -142,12 +150,13 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 唯一的例外是指向源码的链接上的 GitHub 标志：它是 GitHub 的 logo，不是图标，仍用 GitHub 自己画的那个 (Octicons 的 `mark-github`，MIT 许可)。
 
-| Token | 尺寸 | 线宽 | 用途 |
-| --- | --- | --- | --- |
-| `icon-sm` | `1em` | `2` | 一行文字里或 tag 上；随文字缩放。 |
-| `icon-md` | `1.25rem` | `1.75` | 控件上和侧边栏里。 |
+| Token | 值 | 用途 |
+| --- | --- | --- |
+| `icon-sm` | `1em` | 一行文字里或 tag 上；随文字缩放。 |
+| `icon-md` | `1.25rem` | 控件上和侧边栏里。 |
+| `icon-stroke` | `1.75` | 所有图标，按 Lucide 的单位计 (24 个单位见方)。 |
 
-线宽按 Lucide 的单位计 (24 个单位见方)。图标在所在行里垂直居中。只起装饰作用的图标对读屏软件隐藏；只显示图标的按钮要有无障碍名称。
+所有图标用同一个线宽，按 Lucide 的画法只用描边，不用填充。图标在所在行里垂直居中，大小在 16px 到 24px 之间。图标全部放在一个目录里，每个都以来源加名字命名 (`lucide:funnel`)，不在用到它的页面标记里整段写出来。只起装饰作用的图标对读屏软件隐藏 (`aria-hidden`)；只显示图标的按钮要给读屏软件一个名称 (`aria-label`)。
 
 现有图标换成什么：
 
@@ -169,17 +178,28 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 ## <a id="motion"></a>动效
 
-动效只用在三处：折叠的部分展开或收起，指针或键盘焦点带来的变化，弹出层打开或关闭；另外，锚点跳到的目标闪一次。没有东西会自己动，滚动时和页面加载时都不动。
+动效只用在三处：折叠的部分展开或收起，指针或键盘焦点带来的变化，弹出层打开或关闭；另外，锚点跳到的目标闪一次。没有东西会自己动，滚动时和页面加载时都不动。经常做的操作完全不动：列表翻页、改动筛选器，以及一切用键盘做的操作 (快捷键、Escape) 都立即生效。
 
-| Token | 值 | 减弱时 | 用途 |
-| --- | --- | --- | --- |
-| `duration-fast` | `120ms` | `0ms` | hover 和焦点的颜色变化、弹出层关闭。 |
-| `duration-base` | `200ms` | `0ms` | 展开或收起、弹出层打开、箭头转向。 |
-| `duration-flash` | `2000ms` | `0ms` | 锚点目标从 `bg-target` 淡出。 |
-| `ease-out` | `cubic-bezier(0.2, 0, 0, 1)` | | 出现或打开。 |
-| `ease-in` | `cubic-bezier(0.4, 0, 1, 1)` | | 关闭。 |
+| Token | 值 | 用途 |
+| --- | --- | --- |
+| `duration-fast` | `120ms` | hover 和焦点的颜色变化、弹出层或折叠部分关闭。 |
+| `duration-base` | `200ms` | 展开、弹出层打开、箭头转向。 |
+| `duration-flash` | `2000ms` | 锚点目标从 `bg-target` 淡出。 |
+| `ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | 所有动效，打开和关闭都用它。 |
 
-动的只有颜色、透明度和 transform：弹出层淡入，同时向下移动 `space-1` 到位；箭头转四分之一圈。在 `prefers-reduced-motion: reduce` 下，所有时长取「减弱时」一列的值，变化立即完成；锚点目标不再闪烁，而是在起始一侧显示一条 `accent` 色条，直到读者点了别处。
+读者触发的动效都不超过 300 ms，闪一下的那个除外，读者不必等它。关闭比它所撤销的打开更短 (`duration-fast` 对 `duration-base`)，两者都用 `ease-out`：界面上没有慢慢起步的动效。动的只有透明度和 transform，状态变化时还有颜色；过渡要写明动哪些属性，不写 `all`。弹出层从 `scale(0.95)` 和 `opacity: 0` 进场，不从 `scale(0)` 进场，`transform-origin` 对准打开它的控件；箭头转四分之一圈。
+
+在 `prefers-reduced-motion: reduce` 下，没有东西移动或缩放：去掉缩放和转向，弹出层和折叠部分在原地出现。表示状态变化的部分保留，改成淡入淡出：弹出层照样淡入淡出，颜色照样在 `duration-fast` 内变化，锚点目标照样从 `bg-target` 淡出。
+
+## <a id="interaction-and-accessibility"></a>交互与无障碍
+
+- **点击区域。** 能点的东西至少 24px 见方 (padding 算在内)，在粗指针 (`pointer: coarse`，即触屏) 上至少 44px 见方；小图标靠 padding 撑到这个大小，不靠把图画大。
+- **hover。** hover 样式只在有能悬停的精确指针时生效 (`@media (hover: hover) and (pointer: fine)`)，触屏上点一下不会留下 hover 样式。
+- **名称和状态。** 控件就用本来是控件的元素 (`button`、链接、`details`、`select`)，只为元素本身表达不了的东西加 ARIA。打开或折叠某个部分的控件要说明它是否打开 (`aria-expanded`) 以及它打开的是什么 (`aria-controls`)。带控件的弹出层打开时接过焦点，关闭时把焦点交还给它的控件；按 Escape 关闭。
+- **提示气泡。** hover 时显示的提示约 300 ms 后出现；已经有一个显示过之后，指针移到下一个上面时立即出现。提示里不放页面别处没有的内容：它说的内容也是元素的无障碍名称，或者写在图例里。
+- **状态写进地址。** 列表的筛选、每页条数和页码都在地址里，列表可以直接链接，前进后退能回到原来的样子。
+- **不靠脚本。** 内容默认可见：脚本出错或根本没运行的页面照样显示全部文字，靠脚本展开的部分保持展开。
+- **空状态和加载。** 筛选后为空的列表要说明为空，并给出下一步：「清除筛选」。如果以后页面要在读者等待时加载东西，加载提示约 150 到 300 ms 后才出现，出现后至少显示 300 到 500 ms，避免一闪而过；两个网站现在都没有这样的加载。
 
 ## <a id="components"></a>组件
 
@@ -195,20 +215,29 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **筛选器**，照 Linear 和 Notion 的样子。收起时是一个按钮：`funnel` (`icon-md`)、「筛选」二字，有条件生效时再加一个徽标显示条件数 (`radius-full`，`bg-selected` 上的 `accent`)。打开时是按钮下方的弹出层，宽约 `28rem` (窄屏上与栏同宽)，一行一个条件：字段 (状态、默认开关、用途、领域；有多个规定源时加象限，网站带规定清单时加是否启用)、运算 (是、不是)、取值 (字段的一个或多个值，从列表里选)，以及删除这一行的 `x`。第一行以「当」开头；之后每行以连接词「且」或「或」开头，连接词在第二行是一个菜单，选定后对整个筛选器生效 (所有行共用一个连接词，同 Notion 的简单筛选)。各行下面是「添加条件」(`plus`) 和「清除」，后者删掉所有条件。改动立即生效并写进地址，筛选后的列表可以直接链接；没有「应用」按钮。领域的条件包含其下的领域。按 Escape 或点击外面关闭。不带脚本的网站 (本地网站就是) 显示同样的按钮和弹出层，每个字段一行，它的取值做成复选框，各行之间是「且」。
 - **规定树。** 节点的层级靠字号、字重和色条区分 ([字体](#type))，不靠缩进：第一层的领域是一个标题，上方留 `space-8`；第二层的领域缩进一级 (`space-4`)，起始一侧有一条 `2px` 的 `border-strong` 色条，贯穿它下面的规定；更深的领域不再缩进，色条用 `border-subtle`。一个领域的规定与它的标题左边对齐。挂在另一条规定下的规定不再缩进，而是在标号前加 `corner-down-right` (`icon-sm`，`text-faint`) 表示。每条规定占一行：标号在固定宽度的一列里，用 `text-muted`；标题超出一行时以省略号截断；tag 在右边。整行是一个链接：hover 时整行填上 `bg-hover`、`radius-sm`，标题变成 `accent`；获得焦点时焦点框围住整行。
 - **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
-- **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 表明当前状态；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开。按 Escape 或点击外面都会关闭。打开用 `duration-base` 和 `ease-out`，关闭用 `duration-fast` 和 `ease-in`。
+- **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
 - **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
 - **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`；获得焦点时显示焦点框。
+
+## <a id="not-done"></a>不做的事
+
+- 只有一个强调色 `accent`，不为强调再加第二个。
+- 不用渐变文字，不用装饰性的模糊或毛玻璃，不用发光效果。
+- 标题上方不加小号大写的标签 (eyebrow)，没有顺序的内容不编 01、02、03 这样的号。
+- 不用第二套图标库的图标，不拿 emoji 或字符当图标，描边图标里不混入填充图标。
+- 不写 `transition: all`，不从 `scale(0)` 进场，界面上不用 `ease-in`，加载时和滚动时没有动效。
+- 不能悬停的设备上没有 hover 样式。
 
 ## <a id="screenshots-and-review"></a>截图与审查
 
 - **截图。** 改动页面样子的 pull request (改样式、模板、图标、组件或组件的状态) 要附上它改到的每个页面的截图：light 和 dark 两套主题，英文和中文，每页四张。截图由仓库里的截图脚本生成，脚本见[静态网站](static-site.md)；脚本合入之前，用无头浏览器手工截。说明里写清截了哪些页面、哪些状态。
 - **CI。** 每个 pull request 的 CI 构建网站、检查链接、运行截图脚本，并把截图保存为这次运行的 artifact ([静态网站](static-site.md))。
-- **审查。** 审查方拿本文对照改动逐条核：该用 token 的地方没有直接写值，图标只来自 Lucide，动效只出现在[动效](#motion) 允许的地方且在减弱动效时消失，改到的每个组件的每种状态都按这里的样子画、两套主题都有，四种截图齐全。改动需要本文没有的值或组件时，在同一个 pull request 里把它加进本文。
+- **审查。** 审查方拿本文对照改动逐条核：该用 token 的地方没有直接写值，图标只来自 Lucide，动效只出现在[动效](#motion) 允许的地方、减弱动效时只剩淡入淡出，符合[交互与无障碍](#interaction-and-accessibility) 和[不做的事](#not-done)，改到的每个组件的每种状态都按这里的样子画、两套主题都有，四种截图齐全。改动需要本文没有的值或组件时，在同一个 pull request 里把它加进本文。
 - **视觉对比。** 拿截图与 `main` 上的截图对比、找出没人想改的变化，现在不做；等 CI 能生成截图之后可以再做。
 
 ## <a id="status"></a>现状
 
-已经实现的：配色 (`bg-page`、`bg-panel`、`text`、`text-muted`、`text-faint`、`accent`、`border-subtle`、`bg-target`，名字不同)、字体、正文字号和栏宽，以及断点。尚未实现的，以及各自取代什么：
+已经实现的：配色 (`bg-page`、`bg-panel`、`text`、`text-muted`、`text-faint`、`accent`、`border-subtle`、`bg-target`，名字不同)、字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。尚未实现的，以及各自取代什么：
 
 - 状态、tag、字号阶梯、间距、圆角、阴影和动效的 token，取代现在两个网站的样式表 (公开网站的和本地网站的) 里直接写的值。
 - 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
@@ -216,9 +245,22 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - 新的规定树取代按深度缩进的做法，挂在规定下的规定也包括在内。
 - 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
 - [图标](#icons) 一节表里的 Lucide 图标取代表中现有的图标。
+- 动效：锚点目标的闪烁现在不管读者怎么设置都会运行；减弱动效、点击区域的大小、只在精确指针上用 hover 和提示气泡的延迟都还没有实现。筛选后为空的列表现在只说没有规定符合，不给清除筛选的下一步。
 - 截图脚本及其在 CI 里的运行，尚未实现。
 - 这一切在代码里怎么写，要等网站的技术栈选定。
 
 ## <a id="open-questions"></a>待定问题
 
 - 两个网站一个由网站生成器构建、一个由 `statute` 构建，怎样共用一份 token 定义和一份图标：随技术栈一起定。
+
+## <a id="sources"></a>出处
+
+上文有几处取自已发布的界面规范，2026-10-15 按下列 commit 读取：
+
+- emil-design-eng，Emil Kowalski 讲动效的 skill (<https://github.com/emilkowalski/skills>，`2d228630`)：经常做的操作不加动效，界面用 `ease-out`、关闭更短，`ease-out` 的曲线，弹出层从 `scale(0.95)` 进场，减弱动效是减少而不是归零，hover 只在精确指针上生效，提示气泡的延迟。
+- Vercel 的 Web Interface Guidelines (<https://github.com/vercel-labs/web-interface-guidelines>，`434b7f91`)：点击区域的大小，状态写进地址，两层阴影，嵌套圆角，等宽数字，加载提示的时机，状态提高对比度，不写 `transition: all`。
+- UI Skills (<https://github.com/ibelick/ui-skills>，`c628a591`)：名称、`aria-expanded` 和 `aria-controls`、先用原生元素再用 ARIA (fixing-accessibility)；只动 transform 和 opacity (fixing-motion-performance)；空状态给下一步 (baseline-ui)。
+- Impeccable (<https://github.com/pbakaus/impeccable>，`a231cc5b`)：不靠脚本内容也可见，只用一套图标库，正文字号的下限和行长，「不做的事」里的一部分。
+- Anthropic 的 frontend-design skill (<https://github.com/anthropics/skills>，`dbd4588f`)：一个强调色，「不做的事」里的一部分。
+- UI Design Brain (<https://github.com/carmahhawwari/ui-design-brain>，`38f04c5a`)：边框或阴影二选一，表格里的数字靠末端对齐，图标 16px 到 24px、描边和填充不混用，提示里不放页面没有的内容。
+- Better Icons (<https://github.com/better-auth/better-icons>，`033316ec`)：图标以来源命名，放在一处。

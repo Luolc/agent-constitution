@@ -26,13 +26,18 @@ and behavior here in whatever code the site has.
 - [Space, radius and shadow](#space-radius-and-shadow).
 - [Icons](#icons): one library, Lucide, and what replaces today's icons.
 - [Motion](#motion): durations, easing and reduced motion.
+- [Interaction and accessibility](#interaction-and-accessibility):
+  target sizes, hover on devices that have it, names and states for
+  assistive technology, pages that work without scripts.
 - [Components](#components): tags, the filter, the tree of rules, the
   one-of, popovers, the sidebar and buttons.
+- [Not done](#not-done): what the pages never do.
 - [Screenshots and review](#screenshots-and-review): what a pull request
   that changes the pages attaches, what CI runs, what the reviewer
   checks.
 - [Status](#status): what is built and what this replaces.
 - [Open questions](#open-questions).
+- [Sources](#sources): the outside guidelines this file draws on.
 
 ## Design tokens
 
@@ -116,6 +121,12 @@ The contrast the values must keep, in both themes:
   the change shows in light mode too (`bg-hover` on the page 1.24 light
   and 1.36 dark; `bg-panel-hover` on a panel 1.24 and 1.36).
 - `accent` on `bg-selected`: at least 4.5 (4.80 light, 4.92 dark).
+- A state never lowers the contrast of the text it holds below 4.5.
+  `text-muted` keeps it only on `bg-hover` (4.69 light, 4.77 dark); on
+  `bg-panel-hover`, `bg-active` and `bg-selected` it falls to between
+  3.67 and 4.48, so there a muted label or a tag's word turns to
+  `text`. `accent` falls under 4.5 on `bg-active` (4.31 light, 4.04
+  dark), so a pressed item's text is `text`.
 
 The focus ring is `2px` of `accent`, outside the element (offset `2px`),
 shown on keyboard focus only (`:focus-visible`), the same on every
@@ -136,6 +147,13 @@ gives them:
 | `measure` | `36em` | `40em` |
 | `line-height-text` | `1.65` | `1.9` |
 | `line-height-ui` | `1.4` | `1.5` |
+
+The text is never smaller than 16px: the floors above are 18px in
+English and 16px in Chinese. A line of English holds about 90
+characters, above the 45 to 75 most guides give; [Static
+site](static-site.md) says why this text reads better so. Numbers that
+are compared, in a column or from one row to the next, use tabular
+figures, and in a table they are aligned to the end.
 
 Every other size is relative to the text's size, in em:
 
@@ -190,8 +208,14 @@ heading) stays in em, a multiple of the text size.
 
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
-| `shadow-raised` | `0 1px 2px rgb(0 0 0 / 0.08)` | `0 1px 2px rgb(0 0 0 / 0.30)` | A control that stands on the page. |
-| `shadow-popover` | `0 0.25rem 0.9rem rgb(0 0 0 / 0.14)` | `0 0.25rem 0.9rem rgb(0 0 0 / 0.45)` | Popovers and the filter's panel. |
+| `shadow-raised` | `0 1px 1px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08)` | `0 1px 1px rgb(0 0 0 / 0.25), 0 1px 3px rgb(0 0 0 / 0.30)` | A control that stands on the page. |
+| `shadow-popover` | `0 1px 2px rgb(0 0 0 / 0.08), 0 0.25rem 0.9rem rgb(0 0 0 / 0.14)` | `0 1px 2px rgb(0 0 0 / 0.30), 0 0.25rem 0.9rem rgb(0 0 0 / 0.45)` | Popovers and the filter's panel. |
+
+Each shadow has two layers, a close one that sets the edge and a wide
+one that lifts it. A box that rests on the page has a border or a
+shadow, not both; a popover has both, as it lies over text of the same
+colors. A rounded box inside another has a radius no larger than the
+outer one's.
 
 The breakpoints are the sites' today, in rem: `22.5rem` (the narrowest
 phones), `48rem` (a popover spans the column), `56rem` (the sidebar
@@ -212,14 +236,19 @@ The one exception is GitHub's mark on the link to the source: it is
 GitHub's logo, not an icon, and stays GitHub's own drawing (Octicons'
 `mark-github`, MIT license).
 
-| Token | Size | Stroke | Use |
-| --- | --- | --- | --- |
-| `icon-sm` | `1em` | `2` | In a line of text or on a tag; grows with the text. |
-| `icon-md` | `1.25rem` | `1.75` | On controls and in the sidebar. |
+| Token | Value | Use |
+| --- | --- | --- |
+| `icon-sm` | `1em` | In a line of text or on a tag; grows with the text. |
+| `icon-md` | `1.25rem` | On controls and in the sidebar. |
+| `icon-stroke` | `1.75` | Every icon, in Lucide's units (a 24-unit box). |
 
-The stroke is in Lucide's units (a 24-unit box). An icon is set on the
-middle of its line. An icon that only decorates is hidden from screen
-readers; a button that shows only an icon has an accessible name.
+Every icon has the one stroke width and is drawn in outline, as Lucide
+draws them; none is filled. An icon is set on the middle of its line,
+between 16px and 24px. All icons are kept in one directory, each named
+by its source and name, `lucide:funnel`, never written out in a page's
+markup where it is used. An icon that only decorates is hidden from
+screen readers (`aria-hidden`); a button that shows only an icon has a
+name for them (`aria-label`).
 
 What replaces today's icons:
 
@@ -244,22 +273,64 @@ What replaces today's icons:
 Motion is for three things only: a part that folds open or shut, a
 change under the pointer or the keyboard's focus, and a popover that
 opens or closes; and, once, the flash on an anchor's target. Nothing
-moves on its own, on scroll or while the page loads.
+moves on its own, on scroll or while the page loads. What is done often
+does not move at all: turning a page of the list, a change to the
+filter, and anything done from the keyboard (a shortcut, Escape) take
+effect at once.
 
-| Token | Value | Reduced | Use |
-| --- | --- | --- | --- |
-| `duration-fast` | `120ms` | `0ms` | Hover and focus colors, a popover closing. |
-| `duration-base` | `200ms` | `0ms` | Folding open or shut, a popover opening, a chevron turning. |
-| `duration-flash` | `2000ms` | `0ms` | The anchor's target fading from `bg-target`. |
-| `ease-out` | `cubic-bezier(0.2, 0, 0, 1)` | | Something appearing or opening. |
-| `ease-in` | `cubic-bezier(0.4, 0, 1, 1)` | | Something closing. |
+| Token | Value | Use |
+| --- | --- | --- |
+| `duration-fast` | `120ms` | Hover and focus colors, a popover or a part closing. |
+| `duration-base` | `200ms` | Folding open, a popover opening, a chevron turning. |
+| `duration-flash` | `2000ms` | The anchor's target fading from `bg-target`. |
+| `ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Every motion, opening and closing alike. |
 
-What moves is color, opacity and transform: a popover fades in and moves
-`space-1` down to its place; a chevron turns a quarter. Under
-`prefers-reduced-motion: reduce` every duration is the Reduced column's,
-so the change is there at once, and the target, instead of flashing,
-keeps a bar of `accent` along its start edge until the reader clicks
-elsewhere.
+Every motion the reader starts lasts at most 300 ms, the flash aside,
+which the reader does not wait for. A closing is shorter than the
+opening it undoes (`duration-fast` against `duration-base`), and both
+use `ease-out`: no motion of the interface starts slowly. What moves is
+opacity and transform, and color for the states; a transition names the
+properties it moves, never `all`. A popover enters from `scale(0.95)`
+and `opacity: 0`, never from `scale(0)`, its `transform-origin` at the
+control that opened it; a chevron turns a quarter.
+
+Under `prefers-reduced-motion: reduce` nothing moves or changes size:
+the scale and the turn are dropped, and a popover or a part appears in
+place. What shows a change of state stays, as a fade: a popover still
+fades in and out, colors still change over `duration-fast`, and the
+target still fades from `bg-target`.
+
+## Interaction and accessibility
+
+- **Targets.** Everything that can be clicked is at least 24px by 24px,
+  its padding counted, and at least 44px by 44px where the pointer is
+  coarse (`pointer: coarse`, a touch screen); a small icon gets the
+  size from its padding, not from a larger drawing.
+- **Hover.** Hover styles apply only where there is a fine pointer that
+  can hover (`@media (hover: hover) and (pointer: fine)`), so a tap on a
+  touch screen does not leave one behind.
+- **Names and states.** A control is the element that is one (a
+  `button`, a link, a `details`, a `select`), and ARIA is added only for
+  what that element does not say itself. A control that opens or folds
+  something says whether it is open (`aria-expanded`) and what it opens
+  (`aria-controls`). A popover with controls takes the focus when it
+  opens and gives it back to its control when it closes; Escape closes
+  it.
+- **Tooltips.** A tip shown on hover appears after about 300 ms; once one
+  is shown, the next one under the pointer appears at once. A tip never
+  holds what the page says nowhere else: what it says is also the
+  element's accessible name or in a legend.
+- **State in the address.** The filter, the page size and the page of
+  the list are in the address, so a list can be linked, and back and
+  forward return to the list as it was.
+- **Without scripts.** The content is visible by default: a page whose
+  scripts fail or never run still shows all its text, with the parts
+  that scripts fold open left open.
+- **Empty and loading.** A list that the filter leaves empty says so and
+  offers the next step, Clear filter. Should a page ever load something
+  while the reader waits, its indicator appears only after about 150 to
+  300 ms and then stays at least 300 to 500 ms, so it does not flicker;
+  the sites load nothing that way today.
 
 ## Components
 
@@ -334,11 +405,13 @@ turned off (disabled), where it has these.
   of `border-subtle`, `radius-md`, `shadow-popover`, padding `space-3
   space-4`, under the control that opens it. A popover with controls
   opens and closes on a click, Enter or Space, its control's
-  `aria-expanded` saying which; focus goes into it and back to the
-  control when it closes. A popover that only explains (the info on the
-  length) may also open on hover. Escape closes either, and so does a
-  click outside. It opens with `duration-base` and `ease-out`, closes
-  with `duration-fast` and `ease-in`.
+  `aria-expanded` and `aria-controls` saying whether and what; focus
+  goes into it and back to the control when it closes. A popover that
+  only explains (the info on the length) may also open on hover, after
+  the delay of a tooltip. Escape closes either, and so does a click
+  outside. It opens over `duration-base` from `scale(0.95)` and
+  transparent, and closes over `duration-fast`, both `ease-out`
+  ([Motion](#motion)).
 - **The sidebar.** `bg-panel`, with `1px` of `border-subtle` along its
   edge. A group's name: its icon (`icon-md`) and its name in `text-md`,
   `weight-bold`, `text`. A page: `text-md`, `weight-regular`, `text`,
@@ -349,11 +422,22 @@ turned off (disabled), where it has these.
   `duration-base`.
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding `space-1
-  space-3`; hover darkens it by 10% `text`, disabled is at half
-  opacity. A quiet button (most of them: the color switch, the
+  space-3`; hover `accent-hover`, disabled at half opacity. A quiet button (most of them: the color switch, the
   filter's, an icon alone): no fill, `text`, hover `bg-hover`, active
   `bg-active`. Inputs and menus: `bg-page`, `1px` of `border-strong`,
   `radius-sm`; focus the ring.
+
+## Not done
+
+- One accent color, `accent`; no second one for emphasis.
+- No gradient text, no decorative blur or glass, no glow.
+- No small upper-case label over a heading (an eyebrow), no numbers
+  such as 01, 02, 03 on what has no order.
+- No icon from a second library, no emoji or character as an icon, no
+  filled icon among outlined ones.
+- No `transition: all`, no entrance from `scale(0)`, no `ease-in` on
+  the interface, no motion on load or on scroll.
+- No hover style on a device that cannot hover.
 
 ## Screenshots and review
 
@@ -370,8 +454,10 @@ turned off (disabled), where it has these.
   artifact of the run ([Static site](static-site.md)).
 - **Review.** The reviewer goes through this file against the change,
   point by point: no value written where a token belongs, icons from
-  Lucide only, motion only where [Motion](#motion) allows it and gone
-  under reduced motion, each state of each component it touches drawn
+  Lucide only, motion only where [Motion](#motion) allows it and only
+  fades under reduced motion, the rules of
+  [Interaction and accessibility](#interaction-and-accessibility) and
+  [Not done](#not-done), each state of each component it touches drawn
   as here, in both themes, and the screenshots there for all four.
   A change that needs a value or a component this file lacks adds it
   here in the same pull request.
@@ -383,8 +469,11 @@ turned off (disabled), where it has these.
 
 Built today: the palette (`bg-page`, `bg-panel`, `text`, `text-muted`,
 `text-faint`, `accent`, `border-subtle`, `bg-target`, under other names),
-the fonts, the text size and the column, and the breakpoints. Not built
-yet, and what each replaces:
+the fonts, the text size and the column, and the breakpoints; the
+filter and the page in the address, pages readable without scripts,
+tabular figures, and `aria-expanded` with `aria-controls` on the info
+button and the buttons of the rules under a provision. Not built yet,
+and what each replaces:
 
 - The tokens for the states, the tags, the type scale, space, radii,
   shadows and motion replace the values written in the style sheets
@@ -400,6 +489,10 @@ yet, and what each replaces:
   its options and the tag of [Components](#components) replace the
   plain tag that marks its default option.
 - The icons replace those of the table in [Icons](#icons).
+- Motion: the flash on a target runs today whatever the reader's
+  setting; reduced motion, the sizes of targets, hover only on fine
+  pointers and the delay of tooltips are not built. The empty list says
+  that no rule matches, without the step to clear the filter.
 - The screenshot script, and its run in CI, are not built yet.
 - How all of this is written in the code waits for the choice of the
   sites' stack.
@@ -409,3 +502,38 @@ yet, and what each replaces:
 - How the two sites share one definition of the tokens and one copy of
   the icons, when one is built by a site generator and the other by
   `statute`: decided with the stack.
+
+## Sources
+
+Several points above come from published guidelines for interfaces,
+read on 2026-10-15 at the commits named:
+
+- emil-design-eng, Emil Kowalski's skill on motion
+  (<https://github.com/emilkowalski/skills>, `2d228630`): what is done
+  often does not move, `ease-out` for the interface and shorter
+  closings, the curve of `ease-out`, popovers from `scale(0.95)`,
+  reduced motion as less motion rather than none, hover only on fine
+  pointers, the delay of tooltips.
+- Vercel's Web Interface Guidelines
+  (<https://github.com/vercel-labs/web-interface-guidelines>,
+  `434b7f91`): target sizes, state in the address, shadows of two
+  layers, nested radii, tabular figures, the timing of a loading
+  indicator, states that raise contrast, no `transition: all`.
+- UI Skills (<https://github.com/ibelick/ui-skills>, `c628a591`):
+  names, `aria-expanded` and `aria-controls`, native elements before
+  ARIA (fixing-accessibility); transform and opacity only
+  (fixing-motion-performance); the next step in an empty state
+  (baseline-ui).
+- Impeccable (<https://github.com/pbakaus/impeccable>, `a231cc5b`):
+  content visible without scripts, one icon library, the floor of the
+  text size and the length of a line, part of the list of what is not
+  done.
+- Anthropic's frontend-design skill
+  (<https://github.com/anthropics/skills>, `dbd4588f`): one accent and
+  part of the list of what is not done.
+- UI Design Brain (<https://github.com/carmahhawwari/ui-design-brain>,
+  `38f04c5a`): a border or a shadow, numbers aligned to the end in
+  tables, icons between 16px and 24px without mixing outline and fill,
+  tips that hold nothing the page lacks.
+- Better Icons (<https://github.com/better-auth/better-icons>,
+  `033316ec`): icons named by source and kept in one place.
