@@ -284,7 +284,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
   - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
   - the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
 - L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
-- L18 Count `statute.toml`, `statute.lock`, `statute-checks.toml`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too.
+- L27 Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml`, which `statute compile` generates, with whichever side changed it (R47).
 - R68 Put what is still needed after the task ends, such as a decision, knowledge to keep or work handed over to a later agent, into a repository through review, never only into a conversation.
 - R69 Never write to the cross-session memory an agent tool keeps for itself; keep a lesson that must last in a repository, through review.
 - R74 Before you write into a repository a fact you have only from someone else's account, check that it holds at its source and name in the change what you read; when it does not hold there yet, write an open item with an owner and a condition that confirms it instead of the fact.
