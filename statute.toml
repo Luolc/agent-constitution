@@ -15,8 +15,8 @@ domains = [
   "R175",
   # The repository builds two sites from web/, with a frontend design in docs/design/frontend.md.
   "R240",
-  # The owner's environment, which a private layer would carry once one can be compiled
-  # (the full text is limited to 32 KiB): machines and their directories,
+  # The owner's environment, public rules that hold no private value; the private layer
+  # adds what is private: machines and their directories,
   "R127",
   # the tiers of the secret store,
   "R137",
