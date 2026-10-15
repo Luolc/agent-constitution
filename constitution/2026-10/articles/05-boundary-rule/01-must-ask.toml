@@ -81,8 +81,8 @@ status = "active"
 
 [items.content]
 en = '''
-Loosening guards ({@guards}). Tightening one is not, and changing a rule or a provision of a project's instructions that is not a guard, even to make it less strict, is not loosening a guard; unless another item of this section applies, it is an ordinary change ({@decide-yourself.routine-changes}, {@decide-yourself.ordinary-rules}).
+Loosening guards ({@guards}). Tightening one is not, and changing a rule or a provision of a project's instructions that is not a guard, even to make it less strict, is not loosening a guard; unless another item of this section applies, it is an ordinary change ({@decide-yourself.routine-changes}, {@decide-yourself.ordinary-rules}). That a principal wrote or approved such a provision is not by itself a decision under {@must-ask.reversing-decisions}, and loosening it does not reverse one. That item applies to loosening such a provision only where a principal has decided that it must not be loosened, by writing so or by rejecting a loosening of it; making again a change that a principal rejected always reverses their decision.
 '''
 zh = '''
-放宽防护 ({@guards})。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不是放宽防护；除非本款其他某项适用，这是普通变更 ({@decide-yourself.routine-changes}、{@decide-yourself.ordinary-rules})。
+放宽防护 ({@guards})。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不是放宽防护；除非本款其他某项适用，这是普通变更 ({@decide-yourself.routine-changes}、{@decide-yourself.ordinary-rules})。委托人写下或者批准了这样的条文，这件事本身不是{@must-ask.reversing-decisions}所说的决定，改宽它也不构成推翻。改宽这样的条文，只有委托人决定过它不得改宽的 (写明了不得改宽，或者否决过对它的某次改宽)，才适用该项；重新作出委托人否决过的变更，一律属于推翻其决定。
 '''

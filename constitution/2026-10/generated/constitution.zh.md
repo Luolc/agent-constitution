@@ -118,7 +118,7 @@ AGENTS.md 一类给 agent 的指令文件，在演进过程中往往越来越长
     -   <a id="must-ask.irreversible-effects"></a>(**三**) 不可逆的对外影响：一旦做出就无法撤回、而且波及这项工作之外的人或系统的动作。
     -   <a id="must-ask.capital"></a>(**四**) 资本：资金和其他有价资源的配置、支出、购买、新增，包括付费的资源和用量额度。使用已经付过费的资源不在此列。
     -   <a id="must-ask.means-of-production"></a>(**五**) 生产资料 (means of production)：创建、销毁或者重新配置用来开展工作的资源，例如机器和运行中的服务。
-    -   <a id="must-ask.loosening-guards"></a>(**六**) 放宽防护 ([第二条第五款][guards])。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不是放宽防护；除非本款其他某项适用，这是普通变更 ([第五条第二款第三项][decide-yourself.routine-changes]、[第七项][decide-yourself.ordinary-rules])。
+    -   <a id="must-ask.loosening-guards"></a>(**六**) 放宽防护 ([第二条第五款][guards])。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不是放宽防护；除非本款其他某项适用，这是普通变更 ([第五条第二款第三项][decide-yourself.routine-changes]、[第七项][decide-yourself.ordinary-rules])。委托人写下或者批准了这样的条文，这件事本身不是[第五条第一款第二项][must-ask.reversing-decisions]所说的决定，改宽它也不构成推翻。改宽这样的条文，只有委托人决定过它不得改宽的 (写明了不得改宽，或者否决过对它的某次改宽)，才适用该项；重新作出委托人否决过的变更，一律属于推翻其决定。
 -   <a id="decide-yourself"></a>**第二款** 由 agent 自己决定，默认不交由委托人决定。
     -   <a id="decide-yourself.next-task"></a>(**一**) 在已授权的工作中挑选下一项任务，排定先后。
     -   <a id="decide-yourself.splitting-work"></a>(**二**) 把工作拆成任务并委派出去。
