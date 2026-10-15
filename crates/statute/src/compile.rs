@@ -625,8 +625,13 @@ pub fn cited(
                     describe(&cited.source)
                 ));
             }
-            // An overridden rule is shown as the rule in its place.
-            let cited = project.resolution.standing(&cited);
+            // An overridden rule is shown as the rule in its place, but a
+            // rule that stands in its place names it as itself.
+            let cited = if project.resolution.chain(key).contains(&cited) {
+                cited
+            } else {
+                project.resolution.standing(&cited)
+            };
             match project.sources.get(&cited) {
                 Some(_) if compiled => Ok(cited.to_string()),
                 Some(n) => Ok(format!(
