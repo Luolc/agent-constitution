@@ -219,8 +219,7 @@ git's directory, a lock file of its own sources alone,
 `.statute/.gitignore` and `compile --private-only` are not built yet.
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
-in `~/.statute/` rather than the XDG directories, and except that
-`upgrade` does not show the text of a changed rule yet.
+except that `upgrade` does not show the text of a changed rule yet.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
