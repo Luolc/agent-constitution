@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, param, rule};
 
 struct Run {
     code: i32,
@@ -129,11 +129,28 @@ fn a_reference_to_no_node_fails() {
 }
 
 #[test]
-fn the_parameters_file_is_not_a_rule() {
-    let dir = rules("params", &[domain(1), rule(2, 1, "")]);
-    std::fs::write(dir.join("params.toml"), "[[parameter]]\n").unwrap();
+fn the_parameters_file_declares_what_the_rules_name() {
+    let uses = edit(
+        rule(2, 1, ""),
+        "Do the thing 2.",
+        "Write in {$language.docs}.",
+    );
+    let dir = rules("params", &[domain(1), uses.clone()]);
+    let declared = param("language.docs", "type = \"language\"", "repo", "en");
+    std::fs::write(dir.join("params.toml"), &declared).unwrap();
     let run = validate(&dir);
     assert_eq!(run.code, 0, "{}", run.stderr);
+    // A placeholder of no parameter, and a file that is no declaration.
+    let dir = rules("params-missing", &[domain(1), uses]);
+    std::fs::write(dir.join("params.toml"), "[[parameter]]\n").unwrap();
+    let run = validate(&dir);
+    assert_eq!(run.code, 1);
+    for line in [
+        "rules/params.toml: error: parameter 1: `name` is missing",
+        "rules/2.toml: error: names `{$language.docs}`, a parameter that neither",
+    ] {
+        assert!(run.stderr.contains(line), "{line}: {}", run.stderr);
+    }
 }
 
 /// A repealed rule keeps its texts as they were: what it cites may be

@@ -102,3 +102,11 @@ pub fn source(nodes: &[(u64, String)]) -> statute::source::Sources {
     );
     statute::source::Sources::new(vec![source])
 }
+
+/// One `[[parameter]]` table of `params.toml`: `kind` is its type line
+/// and anything after it, as `type = "language"`.
+pub fn param(name: &str, kind: &str, scope: &str, default: &str) -> String {
+    format!(
+        "[[parameter]]\nname = \"{name}\"\n{kind}\nscope = \"{scope}\"\ndefault = \"{default}\"\n\n[parameter.title]\nen = \"The {name}\"\n\n"
+    )
+}
