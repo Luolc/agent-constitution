@@ -693,6 +693,20 @@ fn the_skills_of_enabled_rules_are_copied_and_linked() {
     }
 }
 
+#[cfg(unix)]
+#[test]
+fn the_skills_at_the_top_belong_to_the_source_there_not_to_the_local_rules() {
+    let dir = skills_repo("skills-and-local-rules");
+    // The repository's own rules hold no rule 3, 6 or 12.
+    let local = dir.join(".statute/rules");
+    std::fs::create_dir_all(&local).unwrap();
+    std::fs::write(local.join("1.toml"), domain(1).1).unwrap();
+    std::fs::write(local.join("2.toml"), rule(2, 1, "").1).unwrap();
+    compiled(&dir);
+    assert!(dir.join(".agents/skills/three/SKILL.md").is_file());
+    assert!(!dir.join(".agents/skills/six").exists());
+}
+
 #[test]
 fn no_enabled_skill_writes_no_skill_directory() {
     let dir = repo("no-skills", &manifest(""));

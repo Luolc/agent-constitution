@@ -91,7 +91,10 @@ lock file are unchanged.
 In the directory of the `AGENTS.md`, `statute compile` also writes:
 
 - each skill an enabled rule needs ([Rules and skills](rule-format.md#rules-and-skills)),
-  copied whole from `skills/<name>/` of the rule's source to
+  copied whole from `skills/<name>/` of the rule's source (for the
+  repository's own rules, the `skills/` at the top of the repository,
+  unless a source is that directory, as with `R = { path = "." }`: those
+  skills are then the source's, and the repository's own rules have none) to
   `.agents/skills/<name>/` (two needed skills of one name, from two
   sources, fail the command), with a file `.statute-generated` added, and a
   link to that copy, `.claude/skills/<name>`, whose target is the
