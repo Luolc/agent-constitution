@@ -50,11 +50,12 @@ files changes, this table is the one place to change.
    the built-in first-party source, which is enough for a public
    repository with no private rules. When the person keeps private
    rules, it must name their private source; ask before writing it
-   ([Questions](#questions), Q1). A `personal` parameter in the
-   global configuration, such as the language an agent writes to the
-   person in, makes a private output by itself, so even with no private
-   rules `statute compile` asks for the two private links in the
-   exclude file first (step g).
+   ([Questions](#questions), Q1). In a public repository, a
+   `personal` parameter whose value in the global configuration differs
+   from the committed one (such as the language an agent writes to the
+   person in) makes a private output by itself, so even with no
+   private rules `statute compile` asks for the two private links in
+   the exclude file first (step g).
 3. The repository has no rule set yet. One that has a rule set
    written before default switches is redone from step b: its `rules`
    and `packs` are where the three lists of step f start.
@@ -302,10 +303,12 @@ Acceptance, before you ask for a review:
 - `statute compile --check` exits 0, which shows the public output is
   what a fresh compile writes (`statute compile` prints `wrote` for a
   file even when its content did not change), and `statute compile`
-  warns of no `CLAUDE.md` unless the person chose to keep it. Git
-  ignores the private output, so compare it by hand: copy the private
-  output and the private links aside, run `statute compile`, and `cmp`
-  each file with its copy.
+  warns of no `CLAUDE.md` unless the person chose to keep it. Where there
+  is a private output (a public repository with private rules, or a
+  personal value that differs), git ignores it, so compare it by hand:
+  copy the private output aside, note where each private link points
+  with `readlink`, run `statute compile`, and `cmp` each file with its
+  copy and compare each `readlink` result with the note.
 - The compiled file's first line says statute wrote it.
 - The pull request adds the `statute compile --check` hook, and the CI
   step too unless CI already runs every pre-commit hook.
