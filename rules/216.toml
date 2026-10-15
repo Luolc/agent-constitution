@@ -1,8 +1,9 @@
 id = 216
 slug = "main-checkouts-root-holds-nothing-else"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 288
 lang = "en"
 parent = 127
 default = "on"

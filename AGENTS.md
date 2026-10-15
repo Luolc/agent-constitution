@@ -282,7 +282,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R239 Write a rule's statement so that it can be read and followed on its own, as one line of the compiled instructions, resting on nothing that line does not show, such as the rule's title, reason or verification, its domain, its place in the tree or its `requires`. Name another rule in it only by a citation, never by its position, as in "the rule above" or "the other options".
 - L6 Keep each rule, one-of and domain of the first-party source in `rules/<id>.toml`, named by its ID without zero padding, and never delete one or reuse its ID: a rule that goes is superseded or repealed.
 - L7 In a first-party rule, cite a rule as `{@rule:<id>}` and the constitution as `{@constitution:<id>}`, and in the constitution cite without a prefix; never cite a rule by its slug.
-- R128 Keep each repository's main checkout in a directory named after the repository, directly under the root the jurisdiction designates for main checkouts.
 - R129 Put each worktree of a repository at `<root>/<repo>/<slug>/`, under the root the jurisdiction designates for worktrees, never inside a repository's directory.
 - R130 Put the temporary files handed between agents (handover notes, findings, drafts, research output) in the scratch directory of their repository.
 - R131 Keep large local data in the data directory of its repository, outside the repository.
@@ -291,7 +290,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R134 Never delete a tool's root directory named after the user rather than the project (such as `/tmp/pytest-of-<user>` or `/tmp/pytest-current`); delete only your own numbered subtree in it (such as `pytest-<n>`).
 - R135 Run the Linux release the jurisdiction designates on the Linux machines (development machines, servers) and as the base image of test containers, naming that release in the image tag.
 - R136 Push your work to the remote before you leave a machine.
-- R216 Keep nothing but main checkouts directly under the root the jurisdiction designates for main checkouts.
 - R217 Give each file you put in a scratch directory (R130) a date in its name.
 - R218 Once content of a scratch directory (R130) is in the repository, delete its copy in the scratch directory.
 - R219 Commit no large data file to a repository; commit only a pointer to it in the data directory (R131), with its SHA-256.
