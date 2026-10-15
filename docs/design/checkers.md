@@ -14,7 +14,7 @@ position. What each one proves, and what it does not:
 | Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint-zh-sources`; limae on every Markdown file of the repo) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text gets limae's rules too, which mostly find nothing there |
 | Design translation (`check-design-translation`) | `docs/design/zh/` holds a file for each of `docs/design/` and no other; each starts with the SHA-256 of the English file as it is now, then its title, and has the English file's headings, in the same order and at the same levels, each with the English heading's anchor; every relative link of the design, in either language, leads to a file or directory of the repo | That the translation says what the English says, or that it was brought up to date when its hash line was |
-| Python code (`ruff check`, `ruff format --check`, `pydoclint`, `basedpyright`, configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
+| Python code (`ruff check`, `ruff format --check` and `pydoclint` as commit hooks; `basedpyright` in CI; all configured in `pyproject.toml`) | The scripts under `tools/` follow the configured lint rules and formatting, their docstrings name each argument and return value, and the type checker finds no error in standard mode | That the scripts do what their docstrings say; that is what the tests are for |
 | Rust code (`cargo fmt --check` as a commit hook; `cargo clippy --all-targets -- -D warnings`, `cargo test` and `cargo publish --dry-run -p statute` in CI) | The workspace under `crates/` is formatted, clippy finds no warning, the tests pass, and `statute` packages and builds as crates.io would receive it | That the commands do what the design says where no test covers them, or that crates.io would accept the upload |
 | Schema | Fixtures and the overlay manifest have the required keys and allowed values; IDs match their file names | That the text means what the fields claim |
 | References | Every cited ID (a constitution provision, a rule, a case) exists and is not repealed; no source points to a file outside the core or the overlay | That the cited article actually supports the rule |
@@ -147,8 +147,8 @@ numbering check is tested on a temporary git repository
 (`crates/statute/tests/constitution.rs`; what `statute validate` checks
 of the rules against the constitution in `validate_constitution.rs`,
 the rest in `validate.rs` and the crate's other tests).
-Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
-CI only, on a pull request against the tip of the base branch the
+Checks 1 to 6 run as commit hooks and in CI; the tests run in CI only,
+and so does check 7, on a pull request against the tip of the base branch the
 checked-out merge commit was made on (its first parent), on a push to
 `main` against the commit before the push.
 
