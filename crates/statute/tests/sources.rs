@@ -344,7 +344,7 @@ fn a_cycle_of_requirements_across_sources_fails() {
     );
     fails(
         &dir,
-        "me/rules/4.toml: error: the requirements form a cycle across sources (a parent counts as a requirement): me:4 -> team:7 -> me:4",
+        "me/rules/4.toml: error: the requirements form a cycle across sources: me:4 -> team:7 -> me:4",
     );
     // Without the edge back, it locks.
     let dir = repo("no-cycle", &private, &[team]);

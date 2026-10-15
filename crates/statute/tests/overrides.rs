@@ -18,7 +18,7 @@ fn manifest(rules: &str) -> String {
     )
 }
 
-/// R: rule 2, which requires rule 8, with its child 3; rule 9, which
+/// R: rule 2, which requires rule 8, and rule 3, which requires 2; rule 9, which
 /// requires 2; rule 10, which conflicts with 2; one-of 4 with children 5
 /// and 6, and rule 11, which requires the one-of. The other sources have
 /// a domain 1 each and me a rule 4; the nodes of each test come on top.
@@ -26,7 +26,7 @@ fn base() -> Vec<(&'static str, (u64, String))> {
     let mut nodes: Vec<(&str, (u64, String))> = [
         domain(1),
         rule(2, 1, "requires = [8]"),
-        rule(3, 2, ""),
+        rule(3, 1, "requires = [2]"),
         one_of(4, 1),
         rule(5, 4, ""),
         rule(6, 4, ""),
@@ -149,7 +149,7 @@ fn the_overriding_rule_stands_in_the_place_of_the_one_it_overrides() {
     let l20 = ("rules", overriding(20, "R2", ""));
     let dir = repo("place", &manifest("\"R3\", \"R9\", \"20\""), &[l20]);
     ok(&statute(&dir, &["lock"]));
-    // R2 counts as enabled, for R3 under it and R9 that requires it, and
+    // R2 counts as enabled, for R3 and R9 that require it, and
     // brings in nothing: not R8, its requirement.
     assert_eq!(locked(&dir), ["R2 by L20", "R3", "R9", "L20"]);
     let without = repo("place-without", &manifest("\"R3\", \"R9\""), &[]);
@@ -160,7 +160,7 @@ fn the_overriding_rule_stands_in_the_place_of_the_one_it_overrides() {
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     assert!(
         out.contains(
-            "\n<a id=\"rule-R2\"></a>\n<a id=\"rule-L20\"></a>\n### Rule 20 (L20)\n\nOverrides R2.\n\nDo the thing 20.\n\n<a id=\"rule-R3\"></a>\n#### Rule 3 (R3)\n"
+            "\n<a id=\"rule-R2\"></a>\n<a id=\"rule-L20\"></a>\n### Rule 20 (L20)\n\nOverrides R2.\n\nDo the thing 20.\n\n<a id=\"rule-R3\"></a>\n### Rule 3 (R3)\n"
         ),
         "{out}"
     );
@@ -411,7 +411,10 @@ fn the_overridden_rule_has_no_conflicts_and_no_check() {
             "check = \"command\"\nrun = \"exit 1\"\ntools = [\"sh\"]",
         ),
     );
-    let l20 = ("rules", overriding(20, "R2", ""));
+    let l20 = (
+        "rules",
+        overriding(20, "R2", "uses = [\"instructions\", \"review\"]"),
+    );
     let dir = repo(
         "conflict-check",
         &manifest("\"R10\", \"R3\", \"20\""),
@@ -467,43 +470,21 @@ fn upgrade_asks_whether_an_override_still_holds() {
 }
 
 #[test]
-fn the_parent_of_the_overridden_rule_is_still_required() {
-    // R3's parent is the rule R2; L21 in R3's place requires it.
-    let dir = repo(
-        "parent",
-        &manifest("\"21\""),
-        &[("rules", overriding(21, "R3", ""))],
-    );
-    let run = statute(&dir, &["lock"]);
-    ok(&run);
-    assert_eq!(locked(&dir), ["R2", "R3 by L21", "R8", "L21"]);
-    let run = statute(&dir, &["explain", "R2"]);
-    assert!(
-        run.stdout
-            .contains("- the parent of L21 (Rule 21), which is enabled:\n"),
-        "{}",
-        run.stdout
-    );
-}
-
-#[test]
 fn a_pack_enters_a_one_of_through_the_child_an_overriding_rule_takes() {
     let dir = repo(
         "pack",
         &manifest("\"21\"").replace("rules = [", "packs = [\"R1\"]\nrules = ["),
         &[
             ("rules", overriding(21, "R5", "")),
-            ("r/rules", rule(12, 5, "")),
             // Not in conflict with R2, which the pack takes as well.
             ("r/rules", rule(10, 1, "")),
         ],
     );
     let run = statute(&dir, &["lock"]);
     ok(&run);
-    // The pack takes R5, which L21 overrides, and R12 below it; not R6.
+    // The pack takes R5, which L21 overrides; not R6.
     let rules = locked(&dir);
     assert!(rules.contains(&"R5 by L21".to_owned()), "{rules:?}");
-    assert!(rules.contains(&"R12".to_owned()), "{rules:?}");
     assert!(!rules.contains(&"R6".to_owned()), "{rules:?}");
     assert!(!run.stderr.contains("warning"), "{}", run.stderr);
 }
@@ -518,7 +499,7 @@ fn a_rule_does_not_override_a_rule_it_is_enabled_through() {
     );
     fails(
         &dir,
-        "team/rules/6.toml: error: `overrides` names \"R13\", which brings in team:6 along `parent` or `requires`; a rule cannot take the place of a rule it is enabled through",
+        "team/rules/6.toml: error: `overrides` names \"R13\", which brings in team:6 along `requires`; a rule cannot take the place of a rule it is enabled through",
     );
     // Without the requirement, the override holds.
     let dir = repo(

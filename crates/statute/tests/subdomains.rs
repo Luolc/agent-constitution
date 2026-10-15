@@ -269,7 +269,7 @@ struct SourceCase {
 
 /// The compiler's cases of what one source shows
 /// (`tools/compiler/tests/source_cases.toml`): node 20 in the repository's
-/// own rules, with domain 2, one-of 3 (and a child of it), rule 10 and
+/// own rules, with domain 2, one-of 3, rule 10 and
 /// subdomain 4; `team` holds domain 7 and rule 8.
 #[test]
 fn the_compilers_source_cases() {
@@ -284,7 +284,6 @@ fn the_compilers_source_cases() {
             &[
                 ("rules", domain(2)),
                 ("rules", common::one_of(3, 2)),
-                ("rules", rule(5, 3, "")),
                 ("rules", rule(10, 2, "")),
                 ("rules", (4, cases.subdomain.clone())),
                 ("rules", (20, case.node.clone())),

@@ -51,8 +51,38 @@ pub enum Level {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Check {
     Builtin,
-    Command { run: String, tools: Vec<String> },
-    Review,
+    Command {
+        run: String,
+        tools: Vec<String>,
+    },
+    /// No program checks the rule: `check = "none"`, or `"review"`, its
+    /// older name.
+    None,
+}
+
+/// A domain's or a rule's `default`: whether a rule set gets it without
+/// listing it (`docs/design/rule-config.md`, Default switches).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Switch {
+    On,
+    Off,
+}
+
+/// Where a rule goes, its `uses` (`docs/design/rule-config.md`, Where a
+/// rule is used): into the compiled `AGENTS.md`, to the reviewer, or both.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Uses {
+    pub instructions: bool,
+    pub review: bool,
+}
+
+impl Default for Uses {
+    fn default() -> Self {
+        Uses {
+            instructions: true,
+            review: false,
+        }
+    }
 }
 
 /// An entry of `requires` or `conflicts`: a number names a node of the
@@ -75,6 +105,7 @@ pub struct RuleFields {
     pub constitution: Specifier,
     pub level: Level,
     pub check: Check,
+    pub uses: Uses,
     pub statement: Text,
     pub reason: Text,
     pub verification: Text,
@@ -99,6 +130,11 @@ pub struct Node {
     /// then no `parent`.
     pub overrides: Option<Ref>,
     pub title: Text,
+    /// A domain's or a rule's `default`, when the file gives one.
+    pub default: Option<Switch>,
+    /// A one-of's `default`, the child it enables when a rule set picks
+    /// none, when the file gives one.
+    pub default_child: Option<Id>,
     /// Which repositories a domain is for; only a domain has it.
     pub applicability: Option<Text>,
     pub translations: BTreeMap<String, String>,
@@ -129,6 +165,8 @@ struct RawNode {
     constitution: Option<String>,
     level: Option<Level>,
     check: Option<RawCheck>,
+    default: Option<RawDefault>,
+    uses: Option<Vec<String>>,
     run: Option<String>,
     tools: Option<Vec<String>>,
     title: Text,
@@ -157,7 +195,17 @@ enum RawRef {
 enum RawCheck {
     Builtin,
     Command,
+    None,
     Review,
+}
+
+/// `default`: `"on"` or `"off"` on a domain or a rule, a child's ID on a
+/// one-of.
+#[derive(Clone, Deserialize)]
+#[serde(untagged)]
+enum RawDefault {
+    Child(i64),
+    Switch(String),
 }
 
 #[derive(Deserialize)]
@@ -331,11 +379,11 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
                 .to_owned(),
         ),
         (Kind::Rule, false, false) => err(
-            "a rule needs a `parent`, the ID of a rule, one-of or domain, or `overrides`, the rule of another source it takes the place of"
+            "a rule needs a `parent`, the ID of a domain or a one-of, or `overrides`, the rule of another source it takes the place of"
                 .to_owned(),
         ),
         (Kind::OneOf, false, _) => err(
-            "a one-of needs a `parent`: the ID of a rule, one-of or domain".to_owned(),
+            "a one-of needs a `parent`: the ID of a domain".to_owned(),
         ),
         _ => {}
     }
@@ -381,6 +429,37 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         ));
     }
 
+    let (default, default_child) = match (&raw.default, kind) {
+        (None, _) => (None, None),
+        (Some(RawDefault::Switch(s)), Kind::Domain | Kind::Rule) => match s.as_str() {
+            "on" => (Some(Switch::On), None),
+            "off" => (Some(Switch::Off), None),
+            _ => {
+                err(format!("`default = \"{s}\"` must be \"on\" or \"off\""));
+                (None, None)
+            }
+        },
+        (Some(RawDefault::Child(n)), Kind::OneOf) if *n >= 1 => (None, Some(*n as Id)),
+        (Some(RawDefault::Child(n)), Kind::OneOf) => {
+            err(format!("`default = {n}` is not an ID; IDs start at 1"));
+            (None, None)
+        }
+        (Some(_), Kind::OneOf) => {
+            err(
+                "a one-of's `default` is the ID of one of its children, written as a number"
+                    .to_owned(),
+            );
+            (None, None)
+        }
+        (Some(_), _) => {
+            err(format!(
+                "a {}'s `default` is \"on\" or \"off\"",
+                kind.name()
+            ));
+            (None, None)
+        }
+    };
+
     let rule = if kind == Kind::Rule {
         parse_rule_fields(&raw, &mut err)
     } else {
@@ -393,6 +472,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
             ("constitution", raw.constitution.is_some()),
             ("level", raw.level.is_some()),
             ("check", raw.check.is_some()),
+            ("uses", raw.uses.is_some()),
             ("run", raw.run.is_some()),
             ("tools", raw.tools.is_some()),
             ("text", raw.text.is_some()),
@@ -402,7 +482,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         .collect();
         if !present.is_empty() {
             err(format!(
-                "a {} has only id, slug, revision, kind, status, lang, parent, {} and translations; remove {}",
+                "a {} has only id, slug, revision, kind, status, lang, parent, default, {} and translations; remove {}",
                 kind.name(),
                 if kind == Kind::Domain {
                     "title, applicability"
@@ -431,6 +511,8 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         foreign_parent,
         overrides,
         title: raw.title,
+        default,
+        default_child,
         applicability: raw.applicability,
         translations,
         rule,
@@ -544,8 +626,38 @@ fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<Rule
             }
             Some(match other {
                 RawCheck::Builtin => Check::Builtin,
-                _ => Check::Review,
+                _ => Check::None,
             })
+        }
+    };
+
+    let uses = match &raw.uses {
+        None => Uses::default(),
+        Some(list) => {
+            let mut uses = Uses {
+                instructions: false,
+                review: false,
+            };
+            if list.is_empty() {
+                err("`uses` is empty; write `[\"instructions\"]`, `[\"review\"]` or both, or leave it out for `[\"instructions\"]`".to_owned());
+            }
+            for value in list {
+                let seen = match value.as_str() {
+                    "instructions" => &mut uses.instructions,
+                    "review" => &mut uses.review,
+                    _ => {
+                        err(format!(
+                            "`uses` lists `{value}`; it holds \"instructions\", \"review\" or both"
+                        ));
+                        continue;
+                    }
+                };
+                if *seen {
+                    err(format!("`uses` lists `{value}` twice"));
+                }
+                *seen = true;
+            }
+            uses
         }
     };
 
@@ -564,6 +676,7 @@ fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<Rule
         constitution: constitution?,
         level: raw.level?,
         check: check?,
+        uses,
         statement: text.statement.clone(),
         reason: text.reason.clone(),
         verification: text.verification.clone(),
