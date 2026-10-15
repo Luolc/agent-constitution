@@ -21,7 +21,10 @@ from repo_checks import git_env
 
 # Instruction files in any repo: what an agent harness reads as
 # instructions, skills, subagents, commands, hooks or permissions, in any
-# directory.
+# directory; and what statute compiles AGENTS.md from, at the top of the
+# repo: the rule set, its lock file, the checks file and .statute/ (the
+# local rules and the ignore file), with the legacy copies of the
+# hand-written files it replaces.
 GENERIC = [
   r"(.*/)?AGENTS\.md",
   r"(.*/)?CLAUDE\.md",
@@ -32,6 +35,11 @@ GENERIC = [
   r"(.*/)?\.claude/settings(\.local)?\.json",
   r"(.*/)?\.claude/hooks/.+",
   r"(.*/)?\.codex/.+",
+  r"statute\.toml",
+  r"statute\.lock",
+  r"statute-checks\.toml",
+  r"\.statute/.+",
+  r"(.*/)?[^/]+\.legacy\.md",
 ]
 # This repo's own instruction files: the constitution, rule and skill
 # sources. The constitution's are in its edition directory,
@@ -40,7 +48,6 @@ REPO = [
   r"constitution/[^/]+/index\.toml",
   r"constitution/[^/]+/articles/.+",
   r"rules/.+",
-  r"\.statute/rules/.+",
   r"skills/.+",
 ]
 # Generated files: CI proves they equal a build of the sources with the
