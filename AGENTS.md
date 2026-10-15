@@ -79,9 +79,9 @@ Checkers).
   commit the sources and the generated files together.
 - `tools/`: a uv workspace of two Python projects, each with its own
   `pyproject.toml`, source under `src/` and tests under `tests/`:
-  `tools/site` (the rules' data, the token count and the link check of
-  the static site, `site-rules`, `count-tokens` and
-  `check-site-anchors`; it reads the rules through `statute export`) and
+  `tools/site` (the rules' data, the token count, the link check and
+  the screenshots of the static site, `site-rules`, `count-tokens`,
+  `check-site-anchors` and `site-screenshots`; it reads the rules through `statute export`) and
   `tools/checks` (this repo's own checks, `check-instruction-changes`
   and `lint-zh-sources`); neither depends on the other. The root `pyproject.toml`
   declares the members and holds the development tools and their
@@ -258,6 +258,12 @@ when the two disagree.
   site (every in-page link has its target, every link to another page
   leads to a file of the site, no id repeats, no list marker leaked into
   the text).
+- `uv run site-screenshots [<dir>] [--page <path> ...]`: screenshots of
+  a built site, `site/` by default, with headless Google Chrome, light
+  and dark, desktop and mobile, into `site-screenshots/` (not
+  committed); without `--page`, a set list of pages in both languages
+  (`docs/design/static-site.md`, Screenshots). It needs
+  `google-chrome` on the PATH and is not a check: look at the images.
 - `uv run count-tokens`: counts the tokens of the four texts and
   writes `web/data/lengths.json` (not committed), which the next Hugo
   build reads. It needs `CONSTITUTION_TOKEN_COUNT_API_KEY` or
@@ -284,7 +290,8 @@ the tests and both limae checks run there too, then runs clippy, the tests
 and the publish dry run of the Rust workspace, writes the rules' data with
 `site-rules`, counts the tokens (without a
 credential, so they stay uncounted), builds the static site with the pinned
-Hugo and checks its links, and then runs the constitution build check and
+Hugo, checks its links, takes its screenshots and uploads them as the
+artifact `site-screenshots` of the run, and then runs the constitution build check and
 `statute validate rules`, both with `--base`, and the instruction-only
 check, all against the first parent of the checked-out
 merge commit on a pull request (`docs/design/checkers.md`), or against the
