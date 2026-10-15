@@ -337,6 +337,10 @@ pub struct Manifest {
     /// The domains, one-ofs and rules the defaults enable that the rule
     /// set turns off, in the order written.
     pub exclude: Vec<Key>,
+    /// What the private layer turns on again of what `statute.toml`
+    /// excludes: listed in `rules`, `packs` or `domains` of
+    /// `private.toml`, though the defaults may enable it.
+    pub reopened: Vec<Key>,
     /// The directory of the repository's own rules, relative to that of
     /// `statute.toml`.
     pub local_rules: String,
@@ -548,7 +552,8 @@ struct RawPrivate {
     packs: Vec<String>,
     #[serde(default)]
     domains: Vec<String>,
-    exclude: Option<toml::Value>,
+    #[serde(default)]
+    exclude: Vec<String>,
     #[serde(default)]
     sources: BTreeMap<String, toml::Value>,
     #[serde(flatten)]
@@ -923,6 +928,7 @@ impl Manifest {
             packs,
             domains,
             exclude,
+            reopened: Vec::new(),
             local_rules,
             lang,
             values,
@@ -949,7 +955,7 @@ impl Manifest {
         let mut raw: RawPrivate =
             toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
-        let misplaced = misplaced(&mut raw.sources, &mut errors);
+        misplaced(&mut raw.sources, &mut errors);
         if !self.public {
             errors.push(format!(
                 "{} is for a public repository; in a private one (`public = false`), statute.toml names every source and rule",
@@ -1012,8 +1018,8 @@ impl Manifest {
         }
         // The private layer's entries come after those of statute.toml,
         // and repeat none of them.
-        let mut add = |field: &str, given: &[Key], list: &[String]| {
-            let mut out = given.to_vec();
+        let mut own = |field: &str, given: &[Key], list: &[String]| {
+            let mut out: Vec<Key> = Vec::new();
             for entry in list {
                 match RuleRef::parse(entry).and_then(|r| {
                     key_in(&sources, &self.local_rules, &r).map_err(|e| format!("`{entry}` {e}"))
@@ -1030,24 +1036,38 @@ impl Manifest {
             }
             out
         };
-        let rules = add("rules", &self.rules, &raw.rules);
-        let packs = add("packs", &self.packs, &raw.packs);
-        let domains = add("domains", &self.domains, &raw.domains);
+        let rules = own("rules", &self.rules, &raw.rules);
+        let packs = own("packs", &self.packs, &raw.packs);
+        let domains = own("domains", &self.domains, &raw.domains);
+        let exclude = own("exclude", &self.exclude, &raw.exclude);
         let private_values = values(raw.rest, &mut errors);
-        if raw.exclude.is_some() || misplaced.iter().any(|k| k == "exclude") {
-            errors.push(format!(
-                "`exclude` is for {FILE}: the private layer only adds, and leaves out no rule of the public one"
-            ));
-        }
         if !errors.is_empty() {
             return Err(errors);
         }
+        // What the private layer turns off leaves the lists of
+        // statute.toml, and what it turns on leaves its `exclude`.
+        let reopened: Vec<Key> = self
+            .exclude
+            .iter()
+            .filter(|k| rules.contains(k) || packs.contains(k) || domains.contains(k))
+            .cloned()
+            .collect();
+        let merge = |given: &[Key], off: &[Key], added: Vec<Key>| -> Vec<Key> {
+            given
+                .iter()
+                .filter(|k| !off.contains(k))
+                .cloned()
+                .chain(added)
+                .collect()
+        };
         Ok(Manifest {
             sources,
             held: Vec::new(),
-            rules,
-            packs,
-            domains,
+            rules: merge(&self.rules, &exclude, rules),
+            packs: merge(&self.packs, &exclude, packs),
+            domains: merge(&self.domains, &exclude, domains),
+            exclude: merge(&self.exclude, &reopened, exclude),
+            reopened,
             private_values,
             ..self.clone()
         })
@@ -1450,14 +1470,11 @@ lang = "en"
         let errors = base
             .with_private("[sources]\nteam = { path = \"/srv/team\" }\nexclude = [\"R7\"]\n")
             .unwrap_err();
-        for needle in [
-            "[sources] `exclude`: written after the `[sources]` header",
-            "`exclude` is for statute.toml",
-        ] {
-            assert!(
-                errors.iter().any(|e| e.contains(needle)),
-                "expected an error containing {needle:?}, got {errors:#?}"
-            );
-        }
+        assert!(
+            errors
+                .iter()
+                .any(|e| e.starts_with("[sources] `exclude`: written after the `[sources]` header")),
+            "{errors:#?}"
+        );
     }
 }

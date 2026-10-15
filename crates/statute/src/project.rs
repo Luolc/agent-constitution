@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 use crate::diag::Diagnostics;
-use crate::manifest::{self, LOCAL, Layers, Manifest, SourceSpec};
+use crate::manifest::{self, Key, LOCAL, Layers, Manifest, SourceSpec};
 use crate::param::Setting;
 use crate::private;
 use crate::resolve::{self, Resolution};
@@ -183,19 +183,47 @@ impl Project {
             return (None, diags);
         };
         locked.extend(own);
+        // What the private rule set excludes.
+        let off: Vec<Key> = manifest
+            .exclude
+            .iter()
+            .filter(|k| !project.manifest.exclude.contains(k))
+            .cloned()
+            .collect();
         let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
         diags.0.retain(|d| !given.0.contains(d));
-        // A finding about an entry of `rules`, `packs` or `domains` that
-        // the public rule set alone does not have is about an entry of
-        // the private rule set; the rest still ask for a change to
-        // `statute.toml`.
+        // A finding about an entry of `rules`, `packs`, `domains` or
+        // `exclude`, or about a node that what the private rule set
+        // excludes may not turn off, that the public rule set alone does
+        // not have is about an entry of the private rule set; the rest
+        // still ask for a change to `statute.toml`.
         for d in &mut diags.0 {
             if d.file == manifest::FILE
-                && ["`rules` ", "`packs` ", "`domains` "]
+                && (["`rules` ", "`packs` ", "`domains` ", "`exclude` "]
                     .iter()
                     .any(|field| d.message.starts_with(field))
+                    || (d.message.contains(" cannot be turned off: ")
+                        && turned_off_by(&d.message, &project.sources, &off)))
             {
                 d.file.clone_from(&shown);
+            } else if d.file == manifest::FILE
+                && d.message.starts_with("rule ")
+                && d.message.contains(" cannot be turned off: ")
+            {
+                // A rule statute.toml excludes and only the private layer
+                // needs can be turned on again there.
+                if let Some(named) = d.message.split_whitespace().nth(1) {
+                    // A rule of the repository's own is written by its number.
+                    let named = named
+                        .strip_prefix(LOCAL)
+                        .filter(|id| id.parse::<u64>().is_ok())
+                        .unwrap_or(named)
+                        .to_owned();
+                    d.message.push_str(&format!(
+                        "; or, for the private output alone, list it in `rules` of {}: `statute add --private {named}`",
+                        private::MANIFEST
+                    ));
+                }
             }
         }
         let Some(combined) = combined else {
@@ -207,7 +235,7 @@ impl Project {
                 diags.error(
                     &shown,
                     format!(
-                        "`{by}` overrides \"{target}\", a rule of the public rule set `{}`; in a public repository (`public = true`), `{}` may only add rules",
+                        "`{by}` overrides \"{target}\", a rule of the public rule set `{}`; in a public repository (`public = true`), a rule `{}` enables overrides no rule of the public layer",
                         manifest::FILE,
                         private::MANIFEST
                     ),
@@ -336,6 +364,30 @@ impl Project {
         };
         (Some(project), diags)
     }
+}
+
+/// Whether the node a finding names first, after its kind, is in `off`
+/// or under a node of `off`, as far as `sources` know it.
+fn turned_off_by(message: &str, sources: &Sources, off: &[Key]) -> bool {
+    let Some(named) = message.split_whitespace().nth(1) else {
+        return false;
+    };
+    let mut at = sources
+        .nodes()
+        .map(|(k, _)| k)
+        .find(|k| k.to_string() == named);
+    let mut seen = Vec::new();
+    while let Some(key) = at {
+        if off.contains(&key) {
+            return true;
+        }
+        if seen.contains(&key) {
+            break;
+        }
+        at = sources.parent(&key);
+        seen.push(key);
+    }
+    off.iter().any(|k| k.to_string() == named)
 }
 
 /// Whether the work tree at `root` has a private rule set.

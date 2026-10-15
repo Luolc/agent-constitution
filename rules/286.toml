@@ -1,0 +1,42 @@
+id = 286
+slug = "shell-text-through-a-quoted-heredoc"
+revision = 3
+kind = "rule"
+status = "active"
+lang = "en"
+parent = 284
+authority = ["evidence.facts", "secure-authoring"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Pass text through a shell with a quoted heredoc, on standard input or in a file"
+zh = "经 shell 交给命令的文字，用 quoted heredoc 接到标准输入上，或者写进文件"
+
+[text.statement]
+en = "Pass a text to a command through a shell, when it runs over more than one line or holds `$`, a backtick, a backslash, a quote or `!`, with a quoted heredoc, fed to the command's standard input or written into a file that the command reads."
+zh = "经 shell 交给命令的文字，多于一行或者含有 `$`、反引号、反斜杠、引号或 `!` 的，用 quoted heredoc 传：直接接到命令的标准输入上，或者写进文件、让命令读这个文件。"
+
+[text.reason]
+en = '''
+Inside double quotes the shell expands `$` and backticks: a value in the text is replaced by whatever the shell finds and a code span in Markdown runs as a command, with no error, so the text arrives changed and still reads well, and a number in it may state a fact that was never looked up ({@constitution:evidence.facts}). When the text is quoted from someone else, a `$(…)` in it runs on the agent's own machine, a command injection others can exploit ({@constitution:secure-authoring}). Single quotes break on the first apostrophe, and `!` can set off history expansion. A heredoc with a quoted delimiter passes every character as written; fed to standard input it takes one step and leaves no file behind. Inside double quotes, a short text on one line with none of these characters passes unchanged, so it may stay on the command line.
+'''
+zh = '''
+在双引号里，shell 会展开 `$` 和反引号：文字里的值被 shell 找到的东西替换，Markdown 里的代码片段被当作命令执行，而且不报错；文字到达时已经变了，读起来却照样通顺，里面的数字说出的可能是一个从没查过的事实 ({@constitution:evidence.facts})。文字是从别人那里引来的，里面的 `$(…)` 就会在 agent 自己的机器上执行，这是别人可以利用的命令注入 ({@constitution:secure-authoring})。单引号遇到第一个撇号就断开，`!` 还可能触发历史展开。定界符加了引号的 heredoc 把每个字符照原样传过去；直接接到标准输入上，一步就完成，也不留下文件。一行之内、不含这些字符的短文字，放在双引号里原样就能传过去，可以直接写在命令行里。
+'''
+
+[text.verification]
+en = '''
+The text covered is what a command takes as content, such as a message or a prompt for an agent, a request body, the body of a pull request, issue or comment, or a commit message; flags, paths and identifiers are not. A quoted heredoc is one whose delimiter is quoted, as in `<<'EOF'`. Feeding it to standard input means the command reads the text from there, for example with `--body-file -` or `-F -`; a command that reads no text from standard input gets a file written with a quoted heredoc instead.
+
+Violated when an agent passes such a text to a command written into the command line, in any quoting, or writes it with a heredoc whose delimiter is not quoted.
+'''
+zh = '''
+本规定管的文字，是命令当作内容接收的文字，例如发给 agent 的消息或 prompt、请求体、pull request、issue 或评论的正文，以及 commit message；命令选项、路径和标识符不在其内。quoted heredoc 指定界符加了引号的 heredoc，例如 `<<'EOF'`。接到标准输入上，指命令从标准输入读这段文字，例如通过 `--body-file -` 或 `-F -`；不从标准输入读文字的命令，改用 quoted heredoc 写成的文件交给它。
+
+agent 把这样的文字直接写在命令行里交给命令的 (不论用哪种引号)，或者用定界符没加引号的 heredoc 来写的，即为违反本规定。
+'''
+
+[translations]
+zh = "bb0e6a5d088cd856d373c8a278c1d1471bc3d918e91a27e90f3f89fbb2545255"

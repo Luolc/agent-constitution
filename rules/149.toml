@@ -1,6 +1,6 @@
 id = 149
 slug = "agent-setup"
-revision = 3
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -12,11 +12,11 @@ zh = "Agent"
 
 [applicability]
 en = '''
-The agents' own setup: where skills come from and where they are installed, what a public repository's instructions hold, and, in subdomains off by default, each agent tool and the accounts and quotas the agents use. Enable it wherever agents work.
+The agents' own setup: where skills come from and where they are installed, how instructions, skills and tool settings are changed, what a public repository's instructions hold, and, in subdomains off by default, each agent tool and the accounts and quotas the agents use. Enable it wherever agents work.
 '''
 zh = '''
-agent 自身的配置：skill 从哪来、装在哪，公开仓库的指令写什么；默认关着的子 domain 里是各个 agent 工具，以及 agent 用的账号与额度。凡有 agent 工作的地方都要启用。
+agent 自身的配置：skill 从哪来、装在哪，指令、skill 和工具配置怎么改，公开仓库的指令写什么；默认关着的子 domain 里是各个 agent 工具，以及 agent 用的账号与额度。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "1e9b32bbd171670a36f62351566a0df20732d77a2204de06ff0dd847d68f4274"
+zh = "df098f51631bf92d20fe0ae2dcc4618338eea8335bd24fb2276ed25e478c385b"

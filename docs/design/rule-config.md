@@ -65,9 +65,8 @@ local-rules = "policy/agents"
   set that would list the rule: `private.toml` for a rule of a source
   the private layer adds, `statute.toml` for the others.
 - Only `statute.toml` sets it. It describes the repository's layout,
-  which every machine and CI share, so the global configuration has no
-  such key, and the private rule set neither, since the private layer
-  only adds.
+  which every machine and CI share, so neither the global configuration
+  nor the private rule set has such a key.
 - A source on disk, as `R = { path = "." }`, is still read from
   `<path>/rules/`, or the directory its `rules-dir` names
   ([Sources and references](rule-sets.md#sources-and-references)):
@@ -98,7 +97,8 @@ choice in every repository: the language of commit messages, of
 comments in code, of replies to a person. For those, a rule names a
 parameter in its text, and the rule set gives the value, as a linter's
 configuration gives `line-length`. The first parameters are the
-languages and a few names on an issue tracker. A parameter is not an
+languages, a few names on an issue tracker and the directory of main
+checkouts. A parameter is not an
 `adjustable` value ([Rules](rules.md#rules)): the rule set chooses a
 parameter's value for every agent that reads its output, while an
 adjustable value is one that a repository's or a task's text may relax
@@ -263,8 +263,9 @@ A parameter's `scope` says who sets it:
   the parameter and the file, and is ignored.
 - **`personal`**: what concerns only the person an agent works for,
   wherever the agent works: today the language in which an agent
-  writes to that person, and the language of the work items it writes
-  for them, whose tracker serves every repository of the person.
+  writes to that person, the language of the work items it writes
+  for them, whose tracker serves every repository of the person, and
+  the directory where the person keeps their main checkouts.
   `statute.toml` gives the repository's value, and
   [the global configuration](global-configuration.md#the-global-configuration)
   and the private rule set may each set the person's own, which the
@@ -323,7 +324,19 @@ scope `repo` name them, each with a common name as its default:
 | `work-items.status-done` | `Done` | the status of an attempt that ended as done |
 | `work-items.status-abandoned` | `Abandoned` | the status of an attempt that was given up |
 
-The ten parameters are declared in `rules/params.toml`. The table
+**The directory of main checkouts.** Where a person keeps the main
+checkouts of their repositories is theirs, the same on every machine
+they work on, so one `string` parameter of scope `personal` names it:
+`dirs.main-checkouts`, `~/src` by default. R287 and R288, in the
+domain R127 (`machine`), use it; both are off by default, so a rule
+set that does not turn them on says nothing about the directory. A
+person who wants them turns them on in their own layer and sets the
+value: in a public
+repository, the global configuration or the private rule set gives it
+to the private output; in a private repository, which has no private
+output, `statute.toml` sets it.
+
+The eleven parameters are declared in `rules/params.toml`. The table
 `work-items` and the key `language.work-items` do not collide: one is
 a table of the rule set, the other a key in the table `language`.
 
@@ -500,18 +513,51 @@ packs = ["R96"]
   `statute remove` takes an entry out of `rules`, `domains` or `packs`,
   and when the rule or domain is still enabled by default, writes it to
   `exclude`.
-- `private.toml` may have `rules` and `domains`, which only
-  add, and no `exclude`: the private layer leaves out no rule of the
-  public one
+- `private.toml` may have `rules`, `domains`, `packs` and `exclude`,
+  which change the private output alone: `AGENTS.md` and `statute.lock`
+  stay as `statute.toml` makes them
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
-  They may name rules and domains of any source, the first-party one
-  included, which the private output alone then holds. The file
-  belongs to one clone, so a person who turns on the same domains in
-  several repositories lists them in the `private.toml` of each; the
-  global configuration turns on none, and one place that does it for
-  every repository of the person belongs to the personal layer of
-  [Where it lives](rule-sets.md#rule-sets-and-the-lock-file), which is
-  not designed yet.
+  They may name nodes of any source, the first-party one included, and
+  each works as in `statute.toml`, on the rule set of both layers:
+  - `exclude` turns off a domain, a one-of or a rule that the defaults
+    of either layer enable, or that `statute.toml` lists. An entry of
+    `rules`, `domains` or `packs` of `statute.toml` that it names is
+    dropped from the private layer; a rule `statute.toml` lists under a
+    domain it names stays, as it would in `statute.toml`, and is
+    excluded by name.
+  - `rules`, `domains` and `packs` turn on what the defaults leave off,
+    and turn on again what `exclude` of `statute.toml` names: the entry
+    leaves that `exclude` in the private layer, and the warning that
+    the defaults enable it is not given, since the defaults enable it
+    only without that `exclude`.
+  - The checks of `exclude` above hold for the two layers together. A
+    rule that an enabled rule of either layer requires cannot be turned
+    off: the build fails, naming the rule that requires it, against
+    `private.toml` when its `exclude` turns the rule off and against
+    `statute.toml` when that file's does. A public rule that a private
+    rule requires is turned off only with the private rule, and a
+    private rule that requires a rule `statute.toml` excludes needs that
+    rule in `rules` of `private.toml`, which the error names as a way
+    out. An option of a one-of cannot be
+    listed, and a node in `exclude` and in `rules` or `packs` of
+    `private.toml` fails.
+  - An entry may not repeat one that `statute.toml` has in the same
+    list.
+
+  `statute add --private` writes to `rules` or `domains` of
+  `private.toml`, taking the entry out of its `exclude` first;
+  `statute remove --private` takes an entry out of its lists, and
+  when the defaults or `statute.toml` still enable the rule or domain,
+  writes it to its `exclude`.
+
+  The file belongs to one clone, so a person who turns on the same
+  domains in several repositories lists them in the `private.toml` of
+  each; the global configuration turns on none, and one place that
+  does it for every repository of the person belongs to the personal
+  layer of [Where it lives](rule-sets.md#rule-sets-and-the-lock-file),
+  which is not designed yet. Whether `private.toml` may pick another
+  option of a one-of than `statute.toml` picks is one of the
+  [Open questions](rule-system.md#open-questions).
 
 **Whose defaults.** A rule set takes the defaults of the first-party
 source, `R`, wherever it comes from, and of each source its own

@@ -1,35 +1,36 @@
 id = 42
 slug = "change-sources-not-copies"
-revision = 4
+revision = 6
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
-parent = 13
+parent = 149
 default = "on"
 authority = ["separate-instruction-changes", "independent-review", "no-restating"]
 constitution = ">=1"
 level = "project"
 check = "none"
+uses = ["instructions", "review"]
 
 [title]
-en = "Change instructions, skills and tool settings in their source, not in an installed copy"
-zh = "指令、skill 和工具配置改源文件，不改已安装的副本"
+en = "To change instructions, skills or tool settings, change their source, not an installed copy"
+zh = "要改指令、skill 或工具配置，就改源文件，不改装好的副本"
 
 [text.statement]
-en = "Change instructions, skills and agent tool settings in their source, through review, never in an installed copy."
-zh = "指令、skill 和 agent 工具的配置，改源文件并经过审查，不改已安装的副本。"
+en = "To change instructions, skills or agent tool settings, change their source through review, never an installed copy."
+zh = "要改指令、skill 或 agent 工具的配置，就改它的源文件，并经过审查；不要直接改装好的副本。"
 
 [text.reason]
 en = '''
 A change to instructions that bind agents is proposed and reviewed as a change of its own ({@constitution:separate-instruction-changes}, {@constitution:independent-review}). An edit to an installed copy skips that review, and makes the copy differ from its source, so two places say different things until the next install silently undoes the edit ({@constitution:no-restating}).
 '''
 zh = '''
-约束 agent 的指令，改动要作为单独的变更提出并经过审查 ({@constitution:separate-instruction-changes}、{@constitution:independent-review})。就地修改已安装的副本，跳过了这道审查，还让副本和源文件不一致：在下一次安装悄悄覆盖这处修改之前，两个地方说的不是一回事 ({@constitution:no-restating})。
+约束 agent 的指令，改动要作为单独的变更提出并经过审查 ({@constitution:separate-instruction-changes}、{@constitution:independent-review})。就地修改装好的副本，跳过了这道审查，还让副本和源文件不一致：在下一次安装悄悄覆盖这处修改之前，两个地方说的不是一回事 ({@constitution:no-restating})。
 '''
 
 [text.verification]
 en = '''
-The change goes into the source, through review, and the copy is installed again from there.
+The change goes into the source, through review, and the copy is installed again from there. An installed copy may be tracked in a repository, such as an `AGENTS.md` compiled from a rule set or a skill committed into it, and an edit to it then shows in the change's diff.
 
 Adding an entry through an agent tool's own settings screen or command, such as a menu for permissions or hooks, edits its installed settings in place too.
 
@@ -38,14 +39,14 @@ When unsure whether a file is an installed copy, treat it as one.
 Violated when an agent edits an installed copy of instructions, skills or agent tool settings in place.
 '''
 zh = '''
-改动写入源文件，经过审查，再从源文件重新安装副本。
+改动写入源文件，经过审查，再从源文件重新安装副本。装好的副本也可能纳入仓库的版本管理，例如从规定集编译出来的 `AGENTS.md`，或者提交进仓库的 skill；直接改它，改动会出现在变更的 diff 里。
 
-通过 agent 工具自己的设置界面或命令加条目，例如权限或 hook 的菜单，也是就地修改它已安装的配置。
+通过 agent 工具自己的设置界面或命令加条目，例如权限或 hook 的菜单，也是就地修改它装好的配置。
 
-不确定某个文件是否属于已安装的副本的，按属于处理。
+不确定某个文件是否属于装好的副本的，按属于处理。
 
-agent 就地修改指令、skill 或 agent 工具配置的已安装副本的，即为违反本规定。
+agent 就地修改指令、skill 或 agent 工具配置的装好的副本的，即为违反本规定。
 '''
 
 [translations]
-zh = "7ce97fcf87c9d409a95ecec31400f340cf82016c9953d095bbd77fd058101ead"
+zh = "4ceb432960bd51dcbc147e0bf2e1f3f516d9b764f5b4d4e2ab9b7f04d5f83fa7"

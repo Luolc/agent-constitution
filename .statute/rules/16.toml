@@ -1,8 +1,9 @@
 id = 16
 slug = "touched-checks"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 29
 lang = "en"
 parent = "R276"
 default = "on"

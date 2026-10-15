@@ -1,8 +1,8 @@
 id = 94
 slug = "check-sent-text-against-its-file"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "repealed"
 lang = "en"
 parent = 13
 requires = [93]

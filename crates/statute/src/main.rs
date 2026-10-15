@@ -48,18 +48,21 @@ enum Command {
         /// Enable the pack rooted at this node, in `packs`.
         #[arg(long)]
         pack: bool,
-        /// Enable it in the private rule set, private.toml in git's directory, and update private.lock.
+        /// Enable it in the private rule set, private.toml in git's directory, for the private output alone, even when statute.toml excludes it; and update private.lock.
         #[arg(long)]
         private: bool,
     },
-    /// Take a rule (or a pack) out of statute.toml and update statute.lock.
+    /// Take a rule (or a pack) out of statute.toml and update statute.lock;
+    /// one still on by default goes to `exclude`.
     Remove {
         /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
         rule: String,
         /// Take the pack out of `packs`.
         #[arg(long)]
         pack: bool,
-        /// Take it out of the private rule set, and update private.lock.
+        /// Take it out of the private rule set, or turn it off there with
+        /// `exclude` when the public layer enables it, for the private
+        /// output alone; and update private.lock.
         #[arg(long)]
         private: bool,
     },
@@ -94,8 +97,9 @@ enum Command {
         /// files go next to it.
         #[arg(long)]
         output: Option<std::path::PathBuf>,
-        /// Write only the private output, for a post-checkout hook: no
-        /// network, and warnings in place of errors, exiting 0.
+        /// Write only the private output, for a git hook: no network;
+        /// fails when there is a private output to write and it is not
+        /// written.
         #[arg(long, conflicts_with = "output")]
         private_only: bool,
         /// Write nothing; fail, naming each file, when the committed
@@ -211,10 +215,7 @@ fn main() -> ExitCode {
         } => edit(root, &rule, pack, false, private),
         Command::Compile {
             private_only: true, ..
-        } => {
-            compile_private_only(root);
-            Ok(())
-        }
+        } => compile_private_only(root),
         Command::Compile {
             output,
             check: true,
@@ -533,23 +534,24 @@ fn unused_personal(project: &Project) {
 /// the private output alone, reading git sources from the cache only.
 /// Without a public rule set, or without a private rule set and a
 /// person's own value that differs from the committed one, it does
-/// nothing; any
-/// other problem is a warning, and nothing is written. It never fails, so
-/// that the hook never fails the checkout.
-fn compile_private_only(root: &Path) {
+/// nothing; any other problem fails it, and nothing is written. The hook
+/// ends with `exit 0`, so that the failure never fails the checkout.
+fn compile_private_only(root: &Path) -> Result<(), ()> {
     match private_only(root) {
         Ok(written) => {
             for path in written {
                 println!("wrote {}", path.display());
             }
+            Ok(())
         }
         Err(causes) => {
             for cause in causes {
-                eprintln!("statute: warning: {cause}");
+                eprintln!("statute: error: {cause}");
             }
             eprintln!(
-                "statute: warning: the private output is not written; `statute compile` writes it, or says what to fix"
+                "statute: error: the private output is not written; `statute compile` writes it, or says what to fix"
             );
+            Err(())
         }
     }
 }
@@ -590,7 +592,7 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
         match both {
             Some(both) => statute::compile::full_text(&project, &both, Some(&dir)),
             None if more.has_errors() => return Err(errors(&more)),
-            None => return Ok(Vec::new()),
+            None => return Err(one(format!("{} did not load", private::MANIFEST))),
         }
     } else if statute::compile::personal_differs(&project) {
         statute::compile::full_text(&project, &project, None)
@@ -1656,9 +1658,17 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     };
 
     let mut doc: DocumentMut = start.parse().map_err(|e| eprintln!("{file}: error: {e}"))?;
+    // Whether the file being changed lists the key in `field`: for the
+    // private rule set, its own lists, not those of both layers.
+    let lists = |doc: &DocumentMut, field: &str| {
+        doc.get(field).and_then(Item::as_array).is_some_and(|a| {
+            a.iter()
+                .any(|v| listed_key(v, &manifest).as_ref() == Some(&key))
+        })
+    };
     let mut done = Vec::new();
     // `add` of an entry of `exclude` takes it out of there first.
-    if adding && !pack && manifest.exclude.contains(&key) {
+    if adding && !pack && lists(&doc, "exclude") {
         edit_list(&mut doc, "exclude", &key, &manifest, false, &file)?;
         done.push(format!("removed {key} from `exclude`"));
     }
@@ -1669,13 +1679,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     };
     // `remove` of a rule or domain the defaults enable and the rule set
     // does not list only writes it to `exclude`, below.
-    let listed = match field {
-        "packs" => &manifest.packs,
-        "domains" => &manifest.domains,
-        _ => &manifest.rules,
-    }
-    .contains(&key);
-    let only_exclude = !adding && !pack && !private && !listed;
+    let only_exclude = !adding && !pack && !lists(&doc, field);
     if !(adding && !done.is_empty() && now_on(&doc)) && !only_exclude {
         match edit_list(&mut doc, field, &key, &manifest, adding, &file)? {
             true => done.push(format!(
@@ -1689,21 +1693,32 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
             }
         }
     }
-    // What the defaults still enable after `remove` goes to `exclude`.
-    if !adding && !pack && !private && now_on(&doc) {
-        let defaults_only = try_load(&doc.to_string()).0.is_some_and(|p| {
+    // What the defaults still enable after `remove` goes to `exclude`; in
+    // the private rule set, also what statute.toml enables.
+    if !adding && !pack && now_on(&doc) {
+        let switched = |r: &Reason| {
+            matches!(r, Reason::Default | Reason::DefaultOf(_))
+                || (private && matches!(r, Reason::Direct | Reason::Pack(_)))
+        };
+        let turns_off = try_load(&doc.to_string()).0.is_some_and(|p| {
             if is_domain {
-                return Switches::new(&p.sources, &p.manifest).on_by_default(&key);
+                return private || Switches::new(&p.sources, &p.manifest).on_by_default(&key);
             }
-            p.resolution.enabled.get(&key).is_some_and(|reasons| {
-                reasons
-                    .iter()
-                    .all(|r| matches!(r, Reason::Default | Reason::DefaultOf(_)))
-            })
+            p.resolution
+                .enabled
+                .get(&key)
+                .is_some_and(|reasons| reasons.iter().all(switched))
         });
-        if defaults_only {
+        if turns_off {
             edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
-            done.push(format!("added {key} to `exclude`, as it is on by default"));
+            done.push(format!(
+                "added {key} to `exclude`, as {}",
+                if private {
+                    "the public layer enables it"
+                } else {
+                    "it is on by default"
+                }
+            ));
         }
     }
     if only_exclude && done.is_empty() {

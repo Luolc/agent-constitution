@@ -277,7 +277,8 @@ screenshots (Screenshots, below). The workflow
   under it whether the defaults enable it, as in the list, with more
   than one source, the quadrant and name of its
   source ("Global private · team"), and with `--enabled` whether it is
-  enabled, for a superseded rule the rules that supersede it, its statement,
+  enabled, for a superseded rule the rules that supersede it, for a
+  repealed rule that it is repealed, its statement,
   reason and verification, the provisions it cites (`authority`), linked
   to their anchors on the home page, its relations (its parent, or for a
   rule with `overrides` "Overrides" and the rule it overrides, its

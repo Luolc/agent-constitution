@@ -1,0 +1,42 @@
+id = 285
+slug = "shell-text-through-a-file"
+revision = 3
+kind = "rule"
+status = "active"
+lang = "en"
+parent = 284
+authority = ["evidence.facts", "secure-authoring"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Pass text through a shell from a file written with a quoted heredoc"
+zh = "经 shell 交给命令的文字，先用 quoted heredoc 写进文件，再交文件"
+
+[text.statement]
+en = "Write a text that you pass to a command through a shell, when it runs over more than one line or holds `$`, a backtick, a backslash, a quote or `!`, into a file with a quoted heredoc first, and pass the file to the command."
+zh = "经 shell 交给命令的文字，多于一行或者含有 `$`、反引号、反斜杠、引号或 `!` 的，先用 quoted heredoc 写进文件，再把这个文件交给命令。"
+
+[text.reason]
+en = '''
+Inside double quotes the shell expands `$` and backticks: a value in the text is replaced by whatever the shell finds and a code span in Markdown runs as a command, with no error, so the text arrives changed and still reads well, and a number in it may state a fact that was never looked up ({@constitution:evidence.facts}). When the text is quoted from someone else, a `$(…)` in it runs on the agent's own machine, a command injection others can exploit ({@constitution:secure-authoring}). Single quotes break on the first apostrophe, and `!` can set off history expansion. A heredoc with a quoted delimiter passes every character as written, and the file serves a command that reads only files. Inside double quotes, a short text on one line with none of these characters passes unchanged, so it may stay on the command line.
+'''
+zh = '''
+在双引号里，shell 会展开 `$` 和反引号：文字里的值被 shell 找到的东西替换，Markdown 里的代码片段被当作命令执行，而且不报错；文字到达时已经变了，读起来却照样通顺，里面的数字说出的可能是一个从没查过的事实 ({@constitution:evidence.facts})。文字是从别人那里引来的，里面的 `$(…)` 就会在 agent 自己的机器上执行，这是别人可以利用的命令注入 ({@constitution:secure-authoring})。单引号遇到第一个撇号就断开，`!` 还可能触发历史展开。定界符加了引号的 heredoc 把每个字符照原样传过去，写成的文件也能交给只读文件的命令。一行之内、不含这些字符的短文字，放在双引号里原样就能传过去，可以直接写在命令行里。
+'''
+
+[text.verification]
+en = '''
+The text covered is what a command takes as content, such as a message or a prompt for an agent, a request body, the body of a pull request, issue or comment, or a commit message; flags, paths and identifiers are not. A quoted heredoc is one whose delimiter is quoted, as in `<<'EOF'`. Passing the file means the command reads it, through an option such as `--body-file` or `-F`, or through `"$(cat <file>)"`. The shell does not expand `$` or backticks again in what that substitution puts inside double quotes, but it drops the trailing newlines and runs into the limit on the length of one argument, so an option that reads the file is the better choice where the command has one.
+
+Violated when an agent passes such a text to a command written into the command line, in any quoting, writes it with a heredoc whose delimiter is not quoted, or feeds a heredoc to the command without writing it to a file.
+'''
+zh = '''
+本规定管的文字，是命令当作内容接收的文字，例如发给 agent 的消息或 prompt、请求体、pull request、issue 或评论的正文，以及 commit message；命令选项、路径和标识符不在其内。quoted heredoc 指定界符加了引号的 heredoc，例如 `<<'EOF'`。把文件交给命令，指让命令读这个文件，例如通过 `--body-file`、`-F` 这类选项，或者通过 `"$(cat <file>)"`。这种替换放进双引号里的内容，shell 不会再展开其中的 `$` 和反引号，但会吃掉末尾的换行，太长时还会撞上单个参数的长度上限，所以命令有读文件的选项时，优先用这个选项。
+
+agent 把这样的文字直接写在命令行里交给命令的 (不论用哪种引号)，用定界符没加引号的 heredoc 来写的，或者不写进文件、直接把 heredoc 接到命令上的，即为违反本规定。
+'''
+
+[translations]
+zh = "b269d42e304bc796a3f7f2c9e3e29d41f72e2dd824a430f707484a38d2f77951"

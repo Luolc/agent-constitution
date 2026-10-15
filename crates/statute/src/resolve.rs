@@ -400,13 +400,19 @@ pub fn resolve(
                         label(sources, key)
                     ),
                 ),
-                Some(_) if field == "domains" && sw.on_by_default(key) => diags.warning(
+                Some(_)
+                    if field == "domains"
+                        && sw.on_by_default(key)
+                        && !manifest.reopened.contains(key) =>
+                {
+                    diags.warning(
                     file,
                     format!(
                         "`domains` lists {}, which is on by default; take it out",
                         label(sources, key)
                     ),
-                ),
+                    )
+                }
                 // An option is chosen, not turned off: another option, or
                 // none, is what the rule set means.
                 Some(_) if field == "exclude" => {
@@ -449,7 +455,7 @@ pub fn resolve(
                             label(sources, key)
                         ),
                     );
-                } else if sw.enables(key) {
+                } else if sw.enables(key) && !manifest.reopened.contains(key) {
                     diags.warning(
                         file,
                         format!(

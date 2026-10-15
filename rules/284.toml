@@ -1,0 +1,15 @@
+id = 284
+slug = "shell-text"
+revision = 2
+kind = "one-of"
+status = "active"
+lang = "en"
+parent = 283
+default = 285
+
+[title]
+en = "How text reaches a command through a shell"
+zh = "文字怎么经 shell 交给命令"
+
+[translations]
+zh = "ce4712e7376f25e9c8ec32f8fa9ba8295acc16e6729081200ff411f8f6d8e6ed"

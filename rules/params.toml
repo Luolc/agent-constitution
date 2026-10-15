@@ -127,3 +127,16 @@ zh = "被放弃的尝试所处的状态"
 
 [parameter.translations]
 zh = "0204354e61552dd96778e9d8193d81951a1e40ad340a04dcffde17a3b1f88e26"
+
+[[parameter]]
+name = "dirs.main-checkouts"
+type = "string"
+scope = "personal"
+default = "~/src"
+
+[parameter.title]
+en = "Directory that holds the main checkouts of repositories"
+zh = "放各仓库主检出的目录"
+
+[parameter.translations]
+zh = "f70d27bf52afe0b10f9d3291505d2d0b0fd6359a1b415fc9793ecf0ece27ccf6"

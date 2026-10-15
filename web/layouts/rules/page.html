@@ -1,8 +1,9 @@
 {{- /* The page of one node of the rule tree (content/rules/_content.gotmpl):
   above its title, when it has nodes above it, a breadcrumb of them, each
-  a link, ending with the node itself; its title; for a superseded rule, the rules that supersede it; a note
-  when the text is not in the page's language; a rule's statement, reason
-  and verification, their citations linked; the provisions of the
+  a link, ending with the node itself; its title; for a superseded rule,
+  the rules that supersede it, and for a repealed rule, that it is
+  repealed; a note when the text is not in the page's language; a rule's
+  statement, reason and verification, their citations linked; the provisions of the
   constitution it cites; its relations, among them the rule of another
   source it overrides, in place of a parent; and all its metadata. A domain or
   a one-of has no text, and lists the nodes below it; a domain's
@@ -38,6 +39,9 @@
   {{- $links := slice }}
   {{- range . }}{{ $links = $links | append (partial "rules/link.html" .) }}{{ end }}
 <p class="rule-note superseded">{{ i18n "rule-superseded-by" (dict "rule" (delimit $links (cond (eq $lang "zh") "、" ", "))) | safeHTML }}</p>
+{{- end }}
+{{- if eq $rule.status "repealed" }}
+<p class="rule-note repealed">{{ i18n "rule-repealed" }}</p>
 {{- end }}
 {{- if ne $rule.shown $lang }}
 <p class="rule-note untranslated">{{ i18n "rule-untranslated" (dict "lang" (partial "rules/language.html" $rule.shown)) }}</p>

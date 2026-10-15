@@ -1,0 +1,59 @@
+id = 288
+slug = "main-checkouts-dir-holds-nothing-else"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+default = "off"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Keep nothing but main checkouts in the directory for main checkouts"
+zh = "主检出目录下只放主检出"
+
+[text.statement]
+en = "Keep nothing but main checkouts directly under `{$dirs.main-checkouts}`."
+zh = "`{$dirs.main-checkouts}` 下只直接放主检出，不放别的任何东西。"
+
+[text.reason]
+en = '''
+A script that walks the directory and takes each entry for a repository needs a special case for every stray file or directory, and what lies there stray has no owner, so nobody dares delete it ({@constitution:simplicity}).
+'''
+zh = '''
+把这个目录下每个一级条目都当作一个仓库来遍历的脚本，碰到混进来的文件或目录就要加特判；散落在那里的东西没有归属，也没人敢删 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+A main checkout is a clone whose `.git` is a directory; a worktree's `.git` is a file, so a worktree is not one.
+
+Every entry directly under `{$dirs.main-checkouts}` is a directory whose `.git` is a directory. Each line this command prints is an entry that does not belong there:
+
+```sh
+find {$dirs.main-checkouts} -mindepth 1 -maxdepth 1 -exec sh -c '[ -d "$1/.git" ] || echo "STRAY: $1"' _ {} \;
+```
+
+Only whether it prints anything counts; the number of entries under the directory changes all the time and is no criterion.
+
+Violated when the directory holds an entry that is not a main checkout.
+'''
+zh = '''
+主检出指 `.git` 是目录的那份 clone；worktree 的 `.git` 是文件，所以 worktree 不算主检出。
+
+`{$dirs.main-checkouts}` 下的每个一级条目都是目录，并且其中的 `.git` 是目录。下面这条命令每输出一行，就是一个不该在那里的条目：
+
+```sh
+find {$dirs.main-checkouts} -mindepth 1 -maxdepth 1 -exec sh -c '[ -d "$1/.git" ] || echo "STRAY: $1"' _ {} \;
+```
+
+只看这条命令有没有输出；这个目录下的条目数随时在变，不拿它当判据。
+
+这个目录下有不是主检出的条目的，即为违反本规定。
+'''
+
+[translations]
+zh = "2e8509a0ab08746a5ddcfcd43d7894afc1c466b697132aa2cc6927ca4a164943"

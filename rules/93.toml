@@ -1,8 +1,9 @@
 id = 93
 slug = "pass-shell-text-from-a-quoted-heredoc-file"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 285
 lang = "en"
 parent = 13
 default = "off"

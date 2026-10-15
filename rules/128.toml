@@ -1,8 +1,9 @@
 id = 128
 slug = "main-checkouts-root"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 287
 lang = "en"
 parent = 127
 default = "on"

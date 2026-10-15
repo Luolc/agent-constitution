@@ -201,10 +201,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 
 # Rules
 
-- R41 When a guard blocks an action, take the reviewed route instead of getting around the block.
-- R42 Change instructions, skills and agent tool settings in their source, through review, never in an installed copy.
-- R93 Write a message, a body or a commit message that you pass to a command through a shell into a file with a quoted heredoc first, and pass the file.
-- R94 When you check text you passed through a shell, compare what arrived with the file you passed it from.
+- R282 When a guard blocks you and no reviewed route is open to you, tell whoever delegated the work, an agent or a person, what blocks you, and ask for a way forward.
 - R22 To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status.
 - R23 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
 - R36 Never ask for, read or repeat a credential's value.
@@ -274,7 +271,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R104 In `authority`, cite the most specific provisions of the constitution that the rule refines, and never a provision together with one above it.
 - R105 Give each domain an `[applicability]` that says what it governs, which repositories should enable it and when one need not.
 - R106 While the constitution is active, add a new rule meant for real work with `status = "trial"`.
-- R107 Move a trial rule to `active` only once it has been used in real work at least 5 times with no false positive left unresolved in that time.
 - R108 When a change to a rule changes what counts as compliant, write the new requirement as a rule with a new ID, and mark the old rule superseded, naming the rules that take its place.
 - R109 When a change to a rule's original text or fields keeps what counts as compliant, edit the rule in place and raise its revision by one.
 - R110 When a change to a rule touches only its translations, keep its revision.
@@ -283,9 +279,10 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R230 When the ways of meeting a need differ only in one value filled into the same sentence, write one rule that names a parameter for that value; when they differ in the requirement itself, write a one-of whose options are each a complete rule. Write no condition on a parameter's value into a rule's text.
 - R233 Put `review` in a rule's `uses` only when a reviewer can decide from the diff and the pull request description alone whether the rule was broken, and `instructions` only when an agent needs to know the rule while it works.
 - R239 Write a rule's statement so that it can be read and followed on its own, as one line of the compiled instructions, resting on nothing that line does not show, such as the rule's title, reason or verification, its domain, its place in the tree or its `requires`. Name another rule in it only by a citation, never by its position, as in "the rule above" or "the other options".
+- R289 Move a trial rule to `active` only once a principal has said explicitly that it may move.
+- R290 Make what a rule requires, and the condition under which it applies, rest only on checks, counts, records and other mechanisms that already run, never on one that is still to be built.
 - L6 Keep each rule, one-of and domain of the first-party source in `rules/<id>.toml`, named by its ID without zero padding, and never delete one or reuse its ID: a rule that goes is superseded or repealed.
 - L7 In a first-party rule, cite a rule as `{@rule:<id>}` and the constitution as `{@constitution:<id>}`, and in the constitution cite without a prefix; never cite a rule by its slug.
-- R128 Keep each repository's main checkout in a directory named after the repository, directly under the root the jurisdiction designates for main checkouts.
 - R129 Put each worktree of a repository at `<root>/<repo>/<slug>/`, under the root the jurisdiction designates for worktrees, never inside a repository's directory.
 - R130 Put the temporary files handed between agents (handover notes, findings, drafts, research output) in the scratch directory of their repository.
 - R131 Keep large local data in the data directory of its repository, outside the repository.
@@ -294,12 +291,12 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R134 Never delete a tool's root directory named after the user rather than the project (such as `/tmp/pytest-of-<user>` or `/tmp/pytest-current`); delete only your own numbered subtree in it (such as `pytest-<n>`).
 - R135 Run the Linux release the jurisdiction designates on the Linux machines (development machines, servers) and as the base image of test containers, naming that release in the image tag.
 - R136 Push your work to the remote before you leave a machine.
-- R216 Keep nothing but main checkouts directly under the root the jurisdiction designates for main checkouts.
 - R217 Give each file you put in a scratch directory (R130) a date in its name.
 - R218 Once content of a scratch directory (R130) is in the repository, delete its copy in the scratch directory.
 - R219 Commit no large data file to a repository; commit only a pointer to it in the data directory (R131), with its SHA-256.
 - R220 When a repository has a data directory (R131), say in its instructions what that directory holds and when it is cleared.
 - R221 Keep nothing but others' sources in the root for third-party sources (R132).
+- R42 To change instructions, skills or agent tool settings, change their source through review, never an installed copy.
 - R157 Install a project's skills only inside the project, never into a user-level skills directory.
 - R158 Do not install a skill from outside; distill its good practices into a skill of your own.
 - R159 Keep among the user-level skills only tool skills that are of use in any project and need not be turned off in any.
@@ -416,16 +413,17 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R253 Where CI runs a repository's full set of checks on each change, leave the checks a change does not touch to CI instead of also running them locally before a push.
 - R254 When you pass over a commit for a release because its CI run for the push to the main branch succeeded only on a later attempt, read the logs of the earlier attempts and record why the first one failed.
 - L15 Pass over a false positive of limae with a `<!-- limae-disable-next-line <rule> -->` comment above the line, never by turning the rule off.
-- L16 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
+- L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
+- L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release.
+- L29 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
 
   - `tools/`, a `pyproject.toml` or `uv.lock`: `uv run basedpyright`;
   - each member of `tools/` that the change touches, or that depends on what it touches (`tools/site` uses `statute` and `web/`): its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
   - a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
   - `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
+  - `rules/` or the constitution: also `cargo test --locked`;
   - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
   - the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
-- L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
-- L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release.
 - R27 Build every fixture from made-up data only, with no effect outside the test environment.
 - R84 Write a regression test only for a bug that actually occurred.
 - R85 Put a regression test only with the tests of the module where the bug occurred.
@@ -437,3 +435,4 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R49 Where a repository has a check that a change keeps instruction files apart from other files, run it in CI and have it fail a change that mixes them.
 - L28 Change instruction files in a change of their own, never together with changes to other files, and count the `AGENTS.md` at the root of this repository, which this repository's statute compiles and `statute compile --check` in CI proves equal to a recompile, as a generated file (R47), not as an instruction file (for example, a change to statute's code commits it together with that code), while a change to `statute.toml`, `statute.lock`, `.statute/`, `rules/` or the sources of the constitution stays a change to instructions.
 - L27 Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml` as a generated file (R47), not as an instruction file.
+- R285 Write a text that you pass to a command through a shell, when it runs over more than one line or holds `$`, a backtick, a backslash, a quote or `!`, into a file with a quoted heredoc first, and pass the file to the command.

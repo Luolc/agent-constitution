@@ -1,0 +1,23 @@
+id = 283
+slug = "shell"
+revision = 3
+kind = "domain"
+status = "active"
+lang = "en"
+parent = 273
+default = "on"
+
+[title]
+en = "Shell"
+zh = "Shell 命令"
+
+[applicability]
+en = '''
+How an agent writes the commands it runs through a shell, such as how a text reaches a command intact. Enable it in a repository where agents run commands through a shell; one where none do can turn it off.
+'''
+zh = '''
+agent 经 shell 跑命令时，命令怎么写，例如怎样让一段文字原样交到命令手里。有 agent 经 shell 跑命令的仓库要启用；没有的可以关掉。
+'''
+
+[translations]
+zh = "0f57801eb1fe7337dac42485634efb6182e4758539cac412465e88dc9b7c6d27"

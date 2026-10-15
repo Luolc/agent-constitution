@@ -70,9 +70,6 @@ rules = [
   "R211",
   # CI runners are pinned to a fixed Ubuntu release (L17).
   "R212",
-  # Pushed text goes through files written with a quoted heredoc.
-  "R93",
-  "R94",
   # Tests cover the happy path, the set boundaries and the bugs that occurred.
   "R84",
   "R85",
