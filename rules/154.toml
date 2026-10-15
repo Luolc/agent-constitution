@@ -1,0 +1,42 @@
+id = 154
+slug = "no-grok-debug-log"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 152
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Do not generate or read Grok's debug log"
+zh = "不生成、不读 Grok 的 debug log"
+
+[text.statement]
+en = "Do not generate a debug log with `grok --debug --debug-file <file>`, and do not read or search an existing one."
+zh = "不用 `grok --debug --debug-file <文件>` 生成 debug log，也不读取、不搜索已有的这类文件。"
+
+[text.reason]
+en = '''
+This log holds full tokens in plain text (as tested on 2026-09-02). {@rule:44} keeps an agent from putting a credential into its own output; here the tool has written the credential into a file for the agent, and reading the file, even grepping one field of it, brings the whole matching line, token included, into the context.
+'''
+zh = '''
+这份 log 会把完整的明文 token 写进去 (2026-09-02 实测)。{@rule:44} 管的是 agent 自己不让凭证进输出；这里是工具替 agent 把凭证写进了文件，一旦读它，哪怕只 grep 一个字段，命中的整行也会把 token 带进上下文。
+'''
+
+[text.verification]
+en = '''
+This covers only the files that `--debug-file` writes; Grok's usual logs are not among them.
+
+Violated when an agent generates a Grok debug log with `--debug-file`, or reads or searches such a file.
+'''
+zh = '''
+这只针对 `--debug-file` 写出的文件；Grok 平时的日志不在此列。
+
+agent 用 `--debug-file` 生成了 Grok 的 debug log，或者读取、搜索了这类文件的，即为违反本规定。
+'''
+
+[translations]
+zh = "eec7355e854536c8e698b488ae82932701065ef7423b04558b7c2cce81b15e8d"

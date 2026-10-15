@@ -1,0 +1,42 @@
+id = 153
+slug = "no-codex-update"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 151
+authority = ["must-ask.means-of-production"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Do not run `codex update`"
+zh = "不运行 `codex update`"
+
+[text.statement]
+en = "Do not run `codex update`."
+zh = "不运行 `codex update`。"
+
+[text.reason]
+en = '''
+Several agents run on one machine at the same time, and upgrading Codex changes a tool they all use. The agents already running are not affected, but the ones started next get the new version, so a failure shows up later and is hard to trace. The upgrade prompt at start-up can be turned off in the settings; this subcommand has no setting that turns it off.
+'''
+zh = '''
+一台机器上同时跑着多个 agent，升级 Codex 改变的是大家都在用的工具。正在跑的 agent 不受影响，新起的却换了版本，故障延后出现，很难查到原因。启动时的升级提示可以在配置里关掉，这个子命令没有配置项可关。
+'''
+
+[text.verification]
+en = '''
+The principal decides when Codex is upgraded, and the upgrade is installed through the machine's configuration process.
+
+Violated when an agent runs `codex update`.
+'''
+zh = '''
+Codex 什么时候升级由委托人决定，升级经机器的配置流程装上。
+
+agent 运行了 `codex update` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "96fa3055490fb3bc101f525aef0957d7461199260f487ffdb7e818e0cd63c4f3"

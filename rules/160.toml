@@ -1,0 +1,42 @@
+id = 160
+slug = "public-agents-md-no-pointer"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 149
+authority = ["division-of-instructions.project-instructions"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "In a public repository's instructions, write no pointer to user-level instructions or skills"
+zh = "公开仓的指令不写指向用户级守则或 skill 的话"
+
+[text.statement]
+en = "In a public repository's `AGENTS.md` and its skills, write only what is specific to the repository, and no pointer to user-level instructions or skills."
+zh = "公开仓的 `AGENTS.md` 与仓级 skill 只写本仓特有的内容，不写指向用户级守则或用户级 skill 的话。"
+
+[text.reason]
+en = '''
+Agents load the user-level instructions and skills by themselves; they need no pointer from the repository ({@constitution:division-of-instructions.project-instructions}). A public reader has no such files, so the pointer is of no use to them, and it tells them how the owner's environment is laid out.
+'''
+zh = '''
+agent 会自动加载用户级的守则和 skill，不需要仓库指路 ({@constitution:division-of-instructions.project-instructions})。公开仓的读者没有这些文件，一句指向它们的话对他们没用，还透露了所有者环境的布局。
+'''
+
+[text.verification]
+en = '''
+A pointer is a path to a user-level file (for example `~/.claude/CLAUDE.md`) or a line such as "the general rules are in the user-level instructions". A public repository is one its host shows as public.
+
+Violated when a public repository's `AGENTS.md` or one of its skills holds such a pointer.
+'''
+zh = '''
+指向的话，包括写出用户级文件的路径 (例如 `~/.claude/CLAUDE.md`)，以及「通用规则见用户级守则」这类说明。公开仓，指托管服务上显示为公开的仓库。
+
+公开仓的 `AGENTS.md` 或仓级 skill 里有这样的话的，即为违反本规定。
+'''
+
+[translations]
+zh = "ab5764619d26ee26855445d86bace3fd80f86b60ee54212e795984f4201ed5ac"

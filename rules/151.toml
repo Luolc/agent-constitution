@@ -1,0 +1,22 @@
+id = 151
+slug = "codex"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 149
+
+[title]
+en = "Codex"
+zh = "Codex"
+
+[applicability]
+en = '''
+Covers what holds only where agents use Codex. Enable it in a repository or on a machine where agents use Codex; where none does, leave it off.
+'''
+zh = '''
+管只在 agent 使用 Codex 时才成立的做法。agent 使用 Codex 的仓库或机器启用；没有 agent 使用它的，不启用。
+'''
+
+[translations]
+zh = "63781f8469cd085d14cbac4644347f2c0b817bb8b6606c0f7706538d6972ccc1"
