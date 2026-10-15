@@ -1,4 +1,4 @@
-<!-- en-sha256: a165aad4df533e10328c93c877ad0a55b90dbd20dd0764257807510bdaf10e30 -->
+<!-- en-sha256: 6e4a2aa6873fc6359f532879a2f69ca466958d1d403ebb526f5538dce6778828 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -16,6 +16,8 @@ statute.toml              规则集：宪法、本仓采用的领域和规则、
 statute.lock              钉住的规则及其哈希，由 statute 写出          A
 statute-checks.toml       检查文件，由 statute 写在 statute.toml 旁    A
 .statute/
+  .gitignore              statute 在写出第一个生成文件前写它，
+                          新 clone 因此忽略生成文件                    A
   rules/                  本仓自己的规则，一条一个文件                 A
 constitution/
   <YYYY-MM>/              版目录，目前是 2026-10 (constitution.md)     A
