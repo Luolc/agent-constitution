@@ -683,37 +683,37 @@ original-sha256 = "c21d2b7fb297c56c3b653c11b1b4ec970ba5b04707228106b4c1bc5ab28ca
 
 [[rules]]
 rule = "R139"
-revision = 2
-sha256 = "6dc9be426ecfb704c623dd207a67b220603731d2f74cd65ed96d13c11ea22de1"
-original-sha256 = "85d710f988783afda5ac318e0d4f3bc25ca6764e451a1292882142cc57f9e159"
+revision = 3
+sha256 = "7423af935920437eb537ba7f998c26ba4bcf39586254b70e81865c48fe640312"
+original-sha256 = "80817de165a3d294468d6ba127c3054ca80ebbaddcc97622f0cee5af8f9c1461"
 by = "default"
 
 [[rules]]
 rule = "R140"
-revision = 2
-sha256 = "8d970077c59a618c5f24d89e028623b0deb17f872abecf17a626507ac08b4360"
-original-sha256 = "3559cd0eccaf6a65e0a74063b8321cac64b190c55ca1018dd4475636a7e4ba96"
+revision = 3
+sha256 = "e580b06d90d10367a04bea8b181296672aafa38831da58f9c7d0cba4cc4d7e9f"
+original-sha256 = "c72369fe2d2fb631bf18bd132808b4edb23ded35db4141e60f6ea8242ff92be9"
 by = "default"
 
 [[rules]]
 rule = "R141"
-revision = 2
-sha256 = "8cb32ddce72acad2a2578d886338c0329951df345413528434dcf7fbe2ee80a4"
-original-sha256 = "2fa6a38914b17c9f7f1affeb152e76d3d0ae83bc2994062b837fae4479b43623"
+revision = 3
+sha256 = "db90cf7b3fabdaeaf91a24f7a6b8f7785fe48456048492f1b293ef1ea4bbfbf5"
+original-sha256 = "1dc5d47a3692c9d9f103d3e3de0a68785e765bff86c60fe09ae503a85870ae60"
 by = "default"
 
 [[rules]]
 rule = "R142"
-revision = 2
-sha256 = "64629e13c89f1d03cd3619049f29925abf4d587dd463c46dcb5c626835f038c1"
-original-sha256 = "1a9857b387959403609df926ed35995ab7af135ac4ce111cc352c372e7d27480"
+revision = 3
+sha256 = "40bbba0c8be3a3b8270250713204e7db5804c903191eea5c32fb2be88053265e"
+original-sha256 = "6b7dfbcda62a31247aa1757b94e9b1a54aff007cf3692af0da9336fb9e1d98f0"
 by = "default"
 
 [[rules]]
 rule = "R143"
-revision = 2
-sha256 = "11cd16cef8f3672c45c41b661b6b805857594d8e12de84e186aedef70d80e282"
-original-sha256 = "6124506a7970d89b333cdded13ec57eced04bbaf219471a578ccd072b58e7978"
+revision = 3
+sha256 = "0776c1aa8b3f7f67c4885dc3da653745372dfceda86781e0882dbed9acdb70ed"
+original-sha256 = "8c5f2ba9d4c46cc12aa5feeae92e6a69e4063d1d02acd4e68120260601fb830b"
 by = "default"
 
 [[rules]]
