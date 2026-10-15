@@ -48,7 +48,9 @@ screenshots (Screenshots, below). The workflow
   so the table of contents links to it, and the page gets the lengths
   (below) as params. It fails the build when the full version does not
   start with the header line, a blank line and the `# ` title, or the
-  version for agents with the `# ` title. The layout
+  version for agents with the `# ` title. Not built yet: the content
+  adapter still drops a header line from the version for agents and
+  requires one there. The layout
   (`web/layouts/home.html`) sets the title, the list under it and the
   text in `<div class="constitution">`, the root the style sheet hangs
   on. The title (`web/layouts/_partials/constitution/title.html`) has no
@@ -317,8 +319,10 @@ screenshots (Screenshots, below). The workflow
   languages, words split on white space (ASCII white space, the only kind
   the files hold) in English, and tokens as counted for the model
   `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
-  API (`POST /v1/messages/count_tokens`, standard library only). The
-  content adapter counts the characters and words; `count-tokens`
+  API (`POST /v1/messages/count_tokens`, standard library only). Not
+  built yet: both lengths, here and in the popup below, are still
+  counted from the line after a header line. The content adapter counts
+  the characters and words; `count-tokens`
   counts the tokens and writes them to `web/data/lengths.json` (not
   committed), with the SHA-256 of each text it counted and the full SHA
   of the commit it ran on. The site shows a token count, and the commit, only
