@@ -195,7 +195,7 @@ class Constitution(NamedTuple):
 
   Attributes:
     languages: the languages of index.toml, in order.
-    articles: the IDs of the articles.
+    parents: the IDs of the provisions that have one under them.
     ancestors: for each section, its article; for each item, its section
       and its article; nearest first.
     labels: for each language, the label of each provision by citation:
@@ -203,7 +203,7 @@ class Constitution(NamedTuple):
   """
 
   languages: list[str]
-  articles: set[str]
+  parents: set[str]
   ancestors: dict[str, tuple[str, ...]]
   labels: dict[str, dict[str, str]]
 
@@ -229,7 +229,7 @@ def constitution(data: dict[str, Any]) -> Constitution:
       ancestors[p["id"]] = tuple(above)
   return Constitution(
     languages=data["languages"],
-    articles={p["id"] for p in provisions if p["parent"] is None},
+    parents={p["parent"] for p in provisions if p["parent"] is not None},
     ancestors=ancestors,
     labels={
       lang: {p["id"]: p["labels"][lang] for p in provisions}
@@ -849,10 +849,10 @@ def site_data(
     (`sources`); its nodes in tree order, source by source; the page of
     parameters of each source that has some (`params`); for each
     provision a listed rule names in `authority`, those rules
-    (`citedBy`); and for each article that or a provision under it
-    names, those rules (`citedWithin`); each list in order of source and
-    ID, without repeats. With other sources, each node's groups start
-    with its source.
+    (`citedBy`); and for each provision with one under it that it or
+    one under it names, those rules (`citedWithin`); each list in order
+    of source and ID, without repeats. With other sources, each node's
+    groups start with its source.
   """
   sources = [
     Source(FIRST_PARTY, QUADRANTS[0], nodes, params),
@@ -862,7 +862,6 @@ def site_data(
   rank = {s.name: i for i, s in enumerate(sources)}
   order = [(s, n, depth) for s in sources for n, depth in tree_order(s.nodes)]
   conflicts = both_sides(sources)
-  articles = src.articles
   cited: dict[str, list[tuple[str, int]]] = defaultdict(list)
   within: dict[str, list[tuple[str, int]]] = defaultdict(list)
   for s, n, _ in order:
@@ -870,11 +869,11 @@ def site_data(
       refs = specific(n.authority, src)
       for ref in refs:
         cited[ref].append((s.name, n.id))
-      for article in sorted(
+      for parent in sorted(
         {r for ref in refs for r in (ref, *src.ancestors.get(ref, ()))}
-        & articles
+        & src.parents
       ):
-        within[article].append((s.name, n.id))
+        within[parent].append((s.name, n.id))
 
   def ordered(keys: list[tuple[str, int]]) -> list[tuple[str, int]]:
     return sorted(keys, key=lambda k: (rank[k[0]], k[1]))

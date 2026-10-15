@@ -282,7 +282,7 @@ What replaces today's icons:
 | Octicons `book` | The design's group | `book-open` |
 | Octicons `device-desktop`, `sun`, `moon` | The color switch | `monitor`, `sun`, `moon` |
 | A ring around an `i`, drawn by hand | The info button after the length | `info` |
-| A ring holding a plus or a minus, drawn by hand | The button that opens the rules under a provision | `circle-plus`, `circle-minus` |
+| A ring holding a plus or a minus, drawn by hand | The button that shows more of the rules under a provision | `circle-plus`, `circle-minus` |
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
 | The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
@@ -485,9 +485,8 @@ turned off (disabled), where it has these.
   its tag, Default option / 「默认选项」, in `accent` with `check`, so the
   default shows by shape as well as color. A one-of whose options are
   off has its box in `border-subtle`.
-- **Popovers** (the filter's panel, the info on the length, the rules
-  under a provision when they open over the text): `bg-panel`, `1px`
-  of `border-subtle`, `radius-md`, `shadow-popover`, padding
+- **Popovers** (the filter's panel, the info on the length): `bg-panel`,
+  `1px` of `border-subtle`, `radius-md`, `shadow-popover`, padding
   `space-3 space-4`, under the control that opens it. A popover with controls
   opens and closes on a click, Enter or Space, its control's
   `aria-expanded` and `aria-controls` saying whether and what; focus
@@ -497,6 +496,20 @@ turned off (disabled), where it has these.
   outside. It opens over `duration-base` from `scale(0.95)` and
   transparent, and closes over `duration-fast`, both `ease-out`
   ([Motion](#motion)).
+- **The rules under a provision.** One row under an article's heading
+  or a provision's first line, `text-sm` in `text-muted`, wrapping as it
+  needs. First a link to each rule that names the provision: its label
+  in a pill (`text-xs`, `line-height-ui`, `radius-full`, padding
+  `0 space-2`, `1px` of `border-subtle`, tabular figures, never
+  wrapped), the link at least a target wide and tall. Under the pointer the pill
+  fills with `bg-hover`, its border turns to `border-strong` and its
+  label to `accent`; pressed, `bg-active`. When rules name only a
+  provision under it, a quiet button of their count ends the row,
+  `circle-plus` before it: it shows their links in the same row before
+  it, with `circle-minus` while they are shown, and hides them again on
+  a click or on Escape from within the row, the focus left on the
+  button. The links appear and go at once, with no motion. Without
+  scripts every link is shown and the button hidden.
 - **The sidebar.** After the sidebars of Tailwind CSS's documentation
   ([Sources](#sources)), in this file's colors and fonts. `bg-panel`,
   with `1px` of `border-subtle` along its edge, its groups `space-4`
@@ -689,11 +702,12 @@ on what moves today (the popover on the length, the chevrons, the
 flash on a target, the drawers of a narrow screen); hover only on fine
 pointers; the sizes of targets; the sidebar, the table of contents and
 the drawers of [Components](#components); the native controls; the
-fonts, the text size and the column, and the breakpoints; the filter,
-the legend, the table of rules with its marks and its group rows and
-head that stick, and the one-of; the filter and the page in the
-address, pages readable without scripts, tabular figures, and `aria-expanded` with
-`aria-controls` on the info button, the buttons of the rules under a
+fonts, the text size and the column, and the breakpoints; the rows of
+the rules under a provision; the filter, the legend, the table of rules
+with its marks and its group rows and head that stick, and the one-of;
+the filter and the page in the address, pages readable without
+scripts, tabular figures, and `aria-expanded` with `aria-controls` on
+the info button, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's
 buttons. Built today on the local site: every token, and every value
 of its style sheet named by one; the one-of of
