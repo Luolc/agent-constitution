@@ -176,12 +176,59 @@ impl std::fmt::Display for RuleRef {
     }
 }
 
-/// A source of rules. Only a source on the local disk is supported so far;
-/// its `path` is relative to the directory of `statute.toml`.
+/// What a git source follows.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Follow {
+    Branch(String),
+    Tag(String),
+}
+
+impl std::fmt::Display for Follow {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Follow::Branch(b) => write!(f, "branch `{b}`"),
+            Follow::Tag(t) => write!(f, "tag `{t}`"),
+        }
+    }
+}
+
+/// A git source (`docs/design/global-configuration.md`, Git sources).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Git {
+    /// The address `git clone` takes, as written.
+    pub address: String,
+    pub follow: Follow,
+    /// The user's own clone, read in place of statute's.
+    pub clone: Option<String>,
+    /// The commit read, once chosen.
+    pub commit: Option<String>,
+}
+
+/// Where a source's entry comes from (`docs/design/global-configuration.md`,
+/// Which source a name means).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Declared {
+    /// The rule set's own `[sources]`.
+    RuleSet,
+    /// The global configuration.
+    Global,
+    /// The lock file, for a source neither of the above names.
+    Lock,
+    /// statute's own default, `R`.
+    BuiltIn,
+}
+
+/// A source of rules: a directory on disk, its `path` relative to the
+/// directory of `statute.toml`, or a git repository read at one commit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceSpec {
     pub name: String,
+    /// The directory read: as written for a source on disk; for a git
+    /// source, the files of its commit once chosen
+    /// (`crate::global::materialize`), empty before.
     pub path: String,
+    pub git: Option<Git>,
+    pub declared: Declared,
     /// Whether anyone may read the source, as the rule set declares it.
     pub public: bool,
     /// `scope = "local"`: the rules are this repository's, as those of
@@ -193,7 +240,58 @@ impl SourceSpec {
     /// Whether the source is the rule set's own directory, whose `rules/`
     /// are then the source's rules rather than local ones.
     pub fn is_here(&self) -> bool {
-        matches!(self.path.trim_end_matches('/'), "." | "")
+        self.git.is_none() && matches!(self.path.trim_end_matches('/'), "." | "")
+    }
+
+    /// How a path below the source is named in messages: `rules` for the
+    /// source `.`, `../team/rules` for `../team`, `R@1a2b3c4d:rules` for a
+    /// git source at a commit.
+    pub fn shown(&self, below: &str) -> String {
+        match &self.git {
+            Some(git) => {
+                let commit = git.commit.as_deref().unwrap_or("");
+                format!("{}@{}:{below}", self.name, &commit[..commit.len().min(8)])
+            }
+            None => crate::project::shown(&self.path, below),
+        }
+    }
+
+    /// Where the source is, for the compiled `AGENTS.md`: its path, or its
+    /// address at the commit.
+    pub fn place(&self) -> String {
+        match &self.git {
+            Some(git) => format!("{} at {}", git.address, git.commit.as_deref().unwrap_or("")),
+            None => self.path.clone(),
+        }
+    }
+}
+
+/// The source entries a rule set draws on besides its own
+/// (`docs/design/global-configuration.md`, Which source a name means):
+/// those of the global configuration, and those of the lock file, which
+/// count only where nothing else names a source.
+#[derive(Debug, Clone, Default)]
+pub struct Layers {
+    pub global: Vec<SourceSpec>,
+    pub locked: Vec<SourceSpec>,
+    /// Whether `R` is the built-in default when nothing names it.
+    pub built_in: bool,
+}
+
+/// `R` as statute knows it by itself.
+pub fn built_in_first_party() -> SourceSpec {
+    SourceSpec {
+        name: FIRST_PARTY.to_owned(),
+        path: String::new(),
+        git: Some(Git {
+            address: crate::global::FIRST_PARTY_ADDRESS.to_owned(),
+            follow: Follow::Branch(crate::global::FIRST_PARTY_BRANCH.to_owned()),
+            clone: None,
+            commit: None,
+        }),
+        declared: Declared::BuiltIn,
+        public: true,
+        local: false,
     }
 }
 
@@ -205,8 +303,12 @@ pub struct Manifest {
     /// Whether the repository that holds the rule set is public; the
     /// visibility of its own rules.
     pub public: bool,
-    /// The sources of `[sources]`, in order of name.
+    /// The sources of `[sources]`, with those the global configuration,
+    /// the lock file and the built-in default add, in order of name.
     pub sources: Vec<SourceSpec>,
+    /// The private sources that the global configuration names, held for
+    /// the private layer of a public rule set, in order of name.
+    pub held: Vec<SourceSpec>,
     /// The rules chosen directly, in the order written.
     pub rules: Vec<Key>,
     /// The roots of the packs enabled, in the order written.
@@ -225,7 +327,8 @@ struct RawManifest {
     rules: Vec<String>,
     #[serde(default)]
     packs: Vec<String>,
-    sources: BTreeMap<String, RawSource>,
+    #[serde(default)]
+    sources: BTreeMap<String, RawEntry>,
     compile: Option<RawCompile>,
 }
 
@@ -243,8 +346,55 @@ struct RawSource {
     git: Option<String>,
     tag: Option<String>,
     branch: Option<String>,
+    clone: Option<String>,
     public: Option<bool>,
     scope: Option<String>,
+}
+
+/// An entry of a rule set's `[sources]`: a source, or `false`, which takes
+/// a source of the global configuration out.
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RawEntry {
+    Off(bool),
+    On(RawSource),
+}
+
+/// The global configuration.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawConfig {
+    #[serde(default)]
+    sources: BTreeMap<String, RawSource>,
+}
+
+/// The sources of the global configuration, from its text; every problem
+/// found is returned.
+pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
+    let raw: RawConfig =
+        toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
+    let mut errors = Vec::new();
+    for (name, s) in &raw.sources {
+        if s.scope.is_some() {
+            errors.push(format!(
+                "[sources] `{name}`: a source of the global configuration is global; remove `scope`"
+            ));
+        }
+        if s.git.is_none() {
+            errors.push(format!(
+                "[sources] `{name}`: a source of the global configuration is a git source, `{name} = {{ git = \"<address>\", branch = \"main\" }}`; a directory read as it is belongs in a rule set, with `path`"
+            ));
+        }
+    }
+    if !errors.is_empty() {
+        return Err(errors);
+    }
+    let mut sources = read_sources(&raw.sources, None, Declared::Global, &mut errors);
+    if !errors.is_empty() {
+        return Err(errors);
+    }
+    sources.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(sources)
 }
 
 /// `statute.private.toml`.
@@ -272,6 +422,7 @@ struct RawCompile {
 fn read_sources(
     raw: &BTreeMap<String, RawSource>,
     public_rule_set: Option<bool>,
+    declared: Declared,
     errors: &mut Vec<String>,
 ) -> Vec<SourceSpec> {
     let mut sources = Vec::new();
@@ -325,23 +476,50 @@ fn read_sources(
             ));
             continue;
         }
+        let spec = |path: &str, git| SourceSpec {
+            name: name.clone(),
+            path: path.to_owned(),
+            git,
+            declared,
+            public: source_public,
+            local,
+        };
         match (&s.path, &s.git) {
-            (Some(path), None) if s.tag.is_none() && s.branch.is_none() => {
-                sources.push(SourceSpec {
-                    name: name.clone(),
-                    path: path.clone(),
-                    public: source_public,
-                    local,
-                })
+            (Some(path), None) if s.tag.is_none() && s.branch.is_none() && s.clone.is_none() => {
+                sources.push(spec(path, None))
             }
             (Some(_), _) => errors.push(format!(
                 "[sources] `{name}`: a source is either `path` or `git` with `tag` or `branch`, not both"
             )),
-            (None, Some(_)) => errors.push(format!(
-                "[sources] `{name}`: git sources are not supported yet; use a source on disk, `{name} = {{ path = \"<dir>\" }}`"
-            )),
+            (None, Some(address)) => {
+                let follow = match (&s.branch, &s.tag) {
+                    (Some(b), None) => Follow::Branch(b.clone()),
+                    (None, Some(t)) => Follow::Tag(t.clone()),
+                    _ => {
+                        errors.push(format!(
+                            "[sources] `{name}`: a git source follows one `branch` or one `tag`"
+                        ));
+                        continue;
+                    }
+                };
+                if s.clone.is_some() && declared != Declared::Global {
+                    errors.push(format!(
+                        "[sources] `{name}`: `clone` is for the global configuration; in a rule set, name a directory with `path`"
+                    ));
+                    continue;
+                }
+                sources.push(spec(
+                    "",
+                    Some(Git {
+                        address: address.clone(),
+                        follow,
+                        clone: s.clone.clone(),
+                        commit: None,
+                    }),
+                ))
+            }
             (None, None) => errors.push(format!(
-                "[sources] `{name}`: give the source's `path`, as in `{name} = {{ path = \".\" }}`"
+                "[sources] `{name}`: give the source's `path`, as in `{name} = {{ path = \".\" }}`, or its `git` address and `branch`"
             )),
         }
     }
@@ -371,10 +549,30 @@ fn key_in(sources: &[SourceSpec], r: &RuleRef) -> Result<Key, String> {
     }
 }
 
+/// Why `entry`, a reference to a rule of a private source the public rule
+/// set holds for its private layer, cannot be enabled there; `None` for
+/// any other reference.
+fn held_private(held: &[SourceSpec], r: &RuleRef, entry: &str) -> Option<String> {
+    match &r.origin {
+        Origin::Named(n) if held.iter().any(|s| &s.name == n) => Some(format!(
+            "`{entry}` is a rule of the private source `{n}`, and this rule set is of a public repository; enable it in {}, `statute add --private {entry}`, or leave it out",
+            crate::private::MANIFEST
+        )),
+        _ => None,
+    }
+}
+
 impl Manifest {
     /// Reads `statute.toml` from its text. Every problem found is returned,
     /// each a message about the file.
     pub fn parse(text: &str) -> Result<Manifest, Vec<String>> {
+        Manifest::parse_with(text, &Layers::default())
+    }
+
+    /// As `parse`, with the sources of `layers` added where the rule set
+    /// does not name them (`docs/design/global-configuration.md`, Which
+    /// source a name means).
+    pub fn parse_with(text: &str, layers: &Layers) -> Result<Manifest, Vec<String>> {
         let raw: RawManifest =
             toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
@@ -388,14 +586,57 @@ impl Manifest {
             false
         });
 
-        let sources = read_sources(&raw.sources, Some(public), &mut errors);
-        if raw.sources.is_empty() {
+        let mut on = BTreeMap::new();
+        let mut off = Vec::new();
+        for (name, entry) in raw.sources {
+            match entry {
+                RawEntry::On(s) => {
+                    on.insert(name, s);
+                }
+                RawEntry::Off(false) if name == FIRST_PARTY => errors.push(format!(
+                    "[sources] `{FIRST_PARTY} = false`: the first-party source is replaced by naming another `{FIRST_PARTY}`, never taken out"
+                )),
+                RawEntry::Off(false) => off.push(name),
+                RawEntry::Off(true) => errors.push(format!(
+                    "[sources] `{name} = true`: name the source, as in `{name} = {{ path = \"<dir>\" }}`, or write `{name} = false` to take a source of the global configuration out"
+                )),
+            }
+        }
+        let mut sources = read_sources(&on, Some(public), Declared::RuleSet, &mut errors);
+        let sources_ok = sources.len() == on.len();
+        let mut held = Vec::new();
+        let given = |sources: &[SourceSpec], held: &[SourceSpec], name: &str| {
+            off.iter().any(|o| o == name)
+                || sources.iter().any(|s| s.name == name)
+                || held.iter().any(|s| s.name == name)
+        };
+        for spec in layers.global.iter().chain(&layers.locked) {
+            if given(&sources, &held, &spec.name) {
+                continue;
+            }
+            if public && !spec.public {
+                held.push(spec.clone());
+            } else {
+                sources.push(spec.clone());
+            }
+        }
+        let uses_first_party = raw.constitution.source == FIRST_PARTY
+            || raw
+                .rules
+                .iter()
+                .chain(&raw.packs)
+                .any(|e| RuleRef::parse(e).is_ok_and(|r| r.origin == Origin::FirstParty));
+        if layers.built_in && uses_first_party && !given(&sources, &held, FIRST_PARTY) {
+            sources.push(built_in_first_party());
+        }
+        sources.sort_by(|a, b| a.name.cmp(&b.name));
+        held.sort_by(|a, b| a.name.cmp(&b.name));
+        if sources.is_empty() {
             errors.push(
                 "[sources] is empty; name the source of the rules, as in `R = { path = \".\" }`"
                     .to_owned(),
             );
         }
-        let sources_ok = sources.len() == raw.sources.len();
         if sources_ok && !sources.iter().any(|s| s.name == raw.constitution.source) {
             errors.push(format!(
                 "`constitution.source = \"{}\"` is not a source named in [sources]",
@@ -421,7 +662,9 @@ impl Manifest {
             let mut out = Vec::new();
             for entry in list {
                 let key = RuleRef::parse(entry).and_then(|r| {
-                    if sources_ok {
+                    if let Some(e) = held_private(&held, &r, entry) {
+                        Err(e)
+                    } else if sources_ok {
                         key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}"))
                     } else {
                         // The sources are wrong already; that error is enough.
@@ -465,6 +708,7 @@ impl Manifest {
             edition: raw.constitution.edition,
             public,
             sources,
+            held,
             rules,
             packs,
             agents_md,
@@ -477,6 +721,16 @@ impl Manifest {
     /// `statute.toml` (`docs/design/rule-sources.md`, Private rules in a
     /// public repository). Every problem found is returned.
     pub fn with_private(&self, text: &str) -> Result<Manifest, Vec<String>> {
+        self.with_private_from(text, &[])
+    }
+
+    /// As `with_private`, with `locked`, the sources of the private lock
+    /// file, for names neither layer gives.
+    pub fn with_private_from(
+        &self,
+        text: &str,
+        locked: &[SourceSpec],
+    ) -> Result<Manifest, Vec<String>> {
         let raw: RawPrivate =
             toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
@@ -493,14 +747,24 @@ impl Manifest {
             ));
         }
         let mut sources = self.sources.clone();
-        for spec in read_sources(&raw.sources, None, &mut errors) {
-            if self.spec(&spec.name).is_some() {
-                errors.push(format!(
+        let own = read_sources(&raw.sources, None, Declared::RuleSet, &mut errors);
+        for spec in &own {
+            match self.spec(&spec.name) {
+                Some(have) if have.declared == Declared::RuleSet => errors.push(format!(
                     "[sources] `{}` is named in {FILE} already",
                     spec.name
-                ));
-            } else {
-                sources.push(spec);
+                )),
+                Some(_) => errors.push(format!(
+                    "[sources] `{}` is a source of the public layer already, from the global configuration, {} or statute's default; the private layer only adds sources",
+                    spec.name,
+                    crate::lock::FILE
+                )),
+                None => sources.push(spec.clone()),
+            }
+        }
+        for spec in self.held.iter().chain(locked) {
+            if !sources.iter().any(|s| s.name == spec.name) {
+                sources.push(spec.clone());
             }
         }
         sources.sort_by(|a, b| a.name.cmp(&b.name));
@@ -530,6 +794,7 @@ impl Manifest {
         }
         Ok(Manifest {
             sources,
+            held: Vec::new(),
             rules,
             ..self.clone()
         })
@@ -538,8 +803,10 @@ impl Manifest {
     /// The key a reference names in this rule set, written as in
     /// `statute.toml`; else what is wrong.
     pub fn key(&self, text: &str) -> Result<Key, String> {
-        RuleRef::parse(text)
-            .and_then(|r| key_in(&self.sources, &r).map_err(|e| format!("`{text}` {e}")))
+        RuleRef::parse(text).and_then(|r| match held_private(&self.held, &r, text) {
+            Some(e) => Err(e),
+            None => key_in(&self.sources, &r).map_err(|e| format!("`{text}` {e}")),
+        })
     }
 
     /// The source named `name` in `[sources]`.
@@ -596,6 +863,8 @@ agents-md = ["statement", "reason"]
             [SourceSpec {
                 name: "R".into(),
                 path: ".".into(),
+                git: None,
+                declared: Declared::RuleSet,
                 public: true,
                 local: false,
             }]
@@ -732,13 +1001,30 @@ agents-md = ["statement", "reason"]
     }
 
     #[test]
-    fn git_sources_are_not_supported_yet() {
+    fn git_sources() {
+        let with = |entry: &str| GOOD.replace("R = { path = \".\" }", entry);
+        let m = Manifest::parse(&with(
+            "R = { git = \"https://example.test/rules.git\", tag = \"v1\" }",
+        ))
+        .unwrap();
+        assert_eq!(
+            m.sources[0].git,
+            Some(Git {
+                address: "https://example.test/rules.git".into(),
+                follow: Follow::Tag("v1".into()),
+                clone: None,
+                commit: None,
+            })
+        );
         fails_with(
-            &GOOD.replace(
-                "R = { path = \".\" }",
-                "R = { git = \"example.test/rules\", tag = \"v1\" }",
+            &with("R = { git = \"https://example.test/rules.git\" }"),
+            "follows one `branch` or one `tag`",
+        );
+        fails_with(
+            &with(
+                "R = { git = \"https://example.test/rules.git\", branch = \"main\", clone = \"~/rules\" }",
             ),
-            "git sources are not supported yet",
+            "`clone` is for the global configuration",
         );
     }
 

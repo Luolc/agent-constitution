@@ -125,8 +125,14 @@ pub fn compile(project: &Project) -> Result<Output, String> {
     let mut skills: Vec<(String, PathBuf)> = Vec::new();
     let mut from: Vec<&str> = Vec::new();
     for source in project.sources.iter() {
-        for s in skill::load(&project.root.join(&source.path), &source.path)? {
-            let file = crate::project::shown(&source.path, &format!("skills/{}/SKILL.md", s.name));
+        let spec = project.manifest.spec(&source.name);
+        let label = spec.map_or_else(|| source.path.clone(), |spec| spec.shown(""));
+        for s in skill::load(&project.root.join(&source.path), &label)? {
+            let below = format!("skills/{}/SKILL.md", s.name);
+            let file = spec.map_or_else(
+                || crate::project::shown(&source.path, &below),
+                |spec| spec.shown(&below),
+            );
             if let Some(id) = s.rules.iter().find(|&&id| source.get(id).is_none()) {
                 return Err(format!(
                     "{file}: `metadata.{}` names rule {id}, which is not in {}",
@@ -422,7 +428,8 @@ fn agents_md(project: &Project, lock_file: &str, fallback: bool) -> Result<Strin
     let w = words(lang);
     let mut out = String::new();
     let _ = writeln!(out, "{GENERATED}\n");
-    let (edition, revision, name, path) = (&m.edition, &project.revision, &spec.name, &spec.path);
+    let (edition, revision, name, path) =
+        (&m.edition, &project.revision, &spec.name, &spec.place());
     let _ = match lang {
         "zh" => writeln!(
             out,

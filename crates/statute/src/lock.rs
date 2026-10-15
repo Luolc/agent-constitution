@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::manifest::{Key, RuleRef, SourceSpec};
+use crate::manifest::{Declared, FIRST_PARTY, Follow, Git, Key, RuleRef, SourceSpec};
 use crate::project::Project;
 
 pub const FILE: &str = "statute.lock";
@@ -34,19 +34,52 @@ struct Source<'a> {
     name: &'a str,
     #[serde(flatten)]
     at: Pin<'a>,
+    /// Every source's but `R`'s, so that a source read from the lock file
+    /// alone is checked for which rules may cite which.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    public: Option<bool>,
 }
 
 /// Where a source is. A source on disk is pinned by its path alone: its
 /// commit would change with the very commit that records the lock file,
-/// and each rule's `sha256` already pins its content. A git source, once
-/// supported, adds its address and commit here.
+/// and each rule's `sha256` already pins its content. A git source is
+/// pinned by its address and commit, with the branch or tag it follows
+/// (`docs/design/global-configuration.md`, Git sources).
 #[derive(Serialize)]
-struct Pin<'a> {
-    path: &'a str,
+#[serde(untagged)]
+enum Pin<'a> {
+    Path {
+        path: &'a str,
+    },
+    Git {
+        git: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        branch: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        tag: Option<&'a str>,
+        commit: &'a str,
+    },
 }
 
-fn pin(spec: &SourceSpec) -> Pin<'_> {
-    Pin { path: &spec.path }
+/// `follow` is false for the constitution, whose source's entry says what
+/// it follows.
+fn pin(spec: &SourceSpec, follow: bool) -> Pin<'_> {
+    match &spec.git {
+        None => Pin::Path { path: &spec.path },
+        Some(git) => {
+            let (branch, tag) = match (&git.follow, follow) {
+                (Follow::Branch(b), true) => (Some(b.as_str()), None),
+                (Follow::Tag(t), true) => (None, Some(t.as_str())),
+                _ => (None, None),
+            };
+            Pin::Git {
+                git: &git.address,
+                branch,
+                tag,
+                commit: git.commit.as_deref().unwrap_or(""),
+            }
+        }
+    }
 }
 
 /// A rule, named as the rule set names it (`R42`, `team:7`), and the
@@ -68,7 +101,7 @@ pub fn render(project: &Project) -> String {
     let m = &project.manifest;
     let lock = Lock {
         constitution: Constitution {
-            at: pin(m.constitution_spec()),
+            at: pin(m.constitution_spec(), false),
             edition: &m.edition,
             revision: &project.revision,
         },
@@ -77,7 +110,8 @@ pub fn render(project: &Project) -> String {
             .iter()
             .map(|spec| Source {
                 name: &spec.name,
-                at: pin(spec),
+                at: pin(spec, true),
+                public: (spec.name != FIRST_PARTY).then_some(spec.public),
             })
             .collect(),
         rules: project
@@ -197,4 +231,56 @@ pub fn current(project: &Project) -> Locked {
             })
             .collect(),
     }
+}
+
+#[derive(Deserialize)]
+struct RawPins {
+    #[serde(default)]
+    sources: Vec<RawPin>,
+}
+
+#[derive(Deserialize)]
+struct RawPin {
+    name: String,
+    path: Option<String>,
+    git: Option<String>,
+    branch: Option<String>,
+    tag: Option<String>,
+    commit: Option<String>,
+    public: Option<bool>,
+}
+
+/// The git sources a lock file's text records, each with its commit
+/// (`docs/design/global-configuration.md`, Which source a name means);
+/// none when the text cannot be read. A source without `public`, as in
+/// a lock file written before it was recorded, counts as private, the
+/// side on which a public rule cannot cite it.
+pub fn sources(text: &str) -> Vec<SourceSpec> {
+    let Ok(raw) = toml::from_str::<RawPins>(text) else {
+        return Vec::new();
+    };
+    raw.sources
+        .into_iter()
+        .filter_map(|p| {
+            let follow = match (p.branch, p.tag) {
+                (Some(b), None) => Follow::Branch(b),
+                (None, Some(t)) => Follow::Tag(t),
+                _ => return None,
+            };
+            let first_party = p.name == FIRST_PARTY;
+            Some(SourceSpec {
+                git: Some(Git {
+                    address: p.git?,
+                    follow,
+                    clone: None,
+                    commit: Some(p.commit?),
+                }),
+                path: p.path.unwrap_or_default(),
+                public: first_party || p.public == Some(true),
+                name: p.name,
+                declared: Declared::Lock,
+                local: false,
+            })
+        })
+        .collect()
 }

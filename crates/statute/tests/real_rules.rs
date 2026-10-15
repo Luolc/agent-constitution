@@ -55,7 +55,7 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
         named.join(", "),
         path.to_str().unwrap()
     );
-    let (project, diags) = Project::with_manifest(&dir, &manifest);
+    let (project, diags) = Project::with_manifest(&dir, &manifest, &Default::default());
     assert!(diags.0.is_empty(), "{:#?}", diags.0);
     // Every rule in force is enabled, except the children of a one-of that
     // the rule set does not name and the rules below them; the revision is
