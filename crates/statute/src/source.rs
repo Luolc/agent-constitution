@@ -9,6 +9,7 @@ use crate::cite::{self, Citation};
 use crate::diag::Diagnostics;
 use crate::manifest::{FIRST_PARTY, Key, LOCAL};
 use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
+use crate::param::{self, Param, Placeholder};
 
 /// The file of a source's parameters, beside its rule files.
 pub const PARAMS: &str = "params.toml";
@@ -16,6 +17,8 @@ pub const PARAMS: &str = "params.toml";
 #[derive(Debug, Default)]
 pub struct Source {
     pub nodes: BTreeMap<Id, Node>,
+    /// The parameters its `params.toml` declares.
+    pub params: Vec<Param>,
     /// The source's name in the rule set, which its rules are shown with
     /// (`manifest::show`); empty when the directory is read alone.
     pub name: String,
@@ -58,9 +61,7 @@ impl Source {
             let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
                 continue;
             };
-            // The source's parameters are declared in `params.toml`, next
-            // to the rule files (`docs/design/rule-config.md`, Parameters).
-            if !name.ends_with(".toml") || name == PARAMS {
+            if !name.ends_with(".toml") {
                 continue;
             }
             let file = format!("{label}/{name}");
@@ -76,8 +77,18 @@ impl Source {
     }
 
     /// Checks the given files, each a name such as `rules/42.toml` and its
-    /// bytes.
+    /// bytes. A file named `params.toml` holds the source's parameters,
+    /// next to the rule files (`docs/design/rule-config.md`, Parameters).
     pub fn from_files(mut files: Vec<(String, Vec<u8>)>) -> (Source, Diagnostics) {
+        let mut diags = Diagnostics::default();
+        let mut params = Vec::new();
+        files.retain(|(file, bytes)| {
+            let named = file.rsplit('/').next() == Some(PARAMS);
+            if named {
+                params = param::parse(file, bytes, &mut diags);
+            }
+            !named
+        });
         // By number, not by name; a misnamed file sorts after the rest.
         files.sort_by_key(|(file, _)| {
             let name = file.rsplit('/').next().unwrap_or(file);
@@ -86,8 +97,10 @@ impl Source {
                 file.clone(),
             )
         });
-        let mut diags = Diagnostics::default();
-        let mut source = Source::default();
+        let mut source = Source {
+            params,
+            ..Source::default()
+        };
         let mut files_by_id: HashMap<Id, String> = HashMap::new();
         let mut slugs: HashMap<String, Id> = HashMap::new();
         for (file, bytes) in &files {
@@ -357,6 +370,59 @@ impl Sources {
         }
     }
 
+    /// The parameter `name` that a rule of `source` uses: one of its own
+    /// source or of the first-party source, never of both
+    /// (`docs/design/rule-config.md`, Placeholders).
+    pub fn param(&self, source: &str, name: &str) -> Result<(&str, &Param), String> {
+        let find = |s: &str| {
+            self.source(s)
+                .and_then(|src| src.params.iter().find(|p| p.name == name))
+                .map(|p| (self.source(s).map_or("", |src| src.name.as_str()), p))
+        };
+        let own = find(source);
+        let first = (source != FIRST_PARTY).then(|| find(FIRST_PARTY)).flatten();
+        match (own, first) {
+            (Some(_), Some(_)) => Err(format!(
+                "names `{{${name}}}`, which both {} and {} declare; one of them has to rename it",
+                describe(source),
+                describe(FIRST_PARTY)
+            )),
+            (Some(p), None) | (None, Some(p)) => Ok(p),
+            (None, None) => Err(format!(
+                "names `{{${name}}}`, a parameter that neither {} nor {} declares",
+                describe(source),
+                describe(FIRST_PARTY)
+            )),
+        }
+    }
+
+    /// The parameters rule `key` uses, by name, with their sources: those
+    /// its title and text name and the rule set has.
+    pub fn params_of(&self, key: &Key) -> BTreeMap<String, (String, Param)> {
+        let mut out = BTreeMap::new();
+        let Some(node) = self.get(key) else {
+            return out;
+        };
+        let Some(rule) = &node.rule else {
+            return out;
+        };
+        for text in [
+            &node.title,
+            &rule.statement,
+            &rule.reason,
+            &rule.verification,
+        ] {
+            for value in text.values() {
+                for name in param::counted(value).into_keys() {
+                    if let Ok((source, p)) = self.param(&key.source, name) {
+                        out.insert(name.to_owned(), (source.to_owned(), p.clone()));
+                    }
+                }
+            }
+        }
+        out
+    }
+
     /// Checks what each source could not check alone: the references to
     /// other sources in `requires`, `conflicts` and `{@rule:...}`, which
     /// must name a node the rule set has, and from a public source a
@@ -367,6 +433,20 @@ impl Sources {
             for node in source.nodes.values() {
                 let file = source.file(node.id);
                 if let Some(rule) = &node.rule {
+                    let mut named = BTreeSet::new();
+                    for text in [
+                        &node.title,
+                        &rule.statement,
+                        &rule.reason,
+                        &rule.verification,
+                    ] {
+                        named.extend(text.values().flat_map(|v| param::counted(v).into_keys()));
+                    }
+                    for name in named {
+                        if let Err(e) = self.param(&source.name, name) {
+                            diags.error(&file, e);
+                        }
+                    }
                     for (field, list) in
                         [("requires", &rule.requires), ("conflicts", &rule.conflicts)]
                     {
@@ -653,6 +733,7 @@ impl Checker<'_> {
     fn run(&mut self) {
         self.check_references();
         self.check_citations();
+        self.check_placeholders();
         let tree_ok = self.check_tree_cycles();
         if tree_ok && self.check_requirement_cycles() {
             self.check_redundant_requirements();
@@ -660,6 +741,66 @@ impl Checker<'_> {
             self.check_one_ofs();
             self.check_crossing_requirements();
             self.check_defaults();
+        }
+    }
+
+    /// The placeholders of each node's texts: only in a rule's title and
+    /// its three parts, each the shape of a name, and every language with
+    /// the same ones as the original, each as many times. Whether a
+    /// parameter has the name is checked with the rule set's sources.
+    fn check_placeholders(&mut self) {
+        let source = self.source;
+        for node in source.nodes.values() {
+            let file = self.file(node.id);
+            let mut texts: Vec<(&str, &node::Text)> = vec![("title", &node.title)];
+            if let Some(a) = &node.applicability {
+                texts.push(("applicability", a));
+            }
+            if let Some(rule) = &node.rule {
+                texts.extend([
+                    ("text.statement", &rule.statement),
+                    ("text.reason", &rule.reason),
+                    ("text.verification", &rule.verification),
+                ]);
+            }
+            for (field, text) in texts {
+                for (lang, value) in text {
+                    for p in param::placeholders(value) {
+                        match p {
+                            Placeholder::Malformed(inner) => self.diags.error(
+                                &file,
+                                format!(
+                                    "[{field}] `{lang}`: `{{${inner}}}` is no placeholder; a placeholder names a parameter, as `{{$language.commits}}`"
+                                ),
+                            ),
+                            Placeholder::Name(name) if node.kind != Kind::Rule => {
+                                self.diags.error(
+                                    &file,
+                                    format!(
+                                        "[{field}] `{lang}` holds `{{${name}}}`; only a rule's title and text hold placeholders, not a {}'s",
+                                        node.kind.name()
+                                    ),
+                                );
+                            }
+                            Placeholder::Name(_) => {}
+                        }
+                    }
+                }
+                let Some(original) = text.get(&node.lang).map(|t| param::counted(t)) else {
+                    continue;
+                };
+                for (lang, value) in text.iter().filter(|(l, _)| **l != node.lang) {
+                    if param::counted(value) != original {
+                        self.diags.error(
+                            &file,
+                            format!(
+                                "[{field}] `{lang}` holds other placeholders than `{}`; a translation holds the same ones, each as many times",
+                                node.lang
+                            ),
+                        );
+                    }
+                }
+            }
         }
     }
 
