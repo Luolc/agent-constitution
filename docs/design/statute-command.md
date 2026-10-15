@@ -9,18 +9,9 @@ apply here.
 and a rule set with its lock file, and writes:
 
 - an `AGENTS.md`, which opens with the repository, the edition and the
-  revision of the constitution it rests on, and then has the enabled rules
-  in nested blocks along the parent tree, one heading level per level of
-  the tree, a one-of's enabled option at the one-of's level, each domain with an enabled rule below it as a top heading,
-  followed by the domain's applicability when it has one; a
-  subtree whose root is not enabled (for a one-of: none of its children
-  is) contributes nothing, since none of its rules can be enabled without
-  it, and a requirement that leads out of the requiring rule's nearest
-  domain, a subdomain when the rule is under one, is rendered as a link. By
-  default each rule contributes only its statement, to keep the file
-  small; the rule set can add the reason or the verification
-  ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)), and the
-  reviewer gets them either way. The file is not split for now. Once the
+  revision of the constitution it rests on, and then has the enabled
+  rules as one flat list, each rule an item of its reference and its
+  statement and nothing more (below). The file is not split for now. Once the
   compiled file of a repository using it has been measured with
   `count-tokens`, a length threshold is set from that measurement, and a
   file over it is split along domains;
@@ -47,39 +38,43 @@ an agent that finds no link to the full text the private layer compiles
 to ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)):
 "If `.statute/AGENTS.full.md` exists, read it and follow it: it is this
 file with the repository's private rules added." (in Chinese
-「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」). Each domain is a heading of level two, a subdomain one of
-level three ([Subdomains](rule-sources.md#subdomains)),
-and each level of the tree one level deeper. A one-of has no heading
-of its own: its enabled option stands at its place, after the one-of's
-anchor, and under the option's heading a line names the one-of,
-`One of: <its title>.` (in Chinese `择一：<its title>。`); an option
-that is a domain keeps its heading, with its rules below it. A one-of
-none of whose children is enabled does not appear. The
-first-party source's domains come first, then those of the other
-sources by the sources' names, then the repository's own. A node's
-heading is its title and its reference as statute shows it (`R42`),
-after an anchor of `rule-` and that reference with a colon made a
-hyphen: `rule-R42`, `rule-L12`, `rule-team-7`, so the anchors of
-different sources never clash. An overriding rule
+「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」).
+
+`AGENTS.md` is for agents, as is the private full text,
+`.statute/AGENTS.full.md`, built the same way, and each is always a
+flat list. Each enabled
+rule is one item, `- <reference> <statement>`, such as
+`- R22 Keep a credential out of every message.`: the rule's reference
+as statute shows it (`R42`, `L12`, `team:7`), a space, and its
+statement, a line after the first indented by two spaces to continue
+the item. Nothing else goes in: no title, reason or verification of a
+rule, no domain, subdomain or one-of, neither its title nor its
+applicability, and no anchor or link. The relations and settings
+between the nodes, `requires`, `conflicts`, one-ofs, `overrides`, the
+defaults, `uses` and `parent`, are metadata: statute checks them when it
+locks and compiles, and once the rule set compiles they have done their
+work and stay out of the file. Titles, reasons, verifications and the
+domains' applicability are for people, on the site (below); the
+reviewer gets a rule's reason and verification from `statute check`.
+The references stay, at the start of each item, so that a review's
+findings and a citation can name the rule.
+
+The items follow the tree, a node before its children, so that related
+rules stay together: the first-party source's domains first, then those
+of the other sources by the sources' names, then the repository's own;
+below a node, the first-party source's children first, then those of
+the other sources by name, then the repository's own, each source's by
+ID. A one-of contributes the rules of its enabled option, the option's
+own rules when it is a domain; a subtree with no enabled rule
+contributes nothing. An overriding rule
 ([Overrides](rule-sources.md#overrides)) stands at the place of the rule
-it overrides, with the anchors of every rule of the chain before its
-heading, so that a link to `#rule-R2` lands on it, and the children of
-every rule of the chain below it. Under its heading, a line names what
-it overrides: `Overrides R2.`, or along a chain
-`Overrides team:7, which overrides R2.` (in Chinese
-`覆盖 team:7，后者覆盖 R2。`). A requirement on an overridden rule, and a
-citation of one, render as the rule in its place. A requirement of a node outside the
-requiring rule's nearest domain, or subdomain, is a line "Requires:"
-with a link to that anchor; one within it is not rendered. A rule uses its translation into the language when it has
-one, and its original otherwise. A domain's applicability, when it has
-one ([Rule file format](rule-format.md#rule-file-format)), is a paragraph
-under its heading, in the same language as the heading, its citations
-rendered as in a rule's text. The citations in a rule's text are
-rendered ([IDs](source-formats.md#ids)): `{@rule:<id>}` as the cited
-node's title, in the language as its heading is, linked to its anchor
-when the node is in the file, and followed by "(rule R42)" otherwise; and
-`{@constitution:<id>}` as the provision's label in the language, in plain
-text as in the version for agents, such as `Art. IV §1(2)`. The labels
+it overrides, which is not in the file. A rule uses its translation
+into the language when it has one, and its original otherwise. The
+citations in a statement are rendered ([IDs](source-formats.md#ids)):
+`{@rule:<id>}` as the cited rule's reference, `R42`, whether the rule is
+in the file or not, and as the rule in its place when it is overridden;
+and `{@constitution:<id>}` as the provision's label in the language, in
+plain text as in the version for agents, such as `Art. IV §1(2)`. The labels
 come from the edition's sources, the numbers of the articles' and
 sections' names and the items' `number`, by the same rules as in the
 constitution's build ([Compilation](compilation.md)); unlike that build,

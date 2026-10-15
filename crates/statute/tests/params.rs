@@ -414,8 +414,8 @@ fn the_values_go_into_the_lock_file_and_agents_md() {
     );
     ok(&statute(&work, &["compile"]));
     let out = read(&work, "AGENTS.md");
-    assert!(out.contains("\nWrite documents in Chinese.\n"), "{out}");
-    assert!(out.contains("\nReply in English.\n"), "{out}");
+    assert!(out.contains(" Write documents in Chinese.\n"), "{out}");
+    assert!(out.contains(" Reply in English.\n"), "{out}");
     // In Chinese, a language is named in Chinese.
     let work = repo(
         "values-zh",
@@ -430,7 +430,7 @@ fn the_values_go_into_the_lock_file_and_agents_md() {
     ok(&statute(&work, &["lock"]));
     ok(&statute(&work, &["compile"]));
     let out = read(&work, "AGENTS.md");
-    assert!(out.contains("\nWrite documents in 中文.\n"), "{out}");
+    assert!(out.contains(" Write documents in 中文.\n"), "{out}");
 }
 
 #[test]
@@ -544,10 +544,10 @@ fn a_persons_own_value_goes_to_the_private_output_only() {
     );
     ok(&statute(&work, &["compile"]));
     let public = read(&work, "AGENTS.md");
-    assert!(public.contains("\nReply in English.\n"), "{public}");
+    assert!(public.contains(" Reply in English.\n"), "{public}");
     let full = read(&work, ".statute/AGENTS.full.md");
-    assert!(full.contains("\nReply in Chinese.\n"), "{full}");
-    assert!(full.contains("\nWrite documents in English.\n"), "{full}");
+    assert!(full.contains(" Reply in Chinese.\n"), "{full}");
+    assert!(full.contains(" Write documents in English.\n"), "{full}");
     let run = statute(&work, &["explain", "language.communication"]);
     assert!(
         run.stdout.contains("- value: `en` (English), from the default\n- in the private output: `zh` (Chinese), from the global configuration ("),
@@ -558,7 +558,7 @@ fn a_persons_own_value_goes_to_the_private_output_only() {
     std::fs::remove_file(work.join(".statute/AGENTS.full.md")).unwrap();
     let run = statute(&work, &["compile", "--private-only"]);
     ok(&run);
-    assert!(read(&work, ".statute/AGENTS.full.md").contains("\nReply in Chinese.\n"));
+    assert!(read(&work, ".statute/AGENTS.full.md").contains(" Reply in Chinese.\n"));
     // The private rule set's own value comes first.
     let private = PathBuf::from(
         git(
@@ -579,7 +579,7 @@ fn a_persons_own_value_goes_to_the_private_output_only() {
     );
     ok(&statute(&work, &["lock"]));
     ok(&statute(&work, &["compile"]));
-    assert!(read(&work, ".statute/AGENTS.full.md").contains("\nReply in English.\n"));
+    assert!(read(&work, ".statute/AGENTS.full.md").contains(" Reply in English.\n"));
 }
 
 #[test]

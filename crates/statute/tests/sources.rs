@@ -161,30 +161,24 @@ fn the_sources_lock_and_compile_together() {
 
     ok(&statute(&dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
-    let headings: Vec<&str> = out.lines().filter(|l| l.starts_with("## ")).collect();
-    assert_eq!(
-        headings,
-        [
-            "## Domain 1 (R1)",
-            "## Domain 1 (me:1)",
-            "## Domain 1 (team:1)",
-            "## Domain 1 (L1)"
-        ]
-    );
-    for anchor in ["rule-R3", "rule-me-4", "rule-team-7", "rule-L3"] {
+    // The first-party source's rules first, then the other sources' by
+    // name, then the repository's own; each rule as its number, and so is
+    // a citation of one.
+    let numbers: Vec<&str> = out
+        .lines()
+        .filter_map(|l| l.strip_prefix("- ")?.split_once(' '))
+        .map(|(n, _)| n)
+        .collect();
+    assert_eq!(numbers.first(), Some(&"R2"), "{out}");
+    for (before, after) in [("R3", "me:4"), ("me:4", "team:7"), ("team:7", "L3")] {
+        let at = |n| numbers.iter().position(|&x| x == n);
         assert!(
-            out.contains(&format!("<a id=\"{anchor}\"></a>")),
-            "{anchor}: {out}"
+            at(before) < at(after) && at(before).is_some(),
+            "{before}, {after}: {out}"
         );
     }
-    // A requirement on another source's rule is a link to it, and so is
-    // a citation of one.
     assert!(
-        out.contains("### Rule 7 (team:7)\n\nDo the thing 7.\n\nRequires: [Rule 2](#rule-R2)\n"),
-        "{out}"
-    );
-    assert!(
-        out.contains("Do the thing 5, after [Rule 4](#rule-me-4) and [Rule 2](#rule-R2).\n"),
+        out.contains("Do the thing 5, after me:4 and R2.\n"),
         "{out}"
     );
 
@@ -375,7 +369,7 @@ fn rules_dir_names_where_a_source_keeps_its_rules() {
     );
     ok(&statute(&dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
-    assert!(out.contains("<a id=\"rule-team-8\"></a>"), "{out}");
+    assert!(out.contains("\n- team:8 "), "{out}");
     // Without it, `rules/` is read, which has no rule 8.
     let dir = repo("rules-dir-default", &manifest(false, "\"team:8\""), &[]);
     write(&dir, "team/agent/rules/8.toml", &rule(8, 1, "").1);
