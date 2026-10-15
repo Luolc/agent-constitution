@@ -914,6 +914,33 @@ fn requiring_a_superseded_or_repealed_rule_is_a_warning() {
     );
 }
 
+#[test]
+fn a_rule_no_longer_in_force_may_require_one_no_longer_in_force() {
+    let retire = |id: u64, status: &str, extra: &str| {
+        edit(
+            rule(id, 1, extra),
+            "status = \"draft\"",
+            &format!("status = \"{status}\""),
+        )
+    };
+    // Rule 2 is superseded by 3; rule 5, superseded by 6 or repealed, still
+    // requires 2.
+    let base = [
+        domain(1),
+        retire(2, "superseded", "superseded-by = 3"),
+        rule(3, 1, ""),
+        rule(6, 1, ""),
+    ];
+    for retired in [
+        retire(5, "superseded", "superseded-by = 6\nrequires = [2]"),
+        retire(5, "repealed", "requires = [2]"),
+    ] {
+        let mut nodes = base.to_vec();
+        nodes.push(retired);
+        assert_clean(&load(&nodes));
+    }
+}
+
 // The parent tree without a rule under a rule.
 
 #[test]

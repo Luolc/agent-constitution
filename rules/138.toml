@@ -1,8 +1,9 @@
 id = 138
 slug = "heavy-load-in-cpu-capped-container"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 278
 lang = "en"
 parent = 267
 requires = [31]
