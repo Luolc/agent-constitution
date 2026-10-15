@@ -66,8 +66,9 @@ The format, the rule tree, packs and the review loop are in
 
 `statute` is the rule system's command, in Rust, in
 [`crates/statute`](crates/statute/). It is under development: it reads
-this repo's rules from a clone it keeps in `~/.cache/statute/`, and its
-release on crates.io is still a placeholder. Build it from a clone:
+this repo's rules from a clone it keeps in `~/.cache/statute/`, and on
+crates.io, 0.0.1 is a placeholder that held the name; the command starts
+with 0.1.0. Build it from a clone:
 
 ```sh
 git clone https://github.com/Luolc/agent-constitution.git

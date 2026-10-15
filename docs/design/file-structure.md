@@ -111,9 +111,10 @@ concrete practices taken out of the constitution. `skills/` starts in
 stage A as plain directories, each holding a `SKILL.md` with the usual
 skill front matter (`name`, `description`) and no metadata of this
 repo's own. `crates/` starts in stage A with one crate, `statute`, whose
-first release, a placeholder, was published early to hold the name on
-crates.io; it builds the constitution, which is itself compiled from one
-directory per article and one file per section (see [Source formats](source-formats.md)), and the binary that compiles and checks the rules grows in it in
+first release, 0.0.1, is a placeholder published early to hold the name
+on crates.io; the command starts with 0.1.0. It builds the constitution,
+which is itself compiled from one directory per article and one file per
+section (see [Source formats](source-formats.md)), and the binary that compiles and checks the rules grows in it in
 stage B (what it does so far:
 [The command and the first version](statute-command.md#the-command-and-the-first-version)). Compiling and checking the
 rules, and building the instruction file, stay in stage B.

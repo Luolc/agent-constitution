@@ -107,6 +107,3 @@ lands.
   file names the directory it applies to.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
-- The command's final name, chosen before its first real release. `statute`
-  is held by a placeholder release; another name would be published
-  anew.

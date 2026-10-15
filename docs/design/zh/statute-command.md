@@ -1,4 +1,4 @@
-<!-- en-sha256: 48cfeb323120d42f3ccf53d6e6168cc6b8d5eb96ad2cd9a8d2309a65f40dc846 -->
+<!-- en-sha256: 867e16b3e7205992772e4dd53d72be65c84b55b887753fd798cebf6341a0af81 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -30,7 +30,7 @@
 
 ## <a id="the-command-and-the-first-version"></a>命令与第一版
 
-**命令。** 规定体系的命令用 Rust 写 (见[为什么用 Rust](#why-rust))，在 `crates/statute` 这个 crate 里逐步实现 ([文件结构](file-structure.md))。第一版就是这一个 crate。`statute` 这个名字已经用一个占位版本在 crates.io 上占住 ([发布与版本](amendments-and-releases.md#releases-and-versions))；第一次正式发布前仍可能改名，改了就要用新名字另行发布。规定清单是 `statute.toml`，锁文件是 `statute.lock`，命令有：
+**命令。** 规定体系的命令用 Rust 写 (见[为什么用 Rust](#why-rust))，在 `crates/statute` 这个 crate 里逐步实现 ([文件结构](file-structure.md))。第一版就是这一个 crate。它的名字是 `statute`：crates.io 上的 0.0.1 是占住这个名字的占位版本，这个命令从 0.1.0 起 ([发布与版本](amendments-and-releases.md#releases-and-versions))。规定清单是 `statute.toml`，锁文件是 `statute.lock`，命令有：
 
 - `init`：写一份新的规定清单；加 `--global` 时写全局配置 ([全局配置与 git 规定源](global-configuration.md))；
 - `source add`：在规定清单、它的私有层或全局配置里登记一个规定源 ([添加规定源](global-configuration.md#adding-a-source))；

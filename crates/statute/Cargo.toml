@@ -1,7 +1,7 @@
 [package]
 name = "statute"
-version = "0.0.1"
-description = "Compile a constitution and chosen rules into the instruction files coding agents read. Placeholder release; not usable yet."
+version = "0.1.0"
+description = "Compile a constitution and chosen rules into the instruction files coding agents read."
 readme = "README.md"
 keywords = ["agents", "ai", "instructions", "rules", "compiler"]
 categories = ["command-line-utilities", "development-tools"]
