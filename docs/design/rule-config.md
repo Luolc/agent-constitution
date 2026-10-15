@@ -221,8 +221,9 @@ parameter's `default`.
 Commit messages and pull request descriptions are two parameters
 because a common setup writes the first in English, for the history
 and its tools, and the second in the language of the people who read
-the repository. Code itself, its identifiers and the strings that are
-part of its interface, has no parameter: it is in English.
+the repository. Code itself, its identifiers, file names and the
+strings that are part of its interface, has no parameter: it is in
+English, which is decided.
 
 **Names on the issue tracker.** The rules about work items name the
 tracker's labels and statuses, which differ from one tracker or team
@@ -532,6 +533,7 @@ under its domain is recommended `on`.
 | R78 Fleet | off | Only for work divided among agents |
 | R83 Code | on | Wherever agents write code; its narrower testing rules are off |
 | R96 Writing rules | off | Only for a repository that writes rules |
+| Voice input (`voice-input`), not created yet: a later change that moves rules into it creates it, and its ID is given then | on | How an agent reads a person's messages that may come from speech-to-text; decided to be public and on |
 
 Rules recommended `off` in a domain that is `on`, by the test above
 (a preference of one person, or one environment):
@@ -563,7 +565,8 @@ Rules recommended `off` in a domain that is `on`, by the test above
 | R88 Comment only what the code cannot say | Preference about comment density |
 
 The domains that are off (R78, R96) have every rule `on`: a rule set
-that turns one on takes it whole.
+that turns one on takes it whole. The defaults of the voice input
+domain's rules are set once it is created.
 
 **A subdomain for the design.** The rules about a repository's design
 (R19, R21, R112 to R114, R122 to R125, and the one-of R79 with its
