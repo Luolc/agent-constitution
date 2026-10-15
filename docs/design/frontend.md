@@ -284,7 +284,7 @@ What replaces today's icons:
 | A ring around an `i`, drawn by hand | The info button after the length | `info` |
 | A ring holding a plus or a minus, drawn by hand | The button that shows more of the rules under a provision | `circle-plus`, `circle-minus` |
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
-| The theme's `translate` | The language switch | `languages` |
+| The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
 | A text button | The filter | `funnel` |
 | A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
@@ -402,6 +402,10 @@ turned off (disabled), where it has these.
     `accent`; not enabled: the word alone in `text-muted`.
   - The quadrant of a source: a box with `radius-sm`, filled with the
     quadrant's color, in `text`.
+  - A node with a text not in the page's language, on its page: no
+    box, `languages` (`icon-sm`) before the words Not translated /
+    「无中文」, in `text-muted`. The text itself carries its own
+    language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
 - **The legend**, above the list of the rules, as Ruff's list of rules
@@ -556,6 +560,13 @@ turned off (disabled), where it has these.
     contents below it, every list open: the buttons that fold the
     sidebar's groups are hidden, and the language switch's chevron is
     turned to open and its button does nothing on a click.
+- **The local site's language switch.** The local site has two
+  languages and no sidebar: each page has, at the end of its first
+  line, a link to itself in the other language, a quiet button
+  (padding `0 space-2`, `radius-sm`, `target` high) of `languages`
+  (`icon-sm`) and that language's name in itself, 中文 or English,
+  `text-sm` in `text-muted`; under the pointer `bg-hover` and `text`,
+  active `bg-active`. It names its language (`hreflang`, `lang`).
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding
   `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
@@ -703,7 +714,8 @@ of its style sheet named by one; the one-of of
 [Components](#components); the filter's
 button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
-popover. Not built yet, and what each replaces:
+popover; the language switch and the tag of a text not in the page's
+language. Not built yet, and what each replaces:
 
 - On the public site, the tags of a rule's page, and enabled and the
   quadrant in the list, are boxes of one look; the tags of

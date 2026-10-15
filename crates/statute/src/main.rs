@@ -635,9 +635,11 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
         |r: &statute::check::Report| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review);
     // The labels are read only when a rule's text is printed.
     let labels = if reports.iter().any(|(_, r)| for_reviewer(r)) {
-        Some(statute::compile::labels(&project).map_err(|e| {
-            eprintln!("statute: error: {e}");
-        })?)
+        Some(
+            statute::compile::labels(&project, &project.manifest.lang).map_err(|e| {
+                eprintln!("statute: error: {e}");
+            })?,
+        )
     } else {
         None
     };
@@ -1424,7 +1426,7 @@ fn explain_parameter(project: &Project, name: &str) -> Result<(), ()> {
                 let title = n.title.get(&n.lang).map_or("", String::as_str);
                 format!(
                     "{k} ({})",
-                    statute::compile::filled(project, k, title, false)
+                    statute::compile::filled(project, k, title, false, &project.manifest.lang)
                 )
             }
             None => k.to_string(),
