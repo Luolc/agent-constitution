@@ -1,0 +1,42 @@
+id = 113
+slug = "design-file-per-topic"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give each topic of the design a file of its own"
+zh = "设计的每个主题单独一个文件"
+
+[text.statement]
+en = "Split a repository's design by topic into files, so that changes to different topics touch different files."
+zh = "仓库的设计按主题拆成多个文件，使改不同主题的变更改的是不同的文件。"
+
+[text.reason]
+en = '''
+Changes made in parallel each touch the file of their own topic, so they do not conflict when they are merged, as changes to one large file keep doing; a reader opens the one file of the topic at hand ({@constitution:simplicity}).
+'''
+zh = '''
+并行的变更各自改自己主题的文件，合入时就不会冲突；大家都改同一个大文件，就会不断冲突。读者要看哪个主题，打开那一个文件就行 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+Each file of the design directory ({@rule:112}) covers one topic, a part that a change can alter without altering the others, reads on its own and has one `# ` title. A file that holds several such topics is split.
+
+Violated when one file of the design holds several topics that changes alter apart.
+'''
+zh = '''
+设计目录 ({@rule:112}) 里的每个文件讲一个主题，即一个变更可以只改它、不动其他部分的那一部分；每个文件可以单独阅读，有且只有一个 `# ` 标题。一个文件里装了几个这样的主题的，就拆开。
+
+设计的一个文件里装着几个会被不同变更分别修改的主题，即为违反本规定。
+'''
+
+[translations]
+zh = "917fa7e5a1268c0f022349f41611db2cd78f0a4d37bbd7a9fb479d1109d4500b"

@@ -1,6 +1,6 @@
 id = 37
 slug = "credential-leak-report"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -28,14 +28,14 @@ zh = '''
 
 [text.verification]
 en = '''
-Where it should not be includes a file, an output, a message and the agent's own context. The agent stops using the credential, does not quote, copy or try it, and at once tells a principal responsible for it which credential it is, where it appeared and that it needs rotating, without the value. The notice goes to a person; an agent that cannot reach a principal directly sends it through the agent that talks with principals ({@rule:29}).
+Where it should not be includes a file, an output, a message and the agent's own context. The agent stops using the credential, does not quote, copy or try it, and at once tells a principal responsible for it which credential it is, where it appeared and that it needs rotating, without the value. The notice goes to a person; an agent that cannot reach a principal directly sends it through the agent that talks with principals ({@rule:115}).
 
 When unsure whether something is a credential, handle it as one.
 
 Violated when an agent uses, quotes, copies or tries such a credential, or does not report it at once.
 '''
 zh = '''
-不该出现的地方包括文件、输出、消息，以及 agent 自己的上下文。agent 停止使用这项凭证，不引用、不复制、不试用，并立即告知对它负责的委托人是哪一项凭证、在哪里出现、需要轮换，通知里不出现凭证的值。通知要送到人那里；agent 不能直接联系委托人的，经与委托人对话的 agent ({@rule:29}) 转达。
+不该出现的地方包括文件、输出、消息，以及 agent 自己的上下文。agent 停止使用这项凭证，不引用、不复制、不试用，并立即告知对它负责的委托人是哪一项凭证、在哪里出现、需要轮换，通知里不出现凭证的值。通知要送到人那里；agent 不能直接联系委托人的，经与委托人对话的 agent ({@rule:115}) 转达。
 
 不确定某段内容是否属于凭证的，按凭证处理。
 
@@ -43,4 +43,4 @@ agent 对这样的凭证继续使用、引用、复制、试用，或者没有�
 '''
 
 [translations]
-zh = "80fe9db54ea80b77d7c52f442cfc4c3baa5300216faa0ee0f0e0dd223aa612e4"
+zh = "88a714df5486c9a655ffd77ec262d3c087ec2848b8a5e50c2ef157ae1622f4cf"

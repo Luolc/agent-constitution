@@ -1,0 +1,42 @@
+id = 112
+slug = "design-in-one-directory"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["no-restating", "simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep the design in one directory"
+zh = "设计放在一个目录里"
+
+[text.statement]
+en = "Keep a repository's design in one directory, and write no design document anywhere else."
+zh = "仓库的设计放在一个目录里，别处不写设计文档。"
+
+[text.reason]
+en = '''
+A reader finds the whole design in one place, and a fact about the design is written once and linked to from elsewhere ({@constitution:no-restating}); a second design document elsewhere would hold the same decisions twice ({@constitution:simplicity}).
+'''
+zh = '''
+读者在一个地方就能找到全部设计，关于设计的一个事实只写一次，别处链接过去 ({@constitution:no-restating})；别处再有一份设计文档，同样的决定就会写两遍 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The design lives in one directory, for example `docs/design/`. A design document is a text that describes how the repository's system is or will be built and why: a second design, or a design note that describes a part of the design apart from it. A record of decisions, one entry per decision with its context and its consequences, is not a design document here; whether a repository keeps one, and where, is left to other rules.
+
+Violated when a design document lives outside that directory.
+'''
+zh = '''
+设计放在一个目录里，例如 `docs/design/`。设计文档指描述仓库里的系统现在或将来怎么构建、为什么这样构建的文字：第二份设计，或者脱离设计单独描述其中某一部分的设计笔记。决策记录 (每个决定一条，写明背景和后果) 在这里不算设计文档；仓库要不要设、设在哪里，交给别的规定。
+
+设计文档放在这个目录之外，即为违反本规定。
+'''
+
+[translations]
+zh = "3478d194d06be5ee68741658c56299127e69ebf34a274b918f2c6f5e623dab82"

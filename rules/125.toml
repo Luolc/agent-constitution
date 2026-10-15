@@ -1,0 +1,42 @@
+id = 125
+slug = "design-link-text"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give each link between design files the text of what it leads to"
+zh = "设计文件之间的链接用所指内容的标题作文字"
+
+[text.statement]
+en = "In the design, give a link to another design file the text of the heading it leads to, the file's title, or both."
+zh = "设计里链接另一份设计文件，链接文字用所指标题的文字、那份文件的标题，或者两者都写。"
+
+[text.reason]
+en = '''
+A link is how the design points to the one place a fact is written ({@constitution:no-restating}); a link whose text names something other than where it leads sends the reader to the wrong place.
+'''
+zh = '''
+设计靠链接指向事实所在的那一处 ({@constitution:no-restating})；链接文字说的和它指向的地方对不上，读者就会找错地方。
+'''
+
+[text.verification]
+en = '''
+The text of a link to another design file is the text of the heading its anchor names, the file's title, or the title and the heading together. Whether it is is judged in review.
+
+Violated when the design has a link to another design file whose text is none of these.
+'''
+zh = '''
+指向另一份设计文件的链接，文字是锚点所指标题的文字、那份文件的标题，或者文件标题加上那个标题。是否做到，由审查判断。
+
+设计里有指向另一份设计文件、文字却不是上述之一的链接，即为违反本规定。
+'''
+
+[translations]
+zh = "81dbdd88805b578f12267f533a7302585191e749e091f5888f3ad1e9f87b892b"

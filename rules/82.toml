@@ -1,8 +1,9 @@
 id = 82
 slug = "design-files-by-topic"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [112, 113, 114]
 lang = "en"
 parent = 16
 authority = ["no-restating", "simplicity"]

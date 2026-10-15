@@ -1,8 +1,9 @@
 id = 29
 slug = "job-agent-asks-through-relay"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 115
 lang = "en"
 parent = 78
 authority = ["asking-principals", "asking", "accountable-agent", "decide-yourself"]

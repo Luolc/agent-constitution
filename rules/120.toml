@@ -1,0 +1,42 @@
+id = 120
+slug = "verify-taken-work"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Verify the work item you took"
+zh = "验证自己领取的工作项"
+
+[text.statement]
+en = "When you have done a work item you took yourself, verify it."
+zh = "自己领取的工作项做完后，要验证。"
+
+[text.reason]
+en = '''
+An agent keeps the work moving by completing and verifying the work it finds ({@constitution:automation-first.keep-moving}); work it took on its own is no less in need of verification than work delegated to it.
+'''
+zh = '''
+agent 让工作持续推进，靠的是把自己找到的工作做完并验证 ({@constitution:automation-first.keep-moving})；自己领取的工作和委派来的工作一样需要验证。
+'''
+
+[text.verification]
+en = '''
+This rule is for an agent that looks for work under {@rule:116}. It verifies the item it did as {@constitution:verification} asks of any work.
+
+Violated when such an agent does not verify the item it did.
+'''
+zh = '''
+本规定适用于按{@rule:116}自己找工作的 agent。它按{@constitution:verification}对一切工作的要求，验证自己做完的工作项。
+
+这样的 agent 没有验证自己做完的工作项，即为违反本规定。
+'''
+
+[translations]
+zh = "b6b51e68b66fc31335902b95971f2751d2371db06c1a5b4809a80a91a052e8e3"

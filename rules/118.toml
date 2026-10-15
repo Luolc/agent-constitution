@@ -1,0 +1,42 @@
+id = 118
+slug = "take-work-in-order"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Take work items in the jurisdiction's order"
+zh = "按法域内规定的顺序领取工作项"
+
+[text.statement]
+en = "When you look for work yourself, take the authorized items in the order set in the jurisdiction."
+zh = "自己找工作时，按法域内规定的顺序领取已授权的工作项。"
+
+[text.reason]
+en = '''
+An agent keeps the work moving ({@constitution:automation-first.keep-moving}); taking items in the order the jurisdiction set does the work its principals want done first, first.
+'''
+zh = '''
+agent 要让工作持续推进 ({@constitution:automation-first.keep-moving})；按法域内规定的顺序领取，委托人想先做的工作就先做。
+'''
+
+[text.verification]
+en = '''
+This rule is for an agent that looks for work under {@rule:116}. It takes the authorized items ({@rule:117}) in the order set in the jurisdiction; where none is set, priority first, then age.
+
+Violated when such an agent takes an item out of that order.
+'''
+zh = '''
+本规定适用于按{@rule:116}自己找工作的 agent。它按法域内规定的顺序领取已授权的工作项 ({@rule:117})；法域内没有规定的，先看优先级，再看建立时间。
+
+这样的 agent 不按这个顺序领取工作项，即为违反本规定。
+'''
+
+[translations]
+zh = "08b697ff37ecd62bd9bf1408389a512e0c42585f9c0cb24692a73e3b3803a20f"

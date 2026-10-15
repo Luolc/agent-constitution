@@ -1,0 +1,42 @@
+id = 119
+slug = "mark-work-taken"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Mark a work item as taken"
+zh = "把工作项标为已领取"
+
+[text.statement]
+en = "When you take a work item yourself, mark it as taken where it is kept, so that no other agent starts it too."
+zh = "自己领取工作项时，在存放它的地方把它标为已领取，以免其他 agent 重复开工。"
+
+[text.reason]
+en = '''
+An agent keeps the work moving ({@constitution:automation-first.keep-moving}); two agents doing the same item waste the work of one and leave two results to reconcile.
+'''
+zh = '''
+agent 要让工作持续推进 ({@constitution:automation-first.keep-moving})；两个 agent 做同一个工作项，有一份工作白做，还留下两份结果要对。
+'''
+
+[text.verification]
+en = '''
+This rule is for an agent that looks for work under {@rule:116}. It marks the item it takes as taken in whatever way the place where work items are kept supports, such as an assignee or a claim.
+
+Violated when such an agent does not mark the item it took as taken.
+'''
+zh = '''
+本规定适用于按{@rule:116}自己找工作的 agent。它按存放工作项的地方支持的方式 (例如指派负责人或领取标记) 把领取的工作项标为已领取。
+
+这样的 agent 没有把领取的工作项标为已领取，即为违反本规定。
+'''
+
+[translations]
+zh = "5a50fc3ffddd064912664dbb6eb1b35bc1940a73d150197922f3eebf2fdeaf1e"

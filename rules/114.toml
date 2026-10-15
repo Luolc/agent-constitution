@@ -1,0 +1,42 @@
+id = 114
+slug = "design-index"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "List every file of the design in its index"
+zh = "设计的每个文件都列在索引里"
+
+[text.statement]
+en = "List every file of a repository's design in the index of its directory."
+zh = "仓库设计的每个文件都列在设计目录的索引里。"
+
+[text.reason]
+en = '''
+A reader who starts at the index reaches the whole design from there, in the order it is meant to be read; a file the index leaves out is found only by chance ({@constitution:simplicity}).
+'''
+zh = '''
+读者从索引开始，就能按设计的阅读顺序看到全部设计；索引漏掉的文件，只能碰巧才找得到 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The index of the design directory ({@rule:112}), for example its `README.md`, links to every other file of the directory except the translations ({@rule:21}), in reading order, with a line on what each covers. A change that adds a design file adds it to the index in the same change.
+
+Violated when a file of the design directory other than a translation is missing from the index.
+'''
+zh = '''
+设计目录 ({@rule:112}) 的索引 (例如它的 `README.md`) 按阅读顺序链接到目录里除译文 ({@rule:21}) 以外的其他每个文件，每个配一行说明讲的是什么。新增设计文件的变更，在同一个变更里把它加进索引。
+
+设计目录里译文以外的文件没有列进索引，即为违反本规定。
+'''
+
+[translations]
+zh = "b3696210f1c89ffc2caeecaa2ce30f08edf04e70e09a85e4b45cc933fa1a051b"
