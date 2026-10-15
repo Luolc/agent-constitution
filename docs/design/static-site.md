@@ -162,10 +162,19 @@ site-rules`, `uv run count-tokens` (the token count, below),
   and "Default option" for the default option of a one-of), linked to
   its page; then, with `--enabled`, whether it is enabled, and with more than one source,
   the quadrant of its source, each a small tag. A rule under another rule
-  is indented under it. Domains and one-ofs are not listed but head the
-  rules below them, each with its label (`R13`) and whether the
+  is indented under it. A one-of stands in its domain's list as a box
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)): its label and
+  title after "One of:", its status and whether the defaults enable it,
+  then a line for each option with its tags, the default marked; a rule
+  that is an option stands in that box only. An option that is a
+  domain is a line of the box too, and its rules stay in the list under
+  its heading, a level below its one-of's domain: no one-of heads a
+  group, so the one-of is not repeated as a heading. The filter treats the box
+  as one entry, with the one-of's status, domain and switch and the
+  `uses` of its rule options. Domains are not listed but head the rules
+  below them, each with its label (`R13`) and whether the
   defaults enable it, a level deeper for each
-  domain or one-of above them, a subdomain under its domain's heading,
+  domain above them, a subdomain under its domain's heading,
   where the group changes and again at the top of each page; with more
   than one source, each source heads its rules, as its quadrant and
   name, a level above its domains. Above the list, a filter folds open a
@@ -230,9 +239,12 @@ site-rules`, `uv run count-tokens` (the token count, below),
   the outputs write it in the text's language ("English", 「英文」),
   marked as a value: a link to the parameter's entry on its source's
   page of parameters, the parameter's name as its title, shown on hover;
-  in a code span the span becomes HTML around the link. A title, which
-  the list and other pages show inside a link, gets the value alone, and
-  is marked only on the rule's own page. Each source with parameters has
+  in a code span the span becomes HTML around the link. A title stands
+  inside a link in the list and in a one-of's box, so there the value
+  is marked as a span with the parameter's name as its title, escaped,
+  and not linked; on the rule's own page it is marked and linked as in
+  the text, and elsewhere, in a node named on a page, the value stands
+  alone. Each source with parameters has
   that page, `rules/params/` for this repo's, `rules/<name>-params/` for
   another's (`web/layouts/_partials/rules/params.html`), linked above
   the list: each parameter under a heading of its title, anchored by its
