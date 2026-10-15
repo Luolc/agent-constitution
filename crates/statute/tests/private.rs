@@ -282,7 +282,7 @@ fn three_sources_from_init_to_check() {
     let run = statute(&dir, &["compile"]);
     ok(&run);
     let public = read(&dir, "AGENTS.md");
-    assert!(!public.contains("Rule 4"), "{public}");
+    assert!(!public.contains("- me:4 "), "{public}");
     assert!(
         public.ends_with("\n---\n\nIf `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.\n"),
         "{public}"
@@ -291,10 +291,10 @@ fn three_sources_from_init_to_check() {
     // The full text is the public file with me:4 at its place under R1,
     // and without the line that points to it.
     assert!(
-        full.contains("### Rule 4 (me:4)\n\nDo the thing 4, after [Rule 2](#rule-R2).\n"),
+        full.contains("\n- me:4 Do the thing 4, after R2.\n"),
         "{full}"
     );
-    assert!(full.contains("### Rule 3 (L3)"), "{full}");
+    assert!(full.contains("\n- L3 "), "{full}");
     assert!(!full.contains("AGENTS.full.md"), "{full}");
     for link in ["CLAUDE.local.md", "AGENTS.override.md"] {
         assert_eq!(
@@ -506,7 +506,7 @@ fn a_path_in_the_private_rule_set_is_absolute_or_in_the_home_directory() {
     );
     ok(&statute(&dir, &["lock"]));
     ok(&statute(&dir, &["compile"]));
-    assert!(read(&dir, ".statute/AGENTS.full.md").contains("### Rule 4 (me:4)"));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- me:4 "));
 }
 
 #[test]
@@ -730,12 +730,15 @@ fn worktrees_share_the_private_rule_set() {
         read(&dir, ".statute/AGENTS.full.md"),
         read(&tree, ".statute/AGENTS.full.md"),
     );
-    assert!(here.contains("### Rule 4 (me:4)") && there.contains("### Rule 4 (me:4)"));
-    assert!(there.contains("(R6)") && !here.contains("(R6)"), "{here}");
+    assert!(here.contains("\n- me:4 ") && there.contains("\n- me:4 "));
+    assert!(
+        there.contains("\n- R6 ") && !here.contains("\n- R6 "),
+        "{here}"
+    );
     // A private rule taken out in one worktree is out in the other.
     ok(&statute(&tree, &["remove", "--private", "me:4"]));
     ok(&statute(&dir, &["compile"]));
-    assert!(!read(&dir, ".statute/AGENTS.full.md").contains("(me:4)"));
+    assert!(!read(&dir, ".statute/AGENTS.full.md").contains("\n- me:4 "));
 }
 
 #[test]
@@ -746,8 +749,8 @@ fn the_private_layer_enables_packs() {
     ok(&statute(&dir, &["add", "--private", "--pack", "R1"]));
     assert!(read_private(&dir, "private.toml").contains("packs = [\"R1\"]"));
     ok(&statute(&dir, &["compile"]));
-    assert!(read(&dir, ".statute/AGENTS.full.md").contains("(R6)"));
-    assert!(!read(&dir, "AGENTS.md").contains("(R6)"));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
+    assert!(!read(&dir, "AGENTS.md").contains("\n- R6 "));
     // A pack of statute.toml is not listed again.
     ok(&statute(&dir, &["remove", "--private", "--pack", "R1"]));
     ok(&statute(&dir, &["add", "--pack", "R1"]));
@@ -778,5 +781,5 @@ fn the_private_lock_file_records_a_sources_rules_dir() {
         "{lock}"
     );
     ok(&statute(&dir, &["compile"]));
-    assert!(read(&dir, ".statute/AGENTS.full.md").contains("### Rule 4 (me:4)"));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- me:4 "));
 }

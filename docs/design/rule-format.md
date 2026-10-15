@@ -229,11 +229,10 @@ The fields:
 - `[applicability]` (optional, a domain only): a sentence or two on what
   the domain governs, which repositories should enable it and when one
   need not. It may cite rules (`{@rule:<id>}`) and provisions as a rule's
-  text does ([IDs](source-formats.md#ids)). The compiled `AGENTS.md`
-  gives it under the domain's heading
-  ([Compilation and the site](statute-command.md#compilation-and-the-site)),
-  and the site under the title of the domain's page
-  ([Static site](static-site.md)).
+  text does ([IDs](source-formats.md#ids)). The site gives it under
+  the title of the domain's page ([Static site](static-site.md)); the
+  compiled `AGENTS.md` leaves it out
+  ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 - `[text.statement]`, `[text.reason]` and `[text.verification]`: the three
   parts of the text ([What one rule holds](#what-one-rule-holds)).
 - `[translations]` (optional): one key per translated language, never the

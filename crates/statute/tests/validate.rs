@@ -147,7 +147,7 @@ fn the_parameters_file_declares_what_the_rules_name() {
     assert_eq!(run.code, 1);
     for line in [
         "rules/params.toml: error: parameter 1: `name` is missing",
-        "rules/2.toml: error: names `{$language.docs}`, a parameter that neither",
+        "rules/2.toml: error: names `{$language.docs}`, a parameter that source `R` does not declare\n",
     ] {
         assert!(run.stderr.contains(line), "{line}: {}", run.stderr);
     }

@@ -809,7 +809,7 @@ fn a_git_source_with_rules_dir() {
     // Named by the lock file alone, it is read from the same directory.
     std::fs::write(w.home.join(".config/statute/config.toml"), config).unwrap();
     ok(&w.run(&["compile"]));
-    assert!(read(&w.repo, "AGENTS.md").contains("<a id=\"rule-team-7\"></a>"));
+    assert!(read(&w.repo, "AGENTS.md").contains("\n- team:7 "));
 }
 
 #[test]
