@@ -307,11 +307,8 @@ class SiteRulesTest(unittest.TestCase):
       ["R3", "demo:4", "team:7"],
     )
 
-  def test_rule_config_fields_are_read_past(self):
-    """params.toml is no node; `default = "on"` and `uses` pass.
-
-    statute validates them; the site does not show them yet.
-    """
+  def test_params_are_read_past(self):
+    """params.toml is no node, in this repo or another source."""
     params = (
       '[[parameter]]\nname = "language.docs"\ntype = "language"\n'
       'scope = "repo"\ndefault = "en"\n\n'
@@ -320,21 +317,57 @@ class SiteRulesTest(unittest.TestCase):
     (self.root / "rules/params.toml").write_text(params, encoding="utf-8")
     site_fixture.write_other(self.root / "demo")
     (self.root / "demo/rules/params.toml").write_text(params, encoding="utf-8")
-    rule = self.root / "rules/5.toml"
-    text = rule.read_text(encoding="utf-8")
-    self.assertIn('default = "off"', text)
-    rule.write_text(
-      text.replace(
-        'default = "off"',
-        'default = "on"\nuses = ["instructions", "review"]',
-      ),
-      encoding="utf-8",
-    )
     data = self.other()["en"]
     self.assertEqual(
       [n["label"] for n in data["nodes"]],
       ["R1", "R2", "R3", "R4", "R5", "R6", "demo:1", "demo:2", "demo:4"],
     )
+
+  def test_defaults_and_uses(self):
+    """Each node's switch, the one-of's default option and a rule's uses."""
+    nodes = self.nodes("en")
+    self.assertEqual(
+      [(i, n.get("default"), n["onByDefault"]) for i, n in nodes.items()],
+      [
+        (1, "off", False),
+        (2, None, False),
+        (3, None, False),
+        (4, "off", False),
+        (5, "off", False),
+        (6, "off", False),
+      ],
+    )
+    self.assertEqual(
+      nodes[2]["defaultOption"],
+      {"id": 3, "label": "R3", "title": "Rule 3", "key": "3"},
+    )
+    self.assertEqual(
+      [(i, n.get("optionDefault")) for i, n in nodes.items()],
+      [(1, None), (2, None), (3, True), (4, None), (5, None), (6, None)],
+    )
+    self.assertEqual(nodes[3]["uses"], ["instructions"])
+    self.assertNotIn("uses", nodes[1])
+    # The domain on, and rule 6 in it: rule 3 comes in as the one-of's
+    # default; rule 4, on but superseded, does not.
+    for name, old, new in (
+      ("rules/1.toml", 'default = "off"', 'default = "on"'),
+      ("rules/4.toml", 'default = "off"', 'default = "on"'),
+      (
+        "rules/6.toml",
+        'default = "off"',
+        'default = "on"\nuses = ["instructions", "review"]',
+      ),
+    ):
+      path = self.root / name
+      text = path.read_text(encoding="utf-8")
+      self.assertIn(old, text)
+      path.write_text(text.replace(old, new, 1), encoding="utf-8")
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual(
+      [(i, n["onByDefault"]) for i, n in nodes.items()],
+      [(1, True), (2, True), (3, True), (4, False), (5, False), (6, True)],
+    )
+    self.assertEqual(nodes[6]["uses"], ["instructions", "review"])
 
   def test_main_with_another_source(self):
     out = self.root / "web/data/rules.json"

@@ -157,19 +157,26 @@ site-rules`, `uv run count-tokens` (the token count, below),
   of another source: the ID, not the `slug`, since the ID never changes.
   The list (`web/layouts/rules/section.html`) is dense, one line a rule:
   along the tree, each rule's label, its title, cut to the line by the
-  style sheet, and its status, linked to its page; then, with
-  `--enabled`, whether it is enabled, and with more than one source,
+  style sheet, its status and whether the source's defaults enable it
+  ("On by default", "Off by default", as `statute export` reckons it,
+  and "Default option" for the default option of a one-of), linked to
+  its page; then, with `--enabled`, whether it is enabled, and with more than one source,
   the quadrant of its source, each a small tag. A rule under another rule
   is indented under it. Domains and one-ofs are not listed but head the
-  rules below them, each with its label (`R13`), a level deeper for each
+  rules below them, each with its label (`R13`) and whether the
+  defaults enable it, a level deeper for each
   domain or one-of above them, a subdomain under its domain's heading,
   where the group changes and again at the top of each page; with more
   than one source, each source heads its rules, as its quadrant and
   name, a level above its domains. Above the list, a filter folds open a
-  checkbox for each status and each domain, and for each quadrant when
-  there is more than one source, applied with its button; a rule is
-  shown when its status, its nearest domain and its quadrant are checked,
-  and checking or unchecking a domain does the same to the domains under
+  checkbox for each status, one that keeps only the rules the defaults
+  enable, one for each value of `uses` and one for each domain, and for
+  each quadrant when there is more than one source, applied with its
+  button; a rule is shown when its status, its nearest domain and its
+  quadrant are checked, its `uses` (`["instructions"]` when its file
+  leaves it out) has a value checked, and, with that box, the defaults
+  enable it (a node whose answer depends on another source has no tag
+  and is left out by that box); and checking or unchecking a domain does the same to the domains under
   it. A node whose `parent` is in another source, and a
   rule with `overrides`, has no domain on the site: it is at the top
   of the tree, with no group above it. When its parent is a domain of a
@@ -180,7 +187,8 @@ site-rules`, `uv run count-tokens` (the token count, below),
   the pull request that first adds one fixes the list, and the
   first-party source overrides nothing. By default the filter checks
   the statuses of
-  `params.rulesStatuses` in `web/hugo.toml` and every domain; superseded
+  `params.rulesStatuses` in `web/hugo.toml`, both values of `uses` and
+  every domain, and leaves the box of the defaults unchecked; superseded
   and repealed rules are in the list but not checked, and so are draft
   ones. Beside the filter, a menu sets the page size: 100 by default,
   `params.rulesPerPage`, or 25, 50 or all; the rules are filtered first
@@ -189,13 +197,15 @@ site-rules`, `uv run count-tokens` (the token count, below),
   those not shown hidden.
   `web/assets/rules-list.js`, inlined in `<head>`, takes the filter, the
   size and the page from the address, where the form puts them
-  (`?filter=1&status=draft&domain=14&per=50&page=2`), shows that page's
+  (`?filter=1&status=draft&uses=review&default=on&domain=14&per=50&page=2`),
+  shows that page's
   rules and headings, and makes the links to the pages and the table of contents again; without
   scripts the form is hidden and Hugo's pages stay. The table of
   contents at the right lists the headings on the page, each indented by
   its level. A
   rule's page (`web/layouts/rules/page.html`) gives its label and title,
-  under it, with more than one source, the quadrant and name of its
+  under it whether the defaults enable it, as in the list, with more
+  than one source, the quadrant and name of its
   source ("Global private · team"), and with `--enabled` whether it is
   enabled, for a superseded rule the rules that supersede it, its statement,
   reason and verification, the provisions it cites (`authority`), linked
@@ -204,8 +214,11 @@ site-rules`, `uv run count-tokens` (the token count, below),
   requirements and its conflicts, a conflict shown on both rules though
   written on one) and all its metadata: ID, revision, kind, status, slug,
   default level, the revisions of the constitution, the check with its
-  command and tools, the language of the original and the translations.
-  A domain's or a one-of's page lists the nodes below it; a domain's
+  command and tools, its `default`, its `uses`, the language of the
+  original and the translations.
+  A domain's or a one-of's page lists the nodes below it, a one-of's
+  marking its default option, which its metadata names as its
+  `default`, and a domain's metadata gives its `default`; a domain's
   page gives its applicability, when it has one, under its title, its
   citations linked as in a rule's text. A node named on
   a page shows its label and title; the table of contents lists the

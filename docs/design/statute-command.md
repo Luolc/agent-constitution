@@ -419,7 +419,12 @@ directory is a source, holding `constitution/`, `rules/` or both.
 - `nodes`: each node of `rules/` in order of ID, with its `file` and
   its `fields` as the file writes them, texts included. A program gets
   each value as written and a field statute learns later without a
-  change to the export; it applies its own defaults.
+  change to the export; it applies its own defaults. One value is
+  statute's own reckoning, so that no program repeats it:
+  `on-by-default`, whether the source's defaults enable the node
+  ([Default switches](rule-config.md#default-switches)), never for a
+  superseded or repealed rule, and `null` when that depends on a node
+  of another source.
 
 Before it prints anything, statute checks the rules as it checks any
 source ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));

@@ -351,10 +351,12 @@ class SiteTest(unittest.TestCase):
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "The filter above the list chooses the statuses and domains shown."
-      " Filter Status Active Trial Draft Superseded Repealed Domains R1 Group"
-      " 1 Apply Rules per page 25 50 100 All R1 Group 1 R2 Group 2 R3 Rule 3"
-      " Active",
+      "The filter above the list chooses the statuses, uses and domains"
+      " shown, or only the rules on by default. Filter Status Active Trial"
+      " Draft Superseded Repealed Defaults Only the rules on by default Uses"
+      " Instructions Review Domains R1 Group 1 Apply Rules per page"
+      " 25 50 100 All R1 Group 1 Off by default R2 Group 2 Off by"
+      " default R3 Rule 3 Active Off by default Default option",
       pages["rules/index.html"],
     )
     entries = re.findall(r'class="rule-entry" href="([^"]+)"', page)
@@ -363,12 +365,21 @@ class SiteTest(unittest.TestCase):
     )
     # The superseded rule 4 is there, with its status, but filtered out.
     self.assertIn(
-      '<div class="rule-item" data-status="superseded" data-domain="1" hidden>',
+      '<div class="rule-item" data-status="superseded" data-domain="1"'
+      ' data-uses="instructions" data-default="off" hidden>',
       page,
     )
     self.assertIn('<span class="rule-status">Superseded</span>', page)
     self.assertEqual(page.count('class="rule-item" data-status="active"'), 3)
-    self.assertEqual(page.count('data-status="active" data-domain="1">'), 3)
+    self.assertEqual(
+      page.count('data-status="active" data-domain="1" data-uses'), 3
+    )
+    for box in (
+      '<input type="checkbox" name="default" value="on">',
+      '<input type="checkbox" name="uses" value="instructions" checked>',
+      '<input type="checkbox" name="uses" value="review" checked>',
+    ):
+      self.assertIn(box, page)
     for status, checked in (
       ("active", " checked"),
       ("trial", " checked"),
@@ -384,7 +395,8 @@ class SiteTest(unittest.TestCase):
       '<input type="checkbox" name="domain" value="1" checked>', page
     )
     self.assertIn(
-      "R1 组 1 R2 组 2 R3 规定 3 生效", pages["zh/rules/index.html"]
+      "R1 组 1 默认关闭 R2 组 2 默认关闭 R3 规定 3 生效 默认关闭 默认选项",
+      pages["zh/rules/index.html"],
     )
     self.assertIn('style="--indent: 0"><span class="rule-id">R6', page)
     # A heading shows where its group changes from the rule shown before.
@@ -432,11 +444,11 @@ class SiteTest(unittest.TestCase):
     self.assertIn('data-size="2" data-first="0"', one)
     self.assertIn('data-size="2" data-first="2"', two)
     self.assertEqual(
-      re.findall(r'data-domain="1"( hidden)?>', one),
+      re.findall(r'data-domain="1"[^>]*"( hidden)?>', one),
       ["", " hidden", "", " hidden"],
     )
     self.assertEqual(
-      re.findall(r'data-domain="1"( hidden)?>', two),
+      re.findall(r'data-domain="1"[^>]*"( hidden)?>', two),
       [" hidden", " hidden", " hidden", ""],
     )
     self.assertEqual(
@@ -477,8 +489,8 @@ class SiteTest(unittest.TestCase):
       ' value="2" data-parent="1" checked> R2 Group 2</label>',
       page,
     )
-    self.assertIn('data-status="active" data-domain="2">', page)
-    self.assertEqual(page.count('data-domain="1">'), 2)
+    self.assertIn('data-status="active" data-domain="2" data-uses', page)
+    self.assertEqual(page.count('data-domain="1" data-uses'), 3)
     self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
     self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
 
@@ -495,11 +507,11 @@ class SiteTest(unittest.TestCase):
       page,
     )
     for text in (
-      "Global public · R R1 Group 1 R2 Group 2 R3 Rule 3 Active Enabled"
-      " Global public",
-      "R5 Rule 5 Active Not enabled Global public",
-      "Global private · demo demo:1 Group 1 demo:2 Demo rule Active Enabled"
-      " Global private",
+      "Global public · R R1 Group 1 Off by default R2 Group 2 Off by default"
+      " R3 Rule 3 Active Off by default Default option Enabled Global public",
+      "R5 Rule 5 Active Off by default Not enabled Global public",
+      "Global private · demo demo:1 Group 1 Off by default demo:2 Demo rule"
+      " Active Off by default Enabled Global private",
     ):
       self.assertIn(text, pages["rules/index.html"])
     self.assertIn(
@@ -508,21 +520,29 @@ class SiteTest(unittest.TestCase):
       "</span></h2>",
       page,
     )
-    self.assertIn('data-domain="demo-1" data-quadrant="global-private">', page)
+    self.assertIn(
+      'data-domain="demo-1" data-uses="instructions" data-default="off"'
+      ' data-quadrant="global-private">',
+      page,
+    )
     self.assertIn('href="#group-source-demo">Global private · demo</a>', page)
     # demo:4, under this repo's domain 1, is filtered by that domain.
     self.assertRegex(
       page,
-      r'data-domain="1" data-quadrant="global-private">\n(<h\d[^\n]*\n)*'
+      r'data-domain="1" data-uses="instructions" data-default="off"'
+      r' data-quadrant="global-private">\n(<h\d[^\n]*\n)*'
       r'<a class="rule-entry" href="\.\./rules/demo-4/"',
     )
     demo = pages["rules/demo-2/index.html"]
-    self.assertIn("demo:2 Demo rule Global private · demo Enabled", demo)
+    self.assertIn(
+      "demo:2 Demo rule Off by default Global private · demo Enabled", demo
+    )
     self.assertIn("After rule R3 , see rule demo:2 .", demo)
     self.assertIn('<a href="../3/">rule R3</a>', raw["rules/demo-2/index.html"])
     self.assertIn("Requires R3 Rule 3", demo)
     self.assertIn(
-      "R3 Rule 3 Global public · R Enabled", pages["rules/3/index.html"]
+      "R3 Rule 3 Off by default Default option Global public · R Enabled",
+      pages["rules/3/index.html"],
     )
     self.assertIn("全局私有 · demo 已启用", pages["zh/rules/demo-2/index.html"])
     self.assertIn('href="rules/demo-2/"', raw["index.html"])
@@ -554,7 +574,8 @@ class SiteTest(unittest.TestCase):
       for node_id in range(1, 7):
         self.assertIn(f"{lang}rules/{node_id}/index.html", pages)
     self.assertIn(
-      "R4 Rule 4 Superseded by R5 Rule 5 , R6 Rule 6 . Old. Reason Why.",
+      "R4 Rule 4 Off by default Superseded by R5 Rule 5 , R6 Rule 6 . Old."
+      " Reason Why.",
       pages["rules/4/index.html"],
     )
     # The successors joined as each language writes a list.
@@ -563,11 +584,13 @@ class SiteTest(unittest.TestCase):
     self.assertNotIn("Superseded by", pages["rules/5/index.html"])
     # Rule 3 names `one` and `one-a`, under it: only `one-a` is listed.
     self.assertIn(
-      "R3 Rule 3 See Art. I §1 and rule 6 . Reason Why. Verification Violated"
+      "R3 Rule 3 Off by default Default option See Art. I §1 and rule 6 ."
+      " Reason Why. Verification Violated"
       " when not. Provisions of the constitution it cites Art. I §1 one-a"
       " Relations Parent R2 Group 2 Requires none Conflicts with R5 Rule 5"
       " Metadata ID 3 Revision 2 Kind rule Status active Default level project"
-      " Constitution revisions >=1 Check none Original language English en"
+      " Constitution revisions >=1 Check none Uses Instructions instructions"
+      " Original language English en"
       " Translations Chinese zh On this page Reason Verification Provisions of"
       " the constitution it cites Relations Metadata",
       pages["rules/3/index.html"],
@@ -581,21 +604,32 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       "Conflicts with R3 Rule 3 team:7", pages["rules/5/index.html"]
     )
+    # A one-of marks its default option and names it; a rule gives its
+    # own switch.
     self.assertIn(
-      "R1 Group 1 For every repository; see rule 3 . Relations Below it"
+      "Below it R3 Rule 3 Default option Metadata", pages["rules/2/index.html"]
+    )
+    self.assertIn("Slug group-2 Default R3 Rule 3", pages["rules/2/index.html"])
+    self.assertIn("Check none Default off Uses", pages["rules/5/index.html"])
+    self.assertIn(
+      "下级 R3 规定 3 默认选项 元数据", pages["zh/rules/2/index.html"]
+    )
+    self.assertIn(
+      "R1 Group 1 Off by default For every repository; see rule 3 ."
+      " Relations Below it"
       " R2 Group 2 R4 Rule 4 R5 Rule 5 R6 Rule 6 Metadata ID 1",
       pages["rules/1/index.html"],
     )
     self.assertIn('href="../3/"', raw["rules/1/index.html"])
     self.assertIn(
-      "R1 组 1 所有仓库，见 规定 3 。", pages["zh/rules/1/index.html"]
+      "R1 组 1 默认关闭 所有仓库，见 规定 3 。", pages["zh/rules/1/index.html"]
     )
     # A domain has no text: its contents list only the headings it has.
     self.assertIn(
       "On this page Relations Metadata", pages["rules/1/index.html"]
     )
     self.assertIn(
-      "R3 规定 3 见 第一条第一款 和 规定 6 。 理由 为何。",
+      "R3 规定 3 默认关闭 默认选项 见 第一条第一款 和 规定 6 。 理由 为何。",
       pages["zh/rules/3/index.html"],
     )
     # Rule 4's translation follows an older original: shown as none is.

@@ -1,4 +1,4 @@
-<!-- en-sha256: 20b616ee589a45eef85babb3e87f4a1a73238c02e4a14b9c9821c21f305e05b5 -->
+<!-- en-sha256: aabcababeb5d8786d8ad09c660675c62f19127cfb6b010944cfad0b7a3d0ef73 -->
 # 规定配置
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -219,7 +219,7 @@ default = 81
 
 ### <a id="in-the-rule-set"></a>规定清单里
 
-已经实现，只有网站上的标记除外 (见下)。
+已经实现。
 
 规定清单只列出与默认值不同的地方：
 
@@ -257,7 +257,7 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 
 **编译出的 `AGENTS.md`** 不变：它收录启用的规定，不论它们怎么进来的。
 
-**公开网站**在列表和详情页上把每个领域和每条规定标成默认开启或默认关闭，标出每个 one-of 的默认选项，列表加一个只显示默认开启规定的筛选，让读者一眼看出一份新的规定清单里有什么。**本地网站**在它那份规定清单是否启用这条规定的旁边，显示同样的这些标记。公开网站还没有显示这些标记。
+**公开网站**在列表和详情页上把每个领域和每条规定标成默认开启或默认关闭，标出每个 one-of 的默认选项，列表加一个只显示默认开启规定的筛选，让读者一眼看出一份新的规定清单里有什么。**本地网站**在它那份规定清单是否启用这条规定的旁边，显示同样的这些标记。两个网站都已经显示这些标记。
 
 ### <a id="moving-a-repository-over"></a>把仓库迁过来
 
@@ -287,7 +287,7 @@ uses = ["instructions", "review"]
 
 **怎么选。** 规定 R233 (`rules/233.toml`) 说明了：只有凭 diff 和 pull request 描述就能判断有没有违反的规定，才标 `review`；只有 agent 干活时需要知道的规定，才标 `instructions`。
 
-**由此而来的。** statute 读 `uses`，编译出的 `AGENTS.md`、`statute check`、`statute explain` 和本地网站都按它来；公开网站怎样显示它，还没有实现。
+**由此而来的。** statute 读 `uses`，编译出的 `AGENTS.md`、`statute check`、`statute explain` 和两个网站都按它来。
 
 - 编译出的 `AGENTS.md` 收录 `uses` 含 `instructions` 的启用规定。一个领域里启用的规定全都只进审查时，那里没有它的标题；对只进审查的规定的依赖或引用，按引用文件之外的规定渲染，即它的标题后面加「(规定 R42)」。
 - `statute check` 在各个领域里列出 `uses` 含 `review` 的启用规定，以及它运行的每个程序的结果。
@@ -318,11 +318,11 @@ uses = ["instructions", "review"]
 
 参数已经实现：`params.toml` 和占位符都读取并检查，规定清单、私有规定清单和全局配置设定取值，锁文件、`upgrade`、`explain <name>` 和两份输出都按取值来。
 
-本地网站标出默认开关、每个 one-of 的默认选项、`uses` 和参数的取值 (见[本地网站](statute-command.md#the-local-site))。
+本地网站标出默认开关、每个 one-of 的默认选项、`uses` 和参数的取值 (见[本地网站](statute-command.md#the-local-site))；公开网站标出默认开关和每个 one-of 的默认选项，显示 `uses`，并能按它们筛选。
 
 编译出的 `AGENTS.md` 把每个 one-of 启用的选项放在 one-of 的位置，并加上写明 one-of 的那一行。
 
-还没有实现：网站上 one-of 的框，以及公开网站对这些内容的显示。
+还没有实现：网站上 one-of 的框，以及公开网站对参数的显示。
 
 这部分设计改动了设计的以下部分：
 
