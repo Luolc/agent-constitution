@@ -18,7 +18,7 @@
 pub mod base;
 mod checks;
 pub mod cli;
-mod lang;
+pub(crate) mod lang;
 mod read;
 mod render;
 pub mod rules;
@@ -35,7 +35,7 @@ pub use read::load;
 pub use render::{labels, render};
 
 /// The command the generated files name as the one that wrote them.
-pub const BUILD_COMMAND: &str = "uv run constitution-build";
+pub const BUILD_COMMAND: &str = "cargo run -p statute -- constitution build";
 
 pub const CONSTITUTION: &str = "constitution";
 pub const INDEX_FILE: &str = "index.toml";

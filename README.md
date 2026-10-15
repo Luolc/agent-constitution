@@ -113,7 +113,7 @@ short, you need [uv](https://docs.astral.sh/uv/) and the Rust toolchain:
 ```sh
 uv sync                          # the Python tools, into .venv
 uv run pre-commit install        # the commit hooks
-uv run constitution-build        # rebuild the generated constitution
+cargo run -p statute -- constitution build   # rebuild the generated constitution
 cargo test --locked              # the tests of statute
 ```
 

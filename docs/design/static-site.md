@@ -33,7 +33,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
 - Input: the generated `constitution.<lang>.md` in the edition
   directory's `generated/` ([The constitution](constitution.md)), not the
   sources: the citations, numbers and anchors are rendered once, by
-  `constitution-build`. `web/hugo.toml` mounts them and the edition
+  `statute constitution build`. `web/hugo.toml` mounts them and the edition
   directory's `index.toml` from `constitution/` as assets, and the partial
   `web/layouts/_partials/constitution/source.html` finds each by name,
   failing the build unless exactly one file matches; Python writes no
@@ -148,7 +148,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
   `authority` that names a provision and one above it (an item and its
   section or article, a section and its article) counts only the
   narrower one, so a rule is listed under the most specific provisions it
-  names, and its page lists only those; `constitution-build` warns of
+  names, and its page lists only those; `statute validate rules` warns of
   such a pair ([Checkers](checkers.md#checkers), check 5). A
   superseded or repealed rule has a page and is in the list, but not
   under a provision. The content adapter

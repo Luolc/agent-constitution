@@ -1,4 +1,4 @@
-<!-- en-sha256: 3acad8aa4fc194842203d28e65893173977f44be564e3efbfa36be5c46296e4b -->
+<!-- en-sha256: 43577d6acda265c5e729d46ee1d661c72bc1e54255f0d88c1d9baeea235d42bc -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -24,7 +24,7 @@
 
 写出的 `AGENTS.md` 旁边 (不给 `--output` 时就是仓库顶层) 有 `CLAUDE.md` 时，不论是普通文件还是指向 `AGENTS.md` 的软链，每次 `statute compile` 都给出 warning，有没有私有层都一样。warning 问要不要删掉它，并用几句短话说明原因：没有 `CLAUDE.md` 时 Claude Code 自己会读 `AGENTS.md` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，所以不需要 `CLAUDE.md` 指向它；有私有输出时，`CLAUDE.local.md` 用全文代替 `AGENTS.md` 给 Claude Code 读，Claude Code 还会再读 `CLAUDE.md`，它的内容就叠在规定之上，指向 `AGENTS.md` 的软链会让公开规定读两遍 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，没有私有层时 warning 不说这一句；迁移时 ([statute-migrate](../../../skills/statute-migrate/SKILL.md)，第 e 步)，普通文件的 `CLAUDE.md` 改名为旧版副本，指向 `AGENTS.md` 的软链不改名，只问用户要不要删。statute 既不删它，也不改名。尚未实现：warning 仍说迁移时两种都会改名。
 
-编译、检查和升级规定清单由同一个命令完成 ([命令与第一版](#the-command-and-the-first-version))。宪法的编译器暂时仍用 Python ([编译](compilation.md))，以后再并入这个命令。
+编译、检查和升级规定清单由同一个命令完成 ([命令与第一版](#the-command-and-the-first-version))。宪法也由这个命令构建，即 `statute constitution build`。
 
 **公开网站**列出每条规定，让人们能从完整列表里挑选，列表的筛选默认不显示已被取代和已废止的规定；被取代的规定保留自己的页面，指向它的链接仍然有效。本仓的规定在网站上也显示成 `R42`。列表和规定详情页显示什么，见[静态网站](static-site.md)。
 
@@ -53,9 +53,9 @@
 
 **`upgrade`** 把解析结果与 `statute.lock` 比较，打印变了什么 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))，没有变化就说锁文件已是最新，然后像 `lock` 一样写锁文件。没有 `statute.lock` 时没有可比的东西，以退出码 1 退出。加上 `--replace-superseded` 时，它先在 `rules` 和 `packs` 里把每条被取代的规定换成它的后继规定，顺着取代链找到最后一条，文件其余部分保持原样；后继规定已经列出的，只去掉旧的那一项。取代链走到一条有多个后继规定的规定时，这一项保持不动，把这几条后继规定列出来，由用户用 `add` 和 `remove` 自己选。已废止的规定留给用户自己去掉。改过的规定清单解析不通过时，两个文件都不改。
 
-**`validate <dir>`** 把一个目录里的规定文件当作第一方规定源读，连同 `params.toml` 里的参数，做所有不需要规定清单的检查 ([检查程序](checkers.md#checkers))：每个节点和参数的格式、规定树、引用的目标、译文、引用和占位符，以及默认值。每条发现单独一行写到标准错误；有错误时以状态 1 退出，没有问题时向标准输出打一行，写明节点数。`<dir>` 旁边有 `constitution/` 时，它还读这部宪法，检查宪法对规定的要求：每个节点的 status 与 `index.toml` 的一致，每处 `{@constitution:...}` 引用和每个 `authority` 条目都成立，`authority` 同时写了某个条款和它的上级时给警告；宪法读不进来时只报一条错误，宪法自身的错误留给 `constitution build` 报。加 `--base <git-ref>` 时还做第 7 项检查里规定的那部分：比较编号时，base 里的每个节点都还在，旧格式的规定以 slug 为其名字的节点存在，已废止或已被取代的仍然如此；第 7 项跳过比较的情况下它也跳过，并打出同样的提示；`<dir>` 旁边没有 `constitution/` 时报错。这些发现写成 `rules/7.toml:12: error: <message>`，报错文字与 `uv run constitution-build` 相同；那个命令也做这些检查，CI 和提交钩子目前仍由它来跑，还没有改成 `validate`。本仓把 `statute validate rules` 作为 commit 钩子运行。
+**`validate <dir>`** 把一个目录里的规定文件当作第一方规定源读，连同 `params.toml` 里的参数，做所有不需要规定清单的检查 ([检查程序](checkers.md#checkers))：每个节点和参数的格式、规定树、引用的目标、译文、引用和占位符，以及默认值。每条发现单独一行写到标准错误；有错误时以状态 1 退出，没有问题时向标准输出打一行，写明节点数。`<dir>` 旁边有 `constitution/` 时，它还读这部宪法，检查宪法对规定的要求：每个节点的 status 与 `index.toml` 的一致，每处 `{@constitution:...}` 引用和每个 `authority` 条目都成立，`authority` 同时写了某个条款和它的上级时给警告；宪法读不进来时只报一条错误，宪法自身的错误留给 `constitution build` 报。加 `--base <git-ref>` 时还做第 7 项检查里规定的那部分：比较编号时，base 里的每个节点都还在，旧格式的规定以 slug 为其名字的节点存在，已废止或已被取代的仍然如此；第 7 项跳过比较的情况下它也跳过，并打出同样的提示；`<dir>` 旁边没有 `constitution/` 时报错。这些发现写成 `rules/7.toml:12: error: <message>`。本仓把 `statute validate rules` 作为 commit 钩子运行，CI 里还加上 `--base` 运行。
 
-**`constitution build`** 在宪法上做的事与 `uv run constitution-build` 相同：检查 `constitution/` 下唯一一版的源文件，为每种语言把完整版和 agent 版写到这一版的 `generated/` 里，与那个命令写出的逐字节相同；加 `--check` 时什么都不写，已提交的文件与重新构建的结果不同就失败；加 `--check --base <git-ref>` 时还要与那个提交比较编号和修订号；`--root <dir>` 让它在当前目录以外的检出上运行。它做的检查是[检查程序](checkers.md#checkers) 里第 1 至第 7 项中关于宪法的部分，报错文字也相同。它不读 `rules/`：那个命令对规定的检查，包括规定对宪法的引用和 base 提交里已有的规定，归 `validate` 做 (见上文)。生成文件里写的仍是 `uv run constitution-build`，CI、提交钩子和本设计的其他部分也仍然运行它；换成 `statute constitution build`、删掉 Python 的命令，都还没有做。
+**`constitution build`** 检查 `constitution/` 下唯一一版的源文件，为每种语言把完整版和 agent 版写到这一版的 `generated/` 里，文件第一行写明生成它的命令 `cargo run -p statute -- constitution build`；加 `--check` 时什么都不写，已提交的文件与重新构建的结果不同就失败；加 `--check --base <git-ref>` 时还要与那个提交比较编号和修订号；`--root <dir>` 让它在当前目录以外的检出上运行。它做的检查是[检查程序](checkers.md#checkers) 里第 1 至第 7 项中关于宪法的部分。它不读 `rules/`：规定对宪法的说法和 base 提交里已有的规定，归 `validate` 检查 (见上文)。本仓把 `constitution build --check` 作为 commit 钩子运行，CI 里还加上 `--base` 运行。
 
 **切换。** 目前 agent 读的是私有 overlay 的用户级指令文件。这些文件将加一条：仓库里有 `statute.lock` 的，以这个仓库的编译输出为准，用户级指令文件不再适用。它们管着的所有仓库一次切换：等它们的每一部分都成了规定，并且[从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide) 的几个条件都成立；不先切某一个主题。在那之前，编译输出照常构建、用来对比，但不代替它们给 agent 读。
 

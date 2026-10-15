@@ -58,7 +58,7 @@ jobs:
           GITLEAKS_ENABLE_COMMENTS: false
 
       # uv sets up the Python of pyproject.toml and, from uv.lock, the
-      # environment with the three workspace members under tools/, limae
+      # environment with the two workspace members under tools/, limae
       # and pre-commit; --locked fails when the lock no longer matches the
       # pyproject.toml files. The uv version is the rev of the
       # uv-lock hook in .pre-commit-config.yaml; change both together.
@@ -122,15 +122,17 @@ jobs:
       - name: Link check
         run: uv run --frozen check-site-anchors site
 
-      # Numbering against the base: on a pull request the first parent of
-      # the checked-out merge commit, which is the tip of the base branch
-      # the PR was merged onto for this run; on a push the commit before it.
+      # Numbering against the base, of the constitution and of the rules
+      # (check 7, docs/design/checkers.md): on a pull request the first
+      # parent of the checked-out merge commit, which is the tip of the base
+      # branch the PR was merged onto for this run; on a push the commit
+      # before it.
       # The commit hook runs without --base. The full-history checkout above
       # makes both commits available; only a push without a usable `before`
       # (the first push, or a rewritten history) skips the comparison and
       # says so. On a pull request a missing base fails the job. The step
       # prints the base it uses.
-      - name: Constitution numbering against the base commit
+      - name: Numbering against the base commit
         env:
           BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
         run: |
@@ -141,7 +143,14 @@ jobs:
           fi
           base="$(git rev-parse --verify "${BASE}^{commit}")"
           echo "base: ${base}"
-          uv run --frozen constitution-build --check --base "$base"
+          # Both run, so that the findings of each show at once; the base is
+          # a commit by now, and the few base errors both share (a status
+          # back to draft, an earlier edition, a base index.toml that is not
+          # TOML) are printed by each.
+          status=0
+          cargo run --locked --quiet -p statute -- constitution build --check --base "$base" || status=1
+          cargo run --locked --quiet -p statute -- validate rules --base "$base" || status=1
+          exit "$status"
 
       # Instruction files and other files never change together (see
       # docs/design/checkers.md). Same base as the step above, skipped the
