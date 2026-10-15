@@ -494,6 +494,37 @@ class SiteTest(unittest.TestCase):
     self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
     self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
 
+  def test_params(self):
+    """A page of parameters; a placeholder marked, linked to its entry."""
+    raw = self.build(raw=True, edit_rules=site_fixture.params)
+    pages = {p: visible(t) for p, t in raw.items()}
+    self.assertIn(
+      "Parameters The values the rules leave to each rule set.",
+      pages["rules/params/index.html"],
+    )
+    self.assertIn(
+      "Language of documents Name language.docs Type language Scope The"
+      " repository's, the same for everyone repo Default Chinese zh Used by"
+      " R6 Rule 6 Label of a done item Name work-items.label-done",
+      pages["rules/params/index.html"],
+    )
+    self.assertIn('<h2 id="language.docs">', raw["rules/params/index.html"])
+    self.assertIn(
+      "完成项的标签 名字 work-items.label-done",
+      pages["zh/rules/params/index.html"],
+    )
+    self.assertIn(
+      '<p class="rules-params"><a href="../rules/params/">Parameters</a></p>',
+      raw["rules/index.html"],
+    )
+    self.assertIn(
+      'Write in <a class="param-value" href="../params/#language.docs"'
+      ' title="language.docs">Chinese</a>; label <code>x <a'
+      ' class="param-value" href="../params/#work-items.label-done"'
+      ' title="work-items.label-done">done &amp; dusted</a></code>.',
+      raw["rules/6/index.html"],
+    )
+
   def test_rules_of_two_sources(self):
     """Each source heads its rules; the tags say quadrant and rule set."""
     raw = self.build(raw=True, other=True)

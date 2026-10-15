@@ -90,6 +90,17 @@ quadrant-local-public: "本仓公开"
 quadrant-local-private: "本仓私有"
 rule-enabled: "已启用"
 rule-not-enabled: "未启用"
+# 规定源的参数页，链接在列表上方 (layouts/_partials/rules/params.html)。
+params: "参数"
+params-intro: "规定留给各份规定清单去定的值。规定正文里，参数显示为它的默认值并加上标记；鼠标悬停时显示参数名，标记链接到这里。"
+param-name: "名字"
+param-type: "类型"
+param-values: "可选的值"
+param-scope: "范围"
+param-scope-repo: "仓库的，所有人一样"
+param-scope-personal: "每个人自己的"
+param-default: "默认值"
+param-rules: "用到它的规定"
 # 规定源的默认值是否启用一个节点，以及 one-of 的默认选项
 # (layouts/_partials/rules/default.html)。
 default-on: "默认开启"

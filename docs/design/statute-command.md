@@ -425,6 +425,13 @@ directory is a source, holding `constitution/`, `rules/` or both.
   ([Default switches](rule-config.md#default-switches)), never for a
   superseded or repealed rule, and `null` when that depends on a node
   of another source.
+- `params`: the parameters of `rules/params.toml`
+  ([Parameters](rule-config.md#parameters)) in the order of the file,
+  each with its `name`, `type`, `values` (a `choice`'s, else `null`),
+  `scope`, `default` and `title` by language, and `shown`: the default
+  as the outputs write it, by each language a title of the source is
+  written in (a language by its name, "Chinese", 「中文」); empty without
+  that file.
 
 Before it prints anything, statute checks the rules as it checks any
 source ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));

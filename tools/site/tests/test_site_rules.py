@@ -80,9 +80,9 @@ class SiteRulesTest(unittest.TestCase):
     return read
 
   def load(self):
-    src, nodes = self.read()
+    src, nodes, params = self.read()
     assert src is not None
-    return site_rules.site_data(src, nodes)
+    return site_rules.site_data(src, nodes, params=params)
 
   def test_superseded_is_not_under_provisions(self):
     nodes = self.nodes("en")
@@ -143,7 +143,7 @@ class SiteRulesTest(unittest.TestCase):
     self.assertIsNone(en[2]["applicability"])
 
   def test_listed_only_in_force(self):
-    _, nodes = self.read()
+    _, nodes, _ = self.read()
     rule = next(n for n in nodes if n.id == 5)
     self.assertTrue(site_rules.listed(rule))
     for status in ("superseded", "repealed"):
@@ -227,12 +227,13 @@ class SiteRulesTest(unittest.TestCase):
     )
 
   def other(self, enabled=None):
-    src, nodes = self.read()
+    src, nodes, params = self.read()
     assert src is not None
     demo = self.root / "demo"
-    site_fixture.write_other(demo)
-    other = site_rules.Source("demo", "global-private", self.read(demo)[1])
-    return site_rules.site_data(src, nodes, [other], enabled)
+    if not demo.exists():
+      site_fixture.write_other(demo)
+    other = site_rules.Source("demo", "global-private", *self.read(demo)[1:])
+    return site_rules.site_data(src, nodes, [other], enabled, params)
 
   def test_one_source(self):
     """Alone, this repo's nodes have no source heading and no `enabled`."""
@@ -368,6 +369,103 @@ class SiteRulesTest(unittest.TestCase):
       [(1, True), (2, True), (3, True), (4, False), (5, False), (6, True)],
     )
     self.assertEqual(nodes[6]["uses"], ["instructions", "review"])
+
+  def test_params(self):
+    """A placeholder shows its default, marked; each source its page."""
+    site_fixture.params(self.root)
+    data = self.load()
+    for lang, docs in (("en", "Chinese"), ("zh", "Chinese")):
+      nodes = {n["id"]: n for n in data[lang]["nodes"]}
+      # Rule 6 is untranslated: its English text names the language in
+      # English on both languages' pages.
+      self.assertEqual(
+        nodes[6]["text"]["statement"],
+        'Write in <a class="param-value" href="../params/#language.docs"'
+        f' title="language.docs">{docs}</a>; label <code>x <a'
+        ' class="param-value" href="../params/#work-items.label-done"'
+        ' title="work-items.label-done">done &amp; dusted</a></code>.',
+      )
+      self.assertEqual(nodes[6]["title"], "Rule 6")
+    pages = data["zh"]["params"]
+    self.assertEqual(
+      [(p["key"], p["source"]) for p in pages], [("params", "R")]
+    )
+    docs, label = pages[0]["params"]
+    self.assertEqual(
+      docs,
+      {
+        "name": "language.docs",
+        "type": "language",
+        "values": None,
+        "scope": "repo",
+        "default": "zh",
+        "shown": "中文",
+        "title": "Language of documents",
+        "lang": "en",
+        "rules": [{"id": 6, "label": "R6", "title": "Rule 6", "key": "6"}],
+      },
+    )
+    self.assertEqual((label["title"], label["lang"]), ("完成项的标签", "zh"))
+    self.assertEqual(self.data["en"]["params"], [])
+
+  def test_params_of_two_sources(self):
+    """A rule of another source names its own parameter or this repo's."""
+    site_fixture.params(self.root)
+    demo = self.root / "demo"
+    site_fixture.write_other(demo)
+    (demo / "rules/params.toml").write_text(
+      site_fixture.PARAMS.split("[[parameter]]")[0]
+      + "[[parameter]]"
+      + site_fixture.PARAMS.split("[[parameter]]")[2],
+      encoding="utf-8",
+    )
+    rule = demo / "rules/2.toml"
+    rule.write_text(
+      rule.read_text(encoding="utf-8").replace(
+        "see {@rule:2}.",
+        "see {@rule:2}, in {$language.docs}, `{$work-items.label-done}`.",
+      ),
+      encoding="utf-8",
+    )
+    data = self.other()["en"]
+    text = {n["label"]: n for n in data["nodes"]}["demo:2"]["text"]
+    self.assertIn('href="../params/#language.docs"', text["statement"])
+    self.assertIn(
+      'href="../demo-params/#work-items.label-done"', text["statement"]
+    )
+    pages = {p["key"]: p for p in data["params"]}
+    self.assertEqual(list(pages), ["params", "demo-params"])
+    rules = {
+      (key, q["name"]): [r["label"] for r in q["rules"]]
+      for key, page in pages.items()
+      for q in page["params"]
+    }
+    self.assertEqual(
+      rules,
+      {
+        ("params", "language.docs"): ["R6", "demo:2"],
+        ("params", "work-items.label-done"): ["R6"],
+        ("demo-params", "work-items.label-done"): ["demo:2"],
+      },
+    )
+
+  def test_a_title_shows_the_value_alone(self):
+    """A placeholder in a title: the value in the title, marked apart."""
+    site_fixture.params(self.root)
+    rule = self.root / "rules/5.toml"
+    text = rule.read_text(encoding="utf-8")
+    rule.write_text(
+      text.replace('en = "Rule 5"', 'en = "Rule in {$language.docs}"'),
+      encoding="utf-8",
+    )
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual(nodes[5]["title"], "Rule in Chinese")
+    self.assertEqual(
+      nodes[5]["titleMarked"],
+      'Rule in <a class="param-value" href="../params/#language.docs"'
+      ' title="language.docs">Chinese</a>',
+    )
+    self.assertEqual(nodes[3]["conflicts"][0]["title"], "Rule in Chinese")
 
   def test_main_with_another_source(self):
     out = self.root / "web/data/rules.json"

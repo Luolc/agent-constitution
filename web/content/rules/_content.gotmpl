@@ -2,7 +2,10 @@
   `uv run site-rules` writes from rules/ (not committed): the list as
   rules/ itself, paginated by layouts/rules/section.html, and one page
   per node of the rule tree, rules/<key>/, weighted in the order of the
-  parent tree, the node's data in its params. The pages are hidden from
+  parent tree, the node's data in its params, and for each source with
+  parameters its page of them, rules/params/ for this repo's,
+  rules/<name>-params/ for another's, after the nodes, the page's data
+  in its params. The pages are hidden from
   the theme's own list (bookHidden); the menu links the list. The build
   fails without the data. It runs once for each language of the site. */ -}}
 {{- .EnableAllLanguages }}
@@ -23,5 +26,14 @@
     "title" $node.title
     "weight" (add $i 1)
     "params" (dict "rule" $node "bookHidden" true)
+  ) }}
+{{- end }}
+{{- $many := gt (len $data.sources) 1 }}
+{{- range $i, $page := $data.params }}
+  {{- $.AddPage (dict
+    "path" $page.key
+    "title" (cond $many (printf "%s · %s" (i18n "params") $page.source) (i18n "params"))
+    "weight" (add (len $data.nodes) $i 1)
+    "params" (dict "paramsPage" $page "bookHidden" true)
   ) }}
 {{- end }}

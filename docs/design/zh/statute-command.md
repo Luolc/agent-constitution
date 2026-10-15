@@ -1,4 +1,4 @@
-<!-- en-sha256: 0429ff804812a47d98ea7fb527f430bfa34ba7a13660862268bfc3777792481d -->
+<!-- en-sha256: 43577d6acda265c5e729d46ee1d661c72bc1e54255f0d88c1d9baeea235d42bc -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -76,6 +76,7 @@
 
 - `constitution`：没有 `constitution/` 时为 `null`；否则是它唯一那一版的 `index.toml` 里的 `edition`、`revision`、`status` 和 `languages` (一版都没有或不止一版时导出失败)，以及按正文顺序排列的 `provisions`：每个条、款、项给出引用它时写的 `id`、它的 `parent` (条为 `null`) 和按语言给出的 `labels`，写法与编译出的 `AGENTS.md` 相同。
 - `nodes`：`rules/` 里的每个节点，按 ID 排序，给出它的 `file` 和它的 `fields`，即文件里原样写的各字段，正文也在内。程序拿到的是文件里原样写的值；statute 以后认识的新字段，不改导出也能传过去；默认值由程序自己补。只有一个值是 statute 自己算出来的，免得每个程序再算一遍：`on-by-default`，即规定源的默认值是否启用这个节点 ([默认开关](rule-config.md#default-switches))，已被取代或已废止的规定总是否；取决于别的规定源里的节点时为 `null`。
+- `params`：`rules/params.toml` 里的参数 ([参数](rule-config.md#parameters))，按文件里的顺序，每个给出 `name`、`type`、`values` (`choice` 的可选值，其他类型为 `null`)、`scope`、`default`、各语言的 `title`，以及 `shown`：输出里写出的默认值，按该规定源的标题用到的每种语言各给一份 (语言写成它的名称，「Chinese」「中文」)；没有这个文件时为空。
 
 打印之前，statute 像检查任何规定源一样检查这些规定 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))；检查不通过时，它只打印错误，以退出码 1 退出。依据旧原文翻译的译文过不了这项检查，所以节点列出的每份译文都跟随当前原文。JSON 是唯一的格式，所以这个命令没有选择格式的选项。
 

@@ -2,7 +2,8 @@
 //! (`docs/design/statute-command.md`, Export): its constitution's
 //! languages and provisions with their labels, and each node of its
 //! `rules/` with the fields of its file and whether the source's defaults
-//! enable it, after statute has checked them.
+//! enable it, and the parameters its `params.toml` declares, after
+//! statute has checked them.
 
 use std::path::Path;
 
@@ -11,6 +12,7 @@ use serde_json::{Map, Value, json};
 use crate::cite::{self, Labels};
 use crate::diag::Diagnostics;
 use crate::node::{Kind, Status};
+use crate::param::{Param, Scope, Type};
 use crate::project::shown;
 use crate::source::{Source, by_default};
 
@@ -36,6 +38,11 @@ struct Index {
 ///   whether the source's defaults enable it, as statute checks them
 ///   (`docs/design/rule-config.md`, In the rule files), a rule only when
 ///   it is in force; `null` when that depends on another source.
+/// - `params`: the parameters of `rules/params.toml` in the order of the
+///   file, each with its `name`, `type`, `values` (a `choice`'s, else
+///   `null`), `scope`, `default`, its `title` by language and `shown`,
+///   the default as an output writes it in each language a title of the
+///   source is written in.
 ///
 /// The value is `None` when the sources do not pass statute's checks, so
 /// every translation a node lists follows its current original.
@@ -55,6 +62,7 @@ pub fn export(dir: &Path) -> (Option<Value>, Diagnostics) {
     };
     let rules_dir = dir.join("rules");
     let mut nodes = Vec::new();
+    let mut params = Vec::new();
     if rules_dir.is_dir() {
         let (source, more) = Source::load(&rules_dir, &shown(&base, "rules"));
         diags.0.extend(more.0);
@@ -84,11 +92,45 @@ pub fn export(dir: &Path) -> (Option<Value>, Diagnostics) {
         if diags.has_errors() {
             return (None, diags);
         }
+        // Every language a title of the source is written in, so that a
+        // placeholder in any text has its default in that language.
+        let langs: std::collections::BTreeSet<&String> = source
+            .nodes
+            .values()
+            .flat_map(|n| n.title.keys())
+            .chain(source.params.iter().flat_map(|p| p.title.keys()))
+            .collect();
+        params = source.params.iter().map(|p| param(p, &langs)).collect();
     }
     (
-        Some(json!({"constitution": constitution, "nodes": nodes})),
+        Some(json!({"constitution": constitution, "nodes": nodes, "params": params})),
         diags,
     )
+}
+
+/// A parameter as the export gives it.
+fn param(p: &Param, langs: &std::collections::BTreeSet<&String>) -> Value {
+    let values = match &p.kind {
+        Type::Choice(values) => json!(values),
+        _ => Value::Null,
+    };
+    let scope = match p.scope {
+        Scope::Repo => "repo",
+        Scope::Personal => "personal",
+    };
+    let shown: Map<String, Value> = langs
+        .iter()
+        .map(|lang| (lang.to_string(), json!(p.shown(&p.default, lang))))
+        .collect();
+    json!({
+        "name": p.name,
+        "type": p.kind.name(),
+        "values": values,
+        "scope": scope,
+        "default": p.default,
+        "title": p.title,
+        "shown": shown,
+    })
 }
 
 /// The one edition under `dir/constitution/`, as the export gives it.
