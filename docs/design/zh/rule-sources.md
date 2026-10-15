@@ -1,4 +1,4 @@
-<!-- en-sha256: fc713d36121bddd8340f80b1e5284c4a982f4c6ce5cb075408bc7f572a80b403 -->
+<!-- en-sha256: 860e6ccfec647b1429b707a4e1b8384f85c7645f8d1ad9eadaab24b1f2692445 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -168,7 +168,7 @@ Codex 读一个项目的指令文件，从仓库根目录到工作目录的各�
 
 检出分支时 `$3` 是 1，检出文件时是 0，所以私有输出跟着分支走，因为不同分支的 `statute.toml` 可能不同。
 
-merge 移动分支时不做检出。主检出如果只用 `git merge --ff-only` 跟上远端，就不会运行 `post-checkout` 钩子，它的私有输出会一直停在第一次检出时写的样子，或者从来没写过。`post-merge` 钩子在每次 merge 后运行同一条命令：git 在移动了分支的 merge 之后运行它，fast-forward 也算，什么都没合的 merge 之后不运行 (githooks(5))。
+merge 移动分支时不做检出。主检出如果只用 `git merge --ff-only` 跟上远端，就不会运行 `post-checkout` 钩子，它的私有输出会一直停在第一次检出时写的样子，或者从来没写过。`post-merge` 钩子在 merge 之后无条件运行同一条命令：git 在移动了分支的 merge 之后运行它，fast-forward 也算，什么都没合的 merge 之后不运行 (githooks(5))。
 
 ```sh
 #!/bin/sh
