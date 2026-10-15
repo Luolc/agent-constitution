@@ -1,0 +1,43 @@
+id = 287
+slug = "main-checkouts-dir"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+default = "off"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Keep each main checkout directly under the directory for main checkouts"
+zh = "每个主检出都直接放在放主检出的目录下"
+
+[text.statement]
+en = "Keep each repository's main checkout at `{$dirs.main-checkouts}/<repo>`, in a directory named after the repository."
+zh = "每个仓库的主检出 (main checkout) 放在 `{$dirs.main-checkouts}/<repo>`，目录名就是仓库名。"
+
+[text.reason]
+en = '''
+With one layout on every machine, people and agents find a repository's checkout from its name alone ({@constitution:simplicity}).
+'''
+zh = '''
+每台机器的目录布局相同，人和 agent 只凭仓库名就能找到它的检出 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+A main checkout is a clone whose `.git` is a directory; a worktree's `.git` is a file, so a worktree is not one. What else the directory may hold is {@rule:288}'s matter.
+
+Violated when a repository's main checkout is not directly under `{$dirs.main-checkouts}`, or its directory is not named after the repository.
+'''
+zh = '''
+主检出指 `.git` 是目录的那份 clone；worktree 的 `.git` 是文件，所以 worktree 不算主检出。这个目录下还能放什么，由 {@rule:288} 管。
+
+某个仓库的主检出不直接在 `{$dirs.main-checkouts}` 下，或者目录名与仓库名不同的，即为违反本规定。
+'''
+
+[translations]
+zh = "bec72452d399e00e14496e66674ba995c47ff5868586e47d067a016bf7709713"

@@ -1,6 +1,6 @@
 id = 132
 slug = "third-party-sources-root"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -21,10 +21,10 @@ zh = "第三方源码的 clone 放在法域为它指定的根目录下的 `<root
 
 [text.reason]
 en = '''
-Others' sources cloned into the root of main checkouts ({@rule:216}) mix with your own repositories; with `<owner>` in the path, two repositories of the same name do not collide ({@constitution:simplicity}).
+Others' sources cloned into the root of main checkouts ({@rule:288}) mix with your own repositories; with `<owner>` in the path, two repositories of the same name do not collide ({@constitution:simplicity}).
 '''
 zh = '''
-别人的源码放进主检出的根目录 ({@rule:216})，就和自己的仓库混在一起；路径带上 `<owner>`，同名的仓库也不会冲突 ({@constitution:simplicity})。
+别人的源码放进主检出的根目录 ({@rule:288})，就和自己的仓库混在一起；路径带上 `<owner>`，同名的仓库也不会冲突 ({@constitution:simplicity})。
 '''
 
 [text.verification]
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "44b0c3c425cfc98816f3a874da078d40f18e20eab52cbfd048ceac7c9fe8cf4b"
+zh = "d0495b6ad635dcc7683958698575ea624e4984390cc9427f656afd4a58299695"
