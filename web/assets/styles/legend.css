@@ -1,0 +1,26 @@
+/* The legend above the list of the rules
+   (layouts/_partials/rules/legend.html), as docs/design/frontend.md
+   (Components) draws it: a box with a hairline border, a row per kind
+   of mark, its name in a column of its own and its marks after it on
+   one line, wrapping under themselves on a narrow screen. */
+.rules .rules-legend {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--t-space-2) var(--t-space-6);
+  margin-block: var(--t-space-4);
+  padding: var(--t-space-3) var(--t-space-4);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-md);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+}
+.rules .rules-legend > div { display: contents; }
+.rules .rules-legend dt { margin: 0; color: var(--t-text-muted); font-weight: var(--t-weight-medium); }
+.rules .rules-legend dd { display: flex; flex-wrap: wrap; gap: var(--t-space-1) var(--t-space-6); margin: 0; }
+.rules .rules-legend .legend-item { display: inline-flex; align-items: baseline; gap: var(--t-space-2); }
+.rules .rules-legend .legend-item > :is(.rule-mark, .icon) { flex: none; align-self: center; }
+.rules .rules-legend .legend-item > .rule-mark:not(.rule-dot) { inline-size: auto; }
+.rules .rules-legend strong { font-weight: var(--t-weight-medium); }
+.rules .rules-legend .legend-default-option { color: var(--t-accent); }
+.rules .rules-legend .legend-option > .icon { color: var(--t-text-muted); }
+.rules .rules-legend .legend-places dd { color: var(--t-text-muted); }

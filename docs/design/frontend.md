@@ -284,7 +284,7 @@ What replaces today's icons:
 | A ring around an `i`, drawn by hand | The info button after the length | `info` |
 | A ring holding a plus or a minus, drawn by hand | The button that shows more of the rules under a provision | `circle-plus`, `circle-minus` |
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
-| The theme's `translate` | The language switch | `languages` |
+| The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
 | A text button | The filter | `funnel` |
 | A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
@@ -402,17 +402,26 @@ turned off (disabled), where it has these.
     `accent`; not enabled: the word alone in `text-muted`.
   - The quadrant of a source: a box with `radius-sm`, filled with the
     quadrant's color, in `text`.
+  - A node with a text not in the page's language, on its page: no
+    box, `languages` (`icon-sm`) before the words Not translated /
+    「无中文」, in `text-muted`. The text itself carries its own
+    language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
 - **The legend**, above the list of the rules, as Ruff's list of rules
-  has one: each mark a row carries in the list, drawn as the list draws
-  it and followed by its word, and a line on what it means, in the
-  order of the marks' places: each status, on and off by default,
-  instructions and review; then the default option of a one-of, and,
-  when the site has them, enabled and not enabled and a quadrant. A
-  term and its meaning on one line (a description list), `text-sm`, the
-  terms in `weight-medium`, the meanings in `text-muted`; under it, a
-  line on the four places and their order.
+  has one: a box with `1px` of `border-subtle` and `radius-md`, `text-sm`,
+  a row per kind of mark (a description list), its name at the start in
+  a column of its own, `weight-medium` in `text-muted`, and its marks
+  after it on one line, each drawn as the list draws it and followed by
+  its word. The rows: Status, each status's icon and word, with no
+  meaning written out; Default, on and off by default; Uses,
+  instructions and review, each with a short meaning after its word in
+  `weight-medium`; One of, what a one-of is, then the default option's
+  `circle-dot` in `accent` and another option's `circle`; when the site
+  has them, Rule set, enabled and not enabled, and Source, a quadrant;
+  last, Row end, the four places of the marks and their order, in
+  `text-muted`. On a narrow screen a row's marks wrap under each other,
+  its name staying at its start.
 - **The filter**, as far as Ruff's list of rules goes, no further: no
   conditions to combine. Shut, it is one button: `funnel` (`icon-md`),
   the word Filter, and, when the reader has changed a field from the
@@ -527,7 +536,9 @@ turned off (disabled), where it has these.
   `chevron-down` open, the turn taking `duration-base`; that button and
   the language switch say whether their list is shown
   (`aria-expanded`, `aria-controls`).
-  - The table of contents, at the right: `text-sm`, under its heading in
+  - The table of contents, at the right, on every page but the list of
+    the rules, whose group rows that stick name the domain in view:
+    `text-sm`, under its heading in
     `text-muted`; its headings along a hairline as the sidebar's pages
     are, `text-muted`, a heading of a lower level indented by `space-4`
     with its bar still on the hairline. Under the pointer: `text`, the
@@ -535,8 +546,8 @@ turned off (disabled), where it has these.
     text in `accent`, `weight-bold`. It follows the scroll, so its marks
     change at once, without a transition.
   - The drawers of a narrow screen. At `56rem` and under the sidebar,
-    and at `70rem` and under the table of contents, go behind a quiet
-    button of the top bar, `menu` and `table-of-contents`, each showing
+    and at `70rem` and under the table of contents where a page has one,
+    go behind a quiet button of the top bar, `menu` and `table-of-contents`, each showing
     `x` while its drawer is open and saying whether it is and which
     drawer it opens (`aria-expanded`, `aria-controls`). At `56rem` and
     under the top bar stays at the top of the window, `bg-page` with
@@ -556,6 +567,13 @@ turned off (disabled), where it has these.
     contents below it, every list open: the buttons that fold the
     sidebar's groups are hidden, and the language switch's chevron is
     turned to open and its button does nothing on a click.
+- **The local site's language switch.** The local site has two
+  languages and no sidebar: each page has, at the end of its first
+  line, a link to itself in the other language, a quiet button
+  (padding `0 space-2`, `radius-sm`, `target` high) of `languages`
+  (`icon-sm`) and that language's name in itself, 中文 or English,
+  `text-sm` in `text-muted`; under the pointer `bg-hover` and `text`,
+  active `bg-active`. It names its language (`hreflang`, `lang`).
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding
   `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
@@ -636,9 +654,10 @@ turned off (disabled), where it has these.
   ring, icons, the sidebar, the table of contents, the top bar),
   `controls.css` (the native controls wherever they stand),
   `constitution.css`, `design.css` (the design and a rule's page),
-  `rules-list.css` (the list of the rules, its marks and the tags) and `filter.css`
-  (the legend, the filter and the page size above the list, whose
-  markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
+  `rules-list.css` (the list of the rules, its marks and the tags),
+  `filter.css` (the filter and the page size above the list) and
+  `legend.css` (the legend above them), whose markup is in
+  `web/layouts/_partials/rules/`. Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
   `web/assets/styles/index.yaml`. The local site's own is
   `crates/statute/src/site.css`, which `statute` writes into each page
@@ -703,7 +722,8 @@ of its style sheet named by one; the one-of of
 [Components](#components); the filter's
 button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
-popover. Not built yet, and what each replaces:
+popover; the language switch and the tag of a text not in the page's
+language. Not built yet, and what each replaces:
 
 - On the public site, the tags of a rule's page, and enabled and the
   quadrant in the list, are boxes of one look; the tags of
