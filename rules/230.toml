@@ -1,0 +1,42 @@
+id = 230
+slug = "parameter-or-one-of"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+authority = ["decidable-provisions", "simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Use a parameter when only a value differs, and a one-of when the requirement does"
+zh = "只差一个值就用参数，要求本身不同就用 one-of"
+
+[text.statement]
+en = "When the ways of meeting a need differ only in one value filled into the same sentence, write one rule that names a parameter for that value; when they differ in the requirement itself, write a one-of whose options are each a complete rule. Write no condition on a parameter's value into a rule's text."
+zh = "几种做法只差同一句话里填的一个值时，写一条规定，用一个参数表示这个值；要求本身不同时，写一个 one-of，每个选项都是一条完整的规定。规定正文里不写按参数取值分情况的条件。"
+
+[text.reason]
+en = '''
+A parameter keeps one sentence and one check for every value, and the rule set chooses the value as a linter's configuration chooses a setting. Ways that differ in how the sentence is built, in what the agent does or in how compliance is checked are different requirements: folded into one rule that branches on a value ("if A, do this; if B, do that"), the rule becomes a small program that every reader has to evaluate, and whether something violates it depends on a value the text does not show ({@constitution:decidable-provisions}). Written out as the options of a one-of, each reads and is checked on its own. Each mechanism used for what it fits, and no third one built on top of them, is the simplest set ({@constitution:simplicity}).
+'''
+zh = '''
+用参数，不管取什么值，都是同一句话、同一种检查，值由规则集来选，就像 linter 的配置选一个设置项。几种做法如果句子的结构不同、agent 要做的事不同，或者检查是否合规的方法不同，那就是不同的要求：硬塞进一条按取值分情况的规定 (「是 A 就这样做，是 B 就那样做」)，规定就成了一段小程序，每个读者都得自己去算，而且算不算违反，取决于一个正文里看不到的值 ({@constitution:decidable-provisions})。写成 one-of 的几个选项，每个都能单独读、单独检查。两种机制各用在合适的地方，不在它们之上再造第三种，这是最简单的一套做法 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+A value here is a word, a number, a name or a code that fills one slot of an otherwise identical sentence, such as the language of commit messages or the name of a label; the rule and its check read the same whatever the value. The requirement differs when the options need different sentences, different actions or different checks. A condition on a parameter's value is any text in a rule that says what to do depending on what the parameter is set to.
+
+Violated when a change adds or rewrites rules so that options differing only in one such value are written as a one-of or as separate rules, so that options differing in the requirement share one rule through a parameter, or so that a rule's text holds a condition on a parameter's value.
+'''
+zh = '''
+这里的值，指填进一句别处都相同的话里某一个位置的词、数字、名字或代码，例如 commit message 用的语言、某个标签的名字；不管取什么值，规定和它的检查读起来都一样。几个选项要用不同的句子、做不同的事或者做不同的检查，就是要求本身不同。按参数取值分情况的条件，指规定里任何根据参数设成什么值来决定怎么做的文字。
+
+变更新增或改写规定后，只差一个这样的值的几个选项被写成了 one-of 或几条单独的规定，要求本身不同的几个选项通过参数共用一条规定，或者规定正文里写了按参数取值分情况的条件的，即为违反本规定。
+'''
+
+[translations]
+zh = "8d660f001526452640a582b16a8f27c5b3eb78bd17d95690adfb955b618294a2"
