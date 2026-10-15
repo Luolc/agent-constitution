@@ -1,12 +1,12 @@
 //! Subdomains (`docs/design/rule-sources.md`, Subdomains): a domain under
-//! a domain, two levels at most, and rules hung under a domain of another
-//! source.
+//! a domain, at any depth, and rules and domains hung under a domain of
+//! another source.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, rule, set_default};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -324,31 +324,23 @@ fn a_domain_hangs_under_a_domain_of_another_source() {
     let dir = repo("hung-domain-own-pack", &manifest("", "\"me:30\""), &more);
     ok(&statute(&dir, &["lock"]));
     assert_eq!(locked(&dir), ["me:31"]);
-    // Two levels at most, on either side.
+    // Under a subdomain of the other source, and with a subdomain of its
+    // own below it.
+    let more = [
+        ("me/rules", hung_domain(30, "R2")),
+        ("me/rules", rule(31, 30, "")),
+        (
+            "me/rules",
+            edit(domain(32), "lang = \"en\"", "lang = \"en\"\nparent = 30"),
+        ),
+        ("me/rules", rule(33, 32, "")),
+    ];
     let dir = repo(
         "hung-domain-sub",
-        &manifest("", ""),
-        &[("me/rules", hung_domain(30, "R2"))],
+        &manifest("\"me:31\", \"me:33\"", ""),
+        &more,
     );
-    fails(
-        &dir,
-        "me/rules/30.toml: error: `parent` names \"R2\", a subdomain already; domains nest two levels at most, so name a domain with no parent",
-    );
-    let dir = repo(
-        "hung-domain-under",
-        &manifest("", ""),
-        &[
-            ("me/rules", hung_domain(30, "R1")),
-            (
-                "me/rules",
-                edit(domain(32), "lang = \"en\"", "lang = \"en\"\nparent = 30"),
-            ),
-        ],
-    );
-    fails(
-        &dir,
-        "me/rules/32.toml: error: parent 30 is a subdomain already, under a domain of another source; domains nest two levels at most, so name a domain with no parent",
-    );
+    assert_eq!(numbers(&dir), ["me:31", "me:33"]);
     // The reference direction: a public domain hangs under a public one.
     let dir = repo(
         "hung-domain-private",
@@ -369,4 +361,115 @@ fn a_domain_hangs_under_a_domain_of_another_source() {
         &dir,
         "r/rules/30.toml: error: `parent` names \"team:1\"; the first-party source's domains are the roots, with no parent in another source",
     );
+}
+
+/// Domain `id` under `parent`, a number in its own source or a quoted
+/// reference to another, on by default.
+fn on_under(id: u64, parent: &str) -> (u64, String) {
+    set_default(
+        edit(
+            domain(id),
+            "lang = \"en\"",
+            &format!("lang = \"en\"\nparent = {parent}"),
+        ),
+        "\"on\"",
+    )
+}
+
+#[test]
+fn a_rule_three_levels_down_is_on_when_each_domain_above_it_is() {
+    // R40 under R41 under R42 under R43, each on, and rule R44 on in R40;
+    // me:30 on under R40, with rule me:31 on.
+    let tree = |off: u64| -> Vec<(&'static str, (u64, String))> {
+        let level = |id, parent: &str| {
+            let node = if parent.is_empty() {
+                set_default(domain(id), "\"on\"")
+            } else {
+                on_under(id, parent)
+            };
+            if id == off {
+                set_default(node, "\"off\"")
+            } else {
+                node
+            }
+        };
+        vec![
+            ("r/rules", level(43, "")),
+            ("r/rules", level(42, "43")),
+            ("r/rules", level(41, "42")),
+            ("r/rules", level(40, "41")),
+            ("r/rules", set_default(rule(44, 40, ""), "\"on\"")),
+            ("me/rules", level(30, "\"R40\"")),
+            ("me/rules", set_default(rule(31, 30, ""), "\"on\"")),
+        ]
+    };
+    let dir = repo("three-levels", &manifest("", ""), &tree(0));
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(locked(&dir), ["R44", "me:31"]);
+    // One domain above them off, and neither is on.
+    let dir = repo("three-levels-off", &manifest("", ""), &tree(42));
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(locked(&dir), Vec::<String>::new());
+}
+
+#[test]
+fn a_rule_ten_levels_down_is_on() {
+    let mut more = vec![("r/rules", set_default(domain(40), "\"on\""))];
+    for id in 41..50 {
+        more.push(("r/rules", on_under(id, &(id - 1).to_string())));
+    }
+    more.push(("r/rules", set_default(rule(50, 49, ""), "\"on\"")));
+    let dir = repo("ten-levels", &manifest("", ""), &more);
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(locked(&dir), ["R50"]);
+}
+
+#[test]
+fn parents_across_sources_form_no_cycle() {
+    // A second private source, `us`: me:30 under us:40 under me:30.
+    let with_us = manifest("", "") + "us = { path = \"us\", public = false }\n";
+    let dir = repo(
+        "parent-cycle",
+        &with_us,
+        &[
+            ("me/rules", hung_domain(30, "us:40")),
+            ("us/rules", hung_domain(40, "me:30")),
+        ],
+    );
+    fails(
+        &dir,
+        "me/rules/30.toml: error: the parents form a cycle across sources: me:30 -> us:40 -> me:30",
+    );
+    // us:40 under me:1 instead, and the tree has three levels.
+    let dir = repo(
+        "parent-no-cycle",
+        &with_us,
+        &[
+            ("me/rules", hung_domain(30, "us:40")),
+            ("us/rules", hung_domain(40, "me:1")),
+        ],
+    );
+    ok(&statute(&dir, &["lock"]));
+}
+
+#[test]
+fn two_domains_under_different_parents_may_share_a_title() {
+    let tiers = |id, parent: &str| {
+        edit(
+            on_under(id, parent),
+            &format!("en = \"Domain {id}\""),
+            "en = \"Tiers\"",
+        )
+    };
+    let more = [
+        ("r/rules", tiers(40, "2")),
+        ("r/rules", rule(41, 40, "")),
+        ("r/rules", tiers(50, "5")),
+        ("r/rules", rule(51, 50, "")),
+    ];
+    let dir = repo("same-title", &manifest("\"R41\", \"R51\"", ""), &more);
+    assert_eq!(numbers(&dir), ["R41", "R51"]);
+    let dir = repo("same-title-packs", &manifest("", "\"R40\", \"R50\""), &more);
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(locked(&dir), ["R41", "R51"]);
 }
