@@ -17,8 +17,8 @@ en = "Rest a rule only on mechanisms that already run"
 zh = "规定只依赖已经在跑的机制"
 
 [text.statement]
-en = "Make what a rule requires, and the condition under which it applies, rest only on checks, counts, records and other mechanisms that already run where the rule is enabled, never on one that is still to be built."
-zh = "规定要求的事，以及它适用的条件，只能依赖在启用它的地方已经在跑的检查、计数、记录等机制，不能依赖还没建起来的机制。"
+en = "Make what a rule requires, and the condition under which it applies, rest only on checks, counts, records and other mechanisms that already run, never on one that is still to be built."
+zh = "规定要求的事，以及它适用的条件，只能依赖已经在跑的检查、计数、记录等机制，不能依赖还没建起来的机制。"
 
 [text.reason]
 en = '''
@@ -30,19 +30,23 @@ zh = '''
 
 [text.verification]
 en = '''
-A rule rests on a mechanism when what it requires, or the condition under which it applies, needs that mechanism to be met or decided: a check or a script it says to run, a count or a record it measures by, a switch or a setting it relies on. The mechanism runs when, as the change takes effect, it exists and works in each jurisdiction that enables the rule, so that an agent there can run it or read what it keeps: a command that is installed, a CI job that runs, a count that something writes down.
+A rule rests on a mechanism when what it requires, or the condition under which it applies, needs that mechanism to be met or decided: a check or a script it says to run, a count, a record or a format it measures by or has agents fill in, a switch or a setting it relies on. For example, a rule that lets a trial rule become active after a number of uses rests on a record of uses; where nothing marks a use as one, that record does not run.
 
-A rule does not rest on a mechanism that the rule itself requires agents to set up, such as a rule that has commit hooks scan for credentials; on an act it requires agents to do themselves, such as counting what is left after a cleanup; or on a condition that asks only whether a mechanism exists, as in "where the repository has a screenshot script".
+An act the rule asks agents to do themselves rests on no mechanism when what the act works on is there to be read when it is done, as the processes left after a cleanup are; when it works on a history or a record that nothing keeps, or on a format that nothing reads, it rests on that. Building a mechanism is not resting on it when building it is the whole requirement, as in a rule that has commit hooks scan for credentials; a rule that has agents fill in a format that nothing reads, or feed a gate that nothing runs, rests on that format or gate. A condition that asks only whether a mechanism exists, as in "where the repository has a screenshot script", rests on none.
 
-Violated when a change adds or rewrites a rule so that what it requires, or the condition under which it applies, rests on a mechanism that does not run in a jurisdiction that enables the rule as the change takes effect.
+A mechanism runs when, as the change takes effect, an agent can run it or read what it keeps: a command that is installed, a CI job that runs, a record that something writes. Where it must run follows from the rule's source. A rule of a repository's own source rests on what runs in that repository. A rule of a public source rests on what that source ships itself, such as a check built into its tool, or, for a rule under a tool's domain ({@rule:102}), on that tool. A value the rule leaves to the layers below as a parameter ({@rule:101}) is the jurisdiction's to provide and is not a mechanism of the rule.
+
+Violated when a change adds or rewrites a rule so that what it requires, or the condition under which it applies, rests on a mechanism that does not run, where this verification says it must, as the change takes effect.
 '''
 zh = '''
-规定要求的事或它适用的条件，要靠某个机制才能满足或判定，这条规定就依赖这个机制：它让人跑的检查或脚本，它拿来衡量的计数或记录，它所依赖的开关或设置。在变更生效时，这个机制在每个启用这条规定的辖区里都存在、都能用，那里的 agent 能运行它或读到它记下的东西，这个机制就算在跑：已经装好的命令，在跑的 CI job，有东西在记的计数。
+规定要求的事或它适用的条件，要靠某个机制才能满足或判定，这条规定就依赖这个机制：它让人跑的检查或脚本，它拿来衡量或让 agent 填写的计数、记录或格式，它所依赖的开关或设置。例如，让试用规定在用过若干次之后改为生效的规定，依赖一份使用记录；没有任何东西把一次使用记成使用，这份记录就没有在跑。
 
-规定本身要求 agent 去建的机制 (例如要求用 commit 钩子扫描凭证的规定)，规定要求 agent 自己做的动作 (例如清理之后数剩下多少)，以及只问某个机制有没有的条件 (例如「仓库有截图脚本的」)，都不算依赖机制。
+规定要求 agent 自己做的动作，在做的时候，它所处理的东西就摆在那里可以读 (例如清理之后剩下的进程)，就不依赖机制；它处理的是没有东西在记的历史或记录，或者没有东西去读的格式，就依赖它们。规定要求的就是把某个机制建起来 (例如要求用 commit 钩子扫描凭证的规定)，不算依赖这个机制；规定让 agent 去填一个没有东西去读的格式，或者去喂一个没有东西在跑的 gate，就依赖这个格式或 gate。只问某个机制有没有的条件 (例如「仓库有截图脚本的」)，不依赖机制。
 
-变更新增或改写的规定，要求的事或适用的条件依赖了一个机制，而在变更生效时，这个机制在某个启用这条规定的辖区里没有在跑的，即为违反本规定。
+在变更生效时，agent 能运行这个机制或读到它记下的东西，这个机制就算在跑：已经装好的命令，在跑的 CI job，有东西在写的记录。它要在哪里跑，由规定所在的来源决定。仓库自己的来源里的规定，依赖的是这个仓库里在跑的东西。公开来源里的规定，依赖的是这个来源自己带的东西 (例如它的工具内置的检查)；挂在某个工具的领域下的规定 ({@rule:102})，依赖的是那个工具。规定作为参数留给下层的值 ({@rule:101})，由辖区提供，不算这条规定的机制。
+
+变更新增或改写的规定，要求的事或适用的条件依赖了一个机制，而在变更生效时，这个机制在本节说的地方没有在跑的，即为违反本规定。
 '''
 
 [translations]
-zh = "b20a52d4ee7e163c163c28485df53882cf58a440cd79f388f196be145aeab186"
+zh = "298f529f0c4866a7b9b749214031745f6620ec87b099bc2cd86bb33721fc90b2"

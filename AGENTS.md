@@ -280,7 +280,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R233 Put `review` in a rule's `uses` only when a reviewer can decide from the diff and the pull request description alone whether the rule was broken, and `instructions` only when an agent needs to know the rule while it works.
 - R239 Write a rule's statement so that it can be read and followed on its own, as one line of the compiled instructions, resting on nothing that line does not show, such as the rule's title, reason or verification, its domain, its place in the tree or its `requires`. Name another rule in it only by a citation, never by its position, as in "the rule above" or "the other options".
 - R289 Move a trial rule to `active` only once a principal has said explicitly that it may move.
-- R290 Make what a rule requires, and the condition under which it applies, rest only on checks, counts, records and other mechanisms that already run where the rule is enabled, never on one that is still to be built.
+- R290 Make what a rule requires, and the condition under which it applies, rest only on checks, counts, records and other mechanisms that already run, never on one that is still to be built.
 - L6 Keep each rule, one-of and domain of the first-party source in `rules/<id>.toml`, named by its ID without zero padding, and never delete one or reuse its ID: a rule that goes is superseded or repealed.
 - L7 In a first-party rule, cite a rule as `{@rule:<id>}` and the constitution as `{@constitution:<id>}`, and in the constitution cite without a prefix; never cite a rule by its slug.
 - R129 Put each worktree of a repository at `<root>/<repo>/<slug>/`, under the root the jurisdiction designates for worktrees, never inside a repository's directory.
