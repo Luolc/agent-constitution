@@ -1,0 +1,42 @@
+id = 143
+slug = "attended-machine-reads-interactively"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "On an attended machine, read through the interactive route, and give a service account only to scheduled tasks"
+zh = "有人值守的机器上经交互途径读，只有定时任务用 service account"
+
+[text.statement]
+en = "On an attended machine, read the secret manager through the interactive route that a person unlocks, writing each reference with the vault its item is in, and give a service account only to the unattended scheduled tasks there, one that reads the general tier only and whose token goes into those tasks alone, never into a login shell."
+zh = "在有人值守的机器上，agent 经人解锁的交互途径读密钥管理器，引用按条目所在的 vault 写；只有那里无人值守的定时任务用 service account，它只读通用层，token 只注入这些任务，不进登录 shell。"
+
+[text.reason]
+en = '''
+On an attended machine every interactive read waits for a person to unlock it, so no service account is needed. Scheduled tasks run with nobody there to unlock, and only they need a service account, one that reads only the general tier. With its token kept out of login shells, the agents on the machine still read only through the interactive route.
+'''
+zh = '''
+有人值守的机器上，交互读取都要等人解锁，不需要 service account。定时任务运行时没有人在旁边解锁，只有它们需要一个 service account，而且只读通用层。token 不进登录 shell，机器上的 agent 就仍然只能经交互途径读。
+'''
+
+[text.verification]
+en = '''
+An attended machine is one where reads of the secret manager go through an interactive route that a person unlocks, such as the desktop integration of a secret manager's app. The general tier holds the credentials people put there for agents to use ({@rule:139}). Which machines are attended, which service account the scheduled tasks use and where its token is kept are set in the jurisdiction. A login shell is the shell that a person or an agent gets on logging in, together with every process started from it.
+
+Violated when an agent on an attended machine reads the secret manager through a service account, the scheduled tasks' service account reads a tier other than the general tier, or its token enters the environment of a login shell.
+'''
+zh = '''
+有人值守的机器，指读密钥管理器要经人解锁的交互途径的机器，例如经密钥管理器应用的桌面集成读。通用层放的是人放进去给 agent 用的凭证 ({@rule:139})。哪些机器有人值守、定时任务用哪个 service account、它的 token 放在哪里，由法域规定。登录 shell 指人或 agent 登录后得到的 shell，以及从它启动的所有进程。
+
+有人值守的机器上的 agent 经 service account 读密钥管理器，定时任务的 service account 读了通用层以外的层，或者它的 token 进了登录 shell 的环境的，即为违反本规定。
+'''
+
+[translations]
+zh = "72f85bf253560c8c08ff0443768534d64bfb7c18aa2f25b5faf20b01dbc1aaf6"

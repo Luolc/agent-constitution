@@ -1,0 +1,42 @@
+id = 141
+slug = "service-tier-read-by-own-service-account"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Let only a service's own service account read its credentials in the service tier"
+zh = "服务层里的凭据只由所属服务自己的 service account 读"
+
+[text.statement]
+en = "Let a service credential in the service tier be read only by the service account of the service it belongs to, and keep it out of every login shell."
+zh = "服务层里的服务凭据只由所属服务自己的 service account 读，不进任何登录 shell。"
+
+[text.reason]
+en = '''
+A leaked service credential costs more than a leaked general one. When only the service that uses it can read it, neither a login shell nor an agent running in one can reach it, and that service is the only way it can leak.
+'''
+zh = '''
+服务凭据泄露的代价比通用凭证大。只让用它的那个服务读，登录 shell 和在其中运行的 agent 都碰不到它，泄露的途径就只剩那一个服务。
+'''
+
+[text.verification]
+en = '''
+The service tier is the part of the secret manager (a vault, say) that the jurisdiction sets aside for the credentials of services. A login shell is the shell that a person or an agent gets on logging in, together with every process started from it.
+
+Violated when an agent reads an entry of the service tier, a value from the service tier enters the environment of a login shell, or a service account can read the entries of a service other than its own.
+'''
+zh = '''
+服务层，指密钥管理器里由法域专门留给各个服务的凭据的部分 (例如一个 vault)。登录 shell 指人或 agent 登录后得到的 shell，以及从它启动的所有进程。
+
+agent 读了服务层里的条目，服务层里的值进了登录 shell 的环境，或者某个 service account 读得到不属于它的服务的条目的，即为违反本规定。
+'''
+
+[translations]
+zh = "a69de8d152f8b967a277b0b9d448140d13d320a1e3aaae27ae995cb964d0cc62"
