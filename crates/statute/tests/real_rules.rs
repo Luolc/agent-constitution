@@ -81,7 +81,9 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
     assert!(project.revision.parse::<u64>().is_ok());
     let lock = statute::lock::render(&project);
     assert_eq!(lock.matches("[[rules]]").count(), in_force, "{lock}");
-    // The local site has a page for every node, and the index.
+    // The local site has a page for every node, the index and the page of
+    // the parameters.
     let pages = statute::site::pages(&project).unwrap();
-    assert_eq!(pages.len(), source.nodes.len() + 1);
+    assert!(!source.params.is_empty());
+    assert_eq!(pages.len(), source.nodes.len() + 2);
 }
