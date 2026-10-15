@@ -448,6 +448,34 @@ impl RawEntry {
     }
 }
 
+/// The keys of a rule set's top level that are not tables. Written after
+/// the `[sources]` header, such a key falls in that table.
+const TOP_LEVEL: &[&str] = &[
+    "public",
+    "local-rules",
+    "rules",
+    "packs",
+    "domains",
+    "exclude",
+];
+
+/// Takes out of a `[sources]` table the keys of `TOP_LEVEL` that fell in
+/// it, each with an error, and returns their names.
+fn misplaced(sources: &mut BTreeMap<String, toml::Value>, errors: &mut Vec<String>) -> Vec<String> {
+    let mut names = Vec::new();
+    sources.retain(|name, value| {
+        if value.is_table() || !TOP_LEVEL.contains(&name.as_str()) {
+            return true;
+        }
+        errors.push(format!(
+            "[sources] `{name}`: written after the `[sources]` header, it falls in that table; move it above the first table header, to the top level of the file"
+        ));
+        names.push(name.clone());
+        false
+    });
+    names
+}
+
 /// The global configuration.
 #[derive(Deserialize)]
 struct RawConfig {
@@ -517,7 +545,7 @@ struct RawPrivate {
     domains: Vec<String>,
     exclude: Option<toml::Value>,
     #[serde(default)]
-    sources: BTreeMap<String, RawSource>,
+    sources: BTreeMap<String, toml::Value>,
     #[serde(flatten)]
     rest: BTreeMap<String, toml::Value>,
 }
@@ -733,9 +761,10 @@ impl Manifest {
     /// does not name them (`docs/design/global-configuration.md`, Which
     /// source a name means).
     pub fn parse_with(text: &str, layers: &Layers) -> Result<Manifest, Vec<String>> {
-        let raw: RawManifest =
+        let mut raw: RawManifest =
             toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
+        misplaced(&mut raw.sources, &mut errors);
         let public = raw.public.unwrap_or_else(|| {
             errors.push(
                 "`public` is missing; say whether the repository that holds this rule set is public, `public = true` or `public = false`"
@@ -912,9 +941,10 @@ impl Manifest {
         text: &str,
         locked: &[SourceSpec],
     ) -> Result<Manifest, Vec<String>> {
-        let raw: RawPrivate =
+        let mut raw: RawPrivate =
             toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
+        let misplaced = misplaced(&mut raw.sources, &mut errors);
         if !self.public {
             errors.push(format!(
                 "{} is for a public repository; in a private one (`public = false`), statute.toml names every source and rule",
@@ -922,7 +952,19 @@ impl Manifest {
             ));
         }
         let mut sources = self.sources.clone();
-        let mut own = read_sources(&raw.sources, None, Declared::RuleSet, &mut errors);
+        let mut on = BTreeMap::new();
+        for (name, value) in raw.sources {
+            match value.try_into() {
+                Ok(s) => {
+                    on.insert(name, s);
+                }
+                Err(e) => errors.push(format!(
+                    "[sources] `{name}`: {}",
+                    e.to_string().trim_end().trim_end_matches('.')
+                )),
+            }
+        }
+        let mut own = read_sources(&on, None, Declared::RuleSet, &mut errors);
         // The file serves every worktree of a clone, from which a relative
         // path would lead to different places.
         for spec in own.iter_mut().filter(|s| s.git.is_none()) {
@@ -987,7 +1029,7 @@ impl Manifest {
         let packs = add("packs", &self.packs, &raw.packs);
         let domains = add("domains", &self.domains, &raw.domains);
         let private_values = values(raw.rest, &mut errors);
-        if raw.exclude.is_some() {
+        if raw.exclude.is_some() || misplaced.iter().any(|k| k == "exclude") {
             errors.push(format!(
                 "`exclude` is for {FILE}: the private layer only adds, and leaves out no rule of the public one"
             ));
@@ -1373,5 +1415,28 @@ lang = "en"
             &format!("{GOOD}\nextends = \"base\""),
             "unknown field `extends`",
         );
+    }
+
+    /// A top-level key written after the `[sources]` header, which TOML
+    /// reads into that table, is named with the table it fell in.
+    #[test]
+    fn a_top_level_key_under_sources_is_named() {
+        fails_with(
+            &GOOD.replace("[compile]", "exclude = [\"R7\"]\n\n[compile]"),
+            "[sources] `exclude`: written after the `[sources]` header",
+        );
+        let base = Manifest::parse(&GOOD.replace("public = false", "public = true")).unwrap();
+        let errors = base
+            .with_private("[sources]\nteam = { path = \"/srv/team\" }\nexclude = [\"R7\"]\n")
+            .unwrap_err();
+        for needle in [
+            "[sources] `exclude`: written after the `[sources]` header",
+            "`exclude` is for statute.toml",
+        ] {
+            assert!(
+                errors.iter().any(|e| e.contains(needle)),
+                "expected an error containing {needle:?}, got {errors:#?}"
+            );
+        }
     }
 }
