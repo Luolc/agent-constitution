@@ -320,7 +320,7 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
         "<a href=\"{up}{}\"><span class=\"ref\">{}</span>{}</a>",
         page(key).display(),
         escape(&key.to_string()),
-        escape(title)
+        code(&escape(title))
     )
 }
 
@@ -372,7 +372,8 @@ fn node_page(
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
     let title = pick(&node.title, node, lang);
-    let mut out = head(&format!("{key} {title}"), lang);
+    // A page title shows no markup, so its code loses only the backticks.
+    let mut out = head(&format!("{key} {}", title.replace('`', "")), lang);
     let sources = &project.sources;
     // The path from the top of the tree down to the node.
     let mut above = Vec::new();
@@ -392,7 +393,7 @@ fn node_page(
         out,
         "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}",
         escape(&key.to_string()),
-        escape(title),
+        code(&escape(title)),
         tags(project, w, key, node, "../")
     );
     if let Some(slug) = &node.slug {
@@ -440,7 +441,8 @@ fn node_page(
 }
 
 /// A rule's text as HTML: paragraphs, lists whose items start with `- `,
-/// and code in backticks; each citation of a rule a link to its page,
+/// code in backticks and code blocks fenced by lines of three backticks,
+/// the first word after the opening ones naming the language; each citation of a rule a link to its page,
 /// each of a provision its label.
 fn text_html(
     project: &Project,
@@ -471,6 +473,36 @@ fn text_html(
         )),
     })?;
     let mut out = String::new();
+    let mut prose = String::new();
+    let mut lines = text.lines();
+    while let Some(line) = lines.next() {
+        let Some(info) = line.trim_start().strip_prefix("```") else {
+            prose.push_str(line);
+            prose.push('\n');
+            continue;
+        };
+        blocks(&std::mem::take(&mut prose), &mut out);
+        match info.split_whitespace().next() {
+            Some(lang) => {
+                let _ = write!(out, "<pre><code class=\"language-{lang}\">");
+            }
+            None => out.push_str("<pre><code>"),
+        }
+        for line in lines.by_ref() {
+            if line.trim_start().starts_with("```") {
+                break;
+            }
+            out.push_str(line);
+            out.push('\n');
+        }
+        out.push_str("</code></pre>\n");
+    }
+    blocks(&prose, &mut out);
+    Ok(out)
+}
+
+/// Text outside code blocks as paragraphs and lists.
+fn blocks(text: &str, out: &mut String) {
     for block in text.split("\n\n").map(str::trim).filter(|b| !b.is_empty()) {
         if block.starts_with("- ") {
             out.push_str("<ul>\n");
@@ -482,7 +514,6 @@ fn text_html(
             let _ = writeln!(out, "<p>{}</p>", code(block));
         }
     }
-    Ok(out)
 }
 
 /// Text between backticks as code.

@@ -352,3 +352,49 @@ fn site_outside_a_git_repository_writes_the_pages() {
     assert_eq!(r.code, 0, "{}", r.stderr);
     assert!(dir.join(".statute/site/index.html").is_file());
 }
+
+#[test]
+fn site_renders_code_blocks_and_code_in_titles() {
+    let dir = repo("code", "");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nrules = [\"R2\"]\n\n[sources]\nR = { path = \".\" }\n",
+    );
+    put(&dir, "rules", domain(1));
+    let fenced = "Because.\n\n```sh\nls <dir>\n\necho done\n```\n\nThen look.";
+    put(
+        &dir,
+        "rules",
+        edit(
+            edit(rule(2, 1, ""), "Because.\n", &format!("{fenced}\n")),
+            "en = \"Rule 2\"",
+            "en = \"Keep `<repo>` tidy\"",
+        ),
+    );
+    let r = statute(&dir, &["site"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let page = read(&dir, ".statute/site/R/2.html");
+    // The block keeps its lines, blank one included, and its language is
+    // a class, not text.
+    assert!(
+        page.contains(
+            "<p>Because.</p>\n<pre><code class=\"language-sh\">ls &lt;dir&gt;\n\necho done\n</code></pre>\n<p>Then look.</p>"
+        ),
+        "{page}"
+    );
+    assert!(
+        page.contains("<title>R2 Keep &lt;repo&gt; tidy</title>"),
+        "{page}"
+    );
+    assert!(
+        page.contains("</span>Keep <code>&lt;repo&gt;</code> tidy</h1>"),
+        "{page}"
+    );
+    // Its link in the index as well.
+    let index = read(&dir, ".statute/site/index.html");
+    assert!(
+        index.contains("Keep <code>&lt;repo&gt;</code> tidy</a>"),
+        "{index}"
+    );
+}
