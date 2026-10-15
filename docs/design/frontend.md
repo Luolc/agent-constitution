@@ -220,7 +220,7 @@ heading) stays in em, a multiple of the text size.
 | Token | Value | Use |
 | --- | --- | --- |
 | `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
-| `width-label` | `3.2em` | The column of the labels in the list of the rules. |
+| `width-label` | `3.2em` | The column of the labels in the list of the rules, at least. |
 | `width-mark` | `1.1em` | Each of the four places of a row's marks in that list. |
 | `size-dot` | `0.6em` | The dot of on or off by default. |
 
@@ -441,14 +441,10 @@ turned off (disabled), where it has these.
   status, the reader checks All in its group. A change
   applies at once and is written into the address, so a filtered list
   can be linked; there is no Apply button. Escape, a click outside or
-  the focus leaving it closes it. A site without scripts, as the local
-  site is, shows the same groups in the popover, applied with a primary
-  button. The local site differs today: its check boxes apply at once,
-  through the style sheet, with no primary button; its groups are the
-  kind of source, the use, and the rules not enabled and those
-  superseded or repealed, shown besides; and it has no groups for the
-  status, the defaults and the domain, no All and None, and no badge
-  ([Status](#status)).
+  the focus leaving it closes it. On the local site, which must work
+  without its script, the check boxes apply at once through the style
+  sheet, with no primary button, a domain's box holding only the rules
+  right in that domain; the script adds the rest.
 - **The view of the list**, after the filter in its bar: what each
   row of the table of rules shows. A segmented control, the word Show /
   「显示」 in `text-sm` and `text-muted`, then three segments in one box
@@ -471,7 +467,7 @@ turned off (disabled), where it has these.
   own, its segments sharing it.
 - **The table of rules**, as ESLint's list of rules is a table: a
   head, then one row a rule, three columns, the label (`width-label`,
-  `text-muted`, aligned to the end), the title, cut to the row with an
+  or the widest label where that is wider, `text-muted`, aligned to the end), the title, cut to the row with an
   ellipsis, and the marks; the head names the first two, `text-sm`,
   `weight-medium`, `text-muted`, over a line of `border-strong`. Every
   row is at least as tall as a target, with a hairline of
@@ -753,12 +749,13 @@ scripts, tabular figures, and `aria-expanded` with `aria-controls` on
 the info button, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's
 buttons. Built today on the local site: every token, and every value
-of its style sheet named by one; the one-of of
-[Components](#components); the filter's
-button and popover; the check boxes; hover only on fine pointers, the
-sizes of targets, the focus ring, and the motion of the filter's
-popover; the language switch and the tag of a text not in the page's
-language; the view of the list of [Components](#components), its choice
+of its style sheet named by one; the table of rules with its marks and
+its group rows and head that stick, the one-of and the legend of
+[Components](#components); the filter's groups, with All and None,
+closing on Escape or a click outside; the check boxes; hover only on
+fine pointers, the sizes of targets, the focus ring, and the motion of
+the filter's popovers; the language switch and the tag of a text not
+in the page's language; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
 it opens at an address without one. Not built yet, and what each replaces:
 
@@ -766,21 +763,10 @@ it opens at an address without one. Not built yet, and what each replaces:
   quadrant in the list, are boxes of one look; the tags of
   [Components](#components) replace them. A one-of whose options are
   off keeps its box in `border-strong`.
-- The local site lists the rules as a tree of domains, each a heading
-  whose size and weight give its level, a deeper one indented with a
-  bar, and each rule's facts as tags, the status a pill, at the end of
-  its row, with a legend of those tags; the table of rules, its marks,
-  the tags and the legend of [Components](#components) replace them
-  there too.
-- On the local site, the filter's groups for the status, the defaults
-  and the domain, with All and None in each, the badge on its button,
-  and its closing on Escape or a click outside; and the primary button
-  that applies it, which the style sheet's check boxes, applying at
-  once, stand in for. Its popover closes at once, by a click on the
-  button. Its pages load no font and set the text in the local serif
-  fonts.
-- On the local site, the view of the list says 「标题与规定」 and 「规定」
-  in Chinese; 「标题和要求」 and 「要求」 replace them.
+- On the public site the column of the labels is `width-label` wide,
+  however wide its labels.
+- The local site's pages load no font and set the text in the local
+  serif fonts.
 
 ## Open questions
 
