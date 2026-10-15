@@ -207,9 +207,23 @@ impl Source {
         id
     }
 
+    /// The children of a node in order of ID, but below a domain its
+    /// subdomains after its rules and one-ofs (`subdomain`).
     pub fn children(&self, id: Id) -> impl Iterator<Item = &Node> {
-        self.nodes.values().filter(move |n| n.parent == Some(id))
+        let parent = self.get(id);
+        let all = self.nodes.values().filter(move |n| n.parent == Some(id));
+        all.clone()
+            .filter(move |n| !subdomain(parent, n))
+            .chain(all.filter(move |n| subdomain(parent, n)))
     }
+}
+
+/// Whether `child` is a subdomain of `parent`: below a domain, the sites
+/// show its rules and one-ofs first and its subdomains after them, so
+/// that each domain's rules stay together under one heading
+/// (`docs/design/statute-command.md`, Compilation and the site).
+pub fn subdomain(parent: Option<&Node>, child: &Node) -> bool {
+    child.kind == Kind::Domain && parent.is_some_and(|p| p.kind == Kind::Domain)
 }
 
 /// A source named `name` in a sentence: `source `team``, or this
@@ -272,7 +286,8 @@ impl Sources {
 
     /// The children of a node: those of its own source in order of ID,
     /// then the rules and domains of other sources hung under it, in
-    /// order of key.
+    /// order of key; below a domain, its subdomains after the rest
+    /// (`subdomain`).
     pub fn children(&self, key: &Key) -> Vec<Key> {
         let mut out: Vec<Key> = self
             .source(&key.source)
@@ -289,8 +304,14 @@ impl Sources {
                     .map(|n| Key::new(&s.name, n.id)),
             );
         }
-        out.sort_by_key(|k| (k.source != key.source, k.clone()));
+        out.sort_by_key(|k| (self.subdomain(key, k), k.source != key.source, k.clone()));
         out
+    }
+
+    /// Whether `child` is a subdomain of `parent` (`subdomain`).
+    pub fn subdomain(&self, parent: &Key, child: &Key) -> bool {
+        self.get(child)
+            .is_some_and(|c| subdomain(self.get(parent), c))
     }
 
     /// The domain or subdomain nearest above a node, or the node itself

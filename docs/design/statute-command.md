@@ -59,7 +59,16 @@ rules stay together: the first-party source's domains first, then those
 of the other sources by the sources' names, then the repository's own;
 below a node, the first-party source's children first, then those of
 the other sources by name, then the repository's own, each source's by
-ID. A one-of contributes the rules of its enabled option, the option's
+ID; a domain's rules and its subdomains are ordered together. The
+sites order a domain's children otherwise: its rules and one-ofs
+first, and its subdomains after them, each part in the order above,
+so that a domain's own rules stay together under one heading
+([The local site](#the-local-site), [Static site](static-site.md)).
+Open question: whether the compiled file takes the sites' order too.
+It would change this repository's `AGENTS.md` together with statute's
+code, which the instruction-only check
+([Checkers](checkers.md#checkers)) counts as mixing an instruction
+file with other files. A one-of contributes the rules of its enabled option, the option's
 own rules when it is a domain; a subtree with no enabled rule
 contributes nothing. An overriding rule
 ([Overrides](rule-sources.md#overrides)) stands at the place of the rule
@@ -369,7 +378,9 @@ file. It prints the path of `index.html`.
   ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
   sections: global public, global private, local public and local
   private. Each lists its sources, and each source its rules, enabled or
-  not, in a table of rules ([Frontend](frontend.md#components)): a row
+  not, a domain's rules and one-ofs before its subdomains
+  ([Compilation and the site](#compilation-and-the-site)), in a table
+  of rules ([Frontend](frontend.md#components)): a row
   per rule, its reference, title, marks and whether this rule set
   enables it, overrides it or leaves it out, under a group row that
   names its source and domains; a one-of is a box that holds its
