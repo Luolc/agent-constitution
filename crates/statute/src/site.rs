@@ -159,6 +159,9 @@ a{color:#05c}code{background:#f3f3f3;padding:0 .2em;border-radius:3px}\
 .tag{font-size:.8em;color:#666;margin-left:.4em}.on{color:#080}\
 ul.tree{list-style:none;padding-left:1.2rem}nav label{margin-right:1rem}\
 section{border-top:1px solid #ddd;margin-top:1.5rem}\
+.q{font-size:.8em;margin-left:.4em;padding:0 .4em;border-radius:3px;white-space:nowrap}\
+.q.global-public{background:#dbeafe;color:#1e3a8a}.q.global-private{background:#fde7c8;color:#7c2d12}\
+.q.local-public{background:#dcfce7;color:#14532d}.q.local-private{background:#f3e3f9;color:#581c87}\
 body:has(#show-old:not(:checked)) .old,body:has(#show-off:not(:checked)) .off{display:none}";
 
 /// One page of the site: its path below the site's directory, and its
@@ -324,10 +327,15 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
     )
 }
 
-/// A node's kind, status and, for a rule, what this rule set does with
-/// it.
+/// A node's quadrant, kind, status and, for a rule, what this rule set
+/// does with it. The quadrant's class gives it its color, and its name
+/// says it without one.
 fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> String {
     let mut out = String::new();
+    if let Some(source) = project.sources.source(&key.source) {
+        let q = Quadrant::of(source);
+        let _ = write!(out, "<span class=\"q {}\">{}</span>", q.class(), q.name(w));
+    }
     if node.kind != Kind::Rule {
         let _ = write!(out, "<span class=\"tag\">{}</span>", kind(w, node.kind));
     }

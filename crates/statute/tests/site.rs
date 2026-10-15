@@ -291,3 +291,49 @@ fn site_writes_nothing_where_git_tracks_a_file() {
     assert_eq!(read(&dir, ".statute/site/index.html"), before);
     assert!(!dir.join(".statute/site/L/7.html").exists());
 }
+
+#[test]
+fn site_marks_the_quadrant_of_each_rule() {
+    for (lang, names) in [
+        (
+            "en",
+            [
+                "Global public",
+                "Global private",
+                "Local public",
+                "Local private",
+            ],
+        ),
+        ("zh", ["全局公开", "全局私有", "本仓公开", "本仓私有"]),
+    ] {
+        let dir = four(&format!("quadrant-{lang}"));
+        let manifest = read(&dir, "statute.toml");
+        let manifest = manifest.replace(
+            "\n\n[sources]",
+            &format!("\n\n[compile]\nlang = \"{lang}\"\n\n[sources]"),
+        );
+        write(&dir, "statute.toml", &manifest);
+        let r = statute(&dir, &["site"]);
+        assert_eq!(r.code, 0, "{}", r.stderr);
+        let index = read(&dir, ".statute/site/index.html");
+        for ((class, page), name) in [
+            ("global-public", "R/2.html"),
+            ("global-private", "me/4.html"),
+            ("local-public", "L/3.html"),
+            ("local-private", "here/5.html"),
+        ]
+        .into_iter()
+        .zip(names)
+        {
+            let mark = format!("<span class=\"q {class}\">{name}</span>");
+            let html = read(&dir, &format!(".statute/site/{page}"));
+            let h1 = &html[html.find("<h1>").unwrap()..html.find("</p>").unwrap()];
+            assert!(h1.contains(&mark), "{lang} {page}: {h1}");
+            let item = index
+                .lines()
+                .find(|l| l.starts_with("<li") && l.contains(&format!("href=\"{page}\"")))
+                .unwrap();
+            assert!(item.contains(&mark), "{lang} {page}: {item}");
+        }
+    }
+}
