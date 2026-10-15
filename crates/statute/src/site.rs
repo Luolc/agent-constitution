@@ -265,11 +265,17 @@ fn index(project: &Project, w: &Words) -> String {
         }
         for source in project.sources.iter().filter(|s| Quadrant::of(s) == q) {
             any = true;
+            // As in the compiled `AGENTS.md`: a git source by its address
+            // and commit, not the snapshot directory it is read from.
+            let place = match project.manifest.spec(&source.name) {
+                Some(spec) => spec.place(),
+                None => source.path.clone(),
+            };
             let _ = writeln!(
                 out,
                 "<h3 id=\"source-{0}\">{0} <span class=\"tag\">{1}</span></h3>\n<ul class=\"tree\">",
                 escape(&source.name),
-                escape(&source.path)
+                escape(&place)
             );
             for node in source.nodes.values().filter(|n| n.parent.is_none()) {
                 tree(project, w, source, node, &mut out);
