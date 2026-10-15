@@ -133,6 +133,11 @@ class Release(unittest.TestCase):
     self.assertEqual(code, 1)
     self.assertIn("0 runs of .github/workflows/ci.yml", out)
 
+  def test_two_ci_runs(self):
+    code, out = self.run_check(runs=[CI, {**CI, "id": 9}])
+    self.assertEqual(code, 1)
+    self.assertIn("2 runs of .github/workflows/ci.yml", out)
+
   def test_ci_not_finished(self):
     code, _ = self.run_check(
       runs=[{**CI, "status": "in_progress", "conclusion": None}]

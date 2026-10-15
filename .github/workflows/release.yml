@@ -3,9 +3,9 @@
 # workflow and the environment `release` (Trusted Publishing): the job
 # trades its OIDC token for a short-lived crates.io token, so the repo holds
 # no crates.io secret. The environment admits only statute-v* tags.
-# Before publishing, check-release-tag checks the tag against the
-# manifest, that the commit is on main, and that its CI run on main
-# succeeded on the first attempt.
+# Before the job that publishes, the job `check` runs check-release-tag:
+# the tag against the manifest, that the commit is on main, and that its
+# CI run on main succeeded on the first attempt.
 
 name: Release
 
@@ -20,13 +20,14 @@ concurrency:
 permissions: {}
 
 jobs:
-  publish:
+  # The check runs in a job of its own, without the environment or
+  # id-token: write, so that none of the tools uv installs can ask for the
+  # OIDC token crates.io trusts.
+  check:
     runs-on: ubuntu-24.04
-    environment: release
     permissions:
       contents: read
       actions: read # check-release-tag lists the commit's CI runs
-      id-token: write # the OIDC token crates.io trades for its own
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -45,6 +46,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: uv run --frozen check-release-tag --tag "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY"
+
+  publish:
+    needs: check
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # the OIDC token crates.io trades for its own
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install the Rust toolchain
         run: rustup toolchain install --no-self-update

@@ -59,14 +59,16 @@ keeps the edition in force and a draft of the next one is settled by
   the GitHub environment `release` (Trusted Publishing), and the job trades
   its OIDC token for a short-lived crates.io token. The environment admits
   only tags `statute-v*`.
-- Before publishing, `check-release-tag` checks three things in order, each
-  only once the one before it passed, and the job stops at the first that
-  fails: the tag is `statute-v` followed by the version in
+- Before publishing, a job of its own, outside the environment and
+  without the OIDC token, runs `check-release-tag`; the job that publishes
+  runs only when it passed, so no tool of the check can get the token. The
+  check takes three steps in order, each only once the one before it
+  passed, and stops at the first that fails: the tag is `statute-v` followed by the version in
   `crates/statute/Cargo.toml`, and a manifest without a version to read
   fails; the tagged commit is on `main`; that commit's push-triggered run
   of `ci.yml` completed with `success` on its first attempt. So the tag
   goes on after that run has finished; when it was pushed earlier, the
-  check fails, and the release job is rerun once the CI run has passed.
+  check fails, and the workflow is rerun once the CI run has passed.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.
