@@ -16,8 +16,8 @@ en = "Name the repository in a command that would take it from the working direc
 zh = "命令会从工作目录推断仓库的，写明仓库"
 
 [text.statement]
-en = "When a command reads or changes a repository that it would otherwise take from the working directory, name that repository in the command, or first confirm that the working directory is inside it."
-zh = "命令要读或改的仓库，在不写明时会从工作目录推断的，在命令里写明这个仓库，或者先确认工作目录就在这个仓库里。"
+en = "When you run, from a directory not known to be a checkout of the repository you mean, a command that would take its repository from the working directory, name that repository in the command, or first confirm that the working directory is inside it."
+zh = "在一个不确知是目标仓库检出的目录里，运行不写明仓库时会从工作目录推断仓库的命令的，在命令里写明这个仓库，或者先确认工作目录就在这个仓库里。"
 
 [text.reason]
 en = '''
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-Such a command picks its repository from the working directory when none is named, as `gh` does without `-R <owner>/<repo>` and `git` without `-C <path>`. Confirming means running before it, in the same shell and directory, a command that prints the repository the working directory belongs to, such as `git rev-parse --show-toplevel`, and reading that it is the repository meant.
+Such a command picks its repository from the working directory when none is named, as `gh` does without `-R <owner>/<repo>` and `git` without `-C <path>`. A directory is known to be a checkout of the repository when the agent set its working directory to a checkout of that repository, by starting there or changing into it, and has not changed it since. Confirming means running before it, in the same shell and directory, a command that prints the repository the working directory belongs to, such as `git rev-parse --show-toplevel`, and reading that it is the repository meant.
 
-Violated when an agent cites or acts on the output of such a command that neither named its repository nor followed such a confirmation.
+Violated when an agent cites or acts on the output of such a command, run from a directory not known to be a checkout of the repository meant, that neither named its repository nor followed such a confirmation.
 '''
 zh = '''
-这样的命令，在没写明仓库时从工作目录选定仓库，例如不带 `-R <owner>/<repo>` 的 `gh`，不带 `-C <path>` 的 `git`。确认，指在它之前、在同一个 shell 和目录里，运行一条打印出工作目录所属仓库的命令，例如 `git rev-parse --show-toplevel`，并读到它就是要操作的仓库。
+这样的命令，在没写明仓库时从工作目录选定仓库，例如不带 `-R <owner>/<repo>` 的 `gh`，不带 `-C <path>` 的 `git`。agent 把工作目录设成了这个仓库的检出，即从那里开始或者切换到那里，此后没有再换过，这个目录就是确知的这个仓库的检出。确认，指在它之前、在同一个 shell 和目录里，运行一条打印出工作目录所属仓库的命令，例如 `git rev-parse --show-toplevel`，并读到它就是要操作的仓库。
 
-agent 引用或依据这样一条命令的输出行事，而这条命令既没有写明仓库，之前也没有做过这样的确认的，即为违反本规定。
+agent 引用或依据这样一条命令的输出行事，而这条命令是在不确知是目标仓库检出的目录里运行的，既没有写明仓库，之前也没有做过这样的确认的，即为违反本规定。
 '''
 
 [translations]
-zh = "fd8bd347fa66461f8fadc72169d5c4281d63f37cc8fb59bb244006bc15d5997c"
+zh = "3e195609ee2a5c349fc68aa5cfa71d701349e3dde8a340c4df377d676673db1d"
