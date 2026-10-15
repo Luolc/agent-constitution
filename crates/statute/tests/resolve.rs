@@ -128,7 +128,7 @@ fn a_required_one_of_needs_a_chosen_child() {
         &[5],
         &[],
         1,
-        "rule R5 (Rule 5) requires one-of R2 (One-of 2), and the rule set enables none of its children; add one of them to `rules`: \"R3\" (Rule 3), \"R4\" (Rule 4)",
+        "rule R5 (Rule 5) requires one-of R2 (One-of 2), which names no default, and the rule set enables none of its children; add one of them to `rules`: \"R3\" (Rule 3), \"R4\" (Rule 4)",
     );
 }
 
@@ -290,7 +290,7 @@ fn rules_name_rules_that_exist() {
         &[1],
         &[],
         1,
-        "`rules` names domain R1 (Domain 1), which cannot be enabled on its own; to enable every rule under it, move it to `packs`",
+        "`rules` names domain R1 (Domain 1); to turn it on, move it to `domains`, or to enable every rule under it, to `packs`",
     );
     fails(
         &s,

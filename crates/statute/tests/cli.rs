@@ -175,13 +175,13 @@ fn explain_follows_the_chain() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R2 (Rule 2) is enabled:\n- required by R3 (Rule 3), which is enabled:\n  - listed in `rules`\n"
+        "rule R2 (Rule 2) is enabled:\n- required by R3 (Rule 3), which is enabled:\n  - listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
     let run = statute(&dir, &["explain", "R3"]);
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R3 (Rule 3) is enabled:\n- listed in `rules`\n"
+        "rule R3 (Rule 3) is enabled:\n- listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
 }
 
@@ -194,7 +194,7 @@ fn explain_a_rule_brought_in_by_a_requirement() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R8 (Rule 8) is enabled:\n- required by R9 (Rule 9), which is enabled:\n  - listed in `rules`\n"
+        "rule R8 (Rule 8) is enabled:\n- required by R9 (Rule 9), which is enabled:\n  - listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
 }
 
@@ -205,7 +205,7 @@ fn explain_a_rule_not_enabled() {
     assert_eq!(run.code, 1);
     assert_eq!(
         run.stdout,
-        "rule R8 (Rule 8) is not enabled by the rule set\n"
+        "rule R8 (Rule 8) is not enabled by the rule set\n- R8 is off by default (it has no `default`); `statute add R8` turns it on\n"
     );
     let run = statute(&dir, &["explain", "team:8"]);
     assert_eq!(run.code, 1);
@@ -232,8 +232,11 @@ fn add_keeps_the_rest_of_the_rule_set() {
 
 #[test]
 fn commands_take_rules_as_the_rule_set_writes_them() {
-    let dir = repo("refs", &manifest("\"R3\""), &nodes());
-    // The rule set's source is this directory, so its rules are R<id>.
+    let here =
+        manifest("\"R3\"").replace("public = false", "public = false\nlocal-rules = \"rules\"");
+    let dir = repo("refs", &here, &nodes());
+    // The local rules are the `rules/` of the rule set's source, this
+    // directory, so its rules are R<id>.
     for (text, needle) in [
         (
             "5",
@@ -252,7 +255,7 @@ fn commands_take_rules_as_the_rule_set_writes_them() {
         assert_eq!(run.code, 1, "{text}");
         assert!(run.stderr.contains(needle), "{text}: {}", run.stderr);
     }
-    assert_eq!(read(&dir, "statute.toml"), manifest("\"R3\""));
+    assert_eq!(read(&dir, "statute.toml"), here);
 }
 
 #[test]

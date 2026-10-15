@@ -64,7 +64,7 @@ fn four(name: &str) -> PathBuf {
     write(
         &dir,
         "statute.toml",
-        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nrules = [\"R2\", \"3\"]\n\n[sources]\nR = { path = \"r\" }\n",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nlocal-rules = \"rules\"\nrules = [\"R2\", \"3\"]\n\n[sources]\nR = { path = \"r\" }\n",
     );
     write(
         &dir,

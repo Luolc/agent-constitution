@@ -519,7 +519,7 @@ fn a_built_in_check_is_the_first_party_rules_only() {
     write(
         &dir,
         "statute.toml",
-        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R50\", \"50\"]\n\n[sources]\nR = { path = \"r\" }\n",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nlocal-rules = \"rules\"\nrules = [\"R50\", \"50\"]\n\n[sources]\nR = { path = \"r\" }\n",
     );
     write(
         &dir,

@@ -10,9 +10,11 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
-/// What git ignores: the private files through `.gitignore`, the links
-/// through `.git/info/exclude`.
-const GITIGNORE: &str = "/statute.private.toml\n/statute.private.lock\n/.statute/\n";
+/// What git ignores: the private files through `.gitignore`, all of
+/// `.statute/` but the repository's own rules, and the links through
+/// `.git/info/exclude`.
+const GITIGNORE: &str =
+    "/statute.private.toml\n/statute.private.lock\n/.statute/*\n!/.statute/rules/\n";
 const EXCLUDE: &str = "/CLAUDE.local.md\n/AGENTS.override.md\n";
 
 const PRIVATE: &str =
@@ -67,8 +69,8 @@ fn repo(name: &str) -> PathBuf {
         ("r/rules", domain(1)),
         ("r/rules", rule(2, 1, "")),
         ("r/rules", rule(6, 1, "")),
-        ("rules", domain(1)),
-        ("rules", rule(3, 1, "requires = [\"R2\"]")),
+        (".statute/rules", domain(1)),
+        (".statute/rules", rule(3, 1, "requires = [\"R2\"]")),
         ("me/rules", domain(1)),
         (
             "me/rules",
@@ -485,12 +487,19 @@ fn the_staged_files_are_ignored_too() {
         &run,
         ".statute/statute.private.toml.tmp: git does not ignore it, so nothing private is written; add `/.statute` to the repository's .gitignore",
     );
-    assert!(!dir.join(".statute").exists());
+    // Nothing is staged beside the repository's own rules.
+    let staged = || {
+        std::fs::read_dir(dir.join(".statute"))
+            .unwrap()
+            .filter(|e| e.as_ref().unwrap().file_name() != "rules")
+            .count()
+    };
+    assert_eq!(staged(), 0);
     // With it ignored, the files are staged there and renamed away.
     write(&dir, ".gitignore", GITIGNORE);
     ok(&statute(&dir, &["add", "--private", "me:4"]));
     assert!(read(&dir, "statute.private.toml").contains("me:4"));
-    assert_eq!(std::fs::read_dir(dir.join(".statute")).unwrap().count(), 0);
+    assert_eq!(staged(), 0);
 }
 
 #[test]

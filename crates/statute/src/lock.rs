@@ -98,12 +98,17 @@ struct Rule<'a> {
     original_sha256: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
     overridden_by: Option<String>,
+    /// `"default"` for a rule the defaults alone enable
+    /// (`docs/design/rule-config.md`, Defaults in the lock file).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    by: Option<&'static str>,
 }
 
 /// The lock file of a resolved project: the sources in order of name,
 /// the rules in order of key.
 pub fn render(project: &Project) -> String {
     let m = &project.manifest;
+    let chosen = project.resolution.chosen();
     let lock = Lock {
         constitution: Constitution {
             at: pin(m.constitution_spec(), false),
@@ -131,6 +136,7 @@ pub fn render(project: &Project) -> String {
                 sha256: &node.sha256,
                 original_sha256: &node.original_sha256,
                 overridden_by: project.resolution.overridden.get(key).map(Key::to_string),
+                by: (!chosen.contains(key)).then_some("default"),
             })
             .collect(),
     };
@@ -292,6 +298,7 @@ pub fn sources(text: &str) -> Vec<SourceSpec> {
                 name: p.name,
                 declared: Declared::Lock,
                 local: false,
+                defaults: true,
                 rules_dir,
             })
         })
