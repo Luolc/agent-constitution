@@ -164,10 +164,10 @@ and the rule pages show is in [Static site](static-site.md).
 **The command.** The rule system's command is written in Rust (see
 [Why Rust](#why-rust)) and grows in the crate `crates/statute`
 ([File structure](file-structure.md)). The first version is that one
-crate. Its name, `statute`, is held on crates.io by a placeholder release
-([Releases and versions](amendments-and-releases.md#releases-and-versions));
-it may still change before the first real release, and another name would
-be published anew. The rule set is `statute.toml`, the lock file
+crate. Its name is `statute`: on crates.io, 0.0.1 is a placeholder that
+held the name, and the command starts with 0.1.0
+([Releases and versions](amendments-and-releases.md#releases-and-versions)).
+The rule set is `statute.toml`, the lock file
 `statute.lock`, and the commands are:
 
 - `init`: write a new rule set; with `--global`, the global
@@ -424,7 +424,12 @@ directory is a source, holding `constitution/`, `rules/` or both.
 - `nodes`: each node of `rules/` in order of ID, with its `file` and
   its `fields` as the file writes them, texts included. A program gets
   each value as written and a field statute learns later without a
-  change to the export; it applies its own defaults.
+  change to the export; it applies its own defaults. One value is
+  statute's own reckoning, so that no program repeats it:
+  `on-by-default`, whether the source's defaults enable the node
+  ([Default switches](rule-config.md#default-switches)), never for a
+  superseded or repealed rule, and `null` when that depends on a node
+  of another source.
 
 Before it prints anything, statute checks the rules as it checks any
 source ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));

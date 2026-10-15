@@ -448,7 +448,7 @@ requirement brings in.
 
 ### In the rule set
 
-Built, but for the marks of the sites (below).
+Built.
 
 The rule set lists only what differs from the defaults:
 
@@ -540,7 +540,7 @@ however they came in.
 in the list and on its page, and each one-of's default option, and the list gets a filter that shows only
 the rules on by default, so that a reader sees at a glance what a new
 rule set holds. **The local site** shows the same marks beside whether
-its rule set enables the rule. The public site does not show them yet.
+its rule set enables the rule. Both sites show them.
 
 ### Moving a repository over
 
@@ -607,8 +607,8 @@ pull request description alone whether it was broken, and
 `instructions` only when an agent needs to know it while it works.
 
 **What follows from it.** statute reads `uses`, and the compiled
-`AGENTS.md`, `statute check`, `statute explain` and the local site
-follow it; what the public site shows of it is not built yet.
+`AGENTS.md`, `statute check`, `statute explain` and both sites follow
+it.
 
 - The compiled `AGENTS.md` holds the enabled rules whose `uses` has
   `instructions`. A domain whose enabled rules are all review-only has
@@ -695,13 +695,15 @@ configuration set values, and the lock file, `upgrade`, `explain
 
 The local site marks the default switches, each one-of's default
 option, `uses` and the values of parameters
-([The local site](statute-command.md#the-local-site)).
+([The local site](statute-command.md#the-local-site)); the public site
+marks the default switches and each one-of's default option and shows
+`uses`, with their filters.
 
 The compiled `AGENTS.md` puts each one-of's enabled option in the
 one-of's place, with the line that names the one-of.
 
 Not built yet: the one-of as a box on the sites, and what the public
-site shows of these.
+site shows of parameters.
 
 The parts of the design this one changes:
 

@@ -1,4 +1,4 @@
-<!-- en-sha256: f5d92ceef1920b7c8998a554254203b2c3bf9ec25c521d2a6d140b801cc5a102 -->
+<!-- en-sha256: 11838c023f22d06f6167f9d42f03aacd12ce34a5cd8afc13971a7fc04834bd64 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -30,7 +30,7 @@
 
 ## <a id="the-command-and-the-first-version"></a>命令与第一版
 
-**命令。** 规定体系的命令用 Rust 写 (见[为什么用 Rust](#why-rust))，在 `crates/statute` 这个 crate 里逐步实现 ([文件结构](file-structure.md))。第一版就是这一个 crate。`statute` 这个名字已经用一个占位版本在 crates.io 上占住 ([发布与版本](amendments-and-releases.md#releases-and-versions))；第一次正式发布前仍可能改名，改了就要用新名字另行发布。规定清单是 `statute.toml`，锁文件是 `statute.lock`，命令有：
+**命令。** 规定体系的命令用 Rust 写 (见[为什么用 Rust](#why-rust))，在 `crates/statute` 这个 crate 里逐步实现 ([文件结构](file-structure.md))。第一版就是这一个 crate。它的名字是 `statute`：crates.io 上的 0.0.1 是占住这个名字的占位版本，这个命令从 0.1.0 起 ([发布与版本](amendments-and-releases.md#releases-and-versions))。规定清单是 `statute.toml`，锁文件是 `statute.lock`，命令有：
 
 - `init`：写一份新的规定清单；加 `--global` 时写全局配置 ([全局配置与 git 规定源](global-configuration.md))；
 - `source add`：在规定清单、它的私有层或全局配置里登记一个规定源 ([添加规定源](global-configuration.md#adding-a-source))；
@@ -75,7 +75,7 @@
 `statute export [<dir>]` 把一个目录 (默认是 `.`) 里的宪法和规定打印成一个 JSON 值，供读取它们的程序使用，本仓的网站就是这样用的 ([静态网站](static-site.md)，「规定」)。它不读规定清单：这个目录是一个规定源，里面有 `constitution/` 或 `rules/`，或者两者都有。
 
 - `constitution`：没有 `constitution/` 时为 `null`；否则是它唯一那一版的 `index.toml` 里的 `edition`、`revision`、`status` 和 `languages` (一版都没有或不止一版时导出失败)，以及按正文顺序排列的 `provisions`：每个条、款、项给出引用它时写的 `id`、它的 `parent` (条为 `null`) 和按语言给出的 `labels`，写法与编译出的 `AGENTS.md` 相同。
-- `nodes`：`rules/` 里的每个节点，按 ID 排序，给出它的 `file` 和它的 `fields`，即文件里原样写的各字段，正文也在内。程序拿到的是文件里原样写的值；statute 以后认识的新字段，不改导出也能传过去；默认值由程序自己补。
+- `nodes`：`rules/` 里的每个节点，按 ID 排序，给出它的 `file` 和它的 `fields`，即文件里原样写的各字段，正文也在内。程序拿到的是文件里原样写的值；statute 以后认识的新字段，不改导出也能传过去；默认值由程序自己补。只有一个值是 statute 自己算出来的，免得每个程序再算一遍：`on-by-default`，即规定源的默认值是否启用这个节点 ([默认开关](rule-config.md#default-switches))，已被取代或已废止的规定总是否；取决于别的规定源里的节点时为 `null`。
 
 打印之前，statute 像检查任何规定源一样检查这些规定 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))；检查不通过时，它只打印错误，以退出码 1 退出。依据旧原文翻译的译文过不了这项检查，所以节点列出的每份译文都跟随当前原文。JSON 是唯一的格式，所以这个命令没有选择格式的选项。
 
