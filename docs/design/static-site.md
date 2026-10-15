@@ -268,7 +268,9 @@ screenshots (Screenshots, below). The workflow
   screen (`BookToC` off): the group rows that stick name the domain in
   view, and its column is wider than the text's
   ([Frontend](frontend.md#components)). A
-  rule's page (`web/layouts/rules/page.html`) gives its label and title,
+  rule's page (`web/layouts/rules/page.html`) gives, under a breadcrumb
+  of the nodes above it (`path`, [Frontend](frontend.md#components)),
+  its label and title,
   under it whether the defaults enable it, as in the list, with more
   than one source, the quadrant and name of its
   source ("Global private · team"), and with `--enabled` whether it is
@@ -286,7 +288,8 @@ screenshots (Screenshots, below). The workflow
   `default`, and a domain's metadata gives its `default`; a domain's
   page gives its applicability, when it has one, under its title, its
   citations linked as in a rule's text. A node named on
-  a page shows its label and title; the table of contents lists the
+  a page shows its label and title, and its parent's title when a node
+  under another parent has that title (`parentTitle`), as a domain in the filter does; the table of contents lists the
   page's headings. In the texts,
   `{@constitution:...}` becomes a link to the provision's anchor, labeled
   as the full version labels it, in the language of the text, and
@@ -308,8 +311,9 @@ screenshots (Screenshots, below). The workflow
   under a provision its title as HTML as well (`titleHtml`: the text
   escaped once, each code span a `<code>`), since the home page's
   content adapter cannot render Markdown; the name of a rule's link under
-  a provision is that HTML without its tags. A page's own title, in the
-  browser's tab, is its title as text, without the backticks. Each
+  a provision is that HTML without its tags. A node's page's own title, in the
+  browser's tab and in a shared link, is its label and path as text,
+  without the backticks (`pageTitle`). Each
   source with parameters has
   that page, `rules/params/` for this repo's, `rules/<name>-params/` for
   another's (`web/layouts/_partials/rules/params.html`), linked above

@@ -462,7 +462,15 @@ impl Sources {
                                 &file,
                                 diags,
                                 |target, file, diags| {
-                                    judge(target.0, field, target.1, true, file, diags)
+                                    judge(
+                                        target.0,
+                                        field,
+                                        target.1,
+                                        true,
+                                        retired(node),
+                                        file,
+                                        diags,
+                                    )
                                 },
                             );
                         }
@@ -1000,7 +1008,15 @@ impl Checker<'_> {
                             &file,
                             format!("`{field}` names {id}, which does not exist in this source"),
                         ),
-                        Some(target) => judge(source, field, target, false, &file, self.diags),
+                        Some(target) => judge(
+                            source,
+                            field,
+                            target,
+                            false,
+                            retired(node),
+                            &file,
+                            self.diags,
+                        ),
                     }
                 }
             }
@@ -1408,15 +1424,23 @@ pub(crate) fn by_default(source: &Source, id: Id) -> Option<bool> {
     None
 }
 
+/// Whether a node is no longer in force: superseded or repealed.
+fn retired(node: &Node) -> bool {
+    matches!(node.status, Status::Superseded | Status::Repealed)
+}
+
 /// The findings on `field` of a rule naming `target`, a node of `source`,
 /// against `file`: what can be named there, and a requirement of a rule
 /// that is no longer in force. A node of another source than the rule's
-/// (`foreign`) is shown as the rule writes it, `"team:7"`.
+/// (`foreign`) is shown as the rule writes it, `"team:7"`. A rule that is
+/// itself no longer in force (`from_retired`) requires nothing any more,
+/// so what it names in `requires` is not asked to follow a successor.
 fn judge(
     source: &Source,
     field: &str,
     target: &Node,
     foreign: bool,
+    from_retired: bool,
     file: &str,
     diags: &mut Diagnostics,
 ) {
@@ -1433,9 +1457,7 @@ fn judge(
             file,
             format!("`requires` names one-of {shown}, which has no children yet, so the rule can never be enabled; require a rule, or add a child to the one-of first"),
         ),
-        ("requires", Kind::Rule)
-            if matches!(target.status, Status::Superseded | Status::Repealed) =>
-        {
+        ("requires", Kind::Rule) if !from_retired && retired(target) => {
             let what = match target.superseded_by.as_slice() {
                 [] => "is repealed, with nothing in its place".to_owned(),
                 [next] => {

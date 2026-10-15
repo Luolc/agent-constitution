@@ -2,14 +2,15 @@
   page's title is text, and a rule's may hold `<` in a code span, as
   `<owner>/<repo>`, which plainify would take for a tag and drop. The
   title is given without backticks and escaped once, as the attribute
-  escapes it. schema.html does the same. */ -}}
+  escapes it; a rule's page gives its label and path, its pageTitle.
+  schema.html does the same. */ -}}
 <meta property="og:url" content="{{ .Permalink }}">
 
 {{- with or site.Title site.Params.title | plainify }}
 	<meta property="og:site_name" content="{{ . }}">
 {{- end }}
 
-{{- with or .Title site.Title site.Params.title }}
+{{- with or .Params.pageTitle .Title site.Title site.Params.title }}
 	<meta property="og:title" content="{{ replace . "`" "" }}">
 {{- end }}
 

@@ -17,7 +17,7 @@ zh = "元凭据层只经人解锁的途径读"
 
 [text.statement]
 en = "Read the meta credentials in the meta tier, the part of the secret manager kept for credentials that give access to other credentials (the tokens of service accounts, SSH keys), only through an interactive route that a person unlocks, and open the tier to no service account."
-zh = "元凭据层 (密钥管理器里专放能打开别的凭证的凭证的部分，例如各 service account 的 token、SSH 密钥) 里的元凭据，只经人解锁的交互途径读，不对任何 service account 开放。"
+zh = "元凭据层 (密钥管理器里专放能取得其他凭证的凭据的部分，例如各 service account 的 token、SSH 密钥) 里的元凭据，只经人解锁的交互途径读，不对任何 service account 开放。"
 
 [text.reason]
 en = '''

@@ -412,7 +412,10 @@ file. It prints the path of `index.html`.
   as in `Global private · me`.
 - **One page per node**, `<source>/<id>.html`: the statement, reason,
   verification and applicability; `requires`, `conflicts`, `overrides`
-  and the successors; the path of parents and the children. A domain's
+  and the successors; the path of parents and the children. A link to a
+  node whose title a node under another parent has adds its parent's
+  title, as does
+  the index's menu of domains ([Frontend](frontend.md#components)). A domain's
   page is the list of its nodes. A citation of a rule is a link to its
   page, and one of the constitution the provision's label, as in the
   compiled `AGENTS.md`. A status is shown as the rule file writes it,

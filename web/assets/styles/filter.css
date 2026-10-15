@@ -139,6 +139,8 @@
   cursor: pointer;
   transition: background-color var(--t-duration-fast) var(--t-ease-out);
 }
+/* A domain's parent, after a title another node also has. */
+.rules .rules-filter-note { color: var(--t-text-muted); }
 @media (hover: hover) and (pointer: fine) {
   .rules .rules-filter-group button:hover,
   .rules .rules-filter-group label:hover {
