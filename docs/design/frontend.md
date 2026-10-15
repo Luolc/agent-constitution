@@ -18,16 +18,16 @@ tokens, the icons and the scripts are written in the code is in
 - [Design tokens](#design-tokens): what a token is and the one rule
   about values.
 - [Color](#color): the two themes and the states.
-- [Type](#type): fonts, sizes and weights, and the levels of the rules'
-  tree.
+- [Type](#type): fonts, sizes and weights, and the rows of the list of
+  the rules.
 - [Space, radius and shadow](#space-radius-and-shadow).
 - [Icons](#icons): one library, Lucide, and what replaces today's icons.
 - [Motion](#motion): durations, easing and reduced motion.
 - [Interaction and accessibility](#interaction-and-accessibility):
   target sizes, hover on devices that have it, names and states for
   assistive technology, pages that work without scripts.
-- [Components](#components): tags, the legend, the filter, the tree of
-  rules, the one-of, popovers, the sidebar and buttons.
+- [Components](#components): marks and tags, the legend, the filter,
+  the table of rules, the one-of, popovers, the sidebar and buttons.
 - [Not done](#not-done): what the pages never do.
 - [Screenshots and review](#screenshots-and-review): what a pull request
   that changes the pages attaches, what CI runs, what the reviewer
@@ -86,12 +86,12 @@ below.
 | `accent-hover` | `#6b381e` | `#d9ae8f` | A primary button under the pointer. |
 | `text-on-accent` | `#dde6d5` | `#1e2520` | Text on an `accent` background. |
 | `border-subtle` | `#b5c4aa` | `#38453a` | Hairlines: the rules between parts, a link's underline, a tag's outline. |
-| `border-strong` | `#6d7968` | `#717970` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
-| `status-active` | `#245a20` | `#9fd39a` | The text of an Active tag. |
+| `border-strong` | `#6d7968` | `#717970` | Controls and boxes: inputs, the one-of's box, the line under the head of the list of the rules. |
+| `status-active` | `#245a20` | `#9fd39a` | The icon of Active in the list of the rules; the text of an Active tag. |
 | `status-active-bg` | `#c3d2bc` | `#303d31` | Its background. |
-| `status-trial` | `#66460a` | `#e2c07a` | The text of a Trial tag. |
+| `status-trial` | `#66460a` | `#e2c07a` | The icon of Trial; the text of a Trial tag. |
 | `status-trial-bg` | `#ccd0b9` | `#393b2d` | Its background. |
-| `status-draft` | `#4b5946` | `#9cab98` | The text of a Draft tag. |
+| `status-draft` | `#4b5946` | `#9cab98` | The icon of Draft; the text of a Draft tag. |
 | `status-draft-bg` | `#c9d2c1` | `#303831` | Its background. |
 | `quadrant-global-public` | `#acc8df` | `#274160` | The background of a source's quadrant tag (with `text`). |
 | `quadrant-global-private` | `#e4d098` | `#5e491a` | |
@@ -121,6 +121,12 @@ The contrast the values must keep, in both themes:
 - A status tag's text on its background: at least 4.5 (5.19, 5.43 and
   4.78 light; 6.67, 6.56 and 5.01 dark).
 - `text` on a quadrant tag: at least 4.5 (the lowest is 6.10).
+- A status's icon in the list on the page and on `bg-hover`: at least
+  4.5, above the 3 an icon needs (Active 6.39 and 5.16 light, 9.14 and
+  6.72 dark; Trial 6.69 and 5.40, 8.99 and 6.61; Draft 5.81 and 4.69,
+  6.48 and 4.77).
+- `text` on a group row's band: at least 4.5 (on `bg-active` 7.10
+  light, 6.30 dark; on `bg-panel-hover` 7.90 and 7.37).
 - A hover background against the surface it sits on: at least 1.2, so
   the change shows in light mode too (`bg-hover` on the page 1.24 light
   and 1.36 dark; `bg-panel-hover` on a panel 1.24 and 1.36).
@@ -170,9 +176,9 @@ Every other size is relative to the text's size, in em:
 | --- | --- | --- |
 | `text-xs` | `0.75em` | Tags, counts on a button. |
 | `text-sm` | `0.875em` | Controls, the sidebar, notes, the table of contents. |
-| `text-md` | `1em` | The text; a rule's line in the list. |
-| `text-lg` | `1.25em` | A second-level heading; a domain of the second level. |
-| `text-xl` | `1.5em` | A domain of the first level. |
+| `text-md` | `1em` | The text; every row of the list of the rules. |
+| `text-lg` | `1.25em` | A second-level heading. |
+| `text-xl` | `1.5em` | A first-level heading of the design's pages. |
 | `text-2xl` | `1.75em` | A page's title. |
 
 | Token | English | Chinese |
@@ -182,16 +188,17 @@ Every other size is relative to the text's size, in em:
 | `weight-bold` | `750` | `800` |
 
 Noto Serif SC is lighter than EB Garamond at the same weight, hence the
-Chinese column. The levels of the rules' tree differ in size and weight
-together, so that two neighbouring levels never look alike:
+Chinese column. The rows of the list of the rules are all one size, so
+that they line up as a table; a domain's row differs from a rule's by
+its weight and its band ([Components](#components)):
 
-| Level | Size | Weight | Color |
+| Row | Size | Weight | Color |
 | --- | --- | --- | --- |
-| A domain of the first level | `text-xl` | `weight-bold` | `text` |
-| A domain of the second level | `text-lg` | `weight-bold` | `text` |
-| A domain of the third level or deeper; a one-of's title in its box | `text-md` | `weight-medium` | `text` |
-| A rule | `text-md` | `weight-regular` | `text` |
-| A node's label (`R13`) | the size of its line | the weight of its line | `text-muted`, tabular figures |
+| A domain's group row, its label and its path | `text-md` | `weight-bold` | `text`, on `bg-active` at the first level and `bg-panel-hover` below it |
+| A one-of's own row in its box | `text-md` | `weight-medium` | `text` |
+| A rule's row | `text-md` | `weight-regular` | `text` |
+| A rule's label (`R13`) | the size of its row | the weight of its row | `text-muted`, tabular figures, aligned to the end |
+| The head of the table | `text-sm` | `weight-medium` | `text-muted` |
 
 ## Space, radius and shadow
 
@@ -212,12 +219,15 @@ heading) stays in em, a multiple of the text size.
 | Token | Value | Use |
 | --- | --- | --- |
 | `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
+| `width-label` | `3.2em` | The column of the labels in the list of the rules. |
+| `width-mark` | `1.1em` | Each of the four places of a row's marks in that list. |
+| `size-dot` | `0.6em` | The dot of on or off by default. |
 
 | Token | Value | Use |
 | --- | --- | --- |
 | `radius-sm` | `0.25rem` | Tags, inputs, buttons, a row's hover background. |
 | `radius-md` | `0.5rem` | Popovers, panels, the one-of's box. |
-| `radius-full` | `9999px` | Round things: a count badge, a status pill. |
+| `radius-full` | `9999px` | Round things: a count badge, the dot of the marks, a status pill. |
 
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
@@ -277,6 +287,9 @@ What replaces today's icons:
 | The theme's `translate` | The language switch | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
 | A text button | The filter | `funnel` |
+| A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
+| None | A rule's uses in the list and the legend: instructions, review | `scroll-text`, `scan-eye` |
+| None | Between the domains of a group row's path | `chevron-right` |
 | The characters ‹ and › | The list's previous and next page | `chevron-left`, `chevron-right` |
 | None | Closing a popover | `x` |
 | None | A rule under another rule | `corner-down-right` |
@@ -363,33 +376,43 @@ under the pointer (hover), pressed (active), with the keyboard's focus
 (focus, the ring of [Color](#color)), current or chosen (selected), and
 turned off (disabled), where it has these.
 
-- **Tags.** Small, `text-xs`, `line-height-ui`, one line, never wrapped.
-  Different facts take different forms, so the row of tags after a
-  rule is no longer a row of the same boxes:
-  - Status: a pill (`radius-full`, padding `0 space-2`) in the status's
-    colors, `status-active`, `status-trial`, `status-draft`, with no
-    border. Superseded and repealed: `text-muted`, an outline in
-    `border-subtle`, no fill.
-  - Whether the defaults enable a node: no box, a dot before a word. On
-    by default: a filled dot of `accent`, the word in `text-muted`; off
-    by default: a ring of `text-muted`, the word in `text-muted`. In the
-    dense list the dot alone stands, with the word as its accessible
-    name and on hover, and a legend above the list says what the dot
-    means.
+- **Marks.** In the list of the rules, a row's marks stand at its
+  end in four places of `width-mark` each, about four characters in
+  all, in this order: the status, whether the defaults enable the node,
+  instructions and review, its `uses`. A place without its mark stays
+  empty, so that the marks line up from one row to the next; the column
+  has no head, the legend says what each place holds. Each mark is an
+  icon (`icon-sm`) or a dot, named for assistive technology and on
+  hover by its word (`role="img"`, `aria-label` and `title`):
+  - Status: `circle-check` for Active in `status-active`,
+    `flask-conical` for Trial in `status-trial`, `pencil` for Draft in
+    `status-draft`, `arrow-right-left` for Superseded and
+    `circle-slash` for Repealed in `text-muted`.
+  - Whether the defaults enable a node: a dot of `size-dot`, filled
+    with `accent` when they do, a ring (a `2px` border) of
+    `text-muted` when they do not; the place stays empty when that depends on another source.
+  - Uses: `scroll-text` for instructions and `scan-eye` for review, in
+    `text-muted`.
+  - Marks do not react to the pointer; the row does.
+- **Tags.** Small, `text-xs`, `line-height-ui`, one line, never wrapped,
+  for the facts a row's four places do not hold and on a rule's page:
+  - Whether the defaults enable a node, on its page: the dot of the
+    marks before the word, in `text-muted`.
   - Enabled by the rule set: `check` (`icon-sm`) before the word, in
     `accent`; not enabled: the word alone in `text-muted`.
   - The quadrant of a source: a box with `radius-sm`, filled with the
     quadrant's color, in `text`.
-  - In the list the tags stand in a column at the right edge of the
-    row, aligned from one row to the next, not right after the title.
-  - Tags do not react to the pointer; the row does.
+  - In the list, enabled and the quadrant, when the site has them,
+    follow the four places of the marks, in columns of their own.
 - **The legend**, above the list of the rules, as Ruff's list of rules
-  has one: each mark a rule carries in the list, drawn as the list
-  draws it, and a line on what it means: each status, on and off by
-  default, the default option of a one-of, and, when the site has them,
-  enabled and not enabled and a quadrant. A term and its meaning on one
-  line (a description list), `text-sm`, the meanings in `text-muted`;
-  it goes by the marks only, not by how the list is laid out.
+  has one: each mark a row carries in the list, drawn as the list draws
+  it and followed by its word, and a line on what it means, in the
+  order of the marks' places: each status, on and off by default,
+  instructions and review; then the default option of a one-of, and,
+  when the site has them, enabled and not enabled and a quadrant. A
+  term and its meaning on one line (a description list), `text-sm`, the
+  terms in `weight-medium`, the meanings in `text-muted`; under it, a
+  line on the four places and their order.
 - **The filter**, as far as Ruff's list of rules goes, no further: no
   conditions to combine. Shut, it is one button: `funnel` (`icon-md`),
   the word Filter, and, when the reader has changed a field from the
@@ -416,28 +439,48 @@ turned off (disabled), where it has these.
   superseded or repealed, shown besides; and it has no groups for the
   status, the defaults and the domain, no All and None, and no badge
   ([Status](#status)).
-- **The tree of rules.** The level of a node shows by its size, weight
-  and a bar ([Type](#type)), not by indentation: a domain of the first
-  level is a heading with `space-8` above it; one of the second level
-  is indented one step (`space-4`) with a bar of `border-strong`,
-  `2px`, along its start edge, down the height of its rules; deeper
-  domains get no further indent, their bar is `border-subtle`. The
-  rules of a domain start at its heading's edge. A rule under another
-  rule is not indented again: `corner-down-right` (`icon-sm`,
-  `text-faint`) in front of its label shows it. Each rule is one row:
-  the label in a column of fixed width, `text-muted`, the title cut to
-  the row with an ellipsis, the tags at the right. The whole row is the
-  link: hover fills it with `bg-hover`, `radius-sm`, and turns the
-  title to `accent`; focus puts the ring around the row.
-- **The one-of.** A box (`1px` of `border-strong`, `radius-md`, padding
-  `space-3`) holding its options, with a label on its top border, One
-  of / 「择一」 (`text-xs`, `weight-medium`, `text-muted`, on the
-  surface's color so the border breaks around it), after its label and
-  title. Each option is a row as in the tree, led by `circle`, and the
-  default option by `circle-dot` in `accent` and its tag, Default option /
-  「默认选项」, in `accent` with `check`, so the default shows by shape as
-  well as color. A one-of whose options are off has its box in
-  `border-subtle`.
+- **The table of rules**, as ESLint's list of rules is a table: a
+  head, then one row a rule, three columns, the label (`width-label`,
+  `text-muted`, aligned to the end), the title, cut to the row with an
+  ellipsis, and the marks; the head names the first two, `text-sm`,
+  `weight-medium`, `text-muted`, over a line of `border-strong`. Every
+  row is at least as tall as a target, with a hairline of
+  `border-subtle` under it, and the same height on a wide screen. A
+  rule under another rule is not indented: `corner-down-right`
+  (`icon-sm`, `text-faint`) in front of its title shows it. The whole
+  row is the link: hover fills it with `bg-hover` and turns the title
+  to `accent`, active fills it with `bg-active` and turns the title and
+  the label to `text`; focus puts the ring around the row. A domain is not a row of
+  its own but a group row over its rules, a band across the table:
+  `bg-active` for a domain of the first level, `bg-panel-hover` below
+  it, the domain's label in the label column and the path of its
+  domains after it, joined by `chevron-right` in `text-muted`
+  (`Documentation › Design`), all in `text` and `weight-bold`; the path
+  is the whole link to the domain's page, underlined under the pointer,
+  as `accent` would fall under 4.5 on the band, and named for screen
+  readers by the label and the domains joined by commas. A group row shows where
+  the nearest domain changes from the rule shown before it and at the
+  top of each page, so the list coming back to a domain from one under
+  it shows that domain's row again. The head sticks to the top of the
+  window, under a narrow screen's top bar, and each group row sticks
+  under the head until the next one covers it, so that the domain of
+  the rows in view is always named; only the nearest domain's row
+  sticks, as its path names the ones above it. On a narrow screen a
+  title takes as many lines as it needs, the head and the group rows
+  one, and a row's label, the icon before its title and its marks line
+  up with the title's first line.
+- **The one-of.** A box (`1px` of `border-strong`, `radius-md`) around
+  its own row and its options', their columns lined up with the
+  table's, with a label on its top border, One of / 「择一」 (`text-xs`,
+  `weight-medium`, `text-muted`, on the surface's color so the border
+  breaks around it); the box is a group (`role="group"`) that the label
+  names for screen readers (`aria-labelledby`), so that they announce
+  its rows as One of. Its own row's title is `weight-medium`. Each option
+  is a row as in the table, its title led by `circle` in `text-muted`,
+  and the default option's by `circle-dot` in `accent` and followed by
+  its tag, Default option / 「默认选项」, in `accent` with `check`, so the
+  default shows by shape as well as color. A one-of whose options are
+  off has its box in `border-subtle`.
 - **Popovers** (the filter's panel, the info on the length): `bg-panel`,
   `1px` of `border-subtle`, `radius-md`, `shadow-popover`, padding
   `space-3 space-4`, under the control that opens it. A popover with controls
@@ -593,7 +636,7 @@ turned off (disabled), where it has these.
   ring, icons, the sidebar, the table of contents, the top bar),
   `controls.css` (the native controls wherever they stand),
   `constitution.css`, `design.css` (the design and a rule's page),
-  `rules-list.css` (the list of the rules and the tags) and `filter.css`
+  `rules-list.css` (the list of the rules, its marks and the tags) and `filter.css`
   (the legend, the filter and the page size above the list, whose
   markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
@@ -649,29 +692,29 @@ flash on a target, the drawers of a narrow screen); hover only on fine
 pointers; the sizes of targets; the sidebar, the table of contents and
 the drawers of [Components](#components); the native controls; the
 fonts, the text size and the column, and the breakpoints; the rows of
-the rules under a provision; the filter and the legend, the filter and
-the page in the address, pages readable without scripts, tabular
-figures, and `aria-expanded` with `aria-controls` on the info button,
-the buttons of the rules under a provision, the sidebar's groups and
-language switch and the top bar's buttons. Built today on the local site: every token, and every value
-of its style sheet named by one; the tags, the legend, the tree of
-domains and the one-of of [Components](#components); the filter's
+the rules under a provision; the filter, the legend, the table of rules
+with its marks and its group rows and head that stick, and the one-of;
+the filter and the page in the address, pages readable without
+scripts, tabular figures, and `aria-expanded` with `aria-controls` on
+the info button, the buttons of the rules under a
+provision, the sidebar's groups and language switch and the top bar's
+buttons. Built today on the local site: every token, and every value
+of its style sheet named by one; the one-of of
+[Components](#components); the filter's
 button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
 popover. Not built yet, and what each replaces:
 
-- The tags replace the boxes of the same look for status, defaults,
-  enabled and quadrant.
-- The tree replaces the indentation by depth, a rule under a rule
-  included.
-- The list shows a one-of as a box today
-  ([Static site](static-site.md)); the label on its border replaces the
-  prefix "One of:" (「择一：」) before its title, and the circles before
-  its options and the tag of [Components](#components) replace the
-  plain tag that marks its default option.
-- Until the three above are built, `rules-list.css` writes some sizes
-  and spaces as values, and the list's pages are
-  linked by the characters ‹ and ›.
+- On the public site, the tags of a rule's page, and enabled and the
+  quadrant in the list, are boxes of one look; the tags of
+  [Components](#components) replace them. A one-of whose options are
+  off keeps its box in `border-strong`.
+- The local site lists the rules as a tree of domains, each a heading
+  whose size and weight give its level, a deeper one indented with a
+  bar, and each rule's facts as tags, the status a pill, at the end of
+  its row, with a legend of those tags; the table of rules, its marks,
+  the tags and the legend of [Components](#components) replace them
+  there too.
 - On the local site, the filter's groups for the status, the defaults
   and the domain, with All and None in each, the badge on its button,
   and its closing on Escape or a click outside; and the primary button

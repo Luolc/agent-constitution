@@ -1,16 +1,22 @@
-{{- /* The legend above the list of the rules: each mark a rule carries
-  there, drawn as the list draws it, and what it means. The statuses;
-  whether the defaults enable a node and a one-of's default option; when
-  the site has a rule set, whether it enables a rule; with more than one
-  source, the quadrant. Takes (dict "enabled" whether the site has a rule
-  set "many" whether it has more than one source). */ -}}
+{{- /* The legend above the list of the rules: each mark a row carries
+  there, drawn as the list draws it with its name, and what it means, in
+  the order of the four places of the marks (rules/marks.html): the
+  statuses; whether the defaults enable a node; the uses, instructions
+  and review; then a one-of's default option; when the site has a rule
+  set, whether it enables a rule; with more than one source, the
+  quadrant. Under it, a line on the four places. Takes (dict "enabled"
+  whether the site has a rule set "many" whether it has more than one
+  source). */ -}}
+{{- $icons := dict "active" "circle-check" "trial" "flask-conical" "draft" "pencil" "superseded" "arrow-right-left" "repealed" "circle-slash" }}
 <dl class="rules-legend" aria-label="{{ i18n "rules-legend" }}">
 {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
-<div><dt><span class="rule-status">{{ i18n (printf "status-%s" .) }}</span></dt><dd>{{ i18n (printf "rules-legend-status-%s" .) }}</dd></div>
+<div><dt><span class="rule-mark rule-status status-{{ . }}">{{ partial "icon.html" (printf "lucide:%s" (index $icons .)) }}</span>{{ i18n (printf "status-%s" .) }}</dt><dd>{{ i18n (printf "rules-legend-status-%s" .) }}</dd></div>
 {{- end }}
-<div><dt>{{ partial "rules/default.html" (dict "onByDefault" true) }}</dt><dd>{{ i18n "rules-legend-default-on" }}</dd></div>
-<div><dt>{{ partial "rules/default.html" (dict "onByDefault" false) }}</dt><dd>{{ i18n "rules-legend-default-off" }}</dd></div>
-<div><dt>{{ partial "rules/default.html" (dict "optionDefault" true) }}</dt><dd>{{ i18n "rules-legend-default-option" }}</dd></div>
+<div><dt><span class="rule-mark rule-dot on"></span>{{ i18n "default-on" }}</dt><dd>{{ i18n "rules-legend-default-on" }}</dd></div>
+<div><dt><span class="rule-mark rule-dot"></span>{{ i18n "default-off" }}</dt><dd>{{ i18n "rules-legend-default-off" }}</dd></div>
+<div><dt><span class="rule-mark rule-use">{{ partial "icon.html" "lucide:scroll-text" }}</span>{{ i18n "uses-instructions" }}</dt><dd>{{ i18n "rules-legend-uses-instructions" }}</dd></div>
+<div><dt><span class="rule-mark rule-use">{{ partial "icon.html" "lucide:scan-eye" }}</span>{{ i18n "uses-review" }}</dt><dd>{{ i18n "rules-legend-uses-review" }}</dd></div>
+<div><dt class="legend-default-option">{{ partial "icon.html" "lucide:circle-dot" }}{{ i18n "default-option" }}</dt><dd>{{ i18n "rules-legend-default-option" }}</dd></div>
 {{- if .enabled }}
 <div><dt>{{ partial "rules/enabled.html" (dict "enabled" true) }}</dt><dd>{{ i18n "rules-legend-enabled" }}</dd></div>
 <div><dt>{{ partial "rules/enabled.html" (dict "enabled" false) }}</dt><dd>{{ i18n "rules-legend-not-enabled" }}</dd></div>
@@ -19,3 +25,4 @@
 <div><dt>{{ partial "rules/quadrant.html" (dict "quadrant" "global-public" "source" "") }}</dt><dd>{{ i18n "rules-legend-quadrant" }}</dd></div>
 {{- end }}
 </dl>
+<p class="rules-legend-note">{{ i18n "rules-legend-slots" }}</p>

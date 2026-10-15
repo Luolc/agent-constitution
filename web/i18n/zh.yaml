@@ -83,6 +83,11 @@ rules-legend-default-option: "规定清单不另选时得到的 one-of 选项。
 rules-legend-enabled: "本站的规定清单有它。"
 rules-legend-not-enabled: "本站的规定清单没有它。"
 rules-legend-quadrant: "规定所在规定源的象限。"
+rules-legend-uses-instructions: "写进 agent 读的指令。"
+rules-legend-uses-review: "审查方按它审查改动。"
+rules-legend-slots: "每行末尾的标记依次占四个位置：状态、默认、指令、审查；没有这一项的位置空着。"
+# 列表各列的表头；标记那一列没有表头。
+rules-column-rule: "规定"
 rules-reset-filter: "恢复默认筛选"
 rules-defaults: "默认"
 rules-none: "没有符合筛选条件的规定。"
@@ -120,7 +125,7 @@ param-rules: "用到它的规定"
 default-on: "默认开启"
 default-off: "默认关闭"
 default-option: "默认选项"
-# 规定列表里 one-of 画成框时，标题前的字样。
-one-of: "择一："
+# 规定列表里 one-of 的框，边框上的字样。
+one-of: "择一"
 # 左栏里显示或收起一组页面的按钮的名字 (layouts/_partials/docs/menu-hugo.html)。
 fold-pages: "{{ .name }}的页面"
