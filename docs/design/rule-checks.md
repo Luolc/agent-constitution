@@ -226,7 +226,7 @@ person's approval. This follows `automation-first.decide-and-do`.
 When agents doing a piece of work find that no rule, skill or convention
 covers it, they start writing the convention down. The first version is a
 trial rule (`status = "trial"`): it is used on real work, changed freely
-while it is tried, and made a regular rule once it has settled. The rules,
+while it is tried, and moved to `active` once it is stable. The rules,
 skills and conventions of this repo itself are meant to come about the
 same way.
 
@@ -235,15 +235,21 @@ Once it is active, a new rule starts as `trial`, and the rules written
 while it was a draft move from `draft` to `trial` in place
 ([IDs and revisions](rule-format.md#ids-and-revisions)).
 
-**Becoming active.** Agents decide this, not a person. Most rules cannot
-be settled by a deterministic check, so the main use of a rule is in
-review: the reviewer runs the checks there are, reads the rule's
-verification, and judges the change by the rules of its domain. Once a
-trial rule has been used in real work a number of times (5 in the first
-version) with no false positive left unresolved in that time, the
-reviewing agent sets its `status` to `active`. That changes only the
-status, not what counts as compliant, so the rule is edited in place and
-its revision goes up by one ([IDs and revisions](rule-format.md#ids-and-revisions)). A
-false positive is a case where the rule was misapplied, in a review or in
-a check: it was held against work that complied, or its wording led the
-reviewer or the check astray.
+**What the statuses mean.** `trial` and `active` differ as the
+experimental and the stable checks of a linter do: an `active` rule is
+stable and can be used as it is, a `trial` rule is still experimental and
+may change. `active` says that a rule is stable, not that a person
+reviewed it. The status of a domain or a one-of is about that node alone,
+its title, its applicability and which rules it holds; a domain can be
+`active` while some of its rules are still `trial`.
+
+**Becoming active.** A principal decides when a trial rule is stable
+enough to move to `active`, on the conditions of R289
+(`rules/289.toml`). Most rules cannot be settled by a deterministic check,
+so the main use of a rule is in review: the reviewer runs the checks there
+are, reads the rule's verification, and judges the change by the rules of
+its domain. How a trial rule fares there, how often it was used and
+whether it was misapplied, is what the principal has to go on; no count of
+uses moves a rule by itself. The move changes only the status, not what
+counts as compliant, so the rule is edited in place and its revision goes
+up by one ([IDs and revisions](rule-format.md#ids-and-revisions)).
