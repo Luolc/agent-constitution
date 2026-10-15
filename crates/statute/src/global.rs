@@ -303,3 +303,45 @@ pub fn default_branch(address: &str) -> Result<String, String> {
         .args(["symbolic-ref", "--short", "HEAD"]);
     run(cmd, &format!("read the default branch of {address}"))
 }
+
+/// The GitHub repository, `owner/name`, that `address` names; `None` for
+/// an address GitHub does not hold.
+pub fn github_repo(address: &str) -> Option<String> {
+    let rest = [
+        "https://github.com/",
+        "http://github.com/",
+        "ssh://git@github.com/",
+        "git@github.com:",
+    ]
+    .iter()
+    .find_map(|prefix| address.strip_prefix(prefix))?;
+    let repo = rest.trim_end_matches('/').trim_end_matches(".git");
+    let (owner, name) = repo.split_once('/')?;
+    (!owner.is_empty() && !name.is_empty() && !name.contains('/')).then(|| repo.to_owned())
+}
+
+/// The address of the `origin` of the clone at `dir`, and the branch its
+/// `HEAD` names there, as the last fetch left it.
+pub fn clone_origin(dir: &Path) -> Result<(String, Option<String>), String> {
+    let mut cmd = git();
+    cmd.arg("-C").arg(dir).args(["remote", "get-url", "origin"]);
+    let origin = run(cmd, &format!("read the origin of {}", dir.display()))?;
+    let mut cmd = git();
+    cmd.arg("-C")
+        .arg(dir)
+        .args(["symbolic-ref", "--short", "refs/remotes/origin/HEAD"]);
+    let branch = run(cmd, "")
+        .ok()
+        .and_then(|b| b.strip_prefix("origin/").map(str::to_owned));
+    Ok((origin, branch))
+}
+
+/// Whether `dir` is a bare git repository, whose path is a git address
+/// rather than a source on disk.
+pub fn is_bare(dir: &Path) -> bool {
+    let mut cmd = git();
+    cmd.arg("-C")
+        .arg(dir)
+        .args(["rev-parse", "--is-bare-repository"]);
+    run(cmd, "").is_ok_and(|answer| answer == "true")
+}

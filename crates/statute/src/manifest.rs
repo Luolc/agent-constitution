@@ -405,6 +405,8 @@ struct RawPrivate {
     #[serde(default)]
     rules: Vec<String>,
     #[serde(default)]
+    packs: Vec<String>,
+    #[serde(default)]
     sources: BTreeMap<String, RawSource>,
 }
 
@@ -774,21 +776,28 @@ impl Manifest {
                     .to_owned(),
             );
         }
-        let mut rules = self.rules.clone();
-        for entry in &raw.rules {
-            match RuleRef::parse(entry)
-                .and_then(|r| key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}")))
-            {
-                Err(e) => errors.push(format!("`rules`: {e}")),
-                Ok(key) if self.rules.contains(&key) => errors.push(format!(
-                    "`rules` lists `{entry}`, which {FILE} lists already"
-                )),
-                Ok(key) if rules.contains(&key) => {
-                    errors.push(format!("`rules` lists `{entry}` twice"))
+        // The private layer's entries come after those of statute.toml,
+        // and repeat none of them.
+        let mut add = |field: &str, given: &[Key], list: &[String]| {
+            let mut out = given.to_vec();
+            for entry in list {
+                match RuleRef::parse(entry)
+                    .and_then(|r| key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}")))
+                {
+                    Err(e) => errors.push(format!("`{field}`: {e}")),
+                    Ok(key) if given.contains(&key) => errors.push(format!(
+                        "`{field}` lists `{entry}`, which {FILE} lists already"
+                    )),
+                    Ok(key) if out.contains(&key) => {
+                        errors.push(format!("`{field}` lists `{entry}` twice"))
+                    }
+                    Ok(key) => out.push(key),
                 }
-                Ok(key) => rules.push(key),
             }
-        }
+            out
+        };
+        let rules = add("rules", &self.rules, &raw.rules);
+        let packs = add("packs", &self.packs, &raw.packs);
         if !errors.is_empty() {
             return Err(errors);
         }
@@ -796,6 +805,7 @@ impl Manifest {
             sources,
             held: Vec::new(),
             rules,
+            packs,
             ..self.clone()
         })
     }

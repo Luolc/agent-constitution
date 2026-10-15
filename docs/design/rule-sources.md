@@ -179,9 +179,13 @@ with `public = true`:
   here = { path = "../my-rules/repos/example", public = false, scope = "local" }
   ```
 
-  It has no `packs` and no `[compile]`, since its output's place is
-  fixed (below). Its sources' names may not repeat those of
-  `statute.toml`, nor its rules those `statute.toml` lists. In a private
+  It may list `packs` as `statute.toml` does, rooted in a node of any
+  source of either layer, so that a private source's new rules are
+  enabled with it; a pack may enable public rules, which the private
+  layer alone then enables, as a rule it lists may. It has no
+  `[compile]`, since its output's place is fixed (below). Its sources'
+  names may not repeat those of `statute.toml`, nor its rules and packs
+  those `statute.toml` lists. In a private
   repository (`public = false`) the file fails: there `statute.toml`
   names everything. `statute add --private` and `statute remove
   --private` change it.
