@@ -6,9 +6,9 @@ directory, a temporary repository in a test for one, acts on the repository
 of the commit instead. Every git these tools start passes `env=clean()`
 and finds its repository from `-C`.
 
-A copy of this file is tools/checks/src/repo_checks/git_env.py
-so that the two workspace members do not depend on each other; keep the
-two copies equal.
+Copies of this file are tools/checks/src/repo_checks/git_env.py and
+tools/site/src/constitution_site/git_env.py, so that the workspace members
+do not depend on each other; keep the copies equal.
 """
 
 import functools

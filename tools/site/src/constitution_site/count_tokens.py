@@ -28,8 +28,7 @@ import tomllib
 import urllib.error
 import urllib.request
 
-from constitution_compiler import git_env
-from constitution_compiler.model import Layout
+from constitution_site import git_env
 
 ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "web/data/lengths.json"
@@ -42,6 +41,35 @@ COUNT_TIMEOUT = (
   10  # seconds per connect or read; a stalled API must not hold up the build
 )
 VERSIONS = {"full": "", "agent": ".agent"}  # key in the JSON: file suffix
+
+
+def edition() -> Path:
+  """Return the edition directory.
+
+  That is the one directory under constitution/ that holds an index.toml.
+
+  Returns:
+    The directory, relative to the checkout.
+
+  Raises:
+    ValueError: when there is none, or more than one.
+  """
+  dirs = sorted(p.parent for p in ROOT.glob("constitution/*/index.toml"))
+  if len(dirs) != 1:
+    raise ValueError(f"{len(dirs)} edition directories under constitution/")
+  return dirs[0].relative_to(ROOT)
+
+
+def output(name: str) -> Path:
+  """Return a generated constitution, relative to the checkout.
+
+  Args:
+    name: the language, with `.agent` after it for the version for agents.
+
+  Returns:
+    The path.
+  """
+  return edition() / "generated" / f"constitution.{name}.md"
 
 
 def counted(markdown: str) -> str:
@@ -159,8 +187,7 @@ def main(argv: list[str] | None = None) -> int:
     help="fail when a text's tokens are not counted (the Pages workflow)",
   )
   args = parser.parse_args(argv)
-  layout = Layout.of(ROOT)
-  with (ROOT / layout.index).open("rb") as f:
+  with (ROOT / edition() / "index.toml").open("rb") as f:
     languages = tomllib.load(f)["languages"]
   with (ROOT / "web/hugo.toml").open("rb") as f:
     model = tomllib.load(f)["params"]["tokenCount"]["model"]
@@ -176,7 +203,7 @@ def main(argv: list[str] | None = None) -> int:
   for lang in languages:
     versions = lengths[lang] = {}
     for version, suffix in VERSIONS.items():
-      source = layout.output(f"{lang}{suffix}")
+      source = output(f"{lang}{suffix}")
       text = counted((ROOT / source).read_text(encoding="utf-8"))
       tokens = count_tokens(text, model, auth) if auth else None
       if tokens is None and args.require_tokens:

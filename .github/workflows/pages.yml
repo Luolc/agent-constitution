@@ -120,6 +120,11 @@ jobs:
           export CONSTITUTION_TOKEN_COUNT_ACCESS_TOKEN
           uv run --frozen count-tokens --require-tokens
 
+      # As in ci.yml: the Rust toolchain of rust-toolchain.toml, for
+      # site-rules, which runs statute with cargo.
+      - name: Install the Rust toolchain
+        run: rustup toolchain install --no-self-update
+
       # As in ci.yml: the rules' data for Hugo, web/data/rules.json.
       - name: Rule data
         run: uv run --frozen site-rules

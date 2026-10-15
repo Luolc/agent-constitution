@@ -1,0 +1,161 @@
+//! `statute export`: the constitution and the rules of a directory as
+//! JSON, after statute has checked them.
+
+use std::path::{Path, PathBuf};
+use std::process::Command;
+
+use serde_json::{Value, json};
+
+mod common;
+use common::{domain, edit, rule};
+
+const INDEX: &str = r#"status = "active"
+edition = "2026-10"
+revision = "3"
+languages = ["en", "zh"]
+"#;
+
+const SECTION: &str = r#"id = "one-a"
+
+[[items]]
+id = "x"
+number = "1"
+
+[[items]]
+id = "y"
+number = "2"
+"#;
+
+/// A directory with the given rules and, with `constitution`, one
+/// edition: article `one`, its section `one-a` and that section's items
+/// `x` and `y`.
+fn dir(name: &str, constitution: bool, nodes: &[(u64, String)]) -> PathBuf {
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("export")
+        .join(name);
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("rules")).unwrap();
+    if constitution {
+        let edition = dir.join("constitution/2026-10");
+        std::fs::create_dir_all(edition.join("articles/01-one")).unwrap();
+        std::fs::write(edition.join("index.toml"), INDEX).unwrap();
+        std::fs::write(
+            edition.join("articles/01-one/article.toml"),
+            "id = \"one\"\n",
+        )
+        .unwrap();
+        std::fs::write(edition.join("articles/01-one/01-one-a.toml"), SECTION).unwrap();
+    }
+    for (id, text) in nodes {
+        std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
+    }
+    dir
+}
+
+fn export(dir: &Path) -> (i32, String, String) {
+    let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+        .arg("export")
+        .arg(dir)
+        .output()
+        .unwrap();
+    (
+        out.status.code().unwrap(),
+        String::from_utf8(out.stdout).unwrap(),
+        String::from_utf8(out.stderr).unwrap(),
+    )
+}
+
+#[test]
+fn constitution_and_nodes() {
+    let dir = dir(
+        "both",
+        true,
+        &[domain(1), rule(2, 1, "requires = [3]"), rule(3, 1, "")],
+    );
+    let (code, stdout, stderr) = export(&dir);
+    assert_eq!((code, stderr.as_str()), (0, ""));
+    let data: Value = serde_json::from_str(&stdout).unwrap();
+    let constitution = &data["constitution"];
+    assert_eq!(
+        (
+            &constitution["edition"],
+            &constitution["revision"],
+            &constitution["status"],
+            &constitution["languages"]
+        ),
+        (
+            &json!("2026-10"),
+            &json!("3"),
+            &json!("active"),
+            &json!(["en", "zh"])
+        )
+    );
+    assert_eq!(
+        constitution["provisions"],
+        json!([
+            {"id": "one", "parent": null, "labels": {"en": "Art. I", "zh": "第一条"}},
+            {"id": "one-a", "parent": "one", "labels": {"en": "Art. I §1", "zh": "第一条第一款"}},
+            {"id": "one-a.x", "parent": "one-a",
+             "labels": {"en": "Art. I §1(1)", "zh": "第一条第一款第一项"}},
+            {"id": "one-a.y", "parent": "one-a",
+             "labels": {"en": "Art. I §1(2)", "zh": "第一条第一款第二项"}},
+        ])
+    );
+    let nodes = data["nodes"].as_array().unwrap();
+    let files: Vec<&str> = nodes.iter().map(|n| n["file"].as_str().unwrap()).collect();
+    assert_eq!(
+        files,
+        [
+            format!("{}/rules/1.toml", dir.display()),
+            format!("{}/rules/2.toml", dir.display()),
+            format!("{}/rules/3.toml", dir.display()),
+        ]
+    );
+    // The fields as the file writes them: `default`, the reason's
+    // newlines, `requires`.
+    let fields = &nodes[1]["fields"];
+    assert_eq!(fields["default"], "off");
+    assert_eq!(fields["text"]["reason"]["en"], "Because.\n");
+    assert_eq!(fields["requires"], json!([3]));
+    assert_eq!(nodes[0]["fields"]["kind"], "domain");
+}
+
+#[test]
+fn rules_alone() {
+    let other = edit(rule(2, 1, ""), "parent = 1", "parent = \"R1\"");
+    let (code, stdout, _) = export(&dir("rules-alone", false, &[other]));
+    assert_eq!(code, 0);
+    let data: Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(data["constitution"], Value::Null);
+    assert_eq!(data["nodes"][0]["fields"]["parent"], "R1");
+}
+
+#[test]
+fn a_failed_check_prints_no_data() {
+    let stale = edit(
+        rule(2, 1, ""),
+        "[title]\nen = \"Rule 2\"\n",
+        "[title]\nen = \"Rule 2\"\nzh = \"规定 2\"\n",
+    );
+    let stale = edit(
+        stale,
+        "en = \"Do the thing 2.\"\n",
+        "en = \"Do the thing 2.\"\nzh = \"做 2。\"\n",
+    );
+    let stale = edit(
+        stale,
+        "en = '''\nBecause.\n'''\n",
+        "en = '''\nBecause.\n'''\nzh = \"因为。\"\n",
+    );
+    let stale = edit(
+        stale,
+        "en = \"Violated when the thing is not done.\"\n",
+        "en = \"Violated when the thing is not done.\"\nzh = \"没做即违反。\"\n\n[translations]\nzh = \"0000\"\n",
+    );
+    let (code, stdout, stderr) = export(&dir("stale", true, &[domain(1), stale]));
+    assert_eq!((code, stdout.as_str()), (1, ""));
+    assert!(
+        stderr.contains("rules/2.toml: error: the `zh` translation follows another original"),
+        "{stderr}"
+    );
+}

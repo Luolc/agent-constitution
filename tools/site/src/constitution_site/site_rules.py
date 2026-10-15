@@ -24,32 +24,35 @@ With `--enabled`, each rule says whether the rule set of a statute.lock
 enables it. Without either, the pages are this repo's alone
 and say neither.
 
-Errors print as `path:line: check 1: message`, as constitution-build
-prints them; the exit status is 1 when the sources cannot be read.
+statute reads and checks the sources (`statute export`, built from this
+checkout with cargo) and prints what is wrong with them; the exit status
+is 1 when they cannot be read.
 """
 
 import argparse
 from collections import defaultdict
+from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tomllib
 from typing import Any, NamedTuple
 
-from constitution_compiler import render
-from constitution_compiler.model import (
-  Errors,
-  ID,
-  Layout,
-  MARK,
-  Node,
-  PARTS,
-  Sources,
-)
-from constitution_compiler.read import _Reader, first_party, load, node_files
-
 ROOT = Path(__file__).resolve().parents[4]
+# statute, built from this checkout, as cargo runs it.
+STATUTE = [
+  "cargo",
+  "run",
+  "--quiet",
+  "--locked",
+  "--manifest-path",
+  str(ROOT / "Cargo.toml"),
+  "--package",
+  "statute",
+  "--",
+]
 OUT = ROOT / "web/data/rules.json"
 # A rule's page is rules/<id>/, the full version of the constitution the
 # home page of the same language: from a rule's page, these links lead to
@@ -65,9 +68,184 @@ FIELDS = ("revision", "level", "constitution", "check", "run", "tools")
 # list the sources (docs/design/rule-sources.md).
 FIRST_PARTY = "R"
 QUADRANTS = ("global-public", "global-private", "local-public", "local-private")
+# The parts of a rule's text.
+PARTS = ("statement", "reason", "verification")
+# The name of a source, or a part of a provision's ID.
+ID = r"[a-z0-9]+(?:-[a-z0-9]+)*"
+# A citation: `{@id}`, `{@section.item}`, each optionally after a namespace.
+MARK = re.compile(
+  r"\{@(?:(constitution|rule):)?(" + ID + r"(?:\." + ID + r")?)\}"
+)
 # A citation of a rule of another source, as `requires` names it:
 # `{@rule:R12}`, `{@rule:team:7}`.
 OTHER_RULE = re.compile(r"\{@rule:(R[1-9][0-9]*|" + ID + r":[1-9][0-9]*)\}")
+FIRST_PARTY_REF = re.compile(r"R[1-9][0-9]*")
+
+
+@dataclass(frozen=True)
+class Node:
+  """One node of a rule tree, as `statute export` gives it.
+
+  Attributes:
+    id: its ID.
+    slug: its slug, if it has one.
+    kind: rule, one-of or domain.
+    status: its status.
+    lang: the language of its original.
+    parent: its parent, an ID or a reference to another source's node.
+    overrides: the rule of another source it takes the place of.
+    superseded_by: the rules that supersede it.
+    authority: the provisions it names.
+    title: its title by language.
+    applicability: a domain's applicability by language, if it has one.
+    text: a rule's parts, each by language; empty for a domain or one-of.
+    translations: the languages it is translated into, each following its
+      current original, as statute checks.
+    data: the fields of its file.
+  """
+
+  id: int
+  slug: str | None
+  kind: str
+  status: str
+  lang: str
+  parent: int | str | None
+  overrides: str | None
+  superseded_by: list[int]
+  authority: list[str]
+  title: dict[str, str]
+  applicability: dict[str, str] | None
+  text: dict[str, dict[str, str]]
+  translations: list[str]
+  data: dict[str, Any]
+
+
+def texts(table: dict[str, str]) -> dict[str, str]:
+  """Return a text by language without the newlines that open and close it.
+
+  That is, the newline after the opening and before the closing quotes of
+  a multi-line string.
+
+  Args:
+    table: the text by language, as the file writes it.
+
+  Returns:
+    The text by language.
+  """
+  return {lang: text.strip("\n") for lang, text in table.items()}
+
+
+def node(fields: dict[str, Any]) -> Node:
+  """Return a node of the rule tree from the fields of its file.
+
+  Args:
+    fields: the fields, as `statute export` gives them.
+
+  Returns:
+    The node.
+  """
+  successors = fields.get("superseded-by", [])
+  applicability = fields.get("applicability")
+  return Node(
+    id=fields["id"],
+    slug=fields.get("slug"),
+    kind=fields["kind"],
+    status=fields["status"],
+    lang=fields["lang"],
+    parent=fields.get("parent"),
+    overrides=fields.get("overrides"),
+    superseded_by=successors if isinstance(successors, list) else [successors],
+    authority=fields.get("authority", []),
+    title=texts(fields["title"]),
+    applicability=None if applicability is None else texts(applicability),
+    text={part: texts(t) for part, t in fields.get("text", {}).items()},
+    translations=sorted(fields.get("translations", {})),
+    data=fields,
+  )
+
+
+class Constitution(NamedTuple):
+  """What the pages take from the constitution.
+
+  Attributes:
+    languages: the languages of index.toml, in order.
+    articles: the IDs of the articles.
+    ancestors: for each section, its article; for each item, its section
+      and its article; nearest first.
+    labels: for each language, the label of each provision by citation:
+      `Art. IV §1(2)` for `principals.competent`.
+  """
+
+  languages: list[str]
+  articles: set[str]
+  ancestors: dict[str, tuple[str, ...]]
+  labels: dict[str, dict[str, str]]
+
+
+def constitution(data: dict[str, Any]) -> Constitution:
+  """Return the constitution `statute export` gives.
+
+  Args:
+    data: its `constitution`.
+
+  Returns:
+    The constitution.
+  """
+  provisions = data["provisions"]
+  parent = {p["id"]: p["parent"] for p in provisions}
+  ancestors: dict[str, tuple[str, ...]] = {}
+  for p in provisions:
+    above, ref = [], p["parent"]
+    while ref is not None:
+      above.append(ref)
+      ref = parent[ref]
+    if above:
+      ancestors[p["id"]] = tuple(above)
+  return Constitution(
+    languages=data["languages"],
+    articles={p["id"] for p in provisions if p["parent"] is None},
+    ancestors=ancestors,
+    labels={
+      lang: {p["id"]: p["labels"][lang] for p in provisions}
+      for lang in data["languages"]
+    },
+  )
+
+
+def export(path: Path) -> dict[str, Any] | None:
+  """Return the sources of a directory, as `statute export` prints them.
+
+  Args:
+    path: the directory, holding constitution/ or rules/.
+
+  Returns:
+    Its constitution and its nodes, or None when cargo cannot run or
+    statute cannot read or check them; either has then printed why.
+  """
+  try:
+    run = subprocess.run(
+      [*STATUTE, "export", str(path)],
+      stdout=subprocess.PIPE,
+      text=True,
+      encoding="utf-8",
+      check=False,
+    )
+  except OSError as e:
+    print(f"site-rules: error: cannot run cargo: {e}", file=sys.stderr)
+    return None
+  return json.loads(run.stdout) if run.returncode == 0 else None
+
+
+def first_party(value: object) -> bool:
+  """Tell whether a value names a first-party rule, as `R12` does.
+
+  Args:
+    value: a value of a node's file.
+
+  Returns:
+    True when it does.
+  """
+  return isinstance(value, str) and FIRST_PARTY_REF.fullmatch(value) is not None
 
 
 class Source(NamedTuple):
@@ -125,12 +303,12 @@ def other_ref(ref: str) -> tuple[str, int]:
   return name, int(node_id)
 
 
-def specific(authority: list[str], src: Sources) -> list[str]:
+def specific(authority: list[str], src: Constitution) -> list[str]:
   """Return an `authority` without the provisions it names something under.
 
   Args:
     authority: the provisions, as the node names them.
-    src: the sources.
+    src: the constitution.
 
   Returns:
     The provisions no other of them is under, in their order.
@@ -185,25 +363,26 @@ def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
 class _Language:
   """The data of one language of the site."""
 
-  def __init__(self, lang: str, src: Sources, sources: list[Source]) -> None:
+  def __init__(
+    self, lang: str, src: Constitution, sources: list[Source]
+  ) -> None:
     """Index the nodes and the constitution's labels.
 
     Args:
       lang: the language of the pages.
-      src: the sources.
+      src: the constitution.
       sources: the rules of each source, this repo's first.
     """
     self.lang, self.src = lang, src
     self.nodes = {(s.name, n.id): n for s in sources for n in s.nodes}
     self.many = len(sources) > 1
-    self.labels = {code: render.labels(code, src) for code in src.languages}
+    self.labels = src.labels
 
   def shown(self, node: Node) -> str:
     """Return the language the node is shown in on this language's pages.
 
-    The page's own when the node is written in it, or translated into it
-    from its current original; its original's otherwise, also when the
-    translation follows an older original.
+    The page's own when the node is written in it or translated into it;
+    its original's otherwise.
 
     Args:
       node: the node.
@@ -211,8 +390,8 @@ class _Language:
     Returns:
       The language code.
     """
-    current = node.translations.get(self.lang) == node.original
-    return self.lang if node.lang == self.lang or current else node.lang
+    translated = self.lang in node.translations
+    return self.lang if node.lang == self.lang or translated else node.lang
 
   def title(self, key: tuple[str, int]) -> str:
     """Return a node's title as this language's pages show it.
@@ -303,7 +482,7 @@ class _Language:
     Returns:
       The node's data.
     """
-    data = node.doc.data
+    data = node.data
     name = source.name
     shown = self.shown(node)
     groups, ancestor = [], node.parent
@@ -341,11 +520,7 @@ class _Language:
         "status": node.status,
         "lang": node.lang,
         "shown": shown,
-        "translations": sorted(
-          lang
-          for lang, sha in node.translations.items()
-          if sha == node.original
-        ),
+        "translations": node.translations,
         "depth": depth,
         "groups": groups,
         "title": node.title[shown],
@@ -393,7 +568,7 @@ def both_sides(sources: list[Source]) -> dict[tuple[str, int], list[int | str]]:
   names = {s.name for s in sources}
   for s in sources:
     for n in s.nodes:
-      for target in n.doc.data.get("conflicts", []):
+      for target in n.data.get("conflicts", []):
         conflicts[(s.name, n.id)].append(target)
         if isinstance(target, int):
           conflicts[(s.name, target)].append(n.id)
@@ -404,14 +579,16 @@ def both_sides(sources: list[Source]) -> dict[tuple[str, int], list[int | str]]:
 
 
 def site_data(
-  src: Sources,
+  src: Constitution,
+  nodes: list[Node],
   others: list[Source] | None = None,
   enabled: set[str] | None = None,
 ) -> dict[str, Any]:
   """Return the data of every language of the site.
 
   Args:
-    src: the sources.
+    src: the constitution.
+    nodes: this repo's rule tree.
     others: the rules of other sources, if any.
     enabled: the labels of the rules a rule set enables, or None.
 
@@ -424,12 +601,12 @@ def site_data(
     ID, without repeats. With other sources, each node's groups start
     with its source.
   """
-  sources = [Source(FIRST_PARTY, QUADRANTS[0], src.nodes), *(others or [])]
+  sources = [Source(FIRST_PARTY, QUADRANTS[0], nodes), *(others or [])]
   sources.sort(key=lambda s: QUADRANTS.index(s.quadrant))
   rank = {s.name: i for i, s in enumerate(sources)}
   order = [(s, n, depth) for s in sources for n, depth in tree_order(s.nodes)]
   conflicts = both_sides(sources)
-  articles = {a.id for a in src.articles}
+  articles = src.articles
   cited: dict[str, list[tuple[str, int]]] = defaultdict(list)
   within: dict[str, list[tuple[str, int]]] = defaultdict(list)
   for s, n, _ in order:
@@ -469,67 +646,24 @@ def site_data(
   return data
 
 
-class _OtherReader(_Reader):
-  """Reads the rule tree of another source.
-
-  There `R12` names a rule of this repo, as `requires` and the like name
-  it; this repo's own reader takes that for a node of the same source.
-  """
-
-  def parent(self, doc: Any, kind: str) -> None:
-    """Check a node's `parent`, which may name a domain of this repo.
-
-    Args:
-      doc: the node's file.
-      kind: its kind.
-    """
-    if not (kind == "rule" and first_party(doc.data.get("parent"))):
-      super().parent(doc, kind)
-
-  def overrides(self, doc: Any) -> None:
-    """Check a rule's `overrides`, which may name a rule of this repo.
-
-    Args:
-      doc: the rule's file.
-    """
-    if not first_party(doc.data.get("overrides")):
-      super().overrides(doc)
-
-  def references(self, doc: Any) -> None:
-    """Check `requires` and `conflicts`, which may name rules of this repo.
-
-    Args:
-      doc: the rule's file.
-    """
-    d = doc.data
-    kept = {k: d[k] for k in ("requires", "conflicts") if k in d}
-    for k, values in kept.items():
-      d[k] = [v for v in values if not first_party(v)]
-    super().references(doc)
-    d.update(kept)
-
-
-def load_source(
-  path: Path, name: str, quadrant: str, src: Sources, errors: Errors
-) -> Source:
-  """Read the rules of another source, as this repo's are read.
+def load(path: Path) -> tuple[Constitution | None, list[Node]] | None:
+  """Read the constitution and the rules of a directory through statute.
 
   Args:
-    path: the source's directory, holding rules/.
-    name: its name.
-    quadrant: its quadrant.
-    src: this repo's sources, for the languages and the status.
-    errors: where errors go.
+    path: the directory.
 
   Returns:
-    The source.
+    Its constitution, None when it has none, and its rule tree; or None
+    when statute cannot read or check them.
   """
-  reader = _OtherReader(
-    path, Layout(Path()), errors, src.languages, src.index.data["status"]
+  data = export(path)
+  if data is None:
+    return None
+  src = data["constitution"]
+  return (
+    None if src is None else constitution(src),
+    [node(n["fields"]) for n in data["nodes"]],
   )
-  for file in node_files(path):
-    reader.node(file)
-  return Source(name, quadrant, reader.nodes)
 
 
 def enabled_rules(locks: list[Path]) -> set[str]:
@@ -610,25 +744,24 @@ def main(argv: list[str] | None = None) -> int:
     help="a statute.lock whose rules the pages mark as enabled (repeatable)",
   )
   args = parser.parse_args(argv)
-  errors = Errors()
-  src = load(args.root, errors, nodes=True)
-  others = (
-    []
-    if src is None
-    else [
-      load_source(path, name, quadrant, src, errors)
-      for name, quadrant, path in args.source
-    ]
-  )
-  if src is None or errors:
-    print("\n".join(errors), file=sys.stderr)
+  read = load(args.root)
+  if read is None:
     return 1
+  src, nodes = read
+  if src is None:
+    print(f"{args.root}: error: no constitution/", file=sys.stderr)
+    return 1
+  others = []
+  for name, quadrant, path in args.source:
+    other = load(path)
+    if other is None:
+      return 1
+    others.append(Source(name, quadrant, other[1]))
   enabled = enabled_rules(args.enabled) if args.enabled else None
+  data = site_data(src, nodes, others, enabled)
   args.out.parent.mkdir(parents=True, exist_ok=True)
   args.out.write_text(
-    json.dumps(site_data(src, others, enabled), ensure_ascii=False, indent=2)
-    + "\n",
-    encoding="utf-8",
+    json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
   )
   return 0
 

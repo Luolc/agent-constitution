@@ -1,4 +1,4 @@
-<!-- en-sha256: a22257b9aa60d732ddcf4e8335c481dc658c8464ca810b3cd5c2cda3a48782d1 -->
+<!-- en-sha256: 1fd108717cb91a9555d29563ec242caf6599b0440181c564ffaca660c75b356b -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -41,12 +41,13 @@
 - `upgrade`：把规定源和宪法移到更新的版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；
 - `explain`：说明一条规定为什么被启用、哪些规定依赖它；
 - `site`：为规定清单能用到的规定生成一个本地网站 ([本地网站](#the-local-site))；
+- `export`：把一个目录里的宪法和规定以 JSON 打印出来，供读取它们的程序使用 ([导出](#export))；
 - `constitution build`：从源文件构建所在仓库的宪法，或者检查它 (见下文)；
 - `validate <dir>`：单独检查一个规定目录，当作一个规定源，不需要规定清单 (见下文)。
 
 **第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
-**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site`、`constitution build` 和 `validate`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个。仓库自己的规定 `L12` 从 `.statute/rules/` 或 `local-rules` 指定的目录读 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))；那个目录是某个规定源的规定目录时，比如 `local-rules = "rules"` 加上 `R = { path = "." }`，这些规定归那个规定源，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定或领域指向另一个规定源的 `parent`，以及放在 git 目录里的私有层连同它的锁文件、它的输出、`.statute/.gitignore` 和 `compile --private-only`，也都已实现。全局配置、`init --global`、git 规定源和 `source add` 已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。[规定配置](rule-config.md) 里，规定文件的 `default`、`uses` 和 `check = "none"` 已经读取并检查，连同[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule) 的树形，`compile` 写什么、`check` 列什么也按 `uses` 来；规定清单的默认开关也已实现，连同 `domains`、`exclude`、`local-rules` 和规定源条目的 `defaults`，以及 `add`、`remove`、`explain` (包括 `--defaults`) 和锁文件对它们的处理。`default` 在规定文件需要它的地方必填，`check = "review"` 报错。还没有实现的是：参数、one-of 的渲染，以及网站上的标记。继承规定清单和按路径分段还没有实现。
+**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site`、`constitution build` 和 `validate`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个；还有 `export`。仓库自己的规定 `L12` 从 `.statute/rules/` 或 `local-rules` 指定的目录读 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))；那个目录是某个规定源的规定目录时，比如 `local-rules = "rules"` 加上 `R = { path = "." }`，这些规定归那个规定源，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定或领域指向另一个规定源的 `parent`，以及放在 git 目录里的私有层连同它的锁文件、它的输出、`.statute/.gitignore` 和 `compile --private-only`，也都已实现。全局配置、`init --global`、git 规定源和 `source add` 已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。[规定配置](rule-config.md) 里，规定文件的 `default`、`uses` 和 `check = "none"` 已经读取并检查，连同[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule) 的树形，`compile` 写什么、`check` 列什么也按 `uses` 来；规定清单的默认开关也已实现，连同 `domains`、`exclude`、`local-rules` 和规定源条目的 `defaults`，以及 `add`、`remove`、`explain` (包括 `--defaults`) 和锁文件对它们的处理。`default` 在规定文件需要它的地方必填，`check = "review"` 报错。还没有实现的是：参数、one-of 的渲染，以及网站上的标记。继承规定清单和按路径分段还没有实现。
 
 **`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，`public = true` 或 `public = false`，空的 `rules`，以及给了 `--source` 时的一个磁盘上的规定源，即第一方规定源 `R`。`public` 取 `--public` 或 `--private` 指定的值 (两者最多给一个)，没有指定时取 `gh` 显示的这个仓库的情况，见[公开与否](rule-sources.md#public-or-not)。`--source <dir>` 指定规定源的目录，相对于当前目录。不给它时，`init` 不写 `[sources]`，`R` 取全局配置里的或内置默认的那个 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))，读它所跟踪分支的最新提交。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
 
@@ -67,6 +68,15 @@
 - **首页**按四类规定源 ([四类规定源](rule-sources.md#four-kinds-of-source)) 分节：全局公开、全局私有、本仓公开、本仓私有。每节列出它的规定源，每个规定源列出它的领域树，包括每个节点，不论启用与否：节点的引用、标题和状态，以及这份规定清单是启用它、覆盖它还是没选它。按规定源类别筛选、隐藏这份规定清单没有启用的规定，以及显示默认隐藏的已被取代和已废止的节点，都只靠复选框和样式表实现。
 - **规定源属于哪一类**看它的两个属性：仓库自己的规定 (`L`) 和 `scope = "local"` 的规定源是本仓的，其余都是全局的，包括全局配置里的；公开与否按规定源自己的声明，`L` 按规定清单的声明。在 `.` 的规定源，比如本仓的 `R = { path = "." }`，是第一方规定源，所以是全局公开的。`local-rules` 指向它的规定目录时，它的规定同时也是仓库自己的规定：它只在全局公开下列一次，本仓公开那一节写明这一点并链接过去；否则仓库自己的规定列在它所属类别的本仓那一节。尚未实现：不论 `local-rules` 指向哪里，网站仍把在 `.` 的规定源当作仓库自己的规定。每个节点在首页和它自己的页面上都标出所属规定源的类别：用页面的语言写出类别名，底色是四种颜色之一。节点自己的页面上，标记还写出规定源的名字，例如 `全局私有 · me`。
 - **每个节点一页**，`<source>/<id>.html`：陈述、理由、验证方式和适用范围；`requires`、`conflicts`、`overrides` 和取代它的规定；上溯的父节点路径和子节点。领域的页面就是它下面节点的列表。对规定的引用链接到那条规定的页面，对宪法的引用写成条款的标签，和编译出的 `AGENTS.md` 一样。页面用 `[compile] lang` 指定的语言，节点的类别也是；状态按规定文件里的写法显示，比如 `draft` 或 `trial`。
+
+## <a id="export"></a>导出
+
+`statute export [<dir>]` 把一个目录 (默认是 `.`) 里的宪法和规定打印成一个 JSON 值，供读取它们的程序使用，本仓的网站就是这样用的 ([静态网站](static-site.md)，「规定」)。它不读规定清单：这个目录是一个规定源，里面有 `constitution/` 或 `rules/`，或者两者都有。
+
+- `constitution`：没有 `constitution/` 时为 `null`；否则是它唯一那一版的 `index.toml` 里的 `edition`、`revision`、`status` 和 `languages` (一版都没有或不止一版时导出失败)，以及按正文顺序排列的 `provisions`：每个条、款、项给出引用它时写的 `id`、它的 `parent` (条为 `null`) 和按语言给出的 `labels`，写法与编译出的 `AGENTS.md` 相同。
+- `nodes`：`rules/` 里的每个节点，按 ID 排序，给出它的 `file` 和它的 `fields`，即文件里原样写的各字段，正文也在内。程序拿到的是文件里原样写的值；statute 以后认识的新字段，不改导出也能传过去；默认值由程序自己补。
+
+打印之前，statute 像检查任何规定源一样检查这些规定 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))；检查不通过时，它只打印错误，以退出码 1 退出。依据旧原文翻译的译文过不了这项检查，所以节点列出的每份译文都跟随当前原文。JSON 是唯一的格式，所以这个命令没有选择格式的选项。
 
 ## <a id="why-rust"></a>为什么用 Rust
 
