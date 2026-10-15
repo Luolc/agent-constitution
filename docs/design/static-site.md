@@ -3,7 +3,9 @@
 The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
-`site/zh/agent/index.html`), and so is this design, under `design/`
+`site/zh/agent/index.html`) and the full version again under
+`editions/<edition>/` (`site/editions/2026-10/index.html`,
+`site/zh/editions/2026-10/index.html`), and so is this design, under `design/`
 (`site/design/index.html`, `site/zh/design/index.html`), and so are the
 rules, under `rules/` (`site/rules/index.html`,
 `site/zh/rules/index.html`). Hugo builds them with `hugo-0.167.0 -s
@@ -40,13 +42,14 @@ screenshots (Screenshots, below). The workflow
   failing the build unless exactly one file matches; Python writes no
   page, only the data of the rules' pages (Rules, below). The content
   adapter `web/content/_content.gotmpl` makes each into the home page of
-  its language: the header line is dropped,
-  the title becomes the page's, each heading's anchor (`## <a
+  its language: the full version's header line is dropped (the version
+  for agents has none), the title becomes the page's, each heading's anchor (`## <a
   id="general-provisions"></a>Article I. ...`) becomes the heading's id,
   so the table of contents links to it, and the page gets the lengths
-  (below) as params. It fails the build when a file does not start with
-  the header line, a blank line and the `# ` title. The layout
-  (`web/layouts/home.html`) sets the title, the list under it and the
+  (below) as params. It fails the build when the full version does not
+  start with the header line, a blank line and the `# ` title, or the
+  version for agents with the `# ` title. The layout
+  (`web/layouts/_partials/constitution/full.html`) sets the title, the list under it and the
   text in `<div class="constitution">`, the root the style sheet hangs
   on. The title (`web/layouts/_partials/constitution/title.html`) has no
   `#` link from the theme and keeps its name and its parenthesis each on
@@ -78,6 +81,22 @@ screenshots (Screenshots, below). The workflow
   The sidebar, the language switch (to the other language's version for
   agents), the color switch and the table of contents are as on the home
   page, the table of contents linking to the IDs Hugo gives the headings.
+- The edition's page: the full version is also the page
+  `editions/<edition>/` of its language, an address that keeps this
+  edition when a later one takes the home page; a link to an edition from
+  outside the site goes there. The content adapter adds it with the home
+  page's text, title and params, and its layout,
+  `web/layouts/editions/page.html`, sets them as the home page's does,
+  both through `web/layouts/_partials/constitution/full.html`. It has no
+  entry in the sidebar, `bookHidden` hides it from the theme's own list,
+  and the section `editions/` gets no page (`build` with `render` and
+  `list` `never`). As the home page has the same text, the edition's page
+  carries `<meta name="robots" content="noindex">`
+  (`web/layouts/_partials/docs/inject/head.html`), so search engines
+  index the text once, on the home page. The links in the lists of the
+  rules under the provisions start at the site's root (`relLangURL`),
+  which `relativeURLs` makes relative to each page, so they lead to the
+  rules' pages from both.
 - Design: the files of `docs/design/` become the pages under `design/`
   of each language, read where they are: `web/hugo.toml` mounts
   `docs/design/*.md` and `docs/design/zh/*.md` as assets, and the content
@@ -292,9 +311,14 @@ screenshots (Screenshots, below). The workflow
   without scripts the lists are open. The lengths are of the text
   without these lines. The rules' pages have the design's layout and
   style (`<div class="design rules">`).
+- Length: the second item of the list gives the length of the version
+  for agents, bare, which is what takes room in an agent's context: the
+  generated file from its `# ` title on, in characters in both
+  languages, words split on white space (ASCII white space, the only kind
+  the files hold) in English, and tokens as counted for the model
   `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
-  API (`POST /v1/messages/count_tokens`, standard library only). The
-  content adapter counts the characters and words; `count-tokens`
+  API (`POST /v1/messages/count_tokens`, standard library only). The content adapter counts
+  the characters and words; `count-tokens`
   counts the tokens and writes them to `web/data/lengths.json` (not
   committed), with the SHA-256 of each text it counted and the full SHA
   of the commit it ran on. The site shows a token count, and the commit, only
@@ -310,7 +334,7 @@ screenshots (Screenshots, below). The workflow
   popup first says that the length it hangs under is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
-  full version is the generated file without its header line, anchors and
+  full version is the generated file from its `# ` title on, anchors and
   link definitions included; a token count not made is a dash), the table
   as wide as the popup; under it, fainter than the table, a bulleted list
   (spans with ARIA list roles): what the version for agents omits, which
@@ -383,9 +407,11 @@ screenshots (Screenshots, below). The workflow
   the content adapter adds each page's entry to the menu, named from
   `index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
   by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
-  edition's year and month, negated. Today that is the one edition, the
-  home page; a page per edition, once there are several, is not built
-  yet. The version for agents is not listed, as
+  edition's year and month, negated. Today that is the one edition, whose
+  entry links the home page; the edition's page is not listed. A site of
+  several editions, an older one on its own page alone and indexed there,
+  is not built yet: the site reads one edition (Input, above). The
+  version for agents is not listed, as
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
   theme's own list with `bookHidden`, as it hides the design's pages,

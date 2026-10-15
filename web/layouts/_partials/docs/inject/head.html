@@ -11,7 +11,7 @@
 {{- /* The scripts, in this order; one in TypeScript is bundled by Hugo's
   js.Build (esbuild), which strips its types without checking them
   (docs/design/frontend.md, In the code). */ -}}
-{{- range slice "theme.js" "count-info.js" "cites.js" "ts/rules-list.ts" "toc-current.js" }}
+{{- range slice "theme.js" "count-info.js" "cites.js" "ts/rules-list.ts" "toc-current.js" "sidebars.js" }}
   {{- $script := resources.Get . }}
   {{- if strings.HasSuffix . ".ts" }}
     {{- $script = $script | js.Build (dict "target" "es2018" "minify" true) }}
@@ -28,3 +28,25 @@
 {{- /* Without scripts, the lists of the rules under the provisions
   are open, since nothing could open them (assets/cites.js). */}}
 <noscript><style>.cites-list { display: block; } .cites-toggle { display: none; }</style></noscript>
+{{- /* Without scripts, the lists of the sidebar are open and its
+  groups' buttons hidden, and on a narrow screen the sidebar and the
+  table of contents, which nothing could open as drawers
+  (assets/sidebars.js), stand in the page, the sidebar above the text
+  and the table of contents below it, without the top bar's buttons. */}}
+<noscript><style>
+.book-menu .menu-fold, .book-header .drawer-toggle { display: none; }
+.book-menu li:has(> [data-fold][aria-expanded], > .menu-fold-row > [data-fold][aria-expanded]) > ul { display: block; }
+@media screen and (width <= 70rem) {
+  .book-toc { order: 0; }
+  .book-toc .book-toc-content { position: static; inline-size: auto; visibility: visible; transform: none; box-shadow: none; border: none; }
+}
+@media screen and (width <= 56rem) {
+  .book-menu { margin: 0; flex-basis: auto; }
+  .book-menu .book-menu-content { position: static; inline-size: auto; visibility: visible; transform: none; box-shadow: none; border: none; }
+}
+</style></noscript>
+{{- /* An edition's page has the home page's text (content/_content.gotmpl),
+  which search engines index on the home page only. */}}
+{{- if .Params.noindex }}
+<meta name="robots" content="noindex">
+{{- end }}

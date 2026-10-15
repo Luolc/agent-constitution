@@ -77,10 +77,10 @@ below.
 | `bg-hover` | `#c7d0bf` | `#343b35` | A row or a button on the page under the pointer. |
 | `bg-panel-hover` | `#bcc7b4` | `#3a423b` | An item on a panel under the pointer. |
 | `bg-active` | `#b2bdaa` | `#444c45` | An item while it is pressed. |
-| `bg-selected` | `#c5c5b0` | `#3e3e33` | The current item: the sidebar's current page, a chosen option. |
+| `bg-selected` | `#c5c5b0` | `#3e3e33` | The current item: the sidebar's current group, a chosen option. |
 | `bg-target` | `#e3d79c` | `#4a4a2a` | The element an anchor led to, for a moment. |
 | `text` | `#23301f` | `#d3dccf` | Text and links in the text. |
-| `text-muted` | `#4b5946` | `#9cab98` | Labels, secondary text, the table of contents. |
+| `text-muted` | `#4b5946` | `#9cab98` | Labels, secondary text, the sidebar's pages, the table of contents. |
 | `text-faint` | `#5a6754` | `#839080` | Notes under notes on the page: the legend under the title. Never on a panel. |
 | `accent` | `#7d3a1e` | `#dba37f` | Links under the pointer, the current item's text, the focus ring, a primary button. |
 | `accent-hover` | `#6b381e` | `#d9ae8f` | A primary button under the pointer. |
@@ -407,7 +407,12 @@ turned off (disabled), where it has these.
   can be linked; there is no Apply button. Escape, a click outside or
   the focus leaving it closes it. A site without scripts, as the local
   site is, shows the same groups in the popover, applied with a primary
-  button.
+  button. The local site differs today: its check boxes apply at once,
+  through the style sheet, with no primary button; its groups are the
+  kind of source, the use, and the rules not enabled and those
+  superseded or repealed, shown besides; and it has no groups for the
+  status, the defaults and the domain, no All and None, and no badge
+  ([Status](#status)).
 - **The tree of rules.** The level of a node shows by its size, weight
   and a bar ([Type](#type)), not by indentation: a domain of the first
   level is a heading with `space-8` above it; one of the second level
@@ -442,15 +447,53 @@ turned off (disabled), where it has these.
   outside. It opens over `duration-base` from `scale(0.95)` and
   transparent, and closes over `duration-fast`, both `ease-out`
   ([Motion](#motion)).
-- **The sidebar.** `bg-panel`, with `1px` of `border-subtle` along its
-  edge. A group's name: its icon (`icon-md`) and its name in `text-md`,
-  `weight-bold`, `text`. A page: `text-md`, `weight-regular`, `text`,
-  padding `space-1 space-2`, `radius-sm`. Hover: `bg-panel-hover`.
-  Active: `bg-active`. The current page: `bg-selected`, its text in
-  `accent` and `weight-medium`; a group whose current page is listed
-  under it marks that page alone. A group that folds has its chevron at
-  its end, `chevron-right` shut and `chevron-down` open, the turn taking
-  `duration-base`.
+- **The sidebar.** After the sidebars of Tailwind CSS's documentation
+  ([Sources](#sources)), in this file's colors and fonts. `bg-panel`,
+  with `1px` of `border-subtle` along its edge, its groups `space-4`
+  apart. A group's name: its icon (`icon-md`) and its name in `text-md`,
+  `weight-bold`, `text`. Its pages stand under it along a hairline, `1px`
+  of `border-subtle` that starts under the middle of the icon. A page:
+  `text-md`, `weight-regular`, `text-muted`, padding `space-1 space-2`,
+  its text in line with the group's name, with a `2px` bar over the
+  hairline, transparent at rest. A row, a group's or a page's, under the
+  pointer: `bg-panel-hover`, `radius-sm` but on the hairline's side; a
+  page also turns to `text`, its bar to `border-strong`. Active:
+  `bg-active`. The current page: its bar and its text in `accent`, the
+  text in `weight-medium`, with no fill. A group with no pages, when
+  current, has no hairline to mark: it takes `bg-selected`, its text in
+  `accent`. A group whose current page is listed under it marks that
+  page alone. When the page loads, the sidebar scrolls its current page
+  into view if it is out of it. A group that folds has a quiet button at
+  the end of its row, its chevron `chevron-right` shut and
+  `chevron-down` open, the turn taking `duration-base`; that button and
+  the language switch say whether their list is shown
+  (`aria-expanded`, `aria-controls`).
+  - The table of contents, at the right: `text-sm`, under its heading in
+    `text-muted`; its headings along a hairline as the sidebar's pages
+    are, `text-muted`, a heading of a lower level indented by `space-4`
+    with its bar still on the hairline. Under the pointer: `text`, the
+    bar `border-strong`. The heading the reader is in: the bar and the
+    text in `accent`, `weight-bold`. It follows the scroll, so its marks
+    change at once, without a transition.
+  - The drawers of a narrow screen. At `56rem` and under the sidebar,
+    and at `70rem` and under the table of contents, go behind a quiet
+    button of the top bar, `menu` and `table-of-contents`, each showing
+    `x` while its drawer is open and saying whether it is and which
+    drawer it opens (`aria-expanded`, `aria-controls`). At `56rem` and
+    under the top bar stays at the top of the window, `bg-page` with
+    `1px` of `border-subtle` under it. A drawer opens under the top bar
+    from its own edge, the sidebar from the start and the table of
+    contents from the end: `bg-panel`, `1px` of `border-subtle` and
+    `shadow-popover`, as it lies over the text. It slides in over
+    `duration-base` and out over `duration-fast`, both `ease-out`, and
+    the page behind it fades to a quarter of its opacity; under reduced
+    motion it fades in and out in place. While a drawer is open the
+    rest of the page is inert: the focus goes to the drawer's first
+    link, and Escape, its button, a click outside it or a link followed
+    in it closes it, the focus going back to the button when the
+    keyboard or the button closed it. Without scripts there are no
+    drawers: the sidebar stands above the text and the table of
+    contents below it, every list open.
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding
   `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
@@ -535,7 +578,11 @@ turned off (disabled), where it has these.
   (the legend, the filter and the page size above the list, whose
   markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
-  `web/assets/styles/index.yaml`.
+  `web/assets/styles/index.yaml`. The local site's own is
+  `crates/statute/src/site.css`, which `statute` writes into each page
+  after `tokens.css`; it draws the check boxes as `controls.css` does,
+  and holds nothing of the public site's other sheets, which style the
+  theme's markup.
 - **Icons.** The SVG files are in `crates/statute/assets/icons/`, one
   directory per source, `lucide/` and `octicons/`, unchanged from the
   release, with the license in each and the versions in its
@@ -544,7 +591,9 @@ turned off (disabled), where it has these.
   one line with the class `icon`, hidden from screen readers; the class
   sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
   component makes it `icon-md`. A chevron that turns is `chevron-right`
-  turned a quarter, which draws `chevron-down`.
+  turned a quarter, which draws `chevron-down`. The local site inlines
+  the files it needs in the same way, built into `statute` with
+  `include_str!`.
 - **Scripts.** A script that holds more than a few lines of logic, the
   list of the rules and its filter today, is written in TypeScript in
   `web/assets/ts/`, the logic that needs no page (the filter's choice
@@ -576,13 +625,20 @@ of its style sheets named by a token, but in the parts below that are
 not built yet; the icons of the table in [Icons](#icons) that the pages
 have today; the motion of [Motion](#motion), reduced motion included,
 on what moves today (the popover on the length, the chevrons, the
-flash on a target, the sidebar and the table of contents of a narrow
-screen); hover only on fine pointers; the sizes of targets; the
-sidebar's states; the native controls; the fonts, the text size and the column, and the breakpoints;
-the filter and the legend, the filter and the page in the address,
-pages readable without scripts, tabular figures, and `aria-expanded` with `aria-controls` on
-the info button and the buttons of the rules under a provision. Not
-built yet, and what each replaces:
+flash on a target, the drawers of a narrow screen); hover only on fine
+pointers; the sizes of targets; the sidebar, the table of contents and
+the drawers of [Components](#components); the native controls; the
+fonts, the text size and the column, and the breakpoints; the filter
+and the legend, the filter and the page in the address, pages readable
+without scripts, tabular figures, and `aria-expanded` with
+`aria-controls` on the info button, the buttons of the rules under a
+provision, the sidebar's groups and language switch and the top bar's
+buttons. Built today on the local site: every token, and every value
+of its style sheet named by one; the tags, the legend, the tree of
+domains and the one-of of [Components](#components); the filter's
+button and popover; the check boxes; hover only on fine pointers, the
+sizes of targets, the focus ring, and the motion of the filter's
+popover. Not built yet, and what each replaces:
 
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
@@ -596,10 +652,16 @@ built yet, and what each replaces:
 - Until the three above are built, `rules-list.css` writes some sizes
   and spaces as values, and the list's pages are
   linked by the characters ‹ and ›.
-- The local site's filter: the popover with its groups, applied with a
-  primary button, replaces its panel of check boxes.
-- The local site's style sheet writes its own values; it includes
-  neither the tokens nor the icons yet.
+- On the local site, the filter's groups for the status, the defaults
+  and the domain, with All and None in each, the badge on its button,
+  and its closing on Escape or a click outside; and the primary button
+  that applies it, which the style sheet's check boxes, applying at
+  once, stand in for. Its popover closes at once, by a click on the
+  button. Its pages load no font and set the text in the local serif
+  fonts.
+- The script of the sidebar and the drawers, `web/assets/sidebars.js`,
+  holds more than a few lines of logic but is JavaScript; it moves to
+  TypeScript in `web/assets/ts/` ([In the code](#in-the-code)).
 
 ## Open questions
 
@@ -639,3 +701,9 @@ read on 2026-10-15 at the commits named:
   tips that hold nothing the page lacks.
 - Better Icons (<https://github.com/better-auth/better-icons>,
   `033316ec`): icons named by source and kept in one place.
+- Tailwind CSS's documentation (<https://tailwindcss.com/docs>, the
+  pages as served on 2026-10-15, which have no commit to name): the
+  sidebar's and the table of contents' hairline with a bar for the
+  current item, muted items that darken under the pointer, the current
+  heading following the scroll, the sidebar scrolling its current page
+  into view, and a top bar that stays while a drawer opens under it.

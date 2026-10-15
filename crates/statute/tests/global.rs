@@ -561,7 +561,7 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
         ("here", w.at.join("here").display().to_string()),
     ] {
         let heading =
-            format!("<h3 id=\"source-{source}\">{source} <span class=\"tag\">{place}</span></h3>");
+            format!("<h3 id=\"source-{source}\">{source}<span class=\"place\">{place}</span></h3>");
         assert!(index.contains(&heading), "{heading}\n{index}");
     }
     assert!(!index.contains("snapshots"), "{index}");
