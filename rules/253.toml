@@ -1,0 +1,43 @@
+id = 253
+slug = "full-checks-left-to-ci"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+default = "on"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Leave the checks a change does not touch to CI"
+zh = "改动不涉及的检查留给 CI"
+
+[text.statement]
+en = "Where CI runs a repository's full set of checks on each change, leave the checks a change does not touch to CI instead of also running them locally before a push."
+zh = "CI 对每个变更都跑仓库的全部检查的，改动不涉及的检查留给 CI 跑，push 之前不在本地再跑一遍。"
+
+[text.reason]
+en = '''
+A full local run repeats what CI does on the same change: it holds up the author and loads the machine, and the run that counts for the full set is still CI's ({@constitution:simplicity}).
+'''
+zh = '''
+在本地跑全量，重复的是 CI 对同一个变更要做的事：作者要等，机器要扛负载，而算数的全量结果仍然是 CI 那一次 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The full set is every check CI runs on the change. A check is touched when the change touches its inputs; the commit hooks count as touched. A command that runs the whole set, or every test of the repository, runs untouched checks unless the change touches the inputs of all of them. When unsure whether a check is touched, it counts as touched. Where CI does not run the full set on each change, this rule asks nothing.
+
+Violated when an agent, before a push, runs locally checks the change does not touch while CI runs them on the change.
+'''
+zh = '''
+全部检查，指 CI 对这个变更运行的每一项检查。变更动到了某项检查的输入，这项检查就是改动涉及的；commit hook 算作涉及。运行全部检查或者仓库全部测试的命令，除非变更动到了其中每一项的输入，否则就运行了不涉及的检查。不确定某项检查是否涉及的，按涉及处理。CI 不对每个变更都跑全部检查的，本规定不作要求。
+
+agent 在 push 之前，于 CI 会对这个变更运行的情况下，在本地运行改动不涉及的检查的，即为违反本规定。
+'''
+
+[translations]
+zh = "a4d2c04512b16cb9f799ea19b4809fd6a2c25934314e96f6e5d1f059fbf6b698"

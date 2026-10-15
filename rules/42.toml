@@ -1,6 +1,6 @@
 id = 42
 slug = "change-sources-not-copies"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -31,6 +31,8 @@ zh = '''
 en = '''
 The change goes into the source, through review, and the copy is installed again from there.
 
+Adding an entry through an agent tool's own settings screen or command, such as a menu for permissions or hooks, edits its installed settings in place too.
+
 When unsure whether a file is an installed copy, treat it as one.
 
 Violated when an agent edits an installed copy of instructions, skills or agent tool settings in place.
@@ -38,10 +40,12 @@ Violated when an agent edits an installed copy of instructions, skills or agent 
 zh = '''
 改动写入源文件，经过审查，再从源文件重新安装副本。
 
+通过 agent 工具自己的设置界面或命令加条目，例如权限或 hook 的菜单，也是就地修改它已安装的配置。
+
 不确定某个文件是否属于已安装的副本的，按属于处理。
 
 agent 就地修改指令、skill 或 agent 工具配置的已安装副本的，即为违反本规定。
 '''
 
 [translations]
-zh = "2d0fe1c381f362b54379b73a8c2adf7c75b7172cf010e7b013db8286504a2d0d"
+zh = "7ce97fcf87c9d409a95ecec31400f340cf82016c9953d095bbd77fd058101ead"

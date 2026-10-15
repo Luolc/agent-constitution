@@ -1,0 +1,43 @@
+id = 251
+slug = "task-text-asks-whether-at-all"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 13
+default = "off"
+authority = ["decency.legitimate-means", "delegated-authority"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Give no precautions in a task for what a shared machine forbids"
+zh = "任务说明里不为共用机器上禁止的事写防护措施"
+
+[text.statement]
+en = "Before a task text you write tells another agent how to do something safely on a shared machine, decide whether it should be done there at all, and give no precautions for an act that a rule in force forbids on that machine."
+zh = "你写给另一个 agent 的任务说明，要教它在共用的机器上怎样安全地做某件事之前，先判断这件事在那台机器上该不该做；现行规定在那台机器上禁止的事，不写任何防护措施。"
+
+[text.reason]
+en = '''
+Precautions for an act read as leave to take it: an agent told how to run a stress test safely runs it. Whether an act is a legitimate means on a machine shared with others comes before how to do it ({@constitution:decency.legitimate-means}), and a task can grant no leave that its author does not have ({@constitution:delegated-authority}).
+'''
+zh = '''
+为一件事写了防护措施，读的人就会当成可以做：被告知怎样安全地跑压测的 agent，就会去跑。一件事在与他人共用的机器上是不是正当的手段，要先于怎样去做来判断 ({@constitution:decency.legitimate-means})；任务也不能授予它的作者自己都没有的许可 ({@constitution:delegated-authority})。
+'''
+
+[text.verification]
+en = '''
+A task text is what one agent writes to give work to another: a task file, a brief, or a message that hands over a step. It gives precautions for an act when it says how to keep the act safe or small, such as a CPU cap for a stress test or a time limit for a loop. A rule in force forbids an act on a shared machine when a rule of the rule set the agent works under does, as {@rule:30} does for a load generator.
+
+Violated when a task text gives precautions for doing on a shared machine an act that a rule in force forbids there.
+'''
+zh = '''
+任务说明，指一个 agent 为了把工作交给另一个 agent 而写的文字：任务文件、简报，或者交出一个步骤的消息。说明里讲了怎样让一件事做得安全、规模小，例如给压测限定 CPU，给循环限定时间，就是为这件事写了防护措施。agent 所遵循的规定集合里有规定在共用的机器上禁止某件事的，例如 {@rule:30} 禁止负载发生器，这件事就是现行规定在共用的机器上禁止的。
+
+任务说明为在共用的机器上做现行规定在那里禁止的事写了防护措施的，即为违反本规定。
+'''
+
+[translations]
+zh = "ef9646cf1ce7cf293e3f5e833fe23ebfefcaf771ec0fa58962f3c0ddd4a306fa"

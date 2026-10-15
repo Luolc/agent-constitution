@@ -1,0 +1,44 @@
+id = 257
+slug = "unrepeated-failure-stays-open"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+default = "on"
+authority = ["discriminating-checks", "evidence.facts"]
+requires = [92]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Record a failure that did not come back as open"
+zh = "没有复现的失败记成未关闭"
+
+[text.statement]
+en = "When a failure you saw does not come back when you try again, record it as a follow-up that says it is not closed, instead of closing it."
+zh = "见过的失败重试时没有再出现的，不关闭它，而是记成一条 follow-up，写明不视为已关闭。"
+
+[text.reason]
+en = '''
+Trying again a number of times is no exhaustive search: a failure that does not come back may be a real fault that shows only sometimes, so not seeing it again does not show that it is gone ({@constitution:discriminating-checks}). What the record says is what was seen ({@constitution:evidence.facts}), and the next one to see the failure finds the earlier sighting.
+'''
+zh = '''
+重试多少次都不是穷举：没有再出现的失败，可能是一个只是偶尔出现的真故障，没再见到它证明不了它已经没有了 ({@constitution:discriminating-checks})。记录写的是实际见到的 ({@constitution:evidence.facts})，下一个见到这个失败的人能找到之前那次。
+'''
+
+[text.verification]
+en = '''
+A failure is a red check, a crash or a wrong result, in CI or elsewhere. The follow-up is recorded as {@rule:92} asks, in a record that outlasts the task: it says what failed, where and when, how many times it was tried again, and that the failure is not regarded as closed. Giving a cause that was not shown, to explain why it went away, is not such a record.
+
+Violated when an agent closes, marks as fixed or drops a failure it saw on the grounds that it did not come back, or leaves it with no follow-up recorded as above.
+'''
+zh = '''
+失败，指 CI 里或别处的检查变红、崩溃或结果错误。follow-up 按 {@rule:92} 的要求记在比任务留得久的记录里：写明什么失败了、在哪里、什么时候，重试了几次，以及不视为已关闭。为了说明它为什么消失而给出一个没有证实的原因，不算这样的记录。
+
+agent 以没有再出现为由，关闭、标为已修复或丢下一个自己见过的失败的，或者没有按上述方式为它记 follow-up 的，即为违反本规定。
+'''
+
+[translations]
+zh = "2dd9c7cce2b0d4ad86ab4773a06b5f7e0ca90d517c618828a09dd1deb6d2fef9"
