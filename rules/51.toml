@@ -1,11 +1,12 @@
 id = 51
 slug = "public-repo-no-private-details"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 259
 lang = "en"
 parent = 13
-default = "on"
+default = "off"
 authority = ["sensitive-info", "must-ask.irreversible-effects"]
 constitution = ">=1"
 level = "project"

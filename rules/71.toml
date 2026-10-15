@@ -1,11 +1,11 @@
 id = 71
 slug = "no-automatic-merge"
-revision = 5
+revision = 6
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
-default = "off"
+default = "on"
 authority = ["independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
