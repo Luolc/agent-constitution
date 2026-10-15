@@ -39,7 +39,7 @@ AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难�
 
 ## Command: `statute`
 
-`statute` 是规定体系的命令，用 Rust 写，在 [`crates/statute`](crates/statute/)。它还在开发中：它从自己放在 `~/.cache/statute/` 里的一份克隆读本仓的规定；crates.io 上的版本还只是占位。从源码构建：
+`statute` 是规定体系的命令，用 Rust 写，在 [`crates/statute`](crates/statute/)。它还在开发中：它从自己放在 `~/.cache/statute/` 里的一份克隆读本仓的规定；crates.io 上的 0.0.1 是占名的占位版本，这个命令从 0.1.0 起。从源码构建：
 
 ```sh
 git clone https://github.com/Luolc/agent-constitution.git
