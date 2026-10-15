@@ -1,15 +1,16 @@
 id = 6
 slug = "fleet-roles"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = [28, 29]
 lang = "en"
 parent = 14
+default = "off"
 authority = ["delegated-authority", "accountable-agent", "asking-principals", "principals", "delivered-tasks", "decide-yourself", "asking"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Roles in fleet-style division of work"

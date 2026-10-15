@@ -1,15 +1,16 @@
 id = 2
 slug = "credential-status-check"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = [22, 23, 24]
 lang = "en"
 parent = 13
+default = "off"
 authority = ["safety", "sensitive-info"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Check a credential by its status, not its value"

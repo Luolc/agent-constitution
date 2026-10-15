@@ -1,14 +1,15 @@
 id = 22
 slug = "credential-presence-check"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["sensitive-info", "evidence"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Confirm a credential is in place by its presence only"

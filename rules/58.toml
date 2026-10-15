@@ -1,10 +1,11 @@
 id = 58
 slug = "release-first-green-commit"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["discriminating-checks", "evidence.facts"]
 constitution = ">=1"
 level = "project"

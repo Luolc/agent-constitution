@@ -1,15 +1,16 @@
 id = 11
 slug = "relayed-yes"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = [38, 39, 40]
 lang = "en"
 parent = 14
+default = "off"
 authority = ["explicit-yes"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Verify a relayed yes against the principal's own message"

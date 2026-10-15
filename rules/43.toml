@@ -1,14 +1,16 @@
 id = 43
 slug = "credential-designated-place"
-revision = 4
+revision = 5
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "project"
 check = "builtin"
+uses = ["instructions", "review"]
 
 [title]
 en = "Store credentials only in the places designated for them"

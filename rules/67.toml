@@ -1,14 +1,15 @@
 id = 67
 slug = "cleanup-counts-leftovers"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "on"
 authority = ["evidence.grounds", "discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Count what is left after a cleanup"

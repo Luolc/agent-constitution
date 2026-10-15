@@ -1,14 +1,15 @@
 id = 132
 slug = "third-party-sources-root"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
+default = "on"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Clone third-party sources to `<owner>/<repo>` under a root of their own"

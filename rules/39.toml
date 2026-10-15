@@ -1,14 +1,15 @@
 id = 39
 slug = "relayed-yes-checks"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "on"
 authority = ["explicit-yes"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Open the original message and check sender, content and standing"

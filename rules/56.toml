@@ -1,14 +1,16 @@
 id = 56
 slug = "description-read-back"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "off"
 authority = ["evidence.facts", "independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Read a pull request description back against the current head"

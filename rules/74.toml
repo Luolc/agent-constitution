@@ -1,14 +1,15 @@
 id = 74
 slug = "check-a-relayed-fact-at-its-source"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 16
+default = "on"
 authority = ["evidence.facts", "decency.no-hallucination"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Check a relayed fact at its source before writing it into a repository"

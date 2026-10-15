@@ -1,22 +1,23 @@
 id = 176
 slug = "work-item-text-language"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
+default = "on"
 authority = ["purpose"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Write work items in the language set for them"
 zh = "工作项用为它设定的语言写"
 
 [text.statement]
-en = "Write the titles, bodies and comments of work items in the language set for work items (parameter `language.work-items`, default `en`)."
-zh = "工作项的标题、正文和评论用为工作项设定的语言写 (参数 `language.work-items`，默认 `en`)。"
+en = "Write the titles, bodies and comments of work items in {$language.work-items}."
+zh = "工作项的标题、正文和评论用{$language.work-items}写。"
 
 [text.reason]
 en = '''
@@ -39,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "741a59c85ca8828ee59214e3c54c4da6ff67496031459465968a5de8604b4132"
+zh = "c2a4acdfea8125920ed4ec187d3a060200960c998fad07eeb8232deef5e70973"

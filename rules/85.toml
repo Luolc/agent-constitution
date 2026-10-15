@@ -1,15 +1,17 @@
 id = 85
 slug = "regression-test-where-the-bug-was"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 83
 requires = [84]
+default = "off"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Put a regression test only in the module where the bug was"

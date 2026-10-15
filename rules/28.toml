@@ -1,14 +1,15 @@
 id = 28
 slug = "worker-stays-in-task"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
+default = "on"
 authority = ["delegated-authority", "accountable-agent", "delivered-tasks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "A worker stays within its task"

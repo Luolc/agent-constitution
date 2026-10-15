@@ -1,14 +1,15 @@
 id = 40
 slug = "relayed-yes-record"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "on"
 authority = ["explicit-yes.rules", "evidence.grounds"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Record the reference and the checks of a relayed yes"

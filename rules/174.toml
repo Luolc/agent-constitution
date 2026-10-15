@@ -1,14 +1,15 @@
 id = 174
 slug = "channel-names-by-prefix"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
+default = "on"
 authority = ["asking-principals"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Name a Slack channel with the scope's prefix"

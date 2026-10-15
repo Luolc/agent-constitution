@@ -1,14 +1,15 @@
 id = 55
 slug = "ci-run-attempt"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "on"
 authority = ["evidence.facts", "discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Read a CI run's attempt number before saying it passed"

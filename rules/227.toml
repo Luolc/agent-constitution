@@ -1,14 +1,15 @@
 id = 227
 slug = "research-worker-no-reviewer"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
+default = "on"
 authority = ["decide-yourself.splitting-work"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Give a research worker no reviewer"

@@ -1,14 +1,15 @@
 id = 228
 slug = "hand-in-with-fleet-done"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
+default = "on"
 authority = ["decide-yourself.changing-approach", "accountable-agent"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Hand in an attempt with `fleet done` once nothing is left"

@@ -1,14 +1,15 @@
 id = 211
 slug = "merge-waits-for-ci-by-default"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["evidence.grounds", "independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Unless the repository says otherwise, merge after the required check passes"
