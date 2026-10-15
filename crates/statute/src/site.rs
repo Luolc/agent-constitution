@@ -9,7 +9,7 @@ use std::process::Command;
 use crate::cite::{self, Citation, Labels};
 use crate::compile::{filled, labels, pick};
 use crate::manifest::Key;
-use crate::node::{self, Kind, Node, Status, Switch};
+use crate::node::{self, Kind, Node, Status, Switch, Text};
 use crate::param::{self, Origin, Scope, Type};
 use crate::private;
 use crate::project::Project;
@@ -77,6 +77,11 @@ impl Quadrant {
 
 /// The words the site adds around the rules, in one language.
 struct Words {
+    /// The language's name in itself, on the switch to it.
+    name: &'static str,
+    /// On a node's page when a text of the node is not in the page's
+    /// language, and shown in the node's own.
+    untranslated: &'static str,
     title: &'static str,
     quadrants: [&'static str; 4],
     /// The filter's button.
@@ -91,9 +96,9 @@ struct Words {
     show_off: &'static str,
     show_old: &'static str,
     empty: &'static str,
-    /// Before the name of the source at `.`, in the local section of
-    /// its visibility.
-    here: &'static str,
+    /// Before and after the name of the source at `.`, in the local
+    /// section of its visibility.
+    here: [&'static str; 2],
     enabled: &'static str,
     overridden_by: &'static str,
     not_enabled: &'static str,
@@ -124,12 +129,18 @@ struct Words {
     origins: [&'static str; 4],
     /// Before the committed value, when the person's own differs.
     committed: &'static str,
+    /// Between the items of a list.
+    and: &'static str,
+    /// Between a git source's address and its commit.
+    at: &'static str,
     unused: &'static str,
 }
 
 fn words(lang: &str) -> Words {
     match lang {
         "zh" => Words {
+            name: "中文",
+            untranslated: "无中文",
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
             filter: "筛选",
@@ -150,7 +161,7 @@ fn words(lang: &str) -> Words {
             show_off: "未启用的规定",
             show_old: "已被取代与已废止的",
             empty: "没有规定源。",
-            here: "本仓自己的规定就是规定源 ",
+            here: ["本仓自己的规定就是规定源 ", "。"],
             enabled: "已启用",
             overridden_by: "被覆盖，取代它的是 ",
             not_enabled: "未启用",
@@ -167,16 +178,20 @@ fn words(lang: &str) -> Words {
             on_by_default: "默认开启",
             off_by_default: "默认关闭",
             default_option: "默认选项",
-            uses: "用在",
+            uses: "用在：",
             use_names: ["AGENTS.md", "审查"],
             one_of: "择一",
             parameters: "参数",
             param_columns: ["参数", "类型与范围", "默认值", "取值", "用到它的规定"],
             origins: ["statute.toml", "默认值", "私有规定清单", "全局配置"],
-            committed: "AGENTS.md 里是 ",
+            committed: "；AGENTS.md 里是 ",
+            and: "、",
+            at: "，提交 ",
             unused: "没有启用的规定用到它",
         },
         _ => Words {
+            name: "English",
+            untranslated: "Not translated",
             title: "Rules of this repository",
             quadrants: [
                 "Global public",
@@ -202,7 +217,7 @@ fn words(lang: &str) -> Words {
             show_off: "rules not enabled",
             show_old: "superseded and repealed",
             empty: "No source.",
-            here: "This repository's own rules are source ",
+            here: ["This repository's own rules are source ", "."],
             enabled: "enabled",
             overridden_by: "overridden by ",
             not_enabled: "not enabled",
@@ -219,7 +234,7 @@ fn words(lang: &str) -> Words {
             on_by_default: "on by default",
             off_by_default: "off by default",
             default_option: "default option",
-            uses: "Used in",
+            uses: "Used in: ",
             use_names: ["AGENTS.md", "review"],
             one_of: "One of",
             parameters: "Parameters",
@@ -230,10 +245,22 @@ fn words(lang: &str) -> Words {
                 "the private rule set",
                 "the global configuration",
             ],
-            committed: "AGENTS.md has ",
+            committed: "; AGENTS.md has ",
+            and: ", ",
+            at: " at ",
             unused: "no enabled rule uses it",
         },
     }
+}
+
+/// A language of the site: its code, its words, the constitution's labels
+/// in it, and the directory of its pages below the site's, `""` or
+/// `"<code>/"`.
+struct Lang<'a> {
+    code: &'a str,
+    w: Words,
+    labels: Labels,
+    dir: String,
 }
 
 /// The design tokens the public site uses too, then the local site's own
@@ -246,6 +273,7 @@ const CHECK: &str = include_str!("../assets/icons/lucide/check.svg");
 const CIRCLE: &str = include_str!("../assets/icons/lucide/circle.svg");
 const CIRCLE_DOT: &str = include_str!("../assets/icons/lucide/circle-dot.svg");
 const FUNNEL: &str = include_str!("../assets/icons/lucide/funnel.svg");
+const LANGUAGES: &str = include_str!("../assets/icons/lucide/languages.svg");
 
 /// An icon's SVG on one line.
 fn one_line(svg: &str) -> String {
@@ -294,30 +322,94 @@ pub struct Page {
 }
 
 /// The pages of the site of `project`, the rule set with both layers when
-/// there is a private one: the index, and one page per node,
-/// `<source>/<id>.html`. Fails when a text cites a rule or provision that
-/// is not there, or the constitution's labels cannot be read.
+/// there is a private one, in two languages: at the top in the language
+/// of `[compile] lang`, and in `zh/`, or `en/` when that language is
+/// Chinese, in the other. In each, the index, one page per node,
+/// `<source>/<id>.html`, and the parameters of each source that has
+/// them. Fails when a text cites a rule or provision that is not there,
+/// or the constitution's labels cannot be read.
 pub fn pages(project: &Project) -> Result<Vec<Page>, String> {
-    let lang = project.manifest.lang.as_str();
-    let w = words(lang);
-    let labels = labels(project)?;
-    let mut pages = vec![Page {
-        path: PathBuf::from("index.html"),
-        html: index(project, &w),
-    }];
-    for (key, node) in project.sources.nodes() {
+    let first = project.manifest.lang.as_str();
+    let second = if first == "zh" { "en" } else { "zh" };
+    let lang = |code, dir: &str| -> Result<Lang, String> {
+        Ok(Lang {
+            code,
+            w: words(code),
+            labels: labels(project, code)?,
+            dir: dir.to_owned(),
+        })
+    };
+    let langs = [lang(first, "")?, lang(second, &format!("{second}/"))?];
+    let mut pages = Vec::new();
+    for (l, other) in [(&langs[0], &langs[1]), (&langs[1], &langs[0])] {
+        let at = |path: &Path| Path::new(&l.dir).join(path);
+        let path = PathBuf::from("index.html");
         pages.push(Page {
-            path: page(&key),
-            html: node_page(project, &w, &labels, &key, node)?,
+            html: index(project, l, &languages(l, other, &path)),
+            path: at(&path),
         });
-    }
-    for source in project.sources.iter().filter(|s| !s.params.is_empty()) {
-        pages.push(Page {
-            path: params_page(&source.name),
-            html: parameters(project, &w, source),
-        });
+        for (key, node) in project.sources.nodes() {
+            let path = page(&key);
+            pages.push(Page {
+                html: node_page(project, l, &langs, &key, node, &languages(l, other, &path))?,
+                path: at(&path),
+            });
+        }
+        for source in project.sources.iter().filter(|s| !s.params.is_empty()) {
+            let path = params_page(&source.name);
+            pages.push(Page {
+                html: parameters(project, l, source, &languages(l, other, &path)),
+                path: at(&path),
+            });
+        }
     }
     Ok(pages)
+}
+
+/// The switch from the page at `path` in `from` to the same page in
+/// `to`: `languages` and the name of `to`, in `to`.
+fn languages(from: &Lang, to: &Lang, path: &Path) -> String {
+    let depth = path.components().count() - 1 + usize::from(!from.dir.is_empty());
+    format!(
+        "<a class=\"languages\" href=\"{}{}{}\" hreflang=\"{code}\" lang=\"{code}\">{}{}</a>",
+        "../".repeat(depth),
+        to.dir,
+        path.display(),
+        icon(LANGUAGES, ""),
+        to.w.name,
+        code = to.code,
+    )
+}
+
+/// ` lang="<text>"` when a text in `text` stands in a page or an element
+/// in `around`, else nothing.
+fn lang_attr(text: &str, around: &str) -> String {
+    if text == around {
+        String::new()
+    } else {
+        format!(" lang=\"{}\"", escape(text))
+    }
+}
+
+/// `html`, in `text`, in a `span` that says so when it stands in
+/// `around`, another language.
+fn in_lang(html: &str, text: &str, around: &str) -> String {
+    if text == around {
+        html.to_owned()
+    } else {
+        format!("<span{}>{html}</span>", lang_attr(text, around))
+    }
+}
+
+/// A node's `text` in `lang` or, when it has none there, in the node's
+/// own language, and the language it is in.
+fn pick_lang<'a>(text: &'a Text, node: &'a Node, lang: &'a str) -> (&'a str, &'a str) {
+    let shown = if text.contains_key(lang) {
+        lang
+    } else {
+        node.lang.as_str()
+    };
+    (pick(text, node, lang), shown)
 }
 
 /// The page of a source's parameters, relative to the site's directory.
@@ -330,10 +422,10 @@ fn params_page(source: &str) -> PathBuf {
 /// that comes from, and the enabled rules that use it
 /// (`docs/design/rule-config.md`, Values in the lock file and the
 /// outputs).
-fn parameters(project: &Project, w: &Words, source: &Source) -> String {
-    let lang = project.manifest.lang.as_str();
+fn parameters(project: &Project, l: &Lang, source: &Source, switch: &str) -> String {
+    let (w, lang) = (&l.w, l.code);
     let title = format!("{} · {}", w.parameters, source.name);
-    let mut out = head(&title, lang, "list");
+    let mut out = head(&title, lang, "list", switch);
     let _ = writeln!(
         out,
         "<nav><a href=\"../index.html\">{}</a></nav>\n<h1>{}</h1>\n<table>\n<tr>{}</tr>",
@@ -345,11 +437,11 @@ fn parameters(project: &Project, w: &Words, source: &Source) -> String {
             .collect::<String>()
     );
     for p in &source.params {
-        let title = p
+        let (title, title_lang) = p
             .title
-            .get(lang)
-            .or_else(|| p.title.values().next())
-            .map_or("", String::as_str);
+            .get_key_value(lang)
+            .or_else(|| p.title.iter().next())
+            .map_or(("", lang), |(k, v)| (v.as_str(), k.as_str()));
         let scope = match p.scope {
             Scope::Repo => "repo",
             Scope::Personal => "personal",
@@ -363,7 +455,7 @@ fn parameters(project: &Project, w: &Words, source: &Source) -> String {
                     .iter()
                     .map(|v| code(&escape(&format!("`{v}`"))))
                     .collect::<Vec<_>>()
-                    .join(", ")
+                    .join(w.and)
             );
         }
         // The setting is this source's when a rule of the rule set uses
@@ -382,21 +474,25 @@ fn parameters(project: &Project, w: &Words, source: &Source) -> String {
                 if s.personal.is_some() && s.private_value() != s.value {
                     let _ = write!(
                         value,
-                        "; {}<code>{}</code> ({})",
+                        "{}<code>{}</code> ({})",
                         w.committed,
                         escape(&s.value),
                         origin(w, s.from)
                     );
                 }
-                let rules: Vec<String> = s.rules.iter().map(|k| link(project, k, "../")).collect();
-                (value, rules.join(", "))
+                let rules: Vec<String> = s
+                    .rules
+                    .iter()
+                    .map(|k| link(project, k, "../", lang))
+                    .collect();
+                (value, rules.join(w.and))
             }
             None => (String::new(), w.unused.to_owned()),
         };
         let _ = writeln!(
             out,
             "<tr id=\"{name}\"><td>{}<br><code>{name}</code></td><td>{} · {scope}</td><td><code>{}</code></td><td>{value}</td><td>{rules}</td></tr>",
-            escape(title),
+            in_lang(&escape(title), title_lang, lang),
             kind,
             escape(&p.default),
             name = escape(&p.name),
@@ -421,18 +517,19 @@ fn page(key: &Key) -> PathBuf {
     Path::new(&key.source).join(format!("{}.html", key.id))
 }
 
-/// The start of a page, up to its `main`, which takes `class`.
-fn head(title: &str, lang: &str, class: &str) -> String {
+/// The start of a page, up to its `main`, which takes `class`, and the
+/// switch to the other language at the top of it.
+fn head(title: &str, lang: &str, class: &str, switch: &str) -> String {
     format!(
-        "<!DOCTYPE html>\n<html lang=\"{lang}\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{}</title>\n<style>{}</style>\n</head>\n<body>\n<main class=\"{class}\">\n",
+        "<!DOCTYPE html>\n<html lang=\"{lang}\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{}</title>\n<style>{}</style>\n</head>\n<body>\n<main class=\"{class}\">\n{switch}\n",
         escape(title),
         style()
     )
 }
 
-fn index(project: &Project, w: &Words) -> String {
-    let lang = project.manifest.lang.as_str();
-    let mut out = head(w.title, lang, "list");
+fn index(project: &Project, l: &Lang, switch: &str) -> String {
+    let w = &l.w;
+    let mut out = head(w.title, l.code, "list", switch);
     let _ = writeln!(out, "<h1>{}</h1>", w.title);
     // The filter: a button that opens one row per field, its values as
     // check boxes, joined by and; the style sheet hides what a clear
@@ -498,9 +595,10 @@ fn index(project: &Project, w: &Words) -> String {
             if q == at {
                 let _ = writeln!(
                     out,
-                    "<p>{}<a href=\"#source-{1}\">{1}</a>.</p>",
-                    w.here,
-                    escape(&spec.name)
+                    "<p>{}<a href=\"#source-{1}\">{1}</a>{2}</p>",
+                    w.here[0],
+                    escape(&spec.name),
+                    w.here[1]
                 );
                 any = true;
             }
@@ -510,7 +608,15 @@ fn index(project: &Project, w: &Words) -> String {
             // As in the compiled `AGENTS.md`: a git source by its address
             // and commit, not the snapshot directory it is read from.
             let place = match project.manifest.spec(&source.name) {
-                Some(spec) => spec.place(),
+                Some(spec) => match &spec.git {
+                    Some(git) => format!(
+                        "{}{}{}",
+                        git.address,
+                        w.at,
+                        git.commit.as_deref().unwrap_or("")
+                    ),
+                    None => spec.path.clone(),
+                },
                 None => source.path.clone(),
             };
             let params = if source.params.is_empty() {
@@ -529,7 +635,7 @@ fn index(project: &Project, w: &Words) -> String {
                 escape(&place)
             );
             for node in source.nodes.values().filter(|n| n.parent.is_none()) {
-                tree(project, w, source, node, 1, "", &mut out);
+                tree(project, l, source, node, 1, "", &mut out);
             }
             out.push_str("</ul>\n");
         }
@@ -548,13 +654,14 @@ fn index(project: &Project, w: &Words) -> String {
 /// (`docs/design/frontend.md`, Components, The tree of rules).
 fn tree(
     project: &Project,
-    w: &Words,
+    l: &Lang,
     source: &Source,
     node: &Node,
     level: usize,
     lead: &str,
     out: &mut String,
 ) {
+    let w = &l.w;
     let key = Key::new(&source.name, node.id);
     let children: Vec<&Node> = source.children(node.id).collect();
     let mut class = Vec::new();
@@ -589,7 +696,7 @@ fn tree(
         [] => String::new(),
         c => format!(" class=\"{}\"", c.join(" ")),
     };
-    let mut title = link(project, &key, "");
+    let mut title = link(project, &key, "", l.code);
     if node.kind == Kind::Domain {
         let h = 3 + level.min(2);
         title = format!("<h{h}>{title}</h{h}>");
@@ -601,7 +708,7 @@ fn tree(
     let _ = write!(
         out,
         "<div class=\"row\">{lead}{title}<span class=\"tags\">{}{}</span></div>",
-        tags(project, w, &key, node, "", true),
+        tags(project, l, &key, node, "", true),
         mark(project, w, &key, false)
     );
     if !children.is_empty() {
@@ -619,7 +726,7 @@ fn tree(
             } else {
                 level
             };
-            tree(project, w, source, child, level, &lead, out);
+            tree(project, l, source, child, level, &lead, out);
         }
         out.push_str("</ul>");
     }
@@ -636,21 +743,19 @@ fn in_use(project: &Project, source: &Source, node: &Node) -> bool {
         || source.children(node.id).any(|c| in_use(project, source, c))
 }
 
-/// A link to a node's page from a page `up` below the site's directory
-/// (`""` or `"../"`): its reference and title.
-fn link(project: &Project, key: &Key, up: &str) -> String {
-    let title = project.sources.get(key).map_or(String::new(), |n| {
-        filled(
-            project,
-            key,
-            pick(&n.title, n, &project.manifest.lang),
-            true,
-        )
+/// A link to a node's page from a page `up` below the directory of its
+/// language (`""` or `"../"`), in text in `lang`: its reference and its
+/// title in `lang`, else in the node's own language.
+fn link(project: &Project, key: &Key, up: &str, lang: &str) -> String {
+    let (title, title_lang) = project.sources.get(key).map_or((String::new(), lang), |n| {
+        let (title, title_lang) = pick_lang(&n.title, n, lang);
+        (filled(project, key, title, true, title_lang), title_lang)
     });
     format!(
-        "<a href=\"{up}{}\"><span class=\"ref\">{}</span><span class=\"title\">{}</span></a>",
+        "<a href=\"{up}{}\"><span class=\"ref\">{}</span><span class=\"title\"{}>{}</span></a>",
         page(key).display(),
         escape(&key.to_string()),
+        lang_attr(title_lang, lang),
         escape(&title)
     )
 }
@@ -675,7 +780,8 @@ fn mark(project: &Project, w: &Words, key: &Key, named: bool) -> String {
 /// form (`docs/design/frontend.md`, Components, Tags): the status a
 /// pill, a default switch a dot, which in the tree stands alone with
 /// its word as its name.
-fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str, dense: bool) -> String {
+fn tags(project: &Project, l: &Lang, key: &Key, node: &Node, up: &str, dense: bool) -> String {
+    let w = &l.w;
     let mut out = String::new();
     if node.kind != Kind::Rule && !dense {
         let _ = write!(out, "<span class=\"kind\">{}</span>", kind(w, node.kind));
@@ -687,7 +793,7 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str, dense: b
     if node.kind == Kind::Rule {
         let res = &project.resolution;
         let what = match res.overridden.get(key) {
-            Some(by) => format!("{}{}", w.overridden_by, link(project, by, up)),
+            Some(by) => format!("{}{}", w.overridden_by, link(project, by, up, l.code)),
             None if res.enabled.contains_key(key) => w.enabled.to_owned(),
             None => w.not_enabled.to_owned(),
         };
@@ -804,17 +910,22 @@ fn status(status: Status) -> &'static str {
     }
 }
 
+/// The page of a node in `l`, `langs` the site's languages. A text the
+/// node does not have in `l` is shown in the node's own language, marked
+/// with its `lang`, and a tag says so.
 fn node_page(
     project: &Project,
-    w: &Words,
-    labels: &Labels,
+    l: &Lang,
+    langs: &[Lang],
     key: &Key,
     node: &Node,
+    switch: &str,
 ) -> Result<String, String> {
-    let lang = project.manifest.lang.as_str();
-    let title = filled(project, key, pick(&node.title, node, lang), true);
+    let (w, lang) = (&l.w, l.code);
+    let (title, title_lang) = pick_lang(&node.title, node, lang);
+    let title = filled(project, key, title, true, title_lang);
     let title = title.as_str();
-    let mut out = head(&format!("{key} {title}"), lang, "text");
+    let mut out = head(&format!("{key} {title}"), lang, "text", switch);
     let sources = &project.sources;
     // The path from the top of the tree down to the node.
     let mut above = Vec::new();
@@ -828,16 +939,32 @@ fn node_page(
     }
     let _ = write!(out, "<nav><a href=\"../index.html\">{}</a>", w.index);
     for parent in above.iter().rev() {
-        let _ = write!(out, " / {}", link(project, parent, "../"));
+        let _ = write!(out, " / {}", link(project, parent, "../", lang));
     }
+    let texts = [node.applicability.as_ref()].into_iter().flatten().chain(
+        node.rule
+            .iter()
+            .flat_map(|r| [&r.statement, &r.reason, &r.verification]),
+    );
+    let untranslated = std::iter::once(&node.title)
+        .chain(texts)
+        .any(|t| !t.contains_key(lang));
     let _ = writeln!(
         out,
         "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p class=\"tag-line\">{}{}",
         escape(&key.to_string()),
-        escape(title),
+        in_lang(&escape(title), title_lang, lang),
         mark(project, w, key, true),
-        tags(project, w, key, node, "../", false)
+        tags(project, l, key, node, "../", false)
     );
+    if untranslated {
+        let _ = write!(
+            out,
+            "<span class=\"untranslated\">{}{}</span>",
+            icon(LANGUAGES, ""),
+            w.untranslated
+        );
+    }
     if let Some(slug) = &node.slug {
         let _ = write!(out, "<code class=\"slug\">{}</code>", escape(slug));
     }
@@ -848,11 +975,24 @@ fn node_page(
             .zip(w.use_names)
             .filter_map(|(on, name)| on.then_some(name))
             .collect();
-        let _ = writeln!(out, "<p>{}: {}</p>", w.uses, uses.join(", "));
+        let _ = writeln!(out, "<p>{}{}</p>", w.uses, uses.join(w.and));
     }
-    let text = |part: &str, text: &str| text_html(project, labels, key, part, text);
+    // A text not in the page's language is in the node's, with that
+    // language's labels and names.
+    let text = |part: &str, text: &Text| {
+        let (text, text_lang) = pick_lang(text, node, lang);
+        let labels = langs
+            .iter()
+            .find(|l| l.code == text_lang)
+            .map_or(&l.labels, |l| &l.labels);
+        let html = text_html(project, labels, key, part, text, text_lang)?;
+        Ok::<_, String>(match text_lang {
+            t if t == lang => html,
+            t => format!("<div{}>\n{html}</div>\n", lang_attr(t, lang)),
+        })
+    };
     if let Some(applicability) = &node.applicability {
-        out.push_str(&text("applicability", pick(applicability, node, lang))?);
+        out.push_str(&text("applicability", applicability)?);
     }
     if let Some(rule) = &node.rule {
         for (name, heading, t) in [
@@ -861,7 +1001,7 @@ fn node_page(
             ("verification", w.verification, &rule.verification),
         ] {
             let _ = writeln!(out, "<h2>{heading}</h2>");
-            out.push_str(&text(name, pick(t, node, lang))?);
+            out.push_str(&text(name, t)?);
         }
     }
     let successors = crate::resolve::successors(key, node);
@@ -878,7 +1018,7 @@ fn node_page(
         }
         let _ = writeln!(out, "<h2>{heading}</h2>\n<ul>");
         for k in &keys {
-            let _ = writeln!(out, "<li>{}</li>", link(project, k, "../"));
+            let _ = writeln!(out, "<li>{}</li>", link(project, k, "../", lang));
         }
         out.push_str("</ul>\n");
     }
@@ -886,15 +1026,16 @@ fn node_page(
     Ok(out)
 }
 
-/// A rule's text as HTML: paragraphs, lists whose items start with `- `,
-/// and code in backticks; each citation of a rule a link to its page,
-/// each of a provision its label.
+/// A rule's text, in `lang`, as HTML: paragraphs, lists whose items
+/// start with `- `, and code in backticks; each citation of a rule a link
+/// to its page, each of a provision its label.
 fn text_html(
     project: &Project,
     labels: &Labels,
     key: &Key,
     part: &str,
     text: &str,
+    lang: &str,
 ) -> Result<String, String> {
     let fail = |what: String| Err(format!("{}: {part}: {what}", project.sources.file(key)));
     // Escaping leaves the citations and the placeholders as they are:
@@ -902,7 +1043,6 @@ fn text_html(
     // the value, marked, with the parameter's name on hover, linked to
     // its entry on the page of parameters.
     let text = param::fill(&escape(text), |name| {
-        let lang = project.manifest.lang.as_str();
         let (source, shown) = match project.values.get(name) {
             Some(s) => (s.source.clone(), s.param.shown(s.private_value(), lang)),
             None => match project.sources.param(&key.source, name) {
@@ -919,7 +1059,7 @@ fn text_html(
     let text = cite::replace(&text, |c| match c {
         Citation::Rule(text) => match node::cited_ref(text).map(|r| r.key(&key.source)) {
             Some(cited) if project.sources.get(&cited).is_some() => {
-                Ok(link(project, &cited, "../"))
+                Ok(link(project, &cited, "../", lang))
             }
             _ => fail(format!("cites `{{@rule:{text}}}`, which is not there")),
         },
