@@ -61,7 +61,7 @@ rules = [
   "R72",
   # A red main does not hold back pull requests that are ready.
   "R95",
-  # Implementer and reviewer are both Claude today.
+  # Implementer and reviewer use models of the same family today.
   "R205",
   # check is the required status check, and a merge waits for it.
   "R211",

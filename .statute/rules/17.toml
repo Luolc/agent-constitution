@@ -7,7 +7,7 @@ lang = "en"
 parent = "R15"
 default = "on"
 requires = ["R212"]
-authority = ["evidence"]
+authority = ["evidence.grounds"]
 constitution = ">=1"
 level = "project"
 check = "none"

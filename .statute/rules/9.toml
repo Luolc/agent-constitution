@@ -13,19 +13,19 @@ check = "none"
 uses = ["instructions"]
 
 [title]
-en = "Create no directory before the stage it is reserved for"
+en = "Create no reserved directory before what it holds is built"
 
 [text.statement]
-en = "Create no directory that `docs/design/file-structure.md` reserves for a later stage before that stage begins."
+en = "Create none of `behavior/`, `cases/` and `proposals/` before a change that builds what they hold: real-agent scenarios, decided cases and the adoption pipeline."
 
 [text.reason]
 en = '''
-An empty directory waiting for its stage tells a reader that something exists which does not.
+These directories are reserved for later stages of the plan in `docs/design/file-structure.md`; an empty directory waiting for its stage tells a reader that something exists which does not.
 '''
 
 [text.verification]
 en = '''
-`docs/design/file-structure.md` holds the full plan of directories and says which belongs to which stage.
+`behavior/` holds real-agent scenarios, `cases/<id>.md` decided cases, and `proposals/` the adoption pipeline.
 
-Violated when a change adds a directory that the plan reserves for a stage that has not begun.
+Violated when a change adds one of these directories without building what it holds.
 '''
