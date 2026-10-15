@@ -1,7 +1,8 @@
 //! The sources of a directory as JSON, for programs that read them
 //! (`docs/design/statute-command.md`, Export): its constitution's
 //! languages and provisions with their labels, and each node of its
-//! `rules/` with the fields of its file, after statute has checked them.
+//! `rules/` with the fields of its file and whether the source's defaults
+//! enable it, after statute has checked them.
 
 use std::path::Path;
 
@@ -9,8 +10,9 @@ use serde_json::{Map, Value, json};
 
 use crate::cite::{self, Labels};
 use crate::diag::Diagnostics;
+use crate::node::{Kind, Status};
 use crate::project::shown;
-use crate::source::Source;
+use crate::source::{Source, by_default};
 
 /// The fields of `index.toml` the export gives.
 #[derive(serde::Deserialize)]
@@ -29,8 +31,11 @@ struct Index {
 ///   `index.toml`, and its `provisions` in the order of the text, each an
 ///   article, a section or an item with its `id` as a citation names it,
 ///   its `parent` (`null` for an article) and its `labels` by language.
-/// - `nodes`: the nodes of `rules/` in order of ID, each with its `file`
-///   and the `fields` of the file as it writes them.
+/// - `nodes`: the nodes of `rules/` in order of ID, each with its `file`,
+///   the `fields` of the file as it writes them and `on-by-default`:
+///   whether the source's defaults enable it, as statute checks them
+///   (`docs/design/rule-config.md`, In the rule files), a rule only when
+///   it is in force; `null` when that depends on another source.
 ///
 /// The value is `None` when the sources do not pass statute's checks, so
 /// every translation a node lists follows its current original.
@@ -56,13 +61,23 @@ pub fn export(dir: &Path) -> (Option<Value>, Diagnostics) {
         if diags.has_errors() {
             return (None, diags);
         }
-        for id in source.nodes.keys() {
+        for (id, node) in &source.nodes {
             let file = source.file(*id);
+            let retired = matches!(node.status, Status::Superseded | Status::Repealed);
+            let on = if node.kind == Kind::Rule && retired {
+                Some(false)
+            } else {
+                by_default(&source, *id)
+            };
             let fields = std::fs::read_to_string(rules_dir.join(crate::node::file_name(*id)))
                 .map_err(|e| format!("cannot read: {e}"))
                 .and_then(|text| toml::from_str::<toml::Table>(&text).map_err(|e| e.to_string()));
             match fields {
-                Ok(fields) => nodes.push(json!({"file": file, "fields": fields})),
+                Ok(fields) => nodes.push(json!({
+                    "file": file,
+                    "fields": fields,
+                    "on-by-default": on,
+                })),
                 Err(e) => diags.error(file, e),
             }
         }

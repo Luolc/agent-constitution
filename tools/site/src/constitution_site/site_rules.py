@@ -24,6 +24,11 @@ With `--enabled`, each rule says whether the rule set of a statute.lock
 enables it. Without either, the pages are this repo's alone
 and say neither.
 
+Each node says whether its source's defaults enable it, as statute
+reckons it; a domain or a rule gives its own `default`, a one-of its
+default option, an option whether it is that one, and a rule its `uses`
+(docs/design/rule-config.md, Default switches and Where a rule is used).
+
 statute reads and checks the sources (`statute export`, built from this
 checkout with cargo) and prints what is wrong with them; the exit status
 is 1 when they cannot be read.
@@ -70,6 +75,8 @@ FIRST_PARTY = "R"
 QUADRANTS = ("global-public", "global-private", "local-public", "local-private")
 # The parts of a rule's text.
 PARTS = ("statement", "reason", "verification")
+# A rule's `uses` when its file leaves it out.
+USES = ["instructions"]
 # The name of a source, or a part of a provision's ID.
 ID = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 # A citation: `{@id}`, `{@section.item}`, each optionally after a namespace.
@@ -101,6 +108,8 @@ class Node:
     text: a rule's parts, each by language; empty for a domain or one-of.
     translations: the languages it is translated into, each following its
       current original, as statute checks.
+    on_by_default: whether its source's defaults enable it, None when
+      that depends on another source.
     data: the fields of its file.
   """
 
@@ -117,6 +126,7 @@ class Node:
   applicability: dict[str, str] | None
   text: dict[str, dict[str, str]]
   translations: list[str]
+  on_by_default: bool | None
   data: dict[str, Any]
 
 
@@ -135,15 +145,17 @@ def texts(table: dict[str, str]) -> dict[str, str]:
   return {lang: text.strip("\n") for lang, text in table.items()}
 
 
-def node(fields: dict[str, Any]) -> Node:
-  """Return a node of the rule tree from the fields of its file.
+def node(entry: dict[str, Any]) -> Node:
+  """Return a node of the rule tree as `statute export` gives it.
 
   Args:
-    fields: the fields, as `statute export` gives them.
+    entry: the node: the fields of its file and whether its source's
+      defaults enable it.
 
   Returns:
     The node.
   """
+  fields = entry["fields"]
   successors = fields.get("superseded-by", [])
   applicability = fields.get("applicability")
   return Node(
@@ -160,6 +172,7 @@ def node(fields: dict[str, Any]) -> Node:
     applicability=None if applicability is None else texts(applicability),
     text={part: texts(t) for part, t in fields.get("text", {}).items()},
     translations=sorted(fields.get("translations", {})),
+    on_by_default=entry["on-by-default"],
     data=fields,
   )
 
@@ -462,6 +475,33 @@ class _Language:
 
     return OTHER_RULE.sub(lambda m: rule_link(m.group(1)), MARK.sub(link, text))
 
+  def switches(self, node: Node, source: str) -> dict[str, object]:
+    """Return a node's `default` and, for a rule, its `uses`.
+
+    Args:
+      node: the node.
+      source: the name of its source.
+
+    Returns:
+      A domain's or a rule's `default`, when it has one, or a one-of's
+      default option (`defaultOption`); for an option of a one-of,
+      whether it is that one (`optionDefault`); and a rule's `uses`.
+    """
+    data: dict[str, object] = {}
+    default = node.data.get("default")
+    if node.kind == "one-of":
+      if default is not None:
+        data["defaultOption"] = self.ref(default, source)
+    elif default is not None:
+      data["default"] = default
+    if isinstance(node.parent, int):
+      parent = self.nodes[(source, node.parent)]
+      if parent.kind == "one-of":
+        data["optionDefault"] = parent.data.get("default") == node.id
+    if node.kind == "rule":
+      data["uses"] = node.data.get("uses", USES)
+    return data
+
   def node(
     self,
     node: Node,
@@ -511,6 +551,7 @@ class _Language:
     extra: dict[str, object] = {}
     if enabled is not None and node.kind == "rule":
       extra["enabled"] = label in enabled
+    extra |= self.switches(node, name)
     return (
       {
         "id": node.id,
@@ -548,6 +589,7 @@ class _Language:
         "domain": domain,
         "source": name,
         "quadrant": source.quadrant,
+        "onByDefault": node.on_by_default,
       }
       | {field: data[field] for field in FIELDS if field in data}
       | extra
@@ -662,7 +704,7 @@ def load(path: Path) -> tuple[Constitution | None, list[Node]] | None:
   src = data["constitution"]
   return (
     None if src is None else constitution(src),
-    [node(n["fields"]) for n in data["nodes"]],
+    [node(n) for n in data["nodes"]],
   )
 
 

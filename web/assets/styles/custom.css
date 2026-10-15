@@ -417,7 +417,7 @@
    whether the rule set enables it, in the accent color when it does;
    the quadrant of its source on the quadrant's color, a blue, an orange,
    a green and a purple mixed into the page's background. */
-.rules :is(.rule-status, .rule-enabled, .quadrant) {
+.rules :is(.rule-status, .rule-enabled, .rule-default, .quadrant) {
   flex: none;
   color: var(--c-muted);
   font-size: .75em;
@@ -428,6 +428,8 @@
   white-space: nowrap;
 }
 .rules .rule-enabled:not(.off) { color: var(--c-accent); }
+.rules .rule-default:not(.off) { color: var(--c-accent); }
+.rules .rules-group .rule-default { margin-inline-start: .5em; font-size: .6em; vertical-align: middle; }
 .rules .quadrant { color: var(--c-ink); border-color: transparent; background: color-mix(in srgb, var(--q) 30%, var(--c-paper)); }
 .rules .quadrant-global-public { --q: #3b82f6; }
 .rules .quadrant-global-private { --q: #f59e0b; }
