@@ -15,7 +15,7 @@ uses = ["instructions", "review"]
 en = "Instruction files apart, the compiled AGENTS.md going with the side that changed it"
 
 [text.statement]
-en = "Change instruction files in a change of their own, never together with changes to other files, and count the `AGENTS.md` at the root of this repository, which this repository's statute compiles and `statute compile --check` in CI proves equal to a recompile, as a generated file ({@rule:R47}), not as an instruction file: a change to statute's code under `crates/statute` commits it together with that code, while a change to `statute.toml`, `statute.lock`, `.statute/`, `rules/` or the sources of the constitution stays a change to instructions."
+en = "Change instruction files in a change of their own, never together with changes to other files, and count the `AGENTS.md` at the root of this repository, which this repository's statute compiles and `statute compile --check` in CI proves equal to a recompile, as a generated file ({@rule:R47}), not as an instruction file (for example, a change to statute's code commits it together with that code), while a change to `statute.toml`, `statute.lock`, `.statute/`, `rules/` or the sources of the constitution stays a change to instructions."
 
 [text.reason]
 en = '''
@@ -28,7 +28,7 @@ This loosens a guard, so it took effect only with a principal's yes on the chang
 
 [text.verification]
 en = '''
-Instruction files are those {@rule:R46} lists, with the files of statute that this repository counts as instruction files besides them, except the `AGENTS.md` at the root of the repository. An `AGENTS.md` in a subdirectory stays an instruction file.
+Instruction files are those {@rule:R46} lists, with the files of statute that {@rule:L27} counts as instruction files besides them, except the `AGENTS.md` at the root of the repository. An `AGENTS.md` in a subdirectory stays an instruction file.
 
 `uv run check-instruction-changes --base origin/main` lists the root `AGENTS.md` among the generated files, which count with neither side, and CI runs it on every pull request; it still fails a change that mixes another instruction file with other files. `statute compile --check` shows that the root `AGENTS.md` equals a recompile.
 
