@@ -1,6 +1,6 @@
 id = 140
 slug = "runtime-credentials-in-runtime-tier"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -17,8 +17,8 @@ en = "Store a credential a program generates at runtime in the runtime tier"
 zh = "程序运行时产生的凭据存进运行时层"
 
 [text.statement]
-en = "Store a credential that a program generates at runtime (the OAuth token that `claude setup-token` generates, for example) in the runtime tier of the secret manager."
-zh = "程序运行时产生的凭据 (例如 `claude setup-token` 生成的 OAuth token) 存进密钥管理器的运行时层。"
+en = "Store a credential that a program generates at runtime (the OAuth token that `claude setup-token` generates, for example) in the runtime tier, the part of the secret manager kept for credentials that programs generate."
+zh = "程序运行时产生的凭据 (例如 `claude setup-token` 生成的 OAuth token) 存进运行时层，即密钥管理器里专放程序生成的凭据的部分。"
 
 [text.reason]
 en = '''
@@ -41,4 +41,4 @@ zh = '''
 '''
 
 [translations]
-zh = "d42cc3c7e141fc2079c21356585fd5fafa8a6a4dc2d577f014a9911013f4cfb4"
+zh = "852580bedbbed5c62717a47ccc3618d44e6f8206c98fb0e04f2a877bb7001c7e"
