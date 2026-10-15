@@ -1,7 +1,5 @@
 <!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->
 
-Constitution: edition 2026-10, revision 2, from source `R` (`.`).
-
 # Agent Constitution (2026-10 Edition)
 
 Full text: <https://agent-constitution.luolc.com/editions/2026-10/>. … marks a provision whose text is left out here.
@@ -436,7 +434,3 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R249 Write what you address to a person, such as replies, questions and reports, in English, whatever language their messages are in, and use it for the whole text, summaries and follow-up questions included.
 - L1 When you change the English text of a constitution or rule source, change its `zh` text in the same change so that it says what the English says, clause by clause rather than word by word, and cites the same provisions and rules.
 - L2 In the `zh` text of a source and in a Chinese translation of the design, write commas, full stops, enumeration commas, semicolons and colons full-width, and parentheses half-width, with one space outside and none inside; keep code, paths, commands and IDs with half-width punctuation.
-
----
-
-If `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.
