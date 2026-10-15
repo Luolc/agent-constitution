@@ -231,8 +231,8 @@ fn snapshot(dir: &Path, repo: &Path, commit: &str) -> Result<PathBuf, String> {
 }
 
 /// Makes the git source `spec` readable: picks its commit (the one
-/// `locked` names when given, else the head of what it follows, after a
-/// fetch when `newest`), writes that commit's files, and sets the spec's
+/// `locked` names unless `newest`, else the head of what it follows,
+/// after a fetch), writes that commit's files, and sets the spec's
 /// `path` to them and its `commit`.
 pub fn materialize(
     spec: &mut SourceSpec,
@@ -259,8 +259,10 @@ pub fn materialize(
             }
             commit.to_owned()
         }
+        // No commit to keep: the newest, fetched first, as for a new
+        // source or `upgrade`.
         _ => {
-            if own && (newest || head(&repo, &git.follow, own).is_err()) {
+            if own {
                 fetch(&repo, &git.address).map_err(&err)?;
             }
             head(&repo, &git.follow, own).map_err(&err)?
