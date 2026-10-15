@@ -267,7 +267,7 @@ their text into public files
 | --- | --- |
 | `--global` | `$XDG_CONFIG_HOME/statute/config.toml` |
 | a public source, or any source of a private repository | `statute.toml` |
-| a private source of a public repository | the private rule set, `$(git rev-parse --git-path common/statute)/private.toml`, created when it is not there, with the source's `path` made absolute; the command prints the file's path (not built yet: today `statute.private.toml`, next to `statute.toml`) |
+| a private source of a public repository | the private rule set, `$(git rev-parse --git-path common/statute)/private.toml`, created when it is not there, with the source's `path` made absolute; the command prints the file's path |
 
 A private source in a public repository goes to the private layer
 rather than stopping the command: nothing in that layer reaches a

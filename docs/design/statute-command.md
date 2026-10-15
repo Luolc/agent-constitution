@@ -213,10 +213,9 @@ with which rules may cite which in `requires`, `conflicts`,
 `overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's or a domain's `parent`
-in another source, and the private layer with its lock file and
-output, as `statute.private.toml` next to `statute.toml`: its place in
-git's directory, a lock file of its own sources alone,
-`.statute/.gitignore` and `compile --private-only` are not built yet.
+in another source, and the private layer with its lock file in git's
+directory, its output and `.statute/.gitignore`: `compile
+--private-only` is not built yet.
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
 in `~/.statute/` rather than the XDG directories, and except that
@@ -288,8 +287,7 @@ file. It prints the path of `index.html`.
   and it marks the directory as statute's. It also writes
   `.statute/.gitignore`, which lists `/site/`, as every command that
   writes a generated file into `.statute/` does
-  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
-  not built yet).
+  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
   Before anything, in a git repository, it asks `git ls-files` about
   `.statute/site/`, and when git tracks a file there it writes nothing
   and fails, naming the file and the way out,

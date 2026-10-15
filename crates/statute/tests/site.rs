@@ -10,6 +10,9 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
+/// The private rule set of a repository made with `git init`.
+const PRIVATE: &str = ".git/common/statute/private.toml";
+
 fn write(dir: &Path, path: &str, text: &str) {
     let path = dir.join(path);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -66,16 +69,15 @@ fn four(name: &str) -> PathBuf {
         "statute.toml",
         "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nrules = [\"R2\", \"3\"]\n\n[sources]\nR = { path = \"r\" }\n",
     );
+    let at = dir.display();
     write(
         &dir,
-        "statute.private.toml",
-        "base = \"statute.toml\"\nrules = [\"me:4\"]\n\n[sources]\nme = { path = \"me\", public = false }\nhere = { path = \"here\", public = false, scope = \"local\" }\n",
+        PRIVATE,
+        &format!(
+            "rules = [\"me:4\"]\n\n[sources]\nme = {{ path = \"{at}/me\", public = false }}\nhere = {{ path = \"{at}/here\", public = false, scope = \"local\" }}\n"
+        ),
     );
-    write(
-        &dir,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/\n/me/\n/here/\n",
-    );
+    write(&dir, ".gitignore", "/me/\n/here/\n");
     put(&dir, "r/rules", domain(1));
     put(&dir, "r/rules", rule(2, 1, ""));
     put(&dir, "rules", domain(1));
@@ -202,7 +204,11 @@ fn site_writes_nothing_else_and_git_ignores_it() {
     let new: Vec<&PathBuf> = after.difference(&before).collect();
     assert!(!new.is_empty());
     for path in &new {
-        assert!(path.starts_with(".statute/site"), "{}", path.display());
+        assert!(
+            path.starts_with(".statute/site") || *path == Path::new(".statute/.gitignore"),
+            "{}",
+            path.display()
+        );
     }
     // The private text is in the site, and nowhere else.
     for path in &after {
@@ -215,12 +221,14 @@ fn site_writes_nothing_else_and_git_ignores_it() {
             );
         }
     }
-    // Ignored by the site's own `.gitignore`, without the repository's
-    // `/.statute/`.
-    write(&dir, ".gitignore", "/statute.private.toml\n/me/\n/here/\n");
-    let status_without = git(&dir, &["status", "--porcelain", "--untracked-files=all"]);
-    assert!(!status_without.contains(".statute"), "{status_without}");
-    assert!(status_without.contains(".gitignore"), "{status_without}");
+    // Ignored by statute's own `.gitignore` files, which git shows to be
+    // committed.
+    let status_after = git(&dir, &["status", "--porcelain", "--untracked-files=all"]);
+    assert!(
+        status_after.contains("?? .statute/.gitignore\n"),
+        "{status_after}"
+    );
+    assert!(!status_after.contains(".statute/site"), "{status_after}");
     assert!(!status.contains(".statute"));
 }
 
@@ -234,8 +242,11 @@ fn site_of_the_first_party_source_lists_it_once() {
     );
     write(
         &dir,
-        "statute.private.toml",
-        "base = \"statute.toml\"\n\n[sources]\nme = { path = \"me\", public = false }\n",
+        PRIVATE,
+        &format!(
+            "[sources]\nme = {{ path = \"{}/me\", public = false }}\n",
+            dir.display()
+        ),
     );
     put(&dir, "rules", domain(1));
     put(&dir, "rules", rule(2, 1, ""));
