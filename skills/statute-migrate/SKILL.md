@@ -323,7 +323,7 @@ Acceptance, before you ask for a review:
   output and the private links as ignored, and `git ls-files` lists
   none of them; the private rule set and the private lock file are in
   git's own directory, where git tracks nothing.
-- In a public repository with private rules, the checkout hook holds
+- In a public repository with a private output, the checkout hook holds
   the hook line, and a worktree added with `git worktree add` has the
   private output and the private links without any other command.
 
