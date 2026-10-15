@@ -855,4 +855,28 @@ fn a_finding_of_the_private_layer_names_the_private_rule_set() {
         "{}",
         run.stderr
     );
+    // A finding that asks for a change to `exclude` stays with
+    // statute.toml, though me:8 of the private layer brings it about.
+    write(
+        &dir,
+        "me/rules/8.toml",
+        &rule(8, 1, "requires = [\"R6\"]").1,
+    );
+    write(
+        &dir,
+        "statute.toml",
+        &read(&dir, "statute.toml").replace("rules = [", "exclude = [\"R6\"]\nrules = ["),
+    );
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:8\"]"),
+    );
+    let run = statute(&dir, &["lock"]);
+    assert!(
+        run.stderr
+            .lines()
+            .any(|l| l.starts_with("statute.toml: error: rule R6 (Rule 6) cannot be turned off: rule me:8 (Rule 8) requires it")),
+        "{}",
+        run.stderr
+    );
 }

@@ -170,10 +170,16 @@ impl Project {
         locked.extend(own);
         let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
         diags.0.retain(|d| !given.0.contains(d));
-        // What the public rule set alone does not find, the private layer
-        // brings about.
+        // A finding about an entry of `rules`, `packs` or `domains` that
+        // the public rule set alone does not have is about an entry of
+        // the private rule set; the rest still ask for a change to
+        // `statute.toml`.
         for d in &mut diags.0 {
-            if d.file == manifest::FILE {
+            if d.file == manifest::FILE
+                && ["`rules` ", "`packs` ", "`domains` "]
+                    .iter()
+                    .any(|field| d.message.starts_with(field))
+            {
                 d.file.clone_from(&shown);
             }
         }
