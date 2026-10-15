@@ -1119,3 +1119,129 @@ fn the_defaults_of_a_source_resolve_on_their_own() {
         on(3, 1, "requires = [11]"),
     ]));
 }
+
+// Citations.
+
+#[test]
+fn every_language_cites_what_the_original_cites() {
+    let hash = original_hash(&[
+        "Rule 3",
+        "Do the thing 3, after {@rule:2}.",
+        "Because.\n",
+        "Violated when the thing is not done.",
+    ]);
+    let translated = |zh: &str| {
+        let r = edit(
+            rule(3, 1, ""),
+            "Do the thing 3.",
+            "Do the thing 3, after {@rule:2}.",
+        );
+        let r = edit(r, "en = \"Rule 3\"", "en = \"Rule 3\"\nzh = \"规定 3\"");
+        let r = edit(
+            r,
+            "en = \"Do the thing 3, after {@rule:2}.\"",
+            &format!("en = \"Do the thing 3, after {{@rule:2}}.\"\nzh = \"{zh}\""),
+        );
+        let r = edit(r, "Because.\n'''", "Because.\n'''\nzh = \"因为。\"");
+        let r = edit(
+            r,
+            "en = \"Violated when the thing is not done.\"",
+            "en = \"Violated when the thing is not done.\"\nzh = \"没做即为违反。\"",
+        );
+        (3, format!("{}\n[translations]\nzh = \"{hash}\"\n", r.1))
+    };
+    assert_clean(&load(&[
+        domain(1),
+        rule(2, 1, ""),
+        translated("在{@rule:2}之后做事 3。"),
+    ]));
+    assert_error(
+        &load(&[domain(1), rule(2, 1, ""), translated("做事 3。")]),
+        "3.toml",
+        "[text.statement] `en` cites `{@rule:2}`, and `zh` does not",
+    );
+    // A citation only the translation has is checked as well.
+    let extra = load(&[
+        domain(1),
+        rule(2, 1, ""),
+        translated("在{@rule:2}和{@rule:9}之后做事 3。"),
+    ]);
+    assert_eq!(
+        lines(&extra, Severity::Error),
+        [
+            "rules/3.toml: error: [text.statement] `zh` cites `{@rule:9}`, and `en` does not",
+            "rules/3.toml: error: [text.statement] cites `{@rule:9}`, which does not exist in this source",
+        ]
+    );
+}
+
+#[test]
+fn a_citation_names_a_rule_in_force_with_its_namespace() {
+    let citing = |what: &str| {
+        edit(
+            rule(3, 1, ""),
+            "Do the thing 3.",
+            &format!("Do the thing 3, after {what}."),
+        )
+    };
+    assert_clean(&load(&[domain(1), rule(2, 1, ""), citing("{@rule:2}")]));
+    assert_error(
+        &load(&[domain(1), rule(2, 1, ""), citing("{@rule:9}")]),
+        "3.toml",
+        "[text.statement] cites `{@rule:9}`, which does not exist in this source",
+    );
+    let repealed = edit(
+        rule(2, 1, ""),
+        "status = \"draft\"",
+        "status = \"repealed\"",
+    );
+    assert_error(
+        &load(&[domain(1), repealed, citing("{@rule:2}")]),
+        "3.toml",
+        "[text.statement] cites `{@rule:2}`, which is repealed",
+    );
+    assert_error(
+        &load(&[domain(1), rule(2, 1, ""), citing("{@simplicity}")]),
+        "3.toml",
+        "[text.statement] cites `{@simplicity}` without `rule:` or `constitution:`",
+    );
+    assert_error(
+        &load(&[domain(1), rule(2, 1, ""), citing("{@rule:domain-1}")]),
+        "3.toml",
+        "[text.statement] cites `{@rule:domain-1}`, which names no rule",
+    );
+}
+
+#[test]
+fn a_repealed_rule_may_cite_what_is_gone() {
+    let repeal =
+        |(id, text): (u64, String)| edit((id, text), "status = \"draft\"", "status = \"repealed\"");
+    let citing = |what: &str| {
+        repeal(edit(
+            rule(3, 1, ""),
+            "Do the thing 3.",
+            &format!("Do the thing 3, after {what}."),
+        ))
+    };
+    assert_clean(&load(&[
+        domain(1),
+        repeal(rule(2, 1, "")),
+        citing("{@rule:2} and {@rule:9}"),
+    ]));
+}
+
+#[test]
+fn a_domain_under_an_option_is_too_deep() {
+    let under = |id, parent: u64| {
+        edit(
+            domain(id),
+            "lang = \"en\"",
+            &format!("lang = \"en\"\nparent = {parent}"),
+        )
+    };
+    assert_error(
+        &load(&[domain(1), one_of(2, 1), under(3, 2), under(4, 3)]),
+        "4.toml",
+        "parent 3 is the option of one-of 2, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of",
+    );
+}
