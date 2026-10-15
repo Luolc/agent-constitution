@@ -231,8 +231,9 @@ prints the three lists from the rule set as written; `statute explain
 
 Not built yet: `domains`, `exclude`, `default` in the rule files,
 `statute explain --defaults`, parameters and `local-rules`. Until
-they are, write the draft of step b as `packs` and `rules`, with the
-same comments, show the person that list with the reasons, and leave
+they are, write the draft of step b as `packs` and `rules`
+(`statute add --pack R96` for a domain, `statute add R42` for a rule),
+with the same comments, show the person that list with the reasons, and leave
 the parameters' values in the local rules that need them.
 
 ## g. Lock, compile, check
