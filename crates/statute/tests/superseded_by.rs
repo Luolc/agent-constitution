@@ -8,7 +8,7 @@ use statute::diag::Severity;
 use statute::source::Source;
 
 mod common;
-use common::{domain, edit, empty_one_of, one_of, rule};
+use common::{domain, edit, empty_one_of, rule};
 
 #[derive(Deserialize)]
 struct Cases {
