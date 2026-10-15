@@ -19,7 +19,8 @@ en = "Run the checks of what you change before a push"
 en = '''
 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
 
-- a Python file or a `pyproject.toml`: `uv run basedpyright`, and for each member of `tools/` the change touches, its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
+- `tools/`, a `pyproject.toml` or `uv.lock`: `uv run basedpyright`;
+- each member of `tools/` that the change touches, or that depends on what it touches (`tools/site` uses `statute` and `web/`): its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
 - a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
 - `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
 - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
