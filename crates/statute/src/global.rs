@@ -335,3 +335,13 @@ pub fn clone_origin(dir: &Path) -> Result<(String, Option<String>), String> {
         .and_then(|b| b.strip_prefix("origin/").map(str::to_owned));
     Ok((origin, branch))
 }
+
+/// Whether `dir` is a bare git repository, whose path is a git address
+/// rather than a source on disk.
+pub fn is_bare(dir: &Path) -> bool {
+    let mut cmd = git();
+    cmd.arg("-C")
+        .arg(dir)
+        .args(["rev-parse", "--is-bare-repository"]);
+    run(cmd, "").is_ok_and(|answer| answer == "true")
+}

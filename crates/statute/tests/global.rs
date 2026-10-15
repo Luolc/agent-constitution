@@ -708,3 +708,48 @@ fn github_addresses() {
     assert_eq!(github_repo("https://example.test/o/r.git"), None);
     assert_eq!(github_repo("https://github.com/o"), None);
 }
+
+#[test]
+fn source_add_writes_nothing_when_the_private_layer_would_fail() {
+    let w = world("source-add-clash");
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
+    );
+    ok(&w.run(&["add", "R2"]));
+    w.on_disk("team", 7);
+    write(
+        &w.repo,
+        "statute.private.toml",
+        "base = \"statute.toml\"\n\n[sources]\nteam = { path = \"../team\", public = false }\n",
+    );
+    ok(&w.run(&["lock"]));
+    let before = (read(&w.repo, "statute.toml"), read(&w.repo, "statute.lock"));
+    fails(
+        &w.run(&["source", "add", "team", "../team", "--public"]),
+        "`team` is named in statute.toml already",
+    );
+    assert_eq!(
+        (read(&w.repo, "statute.toml"), read(&w.repo, "statute.lock")),
+        before
+    );
+}
+
+#[test]
+fn source_add_takes_a_bare_repository_as_a_git_address() {
+    let w = world("source-add-bare");
+    ok(&w.run(&["init", "--private"]));
+    source(&w.at, "team", &[domain(1), rule(7, 1, "")]);
+    let bare = w.at.join("team.git");
+    ok(&w.run(&["source", "add", "team", bare.to_str().unwrap(), "--public"]));
+    let manifest = read(&w.repo, "statute.toml");
+    assert!(
+        manifest.contains(&format!(
+            "team = {{ git = \"{}\", branch = \"main\", public = true }}",
+            bare.display()
+        )),
+        "{manifest}"
+    );
+}

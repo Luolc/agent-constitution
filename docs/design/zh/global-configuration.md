@@ -1,4 +1,4 @@
-<!-- en-sha256: c5428391865ae45b8ccd9f4904c798fcaf9c5ea0b35ec8e3bcd9d05c13cf5c25 -->
+<!-- en-sha256: a02ce834e7d3cf324bd1e81e7780da5dd7b2ebf3da1ecca36700a971626aea23 -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -113,7 +113,7 @@ public = true
 
 `statute source add <name> <address>` 登记一个规定源：
 
-- `<address>` 是一个 git 地址，或者磁盘上的一个目录。在规定清单里，目录写成 `path`，相对于 `statute.toml` 所在的目录；加 `--global` 时，目录必须是一份克隆，写成 `clone`，它的 `origin` 写成 `git`。
+- `<address>` 是一个 git 地址，或者磁盘上的一个目录。裸仓库算 git 地址，写成它的绝对路径。在规定清单里，别的目录写成 `path`，相对于 `statute.toml` 所在的目录；加 `--global` 时，目录必须是一份克隆，写成 `clone`，它的 `origin` 写成 `git`。
 - `--branch` 或 `--tag` 说明跟踪什么；两个都不给时，取远端 `HEAD` 指向的分支，并在条目里写明。
 - 写入之前，先克隆这个规定源或读那个目录，并带上它解析一遍规定清单；失败就什么都不写。
 

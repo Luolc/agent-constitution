@@ -291,16 +291,27 @@ fn print_private_locked(public: &Project, both: &Project) {
     );
 }
 
-/// Locks the private layer again after `statute.toml` changed, when it
-/// is there.
-fn relock_private(root: &Path, public: &Project, env: &Env) -> Result<(), ()> {
+/// The private layer over `public`, the public project as it is to be
+/// written, resolved, and checked that git ignores its files, before
+/// anything is written: `None` when there is none. A command that changes
+/// the public layer calls it first and writes nothing when it fails, then
+/// writes the private lock file with `relock_private`.
+fn private_ready(root: &Path, public: &Project, env: &Env) -> Result<Option<Project>, ()> {
     let (both, diags) = Project::load_private(public, &Diagnostics::default(), env);
     print(&diags);
-    match both {
-        Some(both) => write_private_lock(root, public, &both),
-        None if diags.has_errors() => Err(()),
-        None => Ok(()),
+    if diags.has_errors() {
+        return Err(());
     }
+    if both.is_some() {
+        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+    }
+    Ok(both)
+}
+
+/// Writes the private lock file of `both`, from `private_ready`, when
+/// there is a private layer.
+fn relock_private(root: &Path, public: &Project, both: Option<&Project>) -> Result<(), ()> {
+    both.map_or(Ok(()), |both| write_private_lock(root, public, both))
 }
 
 fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
@@ -735,6 +746,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
                 );
                 return Err(());
             };
+            let both = private_ready(root, &next, &env)?;
             for line in lines {
                 println!("{line}");
             }
@@ -748,16 +760,17 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
                 &lock::render(&next),
             )?;
             print_locked(&next);
-            return relock_private(root, &next, &env);
+            return relock_private(root, &next, both.as_ref());
         }
         None => {
             print(&diags);
             project
         }
     };
+    let both = private_ready(root, &project, &env)?;
     report_changes(&old, &project);
     write_lock(root, &project)?;
-    relock_private(root, &project, &env)
+    relock_private(root, &project, both.as_ref())
 }
 
 /// Prints how `project` differs from the lock file `old`.
@@ -1117,6 +1130,11 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     if private {
         private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     }
+    let both = if private {
+        None
+    } else {
+        private_ready(root, &project, &env)?
+    };
     write_both(
         root,
         private,
@@ -1137,7 +1155,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         Some(public) => print_private_locked(public, &project),
         None => {
             print_locked(&project);
-            relock_private(root, &project, &env)?;
+            relock_private(root, &project, both.as_ref())?;
         }
     }
     Ok(())
@@ -1225,10 +1243,19 @@ fn source_add(
     let env = env(Mode::Lock)?;
     let fail = |e: String| eprintln!("statute: error: {e}");
     let dir = root.join(address);
+    // A bare repository's path is a git address: it has no files to read.
+    let bare = dir.is_dir() && statute::global::is_bare(&dir);
+    let absolute;
+    let address = if bare {
+        absolute = std::path::absolute(&dir).map_err(|e| fail(format!("{address}: {e}")))?;
+        absolute.to_str().unwrap_or(address)
+    } else {
+        address
+    };
     let mut entry = toml_edit::InlineTable::new();
     // Where GitHub is asked: a directory's repository, or `owner/name`.
     let (asked_at, repo): (PathBuf, Option<String>);
-    let follow = if dir.is_dir() {
+    let follow = if dir.is_dir() && !bare {
         asked_at = dir.clone();
         repo = None;
         if global {
@@ -1268,7 +1295,7 @@ fn source_add(
     let (public, note) = match public {
         Some(p) => (p, None),
         None => {
-            let answer = match (&repo, dir.is_dir()) {
+            let answer = match (&repo, dir.is_dir() && !bare) {
                 (None, false) => Err(format!("GitHub does not hold {address}")),
                 _ => statute::check::visibility_of(&asked_at, repo.as_deref()),
             };
@@ -1402,6 +1429,8 @@ fn source_add(
         let (project, diags) = Project::with_manifest(root, &changed, &env);
         print(&diags);
         let project = project.ok_or_else(|| eprintln!("statute: {file} is left unchanged"))?;
+        let both = private_ready(root, &project, &env)
+            .map_err(|()| eprintln!("statute: {file} is left unchanged"))?;
         let original = original.unwrap_or_default();
         if root.join(lock::FILE).exists() {
             write_both(
@@ -1413,7 +1442,7 @@ fn source_add(
                 &lock::render(&project),
             )?;
             print_locked(&project);
-            relock_private(root, &project, &env)?;
+            relock_private(root, &project, both.as_ref())?;
         } else {
             std::fs::write(&path, &changed)
                 .map_err(|e| eprintln!("{file}: error: cannot write: {e}"))?;

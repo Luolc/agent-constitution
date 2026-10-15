@@ -218,8 +218,10 @@ commit, `R@1a2b3c4d:rules/7.toml`.
 
 `statute source add <name> <address>` names a source:
 
-- `<address>` is a git address, or a directory on disk. In a rule set a
-  directory becomes `path`, relative to the directory of `statute.toml`;
+- `<address>` is a git address, or a directory on disk. A bare
+  repository is a git address, written as its absolute path. In a rule
+  set another directory becomes `path`, relative to the directory of
+  `statute.toml`;
   with `--global`, the directory must be a clone, which becomes
   `clone`, its `origin` the `git`.
 - `--branch` or `--tag` says what to follow; without either, the branch
