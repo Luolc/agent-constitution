@@ -299,6 +299,54 @@ fn site_writes_nothing_where_git_tracks_a_file() {
 }
 
 #[test]
+fn site_marks_the_quadrant_of_each_rule() {
+    for (lang, names) in [
+        (
+            "en",
+            [
+                "Global public",
+                "Global private",
+                "Local public",
+                "Local private",
+            ],
+        ),
+        ("zh", ["全局公开", "全局私有", "本仓公开", "本仓私有"]),
+    ] {
+        let dir = four(&format!("quadrant-{lang}"));
+        let manifest = read(&dir, "statute.toml");
+        let manifest = manifest.replace(
+            "\n\n[sources]",
+            &format!("\n\n[compile]\nlang = \"{lang}\"\n\n[sources]"),
+        );
+        write(&dir, "statute.toml", &manifest);
+        let r = statute(&dir, &["site"]);
+        assert_eq!(r.code, 0, "{}", r.stderr);
+        let index = read(&dir, ".statute/site/index.html");
+        for ((class, source, page), name) in [
+            ("global-public", "R", "R/2.html"),
+            ("global-private", "me", "me/4.html"),
+            ("local-public", "L", "L/3.html"),
+            ("local-private", "here", "here/5.html"),
+        ]
+        .into_iter()
+        .zip(names)
+        {
+            let mark = format!("<span class=\"q {class}\">{name}</span>");
+            // The page names the source as well; the index lists it above.
+            let named = format!("<span class=\"q {class}\">{name} · {source}</span>");
+            let html = read(&dir, &format!(".statute/site/{page}"));
+            let h1 = &html[html.find("<h1>").unwrap()..html.find("</p>").unwrap()];
+            assert!(h1.contains(&named), "{lang} {page}: {h1}");
+            let item = index
+                .lines()
+                .find(|l| l.starts_with("<li") && l.contains(&format!("href=\"{page}\"")))
+                .unwrap();
+            assert!(item.contains(&mark), "{lang} {page}: {item}");
+        }
+    }
+}
+
+#[test]
 fn site_writes_nothing_where_git_cannot_tell() {
     let dir = four("git-fails");
     // A git that answers everything but `ls-files`, with an error.
