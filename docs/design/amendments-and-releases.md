@@ -50,7 +50,25 @@ keeps the edition in force and a draft of the next one is settled by
   `relaxations.project-overrides`.
 - The crates under `crates/` are published to crates.io, each with its
   own version in its `Cargo.toml`; publishing one is a release too.
-  `statute` 0.0.1 is a placeholder that holds the name.
+  `statute` 0.0.1 was a placeholder that held the name.
+- A crate's version is independent of the repo's, so its tag carries the
+  crate's name: pushing `statute-v<version>` releases `statute` at that
+  version, under the same rules as a release tag above.
+  `.github/workflows/release.yml` publishes it. The workflow holds no
+  crates.io token: crates.io trusts this repo's `release.yml` running in
+  the GitHub environment `release` (Trusted Publishing), and the job trades
+  its OIDC token for a short-lived crates.io token. The environment admits
+  only tags `statute-v*`.
+- Before publishing, a job of its own, outside the environment and
+  without the OIDC token, runs `check-release-tag`; the job that publishes
+  runs only when it passed, so no tool of the check can get the token. The
+  check takes three steps in order, each only once the one before it
+  passed, and stops at the first that fails: the tag is `statute-v` followed by the version in
+  `crates/statute/Cargo.toml`, and a manifest without a version to read
+  fails; the tagged commit is on `main`; that commit's push-triggered run
+  of `ci.yml` completed with `success` on its first attempt. So the tag
+  goes on after that run has finished; when it was pushed earlier, the
+  check fails, and the workflow is rerun once the CI run has passed.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.

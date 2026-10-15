@@ -1,4 +1,4 @@
-<!-- en-sha256: d20e6600ad0268f20b37972656a2a06a6b283f7a68b25a2912b781d6f208d669 -->
+<!-- en-sha256: 59c88584c9142f469ce41638f819ab07ccd99830603a330a40539723d466729b -->
 # 修正案与发布
 
 ## <a id="approving-an-amendment"></a>批准修正案
@@ -19,5 +19,7 @@
 - 版本是 `main` 上的 tag `v<major>.<minor>.<patch>`。改变行为的宪法修正案或规定变更，至少升一个 minor 版本；改变输出的工具变更，至少升一个 minor 版本；其余的升 patch 版本。
 - 发布 tag 只打在这样的 `main` 提交上：它的 push 触发的那次 `check` 运行第一次就成功了。重跑之后才变绿的不算；改为给之后一个第一次就通过的提交打 tag。
 - 推送发布 tag 就使一个版本可以获取。默认情况下，发布是 `must-ask` 的一个事项，由第 32 号规定 (`release-must-ask`) 加入，需要人同意；项目可以依照 `relaxations.project-overrides` 另行规定。
-- `crates/` 下的 crate 发布到 crates.io，各自的版本写在自己的 `Cargo.toml` 里；发布一个 crate 也是一次发布。`statute` 0.0.1 是占住这个名字的占位版本。
+- `crates/` 下的 crate 发布到 crates.io，各自的版本写在自己的 `Cargo.toml` 里；发布一个 crate 也是一次发布。`statute` 0.0.1 是当初占住这个名字的占位版本。
+- crate 的版本与仓库的版本各自独立，所以 crate 的 tag 带上 crate 的名字：推送 `statute-v<version>` 就是发布这一版的 `statute`，与上面的发布 tag 守同样的规矩。发布由 `.github/workflows/release.yml` 完成。这个 workflow 不持有 crates.io 的 token：crates.io 信任本仓在 GitHub environment `release` 里运行的 `release.yml` (Trusted Publishing)，job 用自己的 OIDC token 换一个短期的 crates.io token。这个 environment 只接受 `statute-v*` 形式的 tag。
+- 发布之前，由一个单独的 job 运行 `check-release-tag`，它不在这个 environment 里，也拿不到 OIDC token；它通过了，负责发布的 job 才运行，所以检查用到的任何工具都拿不到这个 token。检查依次分三步，前一步通过才做下一步，哪一步不通过就停下：tag 等于 `statute-v` 加上 `crates/statute/Cargo.toml` 里的版本，manifest 里读不出版本也算不通过；打 tag 的提交在 `main` 上；这个提交由 push 触发的那次 `ci.yml` 运行已经结束，并且第一次就是 `success`。所以 tag 要等这次运行结束后再推；推早了检查不通过，等 CI 运行通过后重跑这个 workflow。
 - overlay 固定一个 tag 及其提交 SHA，两者对不上就拒绝构建。它换用新版本，要在 overlay 里提一次变更，在那里审查。

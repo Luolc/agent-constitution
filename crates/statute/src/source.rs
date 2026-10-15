@@ -1380,7 +1380,7 @@ impl Checker<'_> {
 /// and so is every domain above it, a one-of passing on what its domain
 /// is. `None` when a `default` on the way is missing, or the way leaves
 /// the source, unless a `default` that is there already says no.
-fn by_default(source: &Source, id: Id) -> Option<bool> {
+pub(crate) fn by_default(source: &Source, id: Id) -> Option<bool> {
     let mut known = true;
     let mut at = id;
     for _ in 0..=source.nodes.len() {
