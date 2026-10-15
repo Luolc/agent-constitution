@@ -1268,6 +1268,7 @@ Promise.all(frames.map((f) => new Promise((done) =>
     self.assertIn("</a>, <a", raw["rules/4/index.html"])
     self.assertIn("</a>、<a", raw["zh/rules/4/index.html"])
     self.assertNotIn("Superseded by", pages["rules/5/index.html"])
+    self.assertNotIn("Repealed.", pages["rules/4/index.html"])
     # Rule 3 names `one` and `one-a`, under it: only `one-a` is listed.
     self.assertIn(
       "R3 Rule 3 Off by default Default option See Art. I §1 and rule 6 ."
@@ -1329,6 +1330,21 @@ Promise.all(frames.map((f) => new Promise((done) =>
         raw[f"zh/rules/{node_id}/index.html"],
       )
     self.assertNotIn("还没有中文译文", pages["zh/rules/3/index.html"])
+
+  def test_repealed_rule_page(self):
+    """A repealed rule's page says so under its title."""
+    raw = self.build(raw=True, edit_rules=site_fixture.repealed)
+    for lang, note in (("", "Repealed."), ("zh/", "已废止。")):
+      with self.subTest(lang):
+        self.assertIn(
+          f'<p class="rule-note repealed">{note}</p>',
+          raw[f"{lang}rules/4/index.html"],
+        )
+    self.assertIn(
+      "R4 Rule 4 Off by default Repealed. Old.",
+      visible(raw["rules/4/index.html"]),
+    )
+    self.assertNotIn("Repealed.", visible(raw["rules/5/index.html"]))
 
   def test_rule_paths(self):
     """A node's page has its path; a title two nodes share names the parent."""
