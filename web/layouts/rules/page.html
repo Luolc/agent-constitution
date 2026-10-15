@@ -1,5 +1,6 @@
 {{- /* The page of one node of the rule tree (content/rules/_content.gotmpl):
-  its title; for a superseded rule, the rules that supersede it; a note
+  above its title, when it has nodes above it, a breadcrumb of them, each
+  a link, ending with the node itself; its title; for a superseded rule, the rules that supersede it; a note
   when the text is not in the page's language; a rule's statement, reason
   and verification, their citations linked; the provisions of the
   constitution it cites; its relations, among them the rule of another
@@ -22,6 +23,14 @@
 {{- $rule := .Params.rule }}
 {{- $lang := site.Language.Lang }}
 <article class="markdown book-article"><div class="design rules rule">
+{{- with $rule.path }}
+<nav class="rule-breadcrumb" aria-label="{{ i18n "rule-breadcrumb" }}"><ol>
+  {{- range . }}
+<li><a href="../{{ .key }}/">{{ .titleHtml | safeHTML }}</a>{{ partial "icon.html" "lucide:chevron-right" }}</li>
+  {{- end }}
+<li><span aria-current="page" lang="{{ $rule.shown }}">{{ $rule.titleInLink | $.RenderString }}</span></li>
+</ol></nav>
+{{- end }}
 <h1><span class="rule-label">{{ $rule.label }}</span> <span lang="{{ $rule.shown }}">{{ $rule.titleMarked | .RenderString }}</span></h1>
 {{- $many := gt (len (index hugo.Data.rules $lang).sources) 1 }}
 <p class="rule-tags">{{ partial "rules/default.html" $rule }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" $rule.source) }}{{ end }}{{ partial "rules/enabled.html" $rule }}</p>

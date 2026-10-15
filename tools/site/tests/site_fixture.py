@@ -81,7 +81,13 @@ def original(*texts: str) -> str:
   return hashlib.sha256("\0".join(texts).encode()).hexdigest()
 
 
-def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
+def group(
+  node_id: int,
+  kind: str,
+  parent: int | None,
+  cites: str = "3",
+  titles: tuple[str, str] | None = None,
+) -> str:
   """Return the file of a domain or a one-of, translated.
 
   A domain has an applicability that cites a rule and is off by
@@ -93,18 +99,19 @@ def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
     parent: its parent, None for a domain.
     cites: the rule a domain's applicability cites, as `{@rule:...}`
       names it.
+    titles: its title in English and in Chinese, if not `Group <id>`.
 
   Returns:
     The TOML text.
   """
-  title = f"Group {node_id}"
+  title, zh = titles or (f"Group {node_id}", f"组 {node_id}")
   texts = [title]
   text = (
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
     f'kind = "{kind}"\nstatus = "active"\nlang = "en"\n'
     + (f"parent = {parent}\n" if parent else "")
     + ('default = "off"\n' if kind == "domain" else "default = 3\n")
-    + f'\n[title]\nen = "{title}"\nzh = "组 {node_id}"\n'
+    + f'\n[title]\nen = "{title}"\nzh = "{zh}"\n'
   )
   if kind == "domain":
     applicability = APPLICABILITY.format(rule=cites)
@@ -181,6 +188,30 @@ def subdomain(root: Path) -> None:
   rule.write_text(
     text.replace("parent = 2\n", 'parent = 2\ndefault = "off"\n', 1),
     encoding="utf-8",
+  )
+
+
+def shared_titles(root: Path) -> None:
+  """Give two domains under two parents one title, Tiers / 层级.
+
+  Domain 7, under the domain 1, and domain 9, under a new domain 8,
+  which holds rule 4.
+
+  Args:
+    root: the checkout.
+  """
+  tiers = ("Tiers", "层级")
+  files = {
+    7: group(7, "domain", 1, titles=tiers),
+    8: group(8, "domain", None),
+    9: group(9, "domain", 8, titles=tiers),
+  }
+  for node_id, text in files.items():
+    (root / f"rules/{node_id}.toml").write_text(text, encoding="utf-8")
+  rule = root / "rules/4.toml"
+  text = rule.read_text(encoding="utf-8")
+  rule.write_text(
+    text.replace("parent = 1\n", "parent = 9\n", 1), encoding="utf-8"
   )
 
 

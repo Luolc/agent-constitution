@@ -1,7 +1,8 @@
 {{- /* A node named in a rule's data: a link to its page with its label
-  and title, or, for a node of another source, its reference as written. */ -}}
+  and title, and its parent's title when another node has its title,
+  or, for a node of another source, its reference as written. */ -}}
 {{- with .key -}}
-<a href="../{{ . }}/">{{ $.label }} {{ $.titleHtml | safeHTML }}</a>
+<a href="../{{ . }}/">{{ $.label }} {{ $.titleHtml | safeHTML }}{{ with $.parentTitleHtml }} <span class="rule-parent-title">({{ . | safeHTML }})</span>{{ end }}</a>
 {{- else -}}
 <code>{{ .ref }}</code>
 {{- end -}}

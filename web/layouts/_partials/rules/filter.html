@@ -1,7 +1,8 @@
 {{- /* The controls above the list of the rules: the filter's button, which
   opens its panel, and the page size. The panel has a group of check
   boxes per field: each status, whether the defaults enable the rule,
-  each value of `uses`, each domain, indented by its depth, and each
+  each value of `uses`, each domain, indented by its depth, with its
+  parent's title when another node has its title, and each
   quadrant when the site has more than one source; each group with All
   and None, and Reset filter under them. The boxes are checked as the
   default filter is, the statuses of rulesStatuses and every other
@@ -30,7 +31,9 @@
 {{- $values = slice }}
 {{- range where .page.Pages "Params.rule.kind" "domain" }}
   {{- $domain := .Params.rule }}
-  {{- $values = $values | append (dict "key" $domain.key "label" (printf "%s %s" $domain.label $domain.title) "parent" $domain.domain "depth" (int $domain.depth) "checked" true) }}
+  {{- $label := printf "%s %s" $domain.label $domain.title }}
+  {{- with $domain.parentTitle }}{{ $label = printf "%s (%s)" $label . }}{{ end }}
+  {{- $values = $values | append (dict "key" $domain.key "label" $label "parent" $domain.domain "depth" (int $domain.depth) "checked" true) }}
 {{- end }}
 {{- partial "rules/filter-group.html" (dict "field" "domain" "legend" (i18n "rules-domains") "values" $values) }}
 {{- if gt (len .sources) 1 }}

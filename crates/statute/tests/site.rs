@@ -683,6 +683,61 @@ fn site_draws_the_tree_by_level() {
     assert!(menu[..menu.find("</summary>").unwrap()].contains(&path.replace(" />", "/>")));
 }
 
+#[test]
+fn site_names_the_parent_of_a_shared_title() {
+    let dir = repo("shared-titles", "r/");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R5\", \"R6\"]\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    put(&dir, "r/rules", domain(1));
+    put(&dir, "r/rules", domain(2));
+    // Domains 3 and 4, under 1 and 2, both titled Tiers; 7 has a title of
+    // its own.
+    for (id, parent) in [(3, 1), (4, 2), (7, 1)] {
+        let tiers = edit(
+            domain(id),
+            "default",
+            &format!("parent = {parent}\ndefault"),
+        );
+        let tiers = if id == 7 {
+            tiers
+        } else {
+            edit(tiers, &format!("Domain {id}\""), "Tiers\"")
+        };
+        put(&dir, "r/rules", tiers);
+    }
+    put(&dir, "r/rules", rule(5, 3, ""));
+    put(&dir, "r/rules", rule(6, 4, "requires = [5]"));
+    let r = statute(&dir, &["site"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let site = dir.join(".statute/site");
+    let parent = |name: &str| format!(" <span class=\"parent\">({name})</span></a>");
+    // A link to a domain whose title another has names its parent.
+    let one = std::fs::read_to_string(site.join("R/1.html")).unwrap();
+    assert!(
+        one.contains(&format!("Tiers</span>{}", parent("Domain 1"))),
+        "{one}"
+    );
+    assert!(one.contains("Domain 7</span></a>"), "{one}");
+    // The domain menu does as well.
+    let index = read(&dir, ".statute/site/index.html");
+    let menu = &index[index.find("data-field=\"domain\"").expect(&index)..];
+    assert!(
+        menu.contains("Tiers</span> <span class=\"parent\">(Domain 2)</span>"),
+        "{menu}"
+    );
+    // A rule's breadcrumb, which names the parents, does not.
+    let five = std::fs::read_to_string(site.join("R/5.html")).unwrap();
+    let nav = &five[five.find("<nav>").unwrap()..five.find("</nav>").unwrap()];
+    assert!(nav.contains("Tiers</span></a>"), "{nav}");
+    assert!(!nav.contains("class=\"parent\""), "{nav}");
+    // A rule whose title no other has is named alone.
+    let six = std::fs::read_to_string(site.join("R/6.html")).unwrap();
+    assert!(six.contains("Rule 5</span></a>"), "{six}");
+}
+
 /// The path of the page the language switch of the page at `path` leads
 /// to, both below the site's directory.
 fn switched(site: &Path, path: &Path) -> PathBuf {

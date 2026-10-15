@@ -6,7 +6,8 @@
   parameters its page of them, rules/params/ for this repo's,
   rules/<name>-params/ for another's, after the nodes, the page's data
   in its params. A node's page takes its title as text, without the
-  backticks of its code spans. The pages are hidden from the theme's
+  backticks of its code spans, and the title of the browser's tab and of
+  a shared link from pageTitle, its label and path, the same way. The pages are hidden from the theme's
   own list (bookHidden); the menu links the list. The list has no
   table of contents (BookToC), so no button for one in the top bar of a
   narrow screen: its group rows stick and name the domain in view. The build
@@ -28,7 +29,7 @@
     "path" $node.key
     "title" (replace $node.title "`" "")
     "weight" (add $i 1)
-    "params" (dict "rule" $node "bookHidden" true)
+    "params" (dict "rule" $node "pageTitle" (replace $node.pageTitle "`" "") "bookHidden" true)
   ) }}
 {{- end }}
 {{- $many := gt (len $data.sources) 1 }}

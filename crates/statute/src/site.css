@@ -67,6 +67,8 @@ a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
 
 /* A node's label, before its title. */
 .ref { color: var(--t-text-muted); font-variant-numeric: tabular-nums; margin-inline-end: var(--t-space-2); }
+/* A node's parent, after a title another node also has. */
+.parent { color: var(--t-text-muted); }
 nav { font-size: var(--t-text-sm); color: var(--t-text-muted); margin-block-end: var(--t-space-4); }
 /* The switch to the other language: a quiet button at the end of the
    page's first line, `languages` before the language's name. */
