@@ -1,14 +1,16 @@
 id = 200
 slug = "documents-language"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 196
+default = "on"
 authority = ["purpose"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Write the repository's documents in the language set for them"

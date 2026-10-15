@@ -1,14 +1,15 @@
 id = 198
 slug = "steps-for-a-person"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 196
+default = "on"
 authority = ["asking"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Write steps for a person so they can be followed as written"
