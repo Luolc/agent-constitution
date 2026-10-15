@@ -1,8 +1,9 @@
 id = 107
 slug = "trial-to-active-on-evidence"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 287
 lang = "en"
 parent = 96
 default = "on"

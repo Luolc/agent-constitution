@@ -1,0 +1,43 @@
+id = 287
+slug = "trial-to-active-on-a-principals-yes"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+default = "on"
+authority = ["list-defaults.tightening"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Make a trial rule active only on a principal's explicit yes"
+zh = "试用规定要委托人明确同意才改为生效"
+
+[text.statement]
+en = "Move a trial rule to `active` only once a principal has said explicitly that it may move."
+zh = "试用规定只有在委托人明确说过它可以改为 `active` 之后，才改为 `active`。"
+
+[text.reason]
+en = '''
+Whether a rule has held up well enough to stop being a trial is a judgment on the rule library that a principal makes, and a count of uses that nothing keeps is no ground anyone can check. The rule library may move a matter agents decide themselves ({@constitution:decide-yourself.ordinary-rules}) to those that go through a principal ({@constitution:list-defaults.tightening}).
+'''
+zh = '''
+一条规定是否已经站稳、可以结束试用，是对规定库的判断，由委托人来下；没有任何机制在记的使用次数，谁也核对不了，不能当依据。规定库可以把 agent 自行决定的事项 ({@constitution:decide-yourself.ordinary-rules}) 移到须经委托人的事项里 ({@constitution:list-defaults.tightening})。
+'''
+
+[text.verification]
+en = '''
+An explicit yes is a principal's own message or comment on a pull request that names each rule it covers, by ID or so that it leaves no doubt which rules it means (for example in reply to a list of them), and says that they may move to `active`. A general approval, such as "these all look fine", or a yes to the change that added a rule, is not one. A yes relayed by an agent counts only once it is checked as {@constitution:explicit-yes} requires. The description of the change that moves the rule cites where the yes is, so that a reviewer can open it: for a chat message its thread and the message's own identifier, for a comment its link. The move changes only the status ({@rule:109}).
+
+Violated when a rule moves from `trial` to `active` without a principal's explicit yes that covers it, or in a change whose description does not cite where that yes is.
+'''
+zh = '''
+明确同意，指委托人本人的一条消息或 pull request 上的一条评论：它点名了所涉及的每一条规定 (写出 ID，或者让人不会弄错指的是哪几条，例如回复一份列出它们的清单)，并说这些规定可以改为 `active`。泛泛的认可 (例如「都挺好」)，或者对新增某条规定的那次变更的同意，都不算。经 agent 转告的同意，要按{@constitution:explicit-yes}的要求核实之后才算。把规定改为 `active` 的变更，要在说明里写出这条同意在哪里，让审查方能打开它：聊天消息写出所在的线程和这条消息自己的标识，评论写出链接。改为生效只改状态 ({@rule:109})。
+
+没有覆盖某条规定的委托人明确同意，就把它从 `trial` 改为 `active`，或者改动的说明里没写出这条同意在哪里的，即为违反本规定。
+'''
+
+[translations]
+zh = "ddc3ee2a89c46978306a356b4ba7faf8a13608a422c5490a502c4468b08be3c8"
