@@ -64,7 +64,7 @@
 <fieldset><legend>{{ i18n "rules-domains" }}</legend>
   {{- range where .Pages "Params.rule.kind" "domain" }}
     {{- $domain := .Params.rule }}
-<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.parent }} data-parent="{{ .key }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
+<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.domain }} data-parent="{{ . }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
   {{- end }}
 </fieldset>
 {{- if $many }}

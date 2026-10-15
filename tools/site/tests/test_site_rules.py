@@ -31,17 +31,30 @@ class SiteRulesTest(unittest.TestCase):
 
   def test_tree_order(self):
     order = [(n["id"], n["depth"]) for n in self.data["en"]["nodes"]]
-    self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (4, 1), (5, 1), (6, 1)])
+    # The one-of's option, rule 3, counts no level for the one-of, which
+    # heads no group.
+    self.assertEqual(order, [(1, 0), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1)])
     nodes = self.nodes("en")
-    self.assertEqual([g["id"] for g in nodes[3]["groups"]], [1, 2])
-    self.assertEqual(
-      [g["kind"] for g in nodes[3]["groups"]], ["domain", "one-of"]
-    )
+    self.assertEqual([g["id"] for g in nodes[3]["groups"]], [1])
+    self.assertEqual([g["kind"] for g in nodes[3]["groups"]], ["domain"])
     self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
     self.assertEqual(
       nodes[2]["children"],
       [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
     )
+
+  def test_domain_option(self):
+    """An option that is a domain heads its rules; the one-of heads none."""
+    site_fixture.domain_option(self.root)
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual(
+      [(g["id"], g["kind"]) for g in nodes[3]["groups"]],
+      [(1, "domain"), (7, "domain")],
+    )
+    self.assertEqual((nodes[7]["depth"], nodes[3]["depth"]), (1, 2))
+    self.assertEqual((nodes[3]["domain"], nodes[3]["boxed"]), ("7", False))
+    self.assertEqual([o["id"] for o in nodes[2]["options"]], [7])
+    self.assertTrue(nodes[7]["optionDefault"])
 
   def test_subdomain(self):
     """A domain under a domain heads the rules below it, under its own."""
@@ -65,7 +78,7 @@ class SiteRulesTest(unittest.TestCase):
       path.write_text(path.read_text().replace(old, new), encoding="utf-8")
     data = self.load()["en"]["nodes"]
     order = [(n["id"], n["depth"]) for n in data]
-    self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (5, 1), (4, 0), (6, 0)])
+    self.assertEqual(order, [(1, 0), (2, 1), (3, 1), (5, 1), (4, 0), (6, 0)])
     nodes = {n["id"]: n for n in data}
     self.assertEqual(nodes[6]["parent"], {"ref": "team:7"})
     self.assertEqual(nodes[6]["groups"], [])
@@ -157,7 +170,7 @@ class SiteRulesTest(unittest.TestCase):
         [n["label"] for n in nodes.values()],
         ["R1", "R2", "R3", "R4", "R5", "R6"],
       )
-      self.assertEqual(nodes[3]["groups"][1]["label"], "R2")
+      self.assertEqual(nodes[3]["groups"][0]["label"], "R1")
     self.assertEqual(site_rules.rule_label(12), "R12")
 
   def test_authority_keeps_the_narrowest(self):
@@ -241,7 +254,7 @@ class SiteRulesTest(unittest.TestCase):
       self.data["en"]["sources"], [{"name": "R", "quadrant": "global-public"}]
     )
     nodes = self.nodes("en")
-    self.assertEqual([g["key"] for g in nodes[3]["groups"]], ["1", "2"])
+    self.assertEqual([g["key"] for g in nodes[3]["groups"]], ["1"])
     self.assertNotIn("enabled", nodes[3])
     self.assertEqual(
       (nodes[3]["key"], nodes[3]["source"], nodes[3]["quadrant"]),
@@ -273,7 +286,7 @@ class SiteRulesTest(unittest.TestCase):
       [("source-demo", "source"), ("demo-1", "domain")],
     )
     self.assertEqual(
-      [g["key"] for g in nodes["R3"]["groups"]], ["source-R", "1", "2"]
+      [g["key"] for g in nodes["R3"]["groups"]], ["source-R", "1"]
     )
     self.assertEqual(
       demo["requires"],

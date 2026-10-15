@@ -5,11 +5,12 @@ and the lists under the provisions of the constitution
 (docs/design/static-site.md, Rules). For each language of index.toml it
 holds every node of the rule tree in the order of the parent tree, each
 with its texts in that language where it has a translation that follows
-its original, else in the original, the domains and one-ofs above it
-with their kinds; the citations in the texts as Markdown
-links, relative to the rule's page; the other side of each conflict; and,
-for each provision of the constitution, the rules whose `authority` names
-it, and for each article, the rules that name it or a provision under it.
+its original, else in the original, the domains above it, which head
+it (a one-of above it is a box, not a heading); the citations in the
+texts as Markdown links, relative to the rule's page; the other side of
+each conflict; and, for each provision of the constitution, the rules
+whose `authority` names it, and for each article, the rules that name
+it or a provision under it.
 An `authority` that names a provision and one above it counts only the
 narrower one. A superseded or repealed rule is not listed under the
 provisions.
@@ -688,7 +689,8 @@ class _Language:
     Args:
       node: the node.
       source: its source.
-      depth: its depth in the tree, 0 for a domain.
+      depth: its depth in the tree, 0 for a domain; the pages count no
+        one-of above it.
       conflicts: the rules it conflicts with, on either side.
       enabled: the labels of the rules the rule set enables, or None.
 
@@ -698,11 +700,15 @@ class _Language:
     data = node.data
     name = source.name
     shown = self.shown(node)
-    groups, ancestor = [], node.parent
+    # The domains above it head it; a one-of is a box in its domain's
+    # list, not a heading, and counts for no level.
+    groups, ancestor, boxes = [], node.parent, 0
     while isinstance(ancestor, int):
       parent = self.nodes[(name, ancestor)]
-      if parent.kind != "rule":
+      if parent.kind == "domain":
         groups.insert(0, self.ref(parent.id, name) | {"kind": parent.kind})
+      elif parent.kind == "one-of":
+        boxes += 1
       ancestor = parent.parent
     # The nearest domain, which the filter goes by, may be another
     # source's: a node under it heads a tree of its own here, with no
@@ -735,7 +741,7 @@ class _Language:
         "lang": node.lang,
         "shown": shown,
         "translations": node.translations,
-        "depth": depth,
+        "depth": depth - boxes,
         "groups": groups,
         "title": self.title((name, node.id)),
         "titleMarked": self.values(node.title[shown], shown, name),

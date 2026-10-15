@@ -544,6 +544,28 @@ class SiteTest(unittest.TestCase):
       raw["rules/6/index.html"],
     )
 
+  def test_domain_option(self):
+    """A domain as an option: a line of the box, and the head of its rules.
+
+    No heading for the one-of, so the option's heading is a level below
+    the one-of's domain.
+    """
+    raw = self.build(raw=True, edit_rules=site_fixture.domain_option)
+    page = raw["rules/index.html"]
+    self.assertRegex(
+      page,
+      r'<ul class="one-of-options">\n<li><a class="rule-entry"'
+      r' href="\.\./rules/7/"><span class="rule-id">R7</span>.*Default'
+      r" option</span></a></li>\n</ul>",
+    )
+    self.assertNotIn('data-group="2"', page)
+    self.assertIn(("3", "7", ' id="group-7"'), HEADING.findall(page))
+    self.assertIn('href="../rules/3/" style="--indent: 0"', page)
+    self.assertIn(
+      '<input type="checkbox" name="domain" value="7" data-parent="1" checked>',
+      page,
+    )
+
   def test_a_value_in_a_title_is_escaped(self):
     """In the list, a value with `<` in a title shows as text."""
 
