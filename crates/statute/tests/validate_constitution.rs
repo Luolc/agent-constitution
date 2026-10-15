@@ -507,3 +507,19 @@ fn draft_base_is_not_compared() {
         "base HEAD is draft; numbering not compared\nrules: 2 nodes, no errors\n"
     );
 }
+
+#[test]
+fn dot_inside_the_rules_directory_finds_the_constitution() {
+    let tree = Tree::new("dot");
+    tree.edit("rules/10.toml", "\"alpha-one.money\"", "\"alpha-one.cash\"");
+    let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+        .current_dir(tree.root.join("rules"))
+        .args(["validate", "."])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    assert_eq!(
+        String::from_utf8(out.stderr).unwrap(),
+        "./10.toml:8: error: authority cites undefined alpha-one.cash\n"
+    );
+}
