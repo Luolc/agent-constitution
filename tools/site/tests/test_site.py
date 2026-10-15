@@ -130,6 +130,7 @@ class SiteTest(unittest.TestCase):
     rules: bool = True,
     per_page: int | None = None,
     edit_rules: Callable[[Path], None] | None = None,
+    other: bool = False,
   ) -> dict[str, str]:
     """Build the site in a temporary copy of the repo's layout.
 
@@ -142,6 +143,8 @@ class SiteTest(unittest.TestCase):
         site_fixture.
       per_page: The rules a page of their list shows, if not the site's.
       edit_rules: Changes the rules' checkout before site-rules reads it.
+      other: Whether site-rules also reads site_fixture's second source,
+        `demo`, global private, with a rule set enabling R3 and demo:2.
 
     Returns:
       The visible text of every page, or its HTML, by path.
@@ -176,6 +179,15 @@ class SiteTest(unittest.TestCase):
           edit_rules(checkout)
         out = root / "web/data/rules.json"
         args = ["--root", str(checkout), "--out", str(out)]
+        if other:
+          site_fixture.write_other(root / "demo")
+          lock = root / "statute.lock"
+          lock.write_text(
+            '[[rules]]\nrule = "R3"\n\n[[rules]]\nrule = "demo:2"\n',
+            encoding="utf-8",
+          )
+          args += ["--source", f"demo:global-private:{root / 'demo'}"]
+          args += ["--enabled", str(lock)]
         self.assertEqual(site_rules.main(args), 0)
       env = dict(os.environ)
       if per_page:
@@ -350,9 +362,9 @@ class SiteTest(unittest.TestCase):
     page = raw["rules/index.html"]
     self.assertIn(
       "The filter above the list chooses the statuses and domains shown."
-      " Filter Status Active Trial Draft Superseded Repealed Domains Group 1"
-      " Apply Rules per page 25 50 100 All Group 1 Group 2 R3 See Art. I §1"
-      " and rule 6.",
+      " Filter Status Active Trial Draft Superseded Repealed Domains R1 Group"
+      " 1 Apply Rules per page 25 50 100 All R1 Group 1 R2 Group 2 R3 Rule 3"
+      " Active",
       pages["rules/index.html"],
     )
     entries = re.findall(r'class="rule-entry" href="([^"]+)"', page)
@@ -382,7 +394,7 @@ class SiteTest(unittest.TestCase):
       '<input type="checkbox" name="domain" value="1" checked>', page
     )
     self.assertIn(
-      "组 1 组 2 R3 见第一条第一款和规定 6。", pages["zh/rules/index.html"]
+      "R1 组 1 R2 组 2 R3 规定 3 生效", pages["zh/rules/index.html"]
     )
     self.assertIn('style="--indent: 1"><span class="rule-id">R6', page)
     # A heading shows where its group changes from the rule shown before.
@@ -404,8 +416,8 @@ class SiteTest(unittest.TestCase):
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
       '<nav id="TableOfContents"><ul>\n<li style="--level: 0"><a'
-      ' href="#group-1">Group 1</a></li>\n<li style="--level: 1"><a'
-      ' href="#group-2">Group 2</a></li>\n</ul></nav>',
+      ' href="#group-1">R1 Group 1</a></li>\n<li style="--level: 1"><a'
+      ' href="#group-2">R2 Group 2</a></li>\n</ul></nav>',
       page,
     )
     self.assertIn(
@@ -448,7 +460,8 @@ class SiteTest(unittest.TestCase):
       ],
     )
     self.assertIn(
-      '<li style="--level: 0"><a href="#group-1">Group 1</a></li>\n</ul>', two
+      '<li style="--level: 0"><a href="#group-1">R1 Group 1</a></li>\n</ul>',
+      two,
     )
     self.assertNotIn("#group-2", two)
     self.assertIn('<a href="../rules/page/2/">2</a>', one)
@@ -471,13 +484,52 @@ class SiteTest(unittest.TestCase):
         self.assertIn(f"{below} {three}", sub)
     self.assertIn(
       '<label style="--indent: 1"><input type="checkbox" name="domain"'
-      ' value="2" data-parent="1" checked> Group 2</label>',
+      ' value="2" data-parent="1" checked> R2 Group 2</label>',
       page,
     )
     self.assertIn('data-status="active" data-domain="2">', page)
     self.assertEqual(page.count('data-domain="1">'), 2)
     self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
     self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
+
+  def test_rules_of_two_sources(self):
+    """Each source heads its rules; the tags say quadrant and rule set."""
+    raw = self.build(raw=True, other=True)
+    pages = {p: visible(t) for p, t in raw.items()}
+    page = raw["rules/index.html"]
+    self.assertIn(
+      "Quadrants Global public Global private Apply", pages["rules/index.html"]
+    )
+    self.assertIn(
+      '<input type="checkbox" name="quadrant" value="global-private" checked>',
+      page,
+    )
+    for text in (
+      "Global public · R R1 Group 1 R2 Group 2 R3 Rule 3 Active Enabled"
+      " Global public",
+      "R5 Rule 5 Active Not enabled Global public",
+      "Global private · demo demo:1 Group 1 demo:2 Demo rule Active Enabled"
+      " Global private",
+    ):
+      self.assertIn(text, pages["rules/index.html"])
+    self.assertIn(
+      '<h2 class="rules-group" data-group="source-demo" id="group-source-demo">'
+      '<span class="quadrant quadrant-global-private">Global private · demo'
+      "</span></h2>",
+      page,
+    )
+    self.assertIn('data-domain="demo-1" data-quadrant="global-private">', page)
+    self.assertIn('href="#group-source-demo">Global private · demo</a>', page)
+    demo = pages["rules/demo-2/index.html"]
+    self.assertIn("demo:2 Demo rule Global private · demo Enabled", demo)
+    self.assertIn("After rule R3 , see rule demo:2 .", demo)
+    self.assertIn('<a href="../3/">rule R3</a>', raw["rules/demo-2/index.html"])
+    self.assertIn("Requires R3 Rule 3", demo)
+    self.assertIn(
+      "R3 Rule 3 Global public · R Enabled", pages["rules/3/index.html"]
+    )
+    self.assertIn("全局私有 · demo 已启用", pages["zh/rules/demo-2/index.html"])
+    self.assertIn('href="rules/demo-2/"', raw["index.html"])
 
   def test_rule_page_of_an_override(self):
     """An overriding rule names the rule it overrides in place of a parent."""

@@ -125,9 +125,24 @@ site-rules`, `uv run count-tokens` (the token count, below),
   holds every node of the rule tree along the parent tree, a node's
   children in order of ID, each with its label, `R` and its ID (`R12`),
   made by `rule_label` in `site_rules.py`, the one place that makes it;
-  the templates read the node's `label`. For each provision it holds the
+  the templates read the node's `label`. With `--source
+  <name>:<quadrant>:<dir>`, once for each, it also reads the rules of other
+  sources, `<dir>/rules/*.toml`, as the same reader reads this repo's but
+  taking `R12` in them for this repo's rule 12, as `requires` writes it
+  ([Rule sources](rule-sources.md)); their nodes follow this repo's,
+  source by source in the order of the quadrants (global public, global
+  private, local public, local private), each labeled `<name>:<id>`
+  (`team:7`), and a node of another source that a node names, in a field
+  or a citation (`{@rule:R12}`, `{@rule:team:7}`), links to its page.
+  Each node holds its source and the source's quadrant; with more than
+  one source, its groups start with its source. With `--enabled
+  <statute.lock>`, once for each, each rule says whether one of those
+  lock files lists it. The private overlay's review site uses both; the
+  public site uses neither, so its pages show no quadrant and nothing
+  enabled. For each provision it holds the
   rules that name it in `authority`, and for each article the rules that
-  name it or a provision under it, each rule once, in order of ID. An
+  name it or a provision under it, each rule once, in order of source and
+  ID. An
   `authority` that names a provision and one above it (an item and its
   section or article, a section and its article) counts only the
   narrower one, so a rule is listed under the most specific provisions it
@@ -136,19 +151,24 @@ site-rules`, `uv run count-tokens` (the token count, below),
   superseded or repealed rule has a page and is in the list, but not
   under a provision. The content adapter
   `web/content/rules/_content.gotmpl` makes the list, `rules/`, and a
-  page for each node, `rules/<id>/`: the ID, not the `slug`, since the ID
-  never changes. The list (`web/layouts/rules/section.html`) shows the
-  rules along the tree, each rule's statement only, as plain text cut to
-  three lines by the style sheet, after its label and linked to its
-  page, a superseded or repealed rule's status after it; a rule under
-  another rule is indented under it. Domains and one-ofs are not listed
-  but head the rules below them, a level deeper for each domain or
-  one-of above them, a subdomain under its domain's heading, where the group
-  changes and again at the top of each page. Above the list, a filter
-  folds open a checkbox for each status and each domain, applied with its
-  button; a rule is shown when its status and its nearest domain are
-  checked, and checking or unchecking a domain does the same to the
-  domains under it. A node whose `parent` is in another source, and a
+  page for each node, `rules/<id>/`, or `rules/<name>-<id>/` for a node
+  of another source: the ID, not the `slug`, since the ID never changes.
+  The list (`web/layouts/rules/section.html`) is dense, one line a rule:
+  along the tree, each rule's label, its title, cut to the line by the
+  style sheet, and its status, linked to its page; then, with
+  `--enabled`, whether it is enabled, and with more than one source,
+  the quadrant of its source, each a small tag. A rule under another rule
+  is indented under it. Domains and one-ofs are not listed but head the
+  rules below them, each with its label (`R13`), a level deeper for each
+  domain or one-of above them, a subdomain under its domain's heading,
+  where the group changes and again at the top of each page; with more
+  than one source, each source heads its rules, as its quadrant and
+  name, a level above its domains. Above the list, a filter folds open a
+  checkbox for each status and each domain, and for each quadrant when
+  there is more than one source, applied with its button; a rule is
+  shown when its status, its nearest domain and its quadrant are checked,
+  and checking or unchecking a domain does the same to the domains under
+  it. A node whose `parent` is in another source, and a
   rule with `overrides`, has no domain on the site: it is at the top
   of the tree, with no group above it. The filter does not show it yet,
   since it shows only the rules of a checked domain; without scripts it
@@ -171,7 +191,9 @@ site-rules`, `uv run count-tokens` (the token count, below),
   contents at the right lists the headings on the page, each indented by
   its level. A
   rule's page (`web/layouts/rules/page.html`) gives its label and title,
-  for a superseded rule the rules that supersede it, its statement,
+  under it, with more than one source, the quadrant and name of its
+  source ("Global private · team"), and with `--enabled` whether it is
+  enabled, for a superseded rule the rules that supersede it, its statement,
   reason and verification, the provisions it cites (`authority`), linked
   to their anchors on the home page, its relations (its parent, or for a
   rule with `overrides` "Overrides" and the rule it overrides, its

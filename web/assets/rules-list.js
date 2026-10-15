@@ -1,6 +1,7 @@
 // The list of the rules (layouts/rules/section.html) with the filter and
 // the page size the reader chose, read from the address: `filter` once the
-// form was sent, with the checked `status` and `domain` values, `per` (25,
+// form was sent, with the checked `status`, `domain` and, when the site
+// has more than one source, `quadrant` values, `per` (25,
 // 50, 100 or all) and `page`. Without them, the default filter, as the
 // form's checkboxes were built, and the page Hugo built. Every page holds
 // every rule, so this only shows the rules of the filter and page, and
@@ -13,6 +14,8 @@
 // then finds the headings shown.
 (function () {
   var SIZES = ["25", "50", "100", "all"];
+  // The filter's checkboxes; a name the form has none of filters nothing.
+  var NAMES = ["status", "domain", "quadrant"];
   document.addEventListener("DOMContentLoaded", function () {
     var list = document.querySelector(".rules-list");
     var form = document.querySelector(".rules-controls");
@@ -22,7 +25,7 @@
       return Array.prototype.slice.call(form.querySelectorAll("input[name='" + name + "']"));
     };
     if (query.has("filter")) {
-      ["status", "domain"].forEach(function (name) {
+      NAMES.forEach(function (name) {
         var checked = query.getAll(name);
         boxes(name).forEach(function (box) { box.checked = checked.indexOf(box.value) >= 0; });
       });
@@ -30,9 +33,11 @@
     var checked = function (name) {
       return boxes(name).filter(function (box) { return box.checked; }).map(function (box) { return box.value; });
     };
-    var statuses = checked("status"), domains = checked("domain");
+    var filters = NAMES.filter(function (name) { return boxes(name).length; }).map(function (name) {
+      return { name: name, values: checked(name) };
+    });
     var matched = Array.prototype.filter.call(list.querySelectorAll(".rule-item"), function (item) {
-      return statuses.indexOf(item.dataset.status) >= 0 && domains.indexOf(item.dataset.domain) >= 0;
+      return filters.every(function (f) { return f.values.indexOf(item.dataset[f.name]) >= 0; });
     });
 
     var per = query.get("per");

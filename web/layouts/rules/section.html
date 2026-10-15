@@ -1,22 +1,27 @@
-{{- /* The list of the rules, in the order of the parent tree: each rule's
-  statement only, as plain text cut to a few lines by the style sheet,
-  linked to its page and marked with its label, and with its status when
-  it is superseded or repealed; a rule under another rule is indented
+{{- /* The list of the rules, in the order of the parent tree, one line
+  each: the rule's label, its title, cut to the line by the style sheet,
+  and its status, all linked to its page; when the site has a rule set,
+  whether it enables the rule, and when it has more than one source, the
+  quadrant of the rule's source. A rule under another rule is indented
   under it. Domains and one-ofs are not listed but head the rules below
-  them, a level deeper for each domain or one-of above them: a heading
-  where a rule's group at that level differs from the one of the rule
-  shown before it, and on each page above its first rule.
+  them, each with its label, a level deeper for each domain or one-of
+  above them: a heading where a rule's group at that level differs from
+  the one of the rule shown before it, and on each page above its first
+  rule. With more than one source, each source heads its rules, as its
+  quadrant and name, a level above its domains.
 
   Above the list, a form: a filter, which folds open, with a checkbox for
-  each status and each domain, and the page size. The rules shown are
-  those whose status and nearest domain are checked, rulesPerPage of them
-  a page; by default the statuses of rulesStatuses and every domain.
+  each status and each domain, and for each quadrant when the site has
+  more than one source, and the page size. The rules shown are those
+  whose status, nearest domain and quadrant are checked, rulesPerPage of
+  them a page; by default the statuses of rulesStatuses, every domain
+  and every quadrant.
   Every page holds every rule, each with all its group headings, the
   rules and headings not shown hidden, so that assets/rules-list.js can
   show another filter and page size, from the address, without a page of
   their own. Without scripts the pages are Hugo's, of the rules of the
   default filter, and the form stays hidden. A heading shown has the id
-  `group-<id>`, which the table of contents at the right links. */ -}}
+  `group-<key>`, which the table of contents at the right links. */ -}}
 {{ define "main" }}
 {{- $all := where .Pages "Params.rule.kind" "rule" }}
 {{- $statuses := site.Params.rulesStatuses }}
@@ -24,6 +29,8 @@
 {{- $pager := .Paginate (where $all "Params.rule.status" "in" $statuses) $size }}
 {{- $first := mul (sub $pager.PageNumber 1) $size }}
 {{- $end := add $first $size }}
+{{- $sources := (index hugo.Data.rules site.Language.Lang).sources }}
+{{- $many := gt (len $sources) 1 }}
 <article class="markdown book-article"><div class="design rules">
 {{ printf "# %s {anchor=false}" .Title | .RenderString }}
 <p class="rules-intro">{{ i18n "rules-intro" }}</p>
@@ -39,9 +46,16 @@
 <fieldset><legend>{{ i18n "rules-domains" }}</legend>
   {{- range where .Pages "Params.rule.kind" "domain" }}
     {{- $domain := .Params.rule }}
-<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.id }}"{{ with $domain.parent }} data-parent="{{ .id }}"{{ end }} checked> {{ $domain.title }}</label>
+<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.parent }} data-parent="{{ .key }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
   {{- end }}
 </fieldset>
+{{- if $many }}
+<fieldset><legend>{{ i18n "rules-quadrants" }}</legend>
+  {{- range uniq (apply $sources "index" "." "quadrant") }}
+<label><input type="checkbox" name="quadrant" value="{{ . }}" checked> {{ partial "rules/quadrant.html" (dict "quadrant" . "source" "") }}</label>
+  {{- end }}
+</fieldset>
+{{- end }}
 <button type="submit">{{ i18n "rules-apply" }}</button>
 </div>
 </details>
@@ -63,19 +77,25 @@
     {{- $k = add $k 1 }}
   {{- end }}
   {{- $domain := "" }}
-  {{- range $rule.groups }}{{ if eq .kind "domain" }}{{ $domain = .id }}{{ end }}{{ end }}
-<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $domain }}"{{ if not $on }} hidden{{ end }}>
+  {{- range $rule.groups }}{{ if eq .kind "domain" }}{{ $domain = .key }}{{ end }}{{ end }}
+<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $domain }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
   {{- $changed := false }}
   {{- range $j, $group := $rule.groups }}
-    {{- $changed = or $changed (ge $j (len $previous)) (ne (index $previous $j).id $group.id) }}
+    {{- $changed = or $changed (ge $j (len $previous)) (ne (index $previous $j).key $group.key) }}
     {{- $shown := and $on $changed }}
-    {{- if $shown }}{{ $toc = $toc | append (dict "id" $group.id "title" $group.title "level" $j) }}{{ end }}
-<h{{ add $j 2 }} class="rules-group" data-group="{{ $group.id }}"{{ if $shown }} id="group-{{ $group.id }}"{{ else }} hidden{{ end }}><a href="{{ (site.GetPage (printf "/rules/%d" (int $group.id))).RelPermalink }}">{{ $group.title }}</a></h{{ add $j 2 }}>
+    {{- $source := eq $group.kind "source" }}
+    {{- $title := cond $source (printf "%s · %s" (i18n (printf "quadrant-%s" $group.quadrant)) $group.source) (printf "%s %s" $group.label $group.title) }}
+    {{- if $shown }}{{ $toc = $toc | append (dict "key" $group.key "title" $title "level" $j) }}{{ end }}
+<h{{ add $j 2 }} class="rules-group" data-group="{{ $group.key }}"{{ if $shown }} id="group-{{ $group.key }}"{{ else }} hidden{{ end }}>
+    {{- if $source }}{{ partial "rules/quadrant.html" (dict "quadrant" $group.quadrant "source" $group.source) }}
+    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}"><span class="group-label">{{ $group.label }}</span> {{ $group.title }}</a>{{ end -}}
+</h{{ add $j 2 }}>
   {{- end }}
   {{- if $on }}{{ $previous = $rule.groups }}{{ end }}
-  {{- $statement := $rule.text.statement | $.RenderString | plainify | htmlUnescape }}
-<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth (len $rule.groups))) | safeCSS }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-statement" lang="{{ $rule.shown }}">{{ $statement }}</span>
-  {{- if in (slice "superseded" "repealed") $rule.status }}<span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>{{ end -}}
+  {{- $nested := len (where $rule.groups "kind" "ne" "source") }}
+<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth $nested)) | safeCSS }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ $rule.title | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>
+  {{- partial "rules/enabled.html" $rule }}
+  {{- if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" "") }}{{ end -}}
 </a>
 </div>
 {{- end }}
@@ -110,7 +130,7 @@
 {{ partial "docs/inject/toc-before" . }}
 <nav id="TableOfContents"><ul>
 {{- range .Store.Get "toc" }}
-<li style="{{ printf "--level: %d" (int .level) | safeCSS }}"><a href="#group-{{ .id }}">{{ .title }}</a></li>
+<li style="{{ printf "--level: %d" (int .level) | safeCSS }}"><a href="#group-{{ .key }}">{{ .title }}</a></li>
 {{- end }}
 </ul></nav>
 {{ end }}

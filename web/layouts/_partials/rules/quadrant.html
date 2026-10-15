@@ -1,0 +1,5 @@
+{{- /* The quadrant of a source, as a mark on the background of its
+  quadrant, and the name of the source after it when given. Takes (dict
+  "quadrant" the quadrant, as data/rules.json gives it "source" the
+  name, or ""). */ -}}
+<span class="quadrant quadrant-{{ .quadrant }}">{{ i18n (printf "quadrant-%s" .quadrant) }}{{ with .source }} · {{ . }}{{ end }}</span>
