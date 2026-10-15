@@ -170,9 +170,10 @@ files, which are generated and which are other files is one table at the
 top of the script: a generic part that holds in any repo, this repo's own
 part (the constitution, rule and skill sources) and this repo's generated
 files. The generic part has what an agent harness reads in any directory
-and, at the top of the repo, what statute compiles the instruction file
-from: `statute.toml`, `statute.lock`, `statute-checks.toml` and
-`.statute/`, with the legacy copies `<name>.legacy.md` in any directory
+and, at the top of the repo, statute's files: `statute.toml`,
+`statute.lock` and `.statute/`, which it compiles the instruction file
+from; `statute-checks.toml`, which `statute compile` writes beside the
+rule set; and the legacy copies `<name>.legacy.md` in any directory
 (the Files table of [statute-migrate](../../skills/statute-migrate/SKILL.md)).
 A generated file goes with whichever side changed it: with the
 constitution sources it is an amendment, alone with the tools it is a
