@@ -1,4 +1,4 @@
-<!-- en-sha256: 977c1f55384fd001a922c23f3144a0b1d7599cb9dd41e1516e8ca99be98490c8 -->
+<!-- en-sha256: a8f4d418b409aaaa7b50d226c8684c4531b3163289f7a908d4d5c4f36a5095aa -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -99,7 +99,7 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
   here = { path = "../my-rules/repos/example", public = false, scope = "local" }
   ```
 
-  它没有 `packs`，也没有 `[compile]`，因为它的输出位置是固定的 (见下文)。它的规定源不能与 `statute.toml` 的重名，它的规定也不能与 `statute.toml` 列出的重复。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。`statute add --private` 和 `statute remove --private` 修改它。
+  它可以像 `statute.toml` 那样列 `packs`，根可以是两层中任何一个规定源的节点，这样私有规定源新加的规定会跟着启用；规定包也可以启用公开规定，这时只有私有层启用它们，和它列出的规定一样。它没有 `[compile]`，因为它的输出位置是固定的 (见下文)。它的规定源不能与 `statute.toml` 的重名，它的规定和规定包也不能与 `statute.toml` 列出的重复。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。`statute add --private` 和 `statute remove --private` 修改它。
 
 - 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
 - 它有自己的锁文件 `statute.private.lock`，同时锁定两层；`statute lock` 把它和 `statute.lock` 一起写出，改动任一份规定清单的命令都会重写它，`statute compile` 按它核对全文。它还有自己的输出，见下文。写其中任何一个之前，statute 先用 `git check-ignore` 确认 git 忽略了 `statute.private.toml`、`statute.private.lock`、它要写的每个文件，以及 `add --private` 和 `remove --private` 先写在 `.statute/` 下、再挪到位的那些文件。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了 (比如不在 git 仓库里)，就什么都不写。

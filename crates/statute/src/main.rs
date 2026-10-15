@@ -38,7 +38,7 @@ enum Command {
         /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
         rule: String,
         /// Enable the pack rooted at this node, in `packs`.
-        #[arg(long, conflicts_with = "private")]
+        #[arg(long)]
         pack: bool,
         /// Enable it in statute.private.toml, and update statute.private.lock.
         #[arg(long)]
@@ -49,7 +49,7 @@ enum Command {
         /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
         rule: String,
         /// Take the pack out of `packs`.
-        #[arg(long, conflicts_with = "private")]
+        #[arg(long)]
         pack: bool,
         /// Take it out of statute.private.toml, and update statute.private.lock.
         #[arg(long)]
