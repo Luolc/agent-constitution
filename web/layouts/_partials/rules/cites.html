@@ -1,6 +1,7 @@
 {{- /* The rules under a provision of the home page that cite it, folded:
   a button that shows them as a row of boxes, each a rule's label, or
-  shows a text in their place, and opens a list under it, each rule's
+  shows a text in their place, then `circle-plus`, or `circle-minus`
+  while it is open, and opens a list under it, each rule's
   label and title linked to its page (assets/cites.js); the title is
   `titleHtml`, since the page's Markdown is not rendered under a heading
   and would escape a code span's text again under an item. Takes (dict
@@ -14,4 +15,4 @@
   {{- $items = printf `%s<span class="cites-item" role="listitem"><a href="rules/%s/"><span class="cites-label">%s</span>%s</a></span>` $items .key .label .titleHtml }}
 {{- end }}
 {{- $name := cond (eq .text "") (printf ` aria-label="%s" title="%s"` .name .name) "" }}
-{{- return printf `<span class="cites"><button type="button" class="cites-button" aria-expanded="false" aria-controls="%s"%s>%s<span class="cites-toggle" aria-hidden="true"><svg viewBox="0 0 16 16" width="1em" height="1em"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M5 8h6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><path class="cites-bar" d="M8 5v6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg></span></button><span class="cites-list" id="%s" role="list">%s</span></span>` .id $name (or .text $boxes) .id $items }}
+{{- return printf `<span class="cites"><button type="button" class="cites-button" aria-expanded="false" aria-controls="%s"%s>%s<span class="cites-toggle">%s%s</span></button><span class="cites-list" id="%s" role="list">%s</span></span>` .id $name (or .text $boxes) (partial "icon.html" "lucide:circle-plus") (partial "icon.html" "lucide:circle-minus") .id $items }}

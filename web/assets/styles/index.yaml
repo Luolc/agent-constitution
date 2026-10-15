@@ -1,0 +1,19 @@
+# The style sheets in the order the theme's html-head-styles.html joins
+# them into one: the theme's own, as its index.yaml lists them, without its
+# empty custom.css; then the design tokens, mounted from
+# crates/statute/assets/ (hugo.toml), and the site's own, one per part of
+# the pages.
+- normalize.css
+- variables.css
+- utils.css
+- book.css
+- markdown.css
+- shortcodes.css
+- print.css
+- themes.css
+- tokens.css
+- site.css
+- constitution.css
+- design.css
+- rules-list.css
+- filter.css

@@ -1,9 +1,9 @@
-<!-- en-sha256: 42c35407fec7b3c28f059fc73bee13a606be11082c7b5a028cc34991060fa519 -->
+<!-- en-sha256: e911c07c46dae7f32712e24d50f32882943b9aa3f9ecfd4499183b0949625555 -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
 
-尚未实现：本文先于代码写成。现有页面只有[现状](#status) 一节列出的部分符合它，其余部分会在各页重做时取代现在的做法。这里写的一切都与网站用什么构建无关。token、图标和组件在代码里怎么写 (样式表、模板、主题变量、某个框架的配置) 不在本文里，等网站的技术栈定下后再补；在那之前，改动在网站现有的代码里按这里的取值和行为来做。
+尚未实现：本文有些部分先于代码写成。现有页面在[现状](#status) 一节列出的地方符合它，其余部分会在各页重做时取代现在的做法。token、图标和脚本在代码里怎么写，见[代码实现](#in-the-code)。
 
 ## <a id="contents"></a>目录
 
@@ -17,13 +17,14 @@
 - [组件](#components)：tag、筛选器、规定树、one-of、弹出层、侧边栏和按钮。
 - [不做的事](#not-done)：页面上永远不做的事。
 - [截图与审查](#screenshots-and-review)：改动页面的 pull request 附什么、CI 跑什么、审查方核什么。
+- [代码实现](#in-the-code)：token、样式表和图标放在哪里，脚本怎么构建。
 - [现状](#status)：哪些已经实现，以及这里的设计取代什么。
 - [待定问题](#open-questions)。
 - [出处](#sources)：本文参考的外部规范。
 
 ## <a id="design-tokens"></a>设计 token
 
-token 是一个有名字的值：一种颜色、一个尺寸、一段时长。下面每个 token 都写成名字、light 主题下的值和 dark 主题下的值，两者相同时只写一个。名字不带前缀 (`text`、`space-4`)，既可以落成 CSS 自定义属性 (`--text`)，也可以落成某个框架主题里的键。
+token 是一个有名字的值：一种颜色、一个尺寸、一段时长。下面每个 token 都写成名字、light 主题下的值和 dark 主题下的值，两者相同时只写一个。名字不带前缀 (`text`、`space-4`)；在样式表里，每个 token 是一个带 `--t-` 前缀的自定义属性 (`--t-text`，见[代码实现](#in-the-code))。
 
 关于取值只有一条规矩：在定义 token 的地方之外，页面样式里的颜色、字号、字重、间距 (margin、padding、gap)、圆角、阴影、时长和缓动一律写 token 名，不直接写值。可以直接写的值只有这几种：`0`、`auto`、`100%`、`1px` 和 `2px` 的边框、媒体查询里的断点 (那里不能用自定义属性)，以及为把某一个字形摆进行内而设的偏移 (条目编号后的星号)，后者要加注释说明。页面需要一个 token 里没有的值，先在本文里把它加成 token。
 
@@ -81,6 +82,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 | Token | 英文 | 中文 |
 | --- | --- | --- |
+| `font` | EB Garamond，然后是本机的衬线字体 | EB Garamond、Noto Serif SC，然后是本机的衬线字体 |
 | `font-size-base` | `clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem)` | `clamp(1rem, 0.548vw + 0.583rem, 1.17rem)` |
 | `measure` | `36em` | `40em` |
 | `line-height-text` | `1.65` | `1.9` |
@@ -146,7 +148,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 ## <a id="icons"></a>图标
 
-页面上的图标全部来自一套图标库 Lucide (ISC 许可)，用以 `currentColor` 绘制的 SVG，在两套主题下都随所在文字取色。不手画图标，也不拿字符充当图标 (`ⓘ`、`▸`、`×`、`✓`、`+`)。文件从 Lucide 的发布版拷进仓库，旁边放上它的许可和拷贝时的版本号；不为此安装任何包。文件放在哪里、页面怎么引入，还没有定 (见上文的「尚未实现」)。
+页面上的图标全部来自一套图标库 Lucide (ISC 许可)，用以 `currentColor` 绘制的 SVG，在两套主题下都随所在文字取色。不手画图标，也不拿字符充当图标 (`ⓘ`、`▸`、`×`、`✓`、`+`)。文件从 Lucide 的发布版拷进仓库，旁边放上它的许可和拷贝时的版本号；不为此安装任何包。文件放在哪里、页面怎么引入，见[代码实现](#in-the-code)。
 
 唯一的例外是指向源码的链接上的 GitHub 标志：它是 GitHub 的 logo，不是图标，仍用 GitHub 自己画的那个 (Octicons 的 `mark-github`，MIT 许可)。
 
@@ -168,8 +170,11 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | Octicons `device-desktop`、`sun`、`moon` | 配色开关 | `monitor`、`sun`、`moon` |
 | 手画的圆圈套 `i` | 长度后面的说明按钮 | `info` |
 | 手画的圆圈套加号或减号 | 展开某条款下规定的按钮 | `circle-plus`、`circle-minus` |
-| 主题自带的箭头 | 可以折叠的分组 | `chevron-right`、`chevron-down` |
+| 主题自带的箭头 | 可以折叠的分组、语言切换 | `chevron-right`、`chevron-down` |
+| 主题自带的 `translate` | 语言切换 | `languages` |
+| 主题自带的 `menu` 和 `toc` | 窄屏顶栏上的两个按钮 | `menu`、`table-of-contents` |
 | 文字按钮 | 筛选器 | `funnel` |
+| 字符 ‹ 和 › | 列表的上一页和下一页 | `chevron-left`、`chevron-right` |
 | 无 | 关闭弹出层、删除一个条件 | `x` |
 | 无 | 添加条件 | `plus` |
 | 无 | 挂在另一条规定下的规定 | `corner-down-right` |
@@ -185,6 +190,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | `duration-fast` | `120ms` | hover 和焦点的颜色变化、弹出层或折叠部分关闭。 |
 | `duration-base` | `200ms` | 展开、弹出层打开、箭头转向。 |
 | `duration-flash` | `2000ms` | 锚点目标从 `bg-target` 淡出。 |
+| `delay-tip` | `300ms` | 提示气泡，或只做说明的弹出层，在指针下等多久才打开。 |
 | `ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | 所有动效，打开和关闭都用它。 |
 
 读者触发的动效都不超过 300 ms，闪一下的那个除外，读者不必等它。关闭比它所撤销的打开更短 (`duration-fast` 对 `duration-base`)，两者都用 `ease-out`：界面上没有慢慢起步的动效。动的只有透明度和 transform，状态变化时还有颜色；过渡要写明动哪些属性，不写 `all`。弹出层从 `scale(0.95)` 和 `opacity: 0` 进场，不从 `scale(0)` 进场，`transform-origin` 对准打开它的控件；箭头转四分之一圈。
@@ -193,13 +199,17 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 ## <a id="interaction-and-accessibility"></a>交互与无障碍
 
-- **点击区域。** 能点的东西至少 24px 见方 (padding 算在内)，在粗指针 (`pointer: coarse`，即触屏) 上至少 44px 见方；小图标靠 padding 撑到这个大小，不靠把图画大。
+- **点击区域。** 能点的东西至少 24px 见方 (padding 算在内)，在粗指针 (`pointer: coarse`，即触屏) 上至少 44px 见方，即 token `target`；小图标靠 padding 达到这个大小，不靠把图画大。行文中间的链接不在此列：它的高度就是行高。
 - **hover。** hover 样式只在有能悬停的精确指针时生效 (`@media (hover: hover) and (pointer: fine)`)，触屏上点一下不会留下 hover 样式。
 - **名称和状态。** 控件就用本来是控件的元素 (`button`、链接、`details`、`select`)，只为元素本身表达不了的东西加 ARIA。打开或折叠某个部分的控件要说明它是否打开 (`aria-expanded`) 以及它打开的是什么 (`aria-controls`)。带控件的弹出层打开时接过焦点，关闭时把焦点交还给它的控件；按 Escape 关闭。
-- **提示气泡。** hover 时显示的提示约 300 ms 后出现；已经有一个显示过之后，指针移到下一个上面时立即出现。提示里不放页面别处没有的内容：它说的内容也是元素的无障碍名称，或者写在图例里。
+- **提示气泡。** hover 时显示的提示在 `delay-tip` 之后出现；已经有一个显示过之后，指针移到下一个上面时立即出现。提示里不放页面别处没有的内容：它说的内容也是元素的无障碍名称，或者写在图例里。
 - **状态写进地址。** 列表的筛选、每页条数和页码都在地址里，列表可以直接链接，前进后退能回到原来的样子。
 - **不靠脚本。** 内容默认可见：脚本出错或根本没运行的页面照样显示全部文字，靠脚本展开的部分保持展开。
 - **空状态和加载。** 筛选后为空的列表要说明为空，并给出下一步：「清除筛选」。如果以后页面要在读者等待时加载东西，加载提示约 150 到 300 ms 后才出现，出现后至少显示 300 到 500 ms，避免一闪而过；两个网站现在都没有这样的加载。
+
+| Token | 值 | 用途 |
+| --- | --- | --- |
+| `target` | `24px`；在 `pointer: coarse` 下 `44px` | 能点击的东西最小的宽和高。 |
 
 ## <a id="components"></a>组件
 
@@ -216,7 +226,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **规定树。** 节点的层级靠字号、字重和色条区分 ([字体](#type))，不靠缩进：第一层的领域是一个标题，上方留 `space-8`；第二层的领域缩进一级 (`space-4`)，起始一侧有一条 `2px` 的 `border-strong` 色条，贯穿它下面的规定；更深的领域不再缩进，色条用 `border-subtle`。一个领域的规定与它的标题左边对齐。挂在另一条规定下的规定不再缩进，而是在标号前加 `corner-down-right` (`icon-sm`，`text-faint`) 表示。每条规定占一行：标号在固定宽度的一列里，用 `text-muted`；标题超出一行时以省略号截断；tag 在右边。整行是一个链接：hover 时整行填上 `bg-hover`、`radius-sm`，标题变成 `accent`；获得焦点时焦点框围住整行。
 - **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
-- **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
+- **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`；当前页列在某个分组下面时，只标出这一页，不标分组。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
 - **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`；获得焦点时显示焦点框。
 
 ## <a id="not-done"></a>不做的事
@@ -230,28 +240,33 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 ## <a id="screenshots-and-review"></a>截图与审查
 
-- **截图。** 改动页面样子的 pull request (改样式、模板、图标、组件或组件的状态) 要附上它改到的每个页面的截图：light 和 dark 两套主题，英文和中文，每页四张。截图由仓库里的截图脚本生成，脚本见[静态网站](static-site.md)；脚本合入之前，用无头浏览器手工截。说明里写清截了哪些页面、哪些状态。
+- **截图。** 改动页面样子的 pull request (改样式、模板、图标、组件或组件的状态) 要附上它改到的每个页面的截图：light 和 dark 两套主题，英文和中文，每页四张。截图由仓库里的截图脚本生成，脚本见[静态网站](static-site.md)。说明里写清截了哪些页面、哪些状态。
 - **CI。** 每个 pull request 的 CI 构建网站、检查链接、运行截图脚本，并把截图保存为这次运行的 artifact ([静态网站](static-site.md))。
 - **审查。** 审查方拿本文对照改动逐条核：该用 token 的地方没有直接写值，图标只来自 Lucide，动效只出现在[动效](#motion) 允许的地方、减弱动效时只剩淡入淡出，符合[交互与无障碍](#interaction-and-accessibility) 和[不做的事](#not-done)，改到的每个组件的每种状态都按这里的样子画、两套主题都有，四种截图齐全。改动需要本文没有的值或组件时，在同一个 pull request 里把它加进本文。
 - **视觉对比。** 拿截图与 `main` 上的截图对比、找出没人想改的变化，现在不做；等 CI 能生成截图之后可以再做。
 
+## <a id="in-the-code"></a>代码实现
+
+- **token。** 本文的全部 token 定义在一份样式表 `crates/statute/assets/tokens.css` 里，每个是一个 CSS 自定义属性，名字是 token 名加前缀 `--t-` (`--t-text`、`--t-space-4`)；有了前缀，就不会与主题自己的属性混在一起，主题里就有一个取值不同的 `--space-1`。颜色只写一次，两个值一起写成 `light-dark(<light>, <dark>)`，随页面的 `color-scheme` 取值：跟随系统设置，页面根元素带 `data-theme` 时按读者的选择。英文和中文取值不同的 token 在 `:root:lang(zh)` 下重新设定，`target` 在 `pointer: coarse` 下重新设定。这份文件放在 crate 里，是为了让 `statute` 能用 `include_str!` 把它编进本地网站，同时照样能发布：发布的包不能引用 crate 目录以外的文件。公开网站从那里挂载它 (`web/hugo.toml`)。
+- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表和 tag)、`filter.css` (列表上方的表单，它的标记在 `web/layouts/_partials/rules/filter.html`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。
+- **图标。** SVG 文件在 `crates/statute/assets/icons/`，每个来源一个目录，`lucide/` 和 `octicons/`，与发布版里的一样、不做改动，各目录里放着许可，版本号写在它的 `README.md` 里。页面按名字引入图标，`partial "icon.html" "lucide:funnel"`，把文件里的 SVG 压成一行内联进来，带上 class `icon`，并对读屏软件隐藏；这个 class 设定线宽 `icon-stroke` 和大小，大小默认 `icon-sm`，组件要求时改成 `icon-md`。会转向的箭头用 `chevron-right` 转四分之一圈，转过去就是 `chevron-down`。
+- **脚本。** 脚本用 TypeScript 写，由 Hugo 的 `js.Build` 构建，也就是 Hugo 自带的 esbuild，不用 Node，不用 npm 包。尚未实现：现在的脚本是 `web/assets/` 里的 JavaScript，压缩后内联在每个页面的 head 里。
+
 ## <a id="status"></a>现状
 
-已经实现的：配色 (`bg-page`、`bg-panel`、`text`、`text-muted`、`text-faint`、`accent`、`border-subtle`、`bg-target`，名字不同)、字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。尚未实现的，以及各自取代什么：
+公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的侧边栏和目录)；只在精确指针上用 hover；点击区域的大小；侧边栏；字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。尚未实现的，以及各自取代什么：
 
-- 状态、tag、字号阶梯、间距、圆角、阴影和动效的 token，取代现在两个网站的样式表 (公开网站的和本地网站的) 里直接写的值。
 - 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
 - 新的筛选器取代现在那块带「应用」按钮的复选框面板。
 - 新的规定树取代按深度缩进的做法，挂在规定下的规定也包括在内。
 - 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
-- [图标](#icons) 一节表里的 Lucide 图标取代表中现有的图标。
-- 动效：锚点目标的闪烁现在不管读者怎么设置都会运行；减弱动效、点击区域的大小、只在精确指针上用 hover 和提示气泡的延迟都还没有实现。筛选后为空的列表现在只说没有规定符合，不给清除筛选的下一步。
-- 截图脚本及其在 CI 里的运行，尚未实现。
-- 这一切在代码里怎么写，要等网站的技术栈选定。
+- 上面四项实现之前，`rules-list.css` 和 `filter.css` 里还直接写着一些字号和间距，列表的翻页链接用的是字符 ‹ 和 ›，筛选器靠浏览器自带的小三角打开。
+- 筛选后为空的列表现在只说没有规定符合，不给清除筛选的下一步。
+- 本地网站的样式表写的是它自己的值，还没有引入 token 和图标。
 
 ## <a id="open-questions"></a>待定问题
 
-- 两个网站一个由网站生成器构建、一个由 `statute` 构建，怎样共用一份 token 定义和一份图标：随技术栈一起定。
+目前没有。
 
 ## <a id="sources"></a>出处
 

@@ -1,0 +1,46 @@
+{{- /* The form above the list of the rules (rules/section.html): the
+  filter, which folds open, with a checkbox for each status, each value of
+  `uses` and each domain, one for the rules the defaults enable alone, and
+  one for each quadrant when the site has more than one source, and the
+  page size; hidden until assets/rules-list.js shows it. Takes (dict
+  "page" the list's page "statuses" the statuses checked by default "size"
+  the page size "sources" the sources, as data/rules.json gives them). */ -}}
+<form class="rules-controls" action="{{ .page.RelPermalink }}" method="get" hidden>
+<input type="hidden" name="filter" value="1">
+<details class="rules-filter"><summary>{{ i18n "rules-filter" }}</summary>
+<div class="rules-filter-panel">
+<fieldset><legend>{{ i18n "rule-status" }}</legend>
+  {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
+<label><input type="checkbox" name="status" value="{{ . }}"{{ if in $.statuses . }} checked{{ end }}> {{ i18n (printf "status-%s" .) }}</label>
+  {{- end }}
+</fieldset>
+<fieldset><legend>{{ i18n "rules-defaults" }}</legend>
+<label><input type="checkbox" name="default" value="on"> {{ i18n "rules-default-only" }}</label>
+</fieldset>
+<fieldset><legend>{{ i18n "rule-uses" }}</legend>
+  {{- range slice "instructions" "review" }}
+<label><input type="checkbox" name="uses" value="{{ . }}" checked> {{ i18n (printf "uses-%s" .) }}</label>
+  {{- end }}
+</fieldset>
+<fieldset><legend>{{ i18n "rules-domains" }}</legend>
+  {{- range where .page.Pages "Params.rule.kind" "domain" }}
+    {{- $domain := .Params.rule }}
+<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.domain }} data-parent="{{ . }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
+  {{- end }}
+</fieldset>
+{{- if gt (len .sources) 1 }}
+<fieldset><legend>{{ i18n "rules-quadrants" }}</legend>
+  {{- range uniq (apply .sources "index" "." "quadrant") }}
+<label><input type="checkbox" name="quadrant" value="{{ . }}" checked> {{ partial "rules/quadrant.html" (dict "quadrant" . "source" "") }}</label>
+  {{- end }}
+</fieldset>
+{{- end }}
+<button type="submit">{{ i18n "rules-apply" }}</button>
+</div>
+</details>
+<label class="rules-size">{{ i18n "rules-per-page" }} <select name="per">
+  {{- range slice "25" "50" "100" "all" }}
+<option value="{{ . }}"{{ if eq . (string $.size) }} selected{{ end }}>{{ if eq . "all" }}{{ i18n "rules-all" }}{{ else }}{{ . }}{{ end }}</option>
+  {{- end }}
+</select></label>
+</form>

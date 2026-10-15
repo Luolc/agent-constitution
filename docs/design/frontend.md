@@ -7,14 +7,11 @@ attaches. It covers both sites that show the constitution and the
 rules: [the public site](static-site.md) and
 [the local site](statute-command.md#the-local-site) of `statute site`.
 
-Not built yet: this file is written ahead of the code. Today's pages
-follow it only where the [Status](#status) section says so; the rest
-replaces what they do now as each page is redone. Everything here is
-independent of how the sites are built. How the tokens, icons and
-components are written in the code (a style sheet, templates, a theme's
-variables, a framework's configuration) is left out and will be added
-once the sites' stack is chosen; until then a change follows the values
-and behavior here in whatever code the site has.
+Not built yet: parts of this file are written ahead of the code.
+Today's pages follow it where the [Status](#status) section says so;
+the rest replaces what they do now as each page is redone. How the
+tokens, the icons and the scripts are written in the code is in
+[In the code](#in-the-code).
 
 ## Contents
 
@@ -35,6 +32,8 @@ and behavior here in whatever code the site has.
 - [Screenshots and review](#screenshots-and-review): what a pull request
   that changes the pages attaches, what CI runs, what the reviewer
   checks.
+- [In the code](#in-the-code): where the tokens, the style sheets and
+  the icons are, and how the scripts are built.
 - [Status](#status): what is built and what this replaces.
 - [Open questions](#open-questions).
 - [Sources](#sources): the outside guidelines this file draws on.
@@ -44,8 +43,9 @@ and behavior here in whatever code the site has.
 A token is a named value: a color, a size, a duration. Each is given
 below as a name, its value in the light theme and its value in the dark
 theme, one value when the two are the same. The names are written
-without a prefix (`text`, `space-4`), so that they become CSS custom
-properties (`--text`) or the keys of a framework's theme alike.
+without a prefix (`text`, `space-4`); in the style sheets each is a
+custom property with the prefix `--t-` (`--t-text`,
+[In the code](#in-the-code)).
 
 The one rule about values: outside the place where the tokens are
 defined, a page's styles name a token for every color, font size, font
@@ -143,6 +143,7 @@ gives them:
 
 | Token | English | Chinese |
 | --- | --- | --- |
+| `font` | EB Garamond, then local serif fonts | EB Garamond, Noto Serif SC, then local serif fonts |
 | `font-size-base` | `clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem)` | `clamp(1rem, 0.548vw + 0.583rem, 1.17rem)` |
 | `measure` | `36em` | `40em` |
 | `line-height-text` | `1.65` | `1.9` |
@@ -160,7 +161,7 @@ Every other size is relative to the text's size, in em:
 | Token | Size | Use |
 | --- | --- | --- |
 | `text-xs` | `0.75em` | Tags, counts on a button. |
-| `text-sm` | `0.875em` | Controls, the sidebar's group names, notes, the table of contents. |
+| `text-sm` | `0.875em` | Controls, the sidebar, notes, the table of contents. |
 | `text-md` | `1em` | The text; a rule's line in the list. |
 | `text-lg` | `1.25em` | A second-level heading; a domain of the second level. |
 | `text-xl` | `1.5em` | A domain of the first level. |
@@ -229,8 +230,8 @@ as SVG drawn with `currentColor`, so it takes the color of its text in
 both themes. No icon is drawn by hand, and no character stands in for
 one (`ⓘ`, `▸`, `×`, `✓`, `+`). The files are copied into the repository
 from Lucide's release, with its license and the version they were copied
-from beside them; no package is installed for them. Where the files go
-and how a page includes them is not decided (Not built yet, above).
+from beside them; no package is installed for them. Where the files are
+and how a page includes them is in [In the code](#in-the-code).
 
 The one exception is GitHub's mark on the link to the source: it is
 GitHub's logo, not an icon, and stays GitHub's own drawing (Octicons'
@@ -260,8 +261,11 @@ What replaces today's icons:
 | Octicons `device-desktop`, `sun`, `moon` | The color switch | `monitor`, `sun`, `moon` |
 | A ring around an `i`, drawn by hand | The info button after the length | `info` |
 | A ring holding a plus or a minus, drawn by hand | The button that opens the rules under a provision | `circle-plus`, `circle-minus` |
-| The theme's chevron | A group that folds | `chevron-right`, `chevron-down` |
+| The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
+| The theme's `translate` | The language switch | `languages` |
+| The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
 | A text button | The filter | `funnel` |
+| The characters ‹ and › | The list's previous and next page | `chevron-left`, `chevron-right` |
 | None | Closing a popover, removing a condition | `x` |
 | None | Adding a condition | `plus` |
 | None | A rule under another rule | `corner-down-right` |
@@ -283,6 +287,7 @@ effect at once.
 | `duration-fast` | `120ms` | Hover and focus colors, a popover or a part closing. |
 | `duration-base` | `200ms` | Folding open, a popover opening, a chevron turning. |
 | `duration-flash` | `2000ms` | The anchor's target fading from `bg-target`. |
+| `delay-tip` | `300ms` | A tip, or a popover that only explains, waiting under the pointer before it opens. |
 | `ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Every motion, opening and closing alike. |
 
 Every motion the reader starts lasts at most 300 ms, the flash aside,
@@ -304,8 +309,9 @@ target still fades from `bg-target`.
 
 - **Targets.** Everything that can be clicked is at least 24px by 24px,
   its padding counted, and at least 44px by 44px where the pointer is
-  coarse (`pointer: coarse`, a touch screen); a small icon gets the
-  size from its padding, not from a larger drawing.
+  coarse (`pointer: coarse`, a touch screen), the token `target`; a
+  small icon gets the size from its padding, not from a larger drawing.
+  A link within a line of text is exempt: it is as tall as the line.
 - **Hover.** Hover styles apply only where there is a fine pointer that
   can hover (`@media (hover: hover) and (pointer: fine)`), so a tap on a
   touch screen does not leave one behind.
@@ -316,7 +322,7 @@ target still fades from `bg-target`.
   (`aria-controls`). A popover with controls takes the focus when it
   opens and gives it back to its control when it closes; Escape closes
   it.
-- **Tooltips.** A tip shown on hover appears after about 300 ms; once one
+- **Tooltips.** A tip shown on hover appears after `delay-tip`; once one
   is shown, the next one under the pointer appears at once. A tip never
   holds what the page says nowhere else: what it says is also the
   element's accessible name or in a legend.
@@ -331,6 +337,10 @@ target still fades from `bg-target`.
   while the reader waits, its indicator appears only after about 150 to
   300 ms and then stays at least 300 to 500 ms, so it does not flicker;
   the sites load nothing that way today.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `target` | `24px`; `44px` under `pointer: coarse` | The least width and height of what can be clicked. |
 
 ## Components
 
@@ -402,8 +412,8 @@ turned off (disabled), where it has these.
   `border-subtle`.
 - **Popovers** (the filter's panel, the info on the length, the rules
   under a provision when they open over the text): `bg-panel`, `1px`
-  of `border-subtle`, `radius-md`, `shadow-popover`, padding `space-3
-  space-4`, under the control that opens it. A popover with controls
+  of `border-subtle`, `radius-md`, `shadow-popover`, padding
+  `space-3 space-4`, under the control that opens it. A popover with controls
   opens and closes on a click, Enter or Space, its control's
   `aria-expanded` and `aria-controls` saying whether and what; focus
   goes into it and back to the control when it closes. A popover that
@@ -417,12 +427,14 @@ turned off (disabled), where it has these.
   `weight-bold`, `text`. A page: `text-md`, `weight-regular`, `text`,
   padding `space-1 space-2`, `radius-sm`. Hover: `bg-panel-hover`.
   Active: `bg-active`. The current page: `bg-selected`, its text in
-  `accent` and `weight-medium`. A group that folds has its chevron at
+  `accent` and `weight-medium`; a group whose current page is listed
+  under it marks that page alone. A group that folds has its chevron at
   its end, `chevron-right` shut and `chevron-down` open, the turn taking
   `duration-base`.
 - **Buttons and inputs.** A primary button (one per popover at most):
-  `accent` with `text-on-accent`, `radius-sm`, padding `space-1
-  space-3`; hover `accent-hover`, disabled at half opacity. A quiet button (most of them: the color switch, the
+  `accent` with `text-on-accent`, `radius-sm`, padding
+  `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
+  quiet button (most of them: the color switch, the
   filter's, an icon alone): no fill, `text`, hover `bg-hover`, active
   `bg-active`. Inputs and menus: `bg-page`, `1px` of `border-strong`,
   `radius-sm`; focus the ring.
@@ -446,9 +458,8 @@ turned off (disabled), where it has these.
   screenshots of each page it changes, in the light and the dark theme,
   in English and in Chinese, four for each page. They are made by the
   repository's screenshot script, which [Static site](static-site.md)
-  describes; until the script is merged they are made by hand with a
-  headless browser. The description says which pages and which states
-  they show.
+  describes. The description says which pages and which states they
+  show.
 - **CI.** The CI of each pull request builds the site, checks its links
   and runs the screenshot script, and keeps the screenshots as an
   artifact of the run ([Static site](static-site.md)).
@@ -465,19 +476,61 @@ turned off (disabled), where it has these.
   to find changes nobody meant is not done; it may follow once the
   screenshots are made in CI.
 
+## In the code
+
+- **Tokens.** One style sheet, `crates/statute/assets/tokens.css`,
+  defines every token of this file, each as a CSS custom property of its
+  name with the prefix `--t-` (`--t-text`, `--t-space-4`); the prefix
+  keeps them apart from the theme's own properties, which include a
+  `--space-1` of another value. A color is written once with both its
+  values, `light-dark(<light>, <dark>)`, and follows the page's
+  `color-scheme`: the system's setting, or the reader's choice where the
+  page's root has a `data-theme`. The values that differ between English
+  and Chinese are set again under `:root:lang(zh)`, and `target` under
+  `pointer: coarse`. The file is in the crate so that `statute` can
+  build it into the local site with `include_str!` and still be
+  published, which takes nothing from outside the crate's directory; the
+  public site mounts it from there (`web/hugo.toml`).
+- **Style sheets.** The public site's are in `web/assets/styles/`, one
+  for each part of the pages, so that changes to different parts touch
+  different files: `site.css` (the theme's variables, links, the focus
+  ring, icons, the sidebar, the table of contents, the top bar),
+  `constitution.css`, `design.css` (the design and a rule's page),
+  `rules-list.css` (the list of the rules and the tags) and `filter.css`
+  (the form above the list, whose markup is
+  `web/layouts/_partials/rules/filter.html`). Hugo joins them, after
+  the theme's and `tokens.css`, into one file, in the order of
+  `web/assets/styles/index.yaml`.
+- **Icons.** The SVG files are in `crates/statute/assets/icons/`, one
+  directory per source, `lucide/` and `octicons/`, unchanged from the
+  release, with the license in each and the versions in its
+  `README.md`. A page includes an icon by its name,
+  `partial "icon.html" "lucide:funnel"`, which inlines the file's SVG on
+  one line with the class `icon`, hidden from screen readers; the class
+  sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
+  component makes it `icon-md`. A chevron that turns is `chevron-right`
+  turned a quarter, which draws `chevron-down`.
+- **Scripts.** A script is written in TypeScript and built by Hugo's
+  `js.Build`, the esbuild that Hugo carries, with no Node and no npm
+  package. Not built yet: today's scripts are JavaScript in
+  `web/assets/`, minified and inlined in each page's head.
+
 ## Status
 
-Built today: the palette (`bg-page`, `bg-panel`, `text`, `text-muted`,
-`text-faint`, `accent`, `border-subtle`, `bg-target`, under other names),
-the fonts, the text size and the column, and the breakpoints; the
-filter and the page in the address, pages readable without scripts,
-tabular figures, and `aria-expanded` with `aria-controls` on the info
-button and the buttons of the rules under a provision. Not built yet,
-and what each replaces:
+Built today on the public site: every token, in `tokens.css`, and every
+color, font size, weight, spacing, radius, shadow, duration and easing
+of its style sheets named by a token, but in the parts below that are
+not built yet; the icons of the table in [Icons](#icons) that the pages
+have today; the motion of [Motion](#motion), reduced motion included,
+on what moves today (the popover on the length, the chevrons, the
+flash on a target, the sidebar and the table of contents of a narrow
+screen); hover only on fine pointers; the sizes of targets; the
+sidebar; the fonts, the text size and the column, and the breakpoints;
+the filter and the page in the address, pages readable without
+scripts, tabular figures, and `aria-expanded` with `aria-controls` on
+the info button and the buttons of the rules under a provision. Not
+built yet, and what each replaces:
 
-- The tokens for the states, the tags, the type scale, space, radii,
-  shadows and motion replace the values written in the style sheets
-  today (the public site's and the local site's).
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
 - The filter replaces the panel of check boxes with its Apply button.
@@ -488,20 +541,18 @@ and what each replaces:
   prefix "One of:" (「择一：」) before its title, and the circles before
   its options and the tag of [Components](#components) replace the
   plain tag that marks its default option.
-- The icons replace those of the table in [Icons](#icons).
-- Motion: the flash on a target runs today whatever the reader's
-  setting; reduced motion, the sizes of targets, hover only on fine
-  pointers and the delay of tooltips are not built. The empty list says
-  that no rule matches, without the step to clear the filter.
-- The screenshot script, and its run in CI, are not built yet.
-- How all of this is written in the code waits for the choice of the
-  sites' stack.
+- Until the four above are built, `rules-list.css` and `filter.css`
+  write some sizes and spaces as values, and the list's pages are
+  linked by the characters ‹ and › and the filter opens by the
+  browser's marker.
+- The empty list says that no rule matches, without the step to clear
+  the filter.
+- The local site's style sheet writes its own values; it includes
+  neither the tokens nor the icons yet.
 
 ## Open questions
 
-- How the two sites share one definition of the tokens and one copy of
-  the icons, when one is built by a site generator and the other by
-  `statute`: decided with the stack.
+None now.
 
 ## Sources
 

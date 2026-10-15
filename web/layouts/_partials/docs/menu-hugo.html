@@ -1,7 +1,8 @@
 {{- /* hugo-book's menu-hugo (accepts Page and Menu as context), with a
   group that folds when `collapse` is set in its menu params: the theme's
   checkbox, label and chevron of its file tree, checked (open) when the
-  current page is in the group. A group with no children, the rules, is
+  current page is in the group. The group's icon (BookIcon) and the
+  chevron come from layouts/_partials/icon.html. A group with no children, the rules, is
   marked as the current page on every page of its section too, as a rule's
   page has no entry of its own. */ -}}
 {{- if .Menu -}}
@@ -36,7 +37,7 @@
       {{- .Post -}}
     </a>
     {{- if $fold }}
-      <svg class="book-icon" aria-hidden="true">{{ partial "docs/icon" "chevron-right" }}</svg>
+      {{- partial "icon.html" "lucide:chevron-right" }}
     </label>
     {{- end }}
     {{- with .Children -}}
@@ -49,7 +50,7 @@
 
 {{ define "book-menu-title" }}
 {{- with .Params.BookIcon -}}
-  {{ partial "docs/menu-icon" . }}
+  {{ partial "icon.html" . }}
 {{- end -}}
 {{- if .Name -}}
   {{- .Name -}}
