@@ -518,7 +518,11 @@ turned off (disabled), where it has these.
   (the form above the list, whose markup is
   `web/layouts/_partials/rules/filter.html`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
-  `web/assets/styles/index.yaml`.
+  `web/assets/styles/index.yaml`. The local site's own is
+  `crates/statute/src/site.css`, which `statute` writes into each page
+  after `tokens.css`; it draws the check boxes as `controls.css` does,
+  and holds nothing of the public site's other sheets, which style the
+  theme's markup.
 - **Icons.** The SVG files are in `crates/statute/assets/icons/`, one
   directory per source, `lucide/` and `octicons/`, unchanged from the
   release, with the license in each and the versions in its
@@ -527,7 +531,9 @@ turned off (disabled), where it has these.
   one line with the class `icon`, hidden from screen readers; the class
   sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
   component makes it `icon-md`. A chevron that turns is `chevron-right`
-  turned a quarter, which draws `chevron-down`.
+  turned a quarter, which draws `chevron-down`. The local site inlines
+  the files it needs in the same way, built into `statute` with
+  `include_str!`.
 - **Scripts.** A script is written in TypeScript and built by Hugo's
   `js.Build`, the esbuild that Hugo carries, with no Node and no npm
   package. Not built yet: today's scripts are JavaScript in
@@ -546,8 +552,13 @@ screen); hover only on fine pointers; the sizes of targets; the
 sidebar's states; the native controls; the fonts, the text size and the column, and the breakpoints;
 the filter and the page in the address, pages readable without
 scripts, tabular figures, and `aria-expanded` with `aria-controls` on
-the info button and the buttons of the rules under a provision. Not
-built yet, and what each replaces:
+the info button and the buttons of the rules under a provision. Built
+today on the local site: every token, and every value of its style
+sheet named by one; the tags, the tree of domains, the one-of and the
+filter of [Components](#components), the filter as a site without
+scripts has it; the check boxes; hover only on fine pointers, the
+sizes of targets, the focus ring, and the motion of the filter's
+popover. Not built yet, and what each replaces:
 
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
@@ -564,8 +575,11 @@ built yet, and what each replaces:
   linked by the characters ‹ and ›.
 - The empty list says that no rule matches, without the step to clear
   the filter.
-- The local site's style sheet writes its own values; it includes
-  neither the tokens nor the icons yet.
+- On the local site, the filter's button has no badge with the number
+  of conditions set, and its popover closes at once, by a click on the
+  button only: without a script, nothing counts the conditions or
+  closes it on Escape or a click outside. Its pages load no font and
+  set the text in the local serif fonts.
 
 ## Open questions
 

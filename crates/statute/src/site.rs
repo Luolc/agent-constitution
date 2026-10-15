@@ -79,8 +79,14 @@ impl Quadrant {
 struct Words {
     title: &'static str,
     quadrants: [&'static str; 4],
-    show_old: &'static str,
+    /// The filter's button, and the words that join its rows.
+    filter: &'static str,
+    joins: [&'static str; 2],
+    /// The fields of the filter: the kind of source, `uses`, and the
+    /// nodes it shows besides.
+    fields: [&'static str; 3],
     show_off: &'static str,
+    show_old: &'static str,
     empty: &'static str,
     /// Before the name of the source at `.`, in the local section of
     /// its visibility.
@@ -107,8 +113,8 @@ struct Words {
     uses: &'static str,
     /// Where a rule goes: `AGENTS.md`, and review.
     use_names: [&'static str; 2],
-    /// The filters by `uses`.
-    show_uses: [&'static str; 2],
+    /// The label on a one-of's box.
+    one_of: &'static str,
     parameters: &'static str,
     /// The columns of the page of parameters.
     param_columns: [&'static str; 5],
@@ -123,8 +129,11 @@ fn words(lang: &str) -> Words {
         "zh" => Words {
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
-            show_old: "显示已被取代与已废止的",
-            show_off: "显示未启用的",
+            filter: "筛选",
+            joins: ["当", "且"],
+            fields: ["规定源的类别", "用在", "也显示"],
+            show_off: "未启用的规定",
+            show_old: "已被取代与已废止的",
             empty: "没有规定源。",
             here: "本仓自己的规定就是规定源 ",
             enabled: "已启用",
@@ -145,7 +154,7 @@ fn words(lang: &str) -> Words {
             default_option: "默认选项",
             uses: "用在",
             use_names: ["AGENTS.md", "审查"],
-            show_uses: ["显示写进 AGENTS.md 的", "显示列给审查的"],
+            one_of: "择一",
             parameters: "参数",
             param_columns: ["参数", "类型与范围", "默认值", "取值", "用到它的规定"],
             origins: ["statute.toml", "默认值", "私有规定清单", "全局配置"],
@@ -160,8 +169,11 @@ fn words(lang: &str) -> Words {
                 "Local public",
                 "Local private",
             ],
-            show_old: "Show superseded and repealed",
-            show_off: "Show rules not enabled",
+            filter: "Filter",
+            joins: ["Where", "and"],
+            fields: ["Kind of source", "Used in", "Also show"],
+            show_off: "rules not enabled",
+            show_old: "superseded and repealed",
             empty: "No source.",
             here: "This repository's own rules are source ",
             enabled: "enabled",
@@ -182,7 +194,7 @@ fn words(lang: &str) -> Words {
             default_option: "default option",
             uses: "Used in",
             use_names: ["AGENTS.md", "review"],
-            show_uses: ["Show rules for AGENTS.md", "Show rules for review"],
+            one_of: "One of",
             parameters: "Parameters",
             param_columns: ["Parameter", "Type and scope", "Default", "Value", "Used by"],
             origins: [
@@ -197,21 +209,55 @@ fn words(lang: &str) -> Words {
     }
 }
 
-const STYLE: &str = "body{font:16px/1.5 system-ui,sans-serif;max-width:52rem;margin:2rem auto;padding:0 1rem;color:#222}\
-a{color:#05c}code{background:#f3f3f3;padding:0 .2em;border-radius:3px}\
-.ref{font-family:monospace;color:#555;margin-right:.4em}\
-.tag{font-size:.8em;color:#666;margin-left:.4em}.on{color:#080}\
-ul.tree{list-style:none;padding-left:1.2rem}nav label{margin-right:1rem}\
-li.one-of{border:1px solid #ccc;border-radius:4px;padding:.2em .6em;margin:.3em 0}\
-section{border-top:1px solid #ddd;margin-top:1.5rem}\
-.q{font-size:.8em;margin-left:.4em;padding:0 .4em;border-radius:3px;white-space:nowrap}\
-.q.global-public{background:#dbeafe;color:#1e3a8a}.q.global-private{background:#fde7c8;color:#7c2d12}\
-.q.local-public{background:#dcfce7;color:#14532d}.q.local-private{background:#f3e3f9;color:#581c87}\
-.value{border-bottom:1px dotted #080;color:#080;text-decoration:none}\
-table{border-collapse:collapse}td,th{border-top:1px solid #ddd;padding:.2em .6em;text-align:left;vertical-align:top}\
-body:has(#show-old:not(:checked)) .old,body:has(#show-off:not(:checked)) .off{display:none}\
-body:has(#show-instructions:not(:checked)) .u-i,body:has(#show-review:not(:checked)) .u-r,\
-body:has(#show-instructions:not(:checked)):has(#show-review:not(:checked)) .u-ir{display:none}";
+/// The design tokens the public site uses too, then the local site's own
+/// style sheet (`docs/design/frontend.md`).
+const TOKENS: &str = include_str!("../assets/tokens.css");
+const STYLE: &str = include_str!("site.css");
+
+/// The Lucide icons the pages show (`assets/icons/lucide`).
+const CHECK: &str = include_str!("../assets/icons/lucide/check.svg");
+const CIRCLE: &str = include_str!("../assets/icons/lucide/circle.svg");
+const CIRCLE_DOT: &str = include_str!("../assets/icons/lucide/circle-dot.svg");
+const FUNNEL: &str = include_str!("../assets/icons/lucide/funnel.svg");
+
+/// An icon's SVG on one line.
+fn one_line(svg: &str) -> String {
+    svg.split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .replace(" />", "/>")
+        .replace(" >", ">")
+        .replace("> <", "><")
+}
+
+/// An icon inlined, in the color of its text, hidden from screen
+/// readers; the class `icon` sets its size and stroke, and `class`
+/// adds to it.
+fn icon(svg: &str, class: &str) -> String {
+    let class = if class.is_empty() {
+        "icon".to_owned()
+    } else {
+        format!("icon {class}")
+    };
+    one_line(svg).replacen(
+        "<svg ",
+        &format!("<svg class=\"{class}\" aria-hidden=\"true\" focusable=\"false\" "),
+        1,
+    )
+}
+
+/// The style sheet of every page: the tokens, the site's own, and the
+/// check of a check box, Lucide's `check` as a mask, drawn at the
+/// stroke of every icon, `icon-stroke`, which a mask cannot take from
+/// the style sheet.
+fn style() -> String {
+    let check = one_line(CHECK)
+        .replace("stroke-width=\"2\"", "stroke-width=\"1.75\"")
+        .replace('"', "'")
+        .replace('<', "%3C")
+        .replace('>', "%3E");
+    format!("{TOKENS}\n{STYLE}\n:root {{ --icon-check: url(\"data:image/svg+xml,{check}\"); }}\n")
+}
 
 /// One page of the site: its path below the site's directory, and its
 /// HTML.
@@ -260,7 +306,7 @@ fn params_page(source: &str) -> PathBuf {
 fn parameters(project: &Project, w: &Words, source: &Source) -> String {
     let lang = project.manifest.lang.as_str();
     let title = format!("{} · {}", w.parameters, source.name);
-    let mut out = head(&title, lang);
+    let mut out = head(&title, lang, "text");
     let _ = writeln!(
         out,
         "<nav><a href=\"../index.html\">{}</a></nav>\n<h1>{}</h1>\n<table>\n<tr>{}</tr>",
@@ -329,7 +375,7 @@ fn parameters(project: &Project, w: &Words, source: &Source) -> String {
             name = escape(&p.name),
         );
     }
-    out.push_str("</table>\n</body>\n</html>\n");
+    out.push_str("</table>\n</main>\n</body>\n</html>\n");
     out
 }
 
@@ -348,34 +394,52 @@ fn page(key: &Key) -> PathBuf {
     Path::new(&key.source).join(format!("{}.html", key.id))
 }
 
-fn head(title: &str, lang: &str) -> String {
+/// The start of a page, up to its `main`, which takes `class`.
+fn head(title: &str, lang: &str, class: &str) -> String {
     format!(
-        "<!DOCTYPE html>\n<html lang=\"{lang}\">\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n<style>{STYLE}</style>\n</head>\n<body>\n",
-        escape(title)
+        "<!DOCTYPE html>\n<html lang=\"{lang}\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{}</title>\n<style>{}</style>\n</head>\n<body>\n<main class=\"{class}\">\n",
+        escape(title),
+        style()
     )
 }
 
 fn index(project: &Project, w: &Words) -> String {
     let lang = project.manifest.lang.as_str();
-    let mut out = head(w.title, lang);
-    let _ = writeln!(out, "<h1>{}</h1>\n<nav>", w.title);
-    for q in QUADRANTS {
+    let mut out = head(w.title, lang, "list");
+    let _ = writeln!(out, "<h1>{}</h1>", w.title);
+    // The filter: a button that opens one row per field, its values as
+    // check boxes, joined by and; the style sheet hides what a clear
+    // box leaves out.
+    let checkbox = |id: &str, checked: bool, label: &str| {
+        let checked = if checked { " checked" } else { "" };
+        format!("<label><input type=\"checkbox\" id=\"show-{id}\"{checked}> {label}</label>")
+    };
+    let fields = [
+        QUADRANTS
+            .iter()
+            .map(|q| checkbox(q.class(), true, q.name(w)))
+            .collect::<String>(),
+        checkbox("instructions", true, w.use_names[0]) + &checkbox("review", true, w.use_names[1]),
+        checkbox("off", true, w.show_off) + &checkbox("old", false, w.show_old),
+    ];
+    let _ = write!(
+        out,
+        "<details class=\"filter\"><summary>{}{}</summary>\n<div class=\"panel\">\n",
+        icon(FUNNEL, ""),
+        w.filter
+    );
+    for (i, (field, values)) in w.fields.iter().zip(&fields).enumerate() {
         let _ = writeln!(
             out,
-            "<label><input type=\"checkbox\" id=\"show-{0}\" checked> {1}</label>",
-            q.class(),
-            q.name(w)
+            "<div class=\"cond\" role=\"group\" aria-label=\"{field}\"><span class=\"conn\">{}</span><span class=\"field\">{field}</span><span class=\"values\">{values}</span></div>",
+            w.joins[usize::from(i > 0)]
         );
     }
+    out.push_str("</div></details>\n");
     let _ = writeln!(
         out,
-        "<label><input type=\"checkbox\" id=\"show-off\" checked> {}</label>\n<label><input type=\"checkbox\" id=\"show-old\"> {}</label>",
-        w.show_off, w.show_old
-    );
-    let _ = writeln!(
-        out,
-        "<label><input type=\"checkbox\" id=\"show-instructions\" checked> {}</label>\n<label><input type=\"checkbox\" id=\"show-review\" checked> {}</label>\n</nav>",
-        w.show_uses[0], w.show_uses[1]
+        "<p class=\"legend\"><span class=\"switch on\">{}</span><span class=\"switch off\">{}</span></p>",
+        w.on_by_default, w.off_by_default
     );
     // The filters by quadrant, which the style sheet cannot list.
     out.push_str("<style>");
@@ -431,19 +495,19 @@ fn index(project: &Project, w: &Words) -> String {
                 String::new()
             } else {
                 format!(
-                    " <a class=\"tag\" href=\"{}\">{}</a>",
+                    "<a class=\"params\" href=\"{}\">{}</a>",
                     params_page(&source.name).display(),
                     w.parameters
                 )
             };
             let _ = writeln!(
                 out,
-                "<h3 id=\"source-{0}\">{0} <span class=\"tag\">{1}</span>{params}</h3>\n<ul class=\"tree\">",
+                "<h3 id=\"source-{0}\">{0}<span class=\"place\">{1}</span>{params}</h3>\n<ul class=\"tree\">",
                 escape(&source.name),
                 escape(&place)
             );
             for node in source.nodes.values().filter(|n| n.parent.is_none()) {
-                tree(project, w, source, node, &mut out);
+                tree(project, w, source, node, 1, "", &mut out);
             }
             out.push_str("</ul>\n");
         }
@@ -452,24 +516,49 @@ fn index(project: &Project, w: &Words) -> String {
         }
         out.push_str("</section>\n");
     }
-    out.push_str("</body>\n</html>\n");
+    out.push_str("</main>\n</body>\n</html>\n");
     out
 }
 
-/// A node and the nodes below it in its own source, as list items.
-fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut String) {
+/// A node and the nodes below it in its own source, as list items, each
+/// a row: `lead`, the icon in front of its label, its link and its
+/// tags. A domain's `level` (1 at the top) sets its heading and its bar
+/// (`docs/design/frontend.md`, Components, The tree of rules).
+fn tree(
+    project: &Project,
+    w: &Words,
+    source: &Source,
+    node: &Node,
+    level: usize,
+    lead: &str,
+    out: &mut String,
+) {
     let key = Key::new(&source.name, node.id);
+    let children: Vec<&Node> = source.children(node.id).collect();
     let mut class = Vec::new();
+    match node.kind {
+        // Domains nest two levels at most.
+        Kind::Domain => class.push(if level == 1 { "domain d1" } else { "domain d2" }),
+        // A one-of is a box that holds its options, the default marked
+        // (`docs/design/rule-config.md`, No rule under a rule), lighter
+        // when the rule set enables none of them.
+        Kind::OneOf => {
+            class.push("one-of");
+            let enabled = &project.resolution.enabled;
+            if !children
+                .iter()
+                .any(|c| enabled.contains_key(&Key::new(&source.name, c.id)))
+            {
+                class.push("unset");
+            }
+        }
+        Kind::Rule => {}
+    }
     if matches!(node.status, Status::Superseded | Status::Repealed) {
         class.push("old");
     }
     if node.kind == Kind::Rule && !project.resolution.enabled.contains_key(&key) {
         class.push("off");
-    }
-    // A one-of is a box that holds its options, the default marked
-    // (`docs/design/rule-config.md`, No rule under a rule).
-    if node.kind == Kind::OneOf {
-        class.push("one-of");
     }
     if let Some(rule) = &node.rule {
         class.push(match (rule.uses.instructions, rule.uses.review) {
@@ -482,14 +571,37 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
         [] => String::new(),
         c => format!(" class=\"{}\"", c.join(" ")),
     };
-    let _ = write!(out, "<li{class}>{}", link(project, &key, ""));
-    out.push_str(&mark(project, w, &key, false));
-    out.push_str(&tags(project, w, &key, node, ""));
-    let children: Vec<&Node> = source.children(node.id).collect();
+    let mut title = link(project, &key, "");
+    if node.kind == Kind::Domain {
+        let h = 3 + level.min(2);
+        title = format!("<h{h}>{title}</h{h}>");
+    }
+    let _ = write!(out, "<li{class}>");
+    if node.kind == Kind::OneOf {
+        let _ = write!(out, "<span class=\"one-of-label\">{}</span>", w.one_of);
+    }
+    let _ = write!(
+        out,
+        "<div class=\"row\">{lead}{title}<span class=\"tags\">{}{}</span></div>",
+        tags(project, w, &key, node, "", true),
+        mark(project, w, &key, false)
+    );
     if !children.is_empty() {
         out.push_str("\n<ul class=\"tree\">\n");
         for child in children {
-            tree(project, w, source, child, out);
+            // An option of a one-of is led by a circle, the default by
+            // one with a dot.
+            let lead = match node.kind {
+                Kind::OneOf if node.default_child == Some(child.id) => icon(CIRCLE_DOT, "default"),
+                Kind::OneOf => icon(CIRCLE, ""),
+                _ => String::new(),
+            };
+            let level = if node.kind == Kind::Domain {
+                level + 1
+            } else {
+                level
+            };
+            tree(project, w, source, child, level, &lead, out);
         }
         out.push_str("</ul>");
     }
@@ -508,7 +620,7 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
         )
     });
     format!(
-        "<a href=\"{up}{}\"><span class=\"ref\">{}</span>{}</a>",
+        "<a href=\"{up}{}\"><span class=\"ref\">{}</span><span class=\"title\">{}</span></a>",
         page(key).display(),
         escape(&key.to_string()),
         escape(&title)
@@ -530,16 +642,36 @@ fn mark(project: &Project, w: &Words, key: &Key, named: bool) -> String {
     format!("<span class=\"q {}\">{}{name}</span>", q.class(), q.name(w))
 }
 
-/// A node's kind, status and, for a rule, what this rule set does with
-/// it.
-fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> String {
+/// A node's status and, for a rule, what this rule set does with it;
+/// unless `dense`, as in the tree, also its kind. Each fact has its own
+/// form (`docs/design/frontend.md`, Components, Tags): the status a
+/// pill, a default switch a dot, which in the tree stands alone with
+/// its word as its name.
+fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str, dense: bool) -> String {
     let mut out = String::new();
-    if node.kind != Kind::Rule {
-        let _ = write!(out, "<span class=\"tag\">{}</span>", kind(w, node.kind));
+    if node.kind != Kind::Rule && !dense {
+        let _ = write!(out, "<span class=\"kind\">{}</span>", kind(w, node.kind));
     }
-    let _ = write!(out, "<span class=\"tag\">{}</span>", status(node.status));
-    if let Some(switch) = switch(project, w, key, node) {
-        let _ = write!(out, "<span class=\"tag\">{switch}</span>");
+    let status = status(node.status);
+    let _ = write!(out, "<span class=\"status {status}\">{status}</span>");
+    match switch(project, w, key, node) {
+        Some(Mark::Switch(class, word)) if dense => {
+            let _ = write!(
+                out,
+                "<span class=\"switch {class}\" role=\"img\" aria-label=\"{word}\" title=\"{word}\"></span>"
+            );
+        }
+        Some(Mark::Switch(class, word)) => {
+            let _ = write!(out, "<span class=\"switch {class}\">{word}</span>");
+        }
+        Some(Mark::DefaultOption(word)) => {
+            let _ = write!(
+                out,
+                "<span class=\"default-option\">{}{word}</span>",
+                icon(CHECK, "")
+            );
+        }
+        None => {}
     }
     if node.kind == Kind::Rule {
         let res = &project.resolution;
@@ -548,24 +680,39 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> Strin
             None if res.enabled.contains_key(key) => w.enabled.to_owned(),
             None => w.not_enabled.to_owned(),
         };
-        let class = if res.in_force(key) { "tag on" } else { "tag" };
-        let _ = write!(out, "<span class=\"{class}\">{what}</span>");
+        if res.in_force(key) {
+            let _ = write!(
+                out,
+                "<span class=\"enabled on\">{}{what}</span>",
+                icon(CHECK, "")
+            );
+        } else {
+            let _ = write!(out, "<span class=\"enabled\">{what}</span>");
+        }
     }
     out
+}
+
+/// How a node shows what the defaults do with it.
+enum Mark {
+    /// On or off by default: the class of its dot, and the words.
+    Switch(&'static str, &'static str),
+    /// The default option of its one-of.
+    DefaultOption(&'static str),
 }
 
 /// Whether a domain or a rule is on by default, by its own `default`
 /// (`docs/design/rule-config.md`, Default switches), or for an option of
 /// a one-of whether it is the one-of's default.
-fn switch(project: &Project, w: &Words, key: &Key, node: &Node) -> Option<&'static str> {
+fn switch(project: &Project, w: &Words, key: &Key, node: &Node) -> Option<Mark> {
     match node.default {
-        Some(Switch::On) => Some(w.on_by_default),
-        Some(Switch::Off) => Some(w.off_by_default),
+        Some(Switch::On) => Some(Mark::Switch("on", w.on_by_default)),
+        Some(Switch::Off) => Some(Mark::Switch("off", w.off_by_default)),
         None => {
             let parent = project.sources.parent(key)?;
             let one_of = project.sources.get(&parent)?;
             (one_of.kind == Kind::OneOf && one_of.default_child == Some(node.id))
-                .then_some(w.default_option)
+                .then_some(Mark::DefaultOption(w.default_option))
         }
     }
 }
@@ -598,7 +745,7 @@ fn node_page(
     let lang = project.manifest.lang.as_str();
     let title = filled(project, key, pick(&node.title, node, lang), true);
     let title = title.as_str();
-    let mut out = head(&format!("{key} {title}"), lang);
+    let mut out = head(&format!("{key} {title}"), lang, "text");
     let sources = &project.sources;
     // The path from the top of the tree down to the node.
     let mut above = Vec::new();
@@ -616,18 +763,14 @@ fn node_page(
     }
     let _ = writeln!(
         out,
-        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}{}",
+        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p class=\"tag-line\">{}{}",
         escape(&key.to_string()),
         escape(title),
         mark(project, w, key, true),
-        tags(project, w, key, node, "../")
+        tags(project, w, key, node, "../", false)
     );
     if let Some(slug) = &node.slug {
-        let _ = write!(
-            out,
-            "<span class=\"tag\"><code>{}</code></span>",
-            escape(slug)
-        );
+        let _ = write!(out, "<code class=\"slug\">{}</code>", escape(slug));
     }
     out.push_str("</p>\n");
     if let Some(rule) = &node.rule {
@@ -670,7 +813,7 @@ fn node_page(
         }
         out.push_str("</ul>\n");
     }
-    out.push_str("</body>\n</html>\n");
+    out.push_str("</main>\n</body>\n</html>\n");
     Ok(out)
 }
 

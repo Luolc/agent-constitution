@@ -1,4 +1,4 @@
-<!-- en-sha256: aac9316064df918d7e18bbbc34432381a51a05918e9f8d9920d6abc3067bf73c -->
+<!-- en-sha256: 82e29ea3bb1131432b67e8eb4d1cc07347855551b89a3e8f6cc2502e6c8074c2 -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -248,13 +248,13 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 ## <a id="in-the-code"></a>代码实现
 
 - **token。** 本文的全部 token 定义在一份样式表 `crates/statute/assets/tokens.css` 里，每个是一个 CSS 自定义属性，名字是 token 名加前缀 `--t-` (`--t-text`、`--t-space-4`)；有了前缀，就不会与主题自己的属性混在一起，主题里就有一个取值不同的 `--space-1`。颜色只写一次，两个值一起写成 `light-dark(<light>, <dark>)`，随页面的 `color-scheme` 取值：跟随系统设置，页面根元素带 `data-theme` 时按读者的选择。英文和中文取值不同的 token 在 `:root:lang(zh)` 下重新设定，`target` 在 `pointer: coarse` 下重新设定。这份文件放在 crate 里，是为了让 `statute` 能用 `include_str!` 把它编进本地网站，同时照样能发布：发布的包不能引用 crate 目录以外的文件。公开网站从那里挂载它 (`web/hugo.toml`)。
-- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`controls.css` (各处的原生控件)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表和 tag)、`filter.css` (列表上方的表单，它的标记在 `web/layouts/_partials/rules/filter.html`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。
-- **图标。** SVG 文件在 `crates/statute/assets/icons/`，每个来源一个目录，`lucide/` 和 `octicons/`，与发布版里的一样、不做改动，各目录里放着许可，版本号写在它的 `README.md` 里。页面按名字引入图标，`partial "icon.html" "lucide:funnel"`，把文件里的 SVG 压成一行内联进来，带上 class `icon`，并对读屏软件隐藏；这个 class 设定线宽 `icon-stroke` 和大小，大小默认 `icon-sm`，组件要求时改成 `icon-md`。会转向的箭头用 `chevron-right` 转四分之一圈，转过去就是 `chevron-down`。
+- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`controls.css` (各处的原生控件)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表和 tag)、`filter.css` (列表上方的表单，它的标记在 `web/layouts/_partials/rules/filter.html`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。本地网站自己的样式表是 `crates/statute/src/site.css`，`statute` 把它接在 `tokens.css` 后面写进每个页面；复选框照 `controls.css` 的画法画，公开网站其余几份样式表是给主题的标记用的，它一概不取。
+- **图标。** SVG 文件在 `crates/statute/assets/icons/`，每个来源一个目录，`lucide/` 和 `octicons/`，与发布版里的一样、不做改动，各目录里放着许可，版本号写在它的 `README.md` 里。页面按名字引入图标，`partial "icon.html" "lucide:funnel"`，把文件里的 SVG 压成一行内联进来，带上 class `icon`，并对读屏软件隐藏；这个 class 设定线宽 `icon-stroke` 和大小，大小默认 `icon-sm`，组件要求时改成 `icon-md`。会转向的箭头用 `chevron-right` 转四分之一圈，转过去就是 `chevron-down`。本地网站用同样的办法内联它要的那几个文件，借 `include_str!` 编进 `statute`。
 - **脚本。** 脚本用 TypeScript 写，由 Hugo 的 `js.Build` 构建，也就是 Hugo 自带的 esbuild，不用 Node，不用 npm 包。尚未实现：现在的脚本是 `web/assets/` 里的 JavaScript，压缩后内联在每个页面的 head 里。
 
 ## <a id="status"></a>现状
 
-公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的侧边栏和目录)；只在精确指针上用 hover；点击区域的大小；侧边栏的各种状态；原生控件；字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。尚未实现的，以及各自取代什么：
+公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的侧边栏和目录)；只在精确指针上用 hover；点击区域的大小；侧边栏的各种状态；原生控件；字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。本地网站上已经实现的：全部 token，样式表里的值都写 token 名；[组件](#components) 一节里的 tag、领域树、one-of 和筛选器，筛选器是没有脚本的网站那种；复选框；只在精确指针上用 hover，点击区域的大小，焦点框，以及筛选弹出层的动效。尚未实现的，以及各自取代什么：
 
 - 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
 - 新的筛选器取代现在那块带「应用」按钮的复选框面板。
@@ -262,7 +262,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
 - 上面四项实现之前，`rules-list.css` 和 `filter.css` 里还直接写着一些字号和间距，列表的翻页链接用的是字符 ‹ 和 ›。
 - 筛选后为空的列表现在只说没有规定符合，不给清除筛选的下一步。
-- 本地网站的样式表写的是它自己的值，还没有引入 token 和图标。
+- 本地网站上，筛选按钮没有显示已设条件个数的徽标，弹出层也是一下子关上，而且只能再点一次按钮来关：没有脚本，就没有什么去数条件，也没有什么在按 Escape 或点到外面时关掉它。它的页面不加载字体，正文用本机的衬线字体。
 
 ## <a id="open-questions"></a>待定问题
 
