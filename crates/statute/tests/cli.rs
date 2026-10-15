@@ -54,6 +54,8 @@ struct Run {
 fn statute(dir: &Path, args: &[&str]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_CACHE_HOME")
         .args(args)
         .current_dir(dir)
         .output()
@@ -828,6 +830,8 @@ fn init_asking(dir: &Path, args: &[&str], visibility: Option<&str>) -> Run {
     let _ = std::fs::remove_file(dir.join("statute.toml"));
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_CACHE_HOME")
         .args(args)
         .current_dir(dir)
         .env(
