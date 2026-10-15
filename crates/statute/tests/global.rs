@@ -515,8 +515,8 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
         "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
     ));
     ok(&w.run(&["init", "--public"]));
-    write(&w.repo, "rules/1.toml", &domain(1).1);
-    write(&w.repo, "rules/3.toml", &rule(3, 1, "").1);
+    write(&w.repo, ".statute/rules/1.toml", &domain(1).1);
+    write(&w.repo, ".statute/rules/3.toml", &rule(3, 1, "").1);
     write(&w.at, "here/rules/1.toml", &domain(1).1);
     write(&w.at, "here/rules/5.toml", &rule(5, 1, "").1);
     write(
@@ -864,5 +864,30 @@ fn source_add_takes_a_bare_repository_as_a_git_address() {
             bare.display()
         )),
         "{manifest}"
+    );
+}
+
+/// A source that only the global configuration names brings no default
+/// rule in; one the rule set names does. `defaults` is a key of a rule
+/// set's entry only.
+#[test]
+fn only_the_rule_sets_own_sources_bring_their_defaults() {
+    let w = world("defaults");
+    let on = |n: (u64, String)| edit(n, "lang = \"en\"", "lang = \"en\"\ndefault = \"on\"");
+    let (_, team) = source(&w.at, "team", &[on(domain(1)), on(rule(7, 1, ""))]);
+    let entry = format!("team = {{ git = \"{team}\", branch = \"main\", public = true }}");
+    w.configure(&entry);
+    ok(&w.run(&["init", "--private"]));
+    ok(&w.run(&["lock"]));
+    assert!(!read(&w.repo, "statute.lock").contains("team:7"));
+    let path = w.repo.join("statute.toml");
+    let text = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path, format!("{text}\n[sources]\n{entry}\n")).unwrap();
+    ok(&w.run(&["lock"]));
+    assert!(read(&w.repo, "statute.lock").contains("rule = \"team:7\""));
+    w.configure("other = { path = \"other\", public = true, defaults = false }");
+    fails(
+        &w.run(&["lock"]),
+        "the global configuration enables no rule, so its sources bring no defaults",
     );
 }

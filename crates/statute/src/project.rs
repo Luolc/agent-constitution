@@ -201,8 +201,10 @@ impl Project {
             source.local = spec.local;
             list.push(source);
         }
-        if !manifest.sources.iter().any(|s| s.is_here()) && root.join("rules").is_dir() {
-            let (mut source, more) = Source::load(&root.join("rules"), "rules");
+        let local_rules = &manifest.local_rules;
+        if !manifest.sources.iter().any(|s| s.holds(local_rules)) && root.join(local_rules).is_dir()
+        {
+            let (mut source, more) = Source::load(&root.join(local_rules), local_rules);
             diags.0.extend(more.0);
             source.name = LOCAL.to_owned();
             source.path = ".".to_owned();

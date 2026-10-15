@@ -11,7 +11,7 @@ use statute::manifest::{self, Follow, Key, Manifest};
 use statute::node::Kind;
 use statute::private;
 use statute::project::{Env, Project};
-use statute::resolve::{Reason, current_successors, label, refs};
+use statute::resolve::{Reason, Switches, current_successors, label, refs};
 use statute::source::describe;
 
 /// Compile a constitution and the rules a repository chooses into the
@@ -28,10 +28,16 @@ struct Cli {
 enum Command {
     /// Resolve statute.toml and write statute.lock.
     Lock,
-    /// Say why a rule is enabled, along the chain that brings it in.
+    /// Say why a rule is enabled, along the chain that brings it in, and
+    /// whether it is on by default.
     Explain {
         /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
-        rule: String,
+        #[arg(required_unless_present = "defaults", conflicts_with = "defaults")]
+        rule: Option<String>,
+        /// List the rules on by default that the rule set keeps, those it
+        /// turns off, and those off by default that it turns on.
+        #[arg(long)]
+        defaults: bool,
     },
     /// Enable a rule (or a pack) in statute.toml and update statute.lock.
     Add {
@@ -171,7 +177,10 @@ fn main() -> ExitCode {
     let root = Path::new(".");
     let result = match cli.command {
         Command::Lock => lock_command(root),
-        Command::Explain { rule } => explain(root, &rule),
+        Command::Explain { rule, defaults } => match rule {
+            Some(rule) if !defaults => explain(root, &rule),
+            _ => explain_defaults(root),
+        },
         Command::Add {
             rule,
             pack,
@@ -974,6 +983,8 @@ fn why(project: &Project, key: &Key) -> String {
         .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
             Reason::Pack(root) => format!("in pack {}", label(sources, root)),
+            Reason::Default => "on by default".to_owned(),
+            Reason::DefaultOf(o) => format!("the default of one-of {}", label(sources, o)),
             Reason::RequiredBy(b) => format!("required by {}", label(sources, b)),
             Reason::OverriddenBy(b) => format!("overridden by {}", label(sources, b)),
         })
@@ -1076,6 +1087,7 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
         );
         return Err(());
     };
+    let sw = Switches::new(sources, &project.manifest);
     match node.kind {
         Kind::Rule => {}
         Kind::Domain => {
@@ -1083,9 +1095,24 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
                 "{} is a domain: it is never enabled itself, and gives a heading to the enabled rules under it",
                 label(sources, &key)
             );
+            println!("- {}", switch_state(&project, &sw, &key));
             return Ok(());
         }
         Kind::OneOf => {
+            match (sw.default_child(&key), sw.chosen(&key)) {
+                (Some(d), Some(c)) if c != d => println!(
+                    "one-of {}: its default is {}, and the rule set picks {}",
+                    label(sources, &key),
+                    label(sources, &d),
+                    label(sources, &c)
+                ),
+                (Some(d), _) => println!(
+                    "one-of {}: its default is {}",
+                    label(sources, &key),
+                    label(sources, &d)
+                ),
+                (None, _) => {}
+            }
             let chosen: Vec<String> = sources
                 .children(&key)
                 .iter()
@@ -1112,6 +1139,7 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
             "rule {} is not enabled by the rule set",
             label(sources, &key)
         );
+        println!("- {}", switch_state(&project, &sw, &key));
         return Err(());
     }
     let res = &project.resolution;
@@ -1131,6 +1159,119 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
     let mut out = String::new();
     reasons(&project, &key, 0, &mut vec![key.clone()], &mut out);
     print!("{out}");
+    if let Some(uses) = sources
+        .get(&res.standing(&key))
+        .and_then(|n| n.rule.as_ref())
+        .map(|r| r.uses)
+    {
+        let goes = match (uses.instructions, uses.review) {
+            (true, true) => "it is compiled into AGENTS.md and listed for review",
+            (true, false) => "it is compiled into AGENTS.md",
+            (false, _) => "it is listed for review, and not compiled into AGENTS.md",
+        };
+        println!("- {goes}");
+    }
+    Ok(())
+}
+
+/// Whether a domain or a rule is on by default, and what the rule set
+/// does with that: "R44 is on by default, and its domain R13 is on".
+fn switch_state(project: &Project, sw: &Switches, key: &Key) -> String {
+    let sources = &project.sources;
+    let m = &project.manifest;
+    let entry = Manifest::entry(key);
+    let Some(node) = sources.get(key) else {
+        return String::new();
+    };
+    let shown = key.to_string();
+    let switch = match node.default {
+        Some(statute::node::Switch::On) => "on by default",
+        Some(statute::node::Switch::Off) => "off by default",
+        None => "off by default (it has no `default`)",
+    };
+    if let Some(off) = sw
+        .excluded(key)
+        .then(|| m.exclude.iter().find(|e| sw.above(key).contains(e)))
+        .flatten()
+    {
+        return if off == key {
+            format!("{shown} is {switch} and taken out by `exclude`")
+        } else {
+            format!("{shown} is {switch}, and `exclude` turns off {off}, above it")
+        };
+    }
+    if !sw.takes_defaults(&key.source) {
+        return format!(
+            "{shown} is {switch}, and the rule set takes no defaults of {}",
+            describe(&key.source)
+        );
+    }
+    let parent = sources.parent(key);
+    let parent_on = parent.as_ref().is_none_or(|p| sw.active.contains(p));
+    match (node.kind, sw.switched_on(key), parent.as_ref(), parent_on) {
+        (Kind::Domain, _, _, _) if m.domains.contains(key) => {
+            format!("{shown} is {switch}, and `domains` turns it on")
+        }
+        (_, true, Some(p), true) => format!("{shown} is {switch}, and its domain {p} is on"),
+        (_, true, None, _) => format!("{shown} is {switch}"),
+        (_, true, Some(p), false) => format!(
+            "{shown} is {switch}, and its domain {p} is off; `statute add {}` turns that on",
+            Manifest::entry(p)
+        ),
+        (_, false, _, _) => format!("{shown} is {switch}; `statute add {entry}` turns it on"),
+    }
+}
+
+/// `explain --defaults`: the three lists of moving a rule set over to the
+/// defaults (`docs/design/rule-config.md`, Moving a repository over).
+fn explain_defaults(root: &Path) -> Result<(), ()> {
+    let (public, private) = load_layers(root, &env(Mode::Read)?)?;
+    let project = private.map_or(public, |p| p.both);
+    let sources = &project.sources;
+    // What the rule set would hold with nothing listed.
+    let bare = Manifest {
+        rules: Vec::new(),
+        packs: Vec::new(),
+        domains: Vec::new(),
+        exclude: Vec::new(),
+        ..project.manifest.clone()
+    };
+    let number = project.revision.parse().unwrap_or(0);
+    let mut ignored = Diagnostics::default();
+    let defaults = statute::resolve::resolve(sources, &bare, number, &mut ignored).enabled;
+    let enabled = &project.resolution.enabled;
+    let list = |title: &str, keys: Vec<&Key>| {
+        println!("{title}:");
+        if keys.is_empty() {
+            println!("- none");
+        }
+        for key in keys {
+            println!("- {}", label(sources, key));
+        }
+    };
+    list(
+        "On by default, and kept",
+        defaults
+            .keys()
+            .filter(|k| enabled.contains_key(*k))
+            .collect(),
+    );
+    println!();
+    list(
+        "On by default, and turned off",
+        defaults
+            .keys()
+            .filter(|k| !enabled.contains_key(*k))
+            .collect(),
+    );
+    println!();
+    list(
+        "Off by default, and turned on",
+        enabled
+            .keys()
+            .filter(|k| !defaults.contains_key(*k))
+            .collect(),
+    );
     Ok(())
 }
 
@@ -1153,6 +1294,21 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
                 out.push_str(&format!("{indent}- in pack {}\n", label(sources, root)));
                 continue;
             }
+            Reason::Default => {
+                let domain = sources.parent(key).map(|d| label(sources, &d));
+                out.push_str(&format!(
+                    "{indent}- on by default, and its domain {} is on\n",
+                    domain.unwrap_or_default()
+                ));
+                continue;
+            }
+            Reason::DefaultOf(one_of) => {
+                out.push_str(&format!(
+                    "{indent}- the default of one-of {}, which needs a child and has no other\n",
+                    label(sources, one_of)
+                ));
+                continue;
+            }
             Reason::RequiredBy(by) => {
                 out.push_str(&format!(
                     "{indent}- required by {}, which is enabled:\n",
@@ -1172,6 +1328,43 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
             path.push(by.clone());
             reasons(project, by, depth + 1, path, out);
             path.pop();
+        }
+    }
+}
+
+/// Adds `key` to the list `field` of `doc`, or takes it out; `false` when
+/// it is there already, to add. Fails when it is not there, to take out.
+fn edit_list(
+    doc: &mut DocumentMut,
+    field: &str,
+    key: &Key,
+    manifest: &Manifest,
+    adding: bool,
+    file: &str,
+) -> Result<bool, ()> {
+    let list = doc
+        .entry(field)
+        .or_insert_with(|| Item::Value(Value::Array(Array::new())))
+        .as_array_mut()
+        .ok_or_else(|| eprintln!("{file}: error: `{field}` is not a list"))?;
+    // Entries of the list that name this key; the rule set has been read,
+    // so each names a node of one of its sources.
+    let position = list
+        .iter()
+        .position(|v| listed_key(v, manifest).as_ref() == Some(key));
+    match (adding, position) {
+        (true, Some(_)) => Ok(false),
+        (true, None) => {
+            list.push(Manifest::entry(key).as_str());
+            Ok(true)
+        }
+        (false, Some(i)) => {
+            list.remove(i);
+            Ok(true)
+        }
+        (false, None) => {
+            eprintln!("{file}: error: `{field}` does not list {key}");
+            Err(())
         }
     }
 }
@@ -1228,39 +1421,81 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     })?;
     let key = parse_ref(text, &manifest)?;
     let entry = Manifest::entry(&key);
-    let field = if pack { "packs" } else { "rules" };
+    // The rule set as it is, to tell a domain from a rule; when it does
+    // not resolve, the key is taken for a rule.
+    let try_load = |text: &str| match (&public, &dir) {
+        (Some(public), Some(dir)) => Project::with_private(public, &given, text, &env, dir),
+        _ => Project::with_manifest(root, text, &env),
+    };
+    let current = try_load(start).0;
+    let is_domain = current
+        .as_ref()
+        .and_then(|p| p.sources.get(&key))
+        .is_some_and(|n| n.kind == Kind::Domain);
+    let field = match (pack, is_domain) {
+        (true, _) => "packs",
+        (false, true) => "domains",
+        (false, false) => "rules",
+    };
 
     let mut doc: DocumentMut = start.parse().map_err(|e| eprintln!("{file}: error: {e}"))?;
-    let list = doc
-        .entry(field)
-        .or_insert_with(|| Item::Value(Value::Array(Array::new())))
-        .as_array_mut()
-        .ok_or_else(|| eprintln!("{file}: error: `{field}` is not a list"))?;
-    // Entries of the list that name this key; the rule set has been read,
-    // so each names a rule of one of its sources.
-    let position = list
-        .iter()
-        .position(|v| listed_key(v, &manifest).as_ref() == Some(&key));
-    match (adding, position) {
-        (true, Some(_)) => {
-            println!("{key} is already in `{field}`");
-            return Ok(());
+    let mut done = Vec::new();
+    // `add` of an entry of `exclude` takes it out of there first.
+    if adding && !pack && manifest.exclude.contains(&key) {
+        edit_list(&mut doc, "exclude", &key, &manifest, false, &file)?;
+        done.push(format!("removed {key} from `exclude`"));
+    }
+    let now_on = |doc: &DocumentMut| {
+        try_load(&doc.to_string()).0.is_some_and(|p| {
+            p.resolution.enabled.contains_key(&key) || p.resolution.on.contains(&key)
+        })
+    };
+    // `remove` of a rule or domain the defaults enable and the rule set
+    // does not list only writes it to `exclude`, below.
+    let listed = match field {
+        "packs" => &manifest.packs,
+        "domains" => &manifest.domains,
+        _ => &manifest.rules,
+    }
+    .contains(&key);
+    let only_exclude = !adding && !pack && !private && !listed;
+    if !(adding && !done.is_empty() && now_on(&doc)) && !only_exclude {
+        match edit_list(&mut doc, field, &key, &manifest, adding, &file)? {
+            true => done.push(format!(
+                "{} {key} {} `{field}`",
+                if adding { "added" } else { "removed" },
+                if adding { "to" } else { "from" }
+            )),
+            false => {
+                println!("{key} is already in `{field}`");
+                return Ok(());
+            }
         }
-        (true, None) => list.push(entry.as_str()),
-        (false, Some(i)) => {
-            list.remove(i);
+    }
+    // What the defaults still enable after `remove` goes to `exclude`.
+    if !adding && !pack && !private && now_on(&doc) {
+        let defaults_only = try_load(&doc.to_string()).0.is_some_and(|p| {
+            if is_domain {
+                return Switches::new(&p.sources, &p.manifest).on_by_default(&key);
+            }
+            p.resolution.enabled.get(&key).is_some_and(|reasons| {
+                reasons
+                    .iter()
+                    .all(|r| matches!(r, Reason::Default | Reason::DefaultOf(_)))
+            })
+        });
+        if defaults_only {
+            edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
+            done.push(format!("added {key} to `exclude`, as it is on by default"));
         }
-        (false, None) => {
-            eprintln!("{file}: error: `{field}` does not list {key}");
-            return Err(());
-        }
+    }
+    if only_exclude && done.is_empty() {
+        eprintln!("{file}: error: `{field}` does not list {key}");
+        return Err(());
     }
 
     let changed = doc.to_string();
-    let (project, diags) = match (&public, &dir) {
-        (Some(public), Some(dir)) => Project::with_private(public, &given, &changed, &env, dir),
-        _ => Project::with_manifest(root, &changed, &env),
-    };
+    let (project, diags) = try_load(&changed);
     print(&diags);
     let Some(project) = project else {
         eprintln!("statute: {file} and {lock_file} are left unchanged");
@@ -1282,13 +1517,11 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         &changed,
         &lock_text,
     )?;
-    if adding {
-        println!("added {key} to `{field}`");
-    } else {
-        println!("removed {key} from `{field}`");
-        if !pack && project.resolution.enabled.contains_key(&key) {
-            println!("{key} is still enabled; `statute explain {entry}` says why");
-        }
+    for line in &done {
+        println!("{line}");
+    }
+    if !adding && !pack && project.resolution.enabled.contains_key(&key) {
+        println!("{key} is still enabled; `statute explain {entry}` says why");
     }
     match &public {
         Some(public) => print_private_locked(&lock_path, public, &project),

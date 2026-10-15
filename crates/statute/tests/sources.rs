@@ -11,10 +11,11 @@ use common::{domain, edit, rule};
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
 /// The rule set: `R` in `r/`, `team` (public) in `team/`, `me` (private)
-/// in `me/`, and the repository's own rules in `rules/`.
+/// in `me/`, and the repository's own rules in `rules/`, named in
+/// `local-rules`.
 fn manifest(public: bool, rules: &str) -> String {
     format!(
-        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = {public}\nrules = [{rules}]\n\n[sources]\nR = {{ path = \"r\" }}\nteam = {{ path = \"team\", public = true }}\nme = {{ path = \"me\", public = false }}\n"
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = {public}\nlocal-rules = \"rules\"\nrules = [{rules}]\n\n[sources]\nR = {{ path = \"r\" }}\nteam = {{ path = \"team\", public = true }}\nme = {{ path = \"me\", public = false }}\n"
     )
 }
 
@@ -191,13 +192,13 @@ fn the_sources_lock_and_compile_together() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule L3 (Rule 3) is enabled:\n- listed in `rules`\n"
+        "rule L3 (Rule 3) is enabled:\n- listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
     let run = statute(&dir, &["explain", "R2"]);
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R2 (Rule 2) is enabled:\n- required by team:7 (Rule 7), which is enabled:\n  - listed in `rules`\n- required by L3 (Rule 3), which is enabled:\n  - listed in `rules`\n"
+        "rule R2 (Rule 2) is enabled:\n- required by team:7 (Rule 7), which is enabled:\n  - listed in `rules`\n- required by L3 (Rule 3), which is enabled:\n  - listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
 }
 
