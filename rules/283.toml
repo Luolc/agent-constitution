@@ -1,8 +1,8 @@
 id = 283
 slug = "shell"
-revision = 2
+revision = 3
 kind = "domain"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 273
 default = "on"

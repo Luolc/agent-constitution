@@ -1,8 +1,8 @@
 id = 284
 slug = "shell-text"
-revision = 1
+revision = 2
 kind = "one-of"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 283
 default = 285
