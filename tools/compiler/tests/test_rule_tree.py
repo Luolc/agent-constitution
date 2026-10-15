@@ -441,6 +441,15 @@ class BuildTest(Tree):
     errors, _, _ = bc.build(self.root)
     self.assertEqual(errors, [])
 
+  def test_status_agrees_with_the_index(self):
+    """The build reads a node's status and checks it as a section's."""
+    self.edit("rules/2.toml", 'status = "draft"', 'status = "trial"')
+    errors, _, _ = bc.build(self.root)
+    self.assertEqual(
+      [e for e in errors if e.startswith("rules/2.toml")],
+      ["rules/2.toml:5: check 1: a domain is trial while index.toml is draft"],
+    )
+
 
 class NodeBaseTest(Tree):
   """Check 7 on the nodes of the rule tree.
