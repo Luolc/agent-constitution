@@ -21,6 +21,17 @@ struct Lock<'a> {
     constitution: Constitution<'a>,
     sources: Vec<Source<'a>>,
     rules: Vec<Rule<'a>>,
+    /// The value the committed `AGENTS.md` gets of each parameter an
+    /// enabled rule uses (`docs/design/rule-config.md`, Values in the lock
+    /// file and the outputs).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    parameters: Vec<Parameter<'a>>,
+}
+
+#[derive(Serialize)]
+struct Parameter<'a> {
+    name: &'a str,
+    value: &'a str,
 }
 
 #[derive(Serialize)]
@@ -139,6 +150,14 @@ pub fn render(project: &Project) -> String {
                 by: (!chosen.contains(key)).then_some("default"),
             })
             .collect(),
+        parameters: project
+            .values
+            .iter()
+            .map(|(name, s)| Parameter {
+                name,
+                value: &s.value,
+            })
+            .collect(),
     };
     let body = toml::to_string(&lock).expect("the lock file holds only strings and integers");
     format!("{HEADER}{body}")
@@ -193,6 +212,8 @@ pub struct Locked {
     pub edition: String,
     pub revision: String,
     pub rules: BTreeMap<Key, LockedRule>,
+    /// The value of each parameter, by name.
+    pub parameters: BTreeMap<String, String>,
 }
 
 /// A locked rule's revision and its two hashes.
@@ -222,6 +243,14 @@ struct RawLock {
     constitution: RawConstitution,
     #[serde(default)]
     rules: Vec<RawRule>,
+    #[serde(default)]
+    parameters: Vec<RawParameter>,
+}
+
+#[derive(Deserialize)]
+struct RawParameter {
+    name: String,
+    value: String,
 }
 
 #[derive(Deserialize)]
@@ -262,6 +291,11 @@ pub fn read(text: &str) -> Result<Locked, String> {
                 Ok((Key::of(&RuleRef::parse(&rule)?), locked))
             })
             .collect::<Result<_, String>>()?,
+        parameters: raw
+            .parameters
+            .into_iter()
+            .map(|p| (p.name, p.value))
+            .collect(),
     })
 }
 
@@ -284,6 +318,11 @@ pub fn current(project: &Project) -> Locked {
                 };
                 (key.clone(), locked)
             })
+            .collect(),
+        parameters: project
+            .values
+            .iter()
+            .map(|(name, s)| (name.clone(), s.value.clone()))
             .collect(),
     }
 }

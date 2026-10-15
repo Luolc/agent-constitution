@@ -80,10 +80,7 @@ in its local public section.
 
 ## Parameters
 
-Not built yet, but for two parts: statute skips `params.toml` when it
-reads a directory of rules, and the first-party source declares its
-parameters there and writes their placeholders in its rules, which
-statute compiles as written until parameters are built.
+Built, but for what the sites show of parameters (below).
 
 A rule that states a principle leaves its concrete values to the
 layers below (`rules/101.toml`). Some values are the same kind of
@@ -269,7 +266,9 @@ configuration, `statute.toml`, the `default`; in the committed
 
 - A key that names no parameter of the rule set's sources fails, and
   so does a value of the wrong type or a language code statute has no
-  name for. A value set for a parameter no enabled rule uses draws a
+  name for; the global configuration serves every repository, so a key
+  there that names no parameter of this rule set's sources is left
+  alone. A value set for a parameter no enabled rule uses draws a
   warning, so that a value stays in place while its rules are turned
   off.
 - `statute init` copies no value from the global configuration: a new
@@ -357,13 +356,13 @@ output, so a person's own value there is not used, and
 private rule set or the global configuration, with both values when
 they differ) and which enabled rules use it.
 
-**The public site** has a page of parameters for each source: each
-parameter's title, name, type, scope, default (and values, for a
-`choice`) and the rules that use it. A placeholder shows its default,
-marked as a value, with the parameter's name on hover, linked to its
-entry on that page. **The local site** shows the value of its rule set
-in the same way, and on the page of parameters where each value came
-from.
+**The public site** (not built yet) has a page of parameters for each
+source: each parameter's title, name, type, scope, default (and
+values, for a `choice`) and the rules that use it. A placeholder shows
+its default, marked as a value, with the parameter's name on hover,
+linked to its entry on that page. **The local site** (not built yet)
+shows the value of its rule set in the same way, and on the page of
+parameters where each value came from.
 
 ## Default switches
 
@@ -688,9 +687,13 @@ The default switches of a rule set are built too: `domains`,
 taking effect, `by = "default"` in the lock file, and what `statute
 add`, `remove` and `explain` (`--defaults` included) do with them.
 
-Not built yet: parameters (beyond skipping `params.toml`), their
-tables in the rule set, the lock file and the outputs; the one-of's
-rendering; and everything the sites show of these.
+Parameters are built: `params.toml` and the placeholders are read and
+checked, the rule set, the private rule set and the global
+configuration set values, and the lock file, `upgrade`, `explain
+<name>` and both outputs follow them.
+
+Not built yet: the one-of's rendering, and everything the sites show
+of these.
 
 The parts of the design this one changes:
 
