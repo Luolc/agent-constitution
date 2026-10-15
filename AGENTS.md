@@ -89,10 +89,12 @@ Checkers).
   `Cargo.lock`; `rust-toolchain.toml` pins the toolchain). `crates/statute`
   compiles a constitution and the chosen rules into `AGENTS.md`; which
   commands are built so far is in `docs/design/statute-command.md`, The
-  command and the first version. The
-  release on crates.io, 0.0.1, is still a placeholder
-  (`crates/statute/README.md`). Publishing a crate is a release
-  (`docs/design/amendments-and-releases.md`).
+  command and the first version. On crates.io, 0.0.1 is a placeholder
+  that held the name; the command starts with 0.1.0, and
+  `.github/workflows/release.yml` publishes each version
+  (`crates/statute/README.md`; the current one is in
+  `crates/statute/Cargo.toml`). Publishing a crate is a release
+  (`docs/design/amendments-and-releases.md`; Releasing statute, below).
 - `web/`: the Hugo project of the static site (config, layouts, style
   sheet), with the theme hugo-book as a submodule at
   `web/themes/hugo-book`; run `git submodule update --init` once after
@@ -209,6 +211,13 @@ when the two disagree.
   when the branch changes instruction files (the path table at the top of
   the script) together with other files; generated files do not count.
   Run it before a push; CI runs it on every pull request.
+- `uv run check-release-tag --tag statute-v<version> --repo <owner>/<name>`:
+  the check `release.yml` runs before it publishes, in three steps: the
+  tag against `crates/statute/Cargo.toml`, the commit on `origin/main`
+  (`--main` names another ref), and that commit's CI run on `main`
+  (`docs/design/amendments-and-releases.md`, Releases and versions). It
+  needs `gh` signed in. Exit 0 means the tag may publish, 1 that a step
+  says no, 2 that git or gh failed, 4 that the manifest has no version.
 - `uv run lint-zh-sources`: runs limae on the `zh` text of the
   constitution and rule sources and prints `file:line: field: finding`;
   `--fix` writes limae's fixes back into the sources. A limae finding in
@@ -286,6 +295,32 @@ build, the link check or the deployment fails.
 `.github/workflows/gitleaks.yml` scans the full history with the same action
 and gitleaks version, once a week and on a manual run. It finds an old secret
 that a newer gitleaks rule recognizes, and it is not a required check.
+
+`.github/workflows/release.yml` ("Release") runs on a push of a tag
+`statute-v*`, and pushing one is a release (Releasing statute, below). Its
+job `check`, with read access only and no OIDC token, runs
+`check-release-tag` on the tag (Checks, above). Its job `publish` runs
+only when `check` passed: in the GitHub environment `release`, which
+admits only `statute-v*` tags, it trades its OIDC token for a short-lived
+crates.io token (Trusted Publishing, so the repo holds no crates.io
+secret) and runs `cargo publish --locked -p statute`. It is not a required
+check. When the tag was pushed before the commit's CI run on `main` had
+passed, `check` fails; rerun the workflow once that run has passed
+(`docs/design/amendments-and-releases.md`, Releases and versions).
+
+## Releasing statute
+
+- A new version of `statute` bumps the patch number by default: after
+  0.1.0 come 0.1.1, 0.1.2 and so on. The minor or major number goes up
+  only when a person says so.
+- A pull request that bumps the version is not a release; pushing the tag
+  `statute-v<version>` is.
+- A patch release is allowed in advance: the lead may push the tag of a
+  patch version without asking, on a commit that meets the conditions for
+  a release tag (`docs/design/amendments-and-releases.md`, Releases and
+  versions), which the job `check` of `release.yml` checks again.
+- A minor or major release (0.2.0, 1.0.0) needs a person's yes, given at
+  the time or written down in advance for that version.
 
 ## Fleet
 
