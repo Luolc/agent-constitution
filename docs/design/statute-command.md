@@ -239,7 +239,8 @@ default switches of a rule set are built, with `domains`, `exclude`,
 them; `default` is required where the rule files need it, and
 `check = "review"` fails; parameters are built, with their values in
 the lock file, `upgrade`, `explain <name>` and both outputs. Not built
-yet: the one-of's rendering, and the marks of the sites.
+yet: the one-of's rendering, and the marks of the public site; the
+local site's marks are built.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -374,6 +375,17 @@ file. It prints the path of `index.html`.
   compiled `AGENTS.md`. The pages are in the language of
   `[compile] lang`, the kind of each node included; a status is shown
   as the rule file writes it, `draft` or `trial`.
+- **The marks of [Rule configuration](rule-config.md).** Every domain
+  and rule, in the index and on its page, says whether it is on or off
+  by default, and an option of a one-of whether it is the one-of's
+  default. A rule's page says where it is used, `AGENTS.md`, review or
+  both, and two filters of the index hide the rules for either.
+  A placeholder shows the value this rule set gives the parameter, the
+  person's own where there is one, marked, with the parameter's name
+  on hover and a link to the page of its source's parameters,
+  `<source>/parameters.html`. That page lists each parameter's title,
+  name, type, scope and default, its value and where the value comes
+  from, and the enabled rules that use it.
 
 ## Export
 

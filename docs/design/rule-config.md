@@ -80,7 +80,7 @@ in its local public section.
 
 ## Parameters
 
-Built, but for what the sites show of parameters (below).
+Built, but for what the public site shows of parameters (below).
 
 A rule that states a principle leaves its concrete values to the
 layers below (`rules/101.toml`). Some values are the same kind of
@@ -360,9 +360,9 @@ they differ) and which enabled rules use it.
 source: each parameter's title, name, type, scope, default (and
 values, for a `choice`) and the rules that use it. A placeholder shows
 its default, marked as a value, with the parameter's name on hover,
-linked to its entry on that page. **The local site** (not built yet)
-shows the value of its rule set in the same way, and on the page of
-parameters where each value came from.
+linked to its entry on that page. **The local site** shows the value
+of its rule set in the same way, and on the page of parameters where
+each value came from.
 
 ## Default switches
 
@@ -448,7 +448,7 @@ requirement brings in.
 
 ### In the rule set
 
-Built, but for the marks of the local site (below).
+Built.
 
 The rule set lists only what differs from the defaults:
 
@@ -540,8 +540,7 @@ however they came in.
 in the list and on its page, and each one-of's default option, and the list gets a filter that shows only
 the rules on by default, so that a reader sees at a glance what a new
 rule set holds. **The local site** shows the same marks beside whether
-its rule set enables the rule. The public site shows them; the local
-site does not yet.
+its rule set enables the rule. Both sites show them.
 
 ### Moving a repository over
 
@@ -607,9 +606,9 @@ rule `review` only when a reviewer can decide from the diff and the
 pull request description alone whether it was broken, and
 `instructions` only when an agent needs to know it while it works.
 
-**What follows from it.** statute reads `uses`; the compiled
-`AGENTS.md`, `statute check`, `statute explain` and the public site
-follow it, and what the local site shows of it is not built yet.
+**What follows from it.** statute reads `uses`, and the compiled
+`AGENTS.md`, `statute check`, `statute explain` and both sites follow
+it.
 
 - The compiled `AGENTS.md` holds the enabled rules whose `uses` has
   `instructions`. A domain whose enabled rules are all review-only has
@@ -693,11 +692,14 @@ checked, the rule set, the private rule set and the global
 configuration set values, and the lock file, `upgrade`, `explain
 <name>` and both outputs follow them.
 
-The public site marks the default switches and shows `uses`, with
-their filters.
+The local site marks the default switches, each one-of's default
+option, `uses` and the values of parameters
+([The local site](statute-command.md#the-local-site)); the public site
+marks the default switches and each one-of's default option and shows
+`uses`, with their filters.
 
-Not built yet: the one-of's rendering, what the public site shows of
-parameters, and everything the local site shows of these.
+Not built yet: the one-of's rendering, and what the public site shows
+of parameters.
 
 The parts of the design this one changes:
 
