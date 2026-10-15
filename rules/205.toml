@@ -1,6 +1,6 @@
 id = 205
 slug = "same-family-review-note"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -22,10 +22,10 @@ zh = "pull request 的实现方与审查方用的是同一家族的模型时，�
 
 [text.reason]
 en = '''
-Models of one family tend to share blind spots, so a same-family review is a fallback, not the equal of a review by a model of another family. Said plainly, it is something whoever reads the pull request or decides its merge can take into account ({@constitution:evidence.grounds}). No model is named, since a public repository names none ({@rule:51}).
+Models of one family tend to share blind spots, so a same-family review is a fallback, not the equal of a review by a model of another family. Said plainly, it is something whoever reads the pull request or decides its merge can take into account ({@constitution:evidence.grounds}). No model is named, since a public repository names none ({@rule:259}).
 '''
 zh = '''
-同一家族的模型容易有相同的盲点，同家族审查只是降级方案，不等于由另一家族的模型审查。写明这一点，读 pull request 的人和决定合并的一方才能把它算进去 ({@constitution:evidence.grounds})。不点名型号，是因为公开仓库里不写型号 ({@rule:51})。
+同一家族的模型容易有相同的盲点，同家族审查只是降级方案，不等于由另一家族的模型审查。写明这一点，读 pull request 的人和决定合并的一方才能把它算进去 ({@constitution:evidence.grounds})。不点名型号，是因为公开仓库里不写型号 ({@rule:259})。
 '''
 
 [text.verification]
@@ -41,4 +41,4 @@ zh = '''
 '''
 
 [translations]
-zh = "38b753a868118da57d3b6726304660fd52f3679a06cfb3751a1d88808b07ad43"
+zh = "25bf247c55c3a607fa416f11c76694a1b0b1f3740a062ac469ea7605bab41d81"

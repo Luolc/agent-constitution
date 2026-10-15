@@ -31,13 +31,13 @@ zh = '''
 en = '''
 The full set is every check CI runs on the change. A check is touched when the change touches its inputs; the commit hooks count as touched. A command that runs the whole set, or every test of the repository, runs untouched checks unless the change touches the inputs of all of them. When unsure whether a check is touched, it counts as touched. Where CI does not run the full set on each change, this rule asks nothing.
 
-Violated when an agent, before a push, runs locally checks the change does not touch while CI runs them on the change.
+Violated when an agent, as its checks before a push, runs locally checks the change does not touch while CI runs them on the change. A run while the work is under way, before the checks for a push, is not covered.
 '''
 zh = '''
 全部检查，指 CI 对这个变更运行的每一项检查。变更动到了某项检查的输入，这项检查就是改动涉及的；commit hook 算作涉及。运行全部检查或者仓库全部测试的命令，除非变更动到了其中每一项的输入，否则就运行了不涉及的检查。不确定某项检查是否涉及的，按涉及处理。CI 不对每个变更都跑全部检查的，本规定不作要求。
 
-agent 在 push 之前，于 CI 会对这个变更运行的情况下，在本地运行改动不涉及的检查的，即为违反本规定。
+agent 把改动不涉及的检查当作 push 之前的检查在本地运行，而 CI 会对这个变更运行它们的，即为违反本规定。工作进行中、还没到 push 之前那轮检查时的运行，不在此列。
 '''
 
 [translations]
-zh = "a4d2c04512b16cb9f799ea19b4809fd6a2c25934314e96f6e5d1f059fbf6b698"
+zh = "cb0ac95a679575c61109e2a463d28d75bb185be37ba4fc8ea663d7a18bca945b"
