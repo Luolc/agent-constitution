@@ -821,80 +821,34 @@ impl Checker<'_> {
     }
 
     /// The rules a source's defaults enable resolve on their own
-    /// (`docs/design/rule-config.md`, In the rule files): an `on` rule,
-    /// and a rule that is a one-of's default, requires no rule that is
-    /// `off`, and no rule in a domain that is `off` while its own domain
-    /// is `on`. Only what the files write is judged: a node without
-    /// `default` counts as neither.
+    /// (`docs/design/rule-config.md`, In the rule files): each rule in
+    /// force that the defaults enable requires, within the source, only
+    /// rules the defaults enable too; a required one-of counts as met.
+    /// Only what the files write is judged: where a `default` on the way
+    /// is missing, the rule is not checked.
     fn check_defaults(&mut self) {
         let source = self.source;
-        // The domain off by default that a node is in, if any.
-        let off_domain = |mut id: Id| -> Option<Id> {
-            for _ in 0..=source.nodes.len() {
-                let node = source.get(id)?;
-                if node.kind == Kind::Domain && node.default == Some(node::Switch::Off) {
-                    return Some(id);
-                }
-                id = node.parent?;
-            }
-            None
-        };
-        // A required one-of stands for its default child.
-        let target_of = |id: Id| -> Option<&Node> {
-            let node = source.get(id)?;
-            match node.kind {
-                Kind::OneOf => source.get(node.default_child?),
-                _ => Some(node),
-            }
-        };
         for node in source.nodes.values() {
             let Some(rule) = &node.rule else { continue };
-            let on = node.default == Some(node::Switch::On)
-                || node
-                    .parent
-                    .and_then(|p| source.get(p))
-                    .is_some_and(|p| p.default_child == Some(node.id));
-            if !on || matches!(node.status, Status::Superseded | Status::Repealed) {
+            if matches!(node.status, Status::Superseded | Status::Repealed)
+                || by_default(source, node.id) != Some(true)
+            {
                 continue;
             }
-            let why = if node.default == Some(node::Switch::On) {
-                format!("rule {} is on by default", node.id)
-            } else {
-                format!(
-                    "rule {} is the default of one-of {}",
-                    node.id,
-                    node.parent.unwrap_or_default()
-                )
-            };
             for r in &rule.requires {
                 let Ref::Local(required) = *r else { continue };
-                let Some(target) = target_of(required) else {
+                let Some(target) = source.get(required) else {
                     continue;
                 };
                 if target.kind != Kind::Rule {
                     continue;
                 }
-                let via = if target.id == required {
-                    String::new()
-                } else {
-                    format!(", the default of one-of {required},")
-                };
-                if target.default == Some(node::Switch::Off) {
+                if by_default(source, required) == Some(false) {
                     self.diags.error(
                         self.file(node.id),
                         format!(
-                            "{why} and requires rule {}{via} which is off by default; turn {} on, or this rule off",
-                            target.id, target.id
-                        ),
-                    );
-                } else if let Some(domain) = off_domain(target.id)
-                    && off_domain(node.id).is_none()
-                {
-                    self.diags.error(
-                        self.file(node.id),
-                        format!(
-                            "{why}, in a domain that is on, and requires rule {}{via} in domain {domain}, which is off by default; the defaults would not resolve on their own",
-                            target.id
+                            "rule {} is enabled by default and requires rule {required}, which is not; turn {required} on by default, or this rule off",
+                            node.id
                         ),
                     );
                 }
@@ -1120,6 +1074,36 @@ impl Checker<'_> {
             }
         }
     }
+}
+
+/// Whether a source's defaults enable a rule or a domain: its own
+/// `default` is on, or it is the default child of the one-of above it,
+/// and so is every domain above it, a one-of passing on what its domain
+/// is. `None` when a `default` on the way is missing, or the way leaves
+/// the source, unless a `default` that is there already says no.
+fn by_default(source: &Source, id: Id) -> Option<bool> {
+    let mut known = true;
+    let mut at = id;
+    for _ in 0..=source.nodes.len() {
+        let node = source.get(at)?;
+        let parent = node.parent.and_then(|p| source.get(p));
+        let own = match (node.kind, parent) {
+            (Kind::OneOf, _) => Some(true),
+            (_, Some(p)) if p.kind == Kind::OneOf => p.default_child.map(|d| d == at),
+            _ => node.default.map(|d| d == node::Switch::On),
+        };
+        match own {
+            Some(false) => return Some(false),
+            None => known = false,
+            Some(true) => {}
+        }
+        match parent {
+            Some(p) => at = p.id,
+            None if node.foreign_parent.is_some() => return None,
+            None => return known.then_some(true),
+        }
+    }
+    None
 }
 
 /// The findings on `field` of a rule naming `target`, a node of `source`,

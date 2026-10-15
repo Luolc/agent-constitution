@@ -1046,37 +1046,46 @@ fn check_none_and_its_older_name_review() {
 
 #[test]
 fn the_defaults_of_a_source_resolve_on_their_own() {
-    let off = |id| {
+    let switched = |id, default: &str| {
         edit(
             domain(id),
             "lang = \"en\"",
-            "lang = \"en\"\ndefault = \"off\"",
+            &format!("lang = \"en\"\ndefault = \"{default}\""),
         )
     };
     let on = |id, parent, extra: &str| rule(id, parent, &format!("default = \"on\"\n{extra}"));
     let off_rule = |id, parent| rule(id, parent, "default = \"off\"");
-    // An `on` rule requiring an `on` rule, in a domain that is on and in
-    // one that is off.
+    // A rule the defaults enable requiring one they enable; one in a
+    // domain that is off is not checked.
     assert_clean(&load(&[
-        domain(1),
+        switched(1, "on"),
         on(2, 1, ""),
         on(3, 1, "requires = [2]"),
-        off(4),
-        on(5, 4, ""),
+        switched(4, "off"),
+        off_rule(5, 4),
         on(7, 4, "requires = [5]"),
     ]));
     assert_error(
-        &load(&[domain(1), off_rule(2, 1), on(3, 1, "requires = [2]")]),
+        &load(&[
+            switched(1, "on"),
+            off_rule(2, 1),
+            on(3, 1, "requires = [2]"),
+        ]),
         "3.toml",
-        "rule 3 is on by default and requires rule 2 which is off by default",
+        "rule 3 is enabled by default and requires rule 2, which is not; turn 2 on by default, or this rule off",
     );
+    // A rule in a domain that is off is not enabled by default.
     assert_error(
-        &load(&[domain(1), off(4), on(5, 4, ""), on(3, 1, "requires = [5]")]),
+        &load(&[
+            switched(1, "on"),
+            switched(4, "off"),
+            on(5, 4, ""),
+            on(3, 1, "requires = [5]"),
+        ]),
         "3.toml",
-        "rule 3 is on by default, in a domain that is on, and requires rule 5 in domain 4, which is off by default",
+        "rule 3 is enabled by default and requires rule 5, which is not",
     );
-    // A one-of's default child counts as on, and stands for the one-of
-    // when it is required.
+    // A one-of's default child is enabled by default when its domain is.
     let one_of_default = |child| {
         edit(
             one_of(8, 1),
@@ -1086,25 +1095,27 @@ fn the_defaults_of_a_source_resolve_on_their_own() {
     };
     assert_error(
         &load(&[
-            domain(1),
+            switched(1, "on"),
             off_rule(2, 1),
             one_of_default(9),
             rule(9, 8, "requires = [2]"),
             rule(10, 8, ""),
         ]),
         "9.toml",
-        "rule 9 is the default of one-of 8 and requires rule 2 which is off by default",
+        "rule 9 is enabled by default and requires rule 2, which is not",
     );
-    assert_error(
-        &load(&[
-            domain(1),
-            off(4),
-            rule(5, 4, ""),
-            edit(one_of(11, 4), "parent = 4", "parent = 4\ndefault = 12"),
-            rule(12, 11, ""),
-            on(3, 1, "requires = [11]"),
-        ]),
-        "3.toml",
-        "requires rule 12, the default of one-of 11, in domain 4",
-    );
+    // Where a `default` is missing on the way, nothing is checked; a
+    // required one-of counts as met.
+    assert_clean(&load(&[
+        domain(1),
+        off_rule(2, 1),
+        on(3, 1, "requires = [2]"),
+    ]));
+    assert_clean(&load(&[
+        switched(1, "on"),
+        one_of(11, 1),
+        off_rule(12, 1),
+        rule(13, 11, "requires = [12]"),
+        on(3, 1, "requires = [11]"),
+    ]));
 }
