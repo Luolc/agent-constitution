@@ -880,3 +880,58 @@ fn a_finding_of_the_private_layer_names_the_private_rule_set() {
         run.stderr
     );
 }
+
+#[test]
+fn a_rule_of_the_repository_s_own_is_enabled_in_either_layer() {
+    // L7, in no rule set, is compiled nowhere; listed by the private
+    // layer alone, it is in the private output, and the public pass,
+    // which cannot see that, says nothing.
+    for private_lists in [false, true] {
+        let dir = ignoring(if private_lists {
+            "own-listed-privately"
+        } else {
+            "own-unlisted"
+        });
+        write(&dir, ".statute/rules/7.toml", &rule(7, 1, "").1);
+        set_up(&dir);
+        let rules = if private_lists {
+            "rules = [\"me:4\", \"7\"]"
+        } else {
+            "rules = [\"me:4\"]"
+        };
+        write_private(&dir, &private(&dir).replace("rules = []", rules));
+        let run = statute(&dir, &["compile"]);
+        ok(&run);
+        let warned = run.stderr.contains(
+            "statute.toml: warning: rule L7 (Rule 7) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"7\" in `rules` to compile it\n",
+        );
+        assert_eq!(warned, !private_lists, "{}", run.stderr);
+        let full = read(&dir, ".statute/AGENTS.full.md");
+        assert_eq!(full.contains("\n- L7 "), private_lists, "{full}");
+        assert!(!read(&dir, "AGENTS.md").contains("- L7 "));
+    }
+}
+
+#[test]
+fn a_rule_of_a_local_private_source_is_listed_in_the_private_rule_set() {
+    let dir = ignoring("local-private-source");
+    set_up(&dir);
+    // me, now of `scope = "local"`, ranks with the repository's own rules;
+    // me:5, which overrides R2, is listed nowhere.
+    write_private(
+        &dir,
+        &private(&dir)
+            .replace("rules = []", "rules = [\"me:4\"]")
+            .replace("public = false }", "public = false, scope = \"local\" }"),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains(&format!(
+            "{}: warning: rule me:5 (Rule 5) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"me:5\" in `rules` to compile it in place of R2\n",
+            common(&dir).join("private.toml").display()
+        )),
+        "{}",
+        run.stderr
+    );
+}

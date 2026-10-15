@@ -6,7 +6,7 @@ use std::collections::BTreeSet;
 use statute::diag::{Diagnostics, Severity};
 use statute::manifest::Key;
 use statute::manifest::Manifest;
-use statute::resolve::{Reason, Resolution, resolve};
+use statute::resolve::{Reason, Resolution, resolve, unenabled_own};
 use statute::source::Sources;
 
 mod common;
@@ -540,26 +540,26 @@ fn local_source() -> Sources {
 }
 
 #[test]
-fn a_rule_of_the_repository_s_own_that_nothing_enables_warns() {
-    let resolve_with = |lists: &str| {
+fn a_rule_of_the_repository_s_own_that_nothing_enables_is_named() {
+    let unenabled = |lists: &str| {
         let manifest = Manifest::parse(&format!(
             "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\n{lists}\n\n[sources]\nR = {{ path = \".\" }}\n"
         ))
         .unwrap();
+        let sources = local_source();
         let mut diags = Diagnostics::default();
-        resolve(&local_source(), &manifest, 1, &mut diags);
-        diags.0.iter().map(ToString::to_string).collect::<Vec<_>>()
+        let res = resolve(&sources, &manifest, 1, &mut diags);
+        assert!(diags.0.is_empty(), "{:#?}", diags.0);
+        unenabled_own(&sources, &manifest, &res)
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
     };
     // Neither the unchosen option 7 nor rule 8, which `exclude` turns
     // off, is a slip.
+    assert_eq!(unenabled("rules = [\"3\"]\nexclude = [\"8\"]"), ["L2"]);
     assert_eq!(
-        resolve_with("rules = [\"3\"]\nexclude = [\"8\"]"),
-        [
-            "statute.toml: warning: rule L2 (Rule 2) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"2\" in `rules` to compile it"
-        ]
-    );
-    assert_eq!(
-        resolve_with("rules = [\"2\", \"3\"]\nexclude = [\"8\"]"),
+        unenabled("rules = [\"2\", \"3\"]\nexclude = [\"8\"]"),
         Vec::<String>::new()
     );
 }

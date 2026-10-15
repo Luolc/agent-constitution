@@ -60,6 +60,10 @@ local-rules = "policy/agents"
   it, naming the rule and the entry of `rules` that would compile it.
   It does not warn about a rule that is superseded or repealed, one
   that `exclude` turns off, or an option of a one-of.
+  Where a public repository has a private rule set, the warning comes
+  from the private layer, which sees both layers, and names the rule
+  set that would list the rule: `private.toml` for a rule of a source
+  the private layer adds, `statute.toml` for the others.
 - Only `statute.toml` sets it. It describes the repository's layout,
   which every machine and CI share, so the global configuration has no
   such key, and the private rule set neither, since the private layer
