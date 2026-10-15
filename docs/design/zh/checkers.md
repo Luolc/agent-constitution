@@ -1,4 +1,4 @@
-<!-- en-sha256: fb6e79ad346f41289d42205b3ac121f38fb2fdbe53c692578f5e829a20046d39 -->
+<!-- en-sha256: b4603559efed2e9af0219c4ef511e1347c583543cb6f93241aa8f7fe21193e2c -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -46,9 +46,9 @@
 
 修订号部分的可靠程度取决于这个基准。必需检查 `check` 不是严格模式：pull request 落后于 `main` 也能合并，所以它的 CI 运行可能没见过在它上次运行之后合并的修正案，两个修正案可能都用同一个修订号通过检查。pull request 上的运行排除不了这种情况；发现它的是 `main` 上的推送运行，它对每个合并提交做同样的检查，对照的是它之前的那个提交。如果它因为修订号重复而变红，合并方提一个更正的修正案，给正文一个自己的修订号。历史里已经重复的修订号就留着；每次推送只按它自己的提交判断。
 
-指令文件单独变更的检查 (`check-instruction-changes`) 把 agent 当作指令读的改动与其他所有改动分开，使两者都能单独审查、单独撤销。哪些路径是指令文件、哪些是生成文件、哪些是其他文件，写在脚本顶部的一张表里：一部分是在任何仓库都成立的通用部分，一部分是本仓自己的 (宪法、规定和 skill 的源文件)，还有本仓的生成文件。通用部分包括 agent harness 在任何目录下读的文件，以及仓库顶层 statute 用来编译指令文件的文件：`statute.toml`、`statute.lock`、`statute-checks.toml` 和 `.statute/`，还有任何目录下的旧版副本 `<name>.legacy.md` (见 [statute-migrate](../../../skills/statute-migrate/SKILL.md) 的 Files 表)。生成文件跟着改动它的那一边走：与宪法源文件一起改，就是修正案；只与工具一起改，就是工具的改动。脚本比较 `HEAD` 与 `--base` (`git diff <base>...HEAD`，关闭改名检测)，两类混在一起时把两组文件都列出来。CI 用与检查 7 相同的基准运行它；一次推送到 `main` 同时带了几项变更的，作为一项来检查。
+指令文件单独变更的检查 (`check-instruction-changes`) 把 agent 当作指令读的改动与其他所有改动分开，使两者都能单独审查、单独撤销。哪些路径是指令文件、哪些是生成文件、哪些是其他文件，写在脚本顶部的一张表里：一部分是在任何仓库都成立的通用部分，一部分是本仓自己的 (宪法、规定和 skill 的源文件)，还有本仓的生成文件。通用部分包括 agent harness 在任何目录下读的文件，以及仓库顶层 statute 用来编译指令文件的文件：`statute.toml`、`statute.lock`、`statute-checks.toml` 和 `.statute/`，还有任何目录下的旧版副本 `<name>.legacy.md` (见 [statute-migrate](../../../skills/statute-migrate/SKILL.md) 的 Files 表)。生成文件跟着改动它的那一边走：与宪法源文件一起改，就是修正案；只与工具一起改，就是工具的改动。本仓的生成文件是构建出的宪法和 `statute-checks.toml`，后者通用部分也列了，先按生成文件算：`statute compile --check` 证明它就是规定清单编译的结果，而它随 statute 的版本变。脚本比较 `HEAD` 与 `--base` (`git diff <base>...HEAD`，关闭改名检测)，两类混在一起时把两组文件都列出来。CI 用与检查 7 相同的基准运行它；一次推送到 `main` 同时带了几项变更的，作为一项来检查。
 
-别的仓库在自己的 CI 里运行同一项检查：它按固定的 tag 和提交 SHA 取回本仓，就像 overlay 固定核心的版本那样 (见「发布与版本」)，然后在自己的检出目录里运行 `PYTHONPATH=<core>/tools/checks/src python3 -m repo_checks.check_instruction_changes --root . --base <base>`：这个脚本只需要标准库，所以那个仓库既不需要 uv，也不需要本仓的 workspace。通用部分始终适用。那个仓库在自己的 `AGENTS.md` 里用写给 agent 看的文字声明自己的指令路径，再把同样的路径以 `--instructions <regex>` 传给脚本，一个路径一个，把它的生成文件以 `--generated <regex>` 传入；两个选项都会替换掉本仓自己的那部分和本仓的生成文件。
+别的仓库在自己的 CI 里运行同一项检查：它按固定的 tag 和提交 SHA 取回本仓，就像 overlay 固定核心的版本那样 (见「发布与版本」)，然后在自己的检出目录里运行 `PYTHONPATH=<core>/tools/checks/src python3 -m repo_checks.check_instruction_changes --root . --base <base>`：这个脚本只需要标准库，所以那个仓库既不需要 uv，也不需要本仓的 workspace。通用部分始终适用。那个仓库在自己的 `AGENTS.md` 里用写给 agent 看的文字声明自己的指令路径，再把同样的路径以 `--instructions <regex>` 传给脚本，一个路径一个，把它的生成文件以 `--generated <regex>` 传入；两个选项都会替换掉本仓自己的那部分和本仓的生成文件。在那个仓库里，`statute-checks.toml` 仍算指令文件，等它的 CI 跑了 `statute compile --check`，再用 `--generated` 声明它。
 
 设计译文检查 (`check-design-translation`) 让设计的中文译文 `docs/design/zh/<name>.md` 与英文 `docs/design/<name>.md` 保持同步，英文是源文件；网站两种语言都展示 (见[静态网站](static-site.md))。译文第一行是 `<!-- en-sha256: <hex> -->`，即翻译所依据的英文文件的 SHA-256，第二行是 `# ` 标题。标题以下的每个标题都以英文对应位置那个标题的锚点开头，如 `## <a id="checks"></a>检查`：锚点就是 GitHub 和 Hugo 给英文标题生成的那个 (转小写、去掉标点、空格换成连字符，重复的加 `-1`)，所以指向 `#checks` 的链接在两种语言里、在 GitHub 上和网站上都能用。设计文件之间的链接照英文原样写，指出 `docs/design/` 的链接多加一层 `../`，这样每个链接都从它所在的文件解析。以下情况检查会失败：任何一边缺文件；哈希不是英文文件当前的哈希；任何一个标题的级别或锚点与英文对应的不同，或者只有一边有。围栏代码块里的行不算标题。英文文件或译文里的相对链接，从它所在文件的目录解析后指不到仓里的文件或目录 (比如译文里的链接少了一层 `../`)，检查也会失败，否则网站会把它改成指向 GitHub 上一个不存在的文件；代码里的链接跳过。所以英文文件的任何改动，哪怕只改一个错字，都会让检查失败，直到同一个 pull request 把改动带进译文、更新哈希那一行；检查会打印新的哈希。`docs/design/zh/` 不存在时，检查打印一行说明，只检查英文的链接；目录一旦存在，每个文件都要有译文。
 

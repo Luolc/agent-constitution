@@ -1,0 +1,31 @@
+id = 27
+slug = "instruction-paths-statute-inputs"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R15"
+default = "on"
+authority = ["separate-instruction-changes"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Count statute's inputs as instruction files"
+
+[text.statement]
+en = "Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml` as a generated file ({@rule:R47}), not as an instruction file."
+
+[text.reason]
+en = '''
+The listed files decide or record what the compiled `AGENTS.md` holds, so a change to them changes the instructions ({@constitution:separate-instruction-changes}). `statute-checks.toml` only renders them, and the commit hook and CI (`statute compile --check`) fail a change whose copy differs from a recompile, so it cannot carry a meaning of its own. A change that raises the version of statute must recompile it, and could not otherwise pass the hook.
+'''
+
+[text.verification]
+en = '''
+`uv run check-instruction-changes --base origin/main` fails a change that mixes instruction files with other files, and CI runs it on every pull request. `statute compile --check` shows that `statute-checks.toml` equals a recompile.
+
+Violated when a change mixes one of the listed files with files that are not instruction files.
+'''
