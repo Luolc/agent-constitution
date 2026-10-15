@@ -1,0 +1,296 @@
+/* The local site's pages (site.rs), after tokens.css: every color, size,
+   weight, space, radius, duration and easing is a token of
+   docs/design/frontend.md, but for the exceptions it allows. The theme
+   is the system's, through the `color-scheme` tokens.css sets. A hover
+   style stands under `(hover: hover) and (pointer: fine)`, so that a tap
+   leaves none behind. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { font-size: var(--t-font-size-base); }
+body {
+  margin: 0;
+  font-family: var(--t-font);
+  font-weight: var(--t-weight-regular);
+  line-height: var(--t-line-height-text);
+  color: var(--t-text);
+  background: var(--t-bg-page);
+}
+/* Room on both sides that grows with the window (the `vw` term) between
+   two tokens. A page of text is a column; the index, whose rows carry
+   their tags at the right, and the table of parameters span the
+   window. */
+main { padding: var(--t-space-8) clamp(var(--t-space-4), 5vw, var(--t-space-12)); }
+main.text { max-inline-size: var(--t-measure); margin-inline: auto; }
+h1 { margin: 0 0 var(--t-space-4); font-size: var(--t-text-2xl); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
+h2 { margin: 1.5em 0 .5em; font-size: var(--t-text-lg); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
+h3 { margin: 1.5em 0 .5em; font-size: var(--t-text-md); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
+code { font-size: var(--t-text-sm); }
+table { border-collapse: collapse; font-size: var(--t-text-sm); line-height: var(--t-line-height-ui); }
+td, th {
+  padding: var(--t-space-2) var(--t-space-3);
+  text-align: start;
+  vertical-align: top;
+  border-block-start: 1px solid var(--t-border-subtle);
+}
+th { font-weight: var(--t-weight-medium); color: var(--t-text-muted); }
+
+/* Links: the text color with a light underline, both turning to the
+   accent color under the pointer. */
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--t-border-subtle);
+  text-underline-offset: .18em;
+  transition-property: color, text-decoration-color;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  a:hover { color: var(--t-accent); text-decoration-color: currentColor; }
+}
+/* A placeholder's value, marked as a value. */
+a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
+
+/* The focus ring, the same on every control, from the keyboard only. */
+:focus-visible { outline: 2px solid var(--t-accent); outline-offset: 2px; }
+
+/* Icons: outlined in the color of their text, set on the middle of the
+   line. */
+.icon {
+  flex: none;
+  inline-size: var(--t-icon-sm);
+  block-size: var(--t-icon-sm);
+  stroke-width: var(--t-icon-stroke);
+  vertical-align: middle;
+}
+
+/* A node's label, before its title. */
+.ref { color: var(--t-text-muted); font-variant-numeric: tabular-nums; margin-inline-end: var(--t-space-2); }
+nav { font-size: var(--t-text-sm); color: var(--t-text-muted); margin-block-end: var(--t-space-4); }
+/* The legend: each mark and its meaning on a line, in columns. */
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--t-measure) / 2), 1fr));
+  gap: var(--t-space-1) var(--t-space-6);
+  margin-block: var(--t-space-4);
+  line-height: var(--t-line-height-ui);
+}
+.legend > div { display: flex; align-items: center; gap: var(--t-space-2); }
+.legend dt { flex: none; margin: 0; }
+.legend dd { margin: 0; font-size: var(--t-text-sm); color: var(--t-text-muted); }
+.place { font-size: var(--t-text-sm); font-weight: var(--t-weight-regular); color: var(--t-text-muted); margin-inline-start: var(--t-space-2); }
+.params { font-size: var(--t-text-sm); font-weight: var(--t-weight-regular); margin-inline-start: var(--t-space-2); }
+section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-space-2); border-block-start: 1px solid var(--t-border-subtle); }
+
+/* Tags: small, one line each; different facts in different forms. */
+.tags { display: flex; flex: none; align-items: center; gap: var(--t-space-2); margin-inline-start: auto; }
+/* In a row, the word whose length varies first, so that the others line
+   up from one row to the next. */
+.tags > :is(.enabled, .default-option) { order: -1; }
+.tag-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t-space-2); margin-block: 0 var(--t-space-4); }
+:is(.status, .switch, .enabled, .default-option, .q, .kind, .slug) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-space-1);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-regular);
+  line-height: var(--t-line-height-ui);
+  white-space: nowrap;
+}
+/* Status: a pill in its colors; superseded and repealed an outline. */
+.status { padding: 0 var(--t-space-2); border-radius: var(--t-radius-full); }
+.status.active { color: var(--t-status-active); background: var(--t-status-active-bg); }
+.status.trial { color: var(--t-status-trial); background: var(--t-status-trial-bg); }
+.status.draft { color: var(--t-status-draft); background: var(--t-status-draft-bg); }
+.status:is(.superseded, .repealed) { color: var(--t-text-muted); border: 1px solid var(--t-border-subtle); }
+/* On or off by default: a dot, filled or a ring, before the word or, in
+   the list, alone, the word its name. */
+.switch { color: var(--t-text-muted); }
+.switch::before {
+  content: "";
+  inline-size: var(--t-space-2);
+  block-size: var(--t-space-2);
+  border-radius: var(--t-radius-full);
+}
+.switch.on::before { background: var(--t-accent); }
+.switch.off::before { border: 1px solid var(--t-text-muted); }
+.tags > .switch { min-inline-size: var(--t-space-2); justify-content: center; }
+/* Enabled by the rule set: `check` and the word in the accent color;
+   anything else, the word muted. */
+.enabled { color: var(--t-text-muted); }
+.enabled.on, .default-option { color: var(--t-accent); }
+.kind { color: var(--t-text-muted); }
+/* The quadrant of a source: a box of its color. */
+.q { padding: 0 var(--t-space-1); color: var(--t-text); background: var(--q); border-radius: var(--t-radius-sm); }
+.q.global-public { --q: var(--t-quadrant-global-public); }
+.q.global-private { --q: var(--t-quadrant-global-private); }
+.q.local-public { --q: var(--t-quadrant-local-public); }
+.q.local-private { --q: var(--t-quadrant-local-private); }
+
+/* The tree: each node a row, linked as a whole, its label in a column,
+   its title cut to the row, its tags at the right. The level of a domain
+   shows by size, weight and a bar, not by indentation. */
+.tree { list-style: none; margin: 0; padding: 0; }
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--t-space-2);
+  min-block-size: var(--t-target);
+  padding-inline: var(--t-space-1);
+  line-height: var(--t-line-height-ui);
+  border-radius: var(--t-radius-sm);
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+.row > :is(a, h4, h5) { display: flex; flex: 0 1 auto; align-items: baseline; min-inline-size: 0; margin: 0; }
+.row a { text-decoration: none; }
+/* The row's link covers the row; a link among the tags stands above it. */
+.row > a::after, .row > :is(h4, h5) > a::after { content: ""; position: absolute; inset: 0; }
+.row .tags a { position: relative; text-decoration: underline; text-decoration-color: var(--t-border-subtle); }
+.row > a:focus-visible, .row > :is(h4, h5) > a:focus-visible { outline: none; }
+.row:has(> a:focus-visible, > :is(h4, h5) > a:focus-visible) { outline: 2px solid var(--t-accent); outline-offset: 2px; }
+.row .ref { flex: none; min-inline-size: var(--t-space-12); }
+.row .title { min-inline-size: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.row > .icon { color: var(--t-text-faint); }
+@media (hover: hover) and (pointer: fine) {
+  .row:hover { background-color: var(--t-bg-hover); }
+  .row:hover .title { color: var(--t-accent); }
+}
+/* A domain of the first level is a heading; one of the second level,
+   the deepest, is indented one step with a bar along its edge. */
+.domain > .row > :is(h4, h5) { font-weight: var(--t-weight-bold); }
+.d1 { margin-block-start: var(--t-space-8); }
+.d1 > .row > h4 { font-size: var(--t-text-xl); }
+.d2 { margin-block: var(--t-space-4); padding-inline-start: var(--t-space-4); border-inline-start: 2px solid var(--t-border-strong); }
+.d2 > .row > h5 { font-size: var(--t-text-lg); }
+/* A one-of: a box of its options, with its label on the top border. */
+.one-of {
+  position: relative;
+  margin-block: var(--t-space-4);
+  padding: var(--t-space-3);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-md);
+}
+.one-of.unset { border-color: var(--t-border-subtle); }
+.one-of > .row > a { font-weight: var(--t-weight-medium); }
+.one-of-label {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--t-space-3);
+  translate: 0 -50%;
+  padding-inline: var(--t-space-1);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-medium);
+  line-height: var(--t-line-height-ui);
+  color: var(--t-text-muted);
+  background: var(--t-bg-page);
+}
+.one-of > .tree > li > .row > .icon { color: var(--t-text-muted); }
+.one-of > .tree > li > .row > .icon.default { color: var(--t-accent); }
+
+/* The filter: a quiet button with `funnel`; open, a popover of a group
+   per field, its name and its values as check boxes. */
+.filter { position: relative; margin-block-end: var(--t-space-4); }
+.filter > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-space-2);
+  min-block-size: var(--t-target);
+  padding: var(--t-space-1) var(--t-space-2);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+  border-radius: var(--t-radius-sm);
+  list-style: none;
+  cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+.filter > summary::-webkit-details-marker { display: none; }
+.filter > summary > .icon { inline-size: var(--t-icon-md); block-size: var(--t-icon-md); }
+@media (hover: hover) and (pointer: fine) {
+  .filter > summary:hover { background-color: var(--t-bg-hover); }
+}
+.filter > summary:active { background-color: var(--t-bg-active); }
+.filter .panel {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  display: grid;
+  gap: var(--t-space-3);
+  inline-size: var(--t-width-popover);
+  max-inline-size: 100%;
+  margin-block-start: var(--t-space-1);
+  padding: var(--t-space-3) var(--t-space-4);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+  background: var(--t-bg-panel);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-md);
+  box-shadow: var(--t-shadow-popover);
+  transform-origin: top left;
+  transition-property: opacity, scale;
+  transition-duration: var(--t-duration-base);
+  transition-timing-function: var(--t-ease-out);
+}
+@starting-style {
+  .filter[open] .panel { opacity: 0; scale: .95; }
+}
+.filter fieldset { margin: 0; padding: 0; border: 0; }
+.filter legend { padding: 0; color: var(--t-text-muted); font-weight: var(--t-weight-medium); }
+.filter .values { display: flex; flex-wrap: wrap; column-gap: var(--t-space-3); }
+.filter label { display: inline-flex; align-items: center; gap: var(--t-space-2); min-block-size: var(--t-target); cursor: pointer; }
+
+/* Check boxes, drawn as controls.css of the public site draws them: a
+   box on the page, filled with the accent color when checked, its check
+   Lucide's `check` (the mask site.rs sets). */
+input[type="checkbox"] {
+  appearance: none;
+  position: relative;
+  flex: none;
+  inline-size: var(--t-icon-sm);
+  block-size: var(--t-icon-sm);
+  margin: 0;
+  background-color: var(--t-bg-page);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-sm);
+  cursor: pointer;
+  transition-property: background-color, border-color;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
+}
+input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--t-text-on-accent);
+  mask: var(--icon-check) center / 100% no-repeat;
+  opacity: 0;
+  transition: opacity var(--t-duration-fast) var(--t-ease-out);
+}
+input[type="checkbox"]:checked { background-color: var(--t-accent); border-color: var(--t-accent); }
+input[type="checkbox"]:checked::before { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  input[type="checkbox"]:hover { border-color: var(--t-text-muted); }
+  input[type="checkbox"]:checked:hover { background-color: var(--t-accent-hover); border-color: var(--t-accent-hover); }
+}
+
+/* Under reduced motion nothing changes size; the fades stay. */
+@media (prefers-reduced-motion: reduce) {
+  .filter .panel { transition-property: opacity; }
+  @starting-style {
+    .filter[open] .panel { scale: none; }
+  }
+}
+
+/* On a narrow screen the tags go under the title. */
+@media (max-width: 48rem) {
+  .row { flex-wrap: wrap; padding-block: var(--t-space-1); }
+  .row .tags { margin-inline-start: 0; flex-wrap: wrap; }
+}
+
+/* The filters: a node is hidden when its check box is clear. */
+body:has(#show-old:not(:checked)) .old,
+body:has(#show-off:not(:checked)) .off { display: none; }
+body:has(#show-instructions:not(:checked)) .u-i,
+body:has(#show-review:not(:checked)) .u-r,
+body:has(#show-instructions:not(:checked)):has(#show-review:not(:checked)) .u-ir { display: none; }
