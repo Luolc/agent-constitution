@@ -203,7 +203,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R94 When you check text you passed through a shell, compare what arrived with the file you passed it from.
 - R22 To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status.
 - R23 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
-- R24 Let a credential's value reach a program only through an environment variable or a file, never through a command-line argument or any output you see.
 - R36 Never ask for, read or repeat a credential's value.
 - R37 When a credential shows up where it should not, treat it as leaked and report it at once.
 - R43 Store a credential only where the jurisdiction designates for it.
@@ -216,6 +215,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R142 Read the meta credentials in the meta tier (the tokens of service accounts, SSH keys) only through an interactive route that a person unlocks, and open the tier to no service account.
 - R143 On an attended machine, read the secret manager through the interactive route that a person unlocks, writing each reference with the vault its item is in, and give a service account only to the unattended scheduled tasks there, one that reads the general tier only and whose token goes into those tasks alone, never into a login shell.
 - R144 Reference no vault that a person keeps for their own use, except a vault that a principal sets aside for agents.
+- R279 Let a credential's value reach a program only through an environment variable or a file.
 - R52 Before you push to a public repository, have a reviewer read the diff, the commit messages and the pull request text for private material, and push only the head that reviewer passed.
 - R259 In a public repository's files, commit messages, pull requests, comments and reviews, write nothing that identifies or locates a private resource, a private repository, an agent instance or session, or the scope it runs in, and nothing about an agent's usage, quota, model or effort.
 - L8 Commit no instruction file compiled from a real person's rule set; the compiled outputs committed here are this repository's own `AGENTS.md` and outputs built from made-up rule sets.
