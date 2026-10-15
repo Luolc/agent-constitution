@@ -30,6 +30,9 @@ the whole design.
 - [Skills](skills.md): the skill layout.
 - [Compilation](compilation.md): building the instruction file.
 - [Static site](static-site.md): the Hugo site and its deployment.
+- [Frontend](frontend.md): the design tokens, icons, motion and
+  components of the sites' pages, and the screenshots and review of a
+  change to them; not built yet.
 - [Checkers, fixtures and feedback](checkers.md): the checkers, fixtures,
   load verification and the reserved feedback loop.
 - [Amendments and releases](amendments-and-releases.md): approving an

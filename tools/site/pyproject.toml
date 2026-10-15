@@ -1,7 +1,7 @@
 [project]
 name = "constitution-site"
 version = "0.1.0"
-description = "Rule data, token count and link check for the static site Hugo builds"
+description = "Rule data, token count, link check and screenshots for the static site Hugo builds"
 requires-python = ">=3.14"
 dependencies = []
 
@@ -9,6 +9,7 @@ dependencies = []
 count-tokens = "constitution_site.count_tokens:main"
 check-site-anchors = "constitution_site.check_site_anchors:main"
 site-rules = "constitution_site.site_rules:main"
+site-screenshots = "constitution_site.site_screenshots:main"
 
 [build-system]
 requires = ["hatchling>=1.27,<2"]
