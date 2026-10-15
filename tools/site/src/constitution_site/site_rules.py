@@ -45,10 +45,9 @@ from constitution_compiler.model import (
   MARK,
   Node,
   PARTS,
-  RULES,
   Sources,
 )
-from constitution_compiler.read import _Reader, by_number, first_party, load
+from constitution_compiler.read import _Reader, first_party, load, node_files
 
 ROOT = Path(__file__).resolve().parents[4]
 OUT = ROOT / "web/data/rules.json"
@@ -528,9 +527,7 @@ def load_source(
   reader = _OtherReader(
     path, Layout(Path()), errors, src.languages, src.index.data["status"]
   )
-  for file in sorted(
-    (p.relative_to(path) for p in (path / RULES).glob("*.toml")), key=by_number
-  ):
+  for file in node_files(path):
     reader.node(file)
   return Source(name, quadrant, reader.nodes)
 
@@ -614,7 +611,7 @@ def main(argv: list[str] | None = None) -> int:
   )
   args = parser.parse_args(argv)
   errors = Errors()
-  src = load(args.root, errors)
+  src = load(args.root, errors, nodes=True)
   others = (
     []
     if src is None
