@@ -110,6 +110,10 @@ fn repo_at(name: &str, sub: &str, rules: &str, command: &str) -> PathBuf {
             "id = \"principals\"\n",
         ),
         ("AGENTS.md", "agents\n"),
+        (
+            "constitution/2026-10/generated/constitution.en.agent.md",
+            "agent constitution\n",
+        ),
         ("tools/build.py", "tool\n"),
         ("docs/design/README.md", "design\n"),
         (
@@ -127,10 +131,16 @@ fn repo_at(name: &str, sub: &str, rules: &str, command: &str) -> PathBuf {
     dir
 }
 
-/// Writes `files` and commits them as the change on top of `base`.
+/// Changes `files` and commits them as the change on top of `base`: a
+/// file that is there gets a comment line, so that statute's own files
+/// still load; a new one holds a line.
 fn change(dir: &Path, files: &[&str]) {
     for path in files {
-        write(dir, path, "changed\n");
+        let text = std::fs::read_to_string(dir.join(path)).map_or_else(
+            |_| "changed\n".to_owned(),
+            |text| format!("{text}# changed\n"),
+        );
+        write(dir, path, &text);
     }
     git(dir, &["add", "-A"]);
     git(dir, &["commit", "-qm", "change"]);
@@ -179,8 +189,9 @@ fn r46_mixed_change_is_a_violation() {
     assert_eq!(run.code, 1, "{}", run.stdout);
     assert!(line(&run, 46).starts_with("violation "), "{}", run.stdout);
     assert!(
-        run.stdout
-            .contains("M AGENTS.md: an instruction file, in the same change"),
+        run.stdout.contains(
+            "M AGENTS.md: an instruction file, not what statute compiles now, in the same change"
+        ),
         "{}",
         run.stdout
     );
@@ -227,9 +238,82 @@ fn r46_without_a_base_is_inconclusive() {
     );
 }
 
+/// statute's files beside the rule set are instruction files in any
+/// repository, at its top or in a directory of it.
+#[test]
+fn r46_statute_files_are_instruction_files() {
+    for (name, sub, file, status) in [
+        ("toml", "", "statute.toml", "M"),
+        ("lock", "", "statute.lock", "M"),
+        ("local", "", ".statute/notes.md", "A"),
+        ("sub-lock", "sub", "statute.lock", "M"),
+    ] {
+        let dir = repo_at(&format!("r46-statute-{name}"), sub, "\"R46\"", "true");
+        change(&dir, &[file, "tools/build.py"]);
+        let run = statute(&dir, &["check", "--base", "base"], None);
+        assert_eq!(run.code, 1, "{name}: {}", run.stdout);
+        let at = if sub.is_empty() {
+            file.to_owned()
+        } else {
+            format!("{sub}/{file}")
+        };
+        assert!(
+            run.stdout.contains(&format!(
+                "{status} {at}: an instruction file, in the same change"
+            )),
+            "{name}: {}",
+            run.stdout
+        );
+    }
+}
+
+/// `AGENTS.md` and `statute-checks.toml` that equal what statute compiles
+/// now are generated, and go with the tools; beside a rule set in a
+/// directory too.
+#[test]
+fn r46_compiled_files_go_with_the_side_that_changed_them() {
+    for sub in ["", "sub"] {
+        let dir = repo_at(
+            &format!("r46-compiled-{}", sub.len()),
+            sub,
+            "\"R46\"",
+            "true",
+        );
+        // The base's AGENTS.md is hand-written, which compile leaves alone.
+        std::fs::remove_file(dir.join("AGENTS.md")).unwrap();
+        let compile = statute(&dir, &["compile"], None);
+        assert_eq!(compile.code, 0, "{}", compile.stderr);
+        change(&dir, &["tools/build.py"]);
+        let run = statute(&dir, &["check", "--base", "base"], None);
+        assert_eq!(run.code, 0, "{sub}: {}", run.stdout);
+        let l = line(&run, 46);
+        assert!(l.starts_with("inconclusive "), "{sub}: {l}");
+        let at = |f: &str| {
+            if sub.is_empty() {
+                f.to_owned()
+            } else {
+                format!("{sub}/{f}")
+            }
+        };
+        assert!(
+            l.contains(&format!(
+                "generated files: M {}, A {}, which the reviewer checks",
+                at("AGENTS.md"),
+                at("statute-checks.toml")
+            )),
+            "{sub}: {l}"
+        );
+    }
+}
+
 /// The same changes, judged by statute's rule 46 and by this repository's
 /// `check-instruction-changes`: a violation exactly where the Python check
-/// exits 1.
+/// exits 1. The cases leave out where the two differ by design: the
+/// script always counts the top `AGENTS.md` and `statute-checks.toml` as
+/// generated, as this repository's rules L28 and L27 provide, while
+/// statute does only while they equal its compile (the hand-edited
+/// `AGENTS.md` of `r46_mixed_change_is_a_violation`); and the script
+/// knows statute's files only at the top of the repository.
 #[test]
 fn r46_agrees_with_check_instruction_changes() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
@@ -265,6 +349,10 @@ fn r46_agrees_with_check_instruction_changes() {
             &["skills/a/SKILL.md", "docs/design/README.md"],
         ),
         ("lookalike", &["AGENTS.md.bak", "tools/build.py"]),
+        ("statute-toml", &["statute.toml", "tools/build.py"]),
+        ("statute-lock", &["statute.lock", "tools/build.py"]),
+        ("statute-local", &[".statute/notes.md", "tools/build.py"]),
+        ("legacy", &["docs/CLAUDE.legacy.md", "tools/build.py"]),
     ];
     let mut seen = (0, 0);
     for (name, files) in cases {

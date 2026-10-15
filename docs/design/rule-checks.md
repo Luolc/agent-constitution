@@ -119,12 +119,30 @@ a note that statute has no built-in check for it, so a local `L50` does
 not run rule 50's check. The built-in checks:
 
 - rule 46 (instruction-files-apart) tells instruction files, generated
-  files and other files apart with the same path tables as
+  files and other files apart with the path tables of
   `check-instruction-changes`, and is violated by a change that mixes
-  instruction files with other files; files of agent tools the tables do
-  not name, sources of instructions outside them, and paths a repository
-  declares in its `AGENTS.md` are left to the reviewer, and without
-  `--base` there is no change to check;
+  instruction files with other files. statute's files are taken beside
+  the rule set, wherever it is in the repository: `statute.toml`,
+  `statute.lock` and everything under `.statute/` are instruction files.
+  The lock file is one because it pins each git source's commit, and
+  `statute upgrade` moves a source to newer rules by rewriting the lock
+  file alone, which `statute compile --check` accepts. The `AGENTS.md`
+  and `statute-checks.toml` that statute compiles beside the rule set
+  are generated files only while each equals what statute compiles from
+  the public layer now, which is what rule 47 asks of a generated file;
+  edited by hand, not recompiled, or when statute cannot compile, each
+  is an instruction file, so a hand edit mixed with other files is a
+  violation whether or not the repository's CI runs `statute compile
+  --check`. A change of generated files alone, such as a recompile for a
+  new version of statute, mixes nothing. The note names the generated
+  files the change touches, for the reviewer of rule 47. Here the
+  script differs: in this repository it counts the top `AGENTS.md` and
+  `statute-checks.toml` as generated always, by its rules L28 and L27,
+  since its CI runs `statute compile --check`, and it knows statute's
+  files only at the top of the repository. Files of agent tools the
+  tables do not name, sources of instructions outside them, and paths a
+  repository declares in its `AGENTS.md` are left to the reviewer, and
+  without `--base` there is no change to check;
 - rule 43 (credential-designated-place) runs the gitleaks on the
   machine, with `--redact`, on the commits of the change or on the whole
   history, and is violated by a hit, shown by its place and gitleaks rule

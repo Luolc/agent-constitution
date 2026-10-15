@@ -1,21 +1,27 @@
 //! Rule 46, instruction-files-apart: a change does not mix instruction
-//! files with other files. The same check as `check-instruction-changes`
-//! of this repository's tools, with the same path tables.
+//! files with other files. The path tables of `check-instruction-changes`
+//! of this repository's tools, with statute's own files beside the rule
+//! set (`docs/design/checkers.md` says where the two differ).
 //!
 //! It covers only part of the rule: the tables hold the files of the
-//! agent tools they name and this repository's own sources; the files of
-//! other agent tools, the sources another repository compiles its
-//! instructions from, and paths a repository declares as instructions in
-//! its own `AGENTS.md` are for the reviewer. So a change it finds nothing
-//! wrong with is inconclusive, not a pass. Whether a generated file
-//! changed only in rendering is rule 47's, for the reviewer.
+//! agent tools they name, statute's files and this repository's own
+//! sources; the files of other agent tools, the sources another
+//! repository compiles its instructions from, and paths a repository
+//! declares as instructions in its own `AGENTS.md` are for the reviewer.
+//! So a change it finds nothing wrong with is inconclusive, not a pass.
+//! Whether a generated file changed only in rendering is rule 47's, for
+//! the reviewer.
+
+use std::path::Path;
 
 use regex::RegexSet;
 
 use super::{Context, Finding, Outcome, Report, git};
+use crate::compile::{CHECKS, FILE as AGENTS_MD, Output};
 
 /// Instruction files in any repository: what an agent harness reads as
-/// instructions, skills, subagents, commands, hooks or permissions.
+/// instructions, skills, subagents, commands, hooks or permissions, and
+/// the legacy copies of the hand-written instructions a migration keeps.
 const GENERIC: &[&str] = &[
     r"(.*/)?AGENTS\.md",
     r"(.*/)?CLAUDE\.md",
@@ -26,7 +32,16 @@ const GENERIC: &[&str] = &[
     r"(.*/)?\.claude/settings(\.local)?\.json",
     r"(.*/)?\.claude/hooks/.+",
     r"(.*/)?\.codex/.+",
+    r"(.*/)?[^/]+\.legacy\.md",
 ];
+
+/// statute's files beside the rule set, relative to its directory, which
+/// the instructions are compiled from: the rule set, its lock file and
+/// `.statute/`, with the local rules. The lock file is no generated file:
+/// it pins the commit of each git source, and `statute upgrade` moves a
+/// source to newer rules by rewriting the lock file alone, which
+/// `statute compile --check` accepts.
+const STATUTE: &[&str] = &[r"statute\.toml", r"statute\.lock", r"\.statute/.+"];
 
 /// This repository's own instruction files: the constitution, rule and
 /// skill sources.
@@ -37,11 +52,7 @@ const REPO: &[&str] = &[
     r"skills/.+",
 ];
 
-/// Generated files, which go with whichever side changed them. The
-/// script also counts this repository's top `AGENTS.md` as one, under
-/// its local rule L28, which overrides rule 46 there, so this check does
-/// not run there; elsewhere `statute compile --check` need not be in CI,
-/// so here the top `AGENTS.md` stays an instruction file.
+/// Generated files, which go with whichever side changed them.
 const GENERATED: &[&str] = &[r"constitution/[^/]+/generated/constitution\.[^/]+\.md"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,20 +62,71 @@ pub enum Kind {
     Other,
 }
 
-/// Which kind a path relative to the repository is; each pattern matches
-/// the whole path, as Python's `re.fullmatch` does.
-pub fn kind(path: &str) -> Kind {
-    let whole = |patterns: &[&str]| {
-        RegexSet::new(patterns.iter().map(|p| format!("^(?:{p})$")))
-            .expect("the patterns are valid")
-            .is_match(path)
-    };
-    if whole(GENERATED) {
-        Kind::Generated
-    } else if whole(GENERIC) || whole(REPO) {
-        Kind::Instruction
-    } else {
-        Kind::Other
+/// Tells the kind of a path relative to the top of the repository.
+pub struct Classes {
+    /// The rule set's directory relative to the top, with a trailing
+    /// `/`; empty at the top.
+    prefix: String,
+    /// The files statute compiles beside the rule set, `AGENTS.md` and
+    /// `statute-checks.toml`, that equal what it compiles from the public
+    /// layer now, relative to the top. Rule 47 takes a generated file to
+    /// be one shown to equal its build, so only these are generated; one
+    /// that differs (edited by hand, not recompiled, or statute cannot
+    /// compile) stays an instruction file.
+    compiled: Vec<String>,
+}
+
+impl Classes {
+    /// The classes for the rule set at `root`, in the repository whose
+    /// top is `top`, with `output` what statute compiles there now.
+    pub fn new(root: &Path, top: &Path, output: Option<&Output>) -> Self {
+        let canonical = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
+        let prefix = canonical(root)
+            .strip_prefix(canonical(top))
+            .map(|p| p.to_string_lossy().into_owned())
+            .ok()
+            .filter(|p| !p.is_empty())
+            .map_or_else(String::new, |p| format!("{p}/"));
+        let compiled = output
+            .into_iter()
+            .flat_map(|out| [(AGENTS_MD, &out.agents_md), (CHECKS, &out.checks)])
+            .filter(|(name, text)| {
+                std::fs::read(root.join(name)).is_ok_and(|t| t == text.as_bytes())
+            })
+            .map(|(name, _)| format!("{prefix}{name}"))
+            .collect();
+        Classes { prefix, compiled }
+    }
+
+    /// Which kind `path` is; each pattern matches the whole path, as
+    /// Python's `re.fullmatch` does.
+    pub fn kind(&self, path: &str) -> Kind {
+        let whole = |patterns: &[&str], path: &str| {
+            RegexSet::new(patterns.iter().map(|p| format!("^(?:{p})$")))
+                .expect("the patterns are valid")
+                .is_match(path)
+        };
+        if whole(GENERATED, path) || self.compiled.iter().any(|c| c == path) {
+            Kind::Generated
+        } else if whole(GENERIC, path)
+            || whole(REPO, path)
+            || self.beside(path).is_some_and(|p| whole(STATUTE, p))
+        {
+            Kind::Instruction
+        } else {
+            Kind::Other
+        }
+    }
+
+    /// `path` relative to the rule set's directory, when it is inside it.
+    fn beside<'p>(&self, path: &'p str) -> Option<&'p str> {
+        path.strip_prefix(&self.prefix)
+    }
+
+    /// Whether `path` is a file statute compiles beside the rule set.
+    fn compiles(&self, path: &str) -> bool {
+        self.beside(path)
+            .is_some_and(|p| p == AGENTS_MD || p == CHECKS)
     }
 }
 
@@ -94,31 +156,38 @@ pub fn check(ctx: &Context) -> Report {
     };
     let text = String::from_utf8_lossy(&out);
     let fields: Vec<&str> = text.split('\0').filter(|f| !f.is_empty()).collect();
+    let classes = Classes::new(ctx.root, &ctx.top(), ctx.compiled);
     let mut instruction = Vec::new();
-    let mut generated = 0;
+    let mut generated = Vec::new();
     let mut other = Vec::new();
     for pair in fields.chunks(2) {
         let [status, path] = pair else { continue };
         let line = format!("{status} {path}");
-        match kind(path) {
-            Kind::Instruction => instruction.push(line),
-            Kind::Generated => generated += 1,
-            Kind::Other => other.push(line),
+        match classes.kind(path) {
+            Kind::Instruction if classes.compiles(path) => instruction.push((
+                line,
+                "an instruction file, not what statute compiles now, in the same change",
+            )),
+            Kind::Instruction => {
+                instruction.push((line, "an instruction file, in the same change"))
+            }
+            Kind::Generated => generated.push(line),
+            Kind::Other => other.push((line, "another file, in the same change")),
         }
     }
     let counts = format!(
-        "{} instruction, {} other, {generated} generated",
+        "{} instruction, {} other, {} generated",
         instruction.len(),
-        other.len()
+        other.len(),
+        generated.len()
     );
     if !instruction.is_empty() && !other.is_empty() {
         let findings = instruction
             .iter()
-            .map(|l| (l, "an instruction file"))
-            .chain(other.iter().map(|l| (l, "another file")))
-            .map(|(location, what)| Finding {
+            .chain(&other)
+            .map(|(location, reason)| Finding {
                 location: location.clone(),
-                reason: format!("{what}, in the same change"),
+                reason: (*reason).to_owned(),
             })
             .collect();
         return Report {
@@ -129,10 +198,18 @@ pub fn check(ctx: &Context) -> Report {
             ),
         };
     }
+    let rendering = if generated.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "; generated files: {}, which the reviewer checks changed only in rendering when tools changed them",
+            generated.join(", ")
+        )
+    };
     Report::new(
         Outcome::Inconclusive,
         format!(
-            "the change since {base} does not mix instruction files with other files ({counts}); files of other agent tools, sources of instructions outside the path tables, and paths the repository declares in its AGENTS.md are for the reviewer"
+            "the change since {base} does not mix instruction files with other files ({counts}){rendering}; files of other agent tools, sources of instructions outside the path tables, and paths the repository declares in its AGENTS.md are for the reviewer"
         ),
     )
 }

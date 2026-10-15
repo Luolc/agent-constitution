@@ -69,11 +69,13 @@ impl Report {
     }
 }
 
-/// What the checks look at: the repository of `statute.toml`, and the
-/// change to check, `git diff <base>...HEAD`, when a base is given.
+/// What the checks look at: the repository of `statute.toml`, the
+/// change to check, `git diff <base>...HEAD`, when a base is given, and
+/// what statute compiles from the public layer now, when it can.
 pub struct Context<'a> {
     pub root: &'a Path,
     pub base: Option<&'a str>,
+    pub compiled: Option<&'a crate::compile::Output>,
 }
 
 impl Context<'_> {
@@ -150,7 +152,11 @@ pub fn github_visibility(root: &Path) -> Result<String, String> {
 /// As `github_visibility`, for the repository `repo` (`owner/name`) when
 /// given, else the one at `root`.
 pub fn visibility_of(root: &Path, repo: Option<&str>) -> Result<String, String> {
-    let ctx = Context { root, base: None };
+    let ctx = Context {
+        root,
+        base: None,
+        compiled: None,
+    };
     let mut args = vec!["repo", "view"];
     args.extend(repo);
     args.extend(["--json", "visibility"]);
