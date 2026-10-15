@@ -350,14 +350,41 @@ fn a_rule_split_in_two_is_a_warning_naming_both() {
     warns(
         &s,
         &[8],
-        "rule R8 (Rule 8) (listed in `rules`) is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 in `rules` with those of R2, R3 that apply",
+        "rule R8 (Rule 8) (listed in `rules`) is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 in `rules` with R2, R3, which together take its place, leaving out any that does not apply",
     );
     let (_, diags) = run(&s, &[], &[8], 1);
     let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
     assert_eq!(
         warnings,
         [
-            "statute.toml: warning: pack R8 (Rule 8) enables nothing: its root is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 in `packs` with those of R2, R3 that apply"
+            "statute.toml: warning: pack R8 (Rule 8) enables nothing: its root is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 in `packs` with R2, R3, which together take its place, leaving out any that does not apply"
+        ]
+    );
+}
+
+#[test]
+fn a_superseded_successor_is_followed_to_the_rules_in_force() {
+    // R8 is superseded by R4, and R4 by R2 and R3: the advice names R2 and
+    // R3, as `upgrade` does, not R4.
+    let superseded = |r: (u64, String)| edit(r, "status = \"draft\"", "status = \"superseded\"");
+    let s = source(&[
+        domain(1),
+        rule(2, 1, ""),
+        rule(3, 1, ""),
+        superseded(rule(4, 1, "superseded-by = [2, 3]")),
+        superseded(rule(8, 1, "superseded-by = 4")),
+    ]);
+    warns(
+        &s,
+        &[8],
+        "rule R8 (Rule 8) (listed in `rules`) is superseded by R4 (Rule 4); replace R8 in `rules` with R2, R3, which together take its place, leaving out any that does not apply",
+    );
+    let (_, diags) = run(&s, &[], &[8], 1);
+    let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
+    assert_eq!(
+        warnings,
+        [
+            "statute.toml: warning: pack R8 (Rule 8) enables nothing: its root is superseded by R4 (Rule 4); replace R8 in `packs` with R2, R3, which together take its place, leaving out any that does not apply"
         ]
     );
 }

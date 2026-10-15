@@ -696,3 +696,63 @@ pub fn show_ref(r: &Ref) -> String {
         Ref::Foreign { source, id } => format!("\"{}\"", crate::manifest::show(source, *id)),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::original_sha256;
+
+    const BASE: &str = r#"id = 7
+slug = "seven"
+requires = [2]
+lang = "en"
+
+[title]
+en = "Seven"
+zh = "七"
+
+[text.statement]
+en = "Do seven."
+zh = "做七。"
+
+[translations]
+zh = "abc"
+"#;
+
+    fn hash(content: &str) -> String {
+        original_sha256(content, "en")
+    }
+
+    #[test]
+    fn the_hash_follows_the_original_and_the_fields() {
+        let base = hash(BASE);
+        for (from, to) in [
+            ("requires = [2]", "requires = [3]"),
+            ("en = \"Seven\"", "en = \"Seven rules\""),
+            ("en = \"Do seven.\"", "en = \"Do eight.\""),
+        ] {
+            let changed = BASE.replace(from, to);
+            assert_ne!(changed, BASE, "{from} is in the sample");
+            assert_ne!(hash(&changed), base, "{from} -> {to}");
+        }
+    }
+
+    #[test]
+    fn the_hash_ignores_translations_and_layout() {
+        let base = hash(BASE);
+        for (from, to) in [
+            ("zh = \"七\"", "zh = \"第七\""),
+            ("zh = \"做七。\"", "zh = \"做第七条。\""),
+            ("zh = \"abc\"", "zh = \"def\""),
+            // The same table, its keys in another order with a comment.
+            (
+                "id = 7\nslug = \"seven\"",
+                "# A comment.\nslug = \"seven\"\nid = 7",
+            ),
+            ("en = \"Seven\"", "en = 'Seven'"),
+        ] {
+            let changed = BASE.replace(from, to);
+            assert_ne!(changed, BASE, "{from} is in the sample");
+            assert_eq!(hash(&changed), base, "{from} -> {to}");
+        }
+    }
+}
