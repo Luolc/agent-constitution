@@ -221,11 +221,10 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - L8 Commit no instruction file compiled from a real person's rule set; the compiled outputs committed here are this repository's own `AGENTS.md` and outputs built from made-up rule sets.
 - L11 Before a push, search the diff, the commit messages and the pull request text for each class of private material that a public repository must not hold, and run each search once on a file where it must match.
 - R30 On a machine you share with others, start no load generator.
-- R31 On a machine you share with others, reproduce a problem that only shows under heavy load in an isolated environment with capped resources, or, where none is available, record it as open work and report it.
 - R66 Give every loop that waits for something an exit for when what it waits for is gone.
 - R73 Before you start a background process that keeps holding resources, record what stops it if you are closed before you stop it yourself.
-- R138 On a machine you share with others, reproduce a problem that only shows under heavy load in a container with capped CPU (`docker run --cpus 1 …`, for example), keeping the 1-minute load average no higher than the machine's CPU count, or, where you cannot, record it as open work, say what isolated environment it needs, and leave the decision to a principal.
 - R251 Before a task text you write tells another agent how to do something safely on a shared machine, decide whether it should be done there at all, and give no precautions for an act that a rule in force forbids on that machine.
+- R278 On a machine you share with others, reproduce a problem that shows only under heavy load, and only in an isolated environment whose resources are capped so that the machine's load stays within what it can carry; where you have none, record it as open work, say what isolated environment it needs, and leave the decision to a principal.
 - R199 Before starting a task, read the writing guide that the rules in force name, together with the parts it names for the language you will write in, and write all text that people read by it.
 - R200 Write the repository's text for people, such as documents, logs and the README, in English, whatever language the principal speaks to you in.
 - R202 Write code in English: its identifiers, its file names and the strings that are part of its interface.
