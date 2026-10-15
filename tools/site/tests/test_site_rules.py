@@ -27,7 +27,7 @@ class SiteRulesTest(unittest.TestCase):
     self.root = Path(tmp.name)
     site_fixture.write(self.root)
     errors = Errors()
-    src = load(self.root, errors)
+    src = load(self.root, errors, nodes=True)
     assert src is not None, errors
     self.data = site_rules.site_data(src)
 
@@ -83,7 +83,7 @@ class SiteRulesTest(unittest.TestCase):
 
   def load(self):
     errors = Errors()
-    src = load(self.root, errors)
+    src = load(self.root, errors, nodes=True)
     assert src is not None, errors
     return site_rules.site_data(src)
 
@@ -147,7 +147,7 @@ class SiteRulesTest(unittest.TestCase):
 
   def test_listed_only_in_force(self):
     errors = Errors()
-    src = load(self.root, errors)
+    src = load(self.root, errors, nodes=True)
     assert src is not None, errors
     rule = next(n for n in src.nodes if n.id == 5)
     self.assertTrue(site_rules.listed(rule))
@@ -233,7 +233,7 @@ class SiteRulesTest(unittest.TestCase):
 
   def other(self, enabled=None):
     errors = Errors()
-    src = load(self.root, errors)
+    src = load(self.root, errors, nodes=True)
     assert src is not None, errors
     demo = self.root / "demo"
     site_fixture.write_other(demo)
@@ -312,6 +312,31 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       [c.get("label", c.get("ref")) for c in nodes["R5"]["conflicts"]],
       ["R3", "demo:4", "team:7"],
+    )
+
+  def test_rule_config_fields_are_read_past(self):
+    """params.toml is no node; `default`, `uses` and `check = "none"` pass.
+
+    statute validates them; the site does not show them yet.
+    """
+    params = '[[parameter]]\nname = "language.docs"\n'
+    (self.root / "rules/params.toml").write_text(params, encoding="utf-8")
+    site_fixture.write_other(self.root / "demo")
+    (self.root / "demo/rules/params.toml").write_text(params, encoding="utf-8")
+    rule = self.root / "rules/3.toml"
+    text = rule.read_text(encoding="utf-8")
+    self.assertIn('check = "review"', text)
+    rule.write_text(
+      text.replace(
+        'check = "review"',
+        'check = "none"\ndefault = "on"\nuses = ["instructions", "review"]',
+      ),
+      encoding="utf-8",
+    )
+    data = self.other()["en"]
+    self.assertEqual(
+      [n["label"] for n in data["nodes"]],
+      ["R1", "R2", "R3", "R4", "R5", "R6", "demo:1", "demo:2", "demo:4"],
     )
 
   def test_main_with_another_source(self):
