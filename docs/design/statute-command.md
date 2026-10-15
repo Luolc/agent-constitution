@@ -122,6 +122,17 @@ finishes it. The order makes that work: a skill's
 `.statute-generated` is written before its files, a link is removed
 before its directory, and the `AGENTS.md` is written last.
 
+`statute compile --check` writes nothing. It compiles the public layer
+and fails, naming each place, wherever `statute compile` would change
+something: an `AGENTS.md` or `statute-checks.toml` that differs or is
+missing, a file of a skill's copy that differs from the source, is
+missing or is not in the source, a copy or a link that is not statute's,
+and a skill directory with `.statute-generated` that the rule set no
+longer needs. The private output, which git ignores, is neither compiled
+nor compared, so a private layer that does not load does not fail it.
+Like `compile`, it fails when `statute.lock` is not what `statute lock`
+would write now. This repo runs it as a commit hook, which CI runs too.
+
 A `CLAUDE.md` next to the `AGENTS.md` written (the top of the
 repository, unless `--output` names another place), a file or a link to
 `AGENTS.md`, draws a warning on every `statute compile`, with or without
@@ -177,7 +188,8 @@ The rule set is `statute.toml`, the lock file
   `--private-only`, only the private output, for a git hook in a new
   worktree, without the network and never failing
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
-  A new worktree);
+  A new worktree); with `--check`, nothing, failing when the committed
+  output differs from a fresh compile;
 - `check`: list the enabled rules for review by domain, with the outcome
   of those a script checks ([Checks](rule-checks.md#checks));
 - `upgrade`: move the sources and the constitution to newer versions

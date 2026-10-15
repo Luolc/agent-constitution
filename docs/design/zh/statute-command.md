@@ -1,4 +1,4 @@
-<!-- en-sha256: a9fcad8c406c69314bd5e12c949062ff193b12f33410e78392f122433a60406c -->
+<!-- en-sha256: d51adf3d502df4d23fd01d832d204d15b3b72258b60ce1a855dfb212f4022bdc -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -26,6 +26,8 @@
 
 每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，`statute-checks.toml` 里是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
 
+`statute compile --check` 什么都不写。它只编译公开层，凡是 `statute compile` 会改动的地方都逐个列出并失败：内容不同或缺失的 `AGENTS.md`、`statute-checks.toml`，skill 副本里与源不同、缺失或源里没有的文件，不是 statute 写的副本或软链，以及带 `.statute-generated`、但规定清单已经不需要的 skill 目录。git 忽略的私有输出既不编译也不比较，所以私有层加载失败也不会让它失败。和 `compile` 一样，`statute.lock` 不是 `statute lock` 此刻会写出的内容时它也失败。本仓库把它作为提交钩子运行，CI 也跑这些钩子。
+
 写出的 `AGENTS.md` 旁边 (不给 `--output` 时就是仓库顶层) 有 `CLAUDE.md` 时，不论是普通文件还是指向 `AGENTS.md` 的软链，每次 `statute compile` 都给出 warning，有没有私有层都一样。warning 问要不要删掉它，并用几句短话说明原因：没有 `CLAUDE.md` 时 Claude Code 自己会读 `AGENTS.md` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，所以不需要 `CLAUDE.md` 指向它；有私有输出时，`CLAUDE.local.md` 用全文代替 `AGENTS.md` 给 Claude Code 读，Claude Code 还会再读 `CLAUDE.md`，它的内容就叠在规定之上，指向 `AGENTS.md` 的软链会让公开规定读两遍 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，没有私有层时 warning 不说这一句；迁移时 ([statute-migrate](../../../skills/statute-migrate/SKILL.md)，第 e 步)，普通文件的 `CLAUDE.md` 改名为旧版副本，指向 `AGENTS.md` 的软链不改名，只问用户要不要删。statute 既不删它，也不改名。尚未实现：warning 仍说迁移时两种都会改名。
 
 编译、检查和升级规定清单由同一个命令完成 ([命令与第一版](#the-command-and-the-first-version))。宪法也由这个命令构建，即 `statute constitution build`。
@@ -40,7 +42,7 @@
 - `source add`：在规定清单、它的私有层或全局配置里登记一个规定源 ([添加规定源](global-configuration.md#adding-a-source))；
 - `add` 和 `remove`：在规定清单里启用一条规定或去掉它，并更新锁文件；加 `--private` 时改的是私有规定清单 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))；
 - `lock`：把规定清单解析成锁文件；
-- `compile`：写出编译输出 ([编译与网站](#compilation-and-the-site))；加 `--private-only` 时只写私有输出，供新 worktree 里的 git 钩子用，不联网，也从不失败 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)，新的 worktree 一段)；
+- `compile`：写出编译输出 ([编译与网站](#compilation-and-the-site))；加 `--private-only` 时只写私有输出，供新 worktree 里的 git 钩子用，不联网，也从不失败 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)，新的 worktree 一段)；加 `--check` 时什么都不写，提交的输出与重新编译的结果不同就失败；
 - `check`：按 domain 列出启用的规定供审查，脚本能检查的附上结果 ([检查](rule-checks.md#checks))；
 - `upgrade`：把规定源和宪法移到更新的版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；
 - `explain`：说明一条规定为什么被启用、哪些规定依赖它；
