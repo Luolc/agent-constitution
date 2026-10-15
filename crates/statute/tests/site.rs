@@ -166,7 +166,7 @@ fn site_shows_the_four_quadrants() {
     let r = statute(&dir, &["site"]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     assert!(
-        r.stdout.contains("wrote 9 pages to .statute/site"),
+        r.stdout.contains("wrote 18 pages to .statute/site"),
         "{}",
         r.stdout
     );
@@ -609,4 +609,130 @@ fn site_draws_the_tree_by_level() {
         .find("<details class=\"filter\"><summary><svg class=\"icon\"")
         .expect(&index)..];
     assert!(filter[..filter.find("</summary>").unwrap()].contains(&path.replace(" />", "/>")));
+}
+
+/// The path of the page the language switch of the page at `path` leads
+/// to, both below the site's directory.
+fn switched(site: &Path, path: &Path) -> PathBuf {
+    let html = std::fs::read_to_string(site.join(path)).unwrap();
+    let start = html.find("<a class=\"languages\" href=\"").unwrap() + 27;
+    let href = &html[start..start + html[start..].find('"').unwrap()];
+    let mut to = path.parent().unwrap().to_path_buf();
+    for part in href.split('/') {
+        if part == ".." {
+            assert!(to.pop(), "{}: {href}", path.display());
+        } else {
+            to.push(part);
+        }
+    }
+    to
+}
+
+#[test]
+fn site_writes_both_languages() {
+    let dir = four("languages");
+    // R2 has a Chinese translation, here:5 is Chinese only, and me:4,
+    // which cites R2, English only.
+    let hash = statute::node::original_hash(&[
+        "Rule 2",
+        "Do the thing 2.",
+        "Because.\n",
+        "Violated when the thing is not done.",
+    ]);
+    let r2 = rule(2, 1, "");
+    let r2 = edit(r2, "en = \"Rule 2\"", "en = \"Rule 2\"\nzh = \"规定 2\"");
+    let r2 = edit(
+        r2,
+        "en = \"Do the thing 2.\"",
+        "en = \"Do the thing 2.\"\nzh = \"做事 2。\"",
+    );
+    let r2 = edit(r2, "Because.\n'''", "Because.\n'''\nzh = \"因为。\"");
+    let r2 = edit(
+        r2,
+        "en = \"Violated when the thing is not done.\"",
+        "en = \"Violated when the thing is not done.\"\nzh = \"没做即为违反。\"",
+    );
+    write(
+        &dir,
+        "r/rules/2.toml",
+        &format!("{}\n[translations]\nzh = \"{hash}\"\n", r2.1),
+    );
+    let (id, r5) = edit(rule(5, 1, ""), "lang = \"en\"", "lang = \"zh\"");
+    let r5 = edit((id, r5.replace("\nen = ", "\nzh = ")), "Rule 5", "规定 5");
+    put(&dir, "here/rules", r5);
+    let r = statute(&dir, &["site"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+
+    // The language of `[compile] lang` at the top, the other in `zh/`,
+    // with the same pages.
+    let site = dir.join(".statute/site");
+    let all = files(&site);
+    let top: BTreeSet<&PathBuf> = all.iter().filter(|p| !p.starts_with("zh")).collect();
+    let zh: BTreeSet<PathBuf> = all
+        .iter()
+        .filter_map(|p| p.strip_prefix("zh").ok().map(Path::to_path_buf))
+        .collect();
+    assert_eq!(top.len(), 10, "{top:?}");
+    for path in top
+        .iter()
+        .filter(|p| p.extension().is_some_and(|e| e == "html"))
+    {
+        assert!(zh.contains(*path), "{}", path.display());
+        // Each page's switch leads to the same page in the other
+        // language, and back.
+        let other = switched(&site, path);
+        assert_eq!(other, Path::new("zh").join(path));
+        assert_eq!(switched(&site, &other), **path);
+    }
+    let index = read(&site, "index.html");
+    let index_zh = read(&site, "zh/index.html");
+    assert!(index.contains("<html lang=\"en\">") && index.contains("Filter"));
+    assert!(index_zh.contains("<html lang=\"zh\">") && index_zh.contains("筛选"));
+    assert!(
+        index
+            .contains("<a class=\"languages\" href=\"zh/index.html\" hreflang=\"zh\" lang=\"zh\">")
+    );
+    assert!(index.contains("中文</a>") && index_zh.contains("English</a>"));
+
+    // A title the page's language has, as it is; another, in the node's
+    // language, marked with it.
+    assert!(
+        index_zh.contains("<span class=\"title\">规定 2</span>"),
+        "{index_zh}"
+    );
+    assert!(index_zh.contains("<span class=\"title\" lang=\"en\">Rule 3</span>"));
+    assert!(index.contains("<span class=\"title\" lang=\"zh\">规定 5</span>"));
+
+    // A node with every text in the page's language has no tag.
+    for page in ["R/2.html", "zh/R/2.html", "zh/here/5.html"] {
+        let html = read(&site, page);
+        assert!(!html.contains("class=\"untranslated\""), "{page}");
+        assert!(
+            !html.contains("<span lang=") && !html.contains("<div lang="),
+            "{page}"
+        );
+    }
+    let r2 = read(&site, "zh/R/2.html");
+    assert!(
+        r2.contains("<span class=\"ref\">R2</span>规定 2</h1>"),
+        "{r2}"
+    );
+    assert!(r2.contains("<p>做事 2。</p>"), "{r2}");
+
+    // One without them is shown in its own, marked, with a tag; a rule it
+    // cites is named in the language of its text.
+    let r4 = read(&site, "zh/me/4.html");
+    assert!(
+        r4.contains("<span lang=\"en\">Private rule 4</span></h1>"),
+        "{r4}"
+    );
+    assert!(r4.contains("<span class=\"untranslated\">"), "{r4}");
+    assert!(r4.contains("无中文</span>"), "{r4}");
+    assert!(
+        r4.contains("<div lang=\"en\">\n<p>Keep the secret, after <a href=\"../R/2.html\"><span class=\"ref\">R2</span><span class=\"title\">Rule 2</span></a>.</p>\n</div>"),
+        "{r4}"
+    );
+    let r5 = read(&site, "here/5.html");
+    assert!(r5.contains("<span lang=\"zh\">规定 5</span></h1>"), "{r5}");
+    assert!(r5.contains("Not translated</span>"), "{r5}");
 }

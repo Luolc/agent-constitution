@@ -7,7 +7,9 @@
   rules/<name>-params/ for another's, after the nodes, the page's data
   in its params. A node's page takes its title as text, without the
   backticks of its code spans. The pages are hidden from the theme's
-  own list (bookHidden); the menu links the list. The build
+  own list (bookHidden); the menu links the list. The list has no
+  table of contents (BookToC), so no button for one in the top bar of a
+  narrow screen: its group rows stick and name the domain in view. The build
   fails without the data. It runs once for each language of the site. */ -}}
 {{- .EnableAllLanguages }}
 {{- $lang := .Site.Language.Lang }}
@@ -19,7 +21,7 @@
   "kind" "section"
   "path" "."
   "title" (i18n "rules")
-  "params" (dict "bookHidden" true)
+  "params" (dict "bookHidden" true "BookToC" false)
 ) }}
 {{- range $i, $node := $data.nodes }}
   {{- $.AddPage (dict

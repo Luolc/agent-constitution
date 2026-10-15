@@ -565,6 +565,17 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
         assert!(index.contains(&heading), "{heading}\n{index}");
     }
     assert!(!index.contains("snapshots"), "{index}");
+    // The Chinese pages join address and commit in Chinese.
+    let index_zh = read(&w.repo, ".statute/site/zh/index.html");
+    for place in [
+        format!("{}，提交 {r_commit}", w.r_address),
+        format!("{me}，提交 {me_commit}"),
+    ] {
+        let place = format!("<span class=\"place\">{place}</span>");
+        assert!(index_zh.contains(&place), "{place}\n{index_zh}");
+    }
+    let body = &index_zh[index_zh.find("<body>").unwrap()..];
+    assert!(!body.contains(" at "), "{body}");
 }
 
 #[test]
