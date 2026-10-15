@@ -219,7 +219,8 @@ when the two disagree.
   constitution and rule sources and prints `file:line: field: finding`;
   `--fix` writes limae's fixes back into the sources. A limae finding in
   a built file (the four under `generated/`) is fixed in the sources or the
-  build script, never in that file.
+  constitution build (`crates/statute/src/constitution/`), never in that
+  file.
 - `uv run check-design-translation`: fails when `docs/design/zh/` and
   `docs/design/` do not hold the same files, a translation's hash line
   is not its English file's SHA-256 now, a heading's level or anchor
