@@ -389,11 +389,26 @@ serves every worktree of the clone. The hook runs one command,
 
 `$3` is 1 for a checkout of a branch and 0 for one of files, so the
 private output follows the branch, whose `statute.toml` may differ.
-The hook's path is what `git rev-parse --git-path hooks/post-checkout`
-prints, which follows `core.hooksPath`; a repository whose hook
-manager owns that file adds the line there, and pre-commit can install
-a hook of this type. statute does not install the hook: the user does,
-once per clone. `--private-only`:
+
+A merge moves a branch without a checkout. A main checkout that is
+only ever brought up to date with `git merge --ff-only` runs no
+`post-checkout` hook, and its private output would keep what its first
+checkout wrote, or never be written. A `post-merge` hook runs the same
+command, on every merge: git runs it after a merge that moves the
+branch, a fast-forward included, and not after one that finds nothing
+to do (githooks(5)).
+
+```sh
+#!/bin/sh
+statute compile --private-only; exit 0
+```
+
+The hooks' paths are what `git rev-parse --git-path hooks/post-checkout`
+and `git rev-parse --git-path hooks/post-merge` print, which follow
+`core.hooksPath`; a repository whose hook manager owns those files adds
+the lines there, and pre-commit can install hooks of both types. statute
+does not install the hooks: the user does, once per clone.
+`--private-only`:
 
 - writes only `.statute/.gitignore`, `.statute/AGENTS.full.md` and the
   two links, never `AGENTS.md`, the skills or `statute-checks.toml`;
