@@ -14,7 +14,7 @@ uses = ["instructions", "review"]
 
 [title]
 en = "To change instructions, skills or tool settings, change their source, not an installed copy"
-zh = "要改指令、skill 或工具配置，就改源文件，不改已安装的副本"
+zh = "要改指令、skill 或工具配置，就改源文件，不改装好的副本"
 
 [text.statement]
 en = "To change instructions, skills or agent tool settings, change their source through review, never an installed copy."
@@ -25,7 +25,7 @@ en = '''
 A change to instructions that bind agents is proposed and reviewed as a change of its own ({@constitution:separate-instruction-changes}, {@constitution:independent-review}). An edit to an installed copy skips that review, and makes the copy differ from its source, so two places say different things until the next install silently undoes the edit ({@constitution:no-restating}).
 '''
 zh = '''
-约束 agent 的指令，改动要作为单独的变更提出并经过审查 ({@constitution:separate-instruction-changes}、{@constitution:independent-review})。就地修改已安装的副本，跳过了这道审查，还让副本和源文件不一致：在下一次安装悄悄覆盖这处修改之前，两个地方说的不是一回事 ({@constitution:no-restating})。
+约束 agent 的指令，改动要作为单独的变更提出并经过审查 ({@constitution:separate-instruction-changes}、{@constitution:independent-review})。就地修改装好的副本，跳过了这道审查，还让副本和源文件不一致：在下一次安装悄悄覆盖这处修改之前，两个地方说的不是一回事 ({@constitution:no-restating})。
 '''
 
 [text.verification]
@@ -39,13 +39,13 @@ When unsure whether a file is an installed copy, treat it as one.
 Violated when an agent edits an installed copy of instructions, skills or agent tool settings in place.
 '''
 zh = '''
-改动写入源文件，经过审查，再从源文件重新安装副本。已安装的副本也可能纳入仓库的版本管理，例如从规定集编译出来的 `AGENTS.md`，或者提交进仓库的 skill；直接改它，改动会出现在变更的 diff 里。
+改动写入源文件，经过审查，再从源文件重新安装副本。装好的副本也可能纳入仓库的版本管理，例如从规定集编译出来的 `AGENTS.md`，或者提交进仓库的 skill；直接改它，改动会出现在变更的 diff 里。
 
-通过 agent 工具自己的设置界面或命令加条目，例如权限或 hook 的菜单，也是就地修改它已安装的配置。
+通过 agent 工具自己的设置界面或命令加条目，例如权限或 hook 的菜单，也是就地修改它装好的配置。
 
-不确定某个文件是否属于已安装的副本的，按属于处理。
+不确定某个文件是否属于装好的副本的，按属于处理。
 
-agent 就地修改指令、skill 或 agent 工具配置的已安装副本的，即为违反本规定。
+agent 就地修改指令、skill 或 agent 工具配置的装好的副本的，即为违反本规定。
 '''
 
 [translations]
