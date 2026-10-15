@@ -114,3 +114,5 @@ param-rules: "Used by"
 default-on: "On by default"
 default-off: "Off by default"
 default-option: "Default option"
+# Before a one-of's title in the list of the rules, where it is a box.
+one-of: "One of: "

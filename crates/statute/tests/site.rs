@@ -476,6 +476,20 @@ fn site_marks_defaults_uses_and_values() {
         item(5)
     );
     assert!(!item(6).contains("default"), "{}", item(6));
+    // The one-of is a box that holds its options, and they stand nowhere
+    // else in the list.
+    let one_of = index
+        .find("<li class=\"one-of\"><a href=\"R/4.html\">")
+        .expect(&index);
+    let options = index[one_of..]
+        .find("</ul></li>")
+        .map(|e| &index[one_of..one_of + e])
+        .unwrap();
+    assert!(
+        options.contains("R/5.html") && options.contains("R/6.html"),
+        "{options}"
+    );
+    assert_eq!(index.matches("<a href=\"R/5.html\">").count(), 1, "{index}");
     // A rule only for review is hidden with its filter.
     assert!(
         index.contains("<li class=\"off u-r\"><a href=\"R/3.html\">"),

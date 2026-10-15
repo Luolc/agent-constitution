@@ -202,6 +202,7 @@ a{color:#05c}code{background:#f3f3f3;padding:0 .2em;border-radius:3px}\
 .ref{font-family:monospace;color:#555;margin-right:.4em}\
 .tag{font-size:.8em;color:#666;margin-left:.4em}.on{color:#080}\
 ul.tree{list-style:none;padding-left:1.2rem}nav label{margin-right:1rem}\
+li.one-of{border:1px solid #ccc;border-radius:4px;padding:.2em .6em;margin:.3em 0}\
 section{border-top:1px solid #ddd;margin-top:1.5rem}\
 .q{font-size:.8em;margin-left:.4em;padding:0 .4em;border-radius:3px;white-space:nowrap}\
 .q.global-public{background:#dbeafe;color:#1e3a8a}.q.global-private{background:#fde7c8;color:#7c2d12}\
@@ -464,6 +465,11 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
     }
     if node.kind == Kind::Rule && !project.resolution.enabled.contains_key(&key) {
         class.push("off");
+    }
+    // A one-of is a box that holds its options, the default marked
+    // (`docs/design/rule-config.md`, No rule under a rule).
+    if node.kind == Kind::OneOf {
+        class.push("one-of");
     }
     if let Some(rule) = &node.rule {
         class.push(match (rule.uses.instructions, rule.uses.review) {
