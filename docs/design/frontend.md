@@ -389,8 +389,8 @@ turned off (disabled), where it has these.
     `status-draft`, `arrow-right-left` for Superseded and
     `circle-slash` for Repealed in `text-muted`.
   - Whether the defaults enable a node: a dot of `size-dot`, filled
-    with `accent` when they do, a ring of `text-muted` when they do
-    not; the place stays empty when that depends on another source.
+    with `accent` when they do, a ring (a `2px` border) of
+    `text-muted` when they do not; the place stays empty when that depends on another source.
   - Uses: `scroll-text` for instructions and `scan-eye` for review, in
     `text-muted`.
   - Marks do not react to the pointer; the row does.
@@ -457,7 +457,8 @@ turned off (disabled), where it has these.
   domains after it, joined by `chevron-right` in `text-muted`
   (`Documentation › Design`), all in `text` and `weight-bold`; the path
   is the whole link to the domain's page, underlined under the pointer,
-  as `accent` would fall under 4.5 on the band. A group row shows where
+  as `accent` would fall under 4.5 on the band, and named for screen
+  readers by the label and the domains joined by commas. A group row shows where
   the nearest domain changes from the rule shown before it and at the
   top of each page, so the list coming back to a domain from one under
   it shows that domain's row again. The head sticks to the top of the
@@ -466,12 +467,15 @@ turned off (disabled), where it has these.
   the rows in view is always named; only the nearest domain's row
   sticks, as its path names the ones above it. On a narrow screen a
   title takes as many lines as it needs, the head and the group rows
-  one.
+  one, and a row's label, the icon before its title and its marks line
+  up with the title's first line.
 - **The one-of.** A box (`1px` of `border-strong`, `radius-md`) around
   its own row and its options', their columns lined up with the
   table's, with a label on its top border, One of / 「择一」 (`text-xs`,
   `weight-medium`, `text-muted`, on the surface's color so the border
-  breaks around it). Its own row's title is `weight-medium`. Each option
+  breaks around it); the box is a group (`role="group"`) that the label
+  names for screen readers (`aria-labelledby`), so that they announce
+  its rows as One of. Its own row's title is `weight-medium`. Each option
   is a row as in the table, its title led by `circle` in `text-muted`,
   and the default option's by `circle-dot` in `accent` and followed by
   its tag, Default option / 「默认选项」, in `accent` with `check`, so the

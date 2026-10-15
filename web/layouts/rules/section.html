@@ -5,7 +5,7 @@
   whether it enables the rule, and when it has more than one source, the
   quadrant of the rule's source, after them. A rule under another rule
   has `corner-down-right` before its title. A one-of stands in the table
-  as a box, "One of" on its border: its own row, then a row for each
+  as a box, "One of" on its border and naming it: its own row, then a row for each
   option, `circle` before its title and `circle-dot` before the
   default's, which also says Default option; a rule that is an option is
   not listed again but filtered with its box, which carries the one-of's
@@ -86,12 +86,12 @@
     {{- $path = delimit $path (partial "icon.html" "lucide:chevron-right") }}
 <h{{ add (len .) 1 }} class="rules-group" data-group="{{ $group.key }}"{{ if not $shown }} hidden{{ end }}>
     {{- if eq $group.kind "source" }}<span class="group-path">{{ $path | safeHTML }}</span>
-    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}" aria-label="{{ $group.label }} {{ delimit $names " › " }}"><span class="group-label">{{ $group.label }}</span><span class="group-path">{{ $path | safeHTML }}</span></a>{{ end -}}
+    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}" aria-label="{{ $group.label }} {{ delimit $names ", " }}"><span class="group-label">{{ $group.label }}</span><span class="group-path">{{ $path | safeHTML }}</span></a>{{ end -}}
 </h{{ add (len .) 1 }}>
     {{- if $on }}{{ $previous = $group.key }}{{ end }}
   {{- end }}
   {{- if eq $rule.kind "one-of" }}
-<div class="one-of"><span class="one-of-label" aria-hidden="true">{{ i18n "one-of" }}</span>
+<div class="one-of" role="group" aria-labelledby="one-of-{{ $rule.key }}"><span class="one-of-label" id="one-of-{{ $rule.key }}">{{ i18n "one-of" }}</span>
 <a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}"><span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>{{ partial "rules/marks.html" $rule | safeHTML }}</a>
 <ul class="one-of-options">
     {{- range $rule.options }}

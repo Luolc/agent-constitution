@@ -234,18 +234,18 @@
   font-weight: var(--t-weight-medium);
   white-space: nowrap;
 }
-@media (hover: hover) and (pointer: fine) {
-  .rules .one-of-options a.rule-entry[href]:hover .rule-default-option { color: var(--t-accent); }
-}
 
+/* An icon before a title stays on the title's first line: the offset
+   sets the glyph in its line. */
+.rules .rule-title > .icon { align-self: start; margin-block-start: calc((1lh - 1em) / 2); }
 /* A narrow screen: a title takes as many lines as it needs, its row
-   growing; the head and the group rows keep one line. */
-/* An option's circle stays on the first line of a title of several:
-   the offset sets the glyph in its line. */
-.rules .one-of-options .rule-title > .icon { align-self: start; margin-block-start: calc((1lh - 1em) / 2); }
+   growing; the head and the group rows keep one line. The label, the
+   title and the marks line up on the first line, which the padding
+   keeps in the middle of a row of one line. */
 @media screen and (width <= 48rem) {
   .rules :is(.rules-head, .rule-entry, .rules-group) { column-gap: var(--t-space-2); }
-  .rules .rule-entry { padding-block: var(--t-space-1); }
+  .rules .rule-entry { align-items: start; padding-block: calc((var(--rules-row) - 1lh) / 2); }
+  .rules .rule-entry > :is(.rule-title, .rule-marks) { min-block-size: 1lh; }
   .rules .rule-text { white-space: normal; }
   .rules .one-of-options .rule-title { grid-template-columns: auto minmax(0, 1fr); padding-inline-start: var(--t-space-2); }
   .rules .one-of-options .rule-default-option { grid-column: 2; }

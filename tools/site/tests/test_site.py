@@ -415,6 +415,12 @@ class SiteTest(unittest.TestCase):
       ' data-domain="1" data-uses="instructions" data-default="off">',
       page,
     )
+    # The box is a group named by its label, One of.
+    self.assertIn(
+      '<div class="one-of" role="group" aria-labelledby="one-of-2">'
+      '<span class="one-of-label" id="one-of-2">One of</span>',
+      page,
+    )
     self.assertRegex(
       page,
       r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
@@ -589,7 +595,7 @@ class SiteTest(unittest.TestCase):
     )
     self.assertEqual(GROUP_ID.findall(page), ["1", "2"])
     self.assertIn(
-      '<a href="../rules/2/" aria-label="R2 Group 1 › Group 2"><span'
+      '<a href="../rules/2/" aria-label="R2 Group 1, Group 2"><span'
       ' class="group-label">R2</span><span class="group-path"><span'
       ' class="group-part" data-group="1" data-level="0" data-toc="R1 Group 1"'
       ' id="group-1">Group 1</span><svg ',
@@ -660,7 +666,7 @@ class SiteTest(unittest.TestCase):
           ).stdout
           shown = re.findall(
             r'<div class="rule-item[^"]*"[^>]*?(?<! hidden="")>\n?'
-            r'(?:<h[^\n]*\n)*(?:<div class="one-of">[^\n]*\n)?'
+            r'(?:<h[^\n]*\n)*(?:<div class="one-of"[^\n]*\n)?'
             r'<a class="rule-entry" href="[^"]*/(\d+)/"',
             dom,
           )
@@ -727,7 +733,7 @@ class SiteTest(unittest.TestCase):
     self.assertNotIn('data-group="2"', page)
     self.assertIn(("3", "7", ""), HEADING.findall(page))
     self.assertIn("7", GROUP_ID.findall(page))
-    self.assertIn('aria-label="R7 Group 1 › Group 7"', page)
+    self.assertIn('aria-label="R7 Group 1, Group 7"', page)
     self.assertIn(
       '<input type="checkbox" name="domain" value="7" data-parent="1" checked>',
       page,
