@@ -278,8 +278,23 @@ needs no rule set ([Checkers](checkers.md#checkers)): the format of each
 node, the tree, the targets of its references, the translations and
 citations, and the defaults. Each finding goes to standard error on a
 line of its own; an error makes it exit with status 1, and a clean run
-prints one line to standard output with the number of nodes. This repo
-runs `statute validate rules` as a commit hook.
+prints one line to standard output with the number of nodes. When
+`<dir>` has a `constitution/` beside it, it also reads that constitution
+and checks what the constitution decides of the rules: each node's
+status against `index.toml`'s, each `{@constitution:...}` citation and
+each `authority` entry, with the warning on an `authority` that names a
+provision and one above it; a constitution that does not load is one
+error, and its own errors are left to `constitution build`. With
+`--base <git-ref>` it also runs the rules part of check 7: when the
+numbering is compared, every node of the base still exists, a rule of
+the older format as the node whose slug is its name, and what was
+repealed or superseded still is; it skips the comparison, with the
+note, where check 7 does, and without a `constitution/` beside `<dir>`
+it fails. These findings are `rules/7.toml:12: error: <message>`, with
+the messages of `uv run constitution-build`, which runs these checks
+too; CI and the commit hooks still run that command for them, and moving
+them to `validate` is not done yet. This repo runs `statute validate
+rules` as a commit hook.
 
 **`constitution build`** does what `uv run constitution-build` does for
 the constitution: it checks the sources of the one edition under
@@ -292,8 +307,8 @@ compares the numbering and the revision with that commit; and `--root
 checks are checks 1 to 7 of [Checkers](checkers.md#checkers) as far as
 they concern the constitution, with the same messages. It does not read
 `rules/`: what that command checks of the rules, among them the rules'
-citations of the constitution and the rules a base commit had, is not
-built here. The generated files still name `uv run constitution-build`,
+citations of the constitution and the rules a base commit had, is
+`validate`'s (above). The generated files still name `uv run constitution-build`,
 which CI, the commit hooks and the rest of this design still run; the
 switch to `statute constitution build` and the removal of the Python
 command are not done yet.
