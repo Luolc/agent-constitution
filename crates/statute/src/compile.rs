@@ -121,7 +121,13 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
 /// rule's text cites a rule or provision that is not there, or a skill's
 /// declaration cannot be read or names a rule that is not there.
 pub fn compile(project: &Project) -> Result<Output, String> {
-    let agents_md = agents_md(project, lock::FILE, true)?;
+    check_lock(
+        &project.root.join(lock::FILE),
+        lock::FILE,
+        &lock::render(project),
+        crate::manifest::FILE,
+    )?;
+    let agents_md = agents_md(project, true)?;
     let mut skills: Vec<(String, PathBuf)> = Vec::new();
     let mut from: Vec<&str> = Vec::new();
     for source in project.sources.iter() {
@@ -367,12 +373,26 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
 }
 
 /// The full text of the private layer of a public repository: the
-/// `AGENTS.md` of `project`, which holds both layers, checked against the
-/// private lock file, without the line that points to it
+/// `AGENTS.md` of `both`, which holds both layers over `public`, without
+/// the line that points to it, after checking `statute.lock` against
+/// `public` and the private lock file in `dir` against `both`
 /// (`docs/design/rule-sources.md`, Private rules in a public repository).
 /// Fails as `compile` does, and when it is larger than Codex reads.
-pub fn full_text(project: &Project) -> Result<String, String> {
-    let text = agents_md(project, private::LOCK, false)?;
+pub fn full_text(public: &Project, both: &Project, dir: &Path) -> Result<String, String> {
+    check_lock(
+        &public.root.join(lock::FILE),
+        lock::FILE,
+        &lock::render(public),
+        crate::manifest::FILE,
+    )?;
+    let path = dir.join(private::LOCK);
+    check_lock(
+        &path,
+        &path.display().to_string(),
+        &lock::render_private(public, both),
+        private::MANIFEST,
+    )?;
+    let text = agents_md(both, false)?;
     if text.len() > private::MAX_BYTES {
         return Err(format!(
             "{}: {} bytes, more than the {} that Codex reads of a project's instruction files; enable fewer rules",
@@ -384,30 +404,23 @@ pub fn full_text(project: &Project) -> Result<String, String> {
     Ok(text)
 }
 
-/// The text of `AGENTS.md`, checked against the lock file `lock_file`;
-/// with `fallback`, in a public repository, ending with the line that
-/// points to the private layer's full text.
-fn agents_md(project: &Project, lock_file: &str, fallback: bool) -> Result<String, String> {
-    let current = lock::render(project);
-    match std::fs::read_to_string(project.root.join(lock_file)) {
-        Ok(text) if text == current => {}
-        Ok(_) => {
-            let set = if lock_file == lock::FILE {
-                crate::manifest::FILE.to_owned()
-            } else {
-                format!("{} with {}", crate::manifest::FILE, private::MANIFEST)
-            };
-            return Err(format!(
-                "{lock_file} is not what {set} and the rules give now; run `statute lock` first"
-            ));
-        }
-        Err(e) => {
-            return Err(format!(
-                "cannot read {lock_file}: {e}; run `statute lock` first"
-            ));
-        }
+/// Fails unless the lock file at `path`, shown as `shown`, holds
+/// `current`, what the rule set `set` and the rules give now.
+fn check_lock(path: &Path, shown: &str, current: &str, set: &str) -> Result<(), String> {
+    match std::fs::read_to_string(path) {
+        Ok(text) if text == current => Ok(()),
+        Ok(_) => Err(format!(
+            "{shown} is not what {set} and the rules give now; run `statute lock` first"
+        )),
+        Err(e) => Err(format!(
+            "cannot read {shown}: {e}; run `statute lock` first"
+        )),
     }
+}
 
+/// The text of `AGENTS.md`; with `fallback`, in a public repository,
+/// ending with the line that points to the private layer's full text.
+fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
     let m = &project.manifest;
     let spec = m.constitution_spec();
     let lang = m.lang.as_str();

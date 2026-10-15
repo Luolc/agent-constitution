@@ -180,7 +180,7 @@ pub fn visibility(project: &Project, ctx: &Context) -> Report {
             outcome: Outcome::Violation,
             findings: vec![Finding {
                 location: crate::manifest::FILE.to_owned(),
-                reason: "`public = false`, and anyone can read the repository; write `public = true`, and name private sources in statute.private.toml".to_owned(),
+                reason: "`public = false`, and anyone can read the repository; write `public = true`, and name private sources in the private rule set, private.toml".to_owned(),
             }],
             note: format!("{said}, and GitHub shows the repository as {on_github}"),
         },

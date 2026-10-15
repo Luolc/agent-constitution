@@ -1,4 +1,4 @@
-<!-- en-sha256: 4e31fa58214cf8c207eb787398158ac7aed8632a96942cbffc88f1944cfe106e -->
+<!-- en-sha256: 1552010eb9c9d307983fd5a59cc9be80aaa0177b3466e52cb2e12b304c02817d -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -135,6 +135,6 @@ public = true
 | --- | --- |
 | `--global` | `$XDG_CONFIG_HOME/statute/config.toml` |
 | 公开的规定源，或私有仓库的任何规定源 | `statute.toml` |
-| 公开仓库的私有规定源 | 私有规定清单 `$(git rev-parse --git-path common/statute)/private.toml`，没有时创建；规定源的 `path` 改写成绝对路径；命令会打印这个文件的路径 (尚未实现：现在是 `statute.toml` 旁边的 `statute.private.toml`) |
+| 公开仓库的私有规定源 | 私有规定清单 `$(git rev-parse --git-path common/statute)/private.toml`，没有时创建；规定源的 `path` 改写成绝对路径；命令会打印这个文件的路径 |
 
 公开仓库的私有规定源写进私有层，命令不停下：私有层里的东西不会进入任何提交的文件，而添加私有规定源，通常就是为了私有 overlay。提示会说明它写到了哪里，以及加 `--public` 就写进 `statute.toml`。要写入的文件里已经有这个名字，命令报错；规定源要写进私有规定清单而公开层已有这个名字时，也报错，因为私有层只增加。只有全局配置里有的名字，在 `statute.toml` 或 `private.toml` 里替换它，见[一个名字指哪个规定源](#which-source-a-name-means)，提示也会说明这一点。有锁文件时，像 `add` 那样重写它。

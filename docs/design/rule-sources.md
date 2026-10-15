@@ -354,9 +354,7 @@ rewrites it when it starts with statute's line and differs; a
 repository's own, and the command writes nothing and fails. The file is
 committed, so that a fresh clone ignores the generated files before
 statute first runs there. The check with `git check-ignore` above
-still runs on each file before it is written. Not built yet: today the
-repository's `.gitignore` names `.statute/`, and statute writes only
-`.statute/site/.gitignore`.
+still runs on each file before it is written.
 
 By default Codex reads at most 32 KiB of a project's instruction files,
 from the repository's root down to the working directory together, and
@@ -473,13 +471,7 @@ Each negative result holds only for the runs counted; the others are
 one run each.
 
 The private layer is built as described here, except what this
-section marks as not built yet and its place: today the private rule
-set is `statute.private.toml` and its lock file
-`statute.private.lock`, next to `statute.toml`, with `base =
-"statute.toml"`; git must ignore both, which statute checks with
-`git check-ignore`, and the lock file pins both layers together. Moving
-them into git's directory and the lock file down to the private
-sources is not built yet.
+section marks as not built yet.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
@@ -780,8 +772,3 @@ marking what is not built:
   the new fields and what statute does.
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
-
-Building the rest replaces what the tools do today: statute reads the
-private rule set from `statute.private.toml` next to `statute.toml`,
-where it needs `base = "statute.toml"`, and its lock file pins both
-layers ([Private rules in a public repository](#private-rules-in-a-public-repository)).

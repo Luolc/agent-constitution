@@ -1,6 +1,7 @@
 //! The private layer of a public repository, end to end: a git repository
 //! with the first-party source `R`, its own rules and a private global
-//! source `me`, through `init`, `add`, `lock`, `compile` and `check`.
+//! source `me`, through `init`, `add`, `lock`, `compile` and `check`, and
+//! the worktrees of one clone sharing the private rule set.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -10,13 +11,36 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
-/// What git ignores: the private files through `.gitignore`, the links
-/// through `.git/info/exclude`.
-const GITIGNORE: &str = "/statute.private.toml\n/statute.private.lock\n/.statute/\n";
+/// What git ignores through `.git/info/exclude`: the links.
 const EXCLUDE: &str = "/CLAUDE.local.md\n/AGENTS.override.md\n";
 
-const PRIVATE: &str =
-    "base = \"statute.toml\"\nrules = []\n\n[sources]\nme = { path = \"me\", public = false }\n";
+/// What statute writes in `.statute/.gitignore`.
+const GITIGNORE: &str = "# written by statute\n/AGENTS.full.md\n/site/\n";
+
+/// The private rule set of the repository `dir` (or of a worktree's
+/// clone), with `me` in it.
+fn private(dir: &Path) -> String {
+    format!(
+        "rules = []\n\n[sources]\nme = {{ path = \"{}/me\", public = false }}\n",
+        dir.display()
+    )
+}
+
+/// The directory of the private rule set, as git names it for `dir`.
+fn common(dir: &Path) -> PathBuf {
+    PathBuf::from(
+        git_out(
+            dir,
+            &[
+                "rev-parse",
+                "--path-format=absolute",
+                "--git-path",
+                "common/statute",
+            ],
+        )
+        .trim_end(),
+    )
+}
 
 fn write(dir: &Path, path: &str, text: &str) {
     let path = dir.join(path);
@@ -29,6 +53,10 @@ fn read(dir: &Path, path: &str) -> String {
 }
 
 fn git(dir: &Path, args: &[&str]) {
+    git_out(dir, args);
+}
+
+fn git_out(dir: &Path, args: &[&str]) -> String {
     let out = Command::new("git")
         .arg("-C")
         .arg(dir)
@@ -39,12 +67,30 @@ fn git(dir: &Path, args: &[&str]) {
         .output()
         .unwrap();
     assert!(out.status.success(), "git {args:?}");
+    String::from_utf8(out.stdout).unwrap()
+}
+
+fn commit(dir: &Path, message: &str) {
+    git(dir, &["add", "."]);
+    git(
+        dir,
+        &[
+            "-c",
+            "user.name=Example",
+            "-c",
+            "user.email=example@example.test",
+            "commit",
+            "-q",
+            "-m",
+            message,
+        ],
+    );
 }
 
 /// A git repository with `R` in `r/` (domain 1, rules 2 and 6), its own
 /// rules (rule 3, which requires R2) and `me` in `me/`: rule 4, under
 /// R1, which requires R2 and cites it, and rule 5, which overrides R2.
-/// Nothing is ignored yet.
+/// The links are not ignored yet.
 fn repo(name: &str) -> PathBuf {
     let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("private")
@@ -97,10 +143,9 @@ fn repo(name: &str) -> PathBuf {
     dir
 }
 
-/// `repo` with git ignoring what it should.
+/// `repo` with git ignoring the links.
 fn ignoring(name: &str) -> PathBuf {
     let dir = repo(name);
-    write(&dir, ".gitignore", GITIGNORE);
     write(&dir, ".git/info/exclude", EXCLUDE);
     dir
 }
@@ -112,6 +157,11 @@ struct Run {
 }
 
 fn statute(dir: &Path, args: &[&str]) -> Run {
+    statute_with(dir, args, &[])
+}
+
+/// `statute` with `env` added to its environment.
+fn statute_with(dir: &Path, args: &[&str], env: &[(&str, &str)]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .env_remove("XDG_CONFIG_HOME")
@@ -127,6 +177,7 @@ fn statute(dir: &Path, args: &[&str]) -> Run {
         .env_remove("GIT_DIR")
         .env_remove("GIT_INDEX_FILE")
         .env_remove("GIT_WORK_TREE")
+        .envs(env.iter().copied())
         .output()
         .unwrap();
     Run {
@@ -156,21 +207,36 @@ fn fails_with(run: &Run, needle: &str) {
 }
 
 /// A public rule set enabling R2 and L3, and the private layer enabling
-/// me:4, locked.
-fn set_up(dir: &Path) {
+/// me:4 from `me/` of `at`, locked.
+fn set_up_from(dir: &Path, at: &Path) {
     ok(&statute(dir, &["init", "--public", "--source", "r"]));
     ok(&statute(dir, &["add", "R2"]));
     ok(&statute(dir, &["add", "3"]));
-    write(dir, "statute.private.toml", PRIVATE);
+    std::fs::create_dir_all(common(dir)).unwrap();
+    std::fs::write(common(dir).join("private.toml"), private(at)).unwrap();
     let run = statute(dir, &["add", "--private", "me:4"]);
     ok(&run);
     assert!(
-        run.stdout.contains(
-            "wrote statute.private.lock: 3 rules enabled, 1 of them by the private layer"
-        ),
+        run.stdout.contains(&format!(
+            "wrote {}: 3 rules enabled, 1 of them by the private layer",
+            common(dir).join("private.lock").display()
+        )),
         "{}",
         run.stdout
     );
+}
+
+fn set_up(dir: &Path) {
+    set_up_from(dir, dir);
+}
+
+/// The private rule set or its lock file, `file`, of `dir`.
+fn read_private(dir: &Path, file: &str) -> String {
+    std::fs::read_to_string(common(dir).join(file)).unwrap()
+}
+
+fn write_private(dir: &Path, text: &str) {
+    std::fs::write(common(dir).join("private.toml"), text).unwrap();
 }
 
 #[test]
@@ -186,7 +252,15 @@ fn three_sources_from_init_to_check() {
             read(&dir, file)
         );
     }
-    assert!(read(&dir, "statute.private.lock").contains("rule = \"me:4\""));
+    // The private lock file pins the private source and nothing else.
+    let lock = read_private(&dir, "private.lock");
+    assert_eq!(
+        lock,
+        format!(
+            "# Written by statute from private.toml; do not edit by hand.\n\n[[sources]]\nname = \"me\"\npath = \"{}/me\"\npublic = false\nscope = \"global\"\n",
+            dir.display()
+        )
+    );
 
     let run = statute(&dir, &["compile"]);
     ok(&run);
@@ -213,6 +287,7 @@ fn three_sources_from_init_to_check() {
         );
         assert_eq!(read(&dir, link), full);
     }
+    assert_eq!(read(&dir, ".statute/.gitignore"), GITIGNORE);
     // A second compile finds its own links and writes again.
     ok(&statute(&dir, &["compile"]));
 
@@ -235,49 +310,44 @@ fn the_private_layer_overrides_no_public_rule() {
     let run = statute(&dir, &["add", "--private", "me:5"]);
     fails_with(
         &run,
-        "statute.private.toml: error: `me:5` overrides \"R2\", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `statute.private.toml` may only add rules",
+        &format!(
+            "{}: error: `me:5` overrides \"R2\", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `private.toml` may only add rules",
+            common(&dir).join("private.toml").display()
+        ),
     );
-    assert!(!read(&dir, "statute.private.toml").contains("me:5"));
+    assert!(!read_private(&dir, "private.toml").contains("me:5"));
     // An override of a rule only the private layer brings in holds.
     write(
         &dir,
         "me/rules/5.toml",
         &edit(rule(5, 1, ""), "parent = 1", "overrides = \"R6\"").1,
     );
-    write(
+    write_private(
         &dir,
-        "statute.private.toml",
-        &PRIVATE.replace("rules = []", "rules = [\"me:4\", \"R6\"]"),
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"R6\"]"),
     );
     ok(&statute(&dir, &["add", "--private", "me:5"]));
     // A public change the private layer cannot follow is not written.
-    let files = ["statute.toml", "statute.lock", "statute.private.lock"];
-    let before = files.map(|f| read(&dir, f));
+    let files = || {
+        (
+            read(&dir, "statute.toml"),
+            read(&dir, "statute.lock"),
+            read_private(&dir, "private.lock"),
+        )
+    };
+    let before = files();
     fails_with(
         &statute(&dir, &["add", "R6"]),
-        "statute.private.toml: error: `rules` lists `R6`, which statute.toml lists already",
+        "error: `rules` lists `R6`, which statute.toml lists already",
     );
-    assert_eq!(files.map(|f| read(&dir, f)), before);
+    assert_eq!(files(), before);
 }
 
 #[test]
-fn nothing_private_is_written_unless_git_ignores_it() {
-    // The lock file not ignored.
-    let dir = repo("not-ignored");
-    write(&dir, ".gitignore", "/statute.private.toml\n");
-    ok(&statute(&dir, &["init", "--public", "--source", "r"]));
-    write(&dir, "statute.private.toml", PRIVATE);
-    let run = statute(&dir, &["add", "--private", "me:4"]);
-    fails_with(
-        &run,
-        "statute.private.lock: git does not ignore it, so nothing private is written; add `/statute.private.lock` to the repository's .gitignore",
-    );
-    assert!(!dir.join("statute.private.lock").exists());
-    assert!(!read(&dir, "statute.private.toml").contains("me:4"));
-
-    // The links ignored through .gitignore, not .git/info/exclude.
+fn the_links_are_ignored_through_the_exclude_file() {
+    // Through a .gitignore, not .git/info/exclude.
     let dir = repo("links-in-gitignore");
-    write(&dir, ".gitignore", &format!("{GITIGNORE}{EXCLUDE}"));
+    write(&dir, ".gitignore", EXCLUDE);
     set_up(&dir);
     let run = statute(&dir, &["compile"]);
     fails_with(
@@ -285,19 +355,27 @@ fn nothing_private_is_written_unless_git_ignores_it() {
         "CLAUDE.local.md, AGENTS.override.md: git must ignore these links through .git/info/exclude, not a .gitignore (Grok skips an instruction file a .gitignore matches), so nothing private is written; add these lines to .git/info/exclude: /CLAUDE.local.md, /AGENTS.override.md",
     );
     assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    assert!(!dir.join("AGENTS.md").exists());
     assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
+
+    // A negation in a .gitignore takes one out of .git/info/exclude.
+    let dir = ignoring("negation");
+    write(&dir, ".gitignore", "!/AGENTS.override.md\n");
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        "add these lines to .git/info/exclude: /AGENTS.override.md",
+    );
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    std::fs::remove_file(dir.join(".gitignore")).unwrap();
+    ok(&statute(&dir, &["compile"]));
 }
 
 #[test]
 fn nothing_is_written_when_git_cannot_tell() {
-    let dir = ignoring("no-repository");
+    let dir = ignoring("no-git");
     set_up(&dir);
-    std::fs::remove_dir_all(dir.join(".git")).unwrap();
-    const CANNOT_TELL: &str = "git cannot tell whether it ignores statute.private.toml";
-    fails_with(&statute(&dir, &["compile"]), CANNOT_TELL);
-    assert!(!dir.join("AGENTS.md").exists());
-    assert!(!dir.join(".statute/AGENTS.full.md").exists());
-
     // R2 changed, so that a lock file written now would differ.
     let r2 = read(&dir, "r/rules/2.toml");
     write(
@@ -305,24 +383,50 @@ fn nothing_is_written_when_git_cannot_tell() {
         "r/rules/2.toml",
         &r2.replace("Do the thing 2.", "Do the thing 2 well."),
     );
-    let files = ["statute.toml", "statute.lock", "statute.private.lock"];
-    let before = files.map(|f| read(&dir, f));
+    let files = || {
+        (
+            read(&dir, "statute.toml"),
+            read(&dir, "statute.lock"),
+            read_private(&dir, "private.toml"),
+            read_private(&dir, "private.lock"),
+        )
+    };
+    let before = files();
+    // No git on the path: nothing says where the private rule set is.
+    let empty = dir.join("no-bin");
+    std::fs::create_dir_all(&empty).unwrap();
     for args in [
         &["lock"][..],
         &["add", "R6"],
         &["remove", "3"],
         &["upgrade"],
+        &["add", "--private", "R6"],
+        &["compile"],
     ] {
-        fails_with(&statute(&dir, args), CANNOT_TELL);
-        assert_eq!(files.map(|f| read(&dir, f)), before, "{args:?}");
+        let run = statute_with(&dir, args, &[("PATH", empty.to_str().unwrap())]);
+        fails_with(
+            &run,
+            "cannot run git, which says where the private rule set is",
+        );
+        assert_eq!(files(), before, "{args:?}");
     }
+    assert!(!dir.join("AGENTS.md").exists());
+    assert!(!dir.join(".statute").exists());
+}
 
-    // In a repository again, `lock` writes both lock files.
-    git(&dir, &["init", "-q"]);
-    write(&dir, ".git/info/exclude", EXCLUDE);
-    ok(&statute(&dir, &["lock"]));
-    assert_ne!(read(&dir, "statute.lock"), before[1]);
-    assert_ne!(read(&dir, "statute.private.lock"), before[2]);
+#[test]
+fn outside_a_git_repository_there_is_no_private_layer() {
+    let dir = ignoring("no-repository");
+    set_up(&dir);
+    std::fs::remove_dir_all(dir.join(".git")).unwrap();
+    ok(&statute(&dir, &["compile"]));
+    assert!(dir.join("AGENTS.md").exists());
+    assert!(!dir.join(".statute").exists());
+    assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
+    fails_with(
+        &statute(&dir, &["add", "--private", "R6"]),
+        "statute: error: not in a git repository, so there is no private layer: its rule set, private.toml, lives in git's directory",
+    );
 }
 
 #[test]
@@ -343,12 +447,67 @@ fn a_file_in_a_links_place_is_left_as_it_is() {
 fn a_private_repository_has_no_private_layer() {
     let dir = ignoring("private-repository");
     ok(&statute(&dir, &["init", "--private", "--source", "r"]));
-    write(&dir, "statute.private.toml", PRIVATE);
+    std::fs::create_dir_all(common(&dir)).unwrap();
+    write_private(&dir, &private(&dir));
     let run = statute(&dir, &["lock"]);
     fails_with(
         &run,
-        "statute.private.toml: error: statute.private.toml is for a public repository; in a private one (`public = false`), statute.toml names every source and rule",
+        &format!(
+            "{}: error: private.toml is for a public repository; in a private one (`public = false`), statute.toml names every source and rule",
+            common(&dir).join("private.toml").display()
+        ),
     );
+}
+
+#[test]
+fn a_path_in_the_private_rule_set_is_absolute_or_in_the_home_directory() {
+    let dir = ignoring("paths");
+    set_up(&dir);
+    write_private(
+        &dir,
+        "rules = [\"me:4\"]\n\n[sources]\nme = { path = \"me\", public = false }\n",
+    );
+    fails_with(
+        &statute(&dir, &["lock"]),
+        "[sources] `me`: `path = \"me\"` is relative; the private rule set serves every worktree, so a path in it is absolute or starts with `~/`",
+    );
+    // `~/` is the home directory.
+    let home = Path::new(concat!(env!("CARGO_TARGET_TMPDIR"), "/home"));
+    std::fs::create_dir_all(home).unwrap();
+    let link = home.join("private-paths-me");
+    let _ = std::fs::remove_file(&link);
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(dir.join("me"), &link).unwrap();
+    write_private(
+        &dir,
+        "rules = [\"me:4\"]\n\n[sources]\nme = { path = \"~/private-paths-me\", public = false }\n",
+    );
+    ok(&statute(&dir, &["lock"]));
+    ok(&statute(&dir, &["compile"]));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("### Rule 4 (me:4)"));
+}
+
+#[test]
+fn the_private_rule_set_is_written_in_git_s_directory() {
+    let dir = ignoring("in-place-written");
+    ok(&statute(&dir, &["init", "--public", "--source", "r"]));
+    ok(&statute(&dir, &["add", "R2"]));
+    // `add --private` makes the private rule set when there is none.
+    assert!(!common(&dir).exists());
+    ok(&statute(&dir, &["add", "--private", "R6"]));
+    assert_eq!(read_private(&dir, "private.toml"), "rules = [\"R6\"]\n");
+    // Its temporary files went to the same directory and are gone; the
+    // work tree has none.
+    let mut names: Vec<String> = std::fs::read_dir(common(&dir))
+        .unwrap()
+        .map(|e| e.unwrap().file_name().into_string().unwrap())
+        .collect();
+    names.sort();
+    assert_eq!(names, ["private.lock", "private.toml"]);
+    assert!(!dir.join(".statute").exists());
+    assert!(!dir.join("statute.private.toml").exists());
+    ok(&statute(&dir, &["remove", "--private", "R6"]));
+    assert_eq!(read_private(&dir, "private.toml"), "rules = []\n");
 }
 
 #[test]
@@ -388,7 +547,7 @@ fn a_claude_md_is_not_needed() {
     );
     // Without a private layer, the warning says less; without CLAUDE.md,
     // nothing.
-    std::fs::remove_file(dir.join("statute.private.toml")).unwrap();
+    std::fs::remove_file(common(&dir).join("private.toml")).unwrap();
     let run = statute(&dir, &["compile"]);
     ok(&run);
     assert!(
@@ -437,80 +596,58 @@ fn an_agents_md_below_the_top_is_not_loaded() {
         ]
     );
     // Without a private layer, there is no CLAUDE.local.md.
-    std::fs::remove_file(dir.join("statute.private.toml")).unwrap();
+    std::fs::remove_file(common(&dir).join("private.toml")).unwrap();
     let run = statute(&dir, &["compile"]);
     ok(&run);
     assert!(!run.stderr.contains("warning"), "{}", run.stderr);
 }
 
 #[test]
-fn a_negated_pattern_does_not_ignore() {
-    let dir = repo("negation");
-    write(
-        &dir,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/*\n!/.statute/AGENTS.full.md\n",
-    );
-    write(&dir, ".git/info/exclude", EXCLUDE);
+fn statute_writes_its_own_gitignore() {
+    let dir = ignoring("gitignore");
     set_up(&dir);
-    let run = statute(&dir, &["compile"]);
-    fails_with(
-        &run,
-        ".statute/AGENTS.full.md: git does not ignore it, so nothing private is written; add `/.statute` to the repository's .gitignore",
-    );
-    assert!(!dir.join(".statute/AGENTS.full.md").exists());
-    // Without the negation, it is ignored.
     write(
         &dir,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/*\n",
+        ".statute/rules/9.toml",
+        "# a rule of the repository\n",
     );
     ok(&statute(&dir, &["compile"]));
-    assert!(dir.join(".statute/AGENTS.full.md").exists());
-}
-
-#[test]
-fn the_staged_files_are_ignored_too() {
-    // The rule set and the lock file ignored, `.statute/` not.
-    let dir = repo("staged");
-    write(
-        &dir,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n",
-    );
-    ok(&statute(&dir, &["init", "--public", "--source", "r"]));
-    write(&dir, "statute.private.toml", PRIVATE);
-    let run = statute(&dir, &["add", "--private", "me:4"]);
+    ok(&statute(&dir, &["site"]));
+    assert_eq!(read(&dir, ".statute/.gitignore"), GITIGNORE);
+    // git shows what is to be committed in `.statute/`, and none of the
+    // generated files.
+    let status = git_out(&dir, &["status", "--porcelain", "--untracked-files=all"]);
+    assert!(status.contains("?? .statute/.gitignore\n"), "{status}");
+    assert!(status.contains("?? .statute/rules/9.toml\n"), "{status}");
+    for generated in [
+        "AGENTS.full.md",
+        ".statute/site/",
+        "CLAUDE.local.md",
+        "AGENTS.override.md",
+    ] {
+        assert!(!status.contains(generated), "{generated}: {status}");
+    }
+    // statute's own file, as an older statute wrote it, is written anew.
+    write(&dir, ".statute/.gitignore", "# written by statute\n/old\n");
+    ok(&statute(&dir, &["compile"]));
+    assert_eq!(read(&dir, ".statute/.gitignore"), GITIGNORE);
+    // The repository's own is left as it is, and nothing is written.
+    write(&dir, ".statute/.gitignore", "mine\n");
+    std::fs::remove_file(dir.join("AGENTS.md")).unwrap();
+    std::fs::remove_file(dir.join(".statute/AGENTS.full.md")).unwrap();
     fails_with(
-        &run,
-        ".statute/statute.private.toml.tmp: git does not ignore it, so nothing private is written; add `/.statute` to the repository's .gitignore",
+        &statute(&dir, &["compile"]),
+        ".statute/.gitignore: its first line is not `# written by statute`, so it is the repository's own and is left as it is, and nothing is written into .statute",
     );
-    assert!(!dir.join(".statute").exists());
-    // With it ignored, the files are staged there and renamed away.
-    write(&dir, ".gitignore", GITIGNORE);
-    ok(&statute(&dir, &["add", "--private", "me:4"]));
-    assert!(read(&dir, "statute.private.toml").contains("me:4"));
-    assert_eq!(std::fs::read_dir(dir.join(".statute")).unwrap().count(), 0);
+    assert_eq!(read(&dir, ".statute/.gitignore"), "mine\n");
+    assert!(!dir.join("AGENTS.md").exists());
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
 }
 
 #[test]
 fn a_worktree_names_the_clones_exclude_file() {
     let dir = repo("worktree");
-    write(&dir, ".gitignore", GITIGNORE);
-    git(&dir, &["add", "."]);
-    git(
-        &dir,
-        &[
-            "-c",
-            "user.name=Example",
-            "-c",
-            "user.email=example@example.test",
-            "commit",
-            "-q",
-            "-m",
-            "rules",
-        ],
-    );
+    commit(&dir, "rules");
     let tree = dir.with_file_name("worktree-tree");
     let _ = std::fs::remove_dir_all(&tree);
     git(&dir, &["worktree", "add", "-q", tree.to_str().unwrap()]);
@@ -530,14 +667,65 @@ fn a_worktree_names_the_clones_exclude_file() {
 }
 
 #[test]
+fn worktrees_share_the_private_rule_set() {
+    let dir = ignoring("shared");
+    set_up(&dir);
+    commit(&dir, "rules");
+    let tree = dir.with_file_name("shared-tree");
+    let _ = std::fs::remove_dir_all(&tree);
+    git(
+        &dir,
+        &[
+            "worktree",
+            "add",
+            "-q",
+            "-b",
+            "other",
+            tree.to_str().unwrap(),
+        ],
+    );
+    // One private rule set and lock file for both, in the clone's
+    // directory.
+    assert_eq!(common(&tree), dir.join(".git/common/statute"));
+    let lock = read_private(&dir, "private.lock");
+    // The other branch enables R6 as well; its lock files are written,
+    // and the private one stays as it was.
+    let run = statute(&tree, &["add", "R6"]);
+    ok(&run);
+    assert!(
+        run.stdout
+            .contains("private.lock: 4 rules enabled, 1 of them by the private layer"),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(read_private(&tree, "private.lock"), lock);
+    assert_ne!(read(&tree, "statute.toml"), read(&dir, "statute.toml"));
+    // Each worktree compiles its own branch with the private layer, and
+    // neither finds the private lock file stale.
+    ok(&statute(&tree, &["compile"]));
+    ok(&statute(&dir, &["compile"]));
+    let (here, there) = (
+        read(&dir, ".statute/AGENTS.full.md"),
+        read(&tree, ".statute/AGENTS.full.md"),
+    );
+    assert!(here.contains("### Rule 4 (me:4)") && there.contains("### Rule 4 (me:4)"));
+    assert!(there.contains("(R6)") && !here.contains("(R6)"), "{here}");
+    // A private rule taken out in one worktree is out in the other.
+    ok(&statute(&tree, &["remove", "--private", "me:4"]));
+    ok(&statute(&dir, &["compile"]));
+    assert!(!read(&dir, ".statute/AGENTS.full.md").contains("(me:4)"));
+}
+
+#[test]
 fn the_private_layer_enables_packs() {
     let dir = ignoring("private-packs");
     set_up(&dir);
     // R1 as a pack of the private layer adds R6, which only it enables.
     ok(&statute(&dir, &["add", "--private", "--pack", "R1"]));
-    assert!(read(&dir, "statute.private.toml").contains("packs = [\"R1\"]"));
-    assert!(read(&dir, "statute.private.lock").contains("rule = \"R6\""));
-    assert!(!read(&dir, "statute.lock").contains("rule = \"R6\""));
+    assert!(read_private(&dir, "private.toml").contains("packs = [\"R1\"]"));
+    ok(&statute(&dir, &["compile"]));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("(R6)"));
+    assert!(!read(&dir, "AGENTS.md").contains("(R6)"));
     // A pack of statute.toml is not listed again.
     ok(&statute(&dir, &["remove", "--private", "--pack", "R1"]));
     ok(&statute(&dir, &["add", "--pack", "R1"]));
