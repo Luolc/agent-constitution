@@ -1066,3 +1066,30 @@ fn the_private_rule_set_turns_off_no_rule_an_enabled_rule_requires() {
         "`exclude` lists `R6`, which statute.toml lists already",
     );
 }
+
+#[test]
+fn a_private_rule_needs_a_rule_statute_toml_excludes_in_private_rules() {
+    let dir = r6_on_by_default("private-requires-excluded");
+    write(
+        &dir,
+        "me/rules/7.toml",
+        &rule(7, 1, "requires = [\"R6\"]").1,
+    );
+    ok(&statute(&dir, &["remove", "R6"]));
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:7\"]"),
+    );
+    fails_with(
+        &statute(&dir, &["compile"]),
+        "statute.toml: error: rule R6 (Rule 6) cannot be turned off: rule me:7 (Rule 7) requires it; take it out of `exclude`, or turn off me:7 too; or, for the private output alone, list it in `rules` of private.toml: `statute add --private R6`\n",
+    );
+    // Listed there, it is in the private output alone.
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:7\", \"R6\"]"),
+    );
+    ok(&statute(&dir, &["compile"]));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
+    assert!(!read(&dir, "AGENTS.md").contains("\n- R6 "));
+}

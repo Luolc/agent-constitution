@@ -206,6 +206,24 @@ impl Project {
                         && turned_off_by(&d.message, &project.sources, &off)))
             {
                 d.file.clone_from(&shown);
+            } else if d.file == manifest::FILE
+                && d.message.starts_with("rule ")
+                && d.message.contains(" cannot be turned off: ")
+            {
+                // A rule statute.toml excludes and only the private layer
+                // needs can be turned on again there.
+                if let Some(named) = d.message.split_whitespace().nth(1) {
+                    // A rule of the repository's own is written by its number.
+                    let named = named
+                        .strip_prefix(LOCAL)
+                        .filter(|id| id.parse::<u64>().is_ok())
+                        .unwrap_or(named)
+                        .to_owned();
+                    d.message.push_str(&format!(
+                        "; or, for the private output alone, list it in `rules` of {}: `statute add --private {named}`",
+                        private::MANIFEST
+                    ));
+                }
             }
         }
         let Some(combined) = combined else {

@@ -1,4 +1,4 @@
-<!-- en-sha256: 5c4eea541b3e98a63e40457876dfa4ed21bf4565b74df979d15dfee0fb1d977f -->
+<!-- en-sha256: 24aa0dfec4a3c287ff276db79107235b509f894d19c226a378337adf9dc05e48 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -242,7 +242,7 @@ packs = ["R96"]
 - `private.toml` 可以有 `rules`、`domains`、`packs` 和 `exclude`，它们只改变私有输出：`AGENTS.md` 和 `statute.lock` 仍是 `statute.toml` 给出的样子 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。它们可以点名任何规定源的节点，包括第一方规定源，每一项都与在 `statute.toml` 里一样起作用，作用在两层合起来的规定清单上：
   - `exclude` 关掉任一层的默认值开启的领域、one-of 或规定，或者 `statute.toml` 列出的。它点名的 `statute.toml` 的 `rules`、`domains` 或 `packs` 里的一项，在私有层里去掉；`statute.toml` 在它点名的领域下列出的规定仍然启用，与在 `statute.toml` 里一样，要按名字关掉。
   - `rules`、`domains` 和 `packs` 开启默认值没有开启的，也重新开启 `statute.toml` 的 `exclude` 点名的：这一项在私有层里离开那个 `exclude`，也不给出「默认值已经开启它」的警告，因为只有去掉那个 `exclude`，默认值才开启它。
-  - 上面 `exclude` 的检查对两层合起来成立。被任一层的某条启用的规定依赖的规定不能关：构建失败，并指出依赖它的那条规定；关掉它的是 `private.toml` 的 `exclude` 时报在 `private.toml` 上，是 `statute.toml` 的时报在 `statute.toml` 上。私有规定依赖的公开规定，只有连同那条私有规定一起才能关掉；依赖 `statute.toml` 排除的规定的私有规定，需要 `private.toml` 的 `rules` 列出那条规定。one-of 的选项不能列；同一个节点既在 `private.toml` 的 `exclude` 里、又在它的 `rules` 或 `packs` 里，也失败。
+  - 上面 `exclude` 的检查对两层合起来成立。被任一层的某条启用的规定依赖的规定不能关：构建失败，并指出依赖它的那条规定；关掉它的是 `private.toml` 的 `exclude` 时报在 `private.toml` 上，是 `statute.toml` 的时报在 `statute.toml` 上。私有规定依赖的公开规定，只有连同那条私有规定一起才能关掉；依赖 `statute.toml` 排除的规定的私有规定，需要 `private.toml` 的 `rules` 列出那条规定，报错会把这一点列为出路。one-of 的选项不能列；同一个节点既在 `private.toml` 的 `exclude` 里、又在它的 `rules` 或 `packs` 里，也失败。
   - 一项不能重复 `statute.toml` 同一个列表里已有的一项。
 
   `statute add --private` 写进 `private.toml` 的 `rules` 或 `domains`，先把这一项从它的 `exclude` 里去掉；`statute remove --private` 从它的列表里去掉一项，默认值或 `statute.toml` 仍然开启这条规定或这个领域时，把它写进它的 `exclude`。

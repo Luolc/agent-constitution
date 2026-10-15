@@ -537,7 +537,8 @@ packs = ["R96"]
     `statute.toml` when that file's does. A public rule that a private
     rule requires is turned off only with the private rule, and a
     private rule that requires a rule `statute.toml` excludes needs that
-    rule in `rules` of `private.toml`. An option of a one-of cannot be
+    rule in `rules` of `private.toml`, which the error names as a way
+    out. An option of a one-of cannot be
     listed, and a node in `exclude` and in `rules` or `packs` of
     `private.toml` fails.
   - An entry may not repeat one that `statute.toml` has in the same
