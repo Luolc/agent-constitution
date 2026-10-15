@@ -76,9 +76,7 @@
     {{- $on = and (ge $k $first) (lt $k $end) }}
     {{- $k = add $k 1 }}
   {{- end }}
-  {{- $domain := "" }}
-  {{- range $rule.groups }}{{ if eq .kind "domain" }}{{ $domain = .key }}{{ end }}{{ end }}
-<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $domain }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
+<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
   {{- $changed := false }}
   {{- range $j, $group := $rule.groups }}
     {{- $changed = or $changed (ge $j (len $previous)) (ne (index $previous $j).key $group.key) }}

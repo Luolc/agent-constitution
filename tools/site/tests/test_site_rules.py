@@ -266,7 +266,7 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual(
       [n["label"] for n in data["nodes"]],
-      ["R1", "R2", "R3", "R4", "R5", "R6", "demo:1", "demo:2"],
+      ["R1", "R2", "R3", "R4", "R5", "R6", "demo:1", "demo:2", "demo:4"],
     )
     nodes = {n["label"]: n for n in data["nodes"]}
     demo = nodes["demo:2"]
@@ -298,7 +298,20 @@ class SiteRulesTest(unittest.TestCase):
       [("R1", None), ("R3", True), ("R5", False), ("demo:2", True)],
     )
     self.assertEqual(
-      [r["label"] for r in data["citedBy"]["one-a"]], ["R3", "demo:2"]
+      [r["label"] for r in data["citedBy"]["one-a"]], ["R3", "demo:2", "demo:4"]
+    )
+    # Under this repo's domain: no group of its own, filtered by that one.
+    under = nodes["demo:4"]
+    self.assertEqual(
+      (under["depth"], [g["key"] for g in under["groups"]], under["domain"]),
+      (0, ["source-demo"], "1"),
+    )
+    self.assertEqual((demo["domain"], nodes["R3"]["domain"]), ("demo-1", "1"))
+    # A conflict across sources shows on both sides.
+    self.assertEqual([c["label"] for c in under["conflicts"]], ["R5"])
+    self.assertEqual(
+      [c.get("label", c.get("ref")) for c in nodes["R5"]["conflicts"]],
+      ["R3", "demo:4", "team:7"],
     )
 
   def test_main_with_another_source(self):
