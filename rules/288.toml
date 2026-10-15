@@ -13,7 +13,7 @@ check = "none"
 
 [title]
 en = "Keep nothing but main checkouts in the directory for main checkouts"
-zh = "放主检出的目录下只放主检出"
+zh = "主检出目录下只放主检出"
 
 [text.statement]
 en = "Keep nothing but main checkouts directly under `{$dirs.main-checkouts}`."
