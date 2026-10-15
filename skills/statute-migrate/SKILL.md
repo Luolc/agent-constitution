@@ -24,7 +24,7 @@ files changes, this table is the one place to change.
 | Name | Path | Committed |
 | --- | --- | --- |
 | the global configuration | `$XDG_CONFIG_HOME/statute/config.toml` (`~/.config/statute/config.toml` by default) | no, the user's home |
-| the rule set | `statute.toml` at the top of the repository | yes |
+| the rule set | `statute.toml` at the top of the repository | yes, in the same commit as the compiled file (step g) |
 | the lock file | `statute.lock`, next to the rule set | yes |
 | the compiled file | `AGENTS.md`, next to the rule set | yes |
 | the local rules directory | `.statute/rules/` next to the rule set, or what `local-rules` in the rule set names | yes |
@@ -281,6 +281,15 @@ Acceptance, before you ask for a review:
 - In a public repository with private rules, the checkout hook holds
   the hook line, and a worktree added with `git worktree add` has the
   private output and the private links without any other command.
+
+Commit the rule set in the same commit as the compiled file, and no
+earlier: until then it stays in the working tree, uncommitted. Some
+environments read a rule set at the top of a repository as the sign
+that the repository has moved to statute and that its compiled file is
+all an agent there follows, and set aside the instructions from
+outside the repository. A rule set committed while the compiled file
+is still the old one would make an agent drop those instructions, the
+safety rules among them.
 
 The pull request carries the rule set, the lock file, the compiled
 file, the installed skills, the checks file, the local rules, the
