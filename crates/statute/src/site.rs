@@ -306,7 +306,7 @@ fn params_page(source: &str) -> PathBuf {
 fn parameters(project: &Project, w: &Words, source: &Source) -> String {
     let lang = project.manifest.lang.as_str();
     let title = format!("{} · {}", w.parameters, source.name);
-    let mut out = head(&title, lang, "text");
+    let mut out = head(&title, lang, "list");
     let _ = writeln!(
         out,
         "<nav><a href=\"../index.html\">{}</a></nav>\n<h1>{}</h1>\n<table>\n<tr>{}</tr>",

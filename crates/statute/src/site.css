@@ -16,8 +16,9 @@ body {
   background: var(--t-bg-page);
 }
 /* Room on both sides that grows with the window (the `vw` term) between
-   two tokens. A page of text is a column; the index, a list whose rows
-   carry their tags at the right, spans the window. */
+   two tokens. A page of text is a column; the index, whose rows carry
+   their tags at the right, and the table of parameters span the
+   window. */
 main { padding: var(--t-space-8) clamp(var(--t-space-4), 5vw, var(--t-space-12)); }
 main.text { max-inline-size: var(--t-measure); margin-inline: auto; }
 h1 { margin: 0 0 var(--t-space-4); font-size: var(--t-text-2xl); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
