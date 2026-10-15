@@ -1,4 +1,4 @@
-<!-- en-sha256: 127826e3b7eaea12b121d6f987db34e5cc043ec712173f3a3362893252e76c52 -->
+<!-- en-sha256: 2ca11f80b5018f9e9cb13d6947d25c93a2e9250cb72500d8508fcd1ddec7326a -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -93,4 +93,4 @@ rust-toolchain.toml       Rust 工具链的版本，本地和 CI 里的 rustup
 
 阶段 B 按下面的顺序实现：`schema/` 和 schema 检查程序，`rules/` 的其余部分 (由迁移填充)，编译器，`examples/` 和漂移检查，引用检查程序和放宽检查程序，私有词扫描程序，`fixtures/static/` 和 fixture 检查，最后是加载验证。每一步单独就能用。
 
-宪法中关于修改的那一条所保护的，是宪法的正文 (`protected-text`)；在核心部分，它是版目录下的源文件 (`index.toml` 和 `articles/`)，以及由它们构建出的文件的措辞。改动正文就是修正案，按 `approving-amendments` 的规定生效 (见[批准修正案](amendments-and-releases.md#approving-an-amendment))。其余一切都是依照 `rule-evolution` 的普通变更 (`ordinary-tooling`)，与其他变更一样审查和测试：`tools/`、`crates/` 和 `schema/` (编译器、检查程序、fixture 检查的运行程序)、`.github/workflows/`、`fixtures/` 和 `examples/golden/`。人的注意力放在宪法说了什么上；工具靠单元测试和正常路径的端到端测试保证可靠，不靠人去读。生成文件只能通过重新构建来改。对构建脚本的改动，如果只改变生成文件的编号或版式，是普通变更，它的 pull request 要展示生成文件的 diff，让人扫一眼格式；如果改变了它们的措辞，就改变了正文，是修正案 (`protected-text`)。构建脚本自己写的说明 (文件头一行、废止说明，以及 agent 版里的开头说明和代替条文正文的那句说明) 不是宪法的正文：它们随脚本一起改，走普通变更 (`ordinary-tooling`)，只能说正文已经说过的话 (宪法约束每一个 agent，`terms.agent`)、指向完整的正文、说明版式；会改变含义的说明，要先有修正案。agent 版略去哪些条文由源文件设定 (`audience`，见[宪法](constitution.md#constitution))，所以改动它是修正案。
+宪法中关于修改的那一条所保护的，是宪法的正文 (`protected-text`)；在核心部分，它是版目录下的源文件 (`index.toml` 和 `articles/`)，以及由它们构建出的文件的措辞。改动正文就是修正案，按 `approving-amendments` 的规定生效 (见[批准修正案](amendments-and-releases.md#approving-an-amendment))。其余一切都是依照 `rule-evolution` 的普通变更 (`ordinary-tooling`)，与其他变更一样审查和测试：`tools/`、`crates/` 和 `schema/` (编译器、检查程序、fixture 检查的运行程序)、`.github/workflows/`、`fixtures/` 和 `examples/golden/`。人的注意力放在宪法说了什么上；工具靠单元测试和正常路径的端到端测试保证可靠，不靠人去读。生成文件只能通过重新构建来改。对构建脚本的改动，如果只改变生成文件的编号或版式，是普通变更，它的 pull request 要展示生成文件的 diff，让人扫一眼格式；如果改变了它们的措辞，就改变了正文，是修正案 (`protected-text`)。构建脚本自己写的说明 (文件头一行、废止说明，以及 agent 版里标题下的那一行和代替条文正文的标记) 不是宪法的正文：它们随脚本一起改，走普通变更 (`ordinary-tooling`)，只能说正文已经说过的话 (宪法约束每一个 agent，`terms.agent`)、指向完整的正文、说明版式；会改变含义的说明，要先有修正案。agent 版略去哪些条文由源文件设定 (`audience`，见[宪法](constitution.md#constitution))，所以改动它是修正案。

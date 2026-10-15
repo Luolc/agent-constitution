@@ -1,12 +1,15 @@
 {{- /* The pages of one language from the built constitution: its full
-  version, constitution.<lang>.md, as the home page, and its version for
-  agents, constitution.<lang>.agent.md, as agent/ (both found by
-  layouts/_partials/constitution/source.html). Each file
-  starts with the build's header line, a blank line and the `# ` title:
-  the header line is dropped, the title becomes the page's, and the
-  layouts set it above the text (layouts/home.html, layouts/page.html).
-  The page's params hold the length of the text the page gives, the file
-  without its header line: its characters, its words split on white space
+  version, constitution.<lang>.md, as the home page and again as
+  editions/<edition>/, the address of this edition that a later one does
+  not take, and its version for agents, constitution.<lang>.agent.md, as
+  agent/ (both found by
+  layouts/_partials/constitution/source.html). The full version
+  starts with the build's header line, a blank line and the `# ` title,
+  the version for agents with the title: the header line is dropped, the
+  title becomes the page's, and the layouts set it above the text
+  (layouts/home.html, layouts/page.html). The page's params hold the
+  length of the text the page gives, the file from its title on: its
+  characters, its words split on white space
   and its SHA-256, which tells whether data/lengths.json counted this
   text. It runs once for each language of the site. */ -}}
 {{- .EnableAllLanguages }}
@@ -16,13 +19,18 @@
   {{- $file := printf "constitution.%s%s.md" $lang $version }}
   {{- $markdown := (partial "constitution/source.html" $file).Content }}
   {{- $lines := split $markdown "\n" }}
-  {{- if or (lt (len $lines) 3) (not (strings.Contains (index $lines 0) "constitution build")) (not (strings.HasPrefix (index $lines 2) "# ")) }}
-    {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" $file }}
+  {{- if eq $version "" }}
+    {{- if or (lt (len $lines) 3) (not (strings.Contains (index $lines 0) "constitution build")) (not (strings.HasPrefix (index $lines 2) "# ")) }}
+      {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" $file }}
+    {{- end }}
+    {{- $lines = after 2 $lines }}
+  {{- else if not (strings.HasPrefix (index $lines 0) "# ") }}
+    {{- errorf "constitution/%s: does not start with the `# ` title" $file }}
   {{- end }}
-  {{- $text := delimit (after 1 $lines) "\n" }}
+  {{- $text := delimit $lines "\n" }}
   {{- $pages = merge $pages (dict (cond (eq $version "") "full" "agent") (dict
-    "title" (strings.TrimPrefix "# " (index $lines 2))
-    "body" (delimit (after 3 $lines) "\n")
+    "title" (strings.TrimPrefix "# " (index $lines 0))
+    "body" (delimit (after 1 $lines) "\n")
     "length" (dict
       "characters" (strings.RuneCount $text)
       "words" (len (findRE `\S+` $text))
@@ -75,21 +83,39 @@
 {{- if eq $index.status "draft" }}
   {{- $name = printf "%s %s" $name (i18n "draft") }}
 {{- end }}
-{{- .AddPage (dict
-  "kind" "home"
-  "path" "/"
+{{- $page := dict
   "title" $full.title
-  "menus" (dict "before" (dict
-    "parent" "constitution"
-    "name" $name
-    "weight" (sub 0 (int (replace $edition "-" "")))
-  ))
   "params" (dict "length" $full.length "agentLength" $pages.agent.length)
   "content" (dict
     "mediaType" "text/markdown"
     "value" (replaceRE `(?m)^(#{2,6}) <a id="([^"]+)"></a>(.*)$` "$1 $3 {#$2}" $body)
   )
+}}
+{{- .AddPage (merge $page (dict
+  "kind" "home"
+  "path" "/"
+  "menus" (dict "before" (dict
+    "parent" "constitution"
+    "name" $name
+    "weight" (sub 0 (int (replace $edition "-" "")))
+  ))
+)) }}
+{{- /* The edition's page, the home page's text at an address of its own
+  (layouts/editions/page.html), hidden from the theme's list and kept
+  out of search engines' index (layouts/_partials/docs/inject/head.html),
+  as the home page has the same text. Their section, editions/, gets no
+  page of its own. */ -}}
+{{- .AddPage (dict
+  "kind" "section"
+  "path" "editions"
+  "title" "editions"
+  "params" (dict "bookHidden" true)
+  "build" (dict "render" "never" "list" "never")
 ) }}
+{{- .AddPage (merge $page (dict
+  "path" (printf "editions/%s" $edition)
+  "params" (merge $page.params (dict "bookHidden" true "noindex" true))
+)) }}
 {{- .AddPage (dict
   "path" "agent"
   "title" $pages.agent.title

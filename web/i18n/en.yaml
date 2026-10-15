@@ -21,7 +21,7 @@ count-words: "words"
 count-tokens: "tokens"
 count-agent: "Agent version"
 count-full: "Full version, this page"
-count-agent-note: "The agent version omits the background for people, the parts marked *: the preamble entirely, the others but for a pointer to the full version. It has no anchors or links either."
+count-agent-note: "The agent version omits the background for people, the parts marked *: the preamble entirely, the others but for a … in place of their text. It has no anchors or links either."
 counted: "Tokens counted by Anthropic's token counting API for {{ .model }}."
 not-counted: "Tokens are counted by Anthropic's token counting API for {{ .model }}; this build had no credential for it, or the call failed, so they were not counted."
 count-source: "Counted at revision {{ .revision }}{{ with .commit }}, commit {{ . }}{{ end }}."
@@ -129,3 +129,6 @@ default-off: "Off by default"
 default-option: "Default option"
 # Before a one-of's title in the list of the rules, where it is a box.
 one-of: "One of: "
+# The name of the button that shows or hides a group's pages in the
+# sidebar (layouts/_partials/docs/menu-hugo.html).
+fold-pages: "Pages of {{ .name }}"

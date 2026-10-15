@@ -1,4 +1,4 @@
-<!-- en-sha256: 6f0d18c7e2c847a3f498c159be6d8ac707957e51826df7bedffa54b2ba442512 -->
+<!-- en-sha256: a9fcad8c406c69314bd5e12c949062ff193b12f33410e78392f122433a60406c -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -7,13 +7,13 @@
 
 **在本地**，编译器读取宪法 (agent 版) 和一份规定清单及其锁文件，写出：
 
-- 一份 `AGENTS.md`，开头写明它依据的宪法的仓库、版和修订号，然后是启用的规定，排成一个平铺的列表，每条规定一项，只有它的引用和要求 (见下)。文件暂时不拆。等用它的某个仓库编译出的文件用 `count-tokens` 量过之后，再按量出的长度定一个阈值，超过阈值的文件沿领域拆开；
+- 一份 `AGENTS.md`，收入宪法的 agent 版，然后是启用的规定，排成一个平铺的列表，每条规定一项，只有它的引用和要求 (见下)。文件暂时不拆。等用它的某个仓库编译出的文件用 `count-tokens` 量过之后，再按量出的长度定一个阈值，超过阈值的文件沿领域拆开；
 - 启用的规定需要的 skill 目录；
 - 要安装的检查二进制文件的版本，以及启用规定的外部命令。
 
 `AGENTS.md` 只收录 `uses` 含 `instructions` 的启用规定 ([规定用在哪里](rule-config.md#where-a-rule-is-used))；参数实现之后，每个占位符都换成它的取值 ([参数](rule-config.md#parameters))。
 
-`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外两样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释；一行写明宪法的版、修订号和规定源；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。在公开仓库里，它最后还多一行，给找不到指向全文的软链的 agent 看，全文由私有层编译而成 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))：「If `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.」(中文是「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」)。
+`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外两样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释，`compile` 靠它区分自己写的文件和手写的文件；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。文件依据的宪法的版、修订号和规定源记在 `statute.lock` 里，不写进文件。
 
 `AGENTS.md` 是给 agent 读的，私有全文 `.statute/AGENTS.full.md` 也是，两者构建方式相同，永远是一个平铺的列表。每条启用的规定是一项，写成 `- <引用> <要求>`，例如 `- R22 Keep a credential out of every message.`：先是 statute 显示的这条规定的引用 (`R42`、`L12`、`team:7`)，一个空格，然后是它的要求；要求有多行时，第一行之后的每行缩进两个空格，接着这一项写。别的一概不写：没有规定的标题、理由和核验方法，没有领域、子领域和 one-of，既不写它们的标题，也不写 applicability，也没有锚点和链接。节点之间的关系和设置，即 `requires`、`conflicts`、one-of、`overrides`、默认开关、`uses` 和 `parent`，都是元信息：statute 在锁定和编译时检查它们，规定清单编译通过之后，它们的作用就尽到了，不写进文件。标题、理由、核验方法和领域的 applicability 是给人看的，放在网站上 (见下)；审查方从 `statute check` 拿到规定的理由和核验方法。引用保留在每一项的开头，审查发现和引用都靠它指明是哪条规定。
 
@@ -67,7 +67,7 @@
 
 `statute site` 把规定清单能用到的规定生成一个网站，写到 `statute.toml` 旁边的 `.statute/site/`，在浏览器里直接从磁盘打开；它从不发布，也不是[公开网站](static-site.md)。它读 `statute.toml`，有私有规定清单时也读，两层都在内存里解析，每个 git 规定源读锁文件记录的那个提交 ([git 规定源](global-configuration.md#git-sources))；它不写锁文件。最后打印 `index.html` 的路径。
 
-- **文件。** 纯 HTML，加一份内嵌的样式表：没有脚本，不用 Hugo，不引入 statute 现有依赖之外的依赖。每次运行都重新生成：先删掉旧的 `.statute/site/`，但只在这个目录里有 statute 写的 `.gitignore` (见下) 时才删，否则什么都不写并报错。除了 `.statute/.gitignore`，`.statute/site/` 之外什么都不写。
+- **文件。** 纯 HTML，加一份内嵌的样式表，照[前端](frontend.md) 写，用的是公开网站那套 token，图标也内联在页面里：没有脚本，不用 Hugo，不引入 statute 现有依赖之外的依赖。每次运行都重新生成：先删掉旧的 `.statute/site/`，但只在这个目录里有 statute 写的 `.gitignore` (见下) 时才删，否则什么都不写并报错。除了 `.statute/.gitignore`，`.statute/site/` 之外什么都不写。
 - **让 git 忽略。** statute 写 `.statute/site/.gitignore`，内容是 `*`，这样 git 忽略那里的每个文件，包括它自己，它也标明这个目录归 statute。statute 还写 `.statute/.gitignore`，其中列出 `/site/`，每个往 `.statute/` 写生成文件的命令都这样做 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。在 git 仓库里，它先用 `git ls-files` 问 `.statute/site/`，git 跟踪着那里的某个文件时，什么都不写并报错，写明是哪个文件和解决办法 `git rm -r --cached .statute/site`。git 回答不了时 (起不来或出错)，也什么都不写，报错并带上 git 的错误信息。不在 git 仓库里时没有东西会被提交，也就不用问。
 - **首页**按四类规定源 ([四类规定源](rule-sources.md#four-kinds-of-source)) 分节：全局公开、全局私有、本仓公开、本仓私有。每节列出它的规定源，每个规定源列出它的领域树，包括每个节点，不论启用与否：节点的引用、标题和状态，以及这份规定清单是启用它、覆盖它还是没选它；one-of 是一个框，装着它的选项，默认的那个加了标记。按规定源类别筛选、隐藏这份规定清单没有启用的规定，以及显示默认隐藏的已被取代和已废止的节点，都只靠复选框和样式表实现。
 - **规定源属于哪一类**看它的两个属性：仓库自己的规定 (`L`) 和 `scope = "local"` 的规定源是本仓的，其余都是全局的，包括全局配置里的；公开与否按规定源自己的声明，`L` 按规定清单的声明。在 `.` 的规定源，比如本仓的 `R = { path = "." }`，是第一方规定源，所以是全局公开的。`local-rules` 指向它的规定目录时，它的规定同时也是仓库自己的规定：它只在全局公开下列一次，本仓公开那一节写明这一点并链接过去；否则仓库自己的规定列在它所属类别的本仓那一节。尚未实现：不论 `local-rules` 指向哪里，网站仍把在 `.` 的规定源当作仓库自己的规定。每个节点在首页和它自己的页面上都标出所属规定源的类别：用页面的语言写出类别名，底色是四种颜色之一。节点自己的页面上，标记还写出规定源的名字，例如 `全局私有 · me`。

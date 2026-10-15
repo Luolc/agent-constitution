@@ -117,19 +117,6 @@ pub fn write_gitignore(root: &Path) -> Result<(), String> {
         .map_err(|e| format!("{}: cannot write: {e}", shown.display()))
 }
 
-/// The line the committed `AGENTS.md` of a public repository ends with,
-/// for an agent that finds neither link. The path is in backticks, so
-/// that no agent imports it as an `@` path.
-pub fn fallback(lang: &str) -> String {
-    let path = format!("{DIR}/{FULL}");
-    match lang {
-        "zh" => format!("如果 `{path}` 存在，读它并照做：它是本文件加上本仓库的私有规定。"),
-        _ => format!(
-            "If `{path}` exists, read it and follow it: it is this file with the repository's private rules added."
-        ),
-    }
-}
-
 /// How git ignores a path: not at all, through a `.gitignore`, or
 /// through a pattern outside every `.gitignore`, such as
 /// `.git/info/exclude`.

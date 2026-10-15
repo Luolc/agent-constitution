@@ -1,9 +1,10 @@
 {{- /* hugo-book's menu-hugo (accepts Page and Menu as context), with a
   group that folds when `collapse` is set in its menu params: a row of
   its link and a button with a chevron that says whether its pages are
-  shown (assets/sidebars.js), open when the current page is in the
-  group; without scripts the button is hidden and every group open
-  (docs/inject/head.html). The group's icon (BookIcon) and the chevron
+  shown (assets/ts/sidebars.ts), open when the current page is in the
+  group, and named for the pages it shows (`fold-pages`), as the link
+  beside it already says the group's name; without scripts the button
+  is hidden and every group open (docs/inject/head.html). The group's icon (BookIcon) and the chevron
   come from layouts/_partials/icon.html. A group with no
   children, the rules, is marked as the current page on every page of its
   section too, as a rule's page has no entry of its own. */ -}}
@@ -38,7 +39,7 @@
     </a>
     {{- if $fold }}
     {{- $open := or ($.Page.IsMenuCurrent .Menu .) ($.Page.HasMenuCurrent .Menu .) }}
-    <button type="button" class="menu-fold" data-fold aria-expanded="{{ $open }}" aria-controls="{{ $id }}" aria-label="{{ .Name }}">
+    <button type="button" class="menu-fold" data-fold aria-expanded="{{ $open }}" aria-controls="{{ $id }}" aria-label="{{ i18n "fold-pages" (dict "name" .Name) }}">
       {{- partial "icon.html" "lucide:chevron-right" -}}
     </button>
     </div>

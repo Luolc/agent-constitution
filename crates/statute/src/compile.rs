@@ -134,7 +134,7 @@ pub fn compile(project: &Project) -> Result<Output, String> {
         &lock::render(project),
         crate::manifest::FILE,
     )?;
-    let agents_md = agents_md(project, true)?;
+    let agents_md = agents_md(project, false)?;
     let mut skills: Vec<(String, PathBuf)> = Vec::new();
     let mut from: Vec<&str> = Vec::new();
     // The `skills/` at the top belong to the source there, if any; the
@@ -386,8 +386,7 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
 }
 
 /// The full text of the private layer of a public repository: the
-/// `AGENTS.md` of `both`, which holds both layers over `public`, without
-/// the line that points to it, after checking `statute.lock` against
+/// `AGENTS.md` of `both`, which holds both layers over `public`, after checking `statute.lock` against
 /// `public` and the private lock file in `dir` against `both`
 /// (`docs/design/rule-sources.md`, Private rules in a public repository).
 /// Without a private rule set, `both` is `public` and `dir` is `None`:
@@ -409,7 +408,7 @@ pub fn full_text(public: &Project, both: &Project, dir: Option<&Path>) -> Result
             private::MANIFEST,
         )?;
     }
-    agents_md(both, false)
+    agents_md(both, true)
 }
 
 /// Whether a person's own value of a `personal` parameter differs from
@@ -436,9 +435,8 @@ fn check_lock(path: &Path, shown: &str, current: &str, set: &str) -> Result<(), 
     }
 }
 
-/// The text of `AGENTS.md`; with `fallback`, in a public repository,
-/// ending with the line that points to the private layer's full text.
-fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
+/// The text of `AGENTS.md`; with `private`, with the person's own values.
+fn agents_md(project: &Project, private: bool) -> Result<String, String> {
     let m = &project.manifest;
     let spec = m.constitution_spec();
     let lang = m.lang.as_str();
@@ -460,18 +458,6 @@ fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
     let w = words(lang);
     let mut out = String::new();
     let _ = writeln!(out, "{GENERATED}\n");
-    let (edition, revision, name, path) =
-        (&m.edition, &project.revision, &spec.name, &spec.place());
-    let _ = match lang {
-        "zh" => writeln!(
-            out,
-            "依据的宪法：{edition} 版，修订号 {revision}，来自规定源 `{name}` (`{path}`)。\n"
-        ),
-        _ => writeln!(
-            out,
-            "Constitution: edition {edition}, revision {revision}, from source `{name}` (`{path}`).\n"
-        ),
-    };
     out.push_str(constitution.trim_end());
     out.push_str("\n\n");
     let _ = writeln!(out, "# {}\n", w.rules);
@@ -486,10 +472,7 @@ fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
         .map(|(key, _)| key)
         .collect();
     for domain in &domains {
-        render(project, &labels, domain, !fallback, &mut out)?;
-    }
-    if fallback && m.public {
-        let _ = writeln!(out, "\n---\n\n{}", private::fallback(lang));
+        render(project, &labels, domain, private, &mut out)?;
     }
     Ok(out)
 }

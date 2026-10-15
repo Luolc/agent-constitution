@@ -330,8 +330,11 @@ target still fades from `bg-target`.
   `button`, a link, a `details`, a `select`), and ARIA is added only for
   what that element does not say itself. A control that opens or folds
   something says whether it is open (`aria-expanded`) and what it opens
-  (`aria-controls`). A popover with controls takes the focus when it
-  opens and gives it back to its control when it closes; Escape closes
+  (`aria-controls`). A control's name says what it acts on, not the
+  words of a link beside it: the button that folds a group of the
+  sidebar is named for the group's pages ("Pages of Design"), as the
+  group's link already says its name. A popover with controls takes the
+  focus when it opens and gives it back to its control when it closes; Escape closes
   it.
 - **Tooltips.** A tip shown on hover appears after `delay-tip`; once one
   is shown, the next one under the pointer appears at once. A tip never
@@ -407,7 +410,12 @@ turned off (disabled), where it has these.
   can be linked; there is no Apply button. Escape, a click outside or
   the focus leaving it closes it. A site without scripts, as the local
   site is, shows the same groups in the popover, applied with a primary
-  button.
+  button. The local site differs today: its check boxes apply at once,
+  through the style sheet, with no primary button; its groups are the
+  kind of source, the use, and the rules not enabled and those
+  superseded or repealed, shown besides; and it has no groups for the
+  status, the defaults and the domain, no All and None, and no badge
+  ([Status](#status)).
 - **The tree of rules.** The level of a node shows by its size, weight
   and a bar ([Type](#type)), not by indentation: a domain of the first
   level is a heading with `space-8` above it; one of the second level
@@ -484,11 +492,14 @@ turned off (disabled), where it has these.
     the page behind it fades to a quarter of its opacity; under reduced
     motion it fades in and out in place. While a drawer is open the
     rest of the page is inert: the focus goes to the drawer's first
-    link, and Escape, its button, a click outside it or a link followed
+    link shown, and Escape, its button, a click outside it or a link followed
     in it closes it, the focus going back to the button when the
-    keyboard or the button closed it. Without scripts there are no
+    keyboard or the button closed it. The sidebar does not repeat the
+    site's title, which the top bar shows. Without scripts there are no
     drawers: the sidebar stands above the text and the table of
-    contents below it, every list open.
+    contents below it, every list open: the buttons that fold the
+    sidebar's groups are hidden, and the language switch's chevron is
+    turned to open and its button does nothing on a click.
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding
   `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
@@ -573,7 +584,11 @@ turned off (disabled), where it has these.
   (the legend, the filter and the page size above the list, whose
   markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
-  `web/assets/styles/index.yaml`.
+  `web/assets/styles/index.yaml`. The local site's own is
+  `crates/statute/src/site.css`, which `statute` writes into each page
+  after `tokens.css`; it draws the check boxes as `controls.css` does,
+  and holds nothing of the public site's other sheets, which style the
+  theme's markup.
 - **Icons.** The SVG files are in `crates/statute/assets/icons/`, one
   directory per source, `lucide/` and `octicons/`, unchanged from the
   release, with the license in each and the versions in its
@@ -582,9 +597,12 @@ turned off (disabled), where it has these.
   one line with the class `icon`, hidden from screen readers; the class
   sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
   component makes it `icon-md`. A chevron that turns is `chevron-right`
-  turned a quarter, which draws `chevron-down`.
+  turned a quarter, which draws `chevron-down`. The local site inlines
+  the files it needs in the same way, built into `statute` with
+  `include_str!`.
 - **Scripts.** A script that holds more than a few lines of logic, the
-  list of the rules and its filter today, is written in TypeScript in
+  list of the rules and its filter and the sidebar and its drawers
+  today, is written in TypeScript in
   `web/assets/ts/`, the logic that needs no page (the filter's choice
   and the address) in a file of its own. Hugo's `js.Build`, the esbuild
   that Hugo carries, bundles each one, with no Node and no npm package,
@@ -622,8 +640,12 @@ and the legend, the filter and the page in the address, pages readable
 without scripts, tabular figures, and `aria-expanded` with
 `aria-controls` on the info button, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's
-buttons. Not
-built yet, and what each replaces:
+buttons. Built today on the local site: every token, and every value
+of its style sheet named by one; the tags, the legend, the tree of
+domains and the one-of of [Components](#components); the filter's
+button and popover; the check boxes; hover only on fine pointers, the
+sizes of targets, the focus ring, and the motion of the filter's
+popover. Not built yet, and what each replaces:
 
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
@@ -637,13 +659,13 @@ built yet, and what each replaces:
 - Until the three above are built, `rules-list.css` writes some sizes
   and spaces as values, and the list's pages are
   linked by the characters ‹ and ›.
-- The local site's filter: the popover with its groups, applied with a
-  primary button, replaces its panel of check boxes.
-- The local site's style sheet writes its own values; it includes
-  neither the tokens nor the icons yet.
-- The script of the sidebar and the drawers, `web/assets/sidebars.js`,
-  holds more than a few lines of logic but is JavaScript; it moves to
-  TypeScript in `web/assets/ts/` ([In the code](#in-the-code)).
+- On the local site, the filter's groups for the status, the defaults
+  and the domain, with All and None in each, the badge on its button,
+  and its closing on Escape or a click outside; and the primary button
+  that applies it, which the style sheet's check boxes, applying at
+  once, stand in for. Its popover closes at once, by a click on the
+  button. Its pages load no font and set the text in the local serif
+  fonts.
 
 ## Open questions
 
