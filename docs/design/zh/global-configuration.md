@@ -1,4 +1,4 @@
-<!-- en-sha256: f3fb0367710deaaf87dd2d82eb7f86db9e3c0e2516b6d005d4afd5fd732e01e4 -->
+<!-- en-sha256: 1b8c194908994f150d3a29679bbbd5ff78f212b74890ced19ada5557a4d0c782 -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -110,8 +110,6 @@ public = true
 提示信息里，git 规定源的文件按规定源和提交来写，`R@1a2b3c4d:rules/7.toml`。
 
 ## <a id="adding-a-source"></a>添加规定源
-
-还没有实现。
 
 `statute source add <name> <address>` 登记一个规定源：
 

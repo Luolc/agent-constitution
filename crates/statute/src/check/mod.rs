@@ -141,8 +141,17 @@ struct Visibility {
 /// `PRIVATE` or `INTERNAL`, as `gh repo view` gives it; or why gh could
 /// not tell.
 pub fn github_visibility(root: &Path) -> Result<String, String> {
+    visibility_of(root, None)
+}
+
+/// As `github_visibility`, for the repository `repo` (`owner/name`) when
+/// given, else the one at `root`.
+pub fn visibility_of(root: &Path, repo: Option<&str>) -> Result<String, String> {
     let ctx = Context { root, base: None };
-    github::gh::<Visibility>(&ctx, &["repo", "view", "--json", "visibility"])
+    let mut args = vec!["repo", "view"];
+    args.extend(repo);
+    args.extend(["--json", "visibility"]);
+    github::gh::<Visibility>(&ctx, &args)
         .map(|answer| answer.visibility)
         .map_err(|report| report.note)
 }

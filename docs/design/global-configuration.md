@@ -213,8 +213,6 @@ commit, `R@1a2b3c4d:rules/7.toml`.
 
 ## Adding a source
 
-Not built yet.
-
 `statute source add <name> <address>` names a source:
 
 - `<address>` is a git address, or a directory on disk. In a rule set a

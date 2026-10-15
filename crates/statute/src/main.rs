@@ -7,7 +7,7 @@ use toml_edit::{Array, DocumentMut, Item, Value};
 
 use statute::diag::Diagnostics;
 use statute::lock;
-use statute::manifest::{self, Key, Manifest};
+use statute::manifest::{self, Follow, Key, Manifest};
 use statute::node::{Kind, Status};
 use statute::private;
 use statute::project::{Env, Project};
@@ -98,6 +98,11 @@ enum Command {
     /// included, to .statute/site, which git ignores; open its
     /// index.html in a browser.
     Site,
+    /// Name a source of rules.
+    Source {
+        #[command(subcommand)]
+        action: SourceAction,
+    },
     /// Resolve statute.toml again, say how the result differs from
     /// statute.lock, and write statute.lock.
     Upgrade {
@@ -105,6 +110,35 @@ enum Command {
         /// the rule that supersedes it.
         #[arg(long)]
         replace_superseded: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum SourceAction {
+    /// Name a source in statute.toml, in statute.private.toml when it is
+    /// private and the repository public, or with --global in the global
+    /// configuration; and update the lock file when there is one.
+    Add {
+        /// The source's short name, as in `team:7`.
+        name: String,
+        /// A git address, or a directory on disk (with --global, a clone).
+        address: String,
+        /// The branch to follow; by default the one the remote's HEAD names.
+        #[arg(long, conflicts_with = "tag")]
+        branch: Option<String>,
+        /// The tag to follow.
+        #[arg(long)]
+        tag: Option<String>,
+        /// Anyone can read the source. Without `--public` or `--private`,
+        /// GitHub is asked through gh, and anything but PUBLIC is private.
+        #[arg(long, conflicts_with = "private")]
+        public: bool,
+        /// The source is private.
+        #[arg(long)]
+        private: bool,
+        /// Name it in the global configuration, for every rule set.
+        #[arg(long)]
+        global: bool,
     },
 }
 
@@ -148,6 +182,25 @@ fn main() -> ExitCode {
         ),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
+        Command::Source {
+            action:
+                SourceAction::Add {
+                    name,
+                    address,
+                    branch,
+                    tag,
+                    public,
+                    private,
+                    global,
+                },
+        } => source_add(
+            root,
+            &name,
+            &address,
+            branch.map(Follow::Branch).or(tag.map(Follow::Tag)),
+            (public || private).then_some(public),
+            global,
+        ),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -1176,4 +1229,237 @@ fn print_locked(project: &Project) {
         lock::FILE,
         project.resolution.enabled.len()
     );
+}
+
+/// `statute source add`: names a source in the file the design says
+/// (`docs/design/global-configuration.md`, Adding a source), after
+/// reading it and resolving the rule set with it; nothing is written when
+/// that fails.
+fn source_add(
+    root: &Path,
+    name: &str,
+    address: &str,
+    follow: Option<Follow>,
+    public: Option<bool>,
+    global: bool,
+) -> Result<(), ()> {
+    let env = env(Mode::Lock)?;
+    let fail = |e: String| eprintln!("statute: error: {e}");
+    let dir = root.join(address);
+    let mut entry = toml_edit::InlineTable::new();
+    // Where GitHub is asked: a directory's repository, or `owner/name`.
+    let (asked_at, repo): (PathBuf, Option<String>);
+    let follow = if dir.is_dir() {
+        asked_at = dir.clone();
+        repo = None;
+        if global {
+            let clone = std::path::absolute(&dir).map_err(|e| fail(format!("{address}: {e}")))?;
+            let (origin, head) = statute::global::clone_origin(&clone).map_err(fail)?;
+            entry.insert("git", origin.as_str().into());
+            entry.insert("clone", clone.to_string_lossy().as_ref().into());
+            Some(follow.or(head.map(Follow::Branch)).ok_or_else(|| {
+                fail(format!(
+                    "{address}: its origin's HEAD names no branch; say which with --branch"
+                ))
+            })?)
+        } else {
+            entry.insert("path", address.into());
+            if follow.is_some() {
+                fail(format!(
+                    "{address} is a directory, read as it is; --branch and --tag are for a git address"
+                ));
+                return Err(());
+            }
+            None
+        }
+    } else {
+        asked_at = root.to_path_buf();
+        repo = statute::global::github_repo(address);
+        entry.insert("git", address.into());
+        Some(match follow {
+            Some(f) => f,
+            None => Follow::Branch(statute::global::default_branch(address).map_err(fail)?),
+        })
+    };
+    match &follow {
+        Some(Follow::Branch(b)) => entry.insert("branch", b.as_str().into()),
+        Some(Follow::Tag(t)) => entry.insert("tag", t.as_str().into()),
+        None => None,
+    };
+    let (public, note) = match public {
+        Some(p) => (p, None),
+        None => {
+            let answer = match (&repo, dir.is_dir()) {
+                (None, false) => Err(format!("GitHub does not hold {address}")),
+                _ => statute::check::visibility_of(&asked_at, repo.as_deref()),
+            };
+            match answer.as_deref() {
+                Ok("PUBLIC") => (true, None),
+                Ok(other) => (
+                    false,
+                    Some(format!(
+                        "GitHub shows it as {other}, so it is private; --public makes it public"
+                    )),
+                ),
+                Err(why) => (
+                    false,
+                    Some(format!(
+                        "GitHub could not tell whether it is public ({why}), so it is private; --public makes it public"
+                    )),
+                ),
+            }
+        }
+    };
+    if name != manifest::FIRST_PARTY || !public {
+        entry.insert("public", public.into());
+    }
+
+    let global_path = statute::global::dir().map(|d| d.join(statute::global::CONFIG));
+    let (file, path) = if global {
+        let Some(path) = global_path else {
+            fail("the system reports no home directory".to_owned());
+            return Err(());
+        };
+        (statute::global::shown_config(), path)
+    } else {
+        let text = std::fs::read_to_string(root.join(manifest::FILE)).map_err(|e| {
+            eprintln!("{}: error: cannot read: {e}", manifest::FILE);
+        })?;
+        let repo_public = Manifest::parse_with(&text, &env.layers)
+            .map(|m| m.public)
+            .map_err(|errors| {
+                for e in errors {
+                    eprintln!("{}: error: {e}", manifest::FILE);
+                }
+            })?;
+        let file = if repo_public && !public {
+            private::MANIFEST
+        } else {
+            manifest::FILE
+        };
+        (file.to_owned(), root.join(file))
+    };
+    let original = match std::fs::read_to_string(&path) {
+        Ok(text) => Some(text),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+        Err(e) => {
+            eprintln!("{file}: error: cannot read: {e}");
+            return Err(());
+        }
+    };
+    let start = original.clone().unwrap_or_else(|| {
+        if global {
+            String::new()
+        } else {
+            format!("base = \"{}\"\n", manifest::FILE)
+        }
+    });
+    let mut doc: DocumentMut = start.parse().map_err(|e| eprintln!("{file}: error: {e}"))?;
+    let sources = doc
+        .entry("sources")
+        .or_insert_with(|| Item::Table(toml_edit::Table::new()))
+        .as_table_mut()
+        .ok_or_else(|| eprintln!("{file}: error: `sources` is not a table"))?;
+    if sources.contains_key(name) {
+        eprintln!("{file}: error: [sources] names `{name}` already");
+        return Err(());
+    }
+    sources.insert(name, Item::Value(Value::InlineTable(entry)));
+    let changed = doc.to_string();
+    let replaces = env.layers.global.iter().any(|s| s.name == name) && !global;
+
+    if global {
+        let mut spec = manifest::read_config(&changed)
+            .map_err(|errors| {
+                for e in errors {
+                    eprintln!("{file}: error: {e}");
+                }
+            })?
+            .into_iter()
+            .find(|s| s.name == name)
+            .expect("the source was just added");
+        statute::global::materialize(&mut spec, None, false).map_err(fail)?;
+        if !Path::new(&spec.path).join("rules").is_dir() {
+            fail(format!("source `{name}` ({address}) has no rules/"));
+            return Err(());
+        }
+        let written = path
+            .parent()
+            .map_or(Ok(()), std::fs::create_dir_all)
+            .and_then(|()| std::fs::write(&path, &changed));
+        written.map_err(|e| eprintln!("{file}: error: cannot write: {e}"))?;
+        println!("wrote {file}: source `{name}`, {}", spec.place());
+    } else if file == private::MANIFEST {
+        let (public_project, given) = Project::load(root, &env);
+        print(&given);
+        let public_project = public_project.ok_or(())?;
+        if public_project.manifest.spec(name).is_some() {
+            eprintln!(
+                "{file}: error: `{name}` is a source of the public layer already; the private layer only adds sources"
+            );
+            return Err(());
+        }
+        let (both, diags) = Project::with_private(&public_project, &given, &changed, &env);
+        print(&diags);
+        let both = both.ok_or_else(|| eprintln!("statute: {file} is left unchanged"))?;
+        private::check_ignored_files(root).map_err(fail)?;
+        write_both(
+            root,
+            true,
+            (private::MANIFEST, private::LOCK),
+            original.as_deref().unwrap_or(""),
+            &changed,
+            &lock::render(&both),
+        )?;
+        println!(
+            "wrote {file}: source `{name}`, {}",
+            both.manifest
+                .spec(name)
+                .map(|s| s.place())
+                .unwrap_or_default()
+        );
+        print_private_locked(&public_project, &both);
+    } else {
+        let (project, diags) = Project::with_manifest(root, &changed, &env);
+        print(&diags);
+        let project = project.ok_or_else(|| eprintln!("statute: {file} is left unchanged"))?;
+        let original = original.unwrap_or_default();
+        if root.join(lock::FILE).exists() {
+            write_both(
+                root,
+                false,
+                (manifest::FILE, lock::FILE),
+                &original,
+                &changed,
+                &lock::render(&project),
+            )?;
+            print_locked(&project);
+            relock_private(root, &project, &env)?;
+        } else {
+            std::fs::write(&path, &changed)
+                .map_err(|e| eprintln!("{file}: error: cannot write: {e}"))?;
+        }
+        println!(
+            "wrote {file}: source `{name}`, {}",
+            project
+                .manifest
+                .spec(name)
+                .map(|s| s.place())
+                .unwrap_or_default()
+        );
+    }
+    if let Some(note) = note {
+        println!("`{name}`: {note}");
+    }
+    if file == private::MANIFEST {
+        println!(
+            "`{name}` is private, so it is named in {}, which git ignores; --public names it in {}",
+            private::MANIFEST,
+            manifest::FILE
+        );
+    }
+    if replaces {
+        println!("`{name}` here replaces the source of that name in the global configuration");
+    }
+    Ok(())
 }
