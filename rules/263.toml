@@ -1,0 +1,43 @@
+id = 263
+slug = "name-the-repository-a-command-reads"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 260
+default = "on"
+authority = ["evidence.facts", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Name the repository in a command that would take it from the working directory"
+zh = "命令会从工作目录推断仓库的，写明仓库"
+
+[text.statement]
+en = "When a command reads or changes a repository that it would otherwise take from the working directory, name that repository in the command, or first confirm that the working directory is inside it."
+zh = "命令要读或改的仓库，在不写明时会从工作目录推断的，在命令里写明这个仓库，或者先确认工作目录就在这个仓库里。"
+
+[text.reason]
+en = '''
+Run from another directory, such a command reads another repository or none, and its answer, often empty, looks the same as a true "none": it cannot tell the two cases apart ({@constitution:discriminating-checks}), and a fact taken from it is not the one looked for ({@constitution:evidence.facts}).
+'''
+zh = '''
+在别的目录下运行，这样的命令读到的是另一个仓库，或者什么仓库也读不到；它的回答往往是空的，看上去和真正的「没有」一样，分不开这两种情况 ({@constitution:discriminating-checks})，从中取得的事实也不是要查的那个 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+Such a command picks its repository from the working directory when none is named, as `gh` does without `-R <owner>/<repo>` and `git` without `-C <path>`. Confirming means running before it, in the same shell and directory, a command that prints the repository the working directory belongs to, such as `git rev-parse --show-toplevel`, and reading that it is the repository meant.
+
+Violated when an agent cites or acts on the output of such a command that neither named its repository nor followed such a confirmation.
+'''
+zh = '''
+这样的命令，在没写明仓库时从工作目录选定仓库，例如不带 `-R <owner>/<repo>` 的 `gh`，不带 `-C <path>` 的 `git`。确认，指在它之前、在同一个 shell 和目录里，运行一条打印出工作目录所属仓库的命令，例如 `git rev-parse --show-toplevel`，并读到它就是要操作的仓库。
+
+agent 引用或依据这样一条命令的输出行事，而这条命令既没有写明仓库，之前也没有做过这样的确认的，即为违反本规定。
+'''
+
+[translations]
+zh = "fd8bd347fa66461f8fadc72169d5c4281d63f37cc8fb59bb244006bc15d5997c"
