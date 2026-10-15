@@ -29,9 +29,11 @@ enum Command {
     /// Resolve statute.toml and write statute.lock.
     Lock,
     /// Say why a rule is enabled, along the chain that brings it in, and
-    /// whether it is on by default.
+    /// whether it is on by default; or a parameter's value and where it
+    /// comes from.
     Explain {
-        /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
+        /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own;
+        /// or a parameter, as `language.commits`.
         #[arg(required_unless_present = "defaults", conflicts_with = "defaults")]
         rule: Option<String>,
         /// List the rules on by default that the rule set keeps, those it
@@ -290,8 +292,13 @@ fn read_env(mode: Mode) -> Result<Env, Vec<String>> {
     };
     let shown = statute::global::shown_config();
     match std::fs::read_to_string(&path) {
-        Ok(text) => match manifest::read_config(&text) {
-            Ok(sources) => env.layers.global = sources,
+        Ok(text) => match manifest::read_config(&text)
+            .and_then(|sources| Ok((sources, manifest::config_values(&text)?)))
+        {
+            Ok((sources, values)) => {
+                env.layers.global = sources;
+                env.layers.values = values;
+            }
             Err(errors) => {
                 return Err(errors
                     .into_iter()
@@ -414,11 +421,19 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let (project, private) = load_layers(root, &env(Mode::Read)?)?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
     // The private output is made in full before anything is written.
-    let full = private
-        .as_ref()
-        .map(|p| statute::compile::full_text(&project, &p.both, &p.dir))
-        .transpose()
-        .map_err(|e| eprintln!("statute: error: {e}"))?;
+    let full = match &private {
+        Some(p) => Some(statute::compile::full_text(&project, &p.both, Some(&p.dir))),
+        None if project.manifest.public && statute::compile::personal_differs(&project) => {
+            Some(statute::compile::full_text(&project, &project, None))
+        }
+        None => None,
+    }
+    .transpose()
+    .map_err(|e| eprintln!("statute: error: {e}"))?;
+    let has_full = full.is_some();
+    if !project.manifest.public {
+        unused_personal(&project);
+    }
     let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
     // `.statute/.gitignore` is the first file written, once nothing is
     // left that can fail before the public files.
@@ -435,10 +450,10 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         println!("wrote {}", path.display());
     }
     let dir = path.parent().unwrap_or(Path::new(""));
-    if let Some(why) = private::claude_md(dir, private.is_some()) {
+    if let Some(why) = private::claude_md(dir, has_full) {
         eprintln!("{}: warning: {why}", dir.join("CLAUDE.md").display());
     }
-    if private.is_some() {
+    if has_full {
         for nested in private::nested_agents_md(root) {
             eprintln!("{}: warning: {}", nested.display(), private::NESTED);
         }
@@ -446,10 +461,33 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     Ok(())
 }
 
+/// In a private repository, which has no private output, the note that
+/// a person's own value of a parameter goes unused.
+fn unused_personal(project: &Project) {
+    for (name, s) in &project.values {
+        if s.param.scope != statute::param::Scope::Personal {
+            continue;
+        }
+        if let Some(own) = project
+            .manifest
+            .global_values
+            .get(name)
+            .filter(|v| **v != s.value)
+        {
+            eprintln!(
+                "statute: note: the global configuration sets `{name}` to `{own}`, and this repository is private (`public = false`), with no private output; AGENTS.md has `{}`",
+                s.value
+            );
+        }
+    }
+}
+
 /// `compile --private-only`, which a git `post-checkout` hook runs in a
 /// new worktree (`docs/design/rule-sources.md`, A new worktree): writes
 /// the private output alone, reading git sources from the cache only.
-/// Without a public rule set or a private rule set it does nothing; any
+/// Without a public rule set, or without a private rule set and a
+/// person's own value that differs from the committed one, it does
+/// nothing; any
 /// other problem is a warning, and nothing is written. It never fails, so
 /// that the hook never fails the checkout.
 fn compile_private_only(root: &Path) {
@@ -481,9 +519,6 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let Some(dir) = private::dir(root).map_err(one)? else {
         return Ok(Vec::new());
     };
-    if !dir.join(private::MANIFEST).exists() {
-        return Ok(Vec::new());
-    }
     let public = toml::from_str::<toml::Table>(&text)
         .ok()
         .and_then(|t| t.get("public").and_then(toml::Value::as_bool));
@@ -495,15 +530,28 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let errors =
         |diags: &Diagnostics| -> Vec<String> { diags.errors().map(ToString::to_string).collect() };
     let (project, diags) = Project::load(root, &env);
-    let project = project.ok_or_else(|| errors(&diags))?;
-    let (both, more) = Project::load_private(&project, &diags, &env, &dir);
-    let both = match both {
-        Some(both) => both,
-        None if more.has_errors() => return Err(errors(&more)),
+    let has_private = dir.join(private::MANIFEST).exists();
+    // Without a private rule set, only a person's own value could call
+    // for the private output, and a rule set that does not load has none
+    // to tell.
+    let project = match project {
+        Some(project) => project,
+        None if has_private => return Err(errors(&diags)),
         None => return Ok(Vec::new()),
     };
-    let full = statute::compile::full_text(&project, &both, &dir).map_err(one)?;
-    private::write(root, &full).map_err(one)
+    let full = if has_private {
+        let (both, more) = Project::load_private(&project, &diags, &env, &dir);
+        match both {
+            Some(both) => statute::compile::full_text(&project, &both, Some(&dir)),
+            None if more.has_errors() => return Err(errors(&more)),
+            None => return Ok(Vec::new()),
+        }
+    } else if statute::compile::personal_differs(&project) {
+        statute::compile::full_text(&project, &project, None)
+    } else {
+        return Ok(Vec::new());
+    };
+    private::write(root, &full.map_err(one)?).map_err(one)
 }
 
 fn site(root: &Path) -> Result<(), ()> {
@@ -584,7 +632,7 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
             let lang = &project.manifest.lang;
             let text = |part: &str, text| {
                 let text = statute::compile::pick(text, node, lang);
-                statute::compile::cited(&project, labels, key, part, text, false)
+                statute::compile::cited(&project, labels, key, part, text, false, false)
                     .map_err(|e| eprintln!("statute: error: {e}"))
             };
             let reason = text("reason", &rule.reason)?;
@@ -982,6 +1030,22 @@ fn report_changes(old: &lock::Locked, project: &Project) {
     for key in old.rules.keys().filter(|k| !new.rules.contains_key(k)) {
         line(format!("dropped: rule {}", label(sources, key)));
     }
+    for (name, value) in &new.parameters {
+        match old.parameters.get(name) {
+            Some(was) if was != value => {
+                line(format!("changed: parameter `{name}`: `{was}` -> `{value}`"));
+            }
+            Some(_) => {}
+            None => line(format!("brought in: parameter `{name}` = `{value}`")),
+        }
+    }
+    for name in old
+        .parameters
+        .keys()
+        .filter(|n| !new.parameters.contains_key(*n))
+    {
+        line(format!("dropped: parameter `{name}`"));
+    }
     if !any {
         println!("{} is up to date", lock::FILE);
     }
@@ -1093,6 +1157,9 @@ fn listed_key(value: &Value, manifest: &Manifest) -> Option<Key> {
 fn explain(root: &Path, text: &str) -> Result<(), ()> {
     let (public, private) = load_layers(root, &env(Mode::Read)?)?;
     let project = private.map_or(public, |p| p.both);
+    if statute::param::is_name(text) {
+        return explain_parameter(&project, text);
+    }
     let key = parse_ref(text, &project.manifest)?;
     let sources = &project.sources;
     let Some(node) = sources.get(&key) else {
@@ -1240,6 +1307,87 @@ fn switch_state(project: &Project, sw: &Switches, key: &Key) -> String {
 
 /// `explain --defaults`: the three lists of moving a rule set over to the
 /// defaults (`docs/design/rule-config.md`, Moving a repository over).
+/// `explain <name>` for a parameter: its value, where the value comes
+/// from, the person's own when it differs, and the enabled rules that use
+/// it (`docs/design/rule-config.md`, Values in the lock file and the
+/// outputs).
+fn explain_parameter(project: &Project, name: &str) -> Result<(), ()> {
+    let sources = &project.sources;
+    let lang = &project.manifest.lang;
+    let declared: Vec<(&str, &statute::param::Param)> = sources
+        .iter()
+        .flat_map(|s| s.params.iter().map(move |p| (s.name.as_str(), p)))
+        .filter(|(_, p)| p.name == name)
+        .collect();
+    if declared.is_empty() {
+        eprintln!("statute: error: no source of the rule set declares the parameter `{name}`");
+        return Err(());
+    }
+    let about = |source: &str, p: &statute::param::Param| {
+        let title = p
+            .title
+            .get(lang)
+            .or_else(|| p.title.values().next())
+            .map_or("", String::as_str);
+        let scope = match p.scope {
+            statute::param::Scope::Repo => "repo",
+            statute::param::Scope::Personal => "personal",
+        };
+        format!(
+            "parameter `{name}` of {}, a {} of scope `{scope}`: {title}",
+            describe(source),
+            p.kind.name()
+        )
+    };
+    let shown = |p: &statute::param::Param, v: &str| match p.kind {
+        statute::param::Type::Language => {
+            format!("`{v}` ({})", statute::param::language_name(v, lang))
+        }
+        _ => format!("`{v}`"),
+    };
+    let Some(s) = project.values.get(name) else {
+        for (source, p) in &declared {
+            println!("{}", about(source, p));
+        }
+        let (_, p) = declared[0];
+        println!(
+            "- no enabled rule uses it; its default is {}",
+            shown(p, &p.default)
+        );
+        return Ok(());
+    };
+    println!("{}", about(&s.source, &s.param));
+    println!(
+        "- value: {}, from {}",
+        shown(&s.param, &s.value),
+        s.from.place()
+    );
+    if let Some((own, from)) = s.personal.as_ref().filter(|(v, _)| *v != s.value) {
+        println!(
+            "- in the private output: {}, from {}",
+            shown(&s.param, own),
+            from.place()
+        );
+    }
+    // A title that names a parameter reads with the committed values.
+    let rules: Vec<String> = s
+        .rules
+        .iter()
+        .map(|k| match sources.get(k) {
+            Some(n) => {
+                let title = n.title.get(&n.lang).map_or("", String::as_str);
+                format!(
+                    "{k} ({})",
+                    statute::compile::filled(project, k, title, false)
+                )
+            }
+            None => k.to_string(),
+        })
+        .collect();
+    println!("- used by: {}", rules.join(", "));
+    Ok(())
+}
+
 fn explain_defaults(root: &Path) -> Result<(), ()> {
     let (public, private) = load_layers(root, &env(Mode::Read)?)?;
     let project = private.map_or(public, |p| p.both);

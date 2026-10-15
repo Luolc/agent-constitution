@@ -70,7 +70,7 @@ in directories, so moving a rule under another parent changes one line
 and moves no file. Tools always sort the files by number, not by name.
 The directory may also hold `params.toml`, the source's parameters
 ([Declaring a parameter](rule-config.md#declaring-a-parameter)), which
-is no node and which statute skips when it reads the nodes.
+is no node.
 
 A rule, here one that a translation into Chinese accompanies:
 

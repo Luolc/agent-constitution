@@ -11,7 +11,7 @@ and a rule set with its lock file, and writes:
 - an `AGENTS.md`, which opens with the repository, the edition and the
   revision of the constitution it rests on, and then has the enabled rules
   in nested blocks along the parent tree, one heading level per level of
-  the tree, each domain with an enabled rule below it as a top heading,
+  the tree, a one-of's enabled option at the one-of's level, each domain with an enabled rule below it as a top heading,
   followed by the domain's applicability when it has one; a
   subtree whose root is not enabled (for a one-of: none of its children
   is) contributes nothing, since none of its rules can be enabled without
@@ -49,9 +49,12 @@ to ([Private rules in a public repository](rule-sources.md#private-rules-in-a-pu
 file with the repository's private rules added." (in Chinese
 「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」). Each domain is a heading of level two, a subdomain one of
 level three ([Subdomains](rule-sources.md#subdomains)),
-and each level of the tree one level deeper, down to level six, where
-deeper levels stay;
-a one-of none of whose children is enabled does not appear. The
+and each level of the tree one level deeper. A one-of has no heading
+of its own: its enabled option stands at its place, after the one-of's
+anchor, and under the option's heading a line names the one-of,
+`One of: <its title>.` (in Chinese `择一：<its title>。`); an option
+that is a domain keeps its heading, with its rules below it. A one-of
+none of whose children is enabled does not appear. The
 first-party source's domains come first, then those of the other
 sources by the sources' names, then the repository's own. A node's
 heading is its title and its reference as statute shows it (`R42`),
@@ -237,8 +240,11 @@ default switches of a rule set are built, with `domains`, `exclude`,
 `local-rules` and a source entry's `defaults`, and what `add`,
 `remove`, `explain` (`--defaults` included) and the lock file do with
 them; `default` is required where the rule files need it, and
-`check = "review"` fails. Not built yet: parameters, the one-of's
-rendering, and the marks of the sites.
+`check = "review"` fails; parameters are built, with their values in
+the lock file, `upgrade`, `explain <name>` and both outputs. Not built
+yet: the one-of as a box on the sites, and the marks of the public
+site; the local site's marks and the one-of's place in the compiled
+`AGENTS.md` are built.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -275,10 +281,11 @@ as it is and the successors are listed, for the user to choose with
 set does not resolve, neither file is changed.
 
 **`validate <dir>`** reads the rule files of one directory as the
-first-party source, skipping `params.toml`, and runs every check that
-needs no rule set ([Checkers](checkers.md#checkers)): the format of each
-node, the tree, the targets of its references, the translations and
-citations, and the defaults. Each finding goes to standard error on a
+first-party source, with its parameters in `params.toml`, and runs
+every check that needs no rule set ([Checkers](checkers.md#checkers)):
+the format of each node and parameter, the tree, the targets of its
+references, the translations, citations and placeholders, and the
+defaults. Each finding goes to standard error on a
 line of its own; an error makes it exit with status 1, and a clean run
 prints one line to standard output with the number of nodes. This repo
 runs `statute validate rules` as a commit hook.
@@ -372,6 +379,17 @@ file. It prints the path of `index.html`.
   compiled `AGENTS.md`. The pages are in the language of
   `[compile] lang`, the kind of each node included; a status is shown
   as the rule file writes it, `draft` or `trial`.
+- **The marks of [Rule configuration](rule-config.md).** Every domain
+  and rule, in the index and on its page, says whether it is on or off
+  by default, and an option of a one-of whether it is the one-of's
+  default. A rule's page says where it is used, `AGENTS.md`, review or
+  both, and two filters of the index hide the rules for either.
+  A placeholder shows the value this rule set gives the parameter, the
+  person's own where there is one, marked, with the parameter's name
+  on hover and a link to the page of its source's parameters,
+  `<source>/parameters.html`. That page lists each parameter's title,
+  name, type, scope and default, its value and where the value comes
+  from, and the enabled rules that use it.
 
 ## Export
 

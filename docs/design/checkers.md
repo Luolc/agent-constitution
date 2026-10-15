@@ -121,8 +121,9 @@ resolve on their own ([Default switches](rule-config.md#default-switches)),
 and the warnings of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 Each finding is a line on standard error; an error makes it exit with
-status 1. It skips `params.toml`; checking the parameters there is not
-built yet ([Parameters](rule-config.md#parameters)).
+status 1. It reads `params.toml` too and checks each parameter there,
+and each placeholder of a rule names one of them
+([Parameters](rule-config.md#parameters)).
 `crates/statute/tests/real_rules.rs` also reads this repo's `rules/`
 and fails on any error or warning.
 

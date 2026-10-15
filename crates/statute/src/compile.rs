@@ -13,6 +13,7 @@ use crate::cite::{self, Citation, Labels};
 use crate::lock;
 use crate::manifest::{Key, Part};
 use crate::node::{self, Check, Kind, Node, Text};
+use crate::param;
 use crate::private;
 use crate::project::Project;
 use crate::skill;
@@ -80,6 +81,8 @@ struct Words {
     /// rules of a chain of overrides.
     overrides: &'static str,
     which_overrides: &'static str,
+    /// Before the title of the one-of whose option stands in its place.
+    one_of: &'static str,
     end: &'static str,
 }
 
@@ -93,6 +96,7 @@ fn words(lang: &str) -> Words {
             rule: "规定",
             overrides: "覆盖 ",
             which_overrides: "，后者覆盖 ",
+            one_of: "择一：",
             end: "。",
         },
         _ => Words {
@@ -103,6 +107,7 @@ fn words(lang: &str) -> Words {
             rule: "rule",
             overrides: "Overrides ",
             which_overrides: ", which overrides ",
+            one_of: "One of: ",
             end: ".",
         },
     }
@@ -113,6 +118,35 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
     text.get(lang)
         .or_else(|| text.get(&node.lang))
         .map_or("", |s| s.trim_matches('\n'))
+}
+
+/// `text`, of node `key`, with each placeholder replaced by the value of
+/// its parameter, a language as its name in the language compiled to:
+/// the committed value, or with `private` the person's own
+/// (`docs/design/rule-config.md`, Values in the lock file and the
+/// outputs). A rule that is not enabled, whose parameters have no
+/// setting, gets each default.
+pub fn filled(project: &Project, key: &Key, text: &str, private: bool) -> String {
+    let lang = project.manifest.lang.as_str();
+    param::fill(text, |name| match project.values.get(name) {
+        Some(s) => s
+            .param
+            .shown(if private { s.private_value() } else { &s.value }, lang),
+        None => match project.sources.param(&key.source, name) {
+            Ok((_, p)) => p.shown(&p.default, lang),
+            Err(_) => format!("{{${name}}}"),
+        },
+    })
+}
+
+/// A node's title in the language compiled to, its placeholders filled.
+fn title(project: &Project, key: &Key, node: &Node, private: bool) -> String {
+    filled(
+        project,
+        key,
+        pick(&node.title, node, &project.manifest.lang),
+        private,
+    )
 }
 
 /// Compiles a resolved project. Fails, with a message, when the lock file
@@ -377,21 +411,25 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
 /// the line that points to it, after checking `statute.lock` against
 /// `public` and the private lock file in `dir` against `both`
 /// (`docs/design/rule-sources.md`, Private rules in a public repository).
+/// Without a private rule set, `both` is `public` and `dir` is `None`:
+/// the text then differs only in the person's own values.
 /// Fails as `compile` does, and when it is larger than Codex reads.
-pub fn full_text(public: &Project, both: &Project, dir: &Path) -> Result<String, String> {
+pub fn full_text(public: &Project, both: &Project, dir: Option<&Path>) -> Result<String, String> {
     check_lock(
         &public.root.join(lock::FILE),
         lock::FILE,
         &lock::render(public),
         crate::manifest::FILE,
     )?;
-    let path = dir.join(private::LOCK);
-    check_lock(
-        &path,
-        &path.display().to_string(),
-        &lock::render_private(public, both),
-        private::MANIFEST,
-    )?;
+    if let Some(dir) = dir {
+        let path = dir.join(private::LOCK);
+        check_lock(
+            &path,
+            &path.display().to_string(),
+            &lock::render_private(public, both),
+            private::MANIFEST,
+        )?;
+    }
     let text = agents_md(both, false)?;
     if text.len() > private::MAX_BYTES {
         return Err(format!(
@@ -402,6 +440,16 @@ pub fn full_text(public: &Project, both: &Project, dir: &Path) -> Result<String,
         ));
     }
     Ok(text)
+}
+
+/// Whether a person's own value of a `personal` parameter differs from
+/// the committed one, which makes the private output worth writing in a
+/// public repository with no private rule set.
+pub fn personal_differs(project: &Project) -> bool {
+    project
+        .values
+        .values()
+        .any(|s| s.personal.as_ref().is_some_and(|(v, _)| *v != s.value))
 }
 
 /// Fails unless the lock file at `path`, shown as `shown`, holds
@@ -467,7 +515,7 @@ fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
         .map(|(key, _)| key)
         .collect();
     for domain in &domains {
-        render(project, &w, &labels, domain, 2, &mut out)?;
+        render(project, &w, &labels, domain, 2, !fallback, &mut out)?;
     }
     if fallback && m.public {
         let _ = writeln!(out, "\n---\n\n{}", private::fallback(lang));
@@ -525,11 +573,13 @@ pub fn cited(
     part: &str,
     text: &str,
     links: bool,
+    private: bool,
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
     let w = words(lang);
     let fail = |what: &str| Err(format!("{}: {part}: {what}", project.sources.file(key)));
-    cite::replace(text, |c| match c {
+    let text = filled(project, key, text, private);
+    cite::replace(&text, |c| match c {
         Citation::Rule(text) => {
             let Some(cited) = node::cited_ref(text).map(|r| r.key(&key.source)) else {
                 return fail(&format!(
@@ -547,10 +597,14 @@ pub fn cited(
             match project.sources.get(&cited) {
                 Some(n) if links && shown(project, &cited) => Ok(format!(
                     "[{}](#{})",
-                    pick(&n.title, n, lang),
+                    title(project, &cited, n, private),
                     anchor(&cited)
                 )),
-                Some(n) => Ok(format!("{} ({} {cited})", pick(&n.title, n, lang), w.rule)),
+                Some(n) => Ok(format!(
+                    "{} ({} {cited})",
+                    title(project, &cited, n, private),
+                    w.rule
+                )),
                 None => fail(&format!(
                     "cites `{{@rule:{text}}}`, which is not in {}",
                     describe(&cited.source)
@@ -570,15 +624,46 @@ pub fn cited(
     })
 }
 
+/// Writes node `key` and what is below it at heading `level`. A one-of
+/// has no heading of its own: its enabled option stands in its place,
+/// with a line that names the one-of (`docs/design/rule-config.md`, No
+/// rule under a rule).
 fn render(
     project: &Project,
     w: &Words,
     labels: &Labels,
     key: &Key,
     level: usize,
+    private: bool,
     out: &mut String,
 ) -> Result<(), String> {
-    if project.sources.get(key).is_none() || !shown(project, key) {
+    render_in(project, w, labels, key, level, private, None, out)
+}
+
+/// As `render`, for an option of the one-of `of`.
+#[allow(clippy::too_many_arguments)]
+fn render_in(
+    project: &Project,
+    w: &Words,
+    labels: &Labels,
+    key: &Key,
+    level: usize,
+    private: bool,
+    of: Option<&Key>,
+    out: &mut String,
+) -> Result<(), String> {
+    let Some(at) = project.sources.get(key) else {
+        return Ok(());
+    };
+    if !shown(project, key) {
+        return Ok(());
+    }
+    if at.kind == Kind::OneOf {
+        let mut options = project.sources.children(key);
+        options.sort();
+        for option in options {
+            render_in(project, w, labels, &option, level, private, Some(key), out)?;
+        }
         return Ok(());
     }
     // An overridden rule's place holds the rule that stands in it, with
@@ -591,14 +676,15 @@ fn render(
     };
     let lang = project.manifest.lang.as_str();
     out.push('\n');
-    for k in chain.iter().rev().chain([&standing]) {
+    // A link to the one-of lands on the option in its place.
+    for k in of.into_iter().chain(chain.iter().rev()).chain([&standing]) {
         let _ = writeln!(out, "<a id=\"{}\"></a>", anchor(k));
     }
     let _ = writeln!(
         out,
         "{} {} ({standing})",
         "#".repeat(level.min(DEEPEST)),
-        pick(&node.title, node, lang),
+        title(project, &standing, node, private),
     );
     if !chain.is_empty() {
         let names: Vec<String> = chain.iter().map(Key::to_string).collect();
@@ -610,9 +696,26 @@ fn render(
             w.end
         );
     }
+    if let Some(one_of) = of.and_then(|k| Some((k, project.sources.get(k)?))) {
+        let _ = writeln!(
+            out,
+            "\n{}{}{}",
+            w.one_of,
+            title(project, one_of.0, one_of.1, private),
+            w.end
+        );
+    }
     if let Some(applicability) = &node.applicability {
         let text = pick(applicability, node, lang);
-        let text = cited(project, labels, &standing, "applicability", text, true)?;
+        let text = cited(
+            project,
+            labels,
+            &standing,
+            "applicability",
+            text,
+            true,
+            private,
+        )?;
         let _ = writeln!(out, "\n{text}");
     }
     if let Some(rule) = &node.rule {
@@ -629,6 +732,7 @@ fn render(
                 name,
                 pick(text, node, lang),
                 true,
+                private,
             )?;
             if label.is_empty() {
                 let _ = writeln!(out, "\n{text}");
@@ -650,7 +754,7 @@ fn render(
                 let in_file = shown(project, &target);
                 let target = res.standing(&target);
                 let n = project.sources.get(&target)?;
-                let title = pick(&n.title, n, lang);
+                let title = title(project, &target, n, private);
                 Some(if in_file {
                     format!("[{title}](#{})", anchor(&target))
                 } else {
@@ -670,7 +774,7 @@ fn render(
         .collect();
     children.sort();
     for child in children {
-        render(project, w, labels, &child, level + 1, out)?;
+        render(project, w, labels, &child, level + 1, private, out)?;
     }
     Ok(())
 }
