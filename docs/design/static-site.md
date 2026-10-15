@@ -162,10 +162,16 @@ site-rules`, `uv run count-tokens` (the token count, below),
   and "Default option" for the default option of a one-of), linked to
   its page; then, with `--enabled`, whether it is enabled, and with more than one source,
   the quadrant of its source, each a small tag. A rule under another rule
-  is indented under it. Domains and one-ofs are not listed but head the
-  rules below them, each with its label (`R13`) and whether the
+  is indented under it. A one-of stands in its domain's list as a box
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)): its label and
+  title after "One of:", its status and whether the defaults enable it,
+  then a line for each option with its tags, the default marked; a rule
+  that is an option stands in that box only. The filter treats the box
+  as one entry, with the one-of's status, domain and switch and the
+  `uses` of its rule options. Domains are not listed but head the rules
+  below them, each with its label (`R13`) and whether the
   defaults enable it, a level deeper for each
-  domain or one-of above them, a subdomain under its domain's heading,
+  domain above them, a subdomain under its domain's heading,
   where the group changes and again at the top of each page; with more
   than one source, each source heads its rules, as its quadrant and
   name, a level above its domains. Above the list, a filter folds open a

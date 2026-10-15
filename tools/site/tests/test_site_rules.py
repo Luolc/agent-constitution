@@ -467,6 +467,29 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual(nodes[3]["conflicts"][0]["title"], "Rule in Chinese")
 
+  def test_a_value_in_a_title_is_escaped(self):
+    """A string with `<` in a title is text in the list, not HTML."""
+    site_fixture.params(self.root)
+    params = self.root / "rules/params.toml"
+    params.write_text(
+      params.read_text(encoding="utf-8").replace("done & dusted", "a <b> c"),
+      encoding="utf-8",
+    )
+    rule = self.root / "rules/5.toml"
+    text = rule.read_text(encoding="utf-8")
+    rule.write_text(
+      text.replace('en = "Rule 5"', 'en = "Label {$work-items.label-done}"'),
+      encoding="utf-8",
+    )
+    node = {n["id"]: n for n in self.load()["en"]["nodes"]}[5]
+    # As written for a template that escapes it; as HTML in a link.
+    self.assertEqual(node["title"], "Label a <b> c")
+    self.assertEqual(
+      node["titleInLink"],
+      'Label <span class="param-value" title="work-items.label-done">'
+      "a &lt;b&gt; c</span>",
+    )
+
   def test_main_with_another_source(self):
     out = self.root / "web/data/rules.json"
     site_fixture.write_other(self.root / "demo")

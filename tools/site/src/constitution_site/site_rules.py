@@ -469,7 +469,7 @@ class _Language:
     """
     node = self.nodes[key]
     shown = self.shown(node)
-    return self.values(node.title[shown], shown, key[0], marked=False)
+    return self.values(node.title[shown], shown, key[0], mark="none")
 
   def param(self, name: str, source: str) -> tuple[str, Param] | None:
     """Return the parameter a placeholder of a source's rule names.
@@ -490,19 +490,22 @@ class _Language:
     return None
 
   def values(
-    self, text: str, text_lang: str, source: str, marked: bool = True
+    self, text: str, text_lang: str, source: str, mark: str = "link"
   ) -> str:
     """Return a text with each placeholder as its parameter's default.
 
-    Marked, a default is a link to the parameter's entry on its page of
-    parameters, with the name as its title, in a code span as well,
-    which becomes HTML for it; else the default alone.
+    With `mark` "link", a default is a link to the parameter's entry on
+    its page of parameters, with the name as its title; with "span", for
+    a text that stands inside a link, a span with the name as its title;
+    either escaped as HTML, and in a code span as well, which becomes
+    HTML for it. With "none", the default alone, as it is, for a text
+    that the template escapes.
 
     Args:
       text: the text, its citations already links.
       text_lang: its language.
       source: the name of the source of the node that holds it.
-      marked: whether to mark the defaults.
+      mark: "link", "span" or "none".
 
     Returns:
       The text; a placeholder of no parameter stays as it is.
@@ -514,15 +517,20 @@ class _Language:
         return m.group(0)
       where, p = found
       shown = p.shown.get(text_lang, p.default)
-      if not marked:
+      if mark == "none":
         return shown
+      if mark == "span":
+        return (
+          f'<span class="param-value" title="{p.name}">'
+          f"{html.escape(shown)}</span>"
+        )
       return (
         f'<a class="param-value" href="../{params_key(where)}/#{p.name}"'
         f' title="{p.name}">{html.escape(shown)}</a>'
       )
 
     def code(m: re.Match[str]) -> str:
-      if not PLACEHOLDER.search(m.group(2)) or not marked:
+      if not PLACEHOLDER.search(m.group(2)) or mark == "none":
         return m.group(0)
       # Escaping leaves a placeholder as it is.
       inner = html.escape(m.group(2), quote=False)
@@ -637,14 +645,26 @@ class _Language:
 
     Returns:
       A domain's or a rule's `default`, when it has one, or a one-of's
-      default option (`defaultOption`); for an option of a one-of,
-      whether it is that one (`optionDefault`); and a rule's `uses`.
+      default option (`defaultOption`), its options in order of ID
+      (`options`) and the values of `uses` its options that are rules
+      have, both when none is (`optionUses`); for an option of a one-of,
+      whether it is the default (`optionDefault`); and a rule's `uses`.
     """
     data: dict[str, object] = {}
     default = node.data.get("default")
     if node.kind == "one-of":
       if default is not None:
         data["defaultOption"] = self.ref(default, source)
+      options = [
+        o
+        for (name, _), o in sorted(self.nodes.items(), key=lambda kv: kv[0][1])
+        if name == source and o.parent == node.id
+      ]
+      data["options"] = [self.ref(o.id, source) for o in options]
+      uses = {
+        u for o in options if o.kind == "rule" for u in o.data.get("uses", USES)
+      }
+      data["optionUses"] = sorted(uses or {"instructions", "review"})
     elif default is not None:
       data["default"] = default
     if isinstance(node.parent, int):
@@ -719,6 +739,7 @@ class _Language:
         "groups": groups,
         "title": self.title((name, node.id)),
         "titleMarked": self.values(node.title[shown], shown, name),
+        "titleInLink": self.values(node.title[shown], shown, name, "span"),
         "applicability": self.links(node.applicability[shown], shown, name)
         if node.applicability
         else None,
@@ -746,6 +767,9 @@ class _Language:
         "source": name,
         "quadrant": source.quadrant,
         "onByDefault": node.on_by_default,
+        # A rule that is an option of a one-of is listed in the one-of's
+        # box, not on its own.
+        "boxed": node.kind == "rule" and "optionDefault" in extra,
       }
       | {field: data[field] for field in FIELDS if field in data}
       | extra

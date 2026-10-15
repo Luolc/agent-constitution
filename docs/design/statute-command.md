@@ -241,10 +241,10 @@ default switches of a rule set are built, with `domains`, `exclude`,
 `remove`, `explain` (`--defaults` included) and the lock file do with
 them; `default` is required where the rule files need it, and
 `check = "review"` fails; parameters are built, with their values in
-the lock file, `upgrade`, `explain <name>` and both outputs. Not built
-yet: the one-of as a box on the sites, and the marks of the public
-site; the local site's marks and the one-of's place in the compiled
-`AGENTS.md` are built.
+the lock file, `upgrade`, `explain <name>` and both outputs; the marks
+of both sites, the public site's pages of parameters, the one-of's place
+in the compiled `AGENTS.md` and the one-of as a box on the sites are
+built.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -367,7 +367,8 @@ file. It prints the path of `index.html`.
   sections: global public, global private, local public and local
   private. Each lists its sources, and each source its tree of domains
   with every node, enabled or not: its reference, title and status, and
-  whether this rule set enables it, overrides it or leaves it out. A
+  whether this rule set enables it, overrides it or leaves it out; a
+  one-of is a box that holds its options, the default marked. A
   filter by kind of source, one that hides the rules the rule set does
   not enable, and one that shows superseded and repealed nodes, hidden
   by default, work through check boxes and the style sheet alone.
