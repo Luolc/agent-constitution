@@ -454,7 +454,9 @@ fn r280_migration_change_goes_to_the_reviewer() {
     let l = line(&run, 280);
     assert!(l.starts_with("inconclusive "), "{l}");
     assert!(
-        l.contains("adds statute.toml, which its base does not have: it is the migration change"),
+        l.contains(
+            "adds statute.toml, and its base has none in any directory: it is the migration change"
+        ),
         "{l}"
     );
     assert!(
@@ -478,6 +480,17 @@ fn r280_other_changes_mix_as_under_rule_46() {
     let dir = repo("r280-mixed", "\"R280\"", "true");
     change(&dir, &["statute.toml", "tools/build.py"]);
     let run = statute(&dir, &["check", "--base", "base"], None);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 280).starts_with("violation "), "{}", run.stdout);
+    // Moving a rule set into a directory adds its statute.toml there, and
+    // is no migration: the base has one.
+    let dir = repo("r280-moved", "\"R280\"", "true");
+    std::fs::create_dir_all(dir.join("sub")).unwrap();
+    for path in ["statute.toml", "statute.lock", "rules", "constitution"] {
+        git(&dir, &["mv", path, &format!("sub/{path}")]);
+    }
+    change(&dir, &["tools/build.py"]);
+    let run = statute(&dir.join("sub"), &["check", "--base", "base"], None);
     assert_eq!(run.code, 1, "{}", run.stdout);
     assert!(line(&run, 280).starts_with("violation "), "{}", run.stdout);
 }

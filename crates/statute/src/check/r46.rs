@@ -140,10 +140,27 @@ impl Classes {
     }
 }
 
+/// Whether the tree of `base` holds a `statute.toml` in any directory;
+/// true when git cannot tell, so that nothing passes as a migration
+/// unproven.
+fn has_rule_set(ctx: &Context, base: &str) -> bool {
+    let out = git(ctx.root)
+        .args(["ls-tree", "-r", "--name-only", "-z", "--full-tree", base])
+        .output();
+    let Ok(out) = out.map(|o| (o.status.success(), o.stdout)) else {
+        return true;
+    };
+    !out.0
+        || out
+            .1
+            .split(|b| *b == 0)
+            .any(|p| p.rsplit(|b| *b == b'/').next() == Some(RULE_SET.as_bytes()))
+}
+
 /// The check of rule 46, or of rule 280 when `migration` is set: then a
-/// change that adds `statute.toml`, which its base does not have, is the
-/// migration change, which may mix the two, and what else it holds is
-/// for the reviewer.
+/// change that adds `statute.toml` beside the rule set, to a base that
+/// has none in any directory, is the migration change, which may mix the
+/// two, and what else it holds is for the reviewer.
 pub fn check(ctx: &Context, migration: bool) -> Report {
     let Some(base) = ctx.base else {
         return Report::new(
@@ -197,7 +214,7 @@ pub fn check(ctx: &Context, migration: bool) -> Report {
         other.len(),
         generated.len()
     );
-    if migration && adds_rule_set && !other.is_empty() {
+    if migration && adds_rule_set && !other.is_empty() && !has_rule_set(ctx, base) {
         let findings = other
             .iter()
             .map(|(location, _)| Finding {
@@ -209,7 +226,7 @@ pub fn check(ctx: &Context, migration: bool) -> Report {
             outcome: Outcome::Inconclusive,
             findings,
             note: format!(
-                "the change since {base} adds {RULE_SET}, which its base does not have: it is the migration change, which may hold instruction files and other files ({counts}); the reviewer checks that the other files only add `statute compile --check` to each of the commit hooks and the CI the repository has at its base, and that the change holds nothing besides the move and that check"
+                "the change since {base} adds {RULE_SET}, and its base has none in any directory: it is the migration change, which may hold instruction files and other files ({counts}); the reviewer checks that the other files only add `statute compile --check` to each of the commit hooks and the CI the repository has at its base, and that the change holds nothing besides the move and that check"
             ),
         };
     }

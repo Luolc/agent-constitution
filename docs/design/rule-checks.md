@@ -145,8 +145,8 @@ not run rule 50's check. The built-in checks:
   without `--base` there is no change to check;
 - rule 280 (instruction-files-apart-but-migration), which supersedes
   rule 46, runs the same check with its one exception: a change that
-  adds `statute.toml` beside the rule set, where its base has none, is
-  the migration change, which may mix instruction files with other
+  adds `statute.toml` beside the rule set, to a base that has none in
+  any directory, is the migration change, which may mix instruction files with other
   files. It is inconclusive, with each other file listed for the
   reviewer, who checks that they only add `statute compile --check` to
   the commit hooks and the CI the repository has at its base. Every
