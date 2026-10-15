@@ -104,5 +104,8 @@ code-comments = "en"
 docs = "en"
 commits = "en"
 pull-requests = "en"
+# What agents write to a person here is in English, as the repository is; a person who reads
+# another language sets it in their own private layer.
+communication = "en"
 # The tickets of this repository's work are written in Chinese.
 work-items = "zh"
