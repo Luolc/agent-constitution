@@ -1,0 +1,43 @@
+id = 140
+slug = "runtime-credentials-in-runtime-tier"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+requires = [43]
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Store a credential a program generates at runtime in the runtime tier"
+zh = "程序运行时产生的凭据存进运行时层"
+
+[text.statement]
+en = "Store a credential that a program generates at runtime (the OAuth token that `claude setup-token` generates, for example) in the runtime tier of the secret manager."
+zh = "程序运行时产生的凭据 (例如 `claude setup-token` 生成的 OAuth token) 存进密钥管理器的运行时层。"
+
+[text.reason]
+en = '''
+Such credentials are generated, and generated again, by programs on the machine, which must be able to write them. Kept apart from the general credentials that people put in, they are the only tier the machines' service accounts may write, and the general tier stays read-only.
+'''
+zh = '''
+这类凭据由机器上的程序生成，还会被重新生成，要由这些程序写入。把它们和人放进去的通用凭证分开，机器的 service account 就只对运行时层有写权限，通用层始终只读。
+'''
+
+[text.verification]
+en = '''
+The runtime tier is the part of the secret manager (a vault, say) that the jurisdiction sets aside for credentials that programs generate. Agents on a development machine read and write it through the machine's own service account ({@rule:139}).
+
+Violated when a credential that a program generated at runtime is stored in another tier, or anywhere outside the secret manager.
+'''
+zh = '''
+运行时层，指密钥管理器里由法域专门留给程序生成的凭据的部分 (例如一个 vault)。开发机上的 agent 经本机自己的 service account 读写它 ({@rule:139})。
+
+程序运行时产生的凭据存进了别的层，或者存在了密钥管理器以外的地方的，即为违反本规定。
+'''
+
+[translations]
+zh = "d42cc3c7e141fc2079c21356585fd5fafa8a6a4dc2d577f014a9911013f4cfb4"
