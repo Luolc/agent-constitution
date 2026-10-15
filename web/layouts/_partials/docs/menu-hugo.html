@@ -1,8 +1,10 @@
 {{- /* hugo-book's menu-hugo (accepts Page and Menu as context), with a
-  group that folds when `collapse` is set in its menu params: the theme's
-  checkbox, label and chevron of its file tree, checked (open) when the
-  current page is in the group. The group's icon (BookIcon) and the
-  chevron come from layouts/_partials/icon.html. A group with no
+  group that folds when `collapse` is set in its menu params: a row of
+  its link and a button with a chevron that says whether its pages are
+  shown (assets/sidebars.js), open when the current page is in the
+  group; without scripts the button is hidden and every group open
+  (docs/inject/head.html). The group's icon (BookIcon) and the chevron
+  come from layouts/_partials/icon.html. A group with no
   children, the rules, is marked as the current page on every page of its
   section too, as a rule's page has no entry of its own. */ -}}
 {{- if .Menu -}}
@@ -10,7 +12,7 @@
 {{- end -}}
 
 {{ define "book-menu-hugo" }}
-<ul>
+<ul{{ with .ID }} id="{{ . }}"{{ end }}>
 {{- range .Menu -}}
   {{- $class := slice -}}
   {{- with .Params.class -}}
@@ -22,11 +24,9 @@
   <li>
     {{- $isRemote := default (urls.Parse .URL).IsAbs .Params.bookNewTab -}}
     {{- $fold := and .Params.collapse .Children -}}
-    {{- if $fold }}
     {{- $id := printf "menu-%s" .Identifier }}
-    <input type="checkbox" id="{{ $id }}" class="toggle"
-      {{- if or ($.Page.IsMenuCurrent .Menu .) ($.Page.HasMenuCurrent .Menu .) }} checked{{ end }} />
-    <label for="{{ $id }}" class="flex">
+    {{- if $fold }}
+    <div class="menu-fold-row">
     {{- end }}
     <a href="{{ .URL }}"
       {{- with $class }} class="{{ delimit . " " }}"{{- end -}}
@@ -37,11 +37,14 @@
       {{- .Post -}}
     </a>
     {{- if $fold }}
-      {{- partial "icon.html" "lucide:chevron-right" }}
-    </label>
+    {{- $open := or ($.Page.IsMenuCurrent .Menu .) ($.Page.HasMenuCurrent .Menu .) }}
+    <button type="button" class="menu-fold" data-fold aria-expanded="{{ $open }}" aria-controls="{{ $id }}" aria-label="{{ .Name }}">
+      {{- partial "icon.html" "lucide:chevron-right" -}}
+    </button>
+    </div>
     {{- end }}
     {{- with .Children -}}
-      {{- template "book-menu-hugo" (dict "Page" $.Page "Menu" .) -}}
+      {{- template "book-menu-hugo" (dict "Page" $.Page "Menu" . "ID" $id) -}}
     {{- end -}}
   </li>
 {{- end -}}
