@@ -1,14 +1,15 @@
 id = 195
 slug = "list-guesses"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 192
+default = "on"
 authority = ["decency.no-hallucination", "asking"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "List the guesses made and ask the principal to confirm them"

@@ -1,14 +1,15 @@
 id = 70
 slug = "local-main-fast-forward-only"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 77
+default = "on"
 authority = ["independent-review.another-party", "independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Change the local main branch only by fast-forwarding it"

@@ -1,14 +1,15 @@
 id = 158
 slug = "distill-external-skills"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 149
+default = "on"
 authority = ["skills.third-party"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Do not install skills from outside; distill what is good in them into skills of your own"

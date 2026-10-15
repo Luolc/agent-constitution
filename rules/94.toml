@@ -1,15 +1,16 @@
 id = 94
 slug = "check-sent-text-against-its-file"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
 requires = [93]
+default = "off"
 authority = ["discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Check text you sent against the file you sent it from"

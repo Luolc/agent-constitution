@@ -1,14 +1,15 @@
 id = 170
 slug = "research-worker-read-only"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
+default = "on"
 authority = ["delegated-authority"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "A research worker only reads"

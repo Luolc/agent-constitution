@@ -1,11 +1,12 @@
 id = 7
 slug = "instruction-only-changes"
-revision = 4
+revision = 5
 kind = "rule"
 status = "superseded"
 superseded-by = [46, 47, 48, 49]
 lang = "en"
 parent = 15
+default = "off"
 authority = ["separate-instruction-changes", "discriminating-checks"]
 constitution = ">=1"
 level = "project"

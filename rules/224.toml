@@ -1,23 +1,24 @@
 id = 224
 slug = "attempt-end-statuses"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
 requires = [177]
+default = "on"
 authority = ["decide-yourself.changing-approach"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "End an attempt as done or abandoned"
 zh = "尝试只以完成或放弃结束"
 
 [text.statement]
-en = "End the child work item of an attempt only in the status `Done` (parameter `work-items.status-done`, default `Done`) or the status `Abandoned` (parameter `work-items.status-abandoned`, default `Abandoned`)."
-zh = "一次尝试的子工作项只以状态 `Done` (参数 `work-items.status-done`，默认 `Done`) 或状态 `Abandoned` (参数 `work-items.status-abandoned`，默认 `Abandoned`) 结束。"
+en = "End the child work item of an attempt only in the status `{$work-items.status-done}` or the status `{$work-items.status-abandoned}`."
+zh = "一次尝试的子工作项只以状态 `{$work-items.status-done}` 或状态 `{$work-items.status-abandoned}` 结束。"
 
 [text.reason]
 en = '''
@@ -40,4 +41,4 @@ zh = '''
 '''
 
 [translations]
-zh = "4c3a11b9a3264d150ed8d4f73321f9be8ac5c06a598206ae5c8a8d015e4989d3"
+zh = "f59e6761515a86e7b711994631b1c0de57a5b2682fbc2c3f4b085802c944705b"

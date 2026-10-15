@@ -1,14 +1,16 @@
 id = 206
 slug = "content-markdown-in-docs"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 16
+default = "off"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Keep content Markdown under docs/"

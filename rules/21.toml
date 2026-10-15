@@ -1,14 +1,16 @@
 id = 21
 slug = "design-translation"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
-parent = 16
+parent = 232
+default = "on"
 authority = ["no-restating", "discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "A translation of the design records the original it follows"

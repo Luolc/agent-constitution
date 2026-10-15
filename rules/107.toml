@@ -1,14 +1,15 @@
 id = 107
 slug = "trial-to-active-on-evidence"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 96
+default = "on"
 authority = ["decide-yourself.ordinary-rules"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Make a trial rule active only once it has held up in real work"

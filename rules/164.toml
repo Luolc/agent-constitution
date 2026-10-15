@@ -1,14 +1,15 @@
 id = 164
 slug = "one-task-per-lock-file"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
+default = "on"
 authority = ["decide-yourself.splitting-work"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Let one task at a time change a repository's lock file"

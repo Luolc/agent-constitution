@@ -1,14 +1,15 @@
 id = 169
 slug = "starter-picks-model-and-effort"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
+default = "on"
 authority = ["decide-yourself.splitting-work", "evidence.grounds"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Whoever starts an agent with fleet picks its model and effort"

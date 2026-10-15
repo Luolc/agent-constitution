@@ -1,15 +1,16 @@
 id = 18
 slug = "design-with-the-change"
-revision = 3
+revision = 4
 kind = "rule"
 status = "superseded"
 superseded-by = [80, 81]
 lang = "en"
 parent = 16
+default = "off"
 authority = ["evidence.grounds", "evidence.facts"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Change the design in the change that makes it true"

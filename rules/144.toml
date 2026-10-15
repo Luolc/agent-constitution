@@ -1,14 +1,15 @@
 id = 144
 slug = "no-personal-vaults"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 137
+default = "on"
 authority = ["sensitive-info", "personal-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Reference no vault that a person keeps for their own use, except one set aside for agents"

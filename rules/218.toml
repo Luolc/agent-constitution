@@ -1,14 +1,15 @@
 id = 218
 slug = "scratch-only-in-transit"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
+default = "on"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Delete a scratch file once its content is in the repository"

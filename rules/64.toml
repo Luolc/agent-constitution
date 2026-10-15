@@ -1,14 +1,15 @@
 id = 64
 slug = "review-round-limit"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["accountable-agent.whole-task", "accountable-agent.own-work", "decide-yourself.changing-approach", "asking"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "After three review rounds without approval, let the responsible agent decide"

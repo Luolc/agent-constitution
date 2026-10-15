@@ -1,14 +1,15 @@
 id = 157
 slug = "project-skills-stay-in-repo"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 149
+default = "on"
 authority = ["independent-review"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Do not install project skills into a user-level skills directory"

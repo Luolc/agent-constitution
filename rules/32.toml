@@ -1,14 +1,15 @@
 id = 32
 slug = "release-must-ask"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "on"
 authority = ["must-ask", "list-defaults"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "A release goes through a principal"

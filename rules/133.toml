@@ -1,14 +1,16 @@
 id = 133
 slug = "no-fixed-names-in-tmp"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
+default = "on"
 authority = ["decency.legitimate-means"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Write no temporary file to a fixed name directly under `/tmp`"

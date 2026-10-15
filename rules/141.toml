@@ -1,14 +1,15 @@
 id = 141
 slug = "service-tier-read-by-own-service-account"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 137
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Let only a service's own service account read its credentials in the service tier"

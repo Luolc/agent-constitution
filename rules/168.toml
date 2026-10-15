@@ -1,14 +1,15 @@
 id = 168
 slug = "unblock-worker-keys"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
+default = "on"
 authority = ["delegated-authority", "must-ask.capital"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "The `unblock` worker presses only the keys its guidance names"

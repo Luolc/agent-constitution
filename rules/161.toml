@@ -1,10 +1,11 @@
 id = 161
 slug = "fleet-cli"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
 parent = 78
+default = "off"
 
 [title]
 en = "fleet commands"

@@ -1,14 +1,15 @@
 id = 26
 slug = "fixture-runs"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "off"
 authority = ["discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Run the fixtures a change touches, and all of them for a release"

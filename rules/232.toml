@@ -1,0 +1,23 @@
+id = 232
+slug = "design"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 16
+default = "off"
+
+[title]
+en = "Design"
+zh = "设计"
+
+[applicability]
+en = '''
+Covers a repository's design: where it is kept, how its files are split and indexed, how it cites and links, how a translation of it follows the original, and how it keeps in step with the code. Enable it in a repository that keeps a design; the rest of documentation does not need it.
+'''
+zh = '''
+管仓库的设计：放在哪里，文件怎么拆分、怎么建索引，怎么引用、怎么链接，译文怎么跟随原文，以及怎么和代码保持一致。仓库有设计的，就要启用；文档的其余部分不需要它。
+'''
+
+[translations]
+zh = "f231393b126ed1f0428816692e319693ffd03e50c80d28ae3b3cd4c343d462e2"

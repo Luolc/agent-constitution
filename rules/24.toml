@@ -1,14 +1,15 @@
 id = 24
 slug = "credential-value-path"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Pass a credential to a program only through the environment or a file"

@@ -1,14 +1,16 @@
 id = 103
 slug = "conflicting-practices-as-one-of"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 96
+default = "on"
 authority = ["decidable-provisions", "simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Write conflicting practices as children of a one-of"

@@ -1,14 +1,15 @@
 id = 163
 slug = "watch-worker-follows-watch-prompt"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
+default = "on"
 authority = ["delivered-tasks.principal-setup"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "A worker that `fleet watch` started follows its watch's prompt"
