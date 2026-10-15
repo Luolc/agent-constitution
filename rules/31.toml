@@ -1,8 +1,9 @@
 id = 31
 slug = "heavy-load-repro-isolated"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 278
 lang = "en"
 parent = 267
 default = "off"
