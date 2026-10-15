@@ -1,0 +1,42 @@
+id = 162
+slug = "cross-repo-job-in-initiative-checkout"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Do cross-repository work in a job directory inside the initiative's checkout"
+zh = "跨仓工作放在 initiative 检出里的 job 目录下"
+
+[text.statement]
+en = "Do cross-repository work in the working directory of its fleet job, inside the checkout of the initiative's repository in the scope's initiatives directory."
+zh = "跨仓工作放在它所属 fleet job 的工作目录里，这个目录在 scope 的 initiatives 目录下、该 initiative 仓库的检出之内。"
+
+[text.reason]
+en = '''
+Cross-repository work belongs to no one repository, so no repository's main checkout is the right place for it. The checkout of the initiative's repository lasts as long as the initiative; a job's directory comes and goes with the job and, excluded by that repository's `.gitignore`, is never committed by mistake ({@constitution:simplicity}).
+'''
+zh = '''
+跨仓工作不属于任何一个仓库，放进哪个仓库的主检出都不对。initiative 仓库的检出与 initiative 同在；job 的目录随 job 开始和结束，被该仓库的 `.gitignore` 排除，不会被误提交 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The initiatives directory is `paths.initiatives` of the scope's settings. Each entry directly under it is a directory named after an initiative, or after the scope's general initiative (`channels.general_initiative`, the one direct messages belong to), and is a checkout of that initiative's repository, which is named with the initiative prefix (`channels.initiative_prefix`) followed by the initiative's name. In such a checkout, each directory the repository does not track is the working directory of a cross-repository job still open in fleet, named after the job and excluded by the repository's `.gitignore`; fleet deletes it when the job ends. The values of these settings are the scope's, not this rule's.
+
+Violated when an entry directly under the initiatives directory is not such a checkout, or a checkout there holds a directory that the repository does not track and that is not the working directory of an open job.
+'''
+zh = '''
+initiatives 目录是 scope 设置里的 `paths.initiatives`。它下面的每个一级条目都是目录，名字是某个 initiative 的名字，或者 scope 的通用 initiative (`channels.general_initiative`，私信归它) 的名字；每个都是该 initiative 仓库的检出，仓库名是 initiative 前缀 (`channels.initiative_prefix`) 加上 initiative 的名字。在这样的检出里，不由该仓库跟踪的目录都是 fleet 里还开着的跨仓 job 的工作目录，以 job 命名，被该仓库的 `.gitignore` 排除；job 结束时由 fleet 删除。这些设置取什么值由 scope 定，不由本规定定。
+
+initiatives 目录下的一级条目不是这样的检出，或者那里的检出里有不由该仓库跟踪、又不是开着的 job 的工作目录的目录，即为违反本规定。
+'''
+
+[translations]
+zh = "f124b9843e28623ef400c3a0c7b1c7e1fabc1aba7a3e48fe655c1881b5ba5ddb"

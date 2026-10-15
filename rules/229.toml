@@ -1,0 +1,42 @@
+id = 229
+slug = "cross-repo-issues-in-initiative-project"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Put a joint project's cross-repository issues in its initiative's project"
+zh = "联合项目的跨仓 issue 放在 initiative 的 project 里"
+
+[text.statement]
+en = "Put the cross-repository issues of a joint project in its initiative's project in the issue tracker."
+zh = "联合项目的跨仓 issue 放在工单系统里它的 initiative 的 project 中。"
+
+[text.reason]
+en = '''
+With the cross-repository issues of a joint project in one project of the tracker, the agents taking part find them in one place, and each issue is kept once, not in each repository it touches ({@constitution:no-restating}).
+'''
+zh = '''
+联合项目的跨仓 issue 都放在工单系统的同一个 project 里，参与的 agent 在一处就能找到，每个 issue 也只记一份，不在它涉及的每个仓库各记一份 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+The initiative is the one whose repository holds the joint project's charter ({@rule:173}). How the issue tracker's project is named is set by the layers below.
+
+Violated when a cross-repository issue of a joint project is not in its initiative's project in the issue tracker.
+'''
+zh = '''
+initiative 指章程所在仓库对应的那个 initiative ({@rule:173})。工单系统里的 project 怎么命名，由下层规定定。
+
+联合项目的跨仓 issue 不在工单系统里它的 initiative 的 project 中的，即为违反本规定。
+'''
+
+[translations]
+zh = "fde4f8c32a3df6243a4a1049d170c32fe328c3e2957825504811884e7ce96a98"
