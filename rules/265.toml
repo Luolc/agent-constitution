@@ -1,0 +1,23 @@
+id = 265
+slug = "credentials"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 13
+default = "on"
+
+[title]
+en = "Credentials"
+zh = "凭证"
+
+[applicability]
+en = '''
+How a credential is checked, passed to a program, stored, and kept out of every output and away from other agents, and what to do when one leaks; how a secret manager is divided is under {@rule:137}. Enable it wherever agents work.
+'''
+zh = '''
+凭证怎么检查、怎么交给程序、存在哪里，怎么不出现在任何输出里、不交给别的 agent，以及泄露了怎么办；密钥管理器怎么分层见 {@rule:137}。凡有 agent 工作的地方都要启用。
+'''
+
+[translations]
+zh = "213ef2de2462ebc198efba05a6ad5eed2f075cece7e1e1095b177fe458d15805"

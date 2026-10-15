@@ -1,0 +1,23 @@
+id = 277
+slug = "testing"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 273
+default = "on"
+
+[title]
+en = "Testing"
+zh = "测试"
+
+[applicability]
+en = '''
+Which tests to write and with what data: tests for new and changed behavior, the happy path and the boundaries the requirements set, regression tests only for bugs that occurred, and fixtures of made-up data. Enable it in a repository with tests.
+'''
+zh = '''
+写什么测试、用什么数据：新增与改动的行为要有测试，测 happy path 与需求定的边界，回归测试只写发生过的 bug，fixture 用编造的数据。有测试的仓库都要启用。
+'''
+
+[translations]
+zh = "2a008497609e011c348e2f7250b0c41a7941683ef6459cdce704471fe074cbc3"
