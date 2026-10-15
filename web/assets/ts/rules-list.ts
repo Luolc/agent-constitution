@@ -56,6 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const query = write(chosen(), fields, defaults);
     if (per !== list.dataset.size) query.push(`per=${per}`);
     if (n > 1 || list.dataset.first !== "0") query.push(`page=${n}`);
+    // What the rows show is assets/ts/rules-view.ts's, kept as it is.
+    const view = new URLSearchParams(location.search).get("view");
+    if (view) query.push(`view=${encodeURIComponent(view)}`);
     return query.length ? `${location.pathname}?${query.join("&")}` : location.pathname;
   };
   const save = (push: boolean): void => {
