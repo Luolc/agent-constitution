@@ -418,6 +418,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
   - each member of `tools/` that the change touches, or that depends on what it touches (`tools/site` uses `statute` and `web/`): its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
   - a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
   - `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
+  - `rules/`: also `cargo test --locked`, because the tests of `real_rules` and `compile` read the real `rules/`;
   - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
   - the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
 - L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
