@@ -1,4 +1,4 @@
-<!-- en-sha256: a73023a9ef1cbc83fc4010e34bb84b401224d04281ee44ce9e81ac6525b78c57 -->
+<!-- en-sha256: 14cbc98cbd7ebf1f038fbb1af7cb4c7ce544276cc748d891f8de8f47f8dfcd08 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -15,7 +15,7 @@ rules = ["R42", "R51", "12"]
 packs = ["R3"]
 
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 
 [compile]
 agents-md = ["statement"]
@@ -25,29 +25,32 @@ agents-md = ["statement"]
 
 [规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
 
-锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址和提交)，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；以及文件的 SHA-256)：
+锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public` (还没有写入)；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
 
 ```toml
 [constitution]
-repository = "github.com/Luolc/agent-constitution"
+git = "https://github.com/Luolc/agent-constitution"
 edition = "2026-10"
 revision = "<revision>"
 commit = "<commit>"
 
 [[sources]]
 name = "R"
-address = "github.com/Luolc/agent-constitution"
+git = "https://github.com/Luolc/agent-constitution"
+tag = "<tag>"
 commit = "<commit>"
 
 [[rules]]
 rule = "R7"
 revision = 2
 sha256 = "<SHA-256 of rules/7.toml>"
+original-sha256 = "<SHA-256 of rule 7 without its translations>"
 
 [[rules]]
 rule = "R42"
 revision = 1
 sha256 = "<SHA-256 of rules/42.toml>"
+original-sha256 = "<SHA-256 of rule 42 without its translations>"
 ```
 
 规定只用一个字段 `rule` 来写，写法与别处相同，不再拆成规定源和 ID 两个字段，这样按规定清单和提示信息里的写法就能在锁文件里搜到那一行。旧格式的锁文件用 `source` 和 `id` 两个字段写规定，`upgrade` 遇到它会报错，提示运行 `statute lock` 重新写一份。被某条启用的规定覆盖的规定仍保留它那一行，多一个字段 `overridden-by = "L3"`，写明直接覆盖它的是哪条规定 (在一条覆盖链上就是下一环)，这样 `upgrade` 仍会显示它的修改 (见[覆盖](rule-sources.md#overrides))。只因覆盖才带进来、别的都没有启用它的规定，也有自己的一行。
@@ -67,7 +70,7 @@ path = "."
 
 升级是一个明确的步骤：重写锁文件，并显示每条修订号有变动的规定的 diff，以及每条因依赖而带进来或去掉的规定。规定清单启用了被取代的规定时，构建给出警告，并写出它的后继规定。写在 `rules` 里的规定和 `packs` 里的 pack 根，只有一条后继规定时，用一条命令 `statute upgrade --replace-superseded` 就能在规定清单里把旧 ID 换成新 ID；有好几条时，由用户自己选；由别的规定带进来的，警告会写出是哪条规定把它带进来的。启用了已废止的规定，也给出警告。这些都是警告而不是错误，因为规定清单照旧能用。下游用户不必手动顺着取代链往下找。
 
-「升级之前什么都不会变」这个保证只在锁文件留得住旧版本时成立，也就是按 commit 锁定的 git 规定源。磁盘上的规定源没有旧版本可留：锁文件只记每条规定的 SHA-256，规定一改，算出这个哈希的那份文件就没了。所以 `lock` 按磁盘上的规定源现在的样子读，和 uv 对待 path 依赖一样；`upgrade` 写出同样的锁文件，并显示变了什么。也是因为这个，第一版给不出改动的文字：它只列出宪法的修订号、修订号或内容有变动的每条规定，以及被带进来 (附上原因) 或去掉的每条规定。文字 diff 等 git 规定源实现后再做，那时可以读到旧的 commit。规定的内容变了而修订号没变，`lock` 会给出警告，`upgrade` 会在那条规定的那一行注明，因为规定改了，修订号就要加一 ([ID 与修订号](rule-format.md#ids-and-revisions))。这两处分不出改的是译文还是原文，改了哪个都会提示。
+「升级之前什么都不会变」这个保证只在锁文件留得住旧版本时成立，也就是按 commit 锁定的 git 规定源。磁盘上的规定源没有旧版本可留：锁文件只记每条规定的 SHA-256，规定一改，算出这个哈希的那份文件就没了。所以 `lock` 按磁盘上的规定源现在的样子读，和 uv 对待 path 依赖一样；`upgrade` 写出同样的锁文件，并显示变了什么。也是因为这个，第一版给不出改动的文字：它只列出宪法的修订号、修订号或内容有变动的每条规定，以及被带进来 (附上原因) 或去掉的每条规定。文字 diff 等 git 规定源实现后再做，那时可以读到旧的 commit。规定的原文变了而修订号没变，`lock` 会给出警告，`upgrade` 会在那条规定的那一行注明，因为规定改了，修订号就要加一 ([ID 与修订号](rule-format.md#ids-and-revisions))。这两处比的是去掉译文之后的规定：把规定按 TOML 读进来，去掉 `[translations]` 和原文以外各语言的文字，按键排好序写成 JSON，再算 SHA-256。这样改原文或改别的任何字段都算，只改译文或只改文件的排版都不算。只改了译文的规定不会引起警告，`upgrade` 照样列出它，并注明修订号没变。锁文件若写于开始记这个哈希之前，就改比文件的 SHA-256。
 
 **绑定一部宪法。** 规定清单写明它依据的宪法：来自哪个仓库、哪一版 (edition)、哪个修订号 (revision)。锁文件像固定规定源的提交那样固定这个修订号，一次编译只用一部宪法的一个确切修订号。依据不同宪法的规定清单不会合在一起用：仓库和版至少要一致，修订号则对照每条规定来检查 (见[从规定追溯到宪法](rule-format.md#tracing-rules-to-the-constitution))。宪法修订后，钉在旧修订号上的规定清单不会变；把它移到新修订号上，和别的升级一样是一个明确的步骤。继承了基础规定清单的清单，钉的修订号可以与基础清单不同；这时构建取其中较新的那个，如果有已启用规定的范围容不下它，构建就失败。
 
@@ -81,7 +84,7 @@ path = "."
 
 所以分段规定不能指望自己目录里的指令文件被读到。编译器把每一段的规定都编译进仓根的指令文件，每条这样的规定写明它适用的目录；同一个仓库的编译输出只用一个文件名。子目录里可以再放一份重复某一段的文件，但不依赖它被读到。
 
-**放在哪里。** 这套设计仿照 uv 这样的包管理器：规定源相当于包索引，规定清单相当于项目 manifest，锁文件就相当于锁文件，编译相当于 sync，用户级缓存相当于包缓存。仓库里放规定清单、锁文件和编译输出；升级是在仓库里执行的一条命令，结果以一个 pull request 的形式出现。用户级只放命令、规定源的缓存，以及很薄的一层个人设置，存放与人有关、与项目无关的内容：回复用什么语言、把消息当作语音转文字来读、凭证存放在哪里、机器上的目录怎样布局。这一层接管设计中已有的私有 overlay 里与个人相关的那部分。每条规定声明一个默认层级 (项目规定在仓库级，关于人或机器的规定在用户级)，用户可以修改。这样做的原因是：克隆仓库的人、CI 和云端的 agent 都读不到用户级的文件，而且每个仓库固定自己的版本，按自己的节奏升级。第一版只做仓库级 ([命令与第一版](statute-command.md#the-command-and-the-first-version))。
+**放在哪里。** 这套设计仿照 uv 这样的包管理器：规定源相当于包索引，规定清单相当于项目 manifest，锁文件就相当于锁文件，编译相当于 sync，用户级缓存相当于包缓存。仓库里放规定清单、锁文件和编译输出；升级是在仓库里执行的一条命令，结果以一个 pull request 的形式出现。用户级只放命令、规定源的缓存，以及很薄的一层个人设置，存放与人有关、与项目无关的内容：回复用什么语言、把消息当作语音转文字来读、凭证存放在哪里、机器上的目录怎样布局。这一层接管设计中已有的私有 overlay 里与个人相关的那部分。每条规定声明一个默认层级 (项目规定在仓库级，关于人或机器的规定在用户级)，用户可以修改。这样做的原因是：克隆仓库的人、CI 和云端的 agent 都读不到用户级的文件，而且每个仓库固定自己的版本，按自己的节奏升级。第一版只做仓库级 ([命令与第一版](statute-command.md#the-command-and-the-first-version))。规定源的缓存，以及为所有仓库登记规定源的全局配置，设计在[全局配置与 git 规定源](global-configuration.md)；个人那一层规定还没有设计。
 
 ## <a id="sources-and-references"></a>规定源与引用
 
@@ -91,11 +94,11 @@ path = "."
 
 ```toml
 [sources]
-R = { git = "github.com/Luolc/agent-constitution", tag = "<tag>" }
+R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
-键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag 或路径，因为命令自己认定的规定源就得内置一个地址和版本。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。statute 目前只读磁盘上的规定源，`git` 规定源会报告为暂不支持。
+键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag、分支或路径；也可以不写，交给全局配置和内置默认，即第一方仓库的 `main` 分支 ([全局配置与 git 规定源](global-configuration.md#the-global-configuration))。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。规定源也可以是一个 git 仓库，克隆到用户的 statute 目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))；statute 目前只读磁盘上的规定源，`git` 规定源会报告为暂不支持。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
 
 **三种引用。** 每种引用各有自己的写法，不会把一种读成另一种：
 

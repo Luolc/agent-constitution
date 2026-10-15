@@ -1,4 +1,4 @@
-<!-- en-sha256: a292f1ef0082cec862da106c46619e0bd784ae8341d7ec3301e215a61902bc13 -->
+<!-- en-sha256: 2e1334ce2bfa50da448634e2b843abd89b090f7a766b09ed9897e24c08c381f5 -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -19,6 +19,8 @@
 - 改变了，修改后的规定就取一个新 ID。旧规定标为被取代，写明取代它的规定 (拆成几条时写明这几条)，并永久留在规定源里。只有同一规定源的规定才能取代它 (见[规定源与引用](rule-sets.md#sources-and-references))。
 
 所以一条规定的 ID 始终代表同一项要求。修订号是每条规定各自的一个数字，从 1 起算；它与宪法的修订号无关。规定的状态是 `draft`、`trial`、`active`、`superseded` 或 `repealed` 之一。宪法还是草案时，每条规定都是 `draft`；宪法现行之后，新规定从 `trial` 开始，也就是在定型之前先在实际工作中试用 (见[试行规定](rule-checks.md#trial-rules))，`draft` 只留给还不打算用于实际工作的规定，例如 [检查程序](checkers.md) 里的金丝雀规定。规定从 `draft` 转为 `trial`，只改状态，不改什么算合规，所以和上面说的同类改动一样，原地修改，修订号加一。撤销而没有替代的规定为废止，它与被取代的规定一样，保留自己的 ID 和文件。
+
+只改规定译文的改动，修订号不变：修订号跟着原文和文字以外的字段走，改译文两样都不动 (见[规定文件格式](#rule-file-format) 里的「语言」)。锁文件除了记每条规定文件的 SHA-256，还记去掉译文之后的规定的 SHA-256，statute 靠它分清这两种改动 (见[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
 
 ## <a id="rule-file-format"></a>规定文件格式
 
@@ -113,7 +115,7 @@ it.
 - `status`：`draft`、`trial`、`active`、`superseded` 或 `repealed`。
 - `superseded-by`：取代这条规定的、同一规定源里的规定的 ID；几条规定一起取代它时写成 ID 的列表，`superseded-by = [22, 23]`。只在 `status` 为 `superseded` 时出现。每一项都是另一条规定，不重复；列表不能为空。
 - `lang`：这条规定写成时用的语言，即原文的语言，写成语言代码，如 `"en"` 或 `"zh"`。
-- `parent`：父节点的 ID，是同一规定源里的一条规定、一个 one-of 或一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是同一规定源里一个没有 parent 的领域 (见[子领域](rule-sources.md#subdomains))。构建接受这两种 `parent` ([检查程序](checkers.md#checkers))，statute 也接受。
+- `parent`：父节点的 ID，是同一规定源里的一条规定、一个 one-of 或一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是一个没有 parent 的领域，在同一规定源里，或者在另一个规定源里，写法与 `requires` 相同 (见[子领域](rule-sources.md#subdomains))。构建接受这两种 `parent` ([检查程序](checkers.md#checkers))，statute 也接受。
 - `overrides` (可选，只有规定有)：这条规定在启用它的规定清单里所顶替的另一个规定源的规定，写法与 `requires` 相同 (`"R200"`)；带它的规定没有 `parent` (见[覆盖](rule-sources.md#overrides))。
 - `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
 - `conflicts` (可选)：不能与这条规定一起用的规定，写法同 `requires`，只写在一边 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))。

@@ -1,0 +1,42 @@
+id = 121
+slug = "report-taken-work"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Report the work item you took to the principal behind it"
+zh = "向工作项背后的委托人报告"
+
+[text.statement]
+en = "When you have done a work item you took yourself, report to the principal who created or approved it."
+zh = "自己领取的工作项做完后，向建立或批准该工作项的委托人报告。"
+
+[text.reason]
+en = '''
+An agent reports progress to the principal ({@constitution:automation-first.keep-moving}); the principal who created or approved an item is the one waiting for it.
+'''
+zh = '''
+agent 要向委托人报告进展 ({@constitution:automation-first.keep-moving})；等着这个工作项结果的，是建立或批准它的委托人。
+'''
+
+[text.verification]
+en = '''
+This rule is for an agent that looks for work under {@rule:116}. Once it has done and verified the item, it reports to the principal who created or approved it.
+
+Violated when such an agent does not report the item it did to that principal.
+'''
+zh = '''
+本规定适用于按{@rule:116}自己找工作的 agent。工作项做完并验证后，它向建立或批准该工作项的委托人报告。
+
+这样的 agent 没有向这位委托人报告自己做完的工作项，即为违反本规定。
+'''
+
+[translations]
+zh = "0680655f2028cbc721fa8494562d3dccba486f4ce857946d3edab58b0238e529"

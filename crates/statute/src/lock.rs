@@ -57,6 +57,7 @@ struct Rule<'a> {
     rule: String,
     revision: u64,
     sha256: &'a str,
+    original_sha256: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
     overridden_by: Option<String>,
 }
@@ -88,6 +89,7 @@ pub fn render(project: &Project) -> String {
                 rule: key.to_string(),
                 revision: node.revision,
                 sha256: &node.sha256,
+                original_sha256: &node.original_sha256,
                 overridden_by: project.resolution.overridden.get(key).map(Key::to_string),
             })
             .collect(),
@@ -101,8 +103,29 @@ pub fn render(project: &Project) -> String {
 pub struct Locked {
     pub edition: String,
     pub revision: String,
-    /// Each locked rule's revision and SHA-256, by key.
-    pub rules: BTreeMap<Key, (u64, String)>,
+    pub rules: BTreeMap<Key, LockedRule>,
+}
+
+/// A locked rule's revision and its two hashes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LockedRule {
+    pub revision: u64,
+    /// The SHA-256 of the file.
+    pub sha256: String,
+    /// The SHA-256 of the rule without its translations; missing in a lock
+    /// file written before it was recorded.
+    pub original_sha256: Option<String>,
+}
+
+impl LockedRule {
+    /// Whether the rule changed between `self` and `now` beyond its
+    /// translations; without the hash of the original, any change counts.
+    pub fn original_changed(&self, now: &LockedRule) -> bool {
+        match (&self.original_sha256, &now.original_sha256) {
+            (Some(was), Some(is)) => was != is,
+            _ => self.sha256 != now.sha256,
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -125,6 +148,8 @@ struct RawRule {
     rule: Option<String>,
     revision: u64,
     sha256: String,
+    #[serde(rename = "original-sha256")]
+    original_sha256: Option<String>,
 }
 
 /// Reads the text of a lock file.
@@ -140,7 +165,12 @@ pub fn read(text: &str) -> Result<Locked, String> {
                 let rule = r.rule.ok_or(
                     "a rule without `rule`, as in a lock file of an earlier format; run `statute lock` to write it anew",
                 )?;
-                Ok((Key::of(&RuleRef::parse(&rule)?), (r.revision, r.sha256)))
+                let locked = LockedRule {
+                    revision: r.revision,
+                    sha256: r.sha256,
+                    original_sha256: r.original_sha256,
+                };
+                Ok((Key::of(&RuleRef::parse(&rule)?), locked))
             })
             .collect::<Result<_, String>>()?,
     })
@@ -157,7 +187,14 @@ pub fn current(project: &Project) -> Locked {
             .enabled
             .keys()
             .filter_map(|key| Some((key, project.sources.get(key)?)))
-            .map(|(key, n)| (key.clone(), (n.revision, n.sha256.clone())))
+            .map(|(key, n)| {
+                let locked = LockedRule {
+                    revision: n.revision,
+                    sha256: n.sha256.clone(),
+                    original_sha256: Some(n.original_sha256.clone()),
+                };
+                (key.clone(), locked)
+            })
             .collect(),
     }
 }
