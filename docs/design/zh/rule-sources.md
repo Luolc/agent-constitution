@@ -1,4 +1,4 @@
-<!-- en-sha256: 55192b1e62f6d82c58799282750a9119a40e350386df1c476e64e7b2ebbd7257 -->
+<!-- en-sha256: 6b087aef906d0151594c3d2edd2a77a99b8a0f5dfb75b02a629a309f1b62bc45 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -173,7 +173,7 @@ Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到�
 - 没有 `statute.toml`、仓库是私有的 (`public = false`)，或者没有私有规定清单时，什么都不做，不出声，退出码为 0；
 - 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 warning，说明原因和要运行的命令，退出码为 0：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以它从不失败。
 
-软链用相对路径，指向这个 worktree 自己的 `.statute/`。尚未实现：`--private-only`；实现之前，在新 worktree 里跑 `statute compile` 仍是调用方的事。
+软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
 私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
 
