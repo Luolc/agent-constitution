@@ -11,7 +11,7 @@
 {{- /* The scripts, in this order; one in TypeScript is bundled by Hugo's
   js.Build (esbuild), which strips its types without checking them
   (docs/design/frontend.md, In the code). */ -}}
-{{- range slice "theme.js" "count-info.js" "cites.js" "ts/rules-list.ts" "toc-current.js" "ts/sidebars.ts" }}
+{{- range slice "theme.js" "count-info.js" "cites.js" "ts/rules-list.ts" "ts/rules-view.ts" "toc-current.js" "ts/sidebars.ts" }}
   {{- $script := resources.Get . }}
   {{- if strings.HasSuffix . ".ts" }}
     {{- $script = $script | js.Build (dict "target" "es2018" "minify" true) }}

@@ -1,0 +1,66 @@
+// What the rows of the list of the rules show
+// (layouts/_partials/rules/view.html): the value of the address's
+// `view` (both, title or statement), else the one the reader chose
+// last, kept in localStorage, else both. The style sheet does the
+// showing from the checked radio button; this checks it, and writes a
+// change into the address as an entry of the history, leaving out both,
+// the default, so that back and forward return to the view as it was.
+// A view taken from localStorage is written into the address in place,
+// so the address always says what the page shows. The other parameters
+// of the address are kept. Inlined in <head>.
+
+const VIEWS = ["both", "title", "statement"];
+const KEY = "rules-view";
+
+// The view saved, or null where storage is blocked or holds no view.
+function saved(): string | null {
+  try {
+    return localStorage.getItem(KEY);
+  } catch {
+    return null;
+  }
+}
+
+function keep(view: string): void {
+  try {
+    localStorage.setItem(KEY, view);
+  } catch {
+    // Storage blocked: the view lasts as long as the address.
+  }
+}
+
+// The address with the view, or without it for the default.
+function address(view: string): string {
+  const query = new URLSearchParams(location.search);
+  if (view === "both") query.delete("view");
+  else query.set("view", view);
+  const search = query.toString();
+  return `${location.pathname}${search ? `?${search}` : ""}${location.hash}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const control = document.querySelector<HTMLElement>(".rules-view");
+  if (!control) return;
+  const radios = Array.from(control.querySelectorAll<HTMLInputElement>("input[name='view']"));
+  const check = (view: string): void => {
+    for (const radio of radios) radio.checked = radio.value === view;
+  };
+  const load = (stored: boolean): void => {
+    const given = new URLSearchParams(location.search).get("view");
+    let view = given && VIEWS.includes(given) ? given : "both";
+    if (!given && stored) {
+      const last = saved();
+      if (last && VIEWS.includes(last)) view = last;
+    }
+    check(view);
+    if (view !== (given ?? "both")) history.replaceState(history.state, "", address(view));
+  };
+
+  control.addEventListener("change", (event) => {
+    const view = (event.target as HTMLInputElement).value;
+    keep(view);
+    history.pushState(history.state, "", address(view));
+  });
+  window.addEventListener("popstate", () => load(false));
+  load(true);
+});
