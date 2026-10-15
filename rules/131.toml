@@ -1,0 +1,42 @@
+id = 131
+slug = "data-outside-repo-with-pointers"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep large local data outside the repository, with pointers and SHA-256 in it"
+zh = "本地大数据放在仓库外，仓库只提交指针与 SHA-256"
+
+[text.statement]
+en = "Keep large local data in the data directory of its repository, commit to the repository only pointers to it with their SHA-256, and say in the repository's instructions what that directory holds and when it is cleared."
+zh = "本地的大数据放在所属仓库的数据目录，仓库里只提交指向它的指针与 SHA-256，并在仓库的说明里写明这个目录放什么、什么时候清。"
+
+[text.reason]
+en = '''
+A large file, once in git history, is hard to remove. With the data in a fixed place outside the repository and a pointer and SHA-256 inside it, another machine can check that it holds the same data. Saying what the directory holds and when it is cleared keeps it from becoming a heap nobody dares delete ({@constitution:simplicity}).
+'''
+zh = '''
+大文件进了 git 历史就很难再清掉；数据放在仓库外面一个固定的位置，仓库里留指针与 SHA-256，换一台机器也能核对数据是不是同一份。写明放什么、何时清，这个目录才不会变成谁都不敢删的堆放处 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The data directory of a repository is `<root>/<repo>/`, under the root the jurisdiction designates for local data, for example in a rule of a lower layer. Every entry directly under the root is a directory named after a repository, and that repository's instructions (its `AGENTS.md`, or a document it links to) say what the directory holds and when it is cleared.
+
+Violated when large data files are committed to the repository, large data is kept elsewhere than in `<root>/<repo>/`, or `<root>/<repo>/` exists and the repository's instructions do not say what it holds and when it is cleared.
+'''
+zh = '''
+仓库的数据目录是法域为本地数据指定的根目录下的 `<root>/<repo>/`，根目录例如写在下层的规定里。根目录下的一级条目都是目录，目录名就是仓库名；该仓库的说明 (它的 `AGENTS.md`，或者它链到的文档) 写明了这个目录放什么、什么时候清。
+
+把大数据文件提交进仓库，大数据放在 `<root>/<repo>/` 以外的地方，或者 `<root>/<repo>/` 存在而该仓库的说明里没写它放什么、何时清的，即为违反本规定。
+'''
+
+[translations]
+zh = "29821894325fdb19a9ef61844d602dd7401c8baab8b386545cd27a8007449287"

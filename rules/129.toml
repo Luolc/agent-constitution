@@ -1,0 +1,46 @@
+id = 129
+slug = "worktrees-root"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep worktrees under a root of their own, outside every repository's directory"
+zh = "worktree 放在自己的根目录下，不放进仓库目录里"
+
+[text.statement]
+en = "Put each worktree of a repository at `<root>/<repo>/<slug>/`, under the root the jurisdiction designates for worktrees, never inside a repository's directory."
+zh = "仓库的每个 worktree 都放在法域为 worktree 指定的根目录下的 `<root>/<repo>/<slug>/`，不放进仓库目录里。"
+
+[text.reason]
+en = '''
+With a root of their own, worktrees leave the root of main checkouts ({@rule:128}) to main checkouts alone ({@constitution:simplicity}). A worktree put inside a repository's directory (for example `<repo>/.worktrees/<slug>`) sits inside the main checkout, and an agent tool that reads instruction files up the parent directories, as Claude Code reads `CLAUDE.md`, lays the main checkout's instructions over the worktree's.
+'''
+zh = '''
+worktree 有了自己的根目录，主检出的根目录 ({@rule:128}) 里就只剩主检出 ({@constitution:simplicity})。放进仓库目录 (例如 `<repo>/.worktrees/<slug>`) 的 worktree 嵌在主检出里面：沿父目录向上读指令文件的 agent 工具 (比如 Claude Code 读 `CLAUDE.md`) 会把主检出的指令叠到 worktree 上。
+'''
+
+[text.verification]
+en = '''
+`<slug>` is the worktree's name, for example the task's. The jurisdiction designates the root, for example in a rule of a lower layer.
+
+Every path that `git -C <main checkout> worktree list` lists, except the main checkout's own line, starts with `<root>/<repo>/`.
+
+Violated when a worktree's path is not under `<root>/<repo>/`.
+'''
+zh = '''
+`<slug>` 是这个 worktree 的名字，例如任务名。根目录由法域指定，例如写在下层的规定里。
+
+`git -C <主检出> worktree list` 列出的路径，除主检出那一条以外，都以 `<root>/<repo>/` 开头。
+
+某个 worktree 的路径不在 `<root>/<repo>/` 下的，即为违反本规定。
+'''
+
+[translations]
+zh = "3400d7c9ed3547c981487dd00b733b2d1dac8169bae5408030fe6fe3db4f82f1"

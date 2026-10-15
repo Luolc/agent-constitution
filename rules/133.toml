@@ -1,0 +1,46 @@
+id = 133
+slug = "no-fixed-names-in-tmp"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Write no temporary file to a fixed name directly under `/tmp`"
+zh = "临时文件不写到 `/tmp` 下的固定名字"
+
+[text.statement]
+en = "Never write a temporary file to a fixed name directly under `/tmp`, such as `/tmp/<name>`; keep it in a place the jurisdiction designates, such as the session's scratchpad."
+zh = "临时文件不写到 `/tmp/<名字>` 这样直接位于 `/tmp` 下的固定名字，放在法域指定的地方，例如会话的 scratchpad。"
+
+[text.reason]
+en = '''
+`/tmp` is shared by the whole machine: agents of one user that write to the same fixed name overwrite and delete each other's files, and the failures that follow, widespread and gone on a rerun, are easily mistaken for flaky tests. No task of one agent justifies breaking the work of the others ({@constitution:decency.legitimate-means}).
+'''
+zh = '''
+`/tmp` 是全机共用的：同一个用户下的多个 agent 往同一个固定名字写，会互相覆盖、互相删掉对方的文件，造成大面积、重跑就好的红，容易被误记成偶发的 flaky test。一个 agent 的任务不能成为弄坏别人工作的理由 ({@constitution:decency.legitimate-means})。
+'''
+
+[text.verification]
+en = '''
+A fixed name is one that is the same at every run and not guaranteed to be unique, whether the agent chose it or a tool uses it as its default root, such as pytest's `/tmp/pytest-of-<user>`. A name made unique at each run, as by `mktemp` or Python's `tempfile`, is not fixed. Writing into the host's `/tmp` mounted in a container counts as writing to `/tmp`. The places for temporary files are designated, for example, in a rule of a lower layer.
+
+To move a tool elsewhere, set the environment variable `TMPDIR=<your own directory>` when running it, rather than changing the tool's configuration.
+
+Violated when an agent, or a tool it runs, writes to a fixed name directly under `/tmp`.
+'''
+zh = '''
+固定名字指每次运行都相同、不保证唯一的名字，包括 agent 自己定的名字，也包括工具默认用的固定根目录，例如 pytest 的 `/tmp/pytest-of-<user>`。`mktemp`、Python `tempfile` 这类每次生成唯一名字的不在此列。容器把宿主的 `/tmp` 挂进去以后写进去的，也算写到了 `/tmp`。放临时文件的地方例如写在下层的规定里。
+
+要让工具换一个位置，运行时设环境变量 `TMPDIR=<自己的目录>`，不改工具的配置。
+
+agent 自己写、或者让它运行的工具写到直接位于 `/tmp` 下的固定名字的，即为违反本规定。
+'''
+
+[translations]
+zh = "cc9d5f6c9991f01f90a9bcca4890ae359b59b343742358be000acb6ab7d237ce"

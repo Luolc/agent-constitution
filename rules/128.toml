@@ -1,0 +1,58 @@
+id = 128
+slug = "main-checkouts-root"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep main checkouts, and nothing else, in one root"
+zh = "主检出都放在同一个根目录下，那里只放主检出"
+
+[text.statement]
+en = "Keep each repository's main checkout in a directory named after the repository, directly under the root the jurisdiction designates for main checkouts, and keep nothing else in that root."
+zh = "每个仓库的主检出 (main checkout) 放在法域为主检出指定的根目录下，目录名就是仓库名；这个根目录下不放主检出以外的任何东西。"
+
+[text.reason]
+en = '''
+With one layout on every machine, people and agents find a repository's checkout from its name alone ({@constitution:simplicity}). A script that walks the root and takes each entry for a repository needs a special case for every stray file or directory, and what lies there stray has no owner, so nobody dares delete it.
+'''
+zh = '''
+每台机器的目录布局相同，人和 agent 只凭仓库名就能找到它的检出 ({@constitution:simplicity})。把根目录下每个一级条目都当作一个仓库来遍历的脚本，碰到混进来的文件或目录就要加特判；散落在那里的东西没有归属，也没人敢删。
+'''
+
+[text.verification]
+en = '''
+A main checkout is a clone whose `.git` is a directory; a worktree's `.git` is a file, so a worktree is not one. The jurisdiction designates the root, for example in a rule of a lower layer.
+
+Every entry directly under the root is a directory whose `.git` is a directory. Each line this command prints, with the root in place of `<root>`, is an entry that does not belong there:
+
+```sh
+find <root> -mindepth 1 -maxdepth 1 -exec sh -c '[ -d "$1/.git" ] || echo "STRAY: $1"' _ {} \;
+```
+
+Only whether it prints anything counts; the number of entries under the root changes all the time and is no criterion.
+
+Violated when the root holds an entry that is not a main checkout, or a repository's main checkout is not directly under the root or its directory is not named after the repository.
+'''
+zh = '''
+主检出指 `.git` 是目录的那份 clone；worktree 的 `.git` 是文件，所以 worktree 不算主检出。根目录由法域指定，例如写在下层的规定里。
+
+根目录下的每个一级条目都是目录，并且其中的 `.git` 是目录。把下面这条命令里的 `<root>` 换成根目录，它每输出一行，就是一个不该在那里的条目：
+
+```sh
+find <root> -mindepth 1 -maxdepth 1 -exec sh -c '[ -d "$1/.git" ] || echo "STRAY: $1"' _ {} \;
+```
+
+只看这条命令有没有输出；根目录下的条目数随时在变，不拿它当判据。
+
+根目录下有不是主检出的条目，或者某个仓库的主检出不直接在根目录下、目录名与仓库名不同的，即为违反本规定。
+'''
+
+[translations]
+zh = "585c254ae3c6917e4bafd96e85b48134ce665f80c566d52a45e13aecd581044d"
