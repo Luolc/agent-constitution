@@ -1,0 +1,21 @@
+id = 127
+slug = "machine"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Machines and working directories"
+zh = "机器与工作目录"
+
+[applicability]
+en = '''
+Where agents on a machine keep main checkouts, worktrees, files handed between agents, data, third-party sources and temporary files, which Linux release machines and test containers run, and what to do before leaving a machine. The jurisdiction designates the roots and the release, for example in a rule of a lower layer. Enable it where agents work on machines kept beyond one task; an agent that runs only in a one-off sandbox or in CI need not.
+'''
+zh = '''
+管 agent 在机器上把主检出、worktree、agent 之间交接的文件、数据、第三方源码和临时文件放在哪里，Linux 机器与测试容器用哪个发行版本，以及离开一台机器之前要做什么。各个根目录和发行版本由法域指定，例如写在下层的规定里。agent 在不止用于一项任务的机器上工作的，就要启用；只在一次性的沙箱或 CI 里运行的 agent 不必启用。
+'''
+
+[translations]
+zh = "4dccc8e5e449b63fe6e4eef4bab1a9f29e942e2ae5886fd3125d80cd3ed201b5"
