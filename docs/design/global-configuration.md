@@ -75,11 +75,14 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 - `public` is required on every source but `R`, as in a rule set; there
   is no `scope`, since a source of the global configuration is global
   by definition ([Four kinds of source](rule-sources.md#four-kinds-of-source)).
-- The configuration names sources only. It enables no rule: each rule
+- The configuration names sources and enables no rule: each rule
   set lists the rules and packs it uses, as before, so that the
   committed rule set and lock file alone say what a repository's
   compiled output holds. A source of the global configuration is
   available to every rule set by its name, as if the rule set named it.
+  The configuration may also hold the values of parameters, which
+  `statute init` copies into a new rule set and no compile reads
+  ([Setting a value](rule-config.md#setting-a-value), not built yet).
 
 **The built-in default** is the one source statute knows by itself:
 `R = { git = "https://github.com/Luolc/agent-constitution", branch = "main" }`.

@@ -68,6 +68,9 @@ zero padding, since the IDs keep growing and any fixed width would one
 day be too short. The tree is recorded only in the `parent` field, never
 in directories, so moving a rule under another parent changes one line
 and moves no file. Tools always sort the files by number, not by name.
+[Rule configuration](rule-config.md) adds the kind `parameter`,
+`default` on domains, rules and one-ofs, and `uses` on rules, none of
+them built yet.
 
 A rule, here one that a translation into Chinese accompanies:
 

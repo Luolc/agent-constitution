@@ -32,7 +32,10 @@ own ([Sources and references](rule-sets.md#sources-and-references)).
 The general rules are a default set, not obligations on every jurisdiction
 (`division-of-instructions.rules`): one jurisdiction may need a rule that another has
 good reason to drop (a repo that stays private on a self-hosted server may
-keep credentials in it on purpose). Open, for the person to decide. Recommended:
+keep credentials in it on purpose). Open, for the person to decide; once
+built, the default switches of
+[Rule configuration](rule-config.md#default-switches) replace the
+recommendation below. Recommended:
 
 - A jurisdiction uses every general rule by default. Its overlay leaves a rule
   out only by naming it, with a one-line reason, in `overlay.toml`
@@ -84,3 +87,6 @@ A rule that needs a local value names a parameter instead of the value:
 values. Parameters are plain values, never rule text, so the private side can
 change a model name or a machine list without touching a rule. An
 unresolved or unused parameter fails the build.
+[Parameters](rule-config.md#parameters) replaces this section, once
+built: a parameter is a node of its source, and the rule set sets its
+value.
