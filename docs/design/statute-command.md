@@ -271,8 +271,10 @@ file. It prints the path of `index.html`.
   Before anything, in a git repository, it asks `git ls-files` about
   `.statute/site/`, and when git tracks a file there it writes nothing
   and fails, naming the file and the way out,
-  `git rm -r --cached .statute/site`. Outside a git repository there is
-  nothing to commit and nothing to ask.
+  `git rm -r --cached .statute/site`. When git cannot answer, because
+  it does not start or fails, statute writes nothing either and fails
+  with git's error. Outside a git repository there is nothing to commit
+  and nothing to ask.
 - **The index** has the four kinds of source
   ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
   sections: global public, global private, local public and local

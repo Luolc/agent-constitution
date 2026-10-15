@@ -106,12 +106,18 @@ struct Run {
 }
 
 fn statute(dir: &Path, args: &[&str]) -> Run {
+    statute_with(dir, args, &[])
+}
+
+/// `statute` with `env` added to its environment.
+fn statute_with(dir: &Path, args: &[&str], env: &[(&str, &str)]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .args(args)
         .current_dir(dir)
         .env_remove("GIT_DIR")
         .env_remove("GIT_INDEX_FILE")
         .env_remove("GIT_WORK_TREE")
+        .envs(env.iter().copied())
         .output()
         .unwrap();
     Run {
@@ -336,4 +342,59 @@ fn site_marks_the_quadrant_of_each_rule() {
             assert!(item.contains(&mark), "{lang} {page}: {item}");
         }
     }
+}
+
+#[test]
+fn site_writes_nothing_where_git_cannot_tell() {
+    let dir = four("git-fails");
+    // A git that answers everything but `ls-files`, with an error.
+    let bin = dir.join("bin");
+    let real = std::env::split_paths(&std::env::var_os("PATH").unwrap())
+        .map(|d| d.join("git"))
+        .find(|p| p.is_file())
+        .unwrap();
+    write(
+        &dir,
+        "bin/git",
+        &format!(
+            "#!/bin/sh\nfor a; do [ \"$a\" = ls-files ] && {{ echo 'fatal: index file corrupt' >&2; exit 128; }}; done\nexec {} \"$@\"\n",
+            real.display()
+        ),
+    );
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(bin.join("git"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    let path = format!("{}:{}", bin.display(), std::env::var("PATH").unwrap());
+    let r = statute_with(&dir, &["site"], &[("PATH", &path)]);
+    assert_eq!(r.code, 1, "{}", r.stdout);
+    assert!(r.stderr.contains("index file corrupt"), "{}", r.stderr);
+    assert!(!dir.join(".statute/site").exists());
+}
+
+#[test]
+fn site_outside_a_git_repository_writes_the_pages() {
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("site")
+        .join("no-git");
+    let _ = std::fs::remove_dir_all(&dir);
+    write(&dir, "constitution/2026-10/index.toml", INDEX);
+    write(
+        &dir,
+        "constitution/2026-10/articles/04-authority/article.toml",
+        "id = \"authority\"\n",
+    );
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nrules = [\"R2\"]\n\n[sources]\nR = { path = \".\" }\n",
+    );
+    put(&dir, "rules", domain(1));
+    put(&dir, "rules", rule(2, 1, ""));
+    // The test's directory is inside this repository; the ceiling hides it.
+    let ceiling = dir.parent().unwrap().to_str().unwrap().to_owned();
+    let r = statute_with(&dir, &["site"], &[("GIT_CEILING_DIRECTORIES", &ceiling)]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    assert!(dir.join(".statute/site/index.html").is_file());
 }
