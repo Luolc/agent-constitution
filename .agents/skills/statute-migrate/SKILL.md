@@ -173,6 +173,12 @@ which is which when you show the person the rules.
 - In a public repository, name the private source in the private rule
   set, never in the rule set, and list there the private rules it
   enables (`statute add --private`).
+- When a practice of the repository cannot hold together with a public
+  rule that a private rule requires, neither `exclude` in the rule set
+  nor the private rule set can take that rule out. A local rule that
+  `overrides` it takes its place, but only once `rules` lists it: with
+  no parent, nothing else enables it. The lasting fix is to have
+  whoever keeps the private source change it.
 
 Product: the rules, each passing the source's build check; for the
 private source, the change in the repository that holds it.
@@ -231,7 +237,9 @@ exclude = [
 
 `statute add` writes a domain to `domains` and a rule to `rules`, and
 `statute remove` writes a rule the defaults enable to `exclude`; add
-the comments afterwards. Set the parameters the mapping found in their
+the comments afterwards. A rule that a private rule requires cannot go
+in `exclude`, and the private rule set takes no `exclude`; step d says
+what to do instead. Set the parameters the mapping found in their
 tables (`[language]` and others). A `personal` parameter, the language
 an agent writes to the person in, takes the repository's value there;
 the person's own value goes into the global configuration, which in a
