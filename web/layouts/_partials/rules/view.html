@@ -1,0 +1,15 @@
+{{- /* What each row of the list of the rules shows: its title and its
+  statement, its title alone, or its statement alone; a segmented
+  control of three radio buttons, the first checked. The style sheet
+  shows the rows as the checked one says (assets/styles/view.css), with
+  or without scripts; assets/ts/rules-view.ts checks the one the
+  address's `view` names, or the one the reader chose last, and writes a
+  change into the address. */ -}}
+<fieldset class="rules-view">
+<legend>{{ i18n "rules-view" }}</legend>
+<span class="rules-view-options">
+{{- range slice "both" "title" "statement" }}
+<label><input type="radio" name="view" value="{{ . }}"{{ if eq . "both" }} checked{{ end }}><span>{{ i18n (printf "rules-view-%s" .) }}</span></label>
+{{- end }}
+</span>
+</fieldset>

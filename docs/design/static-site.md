@@ -177,7 +177,8 @@ screenshots (Screenshots, below). The workflow
   of another source: the ID, not the `slug`, since the ID never changes.
   The list (`web/layouts/rules/section.html`) is a table under a head,
   one row a rule, along the tree: each rule's label, its title, cut to
-  the row by the style sheet, and its marks, linked to its page: its
+  the row by the style sheet, under it its statement, and its marks,
+  linked to its page: its
   status, whether the source's defaults enable it (on or off, as
   `statute export` reckons it), and its `uses`, each an icon or a dot in
   a place of its own ([Frontend](frontend.md#components)); then, with
@@ -225,7 +226,19 @@ screenshots (Screenshots, below). The workflow
   first-party source overrides nothing. By default the filter checks
   the statuses of `params.rulesStatuses` in `web/hugo.toml` and every
   other value; superseded, repealed and draft rules are in the list but
-  not checked. The list is one page, every rule on it: Hugo builds it
+  not checked. After the filter, a segmented
+  control sets what each row shows ([Frontend](frontend.md#components)):
+  its title and statement, by default, its title alone, or its
+  statement alone; the style sheet shows the rows as its checked radio
+  button says, so it works without scripts too, and each statement is
+  in the page in every view. `web/assets/ts/rules-view.ts` checks the
+  view the address names, `?view=title` or `?view=statement`, an address
+  without `view` showing the default; on arrival at an address without
+  it, the view the reader chose last, kept in the browser's
+  `localStorage`, applies and is written into the address. A change of
+  view adds an entry to the history, and back and forward return to the
+  view their address names.
+  The list is one page, every rule on it: Hugo builds it
   with the rules of the default filter shown, each rule with its group
   row, the others hidden. `web/assets/ts/rules-list.ts`, bundled by
   Hugo ([Frontend](frontend.md#in-the-code)) and inlined in `<head>`,
@@ -275,7 +288,9 @@ screenshots (Screenshots, below). The workflow
   page of parameters, the parameter's name as its title, shown on hover;
   in a code span the span becomes HTML around the link. A title stands
   inside a link in the list, in a one-of's box and in a node named on a
-  page, so there the value is marked as a span with the parameter's name as its
+  page, and so does a statement in the list (`statementInLink`, its
+  citations as their labels alone, not linked), so there the value is
+  marked as a span with the parameter's name as its
   title, escaped, and not linked; on the rule's own page it is marked
   and linked as in the text, and elsewhere the value stands alone. A
   title's code spans show as code wherever it is shown in the page;

@@ -138,8 +138,8 @@ class SiteTest(unittest.TestCase):
         `demo`, global private, with a rule set enabling R3 and demo:2.
 
     Returns:
-      The visible text of every page, or its HTML, by path, and so the
-      site's style sheets.
+      The visible text of every page and style sheet, or its HTML, by
+      path.
     """
     with tempfile.TemporaryDirectory() as tmp:
       root = Path(tmp)
@@ -386,8 +386,10 @@ class SiteTest(unittest.TestCase):
       " a rule has none Status Status All None Active Trial Draft Superseded"
       " Repealed Defaults Defaults All None On by default Off by default Uses"
       " Uses All None Instructions Review Domains Domains All None R1 Group 1"
-      " Reset filter ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3"
-      " Default option R1",
+      " Reset filter Show Title and statement Title Statement ID Rule R1"
+      " Group 1 One of R2 Group 2 R3 Rule 3 Default option See Art. I §1 and"
+      " rule 6. R1 Group 1 R4 Rule 4 Old. R1 Group 1 R5 Rule 5 New. R1 Group 1"
+      " R6 Rule 6 Rule six, see Art. I §1(1).",
       pages["rules/index.html"],
     )
     # The one-of is a box in its domain's list, its option inside it and
@@ -417,7 +419,8 @@ class SiteTest(unittest.TestCase):
     self.assertRegex(
       page,
       r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
-      r' href="\.\./rules/3/" title="Rule 3">.*Default option</span></span>'
+      r' href="\.\./rules/3/" title="Rule 3">.*Default option</span><span'
+      r' class="rule-statement">See Art\. I §1 and rule 6\.</span></span>'
       r'<span class="rule-marks">.*</a></li>\n</ul>',
     )
     # The superseded rule 4 is there, with its status, but filtered out.
@@ -456,9 +459,18 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       '<input type="checkbox" name="domain" value="1" checked>', page
     )
+    # Each rule's statement follows its title, in Chinese where it has
+    # it, else in English, its title's `lang` saying so.
     self.assertIn(
-      "ID 规定 R1 组 1 择一 R2 组 2 R3 规定 3 默认选项 R1",
+      "ID 规定 R1 组 1 择一 R2 组 2 R3 规定 3 默认选项 见第一条第一款和规定 6。"
+      " R1 组 1 R4 Rule 4 Old. R1 组 1 R5 Rule 5 New. R1 组 1 R6 Rule 6"
+      " Rule six, see Art. I §1(1).",
       pages["zh/rules/index.html"],
+    )
+    self.assertIn(
+      '<span class="rule-title" lang="en"><span class="rule-text">Rule 5'
+      '</span><span class="rule-statement">New.</span></span>',
+      raw["zh/rules/index.html"],
     )
     # A rule's marks: its status, the ring of off by default, its one use.
     self.assertRegex(
@@ -466,7 +478,8 @@ class SiteTest(unittest.TestCase):
       r'<a class="rule-entry" href="\.\./rules/6/" title="Rule 6">'
       r'<span class="rule-id">R6'
       r'</span><span class="rule-title" lang="en"><span class="rule-text">'
-      r'Rule 6</span></span><span class="rule-marks"><span class="rule-mark'
+      r'Rule 6</span><span class="rule-statement">Rule six, see Art\. I'
+      r' §1\(1\)\.</span></span><span class="rule-marks"><span class="rule-mark'
       r' rule-status status-active" role="img" aria-label="Active"'
       r' title="Active"><svg [^\n]*</svg></span><span class="rule-mark'
       r' rule-dot" role="img" aria-label="Off by default" title="Off by'
@@ -642,6 +655,132 @@ class SiteTest(unittest.TestCase):
             + "</span>",
           )
           self.assertEqual('<p class="rules-none">' in dom, not rules)
+
+  def test_rules_list_view(self):
+    """The view in the address, else the reader's last, says what rows show.
+
+    Loaded in headless Chrome, with a script added to the page that
+    reports, once the page has settled, the view checked, the address's
+    query and whether a statement and a title with one are displayed:
+    each view, the default and an unknown one, which the address then
+    leaves out, a view saved by the reader on a first visit, which is
+    then written into the address after the filter, its commas as they
+    are, a change to the filter, which keeps the view in the address,
+    and back from a chosen view to the address without one, which is the
+    default whatever was saved. Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True)
+    # The page as a file of its own, its style sheet inlined.
+    sheet = next(p for p in raw if re.fullmatch(r"book\.min\.\w+\.css", p))
+    list_page = re.sub(
+      r'<link rel="stylesheet" href="\.\./book\.min\.\w+\.css" >',
+      lambda _: f"<style>{raw[sheet]}</style>",
+      raw["rules/index.html"],
+    )
+    report = (
+      "const r = () => {"
+      " const s = document.querySelector('.rule-statement');"
+      " const t = s.parentElement.querySelector('.rule-text');"
+      " document.body.dataset.report = JSON.stringify(["
+      " document.querySelector('input[name=view]:checked').value,"
+      " location.search, getComputedStyle(s).display,"
+      " getComputedStyle(t).display]); };"
+    )
+    back = (
+      "addEventListener('popstate', () => setTimeout(r, 100));"
+      " addEventListener('load', () => {"
+      " const v = document.querySelector('input[value=statement]');"
+      " v.checked = true;"
+      " v.dispatchEvent(new Event('change', {bubbles: true}));"
+      " setTimeout(() => history.back(), 100); });"
+    )
+    settle = "addEventListener('load', () => setTimeout(r, 100));"
+    # A change to the filter: Draft checked as well.
+    draft = (
+      "addEventListener('load', () => {"
+      " const d = document.querySelector('input[name=status][value=draft]');"
+      " d.checked = true;"
+      " d.dispatchEvent(new Event('change', {bubbles: true}));"
+      " setTimeout(r, 100); });"
+    )
+    saved = "<script>localStorage.setItem('rules-view', 'statement');</script>"
+    title = "<script>localStorage.setItem('rules-view', 'title');</script>"
+    filtered = "?status=active,trial,draft"
+    with tempfile.TemporaryDirectory() as tmp:
+      for n, (query, head, script, expected) in enumerate(
+        (
+          ("", "", settle, ["both", "", "block", "block"]),
+          (
+            "?view=title",
+            "",
+            settle,
+            ["title", "?view=title", "none", "block"],
+          ),
+          (
+            "?view=statement",
+            "",
+            settle,
+            ["statement", "?view=statement", "block", "none"],
+          ),
+          ("?view=other", "", settle, ["both", "", "block", "block"]),
+          (
+            "",
+            saved,
+            settle,
+            ["statement", "?view=statement", "block", "none"],
+          ),
+          (
+            "?view=title",
+            saved,
+            settle,
+            ["title", "?view=title", "none", "block"],
+          ),
+          ("", "", back, ["both", "", "block", "block"]),
+          ("?view=both", "", settle, ["both", "", "block", "block"]),
+          (
+            "?view=title",
+            "",
+            draft,
+            ["title", f"{filtered}&view=title", "none", "block"],
+          ),
+          (
+            filtered,
+            title,
+            settle,
+            ["title", f"{filtered}&view=title", "none", "block"],
+          ),
+        )
+      ):
+        with self.subTest(query=query, saved=head, script=script[:40]):
+          page = Path(tmp) / f"rules-{n}.html"
+          page.write_text(
+            list_page.replace("<head>", f"<head>{head}", 1).replace(
+              "</body>", f"<script>{report} {script}</script></body>"
+            ),
+            encoding="utf-8",
+          )
+          dom = subprocess.run(
+            [
+              chrome,
+              "--headless",
+              "--no-proxy-server",
+              f"--user-data-dir={Path(tmp) / f'profile-{n}'}",
+              "--virtual-time-budget=5000",
+              "--dump-dom",
+              page.as_uri() + query,
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+            timeout=CHROME_TIMEOUT,
+          ).stdout
+          found = re.search(r'data-report="([^"]*)"', dom)
+          assert found, "no report"
+          self.assertEqual(json.loads(html.unescape(found.group(1))), expected)
 
   def test_rules_filter_menus(self):
     """The filter's menus open one at a time, over the list's head.
@@ -879,7 +1018,10 @@ window.addEventListener("load", () => {
     )
 
   def test_a_value_in_a_title_is_escaped(self):
-    """In the list, a value with `<` in a title shows as text."""
+    """In the list, a value with `<` in a title or a statement shows as text.
+
+    Rule 6's statement names it in a code span.
+    """
 
     def edit(root):
       site_fixture.params(root)
@@ -900,6 +1042,13 @@ window.addEventListener("load", () => {
     self.assertIn(
       '<span class="rule-text">Label <span class="param-value"'
       ' title="work-items.label-done">a &lt;b&gt; c</span></span>',
+      raw["rules/index.html"],
+    )
+    self.assertIn(
+      '<span class="rule-statement">Write in <span class="param-value"'
+      ' title="language.docs">Chinese</span>; label <code>x <span'
+      ' class="param-value" title="work-items.label-done">a &lt;b&gt; c'
+      "</span></code>.</span>",
       raw["rules/index.html"],
     )
     self.assertNotIn("<b>", raw["rules/index.html"])
@@ -925,10 +1074,10 @@ window.addEventListener("load", () => {
     )
     for text in (
       "R1 Global public · R Group 1 One of R2 Group 2 R3 Rule 3 Default"
-      " option Enabled Global public",
-      "R5 Rule 5 Not enabled Global public",
-      "demo:1 Global private · demo Group 1 demo:2 Demo rule Enabled Global"
-      " private",
+      " option See Art. I §1 and rule 6. Enabled Global public",
+      "R5 Rule 5 New. Not enabled Global public",
+      "demo:1 Global private · demo Group 1 demo:2 Demo rule After rule R3,"
+      " see rule demo:2. Enabled Global private",
     ):
       self.assertIn(text, pages["rules/index.html"])
     self.assertIn(

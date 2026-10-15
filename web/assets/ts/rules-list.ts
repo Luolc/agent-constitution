@@ -56,6 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let pushed = false;
   const address = (): string => {
     const query = write(chosen(), fields, defaults);
+    // What the rows show is assets/ts/rules-view.ts's, kept as it is.
+    const view = new URLSearchParams(location.search).get("view");
+    if (view) query.push(`view=${encodeURIComponent(view)}`);
     return query.length ? `${location.pathname}?${query.join("&")}` : location.pathname;
   };
   const save = (push: boolean): void => {
