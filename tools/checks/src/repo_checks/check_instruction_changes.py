@@ -21,10 +21,10 @@ from repo_checks import git_env
 
 # Instruction files in any repo: what an agent harness reads as
 # instructions, skills, subagents, commands, hooks or permissions, in any
-# directory; and what statute compiles AGENTS.md from, at the top of the
-# repo: the rule set, its lock file, the checks file and .statute/ (the
-# local rules and the ignore file), with the legacy copies of the
-# hand-written files it replaces.
+# directory; and statute's files at the top of the repo: what it compiles
+# AGENTS.md from, the rule set, its lock file and .statute/ (the local
+# rules and the ignore file), and the checks file it writes beside them,
+# with the legacy copies of the hand-written files it replaces.
 GENERIC = [
   r"(.*/)?AGENTS\.md",
   r"(.*/)?CLAUDE\.md",
@@ -51,9 +51,14 @@ REPO = [
   r"skills/.+",
 ]
 # Generated files: CI proves they equal a build of the sources with the
-# tools, so they go with whichever side changed them.
+# tools, so they go with whichever side changed them. A path here is not an
+# instruction file even when GENERIC lists it. statute-checks.toml is one:
+# `statute compile --check` proves it equals a compile of the rule set, and
+# it changes with statute's version, which the tools set. Another repo
+# declares it with --generated once its CI runs that check.
 GENERATED = [
   r"constitution/[^/]+/generated/constitution\.[^/]+\.md",
+  r"statute-checks\.toml",
 ]
 
 

@@ -257,9 +257,10 @@ default, and turned off", since the rule was never on by default;
    until everything is in place.
 3. `statute check`, which exits 0 when no rule a script checks is
    violated, and lists the rules for review.
-4. In a public repository with private rules, install the checkout
-   hook, so that each new worktree and each switch of branch writes the
-   private output and the private links
+4. In a public repository with a private output (private rules, or a
+   `personal` value that differs from the committed one), install the
+   checkout hook, so that each new worktree and each switch of branch
+   writes the private output and the private links
    ([Private rules in a public repository](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-sources.md#private-rules-in-a-public-repository),
    A new worktree).
    statute does not install it. First see which hooks are really
@@ -295,8 +296,9 @@ default, and turned off", since the rule was never on by default;
    nothing more is needed; otherwise add a CI step that runs
    `statute compile --check`. The hook and CI run the statute version
    that `statute-checks.toml` names, which is the one that compiled it,
-   and that version must have the flag; after upgrading statute, run
-   `statute compile` again in the same change.
+   and that version must be 0.1.4 or later, the first with the flag;
+   after upgrading statute, run `statute compile` again in the same
+   change.
 
 Acceptance, before you ask for a review:
 
