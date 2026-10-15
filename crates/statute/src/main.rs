@@ -1379,7 +1379,21 @@ fn explain_parameter(project: &Project, name: &str) -> Result<(), ()> {
             from.place()
         );
     }
-    let rules: Vec<String> = s.rules.iter().map(|k| label(sources, k)).collect();
+    // A title that names a parameter reads with the committed values.
+    let rules: Vec<String> = s
+        .rules
+        .iter()
+        .map(|k| match sources.get(k) {
+            Some(n) => {
+                let title = n.title.get(&n.lang).map_or("", String::as_str);
+                format!(
+                    "{k} ({})",
+                    statute::compile::filled(project, k, title, false)
+                )
+            }
+            None => k.to_string(),
+        })
+        .collect();
     println!("- used by: {}", rules.join(", "));
     Ok(())
 }
