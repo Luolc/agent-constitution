@@ -145,7 +145,8 @@ screenshots (Screenshots, below). The workflow
   which Hugo reads; the build fails without it, so CI and
   `pages.yml` run it before Hugo. For each language of `index.toml` it
   holds every node of the rule tree along the parent tree, a node's
-  children in the order of the compiled file
+  children in order of ID, a domain's rules and one-ofs before its
+  subdomains, as statute orders a domain's children
   ([Compilation and the site](statute-command.md#compilation-and-the-site)),
   made by `tree_order` in `site_rules.py`, each with its label, `R` and its ID (`R12`),
   made by `rule_label` in `site_rules.py`, the one place that makes it;

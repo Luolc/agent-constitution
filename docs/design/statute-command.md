@@ -61,8 +61,8 @@ below a node, the first-party source's children first, then those of
 the other sources by name, then the repository's own, each source's by
 ID. Below a domain, though, its rules and one-ofs come first, in that
 order, and its subdomains after them, in that order too, so that a
-domain's own rules stay together; the sites list the nodes in this
-order as well ([The local site](#the-local-site),
+domain's own rules stay together; the sites order a domain's
+children the same way ([The local site](#the-local-site),
 [Static site](static-site.md)). A one-of contributes the rules of its enabled option, the option's
 own rules when it is a domain; a subtree with no enabled rule
 contributes nothing. An overriding rule
@@ -373,7 +373,8 @@ file. It prints the path of `index.html`.
   ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
   sections: global public, global private, local public and local
   private. Each lists its sources, and each source its tree of domains
-  with every node, enabled or not, in the order of the compiled file
+  with every node, enabled or not, a domain's rules and one-ofs before
+  its subdomains, as the compiled file orders them
   ([Compilation and the site](#compilation-and-the-site)): its reference, title and status, and
   whether this rule set enables it, overrides it or leaves it out; a
   one-of is a box that holds its options, the default marked. A rule's
