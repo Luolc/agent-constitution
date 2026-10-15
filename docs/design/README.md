@@ -54,3 +54,7 @@ the whole design.
 - [Rule sources](rule-sources.md): the four kinds of source (global or
   local, public or private), which may cite which, overrides,
   subdomains and the cutover from the hand-written guide; built in part.
+- [Global configuration and git sources](global-configuration.md): the
+  statute directory in the home directory, the global configuration,
+  which source a name means, git sources and adding a source; not built
+  yet.

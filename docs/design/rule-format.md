@@ -52,6 +52,14 @@ as for any such change above. A rule
 withdrawn with nothing in its place is repealed and, like a superseded
 one, keeps its ID and its file.
 
+A change that touches only a rule's translations keeps its revision:
+the revision follows the original and the fields that are not text, and
+a translation changes neither (Languages, in
+[Rule file format](#rule-file-format)). The
+lock file records, beside the SHA-256 of each rule's file, the SHA-256 of
+the rule without its translations, so that statute can tell the two
+apart ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)).
+
 ## Rule file format
 
 Each node of the parent tree (a rule, a one-of or a domain) is one TOML
@@ -165,7 +173,8 @@ The fields:
   same source. A rule's parent may also be a domain or a subdomain of
   another source, written as `requires` writes one (`"team:3"`). Every
   rule and one-of has one, except a rule with `overrides`; a domain has
-  none, or, as a subdomain, a domain of the same source that has none
+  none, or, as a subdomain, a domain that has none, of the same source
+  or, written as `requires` writes one, of another
   ([Subdomains](rule-sources.md#subdomains)). The build accepts both
   ([Checkers](checkers.md#checkers)), and so does statute.
 - `overrides` (optional, a rule only): the rule of another source that

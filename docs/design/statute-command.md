@@ -156,7 +156,11 @@ it may still change before the first real release, and another name would
 be published anew. The rule set is `statute.toml`, the lock file
 `statute.lock`, and the commands are:
 
-- `init`: write a new rule set;
+- `init`: write a new rule set; with `--global`, the global
+  configuration ([Global configuration and git sources](global-configuration.md));
+- `source add`: name a source in the rule set, its private layer or
+  the global configuration
+  ([Adding a source](global-configuration.md#adding-a-source));
 - `add` and `remove`: enable a rule or take it out of the rule set, and
   update the lock file; with `--private`, of `statute.private.toml`
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository));
@@ -167,7 +171,9 @@ be published anew. The rule set is `statute.toml`, the lock file
   of those a script checks ([Checks](rule-checks.md#checks));
 - `upgrade`: move the sources and the constitution to newer versions
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file));
-- `explain`: say why a rule is enabled and which rules require it.
+- `explain`: say why a rule is enabled and which rules require it;
+- `site`: write a local site of the rules the rule set can draw on
+  ([The local site](#the-local-site)).
 
 **The first version** builds the repository level only. The user level,
 whose instruction files in the user's home directory the private overlay
@@ -193,7 +199,11 @@ with which rules may cite which in `requires`, `conflicts`,
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's `parent` in another
 source, and `statute.private.toml` with its lock file and output.
-Inherited rule sets, path segments and git sources are not built.
+Inherited rule sets, path segments and git sources are not built, nor
+are the global configuration, `init --global`, `source add`, a domain's
+`parent` in another source ([Subdomains](rule-sources.md#subdomains)).
+`site` is built ([The local site](#the-local-site)), for sources on
+disk.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,
@@ -202,7 +212,11 @@ an empty `rules`, and one source on disk, the first-party source `R`.
 or else what `gh`
 shows for the repository, as in
 [Public or not](rule-sources.md#public-or-not). `--source <dir>` gives the source's directory, relative
-to the current one, `.` by default. `--edition` names the edition;
+to the current one, `.` by default. Once git sources are built,
+`--source` has no default: without it, `init` writes no `[sources]`,
+and `R` is the global configuration's or the built-in default
+([Which source a name means](global-configuration.md#which-source-a-name-means)),
+read at the head of the branch it follows. `--edition` names the edition;
 without it, `init` takes the one directory under the source's
 `constitution/` that holds an `index.toml`, and fails when there is none
 or more than one, naming those it found. It resolves the rule set before
@@ -233,6 +247,57 @@ the conditions of
 [Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide)
 hold; no topic switches first. Until then the compiled output is built
 and compared, but not read in their place.
+
+## The local site
+
+Built, except for git sources, which are not built yet.
+
+`statute site` writes a site of the rules a rule set can draw on into
+`.statute/site/` next to `statute.toml`, to be opened in a browser from
+disk; it is never published, and it is not
+[the public site](static-site.md). It reads `statute.toml` and, when it
+is there, `statute.private.toml`, both layers resolved in memory, with
+each git source at the commit the lock file records
+([Git sources](global-configuration.md#git-sources)); it writes no lock
+file. It prints the path of `index.html`.
+
+- **Files.** Plain HTML with one inline style sheet: no script, no Hugo,
+  no dependency beyond those statute has. Each run builds the site
+  anew: it removes the old `.statute/site/` first, but only when that
+  directory holds statute's `.gitignore` (below), and otherwise writes
+  nothing and fails. Nothing is written outside `.statute/site/`.
+- **Ignored by git.** statute writes `.statute/site/.gitignore`
+  holding `*`, so git ignores every file there, that one included.
+  Before anything, in a git repository, it asks `git ls-files` about
+  `.statute/site/`, and when git tracks a file there it writes nothing
+  and fails, naming the file and the way out,
+  `git rm -r --cached .statute/site`. Outside a git repository there is
+  nothing to commit and nothing to ask.
+- **The index** has the four kinds of source
+  ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
+  sections: global public, global private, local public and local
+  private. Each lists its sources, and each source its tree of domains
+  with every node, enabled or not: its reference, title and status, and
+  whether this rule set enables it, overrides it or leaves it out. A
+  filter by kind of source, one that hides the rules the rule set does
+  not enable, and one that shows superseded and repealed nodes, hidden
+  by default, work through check boxes and the style sheet alone.
+- **The kind of a source** follows its two properties: local for the
+  repository's own `rules/` (`L`) and a source with `scope = "local"`,
+  global for any other, the global configuration's included; public as
+  the source declares it, and for `L` as the rule set does. A source
+  at `.`, as `R = { path = "." }` in this repo, is first-party and so
+  global public, and is the repository's own rules as well: it is
+  listed once, as global public, and the local public section says so
+  and links there.
+- **One page per node**, `<source>/<id>.html`: the statement, reason,
+  verification and applicability; `requires`, `conflicts`, `overrides`
+  and the successors; the path of parents and the children. A domain's
+  page is the list of its nodes. A citation of a rule is a link to its
+  page, and one of the constitution the provision's label, as in the
+  compiled `AGENTS.md`. The pages are in the language of
+  `[compile] lang`, the kind of each node included; a status is shown
+  as the rule file writes it, `draft` or `trial`.
 
 ## Why Rust
 
