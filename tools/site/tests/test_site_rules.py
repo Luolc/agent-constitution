@@ -44,7 +44,8 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
     self.assertEqual(
-      nodes[5]["children"], [{"id": 6, "label": "R6", "title": "Rule 6"}]
+      nodes[5]["children"],
+      [{"id": 6, "label": "R6", "title": "Rule 6", "key": "6"}],
     )
 
   def test_subdomain(self):
@@ -91,8 +92,8 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       nodes[4]["supersededBy"],
       [
-        {"id": 5, "label": "R5", "title": "Rule 5"},
-        {"id": 6, "label": "R6", "title": "Rule 6"},
+        {"id": 5, "label": "R5", "title": "Rule 5", "key": "5"},
+        {"id": 6, "label": "R6", "title": "Rule 6", "key": "6"},
       ],
     )
     self.assertEqual(nodes[4]["text"]["statement"], "Old.")
@@ -113,7 +114,9 @@ class SiteRulesTest(unittest.TestCase):
         self.assertEqual(zh[node_id]["translations"], [])
         self.assertEqual(zh[node_id]["title"], f"Rule {node_id}")
     self.assertEqual(zh[5]["supersededBy"], [])
-    self.assertEqual(zh[3]["parent"], {"id": 2, "label": "R2", "title": "组 2"})
+    self.assertEqual(
+      zh[3]["parent"], {"id": 2, "label": "R2", "title": "组 2", "key": "2"}
+    )
 
   def test_citations_are_links(self):
     en, zh = self.nodes("en"), self.nodes("zh")
@@ -178,9 +181,9 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       within["one"],
       [
-        {"id": 3, "label": "R3", "title": "规定 3"},
-        {"id": 5, "label": "R5", "title": "Rule 5"},
-        {"id": 6, "label": "R6", "title": "Rule 6"},
+        {"id": 3, "label": "R3", "title": "规定 3", "key": "3"},
+        {"id": 5, "label": "R5", "title": "Rule 5", "key": "5"},
+        {"id": 6, "label": "R6", "title": "Rule 6", "key": "6"},
       ],
     )
 
@@ -188,13 +191,18 @@ class SiteRulesTest(unittest.TestCase):
     nodes = self.nodes("en")
     self.assertEqual(
       nodes[5]["conflicts"],
-      [{"id": 3, "label": "R3", "title": "Rule 3"}, {"ref": "team:7"}],
+      [
+        {"id": 3, "label": "R3", "title": "Rule 3", "key": "3"},
+        {"ref": "team:7"},
+      ],
     )
     self.assertEqual(
-      nodes[3]["conflicts"], [{"id": 5, "label": "R5", "title": "Rule 5"}]
+      nodes[3]["conflicts"],
+      [{"id": 5, "label": "R5", "title": "Rule 5", "key": "5"}],
     )
     self.assertEqual(
-      nodes[5]["requires"], [{"id": 3, "label": "R3", "title": "Rule 3"}]
+      nodes[5]["requires"],
+      [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
     )
     self.assertEqual(nodes[6]["conflicts"], [])
 
@@ -221,6 +229,89 @@ class SiteRulesTest(unittest.TestCase):
     (self.root / "rules/6.toml").write_text("id = 6\n", encoding="utf-8")
     self.assertEqual(
       site_rules.main(["--root", str(self.root), "--out", str(out)]), 1
+    )
+
+  def other(self, enabled=None):
+    errors = Errors()
+    src = load(self.root, errors)
+    assert src is not None, errors
+    demo = self.root / "demo"
+    site_fixture.write_other(demo)
+    other = site_rules.load_source(demo, "demo", "global-private", src, errors)
+    self.assertEqual(list(errors), [])
+    return site_rules.site_data(src, [other], enabled)
+
+  def test_one_source(self):
+    """Alone, this repo's nodes have no source heading and no `enabled`."""
+    self.assertEqual(
+      self.data["en"]["sources"], [{"name": "R", "quadrant": "global-public"}]
+    )
+    nodes = self.nodes("en")
+    self.assertEqual([g["key"] for g in nodes[3]["groups"]], ["1", "2"])
+    self.assertNotIn("enabled", nodes[3])
+    self.assertEqual(
+      (nodes[3]["key"], nodes[3]["source"], nodes[3]["quadrant"]),
+      ("3", "R", "global-public"),
+    )
+
+  def test_other_source(self):
+    """A second source follows, its nodes linked across the two."""
+    data = self.other(enabled={"R3", "demo:2"})["en"]
+    self.assertEqual(
+      data["sources"],
+      [
+        {"name": "R", "quadrant": "global-public"},
+        {"name": "demo", "quadrant": "global-private"},
+      ],
+    )
+    self.assertEqual(
+      [n["label"] for n in data["nodes"]],
+      ["R1", "R2", "R3", "R4", "R5", "R6", "demo:1", "demo:2"],
+    )
+    nodes = {n["label"]: n for n in data["nodes"]}
+    demo = nodes["demo:2"]
+    self.assertEqual(
+      (demo["key"], demo["source"], demo["quadrant"]),
+      ("demo-2", "demo", "global-private"),
+    )
+    self.assertEqual(
+      [(g["key"], g["kind"]) for g in demo["groups"]],
+      [("source-demo", "source"), ("demo-1", "domain")],
+    )
+    self.assertEqual(
+      [g["key"] for g in nodes["R3"]["groups"]], ["source-R", "1", "2"]
+    )
+    self.assertEqual(
+      demo["requires"],
+      [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
+    )
+    self.assertEqual(
+      demo["text"]["statement"],
+      "After [rule R3](../3/), see [rule demo:2](../demo-2/).",
+    )
+    self.assertEqual(
+      nodes["demo:1"]["applicability"], "For every repository; see rule 3."
+    )
+    self.assertEqual(
+      [(label, nodes[label].get("enabled")) for label in ("R1", "R3", "R5")]
+      + [("demo:2", demo.get("enabled"))],
+      [("R1", None), ("R3", True), ("R5", False), ("demo:2", True)],
+    )
+    self.assertEqual(
+      [r["label"] for r in data["citedBy"]["one-a"]], ["R3", "demo:2"]
+    )
+
+  def test_main_with_another_source(self):
+    out = self.root / "web/data/rules.json"
+    site_fixture.write_other(self.root / "demo")
+    lock = self.root / "statute.lock"
+    lock.write_text('[[rules]]\nrule = "demo:2"\n', encoding="utf-8")
+    args = ["--root", str(self.root), "--out", str(out)]
+    args += ["--source", f"demo:global-private:{self.root / 'demo'}"]
+    self.assertEqual(site_rules.main([*args, "--enabled", str(lock)]), 0)
+    self.assertEqual(
+      json.loads(out.read_text(encoding="utf-8")),
+      self.other(enabled={"demo:2"}),
     )
 
 

@@ -325,15 +325,18 @@
 }
 .design [id] { scroll-margin-top: 1rem; }
 
-/* The rules' pages, set as the design's. The list: under a domain's or
-   one-of's heading, each rule a block linked as a whole, its ID in a
-   narrow column at the left in the muted color, its statement cut to
-   three lines; a rule under another rule indented by its depth below
-   its domain. The page of one rule: its notes between rules as on an
-   untranslated design page, the statement a little larger, the
+/* The rules' pages, set as the design's. The list, dense: under a
+   domain's or one-of's heading, smaller than the design's and close to
+   its rules, its label muted, each rule one line linked as a whole, its
+   ID in a narrow column at the left in the muted color, its title cut
+   to the line, then its tags; a rule under another rule indented by its
+   depth below its domain. The page of one rule: its notes between rules
+   as on an untranslated design page, the statement a little larger, the
    relations and metadata in two columns. */
 .rules .rules-intro { color: var(--c-muted); }
-.rules .rules-group { margin-bottom: .4em; }
+.rules .rules-group { margin: 1.2em 0 .2em; font-size: 1.05em; }
+.rules :is(h3, h4).rules-group { margin-top: .8em; font-size: 1em; }
+.rules .rules-group .group-label { color: var(--c-muted); font-variant-numeric: tabular-nums; }
 /* The form above the list, in the muted color: the filter, a button
    that folds open a panel of checkboxes over the list, and the page
    size; the links to the pages below the list, the current page bold.
@@ -410,36 +413,51 @@
 .rules .rules-pager a { flex: none; width: auto; text-decoration: none; }
 .rules .rules-pager a[aria-current] { font-weight: var(--c-weight-bold); color: var(--c-ink); }
 .rules h1 .rule-label { color: var(--c-muted); font-variant-numeric: tabular-nums; }
-.rules .rule-status {
+/* A rule's tags after its title, small and muted, in boxes: its status;
+   whether the rule set enables it, in the accent color when it does;
+   the quadrant of its source on the quadrant's color, a blue, an orange,
+   a green and a purple mixed into the page's background. */
+.rules :is(.rule-status, .rule-enabled, .quadrant) {
   flex: none;
   color: var(--c-muted);
-  font-size: .8em;
+  font-size: .75em;
+  line-height: 1.4;
   border: 1px solid var(--c-rule);
   border-radius: .25em;
   padding: 0 .3em;
+  white-space: nowrap;
 }
+.rules .rule-enabled:not(.off) { color: var(--c-accent); }
+.rules .quadrant { color: var(--c-ink); border-color: transparent; background: color-mix(in srgb, var(--q) 30%, var(--c-paper)); }
+.rules .quadrant-global-public { --q: #3b82f6; }
+.rules .quadrant-global-private { --q: #f59e0b; }
+.rules .quadrant-local-public { --q: #22c55e; }
+.rules .quadrant-local-private { --q: #a855f7; }
+.rules .rules-group .quadrant { font-size: .8em; }
+.rules .rule-tags { display: flex; flex-wrap: wrap; gap: .4em; margin: -.5em 0 1em; }
 .rules .rules-none { color: var(--c-muted); }
 .book-toc li[style] { padding-inline-start: calc(var(--level, 0) * 1em); }
 .rules a.rule-entry[href] {
   display: flex;
-  gap: .8em;
+  gap: .5em;
   align-items: baseline;
-  margin: .5em 0 .5em calc(var(--indent, 0) * 1.6em);
+  margin: 0 0 0 calc(var(--indent, 0) * 1.6em);
+  line-height: 1.6;
   text-decoration: none;
 }
-.rules a.rule-entry[href]:hover .rule-statement { color: var(--c-accent); }
+.rules a.rule-entry[href]:hover .rule-title { color: var(--c-accent); }
 .rules .rule-id {
-  flex: 0 0 2.6em;
+  flex: none;
+  min-width: 2.6em;
   text-align: end;
   color: var(--c-muted);
   font-variant-numeric: tabular-nums;
 }
-.rules .rule-statement {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+.rules .rule-title {
+  min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .rules .rule-note {
   border-block: 1px solid var(--c-rule);

@@ -1,7 +1,7 @@
 {{- /* A node named in a rule's data: a link to its page with its label
   and title, or, for a node of another source, its reference as written. */ -}}
-{{- with .id -}}
-<a href="../{{ int . }}/">{{ $.label }} {{ $.title }}</a>
+{{- with .key -}}
+<a href="../{{ . }}/">{{ $.label }} {{ $.title }}</a>
 {{- else -}}
 <code>{{ .ref }}</code>
 {{- end -}}
