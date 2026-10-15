@@ -581,9 +581,9 @@ rule is enabled:
   the rule set.
 - An overriding rule has no `default`, so it comes in only when the rule
   set enables it: lists it in `rules`, takes it in a pack, or enables a
-  rule that requires it. A rule of the repository's own rules, or of a
-  source with `scope = "local"`, that has `overrides` and that nothing
-  enables gets a warning that names it and says to list it in `rules`.
+  rule that requires it. One of the repository's own rules that nothing
+  enables gets a warning
+  ([The directory of local rules](rule-config.md#the-directory-of-local-rules)).
 
 **The lock file** records the overridden rule as it records any other,
 with one more field:

@@ -170,6 +170,13 @@ impl Project {
         locked.extend(own);
         let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
         diags.0.retain(|d| !given.0.contains(d));
+        // What the public rule set alone does not find, the private layer
+        // brings about.
+        for d in &mut diags.0 {
+            if d.file == manifest::FILE {
+                d.file.clone_from(&shown);
+            }
+        }
         let Some(combined) = combined else {
             return (None, diags);
         };

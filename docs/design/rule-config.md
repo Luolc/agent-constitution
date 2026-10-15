@@ -54,6 +54,12 @@ local-rules = "policy/agents"
   `.github/workflows/`. `.statute/rules/` is committed; `.statute/`
   lists only the files statute generates as ignored
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+- A rule there, or in a source with `scope = "local"`, exists for this
+  rule set alone, so one that nothing enables is most likely a slip, an
+  overriding rule above all, which has no `default`. statute warns about
+  it, naming the rule and the entry of `rules` that would compile it.
+  It does not warn about a rule that is superseded or repealed, one
+  that `exclude` turns off, or an option of a one-of.
 - Only `statute.toml` sets it. It describes the repository's layout,
   which every machine and CI share, so the global configuration has no
   such key, and the private rule set neither, since the private layer

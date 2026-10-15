@@ -640,23 +640,30 @@ pub fn resolve(
         }
     }
 
-    // An overriding rule has no `default`, so the repository's own one is
-    // left out unless the rule set enables it.
+    // A rule of the repository's own exists for this rule set alone; one
+    // that nothing enables is most likely a slip, an overriding rule
+    // above all, which has no `default`. Superseded and repealed rules,
+    // those `exclude` turns off and the options of a one-of stay out by
+    // choice.
     for (key, node) in sources.nodes() {
-        let Some(target) = sources.overrides(&key) else {
-            continue;
-        };
-        if sources.rank(&key.source) == 3
+        if node.kind == Kind::Rule
+            && sources.rank(&key.source) == 3
             && !matches!(node.status, Status::Superseded | Status::Repealed)
             && !res.enabled.contains_key(&key)
             && !sw.excluded(&key)
+            && !sources
+                .parent(&key)
+                .is_some_and(|p| sources.get(&p).is_some_and(|n| n.kind == Kind::OneOf))
         {
+            let place = match sources.overrides(&key) {
+                Some(target) => format!(" in place of {target}"),
+                None => String::new(),
+            };
             diags.warning(
                 file,
                 format!(
-                    "rule {} overrides {}, and nothing in the rule set enables it, so it is compiled nowhere; list \"{}\" in `rules`",
+                    "rule {} is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"{}\" in `rules` to compile it{place}",
                     label(sources, &key),
-                    label(sources, &target),
                     Manifest::entry(&key)
                 ),
             );

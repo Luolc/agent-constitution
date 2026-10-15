@@ -1,4 +1,4 @@
-<!-- en-sha256: e6091436d6febe8c67f3b8ce0a5e2d99b2514660c3076808abee7557f02e1c51 -->
+<!-- en-sha256: f932e22bd6954a53edc81dbe782a4797121d5f3dd8054e6f27cdd3e54a859991 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -232,7 +232,7 @@ error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; 
 - 覆盖只在覆盖方启用的地方生效：规定清单按路径分了段的，只在启用它的那几段里生效。
 - 启用的两条规定覆盖同一条规定，构建失败，报错里写出这两条。
 - 覆盖方要顶替的那条规定没有被任何东西启用时，覆盖方编译在那条规定本该出现的位置，并给出警告，说那条规定不在规定清单里。
-- 覆盖方没有 `default`，只有规定清单启用它时才进来：在 `rules` 里列出它、经 pack 取进它，或启用一条 requires 它的规定。本仓自己的规定、或 `scope = "local"` 的源里的规定带 `overrides` 却没有被任何东西启用时，给出警告，点名这条规定，并提示把它列进 `rules`。
+- 覆盖方没有 `default`，只有规定清单启用它时才进来：在 `rules` 里列出它、经 pack 取进它，或启用一条 requires 它的规定。本仓自己的规定没有被任何东西启用时给出警告 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))。
 
 **锁文件**像记录其他规定一样记录被覆盖的规定，多一个字段：
 

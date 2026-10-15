@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, rule, set_default};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -819,7 +819,7 @@ fn a_public_rule_overrides_a_rule_only_the_private_layer_brings_in() {
             assert!(!full.contains("- R6 "), "{full}");
         } else {
             assert!(
-                run.stderr.contains("statute.toml: warning: rule L7 (Rule 7) overrides R6 (Rule 6), and nothing in the rule set enables it, so it is compiled nowhere; list \"7\" in `rules`\n"),
+                run.stderr.contains("statute.toml: warning: rule L7 (Rule 7) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"7\" in `rules` to compile it in place of R6\n"),
                 "{}",
                 run.stderr
             );
@@ -827,4 +827,32 @@ fn a_public_rule_overrides_a_rule_only_the_private_layer_brings_in() {
             assert!(full.contains("\n- R6 Do the thing 6.\n"), "{full}");
         }
     }
+}
+
+#[test]
+fn a_finding_of_the_private_layer_names_the_private_rule_set() {
+    let dir = ignoring("private-finding");
+    // me:9 is on in me:1, which is on: the private layer's defaults
+    // enable it.
+    set_up(&dir);
+    write(&dir, "me/rules/1.toml", &set_default(domain(1), "\"on\"").1);
+    write(
+        &dir,
+        "me/rules/9.toml",
+        &set_default(rule(9, 1, ""), "\"on\"").1,
+    );
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:9\"]"),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains(&format!(
+            "{}: warning: `rules` lists me:9 (Rule 9), which the defaults enable; take it out\n",
+            common(&dir).join("private.toml").display()
+        )),
+        "{}",
+        run.stderr
+    );
 }
