@@ -137,6 +137,20 @@ fn ok(run: &Run) {
     );
 }
 
+/// The last line of `compile --private-only` when it writes nothing.
+const NOT_WRITTEN: &str = "statute: error: the private output is not written; `statute compile` writes it, or says what to fix\n";
+
+/// Exit status 1, with the line that says nothing was written.
+#[track_caller]
+fn failed(run: &Run) {
+    assert_eq!(
+        run.code, 1,
+        "stdout: {}\nstderr: {}",
+        run.stdout, run.stderr
+    );
+    assert!(run.stderr.ends_with(NOT_WRITTEN), "{}", run.stderr);
+}
+
 /// Nothing printed and nothing written below `.statute/`.
 #[track_caller]
 fn silent(run: &Run, dir: &Path) {
@@ -249,7 +263,7 @@ fn a_new_worktree_gets_the_private_output_without_the_network() {
 }
 
 #[test]
-fn a_commit_missing_from_the_cache_is_a_warning_and_nothing_is_fetched() {
+fn a_commit_missing_from_the_cache_fails_and_nothing_is_fetched() {
     let w = world("missing");
     // The cache is gone, and the source's address leads nowhere.
     std::fs::remove_dir_all(w.home.join(".cache")).unwrap();
@@ -289,10 +303,10 @@ fn a_commit_missing_from_the_cache_is_a_warning_and_nothing_is_fetched() {
     let path = format!("{}:{}", bin.display(), std::env::var("PATH").unwrap());
     let tree = w.worktree("other");
     let run = w.run_with(&tree, &["compile", "--private-only"], &[("PATH", &path)]);
-    ok(&run);
+    failed(&run);
     assert!(
         run.stderr.contains(&format!(
-            "statute: warning: statute.toml: error: source `me` ({}): commit ",
+            "statute: error: statute.toml: error: source `me` ({}): commit ",
             gone.display()
         )) && run.stderr.contains(
             "which the lock file records, is not in statute's cache, and nothing is fetched"
@@ -300,11 +314,7 @@ fn a_commit_missing_from_the_cache_is_a_warning_and_nothing_is_fetched() {
         "{}",
         run.stderr
     );
-    assert!(
-        run.stderr.ends_with("statute: warning: the private output is not written; `statute compile` writes it, or says what to fix\n"),
-        "{}",
-        run.stderr
-    );
+    assert!(run.stderr.ends_with(NOT_WRITTEN), "{}", run.stderr);
     assert!(!tree.join(".statute").exists());
     assert!(tree.join("CLAUDE.local.md").symlink_metadata().is_err());
     let calls = std::fs::read_to_string(&log).unwrap();
@@ -348,7 +358,7 @@ fn nothing_to_compile_is_silent() {
 }
 
 #[test]
-fn what_compile_would_fail_on_is_a_warning() {
+fn what_compile_would_fail_on_fails_it() {
     let w = world("warnings");
     let tree = w.worktree("other");
     // R2 changed since the lock file.
@@ -359,9 +369,9 @@ fn what_compile_would_fail_on_is_a_warning() {
         &r2.replace("Do the thing 2.", "Do the thing 2 well."),
     );
     let run = w.run(&tree, &["compile", "--private-only"]);
-    ok(&run);
+    failed(&run);
     assert!(
-        run.stderr.starts_with("statute: warning: statute.lock is not what statute.toml and the rules give now; run `statute lock` first\n"),
+        run.stderr.starts_with("statute: error: statute.lock is not what statute.toml and the rules give now; run `statute lock` first\n"),
         "{}",
         run.stderr
     );
@@ -370,11 +380,11 @@ fn what_compile_would_fail_on_is_a_warning() {
     write(&tree, "r/rules/2.toml", &r2);
     write(&w.repo, ".git/info/exclude", "");
     let run = w.run(&tree, &["compile", "--private-only"]);
-    ok(&run);
+    failed(&run);
     assert!(
         run.stderr.contains("add these lines to")
             && run.stderr.contains(
-                "statute: warning: CLAUDE.local.md, AGENTS.override.md: git must ignore these links"
+                "statute: error: CLAUDE.local.md, AGENTS.override.md: git must ignore these links"
             ),
         "{}",
         run.stderr

@@ -107,6 +107,12 @@ lands.
   file names the directory it applies to.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
+- Picking another option of a one-of in the private layer: when
+  `private.toml` lists an option other than the one `statute.toml`
+  picks in `rules` or `domains`, both are enabled and the build fails
+  ([In the rule set](rule-config.md#in-the-rule-set)). Whether the
+  private layer's choice should replace the public one in the private
+  output is not decided.
 - A switch that enables only stable rules: statute has none. Whether to
   build one, and what it would do with a domain enabled for its stable
   rules that also holds trial ones, is not decided.

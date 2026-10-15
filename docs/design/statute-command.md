@@ -190,7 +190,8 @@ The rule set is `statute.toml`, the lock file
 - `compile`: write the compiled output
   ([Compilation and the site](#compilation-and-the-site)); with
   `--private-only`, only the private output, for a git hook in a new
-  worktree, without the network and never failing
+  worktree, without the network, and failing when it does not write a
+  private output it should
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
   A new worktree); with `--check`, nothing, failing when the committed
   output differs from a fresh compile;
@@ -377,7 +378,9 @@ file. It prints the path of `index.html`.
   ([Compilation and the site](#compilation-and-the-site)), in a table
   of rules ([Frontend](frontend.md#components)): a row
   per rule, its reference, title, marks and whether this rule set
-  enables it, overrides it or leaves it out, under a group row that
+  enables it, overrides it or leaves it out, with both layers: a rule
+  only the private rule set enables is marked enabled, and one its
+  `exclude` turns off is marked left out, under a group row that
   names its source and domains; a one-of is a box that holds its
   options, the default marked. All of them are on the one page. A rule's
   row also holds its statement, under its title, a size smaller and
