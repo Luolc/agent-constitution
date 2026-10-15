@@ -1,13 +1,16 @@
 {{- /* The list of the rules, in the order of the parent tree, one line
   each: the rule's label, its title, cut to the line by the style sheet,
-  its status and whether the defaults enable it (and, for an option of a
-  one-of, whether it is the default one), all linked to its page; when
-  the site has a rule set,
-  whether it enables the rule, and when it has more than one source, the
-  quadrant of the rule's source. A rule under another rule is indented
-  under it. Domains and one-ofs are not listed but head the rules below
-  them, each with its label and whether the defaults enable it, a level
-  deeper for each domain or one-of above them: a heading where a rule's group at that level differs from
+  its status and whether the defaults enable it, all linked to its page;
+  when the site has a rule set, whether it enables the rule, and when it
+  has more than one source, the quadrant of the rule's source. A one-of
+  stands in its domain's list as a box: its label and title after "One
+  of", its status and whether the defaults enable it, and a line for each
+  option, the default marked; a rule that is an option is not listed
+  again but filtered with its box, which carries the one-of's status,
+  domain and switch and the `uses` of its options. Domains are not
+  listed but head the rules below them, each with its label and whether
+  the defaults enable it, a level deeper for each domain above them: a
+  heading where a rule's group at that level differs from
   the one of the rule shown before it, and on each page above its first
   rule. With more than one source, each source heads its rules, as its
   quadrant and name, a level above its domains.
@@ -27,7 +30,7 @@
   default filter, and the form stays hidden. A heading shown has the id
   `group-<key>`, which the table of contents at the right links. */ -}}
 {{ define "main" }}
-{{- $all := where .Pages "Params.rule.kind" "rule" }}
+{{- $all := where (where .Pages "Params.rule.kind" "in" (slice "rule" "one-of")) "Params.rule.boxed" "ne" true }}
 {{- $statuses := site.Params.rulesStatuses }}
 {{- $size := site.Params.rulesPerPage }}
 {{- $pager := .Paginate (where $all "Params.rule.status" "in" $statuses) $size }}
@@ -61,7 +64,7 @@
 <fieldset><legend>{{ i18n "rules-domains" }}</legend>
   {{- range where .Pages "Params.rule.kind" "domain" }}
     {{- $domain := .Params.rule }}
-<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.parent }} data-parent="{{ .key }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
+<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.domain }} data-parent="{{ . }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
   {{- end }}
 </fieldset>
 {{- if $many }}
@@ -91,7 +94,7 @@
     {{- $on = and (ge $k $first) (lt $k $end) }}
     {{- $k = add $k 1 }}
   {{- end }}
-<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}" data-uses="{{ delimit $rule.uses " " }}" data-default="{{ cond (eq $rule.onByDefault true) "on" "off" }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
+<div class="rule-item{{ if eq $rule.kind "one-of" }} one-of-box{{ end }}" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}" data-uses="{{ delimit (or $rule.optionUses $rule.uses) " " }}" data-default="{{ cond (eq $rule.onByDefault true) "on" "off" }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
   {{- $changed := false }}
   {{- range $j, $group := $rule.groups }}
     {{- $changed = or $changed (ge $j (len $previous)) (ne (index $previous $j).key $group.key) }}
@@ -106,7 +109,22 @@
   {{- end }}
   {{- if $on }}{{ $previous = $rule.groups }}{{ end }}
   {{- $nested := len (where $rule.groups "kind" "ne" "source") }}
-<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth $nested)) | safeCSS }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ $rule.title | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>
+  {{- $indent := printf "--indent: %d" (int (sub $rule.depth $nested)) | safeCSS }}
+  {{- if eq $rule.kind "one-of" }}
+<div class="one-of" style="{{ $indent }}">
+<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ i18n "one-of" }}{{ $rule.titleInLink | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>{{ partial "rules/default.html" $rule }}</a>
+<ul class="one-of-options">
+    {{- range $rule.options }}
+      {{- $page := site.GetPage (printf "/rules/%s" .key) }}
+      {{- $option := $page.Params.rule }}
+<li><a class="rule-entry" href="{{ $page.RelPermalink }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ $option.titleInLink | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $option.status) }}</span>{{ partial "rules/default.html" $option }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
+    {{- end }}
+</ul>
+</div>
+</div>
+    {{- continue }}
+  {{- end }}
+<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ $indent }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ $rule.titleInLink | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>
   {{- partial "rules/default.html" $rule }}
   {{- partial "rules/enabled.html" $rule }}
   {{- if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" "") }}{{ end -}}

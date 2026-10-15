@@ -164,8 +164,14 @@ pub fn compile(project: &Project) -> Result<Output, String> {
     let agents_md = agents_md(project, true)?;
     let mut skills: Vec<(String, PathBuf)> = Vec::new();
     let mut from: Vec<&str> = Vec::new();
+    // The `skills/` at the top belong to the source there, if any; the
+    // repository's own rules then have none.
+    let here = project.manifest.sources.iter().any(|s| s.is_here());
     for source in project.sources.iter() {
         let spec = project.manifest.spec(&source.name);
+        if spec.is_none() && here {
+            continue;
+        }
         let label = spec.map_or_else(|| source.path.clone(), |spec| spec.shown(""));
         for s in skill::load(&project.root.join(&source.path), &label)? {
             let below = format!("skills/{}/SKILL.md", s.name);

@@ -11,7 +11,8 @@ web`, once `uv run site-rules` has written the rules' data (Rules,
 below). CI runs four steps on every pull request and push: `uv run
 site-rules`, `uv run count-tokens` (the token count, below),
 `hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning`, and
-`uv run check-site-anchors site`, the link check. The workflow
+`uv run check-site-anchors site`, the link check, and then takes the
+screenshots (Screenshots, below). The workflow
 `.github/workflows/pages.yml` publishes the site to GitHub Pages at
 `https://agent-constitution.luolc.com/`, which it passes to Hugo as
 `--baseURL`.
@@ -162,10 +163,19 @@ site-rules`, `uv run count-tokens` (the token count, below),
   and "Default option" for the default option of a one-of), linked to
   its page; then, with `--enabled`, whether it is enabled, and with more than one source,
   the quadrant of its source, each a small tag. A rule under another rule
-  is indented under it. Domains and one-ofs are not listed but head the
-  rules below them, each with its label (`R13`) and whether the
+  is indented under it. A one-of stands in its domain's list as a box
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)): its label and
+  title after "One of:", its status and whether the defaults enable it,
+  then a line for each option with its tags, the default marked; a rule
+  that is an option stands in that box only. An option that is a
+  domain is a line of the box too, and its rules stay in the list under
+  its heading, a level below its one-of's domain: no one-of heads a
+  group, so the one-of is not repeated as a heading. The filter treats the box
+  as one entry, with the one-of's status, domain and switch and the
+  `uses` of its rule options. Domains are not listed but head the rules
+  below them, each with its label (`R13`) and whether the
   defaults enable it, a level deeper for each
-  domain or one-of above them, a subdomain under its domain's heading,
+  domain above them, a subdomain under its domain's heading,
   where the group changes and again at the top of each page; with more
   than one source, each source heads its rules, as its quadrant and
   name, a level above its domains. Above the list, a filter folds open a
@@ -230,9 +240,12 @@ site-rules`, `uv run count-tokens` (the token count, below),
   the outputs write it in the text's language ("English", 「英文」),
   marked as a value: a link to the parameter's entry on its source's
   page of parameters, the parameter's name as its title, shown on hover;
-  in a code span the span becomes HTML around the link. A title, which
-  the list and other pages show inside a link, gets the value alone, and
-  is marked only on the rule's own page. Each source with parameters has
+  in a code span the span becomes HTML around the link. A title stands
+  inside a link in the list and in a one-of's box, so there the value
+  is marked as a span with the parameter's name as its title, escaped,
+  and not linked; on the rule's own page it is marked and linked as in
+  the text, and elsewhere, in a node named on a page, the value stands
+  alone. Each source with parameters has
   that page, `rules/params/` for this repo's, `rules/<name>-params/` for
   another's (`web/layouts/_partials/rules/params.html`), linked above
   the list: each parameter under a heading of its title, anchored by its
@@ -428,3 +441,26 @@ site-rules`, `uv run count-tokens` (the token count, below),
   is not a commit hook, and the tests of the templates
   (`test_site.py`, which builds a made-up constitution and design) are
   skipped without it, except in CI; CI installs Hugo before the tests.
+- Screenshots: `uv run site-screenshots [<dir>] [--out <dir>] [--page
+  <path> ...]` (`tools/site`) serves a built site, `site/` by default,
+  on a free local port and takes, with headless Google Chrome, one
+  screenshot of each page path per color scheme, light and dark, and
+  width, desktop (1280 by 900 pixels) and mobile (390 by 844): one
+  Chrome run each, one after the other, each with a fresh profile and
+  `--no-proxy-server`, the window's view only, not the whole page. The
+  file of a page is named by its path, the scheme and the width
+  (`zh-rules-79.dark.mobile.png`, `index.light.desktop.png` for `/`),
+  in `site-screenshots/` by default, which is not committed. The script
+  knows nothing of Hugo: its input is a directory and paths, a language
+  is a path prefix (`/zh/`), and without `--page` it takes the
+  constitution, the list of rules and two rules (rule 79, a one-of, and
+  rule 132, with code in its title), in English and Chinese. Dark is
+  Chrome's `--force-dark-mode`, which makes the preferred color scheme
+  dark; it works because the theme switch (`web/assets/theme.js`)
+  follows that scheme until the reader picks a theme, which a fresh
+  profile never has. This is the one place the script depends on the
+  site's theme, written in `SCHEMES` in the script. CI takes the
+  screenshots after the link check, with the runner's Google Chrome
+  (listed in the ubuntu-24.04 image, read 2026-10-14), and uploads them
+  as the artifact `site-screenshots` of the run. They are for a person
+  or a reviewer to look at; nothing compares them with earlier ones.
