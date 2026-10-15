@@ -1,0 +1,42 @@
+id = 157
+slug = "project-skills-stay-in-repo"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 149
+authority = ["independent-review"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Do not install project skills into a user-level skills directory"
+zh = "项目 skill 不装到用户级的 skill 目录"
+
+[text.statement]
+en = "Install a project's skills only inside the project, never into a user-level skills directory."
+zh = "项目的 skill 只装在项目内，不装到用户级的 skill 目录。"
+
+[text.reason]
+en = '''
+A skill in a user-level directory takes effect in every project, and shadows a project skill of the same name. A project's skill installed there acts in other projects too, though it was reviewed only as closely as its own project asks ({@constitution:independent-review}).
+'''
+zh = '''
+用户级目录里的 skill 在每个项目里都生效，还会盖掉同名的项目 skill。一个项目的 skill 装进去，就在别的项目里也起作用，而审查它的力度只照它自己的项目定 ({@constitution:independent-review})。
+'''
+
+[text.verification]
+en = '''
+A user-level skills directory is one from which an agent tool loads skills in every project, for example `~/.claude/skills` or `~/.agents/skills`.
+
+Violated when a project's skill (a file, a directory or a symlink) is put in such a directory.
+'''
+zh = '''
+用户级的 skill 目录，指 agent 工具在每个项目里都会从中加载 skill 的目录，例如 `~/.claude/skills` 或 `~/.agents/skills`。
+
+这类目录里出现了某个项目的 skill (文件、目录或软链) 的，即为违反本规定。
+'''
+
+[translations]
+zh = "8501d84bc5d7bf1e6362692eb155ae0f87246e92fa8f5a63680aecfd64fa6803"

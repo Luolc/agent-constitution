@@ -1,0 +1,3 @@
+{{- /* Whether the rule set enables a rule, when the site has one: takes
+  the rule's data. */ -}}
+{{- if isset . "enabled" }}{{ if .enabled }}<span class="rule-enabled">{{ i18n "rule-enabled" }}</span>{{ else }}<span class="rule-enabled off">{{ i18n "rule-not-enabled" }}</span>{{ end }}{{ end -}}
