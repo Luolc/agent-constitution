@@ -44,7 +44,7 @@ revision of the constitution. A rule's status is one of `draft`,
 is while the constitution is a draft; once the constitution is active, a
 new rule starts as `trial`, a rule still being tried on real work, and
 moves to `active` once it is stable (what the two mean and who moves a
-rule are in [Trial rules](rule-checks.md#trial-rules)), and `draft` stays only for a
+rule are in [Trial rules](rule-checks.md#trial-rules)). `draft` stays only for a
 rule that is not meant for real work yet, such as the canary rule in
 [Checkers](checkers.md). Moving a rule
 from `draft` to `trial` changes only its status, not what counts as

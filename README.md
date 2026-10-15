@@ -56,7 +56,8 @@ short enough to be checked. Rules hang under domains such as security,
 collaboration, verification and documentation, and each one cites the
 provisions of the constitution it refines. A rule starts as `trial`, and
 so does a convention that agents write down when they find a gap no rule
-covers; it becomes `active` once it has held up in real work. A rule is
+covers; it becomes `active`, stable and ready to use as it is, once a
+principal judges it so. A rule is
 never deleted: it is superseded or repealed.
 
 The format, the rule tree, packs and the review loop are in
