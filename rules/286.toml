@@ -1,8 +1,8 @@
 id = 286
 slug = "shell-text-through-a-quoted-heredoc"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 284
 authority = ["evidence.facts", "secure-authoring"]
