@@ -1,7 +1,7 @@
 # The static site: in each language, the constitution and its version
 # for agents, made by content/_content.gotmpl from
 # constitution.<lang>.md and constitution.<lang>.agent.md, the files
-# constitution-build generates; the rules, made by
+# `statute constitution build` generates; the rules, made by
 # content/rules/_content.gotmpl from data/rules.json, which
 # `uv run site-rules` writes; and the design.
 # `hugo-0.167.0 -s web` builds it into site/, after `uv run site-rules`,
@@ -131,8 +131,8 @@ enableRobotsTXT = false
   # Linked in the sidebar, under the site's title.
   SourceRepo = "https://github.com/Luolc/agent-constitution"
   # The asterisk after a provision the version for agents leaves out, as
-  # the compiler writes it (OMITTED_MARK in
-  # tools/compiler/src/constitution_compiler/render.py).
+  # the constitution's build writes it (OMITTED_MARK in
+  # crates/statute/src/constitution/render.rs).
   omittedMark = '<sup class="omitted">*</sup>'
   # The model count-tokens counts the tokens for, and its name in
   # the popup on the counts.

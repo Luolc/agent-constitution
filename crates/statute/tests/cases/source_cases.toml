@@ -3,12 +3,10 @@
 # and `subdomain`, domain 4 under domain 2. Only what one source can tell
 # is checked here (docs/design/rule-sources.md, Overrides and
 # Subdomains): a reference to another source, `team:7`, is checked for
-# its form alone. The compiler (test_rule_tree.py) builds the source with
-# each node. A case that fails draws errors on rules/20.toml and on no
-# other file, among them one holding its `compiler` text, and in statute
-# (crates/statute/tests/subdomains.rs) one holding its `statute` text.
-# statute reads node 20 as one of a repository's own rules;
-# `statute-passes` gives its outcome where that differs.
+# its form alone. statute (subdomains.rs) reads node 20 as one of a
+# repository's own rules; a case that fails draws errors on
+# rules/20.toml and on no other file, among them one holding its
+# `statute` text.
 
 subdomain = """
 id = 4
@@ -115,7 +113,6 @@ en = "Violated when not."
 [[cases]]
 name = "a one-of under a domain of another source"
 passes = false
-compiler = "a one-of's `parent` `team:7` is not the number of a node of this source"
 statute = "a one-of's `parent` is a node of the same source, written as its number"
 node = """
 id = 20
@@ -160,7 +157,6 @@ en = "Violated when not."
 [[cases]]
 name = "a domain under a subdomain"
 passes = false
-compiler = "a domain's parent is a domain with no parent, or a one-of in one; 4 is a subdomain, under 2"
 statute = "parent 4 is a subdomain already, under 2; domains nest two levels at most"
 node = """
 id = 20
@@ -193,7 +189,6 @@ en = "Node"
 [[cases]]
 name = "a domain under a rule"
 passes = false
-compiler = "a domain's parent is a domain with no parent, or a one-of in one; 10 is a rule"
 statute = "parent 10 is a rule; a domain's parent is a domain"
 node = """
 id = 20
@@ -211,7 +206,6 @@ en = "Node"
 [[cases]]
 name = "a domain under itself"
 passes = false
-compiler = "a domain's parent is a domain with no parent, or a one-of in one; 20 is the domain itself"
 statute = "`parent` names the node itself"
 node = """
 id = 20
@@ -229,7 +223,6 @@ en = "Node"
 [[cases]]
 name = "a domain under a node the source does not have"
 passes = false
-compiler = 'parent 99 is no node'
 statute = "parent 99 does not exist in this source"
 node = """
 id = 20
@@ -246,11 +239,9 @@ en = "Node"
 
 [[cases]]
 name = "a domain under a domain of another source"
-passes = false
-compiler = "a domain's `parent` `team:7` is not the number of a domain of this source"
 # A local domain may hang under another source's; this repo's are the
 # first-party roots.
-statute-passes = true
+passes = true
 node = """
 id = 20
 revision = 1
@@ -267,7 +258,6 @@ en = "Node"
 [[cases]]
 name = "a domain that overrides"
 passes = false
-compiler = 'unknown key `overrides`'
 statute = "remove overrides"
 node = """
 id = 20
@@ -284,7 +274,6 @@ en = "Node"
 [[cases]]
 name = "a one-of that overrides"
 passes = false
-compiler = 'unknown key `overrides`'
 statute = "remove overrides"
 node = """
 id = 20
@@ -302,7 +291,6 @@ en = "Node"
 [[cases]]
 name = "a rule with both overrides and parent"
 passes = false
-compiler = 'a rule has `parent` or `overrides`, not both'
 statute = "a rule with `overrides` has no `parent`"
 node = """
 id = 20
@@ -333,7 +321,6 @@ en = "Violated when not."
 [[cases]]
 name = "a rule with neither overrides nor parent"
 passes = false
-compiler = 'a rule needs `parent`, or `overrides` in its place'
 statute = "a rule needs a `parent`, the ID of a domain or a one-of, or `overrides`"
 node = """
 id = 20
@@ -363,7 +350,6 @@ en = "Violated when not."
 [[cases]]
 name = "a rule that overrides a rule of its own source"
 passes = false
-compiler = 'a rule of this source; within one source a rule is changed in place or superseded, never overridden'
 statute = "`overrides` names 10, a node of this source"
 node = """
 id = 20
@@ -393,7 +379,6 @@ en = "Violated when not."
 [[cases]]
 name = "a rule that overrides itself"
 passes = false
-compiler = 'a rule of this source; within one source a rule is changed in place or superseded, never overridden'
 statute = "`overrides` names 20, a node of this source"
 node = """
 id = 20
@@ -423,7 +408,6 @@ en = "Violated when not."
 [[cases]]
 name = "an override that is not a reference"
 passes = false
-compiler = '`overrides` `seven` is not a reference to a rule of another source'
 statute = "`overrides`: `seven` is not a reference"
 node = """
 id = 20
@@ -453,7 +437,6 @@ en = "Violated when not."
 [[cases]]
 name = "an override of two rules"
 passes = false
-compiler = '`overrides` names one rule, as a string'
 statute = "TOML parse error"
 node = """
 id = 20
@@ -483,7 +466,6 @@ en = "Violated when not."
 [[cases]]
 name = "a parent that is not a reference"
 passes = false
-compiler = '`parent` `seven` is not a reference'
 statute = "`parent`: `seven` is not a reference"
 node = """
 id = 20
@@ -514,7 +496,6 @@ en = "Violated when not."
 [[cases]]
 name = "a parent that is a boolean"
 passes = false
-compiler = '`parent` `true` is not a reference'
 statute = "TOML parse error"
 node = """
 id = 20
@@ -545,7 +526,6 @@ en = "Violated when not."
 [[cases]]
 name = "a rule under a rule"
 passes = false
-compiler = "a rule's parent is a domain or a one-of; 10 is a rule"
 statute = "parent 10 is a rule; a rule's parent is a domain or a one-of"
 node = """
 id = 20
@@ -576,7 +556,6 @@ en = "Violated when not."
 [[cases]]
 name = "a one-of under a one-of"
 passes = false
-compiler = "a one-of's parent is a domain; 3 is a one-of"
 statute = "parent 3 is a one-of; a one-of's parent is a domain"
 node = """
 id = 20
@@ -593,7 +572,6 @@ en = "Node"
 [[cases]]
 name = "a one-of under a rule"
 passes = false
-compiler = "a one-of's parent is a domain; 10 is a rule"
 statute = "parent 10 is a rule; a one-of's parent is a domain"
 node = """
 id = 20
