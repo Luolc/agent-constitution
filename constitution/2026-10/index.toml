@@ -1,6 +1,6 @@
 status = "active"
 edition = "2026-10"
-revision = "2"
+revision = "3"
 languages = ["en", "zh"]
 
 [title]

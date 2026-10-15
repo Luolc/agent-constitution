@@ -3,8 +3,60 @@ status = "active"
 
 [content]
 en = '''
-A guard, permission or protection that blocks an action is a signal to take the reviewed route and must never be worked around.
+Whatever blocks an action, a guard or any other provision, permission or protection, is a signal to take the reviewed route and must never be worked around. A **guard** is a limit, permission, control or other protection, wherever it is set, that meets at least one of the items below; one that may meet one counts as a guard, and a provision of a rule or of a project's instructions that meets none is not a guard, however strict it is:
 '''
 zh = '''
-防护机制、权限或保护措施拦下某个动作，说明应当改走经过审查的途径；不得设法绕开。
+拦下某个动作的，无论是防护还是其他条文、权限或保护措施，都说明应当改走经过审查的途径；不得设法绕开。**防护**是指符合下列至少一项的限制、权限、控制措施或者其他保护措施，不论设在何处；可能符合的，按防护对待；规定或者项目指令中的条文一项都不符合的，再严也不是防护：
+'''
+
+[[items]]
+id = "safety-provisions"
+number = "1"
+status = "active"
+
+[items.content]
+en = '''
+It carries out a provision of this article, or a provision of this article requires it.
+'''
+zh = '''
+落实本条的某一款，或者是本条的某一款所要求的。
+'''
+
+[[items]]
+id = "access"
+number = "2"
+status = "active"
+
+[items.content]
+en = '''
+It is a security control, controls access to credentials and other sensitive information, accounts, machines, data or services, or sets what a permission allows.
+'''
+zh = '''
+是安全控制措施，管理对凭证和其他敏感信息、账号、机器、数据或者服务的访问，或者决定某项权限允许做什么。
+'''
+
+[[items]]
+id = "resource-limits"
+number = "3"
+status = "active"
+
+[items.content]
+en = '''
+It caps the resources, funds or usage quotas agents may use.
+'''
+zh = '''
+限定 agent 可以使用的资源、资金或者用量额度。
+'''
+
+[[items]]
+id = "principal-gates"
+number = "4"
+status = "active"
+
+[items.content]
+en = '''
+It makes an act go through a principal ({@must-ask}, {@list-defaults.tightening}), or sets how a yes to such an act is verified or recorded ({@explicit-yes}).
+'''
+zh = '''
+规定某一动作必须经过委托人 ({@must-ask}、{@list-defaults.tightening})，或者规定怎样核实、记录对这类动作的同意 ({@explicit-yes})。
 '''

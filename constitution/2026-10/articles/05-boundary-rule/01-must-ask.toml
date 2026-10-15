@@ -81,8 +81,8 @@ status = "active"
 
 [items.content]
 en = '''
-Loosening guards: loosening limits, permissions, security controls or other guards. Tightening them is not.
+Loosening guards ({@guards}). Tightening one is not; nor is changing a rule or a provision of a project's instructions that is not a guard, even to make it less strict: that is an ordinary change ({@decide-yourself.routine-changes}, {@decide-yourself.ordinary-rules}).
 '''
 zh = '''
-放宽防护：放宽限额、权限、安全控制或者其他防护机制。收紧不在此列。
+放宽防护 ({@guards})。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不在此列，那是普通变更 ({@decide-yourself.routine-changes}、{@decide-yourself.ordinary-rules})。
 '''
