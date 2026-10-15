@@ -394,9 +394,10 @@ A merge moves a branch without a checkout. A main checkout that is
 only ever brought up to date with `git merge --ff-only` runs no
 `post-checkout` hook, and its private output would keep what its first
 checkout wrote, or never be written. A `post-merge` hook runs the same
-command after a merge, with no condition: git runs it after a merge
-that moves the branch, a fast-forward included, and not after one that finds nothing
-to do (githooks(5)).
+command after a merge, with no condition. `git merge` invokes it, but
+not when the merge failed due to conflicts (githooks(5));
+as observed with git 2.43.0 on 2026-10-15, that includes a
+fast-forward, and a merge that finds nothing to do does not run it.
 
 ```sh
 #!/bin/sh
