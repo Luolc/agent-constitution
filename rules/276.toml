@@ -1,0 +1,23 @@
+id = 276
+slug = "ci-and-releases"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 273
+default = "on"
+
+[title]
+en = "CI and releases"
+zh = "CI 与发版"
+
+[applicability]
+en = '''
+The checks run before a push and in CI, how a CI run is read and cited, how runners are pinned, and which commit may be released. Enable it in a repository with CI.
+'''
+zh = '''
+push 之前与 CI 里跑哪些检查，CI 的结果怎么读、怎么引用，runner 怎么钉版本，哪个 commit 能发版。有 CI 的仓库都要启用。
+'''
+
+[translations]
+zh = "92684041096298cd266fa6659924d68d0ba442cebdd00c2b8653e4bc7fbe2a7b"

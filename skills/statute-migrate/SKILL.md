@@ -10,8 +10,9 @@ metadata:
 The steps, in order: check the tools (step 0), read the constitution
 (a), find the rules that apply (b), take stock of how the repository
 works (c), write its own rules in one go (d), then rename the
-hand-written files, write the rule set, compile and check (e to g).
-Questions for the person are collected in one place
+hand-written files, write the rule set, compile and check (e to g),
+and once that is merged, add the compile check to the commit hooks and
+CI (h). Questions for the person are collected in one place
 ([Questions](#questions)); ask them together, at most five at a time,
 each with its default, and go on with what they do not block.
 
@@ -60,7 +61,9 @@ files changes, this table is the one place to change.
    written before default switches is redone from step b: its `rules`
    and `packs` are where the three lists of step f start.
 4. The work is on a branch of its own with a clean tree, and goes
-   into the main branch the way the repository takes changes.
+   into the main branch the way the repository takes changes, in two
+   pull requests: the migration (steps a to g), then the compile check
+   (step h).
 5. Know whether the repository is public:
    `gh repo view <owner>/<repo> --json visibility --jq .visibility`
    prints `PUBLIC` for a public one. A public repository keeps every
@@ -173,6 +176,12 @@ which is which when you show the person the rules.
 - In a public repository, name the private source in the private rule
   set, never in the rule set, and list there the private rules it
   enables (`statute add --private`).
+- When a practice of the repository cannot hold together with a public
+  rule that a private rule requires, neither `exclude` in the rule set
+  nor the private rule set can take that rule out. A local rule that
+  `overrides` it takes its place, but only once `rules` lists it: with
+  no parent, nothing else enables it. The lasting fix is to have
+  whoever keeps the private source change it.
 
 Product: the rules, each passing the source's build check; for the
 private source, the change in the repository that holds it.
@@ -231,7 +240,9 @@ exclude = [
 
 `statute add` writes a domain to `domains` and a rule to `rules`, and
 `statute remove` writes a rule the defaults enable to `exclude`; add
-the comments afterwards. Set the parameters the mapping found in their
+the comments afterwards. A rule that a private rule requires cannot go
+in `exclude`, and the private rule set takes no `exclude`; step d says
+what to do instead. Set the parameters the mapping found in their
 tables (`[language]` and others). A `personal` parameter, the language
 an agent writes to the person in, takes the repository's value there;
 the person's own value goes into the global configuration, which in a
@@ -277,29 +288,6 @@ default, and turned off", since the rule was never on by default;
    compile --private-only` once in each of them. The private lock
    file lists only sources; to see which rules the private layer
    enables, read the rule ID lines of the private output.
-5. Add `statute compile --check` to the repository's commit hooks, so
-   that a commit cannot leave the compiled file, the checks file or an
-   installed skill out of step with the rule set
-   ([Compilation and the site](https://github.com/Luolc/agent-constitution/blob/main/docs/design/statute-command.md#compilation-and-the-site)).
-   With pre-commit, add a local hook with `entry: statute compile
-   --check`, `language: system`, `pass_filenames: false` and `files`
-   matching the statute inputs and outputs (`statute.toml`,
-   `statute.lock`, `statute-checks.toml`, `AGENTS.md`, `.statute/`,
-   `.agents/`, `.claude/`, and the directories of the local rules); the
-   `statute-compile` hook in the
-   [`.pre-commit-config.yaml` of agent-constitution](https://github.com/Luolc/agent-constitution/blob/main/.pre-commit-config.yaml)
-   is a model, except that its entry runs statute from source. With
-   another hook manager, add it that manager's way. With no commit
-   hooks, add only the CI step, and say so in the pull request
-   description.
-   Then confirm CI runs it: when CI already runs every pre-commit hook,
-   nothing more is needed; otherwise add a CI step that runs
-   `statute compile --check`. The hook and CI run the statute version
-   that `statute-checks.toml` names, which is the one that compiled it,
-   and that version must be 0.1.4 or later, the first with the flag;
-   after upgrading statute, run `statute compile` again in the same
-   change.
-
 Acceptance, before you ask for a review:
 
 - `statute compile --check` exits 0, which shows the public output is
@@ -312,8 +300,6 @@ Acceptance, before you ask for a review:
   with `readlink`, run `statute compile`, and `cmp` each file with its
   copy and compare each `readlink` result with the note.
 - The compiled file's first line says statute wrote it.
-- The pull request adds the `statute compile --check` hook, and the CI
-  step too unless CI already runs every pre-commit hook.
 - `statute check` exits 0.
 - The compiled file is compared with the legacy copies, section by
   section, against the mapping of step c: every item is where the
@@ -338,9 +324,52 @@ safety rules among them.
 
 The pull request carries the rule set, the lock file, the compiled
 file, the installed skills, the checks file, the local rules, the
-legacy copies and the statute ignore file. Its
+legacy copies and the statute ignore file, and nothing else: all of
+them are instructions or what statute builds from them. Its
 description holds the mapping, the three lists with their reasons
 and the answers to the questions.
+
+## h. Add the compile check, in a second pull request
+
+The commit hooks and the CI configuration are the repository's code,
+not its instructions; to the repository, statute is a tool that builds
+its instructions. So the compile check goes into them in a pull request
+of its own (rule R46), opened from the main branch only once the
+migration is merged (rule R48), since the check runs on the files the
+migration adds.
+
+1. Add `statute compile --check` to the repository's commit hooks, so
+   that a commit cannot leave the compiled file, the checks file or an
+   installed skill out of step with the rule set
+   ([Compilation and the site](https://github.com/Luolc/agent-constitution/blob/main/docs/design/statute-command.md#compilation-and-the-site)).
+   With pre-commit, add a local hook with `entry: statute compile
+   --check`, `language: system`, `pass_filenames: false` and `files`
+   matching the statute inputs and outputs (`statute.toml`,
+   `statute.lock`, `statute-checks.toml`, `AGENTS.md`, `.statute/`,
+   `.agents/`, `.claude/`, and the directories of the local rules); the
+   `statute-compile` hook in the
+   [`.pre-commit-config.yaml` of agent-constitution](https://github.com/Luolc/agent-constitution/blob/main/.pre-commit-config.yaml)
+   is a model, except that its entry runs statute from source. With
+   another hook manager, add it that manager's way. With no commit
+   hooks, add only the CI step, and say so in the pull request
+   description.
+2. Confirm CI runs it: when CI already runs every pre-commit hook,
+   nothing more is needed; otherwise add a CI step that runs
+   `statute compile --check`. The hook and CI run the statute version
+   that `statute-checks.toml` names, which is the one that compiled it,
+   and that version must be 0.1.4 or later, the first with the flag.
+   When it is older, upgrade statute and run `statute compile` again
+   in a pull request of its own, merged before this one: what statute
+   writes is part of the instructions.
+
+Acceptance, before you ask for a review:
+
+- The pull request adds the `statute compile --check` hook, and the CI
+  step too unless CI already runs every pre-commit hook.
+- The pull request changes no instruction file and nothing statute
+  writes.
+- On the pull request, CI runs `statute compile --check` for the first
+  time, and it passes.
 
 ## Questions
 

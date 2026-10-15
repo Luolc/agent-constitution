@@ -1,9 +1,10 @@
 id = 145
 slug = "accounts"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
+parent = 149
 default = "off"
 
 [title]

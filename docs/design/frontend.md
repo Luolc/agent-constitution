@@ -26,7 +26,7 @@ tokens, the icons and the scripts are written in the code is in
 - [Interaction and accessibility](#interaction-and-accessibility):
   target sizes, hover on devices that have it, names and states for
   assistive technology, pages that work without scripts.
-- [Components](#components): marks and tags, the legend, the filter,
+- [Components](#components): marks and tags, the legend, the controls, the filter,
   the view of the list, the table of rules, the one-of, popovers, the sidebar and buttons.
 - [Not done](#not-done): what the pages never do.
 - [Screenshots and review](#screenshots-and-review): what a pull request
@@ -73,7 +73,7 @@ below.
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
 | `bg-page` | `#dde6d5` | `#1e2520` | The page behind the text. |
-| `bg-panel` | `#d1dcc8` | `#252d27` | The sidebar, popovers, the filter's panel. |
+| `bg-panel` | `#d1dcc8` | `#252d27` | The sidebar, popovers, the filter's menus, the head of the list of the rules. |
 | `bg-hover` | `#c7d0bf` | `#343b35` | A row or a button on the page under the pointer. |
 | `bg-panel-hover` | `#bcc7b4` | `#3a423b` | An item on a panel under the pointer. |
 | `bg-active` | `#b2bdaa` | `#444c45` | An item while it is pressed. |
@@ -199,7 +199,7 @@ its weight and its band ([Components](#components)):
 | A rule's row | `text-md` | `weight-regular` | `text` |
 | A rule's label (`R13`) | the size of its row | the weight of its row | `text-muted`, tabular figures, aligned to the end |
 | A rule's statement, under its title | `text-sm` | `weight-regular` | `text-muted`; `text-md` in `text` when it stands alone, in place of the title |
-| The head of the table | `text-sm` | `weight-medium` | `text-muted` |
+| The head of the table | `text-sm` | `weight-medium` | `text-muted`, on `bg-panel` |
 
 ## Space, radius and shadow
 
@@ -219,8 +219,9 @@ heading) stays in em, a multiple of the text size.
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
-| `width-label` | `3.2em` | The column of the labels in the list of the rules. |
+| `width-popover` | `28rem` | The greatest width of a popover that holds controls, a menu of the filter. |
+| `height-popover` | `20rem` | The greatest height of a long list in a popover, the domains in the filter, which scrolls. |
+| `width-label` | `3.2em` | The column of the labels in the list of the rules, at least. |
 | `width-mark` | `1.1em` | Each of the four places of a row's marks in that list. |
 | `size-dot` | `0.6em` | The dot of on or off by default. |
 
@@ -233,13 +234,29 @@ heading) stays in em, a multiple of the text size.
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
 | `shadow-raised` | `0 1px 1px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08)` | `0 1px 1px rgb(0 0 0 / 0.25), 0 1px 3px rgb(0 0 0 / 0.30)` | A control that stands on the page. |
-| `shadow-popover` | `0 1px 2px rgb(0 0 0 / 0.08), 0 0.25rem 0.9rem rgb(0 0 0 / 0.14)` | `0 1px 2px rgb(0 0 0 / 0.30), 0 0.25rem 0.9rem rgb(0 0 0 / 0.45)` | Popovers and the filter's panel. |
+| `shadow-popover` | `0 1px 2px rgb(0 0 0 / 0.08), 0 0.25rem 0.9rem rgb(0 0 0 / 0.14)` | `0 1px 2px rgb(0 0 0 / 0.30), 0 0.25rem 0.9rem rgb(0 0 0 / 0.45)` | Popovers and the filter's menus. |
 
 Each shadow has two layers, a close one that sets the edge and a wide
 one that lifts it. A box that rests on the page has a border or a
 shadow, not both; a popover has both, as it lies over text of the same
 colors. A rounded box inside another has a radius no larger than the
 outer one's.
+
+What lies over other parts of a page stacks in layers, lowest first,
+each a token for `z-index`: a popover lies over the head and the group
+rows of the list of the rules that stick, and the top bar and the
+drawers of a narrow screen over all that scrolls under them. A style
+sheet writes no other `z-index`, but for a control raised one above
+its own popover, as the info on the length's button is above the
+bridge to its popover.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `z-row` | `10` | A group row of the list of the rules, which sticks. |
+| `z-head` | `20` | The head of that list, which sticks over the group rows. |
+| `z-popover` | `30` | A popover: the filter's menus, the info on the length. |
+| `z-bar` | `40` | The top bar of a narrow screen, and the button of the table of contents that floats at the top right between `56rem` and `70rem`. |
+| `z-drawer` | `50` | The drawers of a narrow screen. |
 
 The breakpoints are the sites' today, in rem: `22.5rem` (the narrowest
 phones), `48rem` (a popover spans the column), `56rem` (the sidebar
@@ -269,7 +286,7 @@ GitHub's logo, not an icon, and stays GitHub's own drawing (Octicons'
 Every icon has the one stroke width and is drawn in outline, as Lucide
 draws them; none is filled. An icon is set on the middle of its line,
 between 16px and 24px. All icons are kept in one directory, each named
-by its source and name, `lucide:funnel`, never written out in a page's
+by its source and name, `lucide:info`, never written out in a page's
 markup where it is used. An icon that only decorates is hidden from
 screen readers (`aria-hidden`); a button that shows only an icon has a
 name for them (`aria-label`).
@@ -287,11 +304,9 @@ What replaces today's icons:
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
 | The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
-| A text button | The filter | `funnel` |
 | A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
 | None | A rule's uses in the list and the legend: instructions, review | `scroll-text`, `scan-eye` |
 | None | Between the domains of a group row's path | `chevron-right` |
-| The characters ‹ and › | The list's previous and next page | `chevron-left`, `chevron-right` |
 | None | Closing a popover | `x` |
 | None | A rule under another rule | `corner-down-right` |
 | None | An option of a one-of, the default one | `circle`, `circle-dot` |
@@ -303,8 +318,7 @@ Motion is for three things only: a part that folds open or shut, a
 change under the pointer or the keyboard's focus, and a popover that
 opens or closes; and, once, the flash on an anchor's target. Nothing
 moves on its own, on scroll or while the page loads. What is done often
-does not move at all: turning a page of the list, a change to the
-filter, and anything done from the keyboard (a shortcut, Escape) take
+does not move at all: a change to the filter, and anything done from the keyboard (a shortcut, Escape) take
 effect at once.
 
 | Token | Value | Use |
@@ -354,14 +368,14 @@ target still fades from `bg-target`.
   is shown, the next one under the pointer appears at once. A tip never
   holds what the page says nowhere else: what it says is also the
   element's accessible name or in a legend.
-- **State in the address.** The filter, the page size, the page of
-  the list and what its rows show are in the address, so a list can be linked, and back and
+- **State in the address.** The search and the filter of the list and
+  what its rows show are in the address, so a list can be linked, and back and
   forward return to the list as it was.
 - **Without scripts.** The content is visible by default: a page whose
   scripts fail or never run still shows all its text, with the parts
   that scripts fold open left open.
-- **Empty and loading.** A list that the filter leaves empty says so and
-  offers the next step, Reset filter. Should a page ever load something
+- **Empty and loading.** A list that the search and the filter leave
+  empty says so and offers the next step, Clear filters. Should a page ever load something
   while the reader waits, its indicator appears only after about 150 to
   300 ms and then stays at least 300 to 500 ms, so it does not flicker;
   the sites load nothing that way today.
@@ -379,19 +393,22 @@ turned off (disabled), where it has these.
 
 - **Marks.** In the list of the rules, a row's marks stand at its
   end in four places of `width-mark` each, about four characters in
-  all, in this order: the status, whether the defaults enable the node,
+  all, in this order: whether the defaults enable the node, the status,
   instructions and review, its `uses`. A place without its mark stays
   empty, so that the marks line up from one row to the next; the column
   has no head, the legend says what each place holds. Each mark is an
   icon (`icon-sm`) or a dot, named for assistive technology and on
   hover by its word (`role="img"`, `aria-label` and `title`):
+  - Whether the defaults enable a node: a dot of `size-dot`, filled
+    with `accent` when they do, a ring (a `2px` border) of
+    `text-muted` when they do not; the place stays empty when that depends on another source.
+    A domain's group row has this dot too, in the first place, lined up
+    with the rows' marks; a one-of's row has it when the one-of has an
+    answer, else its place stays empty.
   - Status: `circle-check` for Active in `status-active`,
     `flask-conical` for Trial in `status-trial`, `pencil` for Draft in
     `status-draft`, `arrow-right-left` for Superseded and
     `circle-slash` for Repealed in `text-muted`.
-  - Whether the defaults enable a node: a dot of `size-dot`, filled
-    with `accent` when they do, a ring (a `2px` border) of
-    `text-muted` when they do not; the place stays empty when that depends on another source.
   - Uses: `scroll-text` for instructions and `scan-eye` for review, in
     `text-muted`.
   - Marks do not react to the pointer; the row does.
@@ -411,11 +428,19 @@ turned off (disabled), where it has these.
     follow the four places of the marks, in columns of their own.
 - **The legend**, above the list of the rules, as Ruff's list of rules
   has one: a box with `1px` of `border-subtle` and `radius-md`, `text-sm`,
+  that folds: its first line is a button, `chevron-right` (`icon-sm`)
+  and Legend / 「图例」 in `weight-medium` and `text-muted`, `text` under
+  the pointer, the chevron turned down while the legend is open (a
+  `details` and its `summary`, which work without scripts, the summary's
+  `aria-expanded` and `aria-controls` saying whether and what it
+  opens). It is open by default, and stays folded or open as the reader
+  left it, kept in the browser. Open, it holds
   a row per kind of mark (a description list), its name at the start in
   a column of its own, `weight-medium` in `text-muted`, and its marks
   after it on one line, each drawn as the list draws it and followed by
-  its word. The rows: Status, each status's icon and word, with no
-  meaning written out; Default, on and off by default; Uses,
+  its word. The rows, in the order of the marks: Default, on and off by
+  default; Status, each status's icon and word, with no
+  meaning written out; Uses,
   instructions and review, each with a short meaning after its word in
   `weight-medium`; One of, what a one-of is, then the default option's
   `circle-dot` in `accent` and another option's `circle`; when the site
@@ -423,42 +448,63 @@ turned off (disabled), where it has these.
   last, Row end, the four places of the marks and their order, in
   `text-muted`. On a narrow screen a row's marks wrap under each other,
   its name staying at its start.
+- **The controls**, above the list of the rules, as Ruff's list of
+  rules has them: one row, wrapping on a narrow screen, `text-sm`, each
+  control under its name, `text-xs`, `weight-medium`, `text-muted`; the
+  controls' bottoms line up. In order: Search / 「搜索」, a search box;
+  Show / 「显示」, the view of the list; a menu per field of the filter;
+  Clear filters / 「清除筛选」, a quiet button in `accent` at the row's
+  end. Under the row, the number of rules shown, `text-sm`,
+  `text-muted`, tabular figures, a one-of's options each counted. The search shows the rules whose rows' text,
+  their labels, titles and statements, holds what is typed, case aside,
+  as the reader types; a group row's text does not count. Clear filters
+  brings back the default filter and empties the search, the list as
+  its address without them shows it. On a narrow screen the search and
+  the view each take a row of their own. Without scripts the search,
+  Clear filters and the number are not there, nor on the public site
+  the menus.
 - **The filter**, as far as Ruff's list of rules goes, no further: no
-  conditions to combine. Shut, it is one button: `funnel` (`icon-md`),
-  the word Filter, and, when the reader has changed a field from the
-  default filter, the number of such fields in a badge (`radius-full`,
-  `accent` on `bg-selected`); the default filter shows no badge. Open,
-  it is a popover under the button, `width-popover` wide (the column's
-  width on a narrow screen), holding a group of check boxes per field: the status,
-  the defaults (on, off), the use, the domain, its boxes indented by its
-  depth, and the quadrant when there is more than one source. Each
-  group has its name, then All and None, quiet buttons. Within a field
-  a rule needs one of the values checked; across fields it needs that
-  in each, and a field with every value checked filters nothing.
-  Checking or unchecking a domain does the same to the domains under it.
-  Under the groups, Reset filter, which brings back the default filter,
-  the list as its address without a filter shows it; to see every
-  status, the reader checks All in its group. A change
-  applies at once and is written into the address, so a filtered list
-  can be linked; there is no Apply button. Escape, a click outside or
-  the focus leaving it closes it. A site without scripts, as the local
-  site is, shows the same groups in the popover, applied with a primary
-  button. The local site differs today: its check boxes apply at once,
-  through the style sheet, with no primary button; its groups are the
-  kind of source, the use, and the rules not enabled and those
-  superseded or repealed, shown besides; and it has no groups for the
-  status, the defaults and the domain, no All and None, and no badge
-  ([Status](#status)).
-- **The view of the list**, after the filter in its bar: what each
-  row of the table of rules shows. A segmented control, the word Show /
-  「显示」 in `text-sm` and `text-muted`, then three segments in one box
+  conditions to combine. It is a menu per field, in the row of the
+  controls: the status, the defaults (on, off), the use, the domain,
+  and the quadrant when there is more than one source, named Status,
+  Default, Uses, Domain and Quadrant / 「状态」「默认」「用途」「领域」「象限」.
+  Each menu is a quiet button with `1px` of `border-strong`: what the
+  field chooses, and `chevron-down` (`icon-sm`), turned while the menu
+  is open; the button's name for screen readers is the field's name and
+  what it chooses. What it chooses is All, None, the one value chosen
+  or how many of how many (`2/5`), tabular figures, in `text` while the
+  field is as the default filter has it and in a badge (`radius-full`,
+  `accent` on `bg-selected`) while it differs. The button opens a
+  popover under it, as wide as its content up to `width-popover`, moved
+  toward the start as far as it must to stay within the row of the
+  controls (the column's width on a narrow screen), so that it never leaves the
+  screen, holding the field's name, All and None, quiet buttons, and
+  the field's check boxes. The domains' boxes are indented by their
+  depth; their list, which is long, scrolls inside the popover, at most
+  `height-popover` tall, under a search box that shows only the domains
+  whose label or name holds what is typed; closing the menu clears the
+  search. One menu is open at a time:
+  opening one closes another. Within a field a rule needs one of the
+  values checked; across fields it needs that in each, and a field with
+  every value checked filters nothing. Checking or unchecking a domain
+  does the same to the domains under it. To see every status, the
+  reader checks All in its menu. A change applies at
+  once and is written into the address, so a filtered list can be
+  linked; there is no Apply button. Escape, a click outside or the focus
+  leaving a menu closes it. On the local site, which must work
+  without its script, the check boxes apply at once through the style
+  sheet, with no primary button, a domain's box holding only the rules
+  right in that domain; the script adds the rest.
+- **The view of the list**, after the search in the row of the
+  controls: what each row of the table of rules shows. A segmented
+  control under its name, Show / 「显示」, then three segments in one box
   (`1px` of `border-strong`, `radius-sm`), parted by `1px` of
   `border-subtle`: Title and statement / 「标题和要求」, the default;
   Title / 「标题」; Statement / 「要求」. They are radio buttons of one
   group, a `fieldset` named by its `legend`, so the arrow keys move
   between them and Tab enters and leaves the group; each segment is the
-  button's label, `text-sm`, padding `0 space-3`, at least a target
-  tall, the button itself not drawn. At rest `text`; under the pointer
+  button's label, `text-sm`, padding `space-1 space-3`, at least a
+  target tall, the button itself not drawn. At rest `text`; under the pointer
   `bg-hover`; pressed `bg-active` with `text`; chosen `bg-selected` with
   its text in `accent` and `weight-medium`; focus the ring around the
   segment. The rows change at once. The choice is in the address as
@@ -471,9 +517,10 @@ turned off (disabled), where it has these.
   own, its segments sharing it.
 - **The table of rules**, as ESLint's list of rules is a table: a
   head, then one row a rule, three columns, the label (`width-label`,
-  `text-muted`, aligned to the end), the title, cut to the row with an
+  or the widest label where that is wider, `text-muted`, aligned to the end), the title, cut to the row with an
   ellipsis, and the marks; the head names the first two, `text-sm`,
-  `weight-medium`, `text-muted`, over a line of `border-strong`. Every
+  `weight-medium`, `text-muted`, on `bg-panel`, over a line of
+  `border-strong`; the table has no border around it. Every
   row is at least as tall as a target, with a hairline of
   `border-subtle` under it, and a row that shows only its title is the
   same height as the others on a wide screen. A
@@ -498,17 +545,28 @@ turned off (disabled), where it has these.
   is the whole link to the domain's page, underlined under the pointer,
   as `accent` would fall under 4.5 on the band, and named for screen
   readers by the label and the domains joined by commas. A group row shows where
-  the nearest domain changes from the rule shown before it and at the
-  top of each page. A domain's rules come before its subdomains
+  the nearest domain changes from the rule shown before it and above
+  the first rule shown. A domain's rules come before its subdomains
   ([Compilation and the site](statute-command.md#compilation-and-the-site)),
-  so each domain's row shows once on a page. The head sticks to the top of the
+  so each domain's row shows once. The head sticks to the top of the
   window, under a narrow screen's top bar, and each group row sticks
   under the head until the next one covers it, so that the domain of
   the rows in view is always named; only the nearest domain's row
   sticks, as its path names the ones above it. On a narrow screen a
   title takes as many lines as it needs, the head and the group rows
   one, and a row's label, the icon before its title and its marks line
-  up with the title's first line.
+  up with the title's first line. The table is not text to read on, so
+  its line has no measure: on the list's page, which has no table of
+  contents, the table, the legend and the row of the filter fill the
+  page beside the sidebar, with `space-4` on each side and no greatest
+  width, and the intro above them is as wide. A word too long for its
+  row, such as a path in code in a statement, breaks anywhere rather
+  than run past the screen's edge. The
+  label's column and the marks' are as wide as their tokens make them,
+  and the title's takes the rest; a title that still does not fit is
+  cut with an ellipsis, and the whole title shows under the pointer, as
+  the row link's `title`; the row's text holds it whole for screen
+  readers.
 - **The one-of.** A box (`1px` of `border-strong`, `radius-md`) around
   its own row and its options', their columns lined up with the
   table's, with a label on its top border, One of / 「择一」 (`text-xs`,
@@ -521,7 +579,36 @@ turned off (disabled), where it has these.
   its tag, Default option / 「默认选项」, in `accent` with `check`, so the
   default shows by shape as well as color. A one-of whose options are
   off has its box in `border-subtle`.
-- **Popovers** (the filter's panel, the info on the length): `bg-panel`,
+- **The path of a node.** Two nodes under different parents may have
+  one title (a domain Tiers under Credentials and another under
+  Release, say), so a node is named by the path of the nodes above it
+  where a title alone could be either:
+  - On a node's page, above its title, a breadcrumb: a `nav` named
+    Breadcrumb / 「所在位置」 holding an ordered list, each node above
+    it, one-ofs included, outermost first, by its title alone and as a
+    link, then the node itself, its title in `text`, not a link,
+    marked `aria-current="page"`. `text-sm`, `line-height-ui`,
+    `text-muted`, the items joined by `chevron-right` (`icon-sm`) and
+    wrapping on a narrow screen; each link at least `target` tall,
+    turning to `accent` under the pointer as the text's links do. A
+    node with nothing above it has no breadcrumb. The local site's
+    pages keep their line of the path, which starts at the index.
+  - The title of a node's page, in the browser's tab and in a shared
+    link (`og:title`): its label, then the titles of the path joined by
+    ` › ` (`R137 Security › Credentials › Secret manager`). Past 70 characters the
+    titles above its parent are left out from the farthest, an ellipsis
+    in their place (`R22 … › Credentials › Confirm a credential is in
+    place by its presence only`); the parent's title and the node's own
+    stay whole.
+  - Where a node's title stands alone (in a page's relations, the rules
+    of a parameter, the filter's domains, the local site's links and
+    its menu of domains), a title that a node of the site under another
+    parent has in that language is followed by the parent's title in
+    parentheses, in `text-muted` (`Tiers (Credentials)`); a title no
+    other node has, or only nodes under the same parent, which their
+    labels tell apart, stands alone. A breadcrumb or a path does not add it, as it names
+    the parents.
+- **Popovers** (the filter's menus, the info on the length): `bg-panel`,
   `1px` of `border-subtle`, `radius-md`, `shadow-popover`, padding
   `space-3 space-4`, under the control that opens it. A popover with controls
   opens and closes on a click, Enter or Space, its control's
@@ -685,8 +772,9 @@ turned off (disabled), where it has these.
   ring, icons, the sidebar, the table of contents, the top bar),
   `controls.css` (the native controls wherever they stand),
   `constitution.css`, `design.css` (the design and a rule's page),
-  `rules-list.css` (the list of the rules, its marks and the tags),
-  `filter.css` (the filter and the page size above the list) and
+  `rules-list.css` (the list of the rules, its marks and the tags, and
+  the width of its page),
+  `filter.css` (the filter above the list),
   `legend.css` (the legend above them) and `view.css` (the view of the
   list and the statements in its rows), whose markup is in
   `web/layouts/_partials/rules/`. Hugo joins them, after
@@ -700,7 +788,7 @@ turned off (disabled), where it has these.
   directory per source, `lucide/` and `octicons/`, unchanged from the
   release, with the license in each and the versions in its
   `README.md`. A page includes an icon by its name,
-  `partial "icon.html" "lucide:funnel"`, which inlines the file's SVG on
+  `partial "icon.html" "lucide:info"`, which inlines the file's SVG on
   one line with the class `icon`, hidden from screen readers; the class
   sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
   component makes it `icon-md`. A chevron that turns is `chevron-right`
@@ -746,20 +834,24 @@ flash on a target, the drawers of a narrow screen); hover only on fine
 pointers; the sizes of targets; the sidebar, the table of contents and
 the drawers of [Components](#components); the native controls; the
 fonts, the text size and the column, and the breakpoints; the rows of
-the rules under a provision; the filter, the legend, the table of rules
-with its marks and its group rows and head that stick, and the one-of;
-the view of the list and the statements in its rows; the filter, the
-page and the view in the address, pages readable without
+the rules under a provision; the controls, the filter, the legend that
+folds, the table of rules with its marks and its group rows and head
+that stick, and the one-of; the layers; the view of the list and the
+statements in its rows; the path of a node; the search, the filter and the view in the
+address, pages readable without
 scripts, tabular figures, and `aria-expanded` with `aria-controls` on
-the info button, the buttons of the rules under a
+the info button, the legend, the filter's menus, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's
 buttons. Built today on the local site: every token, and every value
-of its style sheet named by one; the one-of of
-[Components](#components); the filter's
-button and popover; the check boxes; hover only on fine pointers, the
-sizes of targets, the focus ring, and the motion of the filter's
-popover; the language switch and the tag of a text not in the page's
-language; the view of the list of [Components](#components), its choice
+of its style sheet named by one; the table of rules with its marks and
+its group rows and head that stick, the one-of, the legend that folds
+and the controls of [Components](#components); the filter's groups,
+with All and None,
+closing on Escape or a click outside; the check boxes; hover only on
+fine pointers, the sizes of targets, the focus ring, and the motion of
+the filter's popovers; the language switch and the tag of a text not
+in the page's language; the parent's title after a title that nodes
+under two parents have; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
 it opens at an address without one. Not built yet, and what each replaces:
 
@@ -767,21 +859,10 @@ it opens at an address without one. Not built yet, and what each replaces:
   quadrant in the list, are boxes of one look; the tags of
   [Components](#components) replace them. A one-of whose options are
   off keeps its box in `border-strong`.
-- The local site lists the rules as a tree of domains, each a heading
-  whose size and weight give its level, a deeper one indented with a
-  bar, and each rule's facts as tags, the status a pill, at the end of
-  its row, with a legend of those tags; the table of rules, its marks,
-  the tags and the legend of [Components](#components) replace them
-  there too.
-- On the local site, the filter's groups for the status, the defaults
-  and the domain, with All and None in each, the badge on its button,
-  and its closing on Escape or a click outside; and the primary button
-  that applies it, which the style sheet's check boxes, applying at
-  once, stand in for. Its popover closes at once, by a click on the
-  button. Its pages load no font and set the text in the local serif
-  fonts.
-- On the local site, the view of the list says 「标题与规定」 and 「规定」
-  in Chinese; 「标题和要求」 and 「要求」 replace them.
+- On the public site the column of the labels is `width-label` wide,
+  however wide its labels.
+- The local site's pages load no font and set the text in the local
+  serif fonts.
 
 ## Open questions
 

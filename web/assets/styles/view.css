@@ -1,7 +1,8 @@
 /* What the rows of the list of the rules show
    (layouts/_partials/rules/view.html), as docs/design/frontend.md
-   (Components) draws it: a segmented control after the filter, three
-   radio buttons drawn as one bar of segments, the checked one on the
+   (Components) draws it: a segmented control in the row of the
+   controls (filter.css), under its name, three radio buttons drawn as
+   one bar of segments, the checked one on the
    selected color in the accent color; and each rule's statement in its
    row, under its title, a size smaller and muted, lined up with the
    title's text. The checked button decides, through :has(), so that the
@@ -9,29 +10,18 @@
    Statement hides the titles of the rows that have one, its statement
    then the row's main line. A one-of's own row has no statement and
    keeps its title. */
-.rules .rules-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-space-2) var(--t-space-6);
-  margin-block: var(--t-space-4);
-}
-.rules .rules-bar > .rules-controls { margin-block: 0; }
 .rules .rules-view {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-space-2);
+  flex-direction: column;
+  gap: var(--t-space-1);
   min-inline-size: 0;
   margin: 0;
   padding: 0;
   border: 0;
-  color: var(--t-text-muted);
-  font-size: var(--t-text-sm);
-  line-height: var(--t-line-height-ui);
 }
 /* A floated legend is laid out as the fieldset's other children are,
-   here in its row, not on its border. */
+   here above the segments, not on its border; its look is the other
+   controls' names' (filter.css). */
 .rules .rules-view > legend { float: left; padding: 0; }
 .rules .rules-view-options {
   display: inline-flex;
@@ -43,7 +33,7 @@
   display: inline-flex;
   align-items: center;
   min-block-size: var(--t-target);
-  padding: 0 var(--t-space-3);
+  padding: var(--t-space-1) var(--t-space-3);
   color: var(--t-text);
   cursor: pointer;
   transition-property: background-color, color;
@@ -124,13 +114,13 @@
 }
 
 /* A narrow screen: an option's statement under its title, as its tag
-   is (rules-list.css); the control takes its own row, its segments
-   sharing it, a long word wrapping in its segment. */
+   is (rules-list.css); the control takes its own row, as the search
+   does (filter.css), its segments sharing it, a long word wrapping in
+   its segment. */
 @media screen and (width <= 48rem) {
   .rules .one-of-options .rule-title:has(> .rule-statement) { grid-template-columns: auto minmax(0, 1fr); }
   .rules .one-of-options .rule-statement { grid-column: 2; }
   .rules .rules-view { flex-basis: 100%; }
-  .rules .rules-view-options { flex: 1; }
   .rules .rules-view label { flex: 1 1 0; justify-content: center; padding: var(--t-space-1) var(--t-space-2); text-align: center; }
 }
 /* An option's default tag stays on its row's first line. */

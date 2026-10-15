@@ -1,6 +1,6 @@
 id = 141
 slug = "service-tier-read-by-own-service-account"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "Let only a service's own service account read its credentials in the servi
 zh = "服务层里的凭据只由所属服务自己的 service account 读"
 
 [text.statement]
-en = "Let a service credential in the service tier be read only by the service account of the service it belongs to, and keep it out of every login shell."
-zh = "服务层里的服务凭据只由所属服务自己的 service account 读，不进任何登录 shell。"
+en = "Let a credential in the service tier, the part of the secret manager kept for the credentials of services, be read only by the service account of the service it belongs to, and keep it out of every login shell."
+zh = "服务层 (密钥管理器里专放各服务凭据的部分) 里的凭据只由所属服务自己的 service account 读，不进任何登录 shell。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ agent 读了服务层里的条目，服务层里的值进了登录 shell 的环�
 '''
 
 [translations]
-zh = "a69de8d152f8b967a277b0b9d448140d13d320a1e3aaae27ae995cb964d0cc62"
+zh = "8acef1dd193642649fdd0441f64d16e115c6088a33b3bcb3f0298cad884e7b61"

@@ -1,15 +1,15 @@
 id = 137
-slug = "secret-tiers"
-revision = 2
+slug = "credential-secret-manager"
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
-parent = 13
+parent = 265
 default = "off"
 
 [title]
-en = "Credential tiers"
-zh = "凭证分层"
+en = "Secret manager"
+zh = "密钥管理器"
 
 [applicability]
 en = '''
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "fd40bbc1826babf63ba09a52155f924c640c02e312e450c69fad88a7ecda3d45"
+zh = "ba797eb5004b09b9aefde063a306206941df54dc381c7b8c6b4f270afd594aad"

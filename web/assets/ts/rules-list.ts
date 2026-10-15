@@ -1,45 +1,64 @@
-// The list of the rules (layouts/rules/section.html) with the filter and
-// the page size the reader chose, read from the address: the values
-// chosen of each field as assets/ts/filter.ts writes them, `per` (25,
-// 50, 100 or all) and `page`. Without them, the default filter, as the
-// panel's check boxes were built, the page size Hugo built the pages
-// with, all by default, and the page Hugo built. Every page
-// holds every rule, so this only shows the rules of the filter and page
-// on the rules' items (`.rule-item`, its values in `data-*`), and hides
-// the others; shows an item's group row where the group changes and on
-// top of the page, each group of its path with its id the first time it
-// shows on the page; and makes the links to the other pages again. A change to the filter, the page
-// size or the page applies at once and is written into the address: the
-// first change after the panel opens adds an entry to the history, the
-// next ones replace it, so back returns to the list as it was before.
-// Checking or unchecking a domain does the same to the domains under it.
-// Inlined in <head>.
+// The list of the rules (layouts/rules/section.html) with the search and
+// the filter the reader chose, read from the address: the values chosen
+// of each field as assets/ts/filter.ts writes them, and `q`, what the
+// search holds. Without them, an empty search and the default filter, as
+// the menus' check boxes were built. The page holds every rule, so this
+// only shows the rules of the filter whose rows' text (their IDs, titles
+// and statements) holds what is searched, case aside, on the rules'
+// items (`.rule-item`, its values in `data-*`), and hides the others;
+// and shows an item's group row where the group changes and above the
+// first rule shown, each group of its path with its id the first time it
+// shows; and writes the number of rules shown, a one-of's options each
+// counted. A change applies at once and is written into the address: the
+// first change after a menu of the filter opens or the search takes the
+// focus adds an entry to the history, the next ones replace it, so back
+// returns to the list as it was before. Checking or unchecking a domain
+// does the same to the domains under it. Each menu's button says what
+// its field chooses: All, None, the one value chosen, or how many of how
+// many. Clear filters brings back the default filter and an empty
+// search. The legend stays folded or open as the reader left it, kept in
+// localStorage. An address of the list's earlier forms, with `filter=1`,
+// a page size (`per`) or a page (`page`), shows its filter on the whole
+// list and is written again without them. Inlined in <head>.
 import { differing, type Fields, type Filter, matches, read, write } from "./filter";
-
-const SIZES = ["25", "50", "100", "all"];
 
 document.addEventListener("DOMContentLoaded", () => {
   const list = document.querySelector<HTMLElement>(".rules-list");
-  const controls = document.querySelector<HTMLElement>(".rules-controls");
-  if (!list || !controls) return;
-  // The controls below are in the partial that made `controls`
+  const bar = document.querySelector<HTMLElement>(".rules-bar");
+  if (!list || !bar) return;
+  // The controls below are in the partial that made `bar`
   // (layouts/_partials/rules/filter.html), so they are there.
-  const button = controls.querySelector<HTMLButtonElement>(".rules-filter-button")!;
-  const badge = controls.querySelector<HTMLElement>(".rules-filter-count")!;
-  const panel = controls.querySelector<HTMLElement>(".rules-filter-panel")!;
-  const select = controls.querySelector<HTMLSelectElement>("select[name='per']")!;
+  const find = bar.querySelector<HTMLElement>(".rules-find")!;
+  const search = find.querySelector<HTMLInputElement>("input")!;
+  const filter = bar.querySelector<HTMLElement>(".rules-filter")!;
+  const resetButton = bar.querySelector<HTMLButtonElement>(".rules-filter-reset")!;
+  const count = document.querySelector<HTMLElement>(".rules-count")!;
   const none = document.querySelector<HTMLElement>(".rules-none");
-  const pager = document.querySelector<HTMLElement>(".rules-pager");
-  const icons = document.querySelector<HTMLTemplateElement>("template.rules-pager-icons");
-  const table = list.closest<HTMLElement>(".rules-table") ?? list;
   const items = Array.from(list.querySelectorAll<HTMLElement>(".rule-item"));
+  // An item's text, that of its rows, not of its group row.
+  const texts = new Map(
+    items.map((item) => [
+      item,
+      Array.from(item.querySelectorAll(".rule-entry"), (row) => row.textContent ?? "")
+        .join(" ")
+        .toLowerCase(),
+    ]),
+  );
   const boxes = (field?: string): HTMLInputElement[] =>
-    Array.from(panel.querySelectorAll<HTMLInputElement>(field ? `input[name='${field}']` : "input[type='checkbox']"));
+    Array.from(filter.querySelectorAll<HTMLInputElement>(field ? `input[name='${field}']` : "input[type='checkbox']"));
+  // Each field's menu: its button, the button's value and its group of
+  // boxes, which the button controls.
+  const menus = Array.from(filter.querySelectorAll<HTMLElement>(".rules-menu"), (menu) => ({
+    menu,
+    button: menu.querySelector<HTMLButtonElement>(".rules-menu-button")!,
+    value: menu.querySelector<HTMLElement>(".rules-menu-value")!,
+    group: menu.querySelector<HTMLElement>("[data-field]")!,
+  }));
 
-  // The fields as the panel offers them, and the default filter, as its
+  // The fields as the menus offer them, and the default filter, as their
   // boxes were built.
   const fields: Fields = new Map(
-    Array.from(panel.querySelectorAll<HTMLElement>("[data-field]"), (group) => {
+    Array.from(filter.querySelectorAll<HTMLElement>("[data-field]"), (group) => {
       const field = group.dataset.field ?? "";
       return [field, boxes(field).map((box) => box.value)];
     }),
@@ -48,49 +67,37 @@ document.addEventListener("DOMContentLoaded", () => {
     new Map([...fields.keys()].map((f) => [f, new Set(boxes(f).filter((b) => b.checked).map((b) => b.value))]));
   const defaults = chosen();
 
-  let per = list.dataset.size ?? "all";
-  let page = 1;
-  // Whether this opening of the panel has added its entry to the history.
+  // Whether this opening of a menu has added its entry to the history.
   let pushed = false;
-  const address = (n: number): string => {
+  const address = (): string => {
     const query = write(chosen(), fields, defaults);
-    if (per !== list.dataset.size) query.push(`per=${per}`);
-    if (n > 1 || list.dataset.first !== "0") query.push(`page=${n}`);
+    if (search.value) query.push(`q=${encodeURIComponent(search.value)}`);
     // What the rows show is assets/ts/rules-view.ts's, kept as it is.
     const view = new URLSearchParams(location.search).get("view");
     if (view) query.push(`view=${encodeURIComponent(view)}`);
     return query.length ? `${location.pathname}?${query.join("&")}` : location.pathname;
   };
   const save = (push: boolean): void => {
-    if (push) history.pushState(null, "", address(page));
-    else history.replaceState(null, "", address(page));
+    if (push) history.pushState(null, "", address());
+    else history.replaceState(null, "", address());
   };
   const load = (): void => {
     const query = new URLSearchParams(location.search);
-    const filter = read(query, fields, defaults);
-    for (const box of boxes()) box.checked = filter.get(box.name)?.has(box.value) ?? false;
-    per = query.get("per") ?? "";
-    if (!SIZES.includes(per)) per = list.dataset.size ?? "all";
-    const size = per === "all" ? 0 : Number(per);
-    page = query.has("page")
-      ? Number(query.get("page"))
-      : size
-        ? Math.floor(Number(list.dataset.first) / size) + 1
-        : 1;
-    // An address of the old form is written in the new one.
-    if (query.has("filter")) save(false);
+    const choice = read(query, fields, defaults);
+    for (const box of boxes()) box.checked = choice.get(box.name)?.has(box.value) ?? false;
+    search.value = query.get("q") ?? "";
+    if (["filter", "per", "page"].some((p) => query.has(p))) save(false);
   };
 
-  // Shows the rules of the filter and the page.
+  // Shows the rules of the search and the filter.
   const show = (): void => {
-    const filter = chosen();
-    const matched = items.filter((item) =>
-      matches(filter, fields, (field) => (item.dataset[field] ?? "").split(" ")),
+    const choice = chosen();
+    const typed = search.value.trim().toLowerCase();
+    const shown = items.filter(
+      (item) =>
+        texts.get(item)?.includes(typed) &&
+        matches(choice, fields, (field) => (item.dataset[field] ?? "").split(" ")),
     );
-    const size = per === "all" ? Math.max(matched.length, 1) : Number(per);
-    const pages = Math.max(1, Math.ceil(matched.length / size));
-    page = Math.min(Math.max(Math.floor(page) || 1, 1), pages);
-    const shown = matched.slice((page - 1) * size, page * size);
 
     for (const item of items) item.hidden = true;
     for (const heading of list.querySelectorAll<HTMLElement>(".rules-group")) heading.hidden = true;
@@ -113,48 +120,23 @@ document.addEventListener("DOMContentLoaded", () => {
       previous = group;
     }
     if (none) none.hidden = shown.length > 0;
+    const rules = shown.reduce((n, item) => n + Math.max(1, item.querySelectorAll(".one-of-options > li").length), 0);
+    count.textContent = ((rules === 1 ? count.dataset.singular : count.dataset.plural) ?? "").replace("{}", String(rules));
 
-    select.value = per;
-    const n = differing(filter, fields, defaults).length;
-    badge.textContent = String(n);
-    badge.hidden = n === 0;
-
-    if (pager) {
-      pager.textContent = "";
-      const link = (n: number, text: string, label?: string, rel?: string): void => {
-        const a = document.createElement("a");
-        // The previous and next pages' links show the icons the page
-        // keeps in a template, the others their number.
-        const icon = rel ? icons?.content.querySelector(`[data-rel='${rel}']`) : null;
-        if (icon) a.append(icon.cloneNode(true));
-        else a.textContent = text;
-        if (n === page && !rel) {
-          a.setAttribute("aria-current", "page");
-        } else {
-          a.href = address(n);
-          a.addEventListener("click", (event) => {
-            event.preventDefault();
-            page = n;
-            save(true);
-            show();
-            table.scrollIntoView();
-          });
-        }
-        if (label) a.setAttribute("aria-label", label);
-        if (rel) a.rel = rel;
-        pager.append(a);
-      };
-      if (pages > 1) {
-        if (page > 1) link(page - 1, "‹", pager.dataset.previous, "prev");
-        for (let i = 1; i <= pages; i++) link(i, String(i));
-        if (page < pages) link(page + 1, "›", pager.dataset.next, "next");
-      }
+    const changedFields = differing(choice, fields, defaults);
+    for (const { button, value, group } of menus) {
+      const field = group.dataset.field ?? "";
+      const on = boxes(field).filter((box) => box.checked);
+      const all = fields.get(field)?.length ?? 0;
+      if (on.length === all) value.textContent = filter.dataset.every ?? "";
+      else if (on.length === 0) value.textContent = filter.dataset.nothing ?? "";
+      else if (on.length === 1) value.textContent = on[0]?.parentElement?.textContent?.trim() ?? "";
+      else value.textContent = `${on.length}/${all}`;
+      button.classList.toggle("changed", changedFields.includes(field));
     }
   };
 
-  // A change to the filter: the first page of the new list.
   const changed = (): void => {
-    page = 1;
     save(!pushed);
     pushed = true;
     show();
@@ -163,15 +145,19 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const box of boxes(field)) box.checked = checked;
     changed();
   };
-  // Back to the default filter, as the address without it.
+  // Back to the default filter and an empty search, as the address
+  // without them.
   const reset = (): void => {
     for (const box of boxes()) box.checked = defaults.get(box.name)?.has(box.value) ?? false;
+    search.value = "";
+    pushed = false;
     changed();
   };
 
-  // The panel's events come from its check boxes and buttons alone.
-  panel.addEventListener("change", (event) => {
+  // The menus' changes come from their check boxes and search boxes.
+  filter.addEventListener("change", (event) => {
     const box = event.target as HTMLInputElement;
+    if (box.type !== "checkbox") return;
     if (box.name === "domain") {
       const below = [box.value];
       for (const other of boxes("domain")) {
@@ -183,57 +169,107 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     changed();
   });
-  panel.addEventListener("click", (event) => {
+  filter.addEventListener("click", (event) => {
     const all = (event.target as Element).closest<HTMLElement>("[data-all]");
     if (all) checkAll(all.dataset.all === "true", all.closest<HTMLElement>("[data-field]")?.dataset.field);
   });
-  panel.querySelector(".rules-filter-reset")?.addEventListener("click", reset);
+  // A search box shows the boxes whose label holds what is typed.
+  filter.addEventListener("input", (event) => {
+    const search = event.target as HTMLInputElement;
+    if (search.type !== "search") return;
+    const typed = search.value.trim().toLowerCase();
+    for (const label of search.closest("[data-field]")?.querySelectorAll<HTMLElement>("label") ?? []) {
+      label.hidden = !(label.textContent ?? "").toLowerCase().includes(typed);
+    }
+  });
+  search.addEventListener("focus", () => {
+    pushed = false;
+  });
+  search.addEventListener("input", changed);
+  resetButton.addEventListener("click", reset);
   const again = document.querySelector<HTMLButtonElement>(".rules-none-reset");
   again?.addEventListener("click", reset);
   if (again) again.hidden = false;
 
-  // The panel, opened and closed by its button: Escape, a click outside
-  // or the focus leaving it closes it, Escape and the button giving the
-  // focus back to the button.
-  const filter = controls.querySelector<HTMLElement>(".rules-filter")!;
-  // A pointer or focus event's target and related target are nodes.
-  const open = (): boolean => button.getAttribute("aria-expanded") === "true";
-  const toggle = (show: boolean, refocus: boolean): void => {
-    button.setAttribute("aria-expanded", String(show));
-    panel.classList.toggle("open", show);
-    if (show) {
-      pushed = false;
-      panel.querySelector<HTMLElement>("input, button")?.focus();
-    } else if (refocus) {
-      button.focus();
+  // The menus, each opened and closed by its button, one open at a
+  // time: Escape, a click outside or the focus leaving it closes it,
+  // Escape and the button giving the focus back to the button. Closing
+  // a menu clears its search.
+  type Menu = (typeof menus)[number];
+  let current: Menu | undefined;
+  const close = (refocus: boolean): void => {
+    if (!current) return;
+    const { button, group } = current;
+    current = undefined;
+    button.setAttribute("aria-expanded", "false");
+    group.classList.remove("open");
+    const search = group.querySelector<HTMLInputElement>("input[type='search']");
+    if (search?.value) {
+      search.value = "";
+      for (const label of group.querySelectorAll<HTMLElement>("label")) label.hidden = false;
     }
+    if (refocus) button.focus();
   };
-  button.addEventListener("click", () => toggle(!open(), true));
+  const openMenu = (menu: Menu): void => {
+    close(false);
+    current = menu;
+    pushed = false;
+    menu.button.setAttribute("aria-expanded", "true");
+    menu.group.classList.add("open");
+    // Under its button, but within the box it is placed in, the bar of
+    // the filter, so that it never runs past the page's edge.
+    const box = (menu.group.offsetParent ?? filter).getBoundingClientRect();
+    const button = menu.button.getBoundingClientRect();
+    const room = box.width - menu.group.offsetWidth;
+    menu.group.style.setProperty("--menu-start", `${Math.max(0, Math.min(button.left - box.left, room))}px`);
+    menu.group.style.setProperty("--menu-top", `${button.bottom - box.top}px`);
+    (menu.group.querySelector<HTMLElement>("input[type='search']") ?? menu.group.querySelector<HTMLElement>("input, button"))?.focus();
+  };
+  for (const menu of menus) {
+    menu.button.addEventListener("click", () => (current === menu ? close(true) : openMenu(menu)));
+  }
   filter.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !open()) return;
+    if (event.key !== "Escape" || !current) return;
     event.preventDefault();
-    toggle(false, true);
+    close(true);
   });
+  // A pointer or focus event's target and related target are nodes.
   document.addEventListener("pointerdown", (event) => {
-    if (open() && !filter.contains(event.target as Node)) toggle(false, false);
+    if (current && !current.menu.contains(event.target as Node)) close(false);
   });
   filter.addEventListener("focusout", (event) => {
     const next = event.relatedTarget as Node | null;
-    if (open() && next && !filter.contains(next)) toggle(false, false);
+    if (current && next && !current.menu.contains(next)) close(false);
   });
 
-  select.addEventListener("change", () => {
-    per = select.value;
-    page = 1;
-    save(true);
-    show();
-  });
   window.addEventListener("popstate", () => {
     load();
     show();
   });
 
+  // The legend, open by default, as the reader left it; its button says
+  // whether it is open.
+  const legend = document.querySelector<HTMLDetailsElement>("details.rules-legend");
+  if (legend) {
+    const summary = legend.querySelector("summary");
+    const expanded = (): void => summary?.setAttribute("aria-expanded", String(legend.open));
+    try {
+      if (localStorage.getItem("rules-legend") === "closed") legend.open = false;
+    } catch {
+      // Storage blocked: the legend opens as the page has it.
+    }
+    expanded();
+    legend.addEventListener("toggle", () => {
+      expanded();
+      try {
+        localStorage.setItem("rules-legend", legend.open ? "open" : "closed");
+      } catch {
+        // Storage blocked: the legend stays as it is until the page reloads.
+      }
+    });
+  }
+
   load();
   show();
-  controls.hidden = false;
+  for (const control of [find, filter, resetButton, count]) control.hidden = false;
 });

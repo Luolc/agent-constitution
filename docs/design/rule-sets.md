@@ -471,8 +471,9 @@ The build checks these constraints:
   one one-of, along `requires`, could never be enabled, and
   the build fails on it; so it does on a rule that requires a one-of with
   no options yet.
-- A rule that requires a superseded or repealed rule draws a warning,
-  which names the successors when there are any.
+- A rule in force that requires a superseded or repealed rule draws a
+  warning, which names the successors when there are any. A rule that is
+  itself superseded or repealed requires nothing any more, and draws none.
 
 **Missing requirements are added.** When a rule set enables a rule
 without one it requires, statute adds the missing rule, as a package

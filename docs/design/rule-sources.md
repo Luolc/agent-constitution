@@ -552,7 +552,11 @@ error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; 
 Within the private layer, a rule may override any rule of a lower rank
 that only the private layer enables, since both are compiled into the
 private output; within the public layer, a rule may override a public
-rule of a lower rank. Both work as in a private repository.
+rule of a lower rank. Both work as in a private repository. A rule of
+the public layer may also override a rule that only the private layer
+enables: the public output has the overriding rule where its target
+would stand, with the warning below that nothing else enables the
+target, and the private output has it in the target's place.
 
 **What the build does.** An override takes effect when the overriding
 rule is enabled:
@@ -575,6 +579,11 @@ rule is enabled:
 - An overriding rule whose target is not enabled by anything is compiled
   where its target would stand, with a warning that the target is not in
   the rule set.
+- An overriding rule has no `default`, so it comes in only when the rule
+  set enables it: lists it in `rules`, takes it in a pack, or enables a
+  rule that requires it. One of the repository's own rules that nothing
+  enables gets a warning
+  ([The directory of local rules](rule-config.md#the-directory-of-local-rules)).
 
 **The lock file** records the overridden rule as it records any other,
 with one more field:
@@ -655,9 +664,10 @@ parent = 104
 **Rendering.** The compiled `AGENTS.md` shows no domain or subdomain:
 its rules are a flat list in the order of the tree, as in
 [Compilation and the site](statute-command.md#compilation-and-the-site),
-which gives the order: a subdomain's rules come after its domain's
-own rules, and the nodes of other sources hung under a domain after
-those of its own source, as the domains themselves are ordered. On the site, a subdomain heads the rules
+which gives the order: a subdomain's rules come after the rules and
+one-ofs directly under its domain, and in each part the domain's own
+source comes first, then the other sources by their names, as the
+domains themselves are ordered. On the site, a subdomain heads the rules
 below it as a domain does, nested under its domain's heading, and its
 page lists the nodes below it ([Static site](static-site.md)).
 

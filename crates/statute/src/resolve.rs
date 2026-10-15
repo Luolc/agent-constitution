@@ -815,6 +815,43 @@ pub fn resolve(
     res
 }
 
+/// The rules of the repository's own, and of the other sources with
+/// `scope = "local"`, that nothing in the resolution `res` of `manifest`
+/// enables. Such a rule exists for this rule set alone, so one left out
+/// is most likely a slip, an overriding rule above all, which has no
+/// `default`; superseded and repealed rules, those `exclude` turns off
+/// and the options of a one-of stay out by choice.
+pub fn unenabled_own(sources: &Sources, manifest: &Manifest, res: &Resolution) -> Vec<Key> {
+    let sw = Switches::new(sources, manifest);
+    sources
+        .nodes()
+        .filter(|(key, node)| {
+            node.kind == Kind::Rule
+                && sources.rank(&key.source) == 3
+                && !matches!(node.status, Status::Superseded | Status::Repealed)
+                && !res.enabled.contains_key(key)
+                && !sw.excluded(key)
+                && !sources
+                    .parent(key)
+                    .is_some_and(|p| sources.get(&p).is_some_and(|n| n.kind == Kind::OneOf))
+        })
+        .map(|(key, _)| key)
+        .collect()
+}
+
+/// The warning about `key`, one of [`unenabled_own`].
+pub fn unenabled_own_warning(sources: &Sources, key: &Key) -> String {
+    let place = match sources.overrides(key) {
+        Some(target) => format!(" in place of {target}"),
+        None => String::new(),
+    };
+    format!(
+        "rule {} is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"{}\" in `rules` to compile it{place}",
+        label(sources, key),
+        Manifest::entry(key)
+    )
+}
+
 /// What [`close`] gives: the rules enabled, the overridden ones, each
 /// requirement of a one-of, and the rules that keep the overrides from
 /// settling, if they do not.

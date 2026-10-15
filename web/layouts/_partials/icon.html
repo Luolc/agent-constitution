@@ -1,8 +1,8 @@
 {{- /* An icon, inlined as its SVG on one line, so that it takes the
   color of its text (`currentColor`) and its size and stroke from the
   style sheets (the class `icon`), hidden from screen readers. Takes the
-  icon's name, its source and its file name, as `lucide:funnel` for
-  icons/lucide/funnel.svg (crates/statute/assets/icons, mounted by
+  icon's name, its source and its file name, as `lucide:info` for
+  icons/lucide/info.svg (crates/statute/assets/icons, mounted by
   hugo.toml); an unknown name fails the build. Returns the SVG, so that a
   partial that returns a string can include it. */ -}}
 {{- $file := printf "icons/%s.svg" (replace . ":" "/") }}

@@ -1,23 +1,26 @@
-{{- /* The legend above the list of the rules: a box of rows, each a kind
-  of mark named at its start and its marks after it on one line, each
-  drawn as the list draws it and followed by its word: the statuses;
-  whether the defaults enable a node; the uses, instructions and review,
-  each with what it means; a one-of, what it is and the icons of its
-  default and other options; when the site has a rule set, whether it
+{{- /* The legend above the list of the rules, after Ruff's: a box with
+  a button that folds it, Legend, open by default and kept folded or
+  open as the reader left it (assets/ts/rules-list.ts); in it, rows,
+  each a kind of mark named at its start and its marks after it on one
+  line, each drawn as the list draws it and followed by its word, in
+  the order of the marks: whether the defaults enable a node; the
+  statuses; the uses, instructions and review, each with what it means;
+  a one-of, what it is and the icons of its default and other options; when the site has a rule set, whether it
   enables a rule; with more than one source, the quadrant; last, the
   order of the four places of the marks (rules/marks.html). Takes (dict
   "enabled" whether the site has a rule set "many" whether it has more
   than one source). */ -}}
 {{- $icons := dict "active" "circle-check" "trial" "flask-conical" "draft" "pencil" "superseded" "arrow-right-left" "repealed" "circle-slash" }}
-<dl class="rules-legend" aria-label="{{ i18n "rules-legend" }}">
+<details class="rules-legend" open><summary aria-controls="rules-legend-list">{{ partial "icon.html" "lucide:chevron-right" }}{{ i18n "rules-legend" }}</summary>
+<dl id="rules-legend-list">
+<div><dt>{{ i18n "rules-legend-default" }}</dt><dd>
+<span class="legend-item"><span class="rule-mark rule-dot on"></span>{{ i18n "default-on" }}</span>
+<span class="legend-item"><span class="rule-mark rule-dot"></span>{{ i18n "default-off" }}</span>
+</dd></div>
 <div><dt>{{ i18n "rule-status" }}</dt><dd>
 {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
 <span class="legend-item"><span class="rule-mark rule-status status-{{ . }}">{{ partial "icon.html" (printf "lucide:%s" (index $icons .)) }}</span>{{ i18n (printf "status-%s" .) }}</span>
 {{- end }}
-</dd></div>
-<div><dt>{{ i18n "rules-legend-default" }}</dt><dd>
-<span class="legend-item"><span class="rule-mark rule-dot on"></span>{{ i18n "default-on" }}</span>
-<span class="legend-item"><span class="rule-mark rule-dot"></span>{{ i18n "default-off" }}</span>
 </dd></div>
 <div><dt>{{ i18n "rule-uses" }}</dt><dd>
 {{- range $use, $icon := dict "instructions" "scroll-text" "review" "scan-eye" }}
@@ -42,3 +45,4 @@
 {{- end }}
 <div class="legend-places"><dt>{{ i18n "rules-legend-places" }}</dt><dd>{{ i18n "rules-legend-slots" }}</dd></div>
 </dl>
+</details>

@@ -1,10 +1,11 @@
 id = 138
 slug = "heavy-load-in-cpu-capped-container"
-revision = 2
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 278
 lang = "en"
-parent = 13
+parent = 267
 requires = [31]
 default = "off"
 authority = ["decency.legitimate-means"]

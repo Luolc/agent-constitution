@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, rule, set_default};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -770,4 +770,168 @@ fn the_private_lock_file_records_a_sources_rules_dir() {
     );
     ok(&statute(&dir, &["compile"]));
     assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+}
+
+#[test]
+fn a_public_rule_overrides_a_rule_only_the_private_layer_brings_in() {
+    for listed in [false, true] {
+        let dir = ignoring(if listed {
+            "cross-layer-listed"
+        } else {
+            "cross-layer-unlisted"
+        });
+        // L7 overrides R6, which only me:8, of the private layer, requires.
+        write(
+            &dir,
+            ".statute/rules/7.toml",
+            &edit(
+                rule(7, 1, ""),
+                "parent = 1\ndefault = \"off\"",
+                "overrides = \"R6\"",
+            )
+            .1,
+        );
+        write(
+            &dir,
+            "me/rules/8.toml",
+            &rule(8, 1, "requires = [\"R6\"]").1,
+        );
+        set_up(&dir);
+        if listed {
+            ok(&statute(&dir, &["add", "7"]));
+        }
+        write_private(
+            &dir,
+            &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:8\"]"),
+        );
+        let run = statute(&dir, &["compile"]);
+        ok(&run);
+        let public = read(&dir, "AGENTS.md");
+        let full = read(&dir, ".statute/AGENTS.full.md");
+        if listed {
+            assert!(
+                run.stderr.contains("statute.toml: warning: rule L7 (Rule 7) overrides R6 (Rule 6), which nothing else in the rule set enables; L7 is compiled where R6 would stand\n"),
+                "{}",
+                run.stderr
+            );
+            assert!(public.contains("\n- L7 Do the thing 7.\n"), "{public}");
+            assert!(full.contains("\n- L7 Do the thing 7.\n"), "{full}");
+            assert!(!full.contains("- R6 "), "{full}");
+        } else {
+            assert!(
+                run.stderr.contains("statute.toml: warning: rule L7 (Rule 7) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"7\" in `rules` to compile it in place of R6\n"),
+                "{}",
+                run.stderr
+            );
+            assert!(!public.contains("- L7 "), "{public}");
+            assert!(full.contains("\n- R6 Do the thing 6.\n"), "{full}");
+        }
+    }
+}
+
+#[test]
+fn a_finding_of_the_private_layer_names_the_private_rule_set() {
+    let dir = ignoring("private-finding");
+    // me:9 is on in me:1, which is on: the private layer's defaults
+    // enable it.
+    set_up(&dir);
+    write(&dir, "me/rules/1.toml", &set_default(domain(1), "\"on\"").1);
+    write(
+        &dir,
+        "me/rules/9.toml",
+        &set_default(rule(9, 1, ""), "\"on\"").1,
+    );
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:9\"]"),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains(&format!(
+            "{}: warning: `rules` lists me:9 (Rule 9), which the defaults enable; take it out\n",
+            common(&dir).join("private.toml").display()
+        )),
+        "{}",
+        run.stderr
+    );
+    // A finding that asks for a change to `exclude` stays with
+    // statute.toml, though me:8 of the private layer brings it about.
+    write(
+        &dir,
+        "me/rules/8.toml",
+        &rule(8, 1, "requires = [\"R6\"]").1,
+    );
+    write(
+        &dir,
+        "statute.toml",
+        &read(&dir, "statute.toml").replace("rules = [", "exclude = [\"R6\"]\nrules = ["),
+    );
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:8\"]"),
+    );
+    let run = statute(&dir, &["lock"]);
+    assert!(
+        run.stderr
+            .lines()
+            .any(|l| l.starts_with("statute.toml: error: rule R6 (Rule 6) cannot be turned off: rule me:8 (Rule 8) requires it")),
+        "{}",
+        run.stderr
+    );
+}
+
+#[test]
+fn a_rule_of_the_repository_s_own_is_enabled_in_either_layer() {
+    // L7, in no rule set, is compiled nowhere; listed by the private
+    // layer alone, it is in the private output, and the public pass,
+    // which cannot see that, says nothing.
+    for private_lists in [false, true] {
+        let dir = ignoring(if private_lists {
+            "own-listed-privately"
+        } else {
+            "own-unlisted"
+        });
+        write(&dir, ".statute/rules/7.toml", &rule(7, 1, "").1);
+        set_up(&dir);
+        let rules = if private_lists {
+            "rules = [\"me:4\", \"7\"]"
+        } else {
+            "rules = [\"me:4\"]"
+        };
+        write_private(&dir, &private(&dir).replace("rules = []", rules));
+        let run = statute(&dir, &["compile"]);
+        ok(&run);
+        let warned = run.stderr.contains(
+            "statute.toml: warning: rule L7 (Rule 7) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"7\" in `rules` to compile it\n",
+        );
+        assert_eq!(warned, !private_lists, "{}", run.stderr);
+        let full = read(&dir, ".statute/AGENTS.full.md");
+        assert_eq!(full.contains("\n- L7 "), private_lists, "{full}");
+        assert!(!read(&dir, "AGENTS.md").contains("- L7 "));
+    }
+}
+
+#[test]
+fn a_rule_of_a_local_private_source_is_listed_in_the_private_rule_set() {
+    let dir = ignoring("local-private-source");
+    set_up(&dir);
+    // me, now of `scope = "local"`, ranks with the repository's own rules;
+    // me:5, which overrides R2, is listed nowhere.
+    write_private(
+        &dir,
+        &private(&dir)
+            .replace("rules = []", "rules = [\"me:4\"]")
+            .replace("public = false }", "public = false, scope = \"local\" }"),
+    );
+    let run = statute(&dir, &["lock"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains(&format!(
+            "{}: warning: rule me:5 (Rule 5) is one of this repository's own, and nothing in the rule set enables it, so it is compiled nowhere; list \"me:5\" in `rules` to compile it in place of R2\n",
+            common(&dir).join("private.toml").display()
+        )),
+        "{}",
+        run.stderr
+    );
 }

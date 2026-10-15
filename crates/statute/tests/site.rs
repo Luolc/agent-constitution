@@ -139,6 +139,36 @@ fn section<'a>(index: &'a str, class: &str) -> &'a str {
     &rest[..rest.find("</section>").unwrap()]
 }
 
+/// The item of the index that links `page`: a rule's row, or a one-of's
+/// box with its options.
+fn item<'a>(index: &'a str, page: &str) -> &'a str {
+    let at = index
+        .find(&format!("href=\"{page}\""))
+        .unwrap_or_else(|| panic!("{page}: {index}"));
+    let start = index[..at].rfind("<div class=\"item\"").unwrap();
+    let end = at + index[at..].find("</div></div>\n").unwrap() + "</div></div>".len();
+    &index[start..end]
+}
+
+/// The row of the index whose title links `page`.
+fn entry<'a>(index: &'a str, page: &str) -> &'a str {
+    let at = index
+        .find(&format!("<a class=\"rule-text\" href=\"{page}\">"))
+        .unwrap_or_else(|| panic!("{page}: {index}"));
+    let start = index[..at].rfind("<div class=\"entry").unwrap();
+    let enabled = at + index[at..].find("<span class=\"rule-enabled\">").unwrap();
+    let end = enabled + index[enabled..].find("</div>").unwrap() + "</div>".len();
+    &index[start..end]
+}
+
+/// The group row over the item that links `page`.
+fn group<'a>(index: &'a str, page: &str) -> &'a str {
+    let at = index.find(&format!("href=\"{page}\"")).unwrap();
+    let start = index[..at].rfind(" class=\"group ").unwrap();
+    let start = index[..start].rfind('<').unwrap();
+    &index[start..start + index[start..].find('\n').unwrap()]
+}
+
 /// Every file below `dir`, relative to it, but `.git`.
 fn files(dir: &Path) -> BTreeSet<PathBuf> {
     let mut out = BTreeSet::new();
@@ -348,17 +378,14 @@ fn site_marks_the_quadrant_of_each_rule() {
         .into_iter()
         .zip(names)
         {
-            let mark = format!("<span class=\"q {class}\">{name}</span>");
-            // The page names the source as well; the index lists it above.
+            // The rule's page and its group row in the index name the
+            // source as well.
             let named = format!("<span class=\"q {class}\">{name} · {source}</span>");
             let html = read(&dir, &format!(".statute/site/{page}"));
             let h1 = &html[html.find("<h1>").unwrap()..html.find("</p>").unwrap()];
             assert!(h1.contains(&named), "{lang} {page}: {h1}");
-            let item = index
-                .lines()
-                .find(|l| l.starts_with("<li") && l.contains(&format!("href=\"{page}\"")))
-                .unwrap();
-            assert!(item.contains(&mark), "{lang} {page}: {item}");
+            let row = group(&index, page);
+            assert!(row.contains(&named), "{lang} {page}: {row}");
         }
     }
 }
@@ -454,37 +481,34 @@ fn site_marks_defaults_uses_and_values() {
     }
     let site = dir.join(".statute/site");
     let index = read(&site, "index.html");
-    let item = |id: u64| {
-        let start = index
-            .find(&format!("<a href=\"R/{id}.html\">"))
-            .unwrap_or_else(|| panic!("R{id}: {index}"));
-        let end = index[start..]
-            .find("</li>")
-            .map_or(index.len(), |e| start + e);
-        &index[start..end]
-    };
-    // In the list a default switch is a dot named by its words.
+    // The first place of a row's marks says whether the defaults enable
+    // it: a dot named by its words.
+    for (id, mark) in [
+        (
+            2,
+            "<span class=\"marks\"><span class=\"mark dot on\" role=\"img\" aria-label=\"on by default\"",
+        ),
+        (
+            3,
+            "<span class=\"marks\"><span class=\"mark dot\" role=\"img\" aria-label=\"off by default\"",
+        ),
+    ] {
+        let row = entry(&index, &format!("R/{id}.html"));
+        assert!(row.contains(mark), "{row}");
+    }
     assert!(
-        item(2).contains("<span class=\"switch on\" role=\"img\" aria-label=\"on by default\""),
+        entry(&index, "R/5.html").contains("<span class=\"default-option\"><svg class=\"icon\""),
         "{}",
-        item(2)
+        entry(&index, "R/5.html")
     );
-    assert!(
-        item(3).contains("<span class=\"switch off\" role=\"img\" aria-label=\"off by default\""),
-        "{}",
-        item(3)
-    );
-    assert!(
-        item(5).contains("<span class=\"default-option\"><svg class=\"icon\""),
-        "{}",
-        item(5)
-    );
-    assert!(!item(6).contains("default"), "{}", item(6));
+    assert!(!entry(&index, "R/6.html").contains("default-option"));
     // The options are led by Lucide's circles, the default's with a dot.
     let circle = include_str!("../assets/icons/lucide/circle.svg");
     let circle_dot = include_str!("../assets/icons/lucide/circle-dot.svg");
     let lead = |id: u64| {
-        let at = index.find(&format!("<a href=\"R/{id}.html\">")).unwrap();
+        let at = index
+            .find(&format!("<a class=\"rule-text\" href=\"R/{id}.html\">"))
+            .unwrap();
         &index[index[..at].rfind("<svg").unwrap()..at]
     };
     assert!(
@@ -496,28 +520,35 @@ fn site_marks_defaults_uses_and_values() {
     assert!(!lead(6).contains("r=\"1\""), "{}", lead(6));
     assert!(lead(6).contains("<circle cx=\"12\" cy=\"12\" r=\"10\"/>"));
     assert!(circle.contains("r=\"10\""));
-    // The one-of is a box that holds its options, labeled on its border,
-    // and they stand nowhere else in the list.
-    let one_of = index
-        .find("<li class=\"one-of\"><span class=\"one-of-label\">One of</span><div class=\"row\"><a href=\"R/4.html\">")
-        .expect(&index);
-    let options = index[one_of..]
-        .find("</ul></li>")
-        .map(|e| &index[one_of..one_of + e])
-        .unwrap();
+    // The one-of is a box that holds its options, labeled on its border
+    // and named by that label, and they stand nowhere else in the list.
+    let one_of = item(&index, "R/4.html");
     assert!(
-        options.contains("R/5.html") && options.contains("R/6.html"),
-        "{options}"
+        one_of.contains("<div class=\"one-of\" role=\"group\" aria-labelledby=\"one-of-R-4\"><span class=\"one-of-label\" id=\"one-of-R-4\">One of</span><div class=\"entry\"><span class=\"ref\">R4</span>"),
+        "{one_of}"
     );
-    assert_eq!(index.matches("<a href=\"R/5.html\">").count(), 1, "{index}");
-    // A rule only for review is hidden with its filter.
+    assert!(
+        one_of.contains("R/5.html") && one_of.contains("R/6.html"),
+        "{one_of}"
+    );
+    assert_eq!(index.matches("href=\"R/5.html\"").count(), 1, "{index}");
+    // A rule only for review carries its use for the filter, which the
+    // style sheet hides with the box of review.
+    assert!(
+        item(&index, "R/3.html").starts_with(
+            "<div class=\"item\" data-status=\"draft\" data-default=\"off\" data-uses=\"review\" data-domain=\"R1\" data-enabled=\"off\">"
+        ),
+        "{}",
+        item(&index, "R/3.html")
+    );
+    assert!(index.contains(
+        "<input type=\"checkbox\" id=\"f-uses-1\" name=\"uses\" value=\"review\" checked>"
+    ));
     assert!(
         index.contains(
-            "<li class=\"off has-statement u-r\"><div class=\"row\"><a href=\"R/3.html\">"
-        ),
-        "{index}"
+            "body:has(#f-uses-1:not(:checked)) .item[data-uses=\"review\"]{display:none}"
+        )
     );
-    assert!(index.contains("<input type=\"checkbox\" id=\"show-review\" checked>"));
     assert!(index.contains("<a class=\"params\" href=\"R/parameters.html\">Parameters</a>"));
     assert!(read(&site, "R/3.html").contains("<p>Used in: review</p>"));
     assert!(read(&site, "R/2.html").contains("<p>Used in: AGENTS.md</p>"));
@@ -570,55 +601,154 @@ fn site_draws_the_tree_by_level() {
         edit(domain(11), "default = \"off\"", "parent = 9"),
     );
     put(&dir, "r/rules", rule(12, 10, ""));
+    // A third level, under domain 2.
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(13), "default", "parent = 2\ndefault"),
+    );
+    put(&dir, "r/rules", rule(14, 13, ""));
     let r = statute(&dir, &["site"]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     let index = read(&dir, ".statute/site/index.html");
-    for (id, class, h) in [(1, "d1", 4), (2, "d2", 5)] {
-        let row = format!(
-            "<li class=\"domain {class}\"><div class=\"row\"><h{h}><a href=\"R/{id}.html\">"
-        );
-        assert!(index.contains(&row), "{row}: {index}");
-    }
+    // A domain is no row but the band over its rules, its path from the
+    // source, the darker band and `h4` for the first level, a deeper one
+    // `h5`; its first place of the marks says whether the defaults
+    // enable it.
+    let top = group(&index, "R/9.html");
     assert!(
-        index.contains("<li class=\"has-statement u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
-        "{index}"
+        top.starts_with("<h4 class=\"group top\"><a href=\"R/1.html\" aria-label=\"R1 Domain 1\">"),
+        "{top}"
     );
     // Below domain 1, the one-of 9 comes before the subdomain 2, though
     // its number is higher.
-    let at = |page: &str| {
-        index
-            .find(&format!("<a href=\"R/{page}.html\">"))
-            .expect(page)
-    };
+    let at = |page: &str| index.find(&format!("href=\"R/{page}.html\"")).expect(page);
     assert!(at("9") < at("2"), "{index}");
-    // A one-of none of whose options is enabled is drawn lighter.
-    assert!(index.contains("<li class=\"one-of unset\">"), "{index}");
-    // One with a domain on is not.
+    let deep = group(&index, "R/4.html");
     assert!(
-        index.contains("<li class=\"one-of\"><span class=\"one-of-label\">One of</span><div class=\"row\"><a href=\"R/9.html\">"),
-        "{index}"
+        deep.starts_with(
+            "<h5 class=\"group deep\"><a href=\"R/2.html\" aria-label=\"R2 Domain 1, Domain 2\">"
+        ),
+        "{deep}"
     );
+    assert!(deep.contains("<span class=\"marks\"><span class=\"mark dot\" role=\"img\" aria-label=\"off by default\""), "{deep}");
+    // A third level goes a heading deeper and writes its whole path; its
+    // block has its row alone, the one that sticks.
+    let third = group(&index, "R/14.html");
+    assert!(
+        third.starts_with(
+            "<h6 class=\"group deep\"><a href=\"R/13.html\" aria-label=\"R13 Domain 1, Domain 2, Domain 13\">"
+        ),
+        "{third}"
+    );
+    assert_eq!(
+        third.matches("<span class=\"group-part\"").count(),
+        3,
+        "{third}"
+    );
+    let block = &index[..index.find("R/14.html\"").unwrap()];
+    let block = &block[block.rfind("<div class=\"block\">").unwrap()..];
+    assert_eq!(block.matches("class=\"group ").count(), 1, "{block}");
+    // A rule under a domain that is an option of a one-of has that
+    // domain in its path.
+    assert!(group(&index, "R/12.html").contains("aria-label=\"R10 Domain 1, Domain 10\""));
+    // A one-of none of whose options is enabled is drawn lighter.
+    assert!(item(&index, "R/5.html").contains("<div class=\"one-of unset\""));
+    // One with a domain on is not.
+    assert!(item(&index, "R/9.html").contains("<div class=\"one-of\" role=\"group\""));
     // Every page carries the tokens, as the public site has them.
     let tokens = include_str!("../assets/tokens.css");
     assert!(index.contains(tokens));
     assert!(read(&dir, ".statute/site/R/4.html").contains(tokens));
     assert!(index.contains("--icon-check: url(\"data:image/svg+xml,%3Csvg "));
-    // The legend draws each mark as the tree does and says what it means.
-    let legend = &index[index.find("<dl class=\"legend\">").expect(&index)..];
-    let legend = &legend[..legend.find("</dl>").unwrap()];
-    assert_eq!(legend.matches("<div><dt>").count(), 11, "{legend}");
-    assert!(legend.contains("<dt><span class=\"switch on\" role=\"img\" aria-label=\"on by default\" title=\"on by default\"></span></dt><dd>A new rule set gets it without listing it.</dd>"), "{legend}");
+    // The legend draws each mark as the rows do, a line per kind, the
+    // defaults first, open until folded.
+    let legend = &index[index.find("<details class=\"legend\" open>").expect(&index)..];
+    let legend = &legend[..legend.find("</details>").unwrap()];
+    assert_eq!(legend.matches("<dt>").count(), 6, "{legend}");
+    assert!(legend.find("<dt>Default</dt>") < legend.find("<dt>Status</dt>"));
     assert!(
-        legend.contains("<dt><span class=\"status trial\">trial</span></dt>"),
+        legend.contains(
+            "<span class=\"legend-item\"><span class=\"mark dot on\"></span>on by default</span>"
+        ),
         "{legend}"
     );
-    // The filter is a button with Lucide's funnel.
-    let funnel = include_str!("../assets/icons/lucide/funnel.svg");
-    let path = funnel.lines().find(|l| l.contains("<path")).unwrap().trim();
-    let filter = &index[index
-        .find("<details class=\"filter\"><summary><svg class=\"icon\"")
+    // The filter is a menu per field, each with `chevron-down`, under its
+    // name.
+    let chevron = include_str!("../assets/icons/lucide/chevron-down.svg");
+    let path = chevron
+        .lines()
+        .find(|l| l.contains("<path"))
+        .unwrap()
+        .trim();
+    let menu = &index[index
+        .find("<span class=\"control-label\" id=\"label-status\">Status</span><details class=\"menu\" data-field=\"status\"")
         .expect(&index)..];
-    assert!(filter[..filter.find("</summary>").unwrap()].contains(&path.replace(" />", "/>")));
+    assert!(menu[..menu.find("</summary>").unwrap()].contains(&path.replace(" />", "/>")));
+}
+
+#[test]
+fn site_names_the_parent_of_a_shared_title() {
+    let dir = repo("shared-titles", "r/");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R5\", \"R6\"]\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    put(&dir, "r/rules", domain(1));
+    put(&dir, "r/rules", domain(2));
+    // Domains 3 and 4, under 1 and 2, both titled Tiers; 7 has a title of
+    // its own.
+    for (id, parent) in [(3, 1), (4, 2), (7, 1)] {
+        let tiers = edit(
+            domain(id),
+            "default",
+            &format!("parent = {parent}\ndefault"),
+        );
+        let tiers = if id == 7 {
+            tiers
+        } else {
+            edit(tiers, &format!("Domain {id}\""), "Tiers\"")
+        };
+        put(&dir, "r/rules", tiers);
+    }
+    put(&dir, "r/rules", rule(5, 3, ""));
+    put(&dir, "r/rules", rule(6, 4, "requires = [5]"));
+    // Rule 8, beside rule 5 under domain 3, has its title.
+    put(
+        &dir,
+        "r/rules",
+        edit(rule(8, 3, ""), "Rule 8\"", "Rule 5\""),
+    );
+    let r = statute(&dir, &["site"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let site = dir.join(".statute/site");
+    let parent = |name: &str| format!(" <span class=\"parent\">({name})</span></a>");
+    // A link to a domain whose title another has names its parent.
+    let one = std::fs::read_to_string(site.join("R/1.html")).unwrap();
+    assert!(
+        one.contains(&format!("Tiers</span>{}", parent("Domain 1"))),
+        "{one}"
+    );
+    assert!(one.contains("Domain 7</span></a>"), "{one}");
+    // The domain menu does as well.
+    let index = read(&dir, ".statute/site/index.html");
+    let menu = &index[index.find("data-field=\"domain\"").expect(&index)..];
+    assert!(
+        menu.contains("Tiers</span> <span class=\"parent\">(Domain 2)</span>"),
+        "{menu}"
+    );
+    // A rule's breadcrumb, which names the parents, does not.
+    let five = std::fs::read_to_string(site.join("R/5.html")).unwrap();
+    let nav = &five[five.find("<nav>").unwrap()..five.find("</nav>").unwrap()];
+    assert!(nav.contains("Tiers</span></a>"), "{nav}");
+    assert!(!nav.contains("class=\"parent\""), "{nav}");
+    // Two rules of one title under one parent are told apart by their
+    // references, not by their parent's title, which they share.
+    let six = std::fs::read_to_string(site.join("R/6.html")).unwrap();
+    assert!(six.contains("Rule 5</span></a>"), "{six}");
+    let three = std::fs::read_to_string(site.join("R/3.html")).unwrap();
+    assert_eq!(three.matches("Rule 5</span></a>").count(), 2, "{three}");
 }
 
 /// The path of the page the language switch of the page at `path` leads
@@ -696,8 +826,8 @@ fn site_writes_both_languages() {
     }
     let index = read(&site, "index.html");
     let index_zh = read(&site, "zh/index.html");
-    assert!(index.contains("<html lang=\"en\">") && index.contains("Filter"));
-    assert!(index_zh.contains("<html lang=\"zh\">") && index_zh.contains("筛选"));
+    assert!(index.contains("<html lang=\"en\">") && index.contains("Clear filters"));
+    assert!(index_zh.contains("<html lang=\"zh\">") && index_zh.contains("清除筛选"));
     assert!(
         index
             .contains("<a class=\"languages\" href=\"zh/index.html\" hreflang=\"zh\" lang=\"zh\">")
@@ -707,11 +837,11 @@ fn site_writes_both_languages() {
     // A title the page's language has, as it is; another, in the node's
     // language, marked with it.
     assert!(
-        index_zh.contains("<span class=\"title\">规定 2</span>"),
+        index_zh.contains("<span class=\"title\" title=\"规定 2\">规定 2</span>"),
         "{index_zh}"
     );
-    assert!(index_zh.contains("<span class=\"title\" lang=\"en\">Rule 3</span>"));
-    assert!(index.contains("<span class=\"title\" lang=\"zh\">规定 5</span>"));
+    assert!(index_zh.contains("<span class=\"title\" lang=\"en\" title=\"Rule 3\">Rule 3</span>"));
+    assert!(index.contains("<span class=\"title\" lang=\"zh\" title=\"规定 5\">规定 5</span>"));
 
     // A node with every text in the page's language has no tag.
     for page in ["R/2.html", "zh/R/2.html", "zh/here/5.html"] {
@@ -811,10 +941,10 @@ fn site_shows_statements_in_three_views() {
     let site = statements("statements").join(".statute/site");
     // The statement of a rule, at the end of its row.
     let statement = |index: &str, id: u64| {
-        let at = index.find(&format!("<a href=\"R/{id}.html\">")).unwrap();
-        let start = at + index[at..].find("<div class=\"statement\"").unwrap();
-        let end = start + index[start..].find("</div></div></li>").unwrap() + "</div>".len();
-        index[start..end].to_owned()
+        let row = entry(index, &format!("R/{id}.html"));
+        let start = row.find("<div class=\"statement\"").unwrap();
+        let end = start + row[start..].find("</div></span>").unwrap() + "</div>".len();
+        row[start..end].to_owned()
     };
     let index = read(&site, "index.html");
     assert_eq!(
@@ -844,7 +974,7 @@ fn site_shows_statements_in_three_views() {
     // script keeps the choice in the address.
     for (page, names) in [
         (&index, ["Title and statement", "Title", "Statement"]),
-        (&zh, ["标题与规定", "标题", "规定"]),
+        (&zh, ["标题和要求", "标题", "要求"]),
     ] {
         for (i, (view, name)) in ["both", "title", "statement"].iter().zip(names).enumerate() {
             let checked = if i == 0 { " checked" } else { "" };
@@ -854,12 +984,12 @@ fn site_shows_statements_in_three_views() {
             assert!(page.contains(&radio), "{radio}");
         }
         assert!(
-            page.contains("body:has(#view-title:checked) .row > .statement { display: none; }")
+            page.contains("body:has(#view-title:checked) .entry .statement { display: none; }")
         );
         assert!(
-            page.contains("body:has(#view-statement:checked) .has-statement > .row > a .title {")
+            page.contains("body:has(#view-statement:checked) .has-statement .rule-text .title {")
         );
-        assert!(page.contains("query.set(\"view\", view.value)"));
+        assert!(page.contains("query.push(`view=${view.value}`)"));
     }
     // A rule's own page is as it was.
     assert!(read(&site, "R/7.html").contains(
@@ -887,6 +1017,26 @@ fn chrome() -> Option<PathBuf> {
         "no Chrome in CI"
     );
     found
+}
+
+/// What the script added to `page` writes on `<body data-probe>` once it
+/// is loaded at `query` in headless Chrome, with the profile in `dir`,
+/// which keeps what the page stores from one load to the next.
+fn probe_run(chrome: &Path, dir: &Path, page: &Path, query: &str) -> String {
+    let out = Command::new(chrome)
+        .args([
+            "--headless",
+            "--no-proxy-server",
+            "--virtual-time-budget=5000",
+        ])
+        .arg(format!("--user-data-dir={}", dir.join("profile").display()))
+        .arg("--dump-dom")
+        .arg(format!("file://{}{query}", page.display()))
+        .output()
+        .unwrap();
+    let dom = String::from_utf8(out.stdout).unwrap();
+    let start = dom.find("data-probe=\"").expect(&dom) + 12;
+    dom[start..start + dom[start..].find('"').unwrap()].replace("&amp;", "&")
 }
 
 /// The view in the address, in headless Chrome, which runs the index's
@@ -917,23 +1067,7 @@ addEventListener("load", () => {
 </script></body>"##;
     let page = dir.join("probe.html");
     std::fs::write(&page, index.replace("</body>", probe)).unwrap();
-    let profile = dir.join("profile");
-    let run = |query: &str| {
-        let out = Command::new(&chrome)
-            .args([
-                "--headless",
-                "--no-proxy-server",
-                "--virtual-time-budget=5000",
-            ])
-            .arg(format!("--user-data-dir={}", profile.display()))
-            .arg("--dump-dom")
-            .arg(format!("file://{}{query}", page.display()))
-            .output()
-            .unwrap();
-        let dom = String::from_utf8(out.stdout).unwrap();
-        let start = dom.find("data-probe=\"").expect(&dom) + 12;
-        dom[start..start + dom[start..].find('"').unwrap()].replace("&amp;", "&")
-    };
+    let run = |query: &str| probe_run(&chrome, &dir, &page, query);
     // A fresh profile: the default; a click writes Title into the
     // address, and back returns to the address without a view, and so to
     // the default, though Title is kept.
@@ -946,4 +1080,148 @@ addEventListener("load", () => {
     assert_eq!(run("?x=1"), "title ?x=1&view=title");
     // An address with a view: that view.
     assert_eq!(run("?view=statement"), "statement ?view=statement");
+}
+
+/// The filter, the search and the legend, in headless Chrome, which runs
+/// the index's script, on the four rules of `four`, all drafts, `here:5`
+/// alone not enabled: the number of rules shown, the sources shown, what
+/// the menus of the status and of the rule set say, and whether the
+/// legend is open; Clear filters, which brings back the default filter
+/// and an empty search; and the legend kept folded. Skipped without
+/// Chrome, except in CI.
+#[test]
+fn site_filters_and_searches_the_table() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = four("filter");
+    assert_eq!(statute(&dir, &["site"]).code, 0);
+    let index = read(&dir, ".statute/site/index.html");
+    let probe = r##"<script>
+const state = () => [
+  document.querySelector(".shown").textContent,
+  document.querySelectorAll(".source:not([hidden])").length,
+  document.querySelector("details.menu[data-field=status] .value").textContent,
+  document.querySelector("details.menu[data-field=enabled] .value").textContent,
+  document.querySelector(".none").hidden ? "-" : "none",
+  document.querySelector("details.legend").open ? "open" : "folded",
+  ["details.menu", "details.legend"]
+    .map((d) => document.querySelector(`${d} > summary`).getAttribute("aria-expanded"))
+    .join("/"),
+  Array.from(document.querySelectorAll("summary")).every((s) => document.getElementById(s.getAttribute("aria-controls")))
+    ? "controls"
+    : "no controls",
+];
+const done = (r) => document.body.setAttribute("data-probe", r.join(" | "));
+addEventListener("load", () => {
+  const r = state();
+  if (location.hash === "#clear") {
+    document.querySelector(".clear").click();
+    r.push(...state(), location.search || "-");
+  }
+  if (location.hash === "#fold") document.querySelector("details.legend > summary").click();
+  done(r);
+});
+</script></body>"##;
+    let page = dir.join("probe.html");
+    std::fs::write(&page, index.replace("</body>", probe)).unwrap();
+    let run = |query: &str| probe_run(&chrome, &dir, &page, query);
+    // Each summary says whether it is open and what it opens.
+    assert_eq!(
+        run(""),
+        "4 rules | 4 | 3/5 | All | - | open | false/true | controls"
+    );
+    assert_eq!(
+        run("?enabled=off"),
+        "1 rules | 1 | 3/5 | not enabled | - | open | false/true | controls"
+    );
+    assert_eq!(
+        run("?q=secret"),
+        "1 rules | 1 | 3/5 | All | - | open | false/true | controls"
+    );
+    assert_eq!(
+        run("?status="),
+        "0 rules | 0 | None | All | none | open | false/true | controls"
+    );
+    assert_eq!(
+        run("?status=&q=x#clear"),
+        "0 rules | 0 | None | All | none | open | false/true | controls | 4 rules | 4 | 3/5 | All | - | open | false/true | controls | -"
+    );
+    // Folded, the legend stays folded on the next load.
+    run("#fold");
+    assert_eq!(
+        run(""),
+        "4 rules | 4 | 3/5 | All | - | folded | false/false | controls"
+    );
+}
+
+/// A statement with a path in code longer than a phone's row wraps: the
+/// index, loaded 390px wide in a frame, as Chrome's headless window is
+/// at least 500px wide, does not scroll sideways, in either language.
+/// Skipped without Chrome, except in CI.
+#[test]
+fn site_fits_a_phone() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("phone");
+    let rule = dir.join("r/rules/7.toml");
+    let text = std::fs::read_to_string(&rule).unwrap();
+    let code = "`.claude/skills/<name>/references/alongfilename.md`";
+    std::fs::write(
+        &rule,
+        edit(
+            (7, text),
+            "Write in {$language.docs}.",
+            &format!("Write in {{$language.docs}}, in {code}."),
+        )
+        .1,
+    )
+    .unwrap();
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    for page in ["index.html", "zh/index.html"] {
+        assert!(read(&dir.join(".statute/site"), page).contains("alongfilename.md"));
+    }
+    let page = dir.join("phone.html");
+    std::fs::write(
+        &page,
+        r##"<!DOCTYPE html><body>
+<iframe src=".statute/site/index.html" style="width: 390px; height: 844px"></iframe>
+<iframe src=".statute/site/zh/index.html" style="width: 390px; height: 844px"></iframe>
+<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {
+    const root = f.contentDocument.documentElement;
+    done(`${root.clientWidth} ${root.scrollWidth <= root.clientWidth}`);
+  })))).then((r) => document.body.setAttribute("data-probe", r.join(" | ")));
+</script></body>"##,
+    )
+    .unwrap();
+    let out = Command::new(chrome)
+        .args([
+            "--headless",
+            "--no-proxy-server",
+            "--hide-scrollbars",
+            // The frames' documents, files too, are the page's to read.
+            "--allow-file-access-from-files",
+            "--window-size=1280,900",
+            "--virtual-time-budget=5000",
+        ])
+        .arg(format!("--user-data-dir={}", dir.join("profile").display()))
+        .arg("--dump-dom")
+        .arg(format!("file://{}", page.display()))
+        .output()
+        .unwrap();
+    let dom = String::from_utf8(out.stdout).unwrap();
+    let start = dom.find("data-probe=\"").expect(&dom) + 12;
+    assert_eq!(
+        &dom[start..start + dom[start..].find('"').unwrap()],
+        "390 true | 390 true"
+    );
 }

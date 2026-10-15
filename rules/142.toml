@@ -1,6 +1,6 @@
 id = 142
 slug = "meta-tier-read-only-through-unlocked-route"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "Read the meta tier only through a route that a person unlocks"
 zh = "元凭据层只经人解锁的途径读"
 
 [text.statement]
-en = "Read the meta credentials in the meta tier (the tokens of service accounts, SSH keys) only through an interactive route that a person unlocks, and open the tier to no service account."
-zh = "元凭据层里的元凭据 (各 service account 的 token、SSH 密钥) 只经人解锁的交互途径读，不对任何 service account 开放。"
+en = "Read the meta credentials in the meta tier, the part of the secret manager kept for credentials that give access to other credentials (the tokens of service accounts, SSH keys), only through an interactive route that a person unlocks, and open the tier to no service account."
+zh = "元凭据层 (密钥管理器里专放能取得其他凭证的凭据的部分，例如各 service account 的 token、SSH 密钥) 里的元凭据，只经人解锁的交互途径读，不对任何 service account 开放。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "1b918e5055d1ebe51378039d30aa8fefdce9fb8da8cf82b89379f3c1e8c78ded"
+zh = "7351f7e289f1868d8d7224c9d87ef6b78bb5366d7e8506349e0811e743121413"

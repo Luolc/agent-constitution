@@ -1,6 +1,6 @@
 id = 161
 slug = "fleet-cli"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,8 +8,8 @@ parent = 78
 default = "off"
 
 [title]
-en = "fleet commands"
-zh = "fleet 命令"
+en = "Commands"
+zh = "命令"
 
 [applicability]
 en = '''
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "16c66fa0a7f5332b0e424477f194c9affa3bc4404082f231e74c553c0e3b4842"
+zh = "1db1cac79d3830603974c921cc17615d5ff88e19c10b273e5ccbe7ef0bf784cf"

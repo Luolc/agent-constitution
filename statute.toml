@@ -18,7 +18,7 @@ domains = [
   # The owner's environment, public rules that hold no private value; the private layer
   # adds what is private: machines and their directories,
   "R127",
-  # the tiers of the secret store,
+  # the tiers of the secret manager,
   "R137",
   # test accounts, logins and usage quotas,
   "R145",
@@ -35,6 +35,9 @@ rules = [
   "R46",
   # The generated constitution goes with the sources it was rebuilt from.
   "R47",
+  # Here the code is the compiler of AGENTS.md: the root AGENTS.md goes with the side
+  # that changed it, in place of R46.
+  "L28",
   # A change that needs new instructions waits until they are merged.
   "R48",
   # CI runs check-instruction-changes on every pull request.
@@ -81,9 +84,9 @@ rules = [
   # Content Markdown lives under docs/ and only convention files at the root.
   "R206",
   # The owner's environment, as for the domains above: shared machines take no load,
+  # and a problem that needs heavy load is reproduced only where its load is capped,
   "R30",
-  "R31",
-  "R138",
+  "R278",
   # a task gives no precautions for what a shared machine forbids,
   "R251",
   # and design questions go to the owner directly, at most five at a time.

@@ -1,22 +1,23 @@
 id = 196
 slug = "writing"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
+parent = 14
 default = "on"
 
 [title]
-en = "Writing and communication"
-zh = "写作与沟通"
+en = "Writing"
+zh = "写作"
 
 [applicability]
 en = '''
-Covers how agents put proposals, questions and steps to people, which language each kind of text is written in, and how text that people read is written. Enable it in a repository where agents talk with people or write text that people read; one whose agents only run batch work that nobody reads need not.
+Text that people read, wherever it is: the writing guide, the language of documents, code, comments, commits and pull requests, quotations, the dates of values that go stale, and proper nouns in translation. Enable it wherever agents work.
 '''
 zh = '''
-管 agent 怎样向人提出提案、问题和要人做的步骤，各类文字用什么语言写，以及写给人读的文字怎么写。agent 与人对话或者写给人读的文字的仓库启用；agent 只跑无人阅读的批处理的仓库不必启用。
+所有给人读的文字，不论写在哪里：写作指南，文档、代码、注释、commit 与 PR 用什么语言，引原文，会过期的值注明日期，译名附原文。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "4dfa1fc04007f32c975d7ea7e8cb8438beda8f61bc59662e0ed09a999f972126"
+zh = "d1beb5e437d5b9f6654f643af044ba152ea58202c051fc423a4b6d343fb2d171"

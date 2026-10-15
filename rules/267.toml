@@ -1,0 +1,23 @@
+id = 267
+slug = "shared-machines"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 13
+default = "on"
+
+[title]
+en = "Shared machines"
+zh = "共享机器"
+
+[applicability]
+en = '''
+Work on a machine that others share: no load generators, problems that need heavy load reproduced in isolation, and a way to stop every waiting loop and lasting process. Enable it wherever agents work; the rules here that are off by default are for machines shared with others.
+'''
+zh = '''
+在与别人共用的机器上工作：不起负载发生器，高负载下才出现的问题隔离复现，等待的循环和长期运行的进程都有办法停下。凡有 agent 工作的地方都要启用；这里默认关着的规定是给与别人共用的机器的。
+'''
+
+[translations]
+zh = "e9470a3298ffb16e84ad68ce99efa2fa154b7502de808b4f8f4a47955a091a94"

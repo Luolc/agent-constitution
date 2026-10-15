@@ -177,12 +177,17 @@ rule set; and the legacy copies `<name>.legacy.md` in any directory
 (the Files table of [statute-migrate](../../skills/statute-migrate/SKILL.md)).
 A generated file goes with whichever side changed it: with the
 constitution sources it is an amendment, alone with the tools it is a
-tools change. This repo's generated files are the built constitution and
-`statute-checks.toml`, which the generic part also lists: generated
-counts first, since `statute compile --check` proves the file is a
-compile of the rule set and it changes with statute's version. The
+tools change. This repo's generated files are the built constitution,
+`statute-checks.toml` and the `AGENTS.md` at the top of the repo, which
+the generic part also lists: generated counts first, since `statute
+compile --check` proves each is a compile of the rule set, and each
+changes with statute as well as with the rule set (`statute-checks.toml`
+with its version, `AGENTS.md` with how it renders the rules), as this
+repo's rule L28 provides in place of R46. An `AGENTS.md` in a
+subdirectory stays an instruction file. The
 script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
-off) and lists both groups when they mix. CI runs
+off), lists both groups when they mix, and on a pass names the
+generated files, for the reviewer. CI runs
 it against the same base as check 7; a push to `main` that carries
 several changes at once is checked as one.
 
@@ -196,9 +201,9 @@ The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
 either option replaces this repo's own part and generated files.
-`statute-checks.toml` stays an instruction file there until the repo
-declares it with `--generated`, once its CI runs `statute compile
---check`.
+`statute-checks.toml` and the top `AGENTS.md` stay instruction files
+there until the repo declares them with `--generated`, once its CI runs
+`statute compile --check`.
 
 The design translation check (`check-design-translation`) keeps the
 Chinese translation of the design, `docs/design/zh/<name>.md`, in step
