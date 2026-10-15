@@ -1,0 +1,32 @@
+id = 24
+slug = "statute-patch-release-authorized"
+revision = 2
+kind = "rule"
+status = "superseded"
+superseded-by = 25
+lang = "en"
+parent = "R14"
+default = "off"
+authority = ["advance-authorization.listed-items", "advance-authorization.as-written"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Patch releases of statute are authorized in advance; others need a person's yes"
+
+[text.statement]
+en = "The lead of a job may push, without asking a person, the tag of a version of statute that raises only the patch number of the last release, on a commit that {@rule:22} allows; every other release of statute, a minor or major one included, needs a person's yes, given at the time or written down in advance for that version."
+
+[text.reason]
+en = '''
+This is the owner's advance authorization of one class of releases, written into this repository's instructions as {@constitution:advance-authorization.listed-items} requires; it counts only as written and within its conditions ({@constitution:advance-authorization.as-written}).
+'''
+
+[text.verification]
+en = '''
+The last release is the highest version of statute already published. A patch release outside these conditions (pushed by another agent, raising more than the patch number, or on a commit the check does not pass) is not covered and needs a person's yes as {@rule:R32} requires.
+
+Violated when a release of statute that this authorization does not cover is made without a person's yes.
+'''

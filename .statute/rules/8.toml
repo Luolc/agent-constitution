@@ -1,0 +1,31 @@
+id = 8
+slug = "compiled-outputs-committed"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R13"
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Commit no instruction file compiled for a real person's rule set"
+
+[text.statement]
+en = "Commit no instruction file compiled from a real person's rule set; the compiled outputs committed here are this repository's own `AGENTS.md` and outputs built from made-up rule sets."
+
+[text.reason]
+en = '''
+A person's compiled file holds their own rules and values, which belong to them and not to this repository.
+'''
+
+[text.verification]
+en = '''
+This repository's own compiled files are `AGENTS.md`, the installed skills and `statute-checks.toml` that `statute compile` writes beside `statute.toml`.
+
+Violated when a change commits an instruction file compiled from a rule set other than this repository's own or a made-up one.
+'''

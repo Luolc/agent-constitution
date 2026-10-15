@@ -1,0 +1,31 @@
+id = 1
+slug = "zh-follows-en"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R196"
+default = "on"
+authority = ["amendment-languages", "equal-languages.differences"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Change the `zh` text of a source with its English"
+
+[text.statement]
+en = "When you change the English text of a constitution or rule source, change its `zh` text in the same change so that it says what the English says, clause by clause rather than word by word, and cites the same provisions and rules."
+
+[text.reason]
+en = '''
+The constitution and the rules of this repository are kept in two languages, and an agent may read either; a `zh` text that lags behind the English gives the agents that read it other requirements ({@constitution:equal-languages.differences}).
+'''
+
+[text.verification]
+en = '''
+The constitution sources (`constitution/<edition>/`) and the rule files (`rules/<id>.toml`) give each text one key per language, `en` and `zh`. A rule's `[translations]` key holds the SHA-256 of the English it follows; when the English changes, `cargo run --locked --quiet -p statute -- validate rules` fails and prints the new hash, which goes into the file once the `zh` text says what the new English says. The checks catch a citation that one language has and the other lacks; whether the `zh` text says the same thing, in plain, natural simplified Chinese, is judged in review, reading it against the English.
+
+Violated when a change alters an English text of these sources and leaves its `zh` text saying something else, or citing other provisions or rules.
+'''
