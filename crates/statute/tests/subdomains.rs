@@ -406,6 +406,11 @@ fn a_rule_three_levels_down_is_on_when_each_domain_above_it_is() {
     let dir = repo("three-levels", &manifest("", ""), &tree(0));
     ok(&statute(&dir, &["lock"]));
     assert_eq!(locked(&dir), ["R44", "me:31"]);
+    ok(&statute(&dir, &["site"]));
+    let index = std::fs::read_to_string(dir.join(".statute/site/index.html")).unwrap();
+    for title in ["Domain 40", "Rule 44", "Domain 30", "Rule 31"] {
+        assert!(index.contains(title), "{title}");
+    }
     // One domain above them off, and neither is on.
     let dir = repo("three-levels-off", &manifest("", ""), &tree(42));
     ok(&statute(&dir, &["lock"]));
