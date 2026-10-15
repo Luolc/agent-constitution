@@ -1,4 +1,4 @@
-<!-- en-sha256: ff0ba91e7327e214b1580ede63a24df63898dbf9eb32f0658cbec94aa826e27d -->
+<!-- en-sha256: 4feef45976d5caab932a1f3d73f012ba647eb87ebd9a3e29195537dacdde4e6a -->
 # 规定检查与审查
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -22,15 +22,15 @@
 
 命令在规定清单所在的目录里用 `sh -c` 运行；检查一个变更时，`STATUTE_BASE` 里是变更起点的 git ref。`tools` 里的工具不在 `PATH` 上、命令 10 分钟后还没退出或还没关闭输出 (它启动的进程一并停掉)、输出超过 1 MiB、退出码为 1 但输出不是上述列表，都算无法判定。
 
-允许规定没有自动检查 (`check = "review"`)；这样的规定直接交给审查方 (见下文)。
+允许规定没有自动检查 (`check = "none"`)；这样的规定在 `uses` 含 `review` 时交给审查方 ([规定用在哪里](rule-config.md#where-a-rule-is-used))。
 
 ## <a id="outcomes-and-the-review-loop"></a>结果与审查回路
 
 检查有三种结果：通过、违反和无法判定。缺工具、超时和脚本崩溃都算无法判定，从不算违反，所以缺了某个工具链不会让检查变红。
 
-审查从 `statute check` 开始：审查方运行它，拿到一份已启用规定的清单，脚本判定了的少数规定带着结果，其余的待审，每条都附上理由和核验方法，这两部分编译出的 `AGENTS.md` 默认不收 ([编译与网站](statute-command.md#compilation-and-the-site))。审查方按 domain、按规定逐项过这份清单：待审的规定、无法判定的结果和违反的结果。是由一个审查方全部接手，还是由几个审查方各接一组，以及怎样分组，在规定清单里设定。实现之后，`uses` 把待审的规定缩小到标了 `review` 的那些 ([规定用在哪里](rule-config.md#where-a-rule-is-used))。
+审查从 `statute check` 开始：审查方运行它，拿到一份已启用规定的清单，脚本判定了的少数规定带着结果，其余的待审，每条都附上理由和核验方法，这两部分编译出的 `AGENTS.md` 默认不收 ([编译与网站](statute-command.md#compilation-and-the-site))。审查方按 domain、按规定逐项过这份清单：待审的规定、无法判定的结果和违反的结果。是由一个审查方全部接手，还是由几个审查方各接一组，以及怎样分组，在规定清单里设定。`uses` 把待审的规定缩小到标了 `review` 的那些 ([规定用在哪里](rule-config.md#where-a-rule-is-used))。
 
-第一版里，`statute check` 列出仓库里已启用的规定供审查，有检查的就运行它的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它把规定按顶层 domain 分组，子领域的规定归在它所属的 domain 下，domain 和每组里的规定都按 ID 排序，每组以 domain 的引用和标题作标题 (`## R13 (Security)`)。每条规定一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查的规定写 `review`)、引用和标题，以及一句说明，发现列在下面；无法判定或待审的规定后面紧跟它的理由和核验方法，其中的引用与编译出的 `AGENTS.md` 一样渲染，只是被引的规定一律写成标题加引用 (`标题 (规定 R42)`)，因为这里的输出没有锚点可链接。在各领域之前，`## statute.toml` 一节把规定清单的 `public` 与仓库在 GitHub 上的可见性比对 (见[公开与否](rule-sources.md#public-or-not))，经 `gh repo view --json visibility` 查询：仓库在 GitHub 上显示为 `PUBLIC` 而清单写着 `public = false`，即为违反；`gh` 给不出答案，算无法判定；其余情况都通过。有规定或规定清单被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看。内置检查属于第一方规定源的规定；别的规定源里写了 `check = "builtin"` 的规定算无法判定，并附一句说明 statute 没有它的内置检查，所以本地的 `L50` 不会运行规定 50 的检查。各条内置检查如下：
+第一版里，`statute check` 列出仓库里 `uses` 含 `review` 的已启用规定供审查，有检查的就运行它的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它把规定按顶层 domain 分组，子领域的规定归在它所属的 domain 下，domain 和每组里的规定都按 ID 排序，每组以 domain 的引用和标题作标题 (`## R13 (Security)`)。每条规定一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查、`uses` 含 `review` 的规定写 `review`)、引用和标题，以及一句说明，发现列在下面；无法判定或待审的规定后面紧跟它的理由和核验方法，其中的引用与编译出的 `AGENTS.md` 一样渲染，只是被引的规定一律写成标题加引用 (`标题 (规定 R42)`)，因为这里的输出没有锚点可链接。在各领域之前，`## statute.toml` 一节把规定清单的 `public` 与仓库在 GitHub 上的可见性比对 (见[公开与否](rule-sources.md#public-or-not))，经 `gh repo view --json visibility` 查询：仓库在 GitHub 上显示为 `PUBLIC` 而清单写着 `public = false`，即为违反；`gh` 给不出答案，算无法判定；其余情况都通过。有规定或规定清单被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看。内置检查属于第一方规定源的规定；别的规定源里写了 `check = "builtin"` 的规定算无法判定，并附一句说明 statute 没有它的内置检查，所以本地的 `L50` 不会运行规定 50 的检查。各条内置检查如下：
 
 - 规定 46 (instruction-files-apart) 用与 `check-instruction-changes` 相同的路径表区分指令文件、生成文件和其他文件，变更里既有指令文件又有其他文件的即为违反；路径表没有列出的 agent 工具的文件、路径表以外的指令源文件，以及仓库在自己的 `AGENTS.md` 里声明的路径，交给审查方；没有 `--base` 就没有可检查的变更。
 - 规定 43 (credential-designated-place) 带 `--redact` 运行机器上的 gitleaks，扫描变更里的提交或全部历史，有命中即为违反，命中只显示位置和 gitleaks 的规则名；gitleaks 识别不出的凭证，以及仓库以外的地方，交给审查方；没有 gitleaks 时算无法判定；
