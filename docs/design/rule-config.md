@@ -655,7 +655,8 @@ has this shape, and statute checks it when it reads a source:
   step with the code."); an option that is a domain keeps its heading.
   On the sites, a one-of is a box in its domain's list that names each
   option and marks the default; an option appears in that box only, not
-  again in the list. This rendering is not built yet.
+  again in the list. The compiled `AGENTS.md` is built so; the box on
+  the sites is not built yet.
 
 **Why.** A reader of the compiled file or the site finds every rule
 directly under a domain or a one-of, with no rule nested under a rule,
@@ -696,8 +697,11 @@ The local site marks the default switches, each one-of's default
 option, `uses` and the values of parameters
 ([The local site](statute-command.md#the-local-site)).
 
-Not built yet: the one-of's rendering, and what the public site shows
-of these.
+The compiled `AGENTS.md` puts each one-of's enabled option in the
+one-of's place, with the line that names the one-of.
+
+Not built yet: the one-of as a box on the sites, and what the public
+site shows of these.
 
 The parts of the design this one changes:
 
