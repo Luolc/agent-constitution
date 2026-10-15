@@ -1,7 +1,7 @@
 # PR gate: secret scan of the PR's or push's commits, then pre-commit on
 # all files, which includes the constitution build check, the tests and
-# cargo fmt (local hooks; the tests of the site's templates need Hugo and
-# cargo fmt the Rust toolchain, both installed before them), then the Rust
+# cargo fmt (local hooks; the site's tests need Hugo and the Rust
+# toolchain, cargo fmt the toolchain, both installed before them), then the Rust
 # lint, tests and package check, then the static site build with its link
 # check, then the constitution numbering check and the instruction-only
 # check, both against the base commit.

@@ -18,7 +18,6 @@ import unittest
 from unittest import mock
 import urllib.error
 
-from constitution_compiler.model import Layout
 from constitution_site import count_tokens
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -136,7 +135,7 @@ class MainTest(unittest.TestCase):
     """
     for lang in ("en", "zh"):
       for version, suffix in count_tokens.VERSIONS.items():
-        path = Layout.of(ROOT).output(f"{lang}{suffix}")
+        path = count_tokens.output(f"{lang}{suffix}")
         md = (ROOT / path).read_text(encoding="utf-8")
         yield lang, version, count_tokens.counted(md)
 

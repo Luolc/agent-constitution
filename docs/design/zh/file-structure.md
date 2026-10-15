@@ -1,4 +1,4 @@
-<!-- en-sha256: 8ba4fb4566a54e89c8f96a3ba120bbd8f4bd6d3e2369bf25cb274b014bbd820b -->
+<!-- en-sha256: 0f9dd6dcbd8816bc6ef99ba3a90670fc4eb2a1cff77d3865d7f7d7908f6f1f29 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -53,7 +53,7 @@ tools/                    一个 uv workspace，每个子目录一个 Python 项
       revision.py         检查 7，对照基准核对修订号                   A
     tests/                渲染、检查、基准的测试，以及共用的测试
                           树 (test_constitution_fixture.py)            A
-  site/                   包 constitution_site，依赖 compiler          A
+  site/                   包 constitution_site，运行 statute export    A
     src/constitution_site/
       count_tokens.py     统计静态网站显示的 token 数
                           (count-tokens)                               A
