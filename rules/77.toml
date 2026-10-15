@@ -1,9 +1,10 @@
 id = 77
 slug = "git"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
+parent = 273
 default = "on"
 
 [title]
@@ -12,11 +13,11 @@ zh = "Git"
 
 [applicability]
 en = '''
-For repositories kept in Git that agents commit to: commit hooks and the local main branch. Not needed when agents only read the repository, or it uses another version control system. The credential scan in the commit hooks ({@rule:50}) sits here and not under Security, so a Git repository enables both.
+For repositories kept in Git that agents commit to: commit hooks, the local main branch, work not yet pushed and rewritten history. Not needed when agents only read the repository, or it uses another version control system.
 '''
 zh = '''
-适用于用 Git 管理、agent 会往里提交的仓库：管 commit hook 和本地 main 分支。agent 只读不提交，或者仓库用的是别的版本控制系统，就不必启用。commit hook 里的凭证扫描 ({@rule:50}) 挂在这里，不在 Security 下，所以用 Git 的仓库两个都要启用。
+agent 会提交的 Git 仓库：commit 钩子、本地 main 分支、尚未 push 的工作与改写过的历史。agent 只读仓库，或仓库用别的版本控制系统，就不需要。
 '''
 
 [translations]
-zh = "1c57b12688130ec70cd41b7dcfc3f56930beb47fe92f872c3a41cc21cc7589a8"
+zh = "6821ebf7efa1f0be319781b1772a811852a04041071747f92cc5c7ffbb0b150e"

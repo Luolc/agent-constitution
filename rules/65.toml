@@ -1,10 +1,10 @@
 id = 65
 slug = "no-installs-for-checks"
-revision = 4
+revision = 5
 kind = "rule"
 status = "trial"
 lang = "en"
-parent = 14
+parent = 268
 default = "on"
 authority = ["delegated-authority", "must-ask.means-of-production"]
 constitution = ">=1"

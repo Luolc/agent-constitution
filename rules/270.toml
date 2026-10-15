@@ -1,0 +1,23 @@
+id = 270
+slug = "talking-with-people"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 14
+default = "on"
+
+[title]
+en = "Talking with people"
+zh = "与人沟通"
+
+[applicability]
+en = '''
+What an agent writes to a person: in which language, how it writes out key parameters and steps, and how it puts a decision to a principal; how it reads a dictated message is below. Enable it wherever agents work.
+'''
+zh = '''
+agent 写给人的内容：用什么语言，关键参数与操作步骤怎么写，要委托人定的事怎么问；口述的消息怎么读在下面。凡有 agent 工作的地方都要启用。
+'''
+
+[translations]
+zh = "1eea7acae19a88d9b3a71281725120be41d8b8fa90d77a08513bbec9bf83c8e4"

@@ -1,0 +1,23 @@
+id = 266
+slug = "private-material"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 13
+default = "on"
+
+[title]
+en = "Private material"
+zh = "私有材料"
+
+[applicability]
+en = '''
+What a public repository may hold and which personal information may be kept as it is: no private resources, scopes or details of agents in public text, and a review before a push. Enable it wherever agents work; its rules about public repositories bind only in public ones.
+'''
+zh = '''
+公开仓库里能放什么、哪些个人信息能原样保留：公开的文字里不写私有资源、scope 和 agent 的细节，push 之前先审。凡有 agent 工作的地方都要启用；其中管公开仓库的规定只在公开仓库里起作用。
+'''
+
+[translations]
+zh = "b349fc81813686b1c608ef69affec8ca20d297d5afc60628830eabc2f196a59d"
