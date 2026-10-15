@@ -218,6 +218,16 @@ fn load_layers(root: &Path, env: &Env) -> Result<(Project, Option<Project>), ()>
     Ok((project, both))
 }
 
+/// When `statute.private.toml` is there, checks that git ignores the
+/// private layer's files, before a command writes anything at all, the
+/// public files included.
+fn check_private_ignored(root: &Path) -> Result<(), ()> {
+    if root.join(private::MANIFEST).exists() {
+        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+    }
+    Ok(())
+}
+
 /// Writes the private lock file of `both`, the project with both layers,
 /// after checking that git ignores it.
 fn write_private_lock(root: &Path, public: &Project, both: &Project) -> Result<(), ()> {
@@ -267,6 +277,9 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         .map(statute::compile::full_text)
         .transpose()
         .map_err(|e| eprintln!("statute: error: {e}"))?;
+    if full.is_some() {
+        private::check_ignored(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+    }
     let mut written = statute::compile::compile(&project)
         .and_then(|out| statute::compile::write(&out, &path))
         .map_err(|e| {
@@ -617,6 +630,7 @@ fn lock_command(root: &Path) -> Result<(), ()> {
             );
         }
     }
+    check_private_ignored(root)?;
     write_lock(root, &project)?;
     match both {
         Some(both) => write_private_lock(root, &project, &both),
@@ -665,6 +679,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
         print(&diags);
         return Err(());
     };
+    check_private_ignored(root)?;
     let replaced = if replace_superseded {
         replace(root, &project)?
     } else {
@@ -1061,9 +1076,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         eprintln!("statute: {file} and {lock_file} are left unchanged");
         return Err(());
     };
-    if private {
-        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
-    }
+    check_private_ignored(root)?;
     write_both(
         root,
         private,
