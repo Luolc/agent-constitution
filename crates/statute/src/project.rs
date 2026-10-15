@@ -39,6 +39,9 @@ pub struct Env {
     /// Whether each git source is read at its newest commit, as `upgrade`
     /// does, rather than at the one the lock file records.
     pub newest: bool,
+    /// Whether each git source is read from statute's cache alone, at the
+    /// commit the lock file records, without the network.
+    pub offline: bool,
 }
 
 #[derive(Deserialize)]
@@ -297,5 +300,14 @@ fn pick_commit(spec: &mut SourceSpec, locked: &[SourceSpec], env: &Env) -> Resul
         }
         _ => None,
     };
+    if env.offline {
+        return match commit {
+            Some(commit) => crate::global::cached(spec, &commit),
+            None => Err(format!(
+                "source `{}`: the lock file records no commit of it, and nothing is fetched; run `statute lock`",
+                spec.name
+            )),
+        };
+    }
     crate::global::materialize(spec, commit.as_deref(), env.newest)
 }

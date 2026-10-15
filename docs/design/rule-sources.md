@@ -417,9 +417,7 @@ once per clone. `--private-only`:
   fails would make `git worktree add` and `git switch` exit with its
   status (githooks(5)), so it never does.
 
-The links are relative and lead to the worktree's own `.statute/`. Not
-built yet: `--private-only`; until it is, running `statute compile` in
-a new worktree is the caller's part.
+The links are relative and lead to the worktree's own `.statute/`.
 
 The private rules only add to the public ones and never contradict
 them, as the private layer only adds rules (above): Grok reads the
