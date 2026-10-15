@@ -1,0 +1,42 @@
+id = 186
+slug = "take-and-release-by-command"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Take and release a work item only through the command that records it"
+zh = "领取与释放工作项只经写记录的命令"
+
+[text.statement]
+en = "Take and release a work item only through the command that writes the fixed-format record of it, never by changing its status or writing a claim or release comment by hand."
+zh = "领取与释放工作项只经写下固定格式记录的那个命令，不手改状态，也不手写领取或释放的评论。"
+
+[text.reason]
+en = '''
+The command writes the taking and the releasing as comments of a fixed format, recording who is working on the item and from which status, and other agents and tools tell by them whether anyone is working on it ({@constitution:accountable-agent}). A status changed or a comment written by hand breaks that record.
+'''
+zh = '''
+这个命令把领取与释放写成固定格式的评论，记下谁在做、从什么状态开始，别的 agent 和工具靠它判断工作项有没有人在做 ({@constitution:accountable-agent})。手改状态或手写评论，这份记录就断了。
+'''
+
+[text.verification]
+en = '''
+The command is the one the rules or the project's instructions that apply name for this. When a tool that starts agents takes and releases their work items for them, as fleet does, an agent it started does not run the command itself.
+
+Violated when an agent takes or releases a work item by any other means than that command, such as changing its status or writing a claim comment by hand.
+'''
+zh = '''
+这个命令，指适用的规定或项目指令为此指定的命令。起 agent 的工具替它起的 agent 领取与释放工作项的 (fleet 就是这样)，被起的 agent 不自己跑这个命令。
+
+agent 用这个命令以外的方式 (比如手改状态、手写领取的评论) 领取或释放工作项的，即为违反本规定。
+'''
+
+[translations]
+zh = "8086f2c7ccd94c2457b5acba8b3b6ff246026cb10f13f9dbc8042ca774c1c955"

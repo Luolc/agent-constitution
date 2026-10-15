@@ -1,4 +1,4 @@
-<!-- en-sha256: f382074316d2a2b3890d6b76f655a212133b1d145d35b550b9f1a1a6c80f18b7 -->
+<!-- en-sha256: f4ac0040dae9c0822ac883d8dfc144f2cc94558f53182019ef3a6986cf50acd6 -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -37,7 +37,7 @@
 
 节点之间的关系不在这里查，由 `statute` 查 ([命令与第一版](statute-command.md#the-command-and-the-first-version))：`requires` 和 `conflicts` 指向的节点存在、种类对，在别的规定源里也一样，`requires` 不成环 (同一规定源内和跨规定源都不成环)、没有多余的项，规定不与它带入的节点冲突，以及[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs) 所说的 warning。CI 里由 `crates/statute/tests/real_rules.rs` 用 `statute` 读本仓的 `rules/`，有任何 error 或 warning 都失败。
 
-[规定源](rule-sources.md) 的检查也这样分。构建接受规定上的 `overrides`、领域上的 `parent`，以及规定指向另一个规定源的 `parent`，并检查单看一个规定源就能查的：各字段的类型；领域的 `parent` 是同一规定源里一个没有 parent 的领域的编号 (检查 3)；规定有 `parent` 或 `overrides`，必须有一个，不能两个都有；`overrides` 是另一个规定源的一条规定，写作 `"team:7"`，不能是列表，也不能是数字，因为数字指的是同一规定源里的节点；指向另一个规定源的 `parent` 只有规定能有，写作 `"team:3"`，只检查写法，因为第一方规定源的领域是根 ([子领域](rule-sources.md#subdomains))；别的规定源的领域，statute 接受它指向另一个规定源的 `parent`。本仓就是第一方规定源，所以在这里 `overrides` 或 `parent` 里的 `"R200"` 指的是同一规定源的规定，会失败；`parent` 写成这样时提示改写成编号。要看别的规定源才能查的归 statute：引用方向、覆盖的级别、公开仓库的私有层所做的覆盖，以及另一个规定源里的 `parent` 是否存在。这些都已实现，领域指向另一个规定源的 `parent` 除外。
+[规定源](rule-sources.md) 的检查也这样分。构建接受规定上的 `overrides`、领域上的 `parent`，以及规定指向另一个规定源的 `parent`，并检查单看一个规定源就能查的：各字段的类型；领域的 `parent` 是同一规定源里一个没有 parent 的领域的编号 (检查 3)；规定有 `parent` 或 `overrides`，必须有一个，不能两个都有；`overrides` 是另一个规定源的一条规定，写作 `"team:7"`，不能是列表，也不能是数字，因为数字指的是同一规定源里的节点；指向另一个规定源的 `parent` 只有规定能有，写作 `"team:3"`，只检查写法，因为第一方规定源的领域是根 ([子领域](rule-sources.md#subdomains))；别的规定源的领域，statute 接受它指向另一个规定源的 `parent`。本仓就是第一方规定源，所以在这里 `overrides` 或 `parent` 里的 `"R200"` 指的是同一规定源的规定，会失败；`parent` 写成这样时提示改写成编号。要看别的规定源才能查的归 statute：引用方向、覆盖的级别、公开仓库的私有层所做的覆盖，以及另一个规定源里的 `parent` 是否存在。这些都已实现。
 
 每项检查都有一个让它失败的测试和一个通过的对照；编号检查在一个临时的 git 仓库上测试 (`tools/compiler` 的 `tests/test_constitution_checks.py`、`tests/test_constitution_base.py`，以及针对 parent 树的 `tests/test_rule_tree.py`)。检查 1 至 6 和这些测试作为提交钩子运行，也在 CI 里运行；检查 7 只在 CI 里运行：在 pull request 上，对照检出的合并提交所基于的那个基准分支的末端 (即它的第一个父提交)；在推送到 `main` 时，对照推送前的那个提交。
 

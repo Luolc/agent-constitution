@@ -1,0 +1,43 @@
+id = 182
+slug = "approved-label"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+requires = [181]
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "When a principal approves, replace the decision label with the approval label"
+zh = "委托人批准后换挂表示批准的标签"
+
+[text.statement]
+en = "When a principal has looked at and approved what a work item asked them to decide, put the label `approved` (parameter `work-items.label-approved`, default `approved`) on it as you take off the label of {@rule:181}."
+zh = "委托人看过并批准了工作项里要委托人定的事，摘下{@rule:181}的标签时，换挂标签 `approved` (参数 `work-items.label-approved`，默认 `approved`)。"
+
+[text.reason]
+en = '''
+The label records that a principal approved, so that it can be found later which matters had a principal's consent ({@constitution:evidence.grounds}).
+'''
+zh = '''
+这个标签记下委托人批准过，事后查得到哪些事经过委托人同意 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+On a ticketing system with labels at more than one level, it is a label of the team (Linear has workspace and team labels). A matter the principal only carried out themselves, one they rejected and one canceled do not take it.
+
+Violated when a work item the principal approved has the label of {@rule:181} taken off without this label put on, or when a work item without a principal's approval has this label.
+'''
+zh = '''
+工单系统的标签分几级的，它是团队级的标签 (Linear 的标签分工作区级和团队级)。委托人只是动手做完的事、被否决的、取消的，不挂。
+
+委托人批准了的工作项摘了{@rule:181}的标签却没有挂上这个标签，或者没有经委托人批准的工作项挂了这个标签的，即为违反本规定。
+'''
+
+[translations]
+zh = "3a5528733bc2cf8902b3cbe0ccdacb3c64f3e642b78301335b54572faf597803"

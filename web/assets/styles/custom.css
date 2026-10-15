@@ -460,7 +460,10 @@
    smaller and muted: a button of their labels in boxes, or of a count,
    with a ring holding a plus, as faint as the ring on the counts under
    the title, that turns to a minus while the list under it is open
-   (layouts/_partials/rules/cites.html). In the list, each rule's label
+   (layouts/_partials/rules/cites.html). The boxes are smaller again,
+   and the ring after them with them: their capital and lining figures
+   stand taller than the text of the line, so at its size the row looks
+   as large as the provision above it. In the list, each rule's label
    in the muted color before its title. */
 .constitution .cited-by {
   display: block;
@@ -475,7 +478,7 @@
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: .3em;
+  gap: .25em;
   font: inherit;
   color: inherit;
   text-align: start;
@@ -488,10 +491,11 @@
 .constitution .cites.open .cites-button { color: var(--c-ink); }
 .constitution .cites-button:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; border-radius: .2em; }
 .constitution .cites-box {
-  padding: 0 .3em;
+  padding: 0 .25em;
   border: 1px solid var(--c-rule);
-  border-radius: .25em;
-  line-height: 1.35;
+  border-radius: .2em;
+  font-size: .85em;
+  line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 .constitution .cites-toggle {
@@ -500,6 +504,7 @@
   opacity: .7;
   line-height: 0;
 }
+.constitution .cites-box ~ .cites-toggle { font-size: .95em; }
 .constitution .cites-button:hover .cites-toggle,
 .constitution .cites.open .cites-toggle { opacity: 1; }
 .constitution .cites.open .cites-bar { display: none; }

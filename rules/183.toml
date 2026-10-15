@@ -1,0 +1,42 @@
+id = 183
+slug = "parent-child-states"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep a parent work item's status in step with its children"
+zh = "父工作项的状态与子工作项一致"
+
+[text.statement]
+en = "Keep a parent work item's status in step with its child work items: while any child is in progress, the parent is not left in the backlog, and once all children are closed and nothing is left to do under the parent, close the parent."
+zh = "父工作项的状态与子工作项保持一致：有子工作项在进行中，父工作项就不停在待办里；子工作项全部关闭、父工作项也没剩下的事，就关闭父工作项。"
+
+[text.reason]
+en = '''
+A parent's status should tell where its goal stands ({@constitution:evidence.facts}); when parent and children disagree, a reader takes it that nobody is working on it, or that something is still left to do.
+'''
+zh = '''
+看父工作项的状态，就该知道这件事进行到哪一步 ({@constitution:evidence.facts})；父子状态对不上，读的人会以为没人在做，或者以为还有事没做完。
+'''
+
+[text.verification]
+en = '''
+In progress and backlog are the ticketing system's own statuses for them, for example Active and Backlog in Linear. A design work item whose content has been built and is live has nothing left to do and moves to the status for a done attempt ({@rule:224}).
+
+Violated when a child work item is in progress while its parent is in the backlog, when all children are closed and nothing is left under the parent but it stays open, or when a design work item whose content has been built and is live has not moved to that status.
+'''
+zh = '''
+进行中和待办，指工单系统里表示这两种情况的状态，比如 Linear 的 Active 和 Backlog。设计类的工作项，内容已经实现、上线了，就没剩下的事，转为完成的状态 ({@rule:224})。
+
+有子工作项在进行中而父工作项在待办里，子工作项全部关闭、父工作项没剩下的事却仍开着，或者设计类的工作项内容已经实现上线却没有转为这个状态的，即为违反本规定。
+'''
+
+[translations]
+zh = "49310d6527c2a4ea70f33b11e1a257db33346453f869968a88ad5b8e73a1ac02"

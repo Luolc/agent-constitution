@@ -1,0 +1,42 @@
+id = 187
+slug = "no-work-without-ticketing-system"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Start no work while the ticketing system cannot be reached"
+zh = "工单系统连不上就不开工"
+
+[text.statement]
+en = "In a repository whose work is kept on a ticketing system, start no work while that system cannot be reached."
+zh = "工作记在工单系统里的仓库，这个系统连不上时不开工。"
+
+[text.reason]
+en = '''
+Starting means taking a work item first, and finishing means writing a report; with the ticketing system out of reach neither can be done, and nobody knows who did the work or how it went ({@constitution:accountable-agent}).
+'''
+zh = '''
+开工要先领取工作项，做完要写报告；工单系统连不上，这两步都做不了，做出来的东西没人知道是谁做的、结果如何 ({@constitution:accountable-agent})。
+'''
+
+[text.verification]
+en = '''
+Cannot be reached means that the command of {@rule:186} fails because it cannot connect to the ticketing system. The agent then stops and reports the case to whoever delegated the work.
+
+Violated when, in such a repository, an agent that could not take a work item because the ticketing system could not be reached starts changing anything all the same.
+'''
+zh = '''
+连不上，指{@rule:186}的命令因为连不上工单系统而失败。这时 agent 停下，把情况报给派活的一方。
+
+在这样的仓库里，agent 因为连不上工单系统没能领取工作项，仍开始改动的，即为违反本规定。
+'''
+
+[translations]
+zh = "ece3bdfd487b64da76bd111fc117e4eab94967456616818178afc9edf0905648"

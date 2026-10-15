@@ -1,0 +1,38 @@
+id = 226
+slug = "work-item-decisions-to-repository"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "When the task ends, move what is still needed from the work item into the repository"
+zh = "任务结束时，把还要用的东西从工作项移进仓库"
+
+[text.statement]
+en = "When a task ends, write the decisions and the knowledge from its work items that are still needed into the repository through a pull request, and link to them from the work item."
+zh = "任务结束时，把工作项里还要用到的决定与知识经 pull request 写进仓库，并在工作项里链接过去。"
+
+[text.reason]
+en = '''
+The body of a work item serves only while the discussion lasts; what is still needed afterwards is kept in the repository, in one place, and the work item links to it ({@constitution:no-restating}).
+'''
+zh = '''
+工作项的正文只是讨论期间的载体；之后还要用到的东西留在仓库里，只写在一处，工作项链接过去 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+Violated when, after the task has ended, a decision to be kept stays only in a work item instead of reaching the repository through a pull request, or when the work item does not link to where it was written.
+'''
+zh = '''
+任务结束后，要留下的决定只留在工作项里、没有经 pull request 进仓库，或者工作项没有链接到它写进的位置的，即为违反本规定。
+'''
+
+[translations]
+zh = "4b64c511bc2657b13bafe5bf2d259a5624f769d1c1994b0947be421476ac7404"

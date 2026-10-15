@@ -1,0 +1,42 @@
+id = 176
+slug = "work-item-text-language"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write work items in the language set for them"
+zh = "工作项用为它设定的语言写"
+
+[text.statement]
+en = "Write the titles, bodies and comments of work items in the language set for work items (parameter `language.work-items`, default `en`)."
+zh = "工作项的标题、正文和评论用为工作项设定的语言写 (参数 `language.work-items`，默认 `en`)。"
+
+[text.reason]
+en = '''
+The text of work items is written for the people who read them, and they read fastest in the language they chose ({@constitution:purpose}).
+'''
+zh = '''
+工作项上的文字是写给读它的人看的，用他们选定的语言，他们读得最快 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+This holds for every text on the ticketing system, whatever language the repository is written in. A text a tool posts for an agent counts as the agent's: for example a task description that becomes the body of a child work item, or a report that becomes its comment. The fixed-format records that the command for taking and releasing work items writes ({@rule:186}) are excepted.
+
+Violated when the title, the body or a comment of a work item is written in another language than the one set, leaving aside the names that {@rule:223} keeps as they are.
+'''
+zh = '''
+本规定适用于工单系统上的所有文字，与仓库用什么语言写无关。工具替 agent 发出的文字算作这个 agent 写的：比如成为子工作项正文的任务说明，或者成为其评论的报告。领取与释放工作项的命令 ({@rule:186}) 写下的固定格式记录不在此列。
+
+工作项的标题、正文或评论没有用设定的语言写的，即为违反本规定；{@rule:223}要求保持原样的名称除外。
+'''
+
+[translations]
+zh = "741a59c85ca8828ee59214e3c54c4da6ff67496031459465968a5de8604b4132"

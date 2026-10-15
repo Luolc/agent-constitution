@@ -1,0 +1,42 @@
+id = 131
+slug = "data-directory"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep large local data in the data directory, outside the repository"
+zh = "本地大数据放在仓库外的数据目录"
+
+[text.statement]
+en = "Keep large local data in the data directory of its repository, outside the repository."
+zh = "本地的大数据放在所属仓库的数据目录，不放在仓库里。"
+
+[text.reason]
+en = '''
+Data kept in one fixed place outside the repository is found from the repository's name alone, on every machine ({@constitution:simplicity}).
+'''
+zh = '''
+数据放在仓库外面一个固定的位置，在哪台机器上都只凭仓库名就能找到 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The data directory of a repository is `<root>/<repo>/`, under the root the jurisdiction designates for local data, for example in a rule of a lower layer. Every entry directly under the root is a directory named after a repository.
+
+Violated when large data is kept elsewhere than in `<root>/<repo>/`.
+'''
+zh = '''
+仓库的数据目录是法域为本地数据指定的根目录下的 `<root>/<repo>/`，根目录例如写在下层的规定里。根目录下的一级条目都是目录，目录名就是仓库名。
+
+大数据放在 `<root>/<repo>/` 以外的地方的，即为违反本规定。
+'''
+
+[translations]
+zh = "73fb357e867e60bdd11a1b03b07093a8bb8c6985412e27ab21879f501e426d0e"
