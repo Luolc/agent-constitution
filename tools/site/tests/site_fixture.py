@@ -81,7 +81,13 @@ def original(*texts: str) -> str:
   return hashlib.sha256("\0".join(texts).encode()).hexdigest()
 
 
-def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
+def group(
+  node_id: int,
+  kind: str,
+  parent: int | None,
+  cites: str = "3",
+  title: str | None = None,
+) -> str:
   """Return the file of a domain or a one-of, translated.
 
   A domain has an applicability that cites a rule and is off by
@@ -93,11 +99,12 @@ def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
     parent: its parent, None for a domain.
     cites: the rule a domain's applicability cites, as `{@rule:...}`
       names it.
+    title: its English title, `Group <id>` when None.
 
   Returns:
     The TOML text.
   """
-  title = f"Group {node_id}"
+  title = title or f"Group {node_id}"
   texts = [title]
   text = (
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
@@ -165,6 +172,18 @@ FILES = {
   ),
   "rules/6.toml": rule(6, 1, 'authority = ["one-a.x"]\n'),
 }
+
+
+def long_domain(root: Path) -> None:
+  """Give the domain 1 a title as long as the longest of this repo's.
+
+  Args:
+    root: the checkout.
+  """
+  title = "Agent instructions, skills and the settings of their tools"
+  (root / "rules/1.toml").write_text(
+    group(1, "domain", None, title=title), encoding="utf-8"
+  )
 
 
 def subdomain(root: Path) -> None:
