@@ -1,6 +1,6 @@
 id = 273
 slug = "engineering"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -12,11 +12,11 @@ zh = "工程"
 
 [applicability]
 en = '''
-Engineering practice in a repository: Git, how work is cut into changes, pull requests and review, CI and releases, tests, code, frontend and documentation. Enable it in every repository whose code or documents are under version control.
+Engineering practice in a repository: Git, how work is cut into changes, pull requests and review, CI and releases, tests, code, shell commands, frontend and documentation. Enable it in every repository whose code or documents are under version control.
 '''
 zh = '''
-仓库里的工程实践：Git、改动怎么分批、PR 与审查、CI 与发版、测试、代码、前端与文档。代码或文档受版本控制的仓库都要启用。
+仓库里的工程实践：Git、改动怎么分批、PR 与审查、CI 与发版、测试、代码、shell 命令、前端与文档。代码或文档受版本控制的仓库都要启用。
 '''
 
 [translations]
-zh = "a682074a3f1bb20ab6ceca90c7ee7b9dad103f9300bb198101dbb70bbe9867cb"
+zh = "ce912c6ea9851824eedd2199391f13cf47b20bc9f42bee537ae28b5fafd2fbf4"

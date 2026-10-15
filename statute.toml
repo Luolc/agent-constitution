@@ -70,9 +70,9 @@ rules = [
   "R211",
   # CI runners are pinned to a fixed Ubuntu release (L17).
   "R212",
-  # Pushed text goes through files written with a quoted heredoc.
-  "R93",
-  "R94",
+  # Text of more than one line, or with characters the shell treats specially, goes to a
+  # command through a file written with a quoted heredoc, since fleet reads only files.
+  "R285",
   # Tests cover the happy path, the set boundaries and the bugs that occurred.
   "R84",
   "R85",
