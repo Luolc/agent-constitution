@@ -412,16 +412,17 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R253 Where CI runs a repository's full set of checks on each change, leave the checks a change does not touch to CI instead of also running them locally before a push.
 - R254 When you pass over a commit for a release because its CI run for the push to the main branch succeeded only on a later attempt, read the logs of the earlier attempts and record why the first one failed.
 - L15 Pass over a false positive of limae with a `<!-- limae-disable-next-line <rule> -->` comment above the line, never by turning the rule off.
-- L16 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
+- L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
+- L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release.
+- L29 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
 
   - `tools/`, a `pyproject.toml` or `uv.lock`: `uv run basedpyright`;
   - each member of `tools/` that the change touches, or that depends on what it touches (`tools/site` uses `statute` and `web/`): its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
   - a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
   - `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
+  - `rules/` or the constitution: also `cargo test --locked`;
   - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
   - the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
-- L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
-- L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release.
 - R27 Build every fixture from made-up data only, with no effect outside the test environment.
 - R84 Write a regression test only for a bug that actually occurred.
 - R85 Put a regression test only with the tests of the module where the bug occurred.

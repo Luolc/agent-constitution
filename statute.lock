@@ -1508,13 +1508,6 @@ original-sha256 = "891b6a5fa61cf30018b5873f066a306ddcd8d1e5e017faedab4df7d6ed225
 by = "default"
 
 [[rules]]
-rule = "L16"
-revision = 5
-sha256 = "52d3a8b8dcabfdfaabcb2b9cc52301c55e069978616b09b0e07e80cd48f2950c"
-original-sha256 = "f9d6b78de16941dafad55f9e8872eb5a8a8e71a19238dc378bf1b7dc81b1f917"
-by = "default"
-
-[[rules]]
 rule = "L17"
 revision = 4
 sha256 = "c9d5e1b86bd8274e09af62e2e681c988c786b98f0a702caa6f80c471d6dbf3d2"
@@ -1568,6 +1561,13 @@ rule = "L28"
 revision = 2
 sha256 = "a91bf0f3bc795f7991bbbcb3499d6035db266293d0057fb01d3e2cc9ba579687"
 original-sha256 = "31bef041ce6823e3d5e80f90f193ef179fb6d3155e145c288a64c9e8f994df82"
+
+[[rules]]
+rule = "L29"
+revision = 1
+sha256 = "e7edc5db106ff3992139001cb74478e8421afdee3017e213bdb3d6d0bd1fa113"
+original-sha256 = "269510acc586cfe79363e4129a124d198a09d377ae21cfd890fa281975ade8c6"
+by = "default"
 
 [[parameters]]
 name = "language.code-comments"

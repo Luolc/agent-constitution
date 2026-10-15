@@ -1,0 +1,41 @@
+id = 29
+slug = "touched-checks-rust-tests"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R276"
+default = "on"
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Run the checks of what you change before a push"
+
+[text.statement]
+en = '''
+Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
+
+- `tools/`, a `pyproject.toml` or `uv.lock`: `uv run basedpyright`;
+- each member of `tools/` that the change touches, or that depends on what it touches (`tools/site` uses `statute` and `web/`): its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
+- a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
+- `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
+- `rules/` or the constitution: also `cargo test --locked`;
+- the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
+- the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
+'''
+
+[text.reason]
+en = '''
+{@rule:R53} asks for the checks a change touches, as the project's instructions list them; this is that list. Tests in `crates/statute/tests/` read the real `rules/` and the constitution, so a change to either can fail `cargo test --locked` while the other checks pass.
+'''
+
+[text.verification]
+en = '''
+The commit hooks run gitleaks on the staged changes, `uv-lock`, ruff (check and format), pydoclint, `cargo-fmt`, `statute validate rules`, the constitution build check, `lint-zh-sources`, `check-design-translation` and limae on the Markdown files; the type check and the tests of the members of `tools/` run in CI and before a push, not in the hooks. `site/` and `web/data/*.json` are built, never committed. When unsure whether a check is touched, it runs.
+
+Violated when a change is pushed and the hooks, the instruction-only check or a check listed for what it touches did not run on the pushed version, or did not pass.
+'''
