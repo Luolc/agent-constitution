@@ -508,23 +508,36 @@ fn escape(text: &str) -> String {
 /// Writes the pages to the site's directory below `root`, the directory
 /// of `statute.toml`, in place of what was there, after the
 /// directory's `.gitignore`. Writes nothing when git tracks a file in
-/// the directory, or when the directory is there without statute's
+/// the directory or cannot tell whether it does, or when the directory is there without statute's
 /// `.gitignore`. Returns the index's path.
 pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
     let site = root.join(dir());
     let fail = |path: &Path, e: std::io::Error| format!("{}: cannot write: {e}", path.display());
     let gitignore = site.join(".gitignore");
     // The `.gitignore` keeps git from adding a page, but not from
-    // tracking a file someone added already; outside a git repository,
-    // where git cannot tell, nothing can be committed either.
-    let tracked = Command::new("git")
+    // tracking a file someone added already; outside a git repository
+    // nothing can be committed either. Any other failure of git leaves
+    // the question open, so nothing is written.
+    let out = Command::new("git")
         .arg("-C")
         .arg(root)
         .args(["ls-files", "--"])
         .arg(dir())
+        .env("LC_ALL", "C")
         .output()
-        .map(|out| String::from_utf8_lossy(&out.stdout).into_owned())
-        .unwrap_or_default();
+        .map_err(|e| format!("cannot run git, so no page is written: {e}"))?;
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let tracked = if out.status.success() {
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    } else if stderr.starts_with("fatal: not a git repository (") {
+        String::new()
+    } else {
+        return Err(format!(
+            "git cannot tell whether it tracks a file in {}, so no page is written: {}",
+            dir().display(),
+            stderr.trim()
+        ));
+    };
     if let Some(file) = tracked.lines().next() {
         return Err(format!(
             "{file}: git tracks it, so it would commit the pages, private rules included, and no page is written; take the directory out of git with `git rm -r --cached {}`",
