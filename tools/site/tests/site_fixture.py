@@ -295,3 +295,27 @@ def params(root: Path) -> None:
     ),
     encoding="utf-8",
   )
+
+
+def domain_option(root: Path) -> None:
+  """Make the one-of 2's option a domain, 7, which holds rule 3.
+
+  The one-of names the domain as its default; the domain, an option,
+  has no `default`, and rule 3, no longer an option, has its own.
+
+  Args:
+    root: the checkout.
+  """
+  domain = group(7, "domain", 2).replace('default = "off"\n', "", 1)
+  (root / "rules/7.toml").write_text(domain, encoding="utf-8")
+  one_of = root / "rules/2.toml"
+  text = one_of.read_text(encoding="utf-8")
+  one_of.write_text(
+    text.replace("default = 3\n", "default = 7\n", 1), encoding="utf-8"
+  )
+  rule = root / "rules/3.toml"
+  text = rule.read_text(encoding="utf-8")
+  rule.write_text(
+    text.replace("parent = 2\n", 'parent = 7\ndefault = "off"\n', 1),
+    encoding="utf-8",
+  )
