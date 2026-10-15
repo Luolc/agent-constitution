@@ -316,6 +316,20 @@ fn three_sources_from_init_to_check() {
 }
 
 #[test]
+fn compile_check_leaves_the_private_output_out() {
+    let dir = ignoring("compile-check");
+    set_up(&dir);
+    ok(&statute(&dir, &["compile"]));
+    write(&dir, ".statute/AGENTS.full.md", "edited by hand\n");
+    ok(&statute(&dir, &["compile", "--check"]));
+    write(&dir, "AGENTS.md", "edited by hand\n");
+    fails_with(
+        &statute(&dir, &["compile", "--check"]),
+        "./AGENTS.md: error: not what `statute compile` writes; run it\n",
+    );
+}
+
+#[test]
 fn the_private_layer_overrides_no_public_rule() {
     let dir = ignoring("override");
     set_up(&dir);
