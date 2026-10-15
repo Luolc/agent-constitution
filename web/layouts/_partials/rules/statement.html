@@ -1,0 +1,7 @@
+{{- /* A rule's statement in its row of the list, in the language of its
+  title, its citations as their labels and each placeholder its
+  parameter's default, as in the title (statementInLink, data/rules.json);
+  shown or hidden by the view (_partials/rules/view.html), and always in
+  the page, so that a search of the rows' text finds it. Takes the
+  rule's data. */ -}}
+{{- with .statementInLink }}<span class="rule-statement">{{ . | page.RenderString }}</span>{{ end -}}
