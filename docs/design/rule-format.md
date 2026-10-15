@@ -181,11 +181,10 @@ The fields:
   parent may also be a domain or a subdomain of another source, written
   as `requires` writes one (`"team:3"`). Every rule and one-of has one,
   except a rule with `overrides`; a domain has none, or, as a
-  subdomain, a domain that has none, of the same source or, written as
-  `requires` writes one, of another
-  ([Subdomains](rule-sources.md#subdomains)), or, as an option, a
-  one-of. The options of a one-of are all rules or all domains, and
-  domains nest two levels at most, an option counting as one
+  subdomain, a domain, of the same source or, written as `requires`
+  writes one, of another ([Subdomains](rule-sources.md#subdomains)),
+  or, as an option, a one-of. The options of a one-of are all rules or
+  all domains, and domains nest to any depth
   ([No rule under a rule](rule-config.md#no-rule-under-a-rule)).
   statute checks all of it.
 - `overrides` (optional, a rule only): the rule of another source that

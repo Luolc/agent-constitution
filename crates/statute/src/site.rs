@@ -721,7 +721,7 @@ fn tree(
     let children: Vec<&Node> = source.children(node.id).collect();
     let mut class = Vec::new();
     match node.kind {
-        // Domains nest two levels at most.
+        // A domain below the second level looks like one at the second.
         Kind::Domain => class.push(if level == 1 { "domain d1" } else { "domain d2" }),
         // A one-of is a box that holds its options, the default marked
         // (`docs/design/rule-config.md`, No rule under a rule), lighter

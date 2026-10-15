@@ -1,4 +1,4 @@
-<!-- en-sha256: 31a430193fa46a326d36ad30cc3b58609bf409c8596af9d8147e1a0c4a2c5c69 -->
+<!-- en-sha256: b32ff497073526279dce4e7d1aba041e73ff2970d8d1a0fe114f426e304912df -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -119,7 +119,7 @@ it.
 - `status`：`draft`、`trial`、`active`、`superseded` 或 `repealed`。
 - `superseded-by`：取代这条规定的、同一规定源里的规定的 ID；几条规定一起取代它时写成 ID 的列表，`superseded-by = [22, 23]`。只在 `status` 为 `superseded` 时出现。每一项都是另一条规定，不重复；列表不能为空。
 - `lang`：这条规定写成时用的语言，即原文的语言，写成语言代码，如 `"en"` 或 `"zh"`。
-- `parent`：同一规定源里父节点的 ID：规定的是一个领域或一个 one-of，从不是规定；one-of 的是一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是一个没有 parent 的领域，在同一规定源里，或者在另一个规定源里，写法与 `requires` 相同 (见[子领域](rule-sources.md#subdomains))，作为选项时则是一个 one-of。one-of 的选项要么全是规定，要么全是领域，领域最多嵌套两层，选项算一层 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。这些 statute 都会检查。
+- `parent`：同一规定源里父节点的 ID：规定的是一个领域或一个 one-of，从不是规定；one-of 的是一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是一个领域，在同一规定源里，或者在另一个规定源里，写法与 `requires` 相同 (见[子领域](rule-sources.md#subdomains))，作为选项时则是一个 one-of。one-of 的选项要么全是规定，要么全是领域，领域可以嵌套任意多层 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。这些 statute 都会检查。
 - `overrides` (可选，只有规定有)：这条规定在启用它的规定清单里所顶替的另一个规定源的规定，写法与 `requires` 相同 (`"R200"`)；带它的规定没有 `parent` (见[覆盖](rule-sources.md#overrides))。
 - `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
 - `conflicts` (可选)：不能与这条规定一起用的规定，写法同 `requires`，只写在一边 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))。
