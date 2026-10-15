@@ -1417,10 +1417,10 @@ original-sha256 = "b9664f763fea120e0a5afad3355c17c39079b7b897405f55e4be91d29574d
 by = "default"
 
 [[rules]]
-rule = "R287"
+rule = "R289"
 revision = 1
-sha256 = "e825a5b6ffeb048bb90a8fb8cfadd3212ae364859b3fd4ba9a9abcf89d581d90"
-original-sha256 = "b11f26e1c677aed10c1302435ec4b992a1fa4138b3f4438d4f749ece336b6444"
+sha256 = "503f3951e2a404e1313d5332471fa8b5f14e1961d2d6aceecd0cd5a194b19146"
+original-sha256 = "698d5d83f139eae9118e365938518ab59b16c7df04fb9c30c5b8a73ec0203efe"
 by = "default"
 
 [[rules]]
