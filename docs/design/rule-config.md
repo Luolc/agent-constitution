@@ -54,6 +54,16 @@ local-rules = "policy/agents"
   `.github/workflows/`. `.statute/rules/` is committed; `.statute/`
   lists only the files statute generates as ignored
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+- A rule there, or in a source with `scope = "local"`, exists for this
+  rule set alone, so one that nothing enables is most likely a slip, an
+  overriding rule above all, which has no `default`. statute warns about
+  it, naming the rule and the entry of `rules` that would compile it.
+  It does not warn about a rule that is superseded or repealed, one
+  that `exclude` turns off, or an option of a one-of.
+  Where a public repository has a private rule set, the warning comes
+  from the private layer, which sees both layers, and names the rule
+  set that would list the rule: `private.toml` for a rule of a source
+  the private layer adds, `statute.toml` for the others.
 - Only `statute.toml` sets it. It describes the repository's layout,
   which every machine and CI share, so the global configuration has no
   such key, and the private rule set neither, since the private layer
@@ -390,11 +400,11 @@ default = "on"
 
 - `on` or `off`. The children of a one-of have no `default`; the
   one-of names one of them as its default (below).
-- A rule with `overrides` has no `default` either: it takes the place
-  of the rule it overrides
-  ([Overrides](rule-sources.md#overrides)), whose place decides whether
-  it comes in, and when that rule is an option of a one-of, a switch of
-  its own would contradict the one-of's default.
+- A rule with `overrides` has no `default` either: it comes in only
+  when the rule set enables it, and then stands in the place of the
+  rule it overrides ([Overrides](rule-sources.md#overrides)); when that
+  rule is an option of a one-of, a switch of its own would contradict
+  the one-of's default.
 - A domain is `off` when it is for some repositories or some ways of
   working only, as Fleet is for work divided among agents: none of its
   rules comes in until a rule set turns it on. A subdomain's `default`

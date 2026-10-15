@@ -552,7 +552,11 @@ error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; 
 Within the private layer, a rule may override any rule of a lower rank
 that only the private layer enables, since both are compiled into the
 private output; within the public layer, a rule may override a public
-rule of a lower rank. Both work as in a private repository.
+rule of a lower rank. Both work as in a private repository. A rule of
+the public layer may also override a rule that only the private layer
+enables: the public output has the overriding rule where its target
+would stand, with the warning below that nothing else enables the
+target, and the private output has it in the target's place.
 
 **What the build does.** An override takes effect when the overriding
 rule is enabled:
@@ -575,6 +579,11 @@ rule is enabled:
 - An overriding rule whose target is not enabled by anything is compiled
   where its target would stand, with a warning that the target is not in
   the rule set.
+- An overriding rule has no `default`, so it comes in only when the rule
+  set enables it: lists it in `rules`, takes it in a pack, or enables a
+  rule that requires it. One of the repository's own rules that nothing
+  enables gets a warning
+  ([The directory of local rules](rule-config.md#the-directory-of-local-rules)).
 
 **The lock file** records the overridden rule as it records any other,
 with one more field:

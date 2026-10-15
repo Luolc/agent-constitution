@@ -6,11 +6,11 @@ use std::collections::BTreeSet;
 use statute::diag::{Diagnostics, Severity};
 use statute::manifest::Key;
 use statute::manifest::Manifest;
-use statute::resolve::{Reason, Resolution, resolve};
+use statute::resolve::{Reason, Resolution, resolve, unenabled_own};
 use statute::source::Sources;
 
 mod common;
-use common::{domain, edit, one_of, option, rule, source};
+use common::{domain, edit, one_of, option, rule, set_default, source};
 
 /// The rule set enabling `rules` and `packs` of source `R`.
 fn manifest(rules: &[u64], packs: &[u64]) -> Manifest {
@@ -513,4 +513,53 @@ fn conflicting_rules_of_one_pack_are_listed_one_by_one() {
     );
     // With one of them listed directly as well, the advice stays the same.
     fails(&s, &[2], &[1], 1, "both are in pack R1");
+}
+
+/// The repository's own rules, `L`: domain 1, on, with rule 2, off; rule
+/// 3, off; rule 4, on; one-of 5 with options 6, its default, and 7; and
+/// rule 8, off.
+fn local_source() -> Sources {
+    let files = [
+        set_default(domain(1), "\"on\""),
+        rule(2, 1, ""),
+        rule(3, 1, ""),
+        set_default(rule(4, 1, ""), "\"on\""),
+        one_of(5, 1, 6),
+        option(6, 5, ""),
+        option(7, 5, ""),
+        rule(8, 1, ""),
+    ]
+    .iter()
+    .map(|(id, text)| (format!("rules/{id}.toml"), text.clone().into_bytes()))
+    .collect();
+    let (mut source, diags) = statute::source::Source::from_files(files);
+    assert!(diags.0.is_empty(), "{:#?}", diags.0);
+    source.name = "L".to_owned();
+    source.local = true;
+    Sources::new(vec![source])
+}
+
+#[test]
+fn a_rule_of_the_repository_s_own_that_nothing_enables_is_named() {
+    let unenabled = |lists: &str| {
+        let manifest = Manifest::parse(&format!(
+            "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\n{lists}\n\n[sources]\nR = {{ path = \".\" }}\n"
+        ))
+        .unwrap();
+        let sources = local_source();
+        let mut diags = Diagnostics::default();
+        let res = resolve(&sources, &manifest, 1, &mut diags);
+        assert!(diags.0.is_empty(), "{:#?}", diags.0);
+        unenabled_own(&sources, &manifest, &res)
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+    };
+    // Neither the unchosen option 7 nor rule 8, which `exclude` turns
+    // off, is a slip.
+    assert_eq!(unenabled("rules = [\"3\"]\nexclude = [\"8\"]"), ["L2"]);
+    assert_eq!(
+        unenabled("rules = [\"2\", \"3\"]\nexclude = [\"8\"]"),
+        Vec::<String>::new()
+    );
 }

@@ -1,4 +1,4 @@
-<!-- en-sha256: 01d9e28f3b746bfefb81f89ac2b7c8970606c6b4d19ab6484ece0671cc34ef18 -->
+<!-- en-sha256: 268f177e6c80079bc2c5c556556da127ccb084f43cd96db6e5dbd91febd98747 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -23,6 +23,7 @@ local-rules = "policy/agents"
 ```
 
 - 默认是 `".statute/rules"`。仓库顶层的 `rules/` 不当作仓库自己的规定读：它属于某个规定源，只有某个规定源就在那个目录时才读，比如 `R = { path = "." }`。`rules/` 这个名字太常见，statute 不该在用到它的仓库里占用它；放进 `.statute/`，这些规定就和 statute 的其他文件在一起，就像某个工具要提交的文件放在 `.claude/` 或 `.github/workflows/` 里一样。`.statute/rules/` 要提交；`.statute/` 只把 statute 生成的文件列为忽略 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
+- 这里的规定，以及 `scope = "local"` 的源里的规定，只为本规定清单而写，所以没有被任何东西启用的这类规定多半是疏漏，带 `overrides` 的尤其如此，因为它没有 `default`。statute 对它给出警告，点名这条规定，以及能把它编译进来的那一项 `rules`。已被取代或废止的规定、`exclude` 关掉的规定，以及 one-of 的选项，不在此列。公开仓库有私有规定清单时，这条警告由私有层给出，因为它能看到两层；警告点名的是能列出这条规定的那份规定清单：私有层添加的源里的规定是 `private.toml`，其余的是 `statute.toml`。
 - 只有 `statute.toml` 能设定它。它描述的是仓库的布局，每台机器和 CI 都一样，所以全局配置里没有这个键；私有规定清单里也没有，因为私有层只增加。
 - 磁盘上的规定源，比如 `R = { path = "." }`，仍从 `<path>/rules/` 或者它的 `rules-dir` 指定的目录读 (见[规定源与引用](rule-sets.md#sources-and-references))：那些是规定源的规定，不是本地规定。`local-rules` 指向同一个目录时，其中的规定归那个规定源：本地引用其中一条会报错，并提示写成 `R12`。
 - 这个目录里可以有 `params.toml`，即其中参数的声明 (见[参数](#parameters))；statute 不把它当作规定读。
@@ -194,7 +195,7 @@ default = "on"
 ```
 
 - 取 `on` 或 `off`。one-of 的子节点没有 `default`；由 one-of 指定其中一个作为默认 (见下)。
-- 带 `overrides` 的规定也没有 `default`：它顶替被覆盖的规定 ([覆盖](rule-sources.md#overrides))，进不进来由被覆盖的那条规定的位置决定；被覆盖的规定是 one-of 的选项时，它自己再写一个开关，就会与 one-of 的默认相矛盾。
+- 带 `overrides` 的规定也没有 `default`：只有规定清单启用它时它才进来，进来后顶替被覆盖的规定 ([覆盖](rule-sources.md#overrides))；被覆盖的规定是 one-of 的选项时，它自己再写一个开关，就会与 one-of 的默认相矛盾。
 - 只适用于部分仓库或部分工作方式的领域是 `off`，比如 Fleet 只适用于在多个 agent 之间分工的工作：规定清单开启它之前，它的规定一条也不进来。子领域的 `default` 在它的领域开启之后才起作用。
 - 一条规定只有属于最通用、放在哪里都最不容易出错的那一类时才是 `on`。依赖某个人的偏好或环境 (共用的机器、一个审查方、某种 CI 服务、某个工具) 的规定是 `off`。
 - 规定源的默认值开启的规定必须能单独解析，statute 会检查这一点。一条仍有效 (既没被取代也没被废止) 的规定，自己的 `default` 是 `on`，上面每个领域都是 `on`，途经的每个 one-of 的默认都是通往它的那个选项，它就是按默认启用的。这样的规定依赖的同一规定源里的每条规定，也必须按默认启用；依赖一个 one-of 算作满足。
