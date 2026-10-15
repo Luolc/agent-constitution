@@ -45,3 +45,8 @@
   .book-menu .book-menu-content { position: static; inline-size: auto; visibility: visible; transform: none; box-shadow: none; border: none; }
 }
 </style></noscript>
+{{- /* An edition's page has the home page's text (content/_content.gotmpl),
+  which search engines index on the home page only. */}}
+{{- if .Params.noindex }}
+<meta name="robots" content="noindex">
+{{- end }}
