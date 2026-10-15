@@ -35,6 +35,9 @@ rules = [
   "R46",
   # The generated constitution goes with the sources it was rebuilt from.
   "R47",
+  # Here the code is the compiler of AGENTS.md: the root AGENTS.md goes with the side
+  # that changed it, in place of R46.
+  "L28",
   # A change that needs new instructions waits until they are merged.
   "R48",
   # CI runs check-instruction-changes on every pull request.
