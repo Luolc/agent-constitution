@@ -1,0 +1,42 @@
+id = 146
+slug = "test-account-browser-profile"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 145
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Use a test account only in a browser profile kept for it"
+zh = "测试账号只在专用的浏览器 profile 里用"
+
+[text.statement]
+en = "Do everything a test account does in a browser in a browser profile kept for test accounts, never in the browser the principal uses every day."
+zh = "测试账号在浏览器里的一切操作，都在专给测试账号用的浏览器 profile 里做，不进委托人日常用的浏览器。"
+
+[text.reason]
+en = '''
+The principal's everyday browser is signed in to the principal's own accounts. Signing in to a test account there mixes the two login states: one slip authorizes something with the wrong account, or signs the principal out of a session ({@constitution:sensitive-info}).
+'''
+zh = '''
+委托人日常用的浏览器里登着委托人自己的账号。在那里登测试账号，会把两边的登录态混在一起，一不小心就用错账号授权，或者把委托人的会话登出 ({@constitution:sensitive-info})。
+'''
+
+[text.verification]
+en = '''
+The profile kept for test accounts is used for nothing else, and is separate from the profiles the principal uses every day.
+
+Violated when a browser action with a test account takes place in the browser or a profile the principal uses every day.
+'''
+zh = '''
+专用的 profile 只给测试账号用，与委托人日常用的 profile 分开。
+
+用测试账号的浏览器操作发生在委托人日常用的浏览器或 profile 里的，即为违反本规定。
+'''
+
+[translations]
+zh = "ea212ad9af3e618b196b73a3de47e140ca81cd560dbba683327dd0f5a954d831"
