@@ -87,7 +87,7 @@ INDEX = (
 HEADING = re.compile(
   r'<h(\d) class="rules-group" data-group="([^"]+)"( hidden)?>'
 )
-# A group in a group row's path, with an id where the page links it.
+# A group in a group row's path, with its id the first time it shows.
 GROUP_ID = re.compile(
   r'<span class="group-part" data-group="([^"]+)"[^>]*? id="group-\1"'
 )
@@ -380,17 +380,13 @@ class SiteTest(unittest.TestCase):
     page = raw["rules/index.html"]
     self.assertIn(
       "The legend says what each mark means; the filter chooses the statuses,"
-      " defaults, uses and domains shown. Active In force. Trial Being tried"
-      " on real work before it settles. Draft Not meant for real work yet."
-      " Superseded Replaced by the rules its page names. Repealed Withdrawn,"
-      " with nothing in its place. On by default A new rule set gets it"
-      " without listing it. Off by default A rule set gets it only by listing"
-      " it. Instructions Goes into the instructions an agent reads. Review A"
-      " reviewer checks a change against it. Default option The option of a"
-      " one-of that a rule set gets unless it chooses another. The marks at"
-      " the end of a row stand in four places, in this order: status,"
-      " default, instructions, review; a place without its mark stays empty."
-      " Filter Status All None Active Trial Draft Superseded Repealed"
+      " defaults, uses and domains shown. Status Active Trial Draft Superseded"
+      " Repealed Default On by default Off by default Uses Instructions : goes"
+      " into the agent's instructions Review : a reviewer checks it One of the"
+      " rule set takes exactly one option Default option Another option Row"
+      " end status, default, instructions, review, in this order; empty where"
+      " a rule has none Filter Status All None Active Trial Draft Superseded"
+      " Repealed"
       " Defaults All None On by default Off by default Uses All None"
       " Instructions Review Domains All None R1 Group 1 Reset filter Rules"
       " per page 25 50 100 All ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3"
@@ -499,13 +495,23 @@ class SiteTest(unittest.TestCase):
       page,
     )
     self.assertIn('id="rules-filter-panel" role="dialog"', page)
-    self.assertIn('<option value="100" selected>', page)
+    self.assertIn('<option value="all" selected>', page)
+    self.assertIn('data-size="all" data-first="0"', page)
+    self.assertNotIn("rules/page/2/index.html", raw)
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
-      '<nav id="TableOfContents"><ul>\n<li style="--level: 0"><a'
-      ' href="#group-1">R1 Group 1</a></li>\n</ul></nav>',
-      page,
+      "状态 生效 试行 草案 已取代 已废止 默认 默认开启 默认关闭"
+      " 用途 指令 ：写进 agent 的指令 审查 ：审查方按它审查"
+      " 择一 规定清单恰好取其中一个选项 默认选项 其他选项"
+      " 行末 依次是状态、默认、指令、审查，没有的留空",
+      pages["zh/rules/index.html"],
     )
+    # The list has no table of contents, nor a button for one on a narrow
+    # screen; the home page keeps both.
+    for path, toc in (("rules/index.html", False), ("index.html", True)):
+      with self.subTest(path):
+        self.assertEqual('<nav id="TableOfContents">' in raw[path], toc)
+        self.assertEqual('data-drawer="toc"' in raw[path], toc)
     self.assertIn(
       "Constitution 2026-10 Edition (draft) Rules Design", pages["index.html"]
     )
@@ -515,8 +521,7 @@ class SiteTest(unittest.TestCase):
     """Every page holds every rule, those of other pages hidden.
 
     The pages split the rules of the default filter; each heads its first
-    rule with the rule's groups, and its table of contents lists those
-    shown.
+    rule with the rule's groups.
     """
     raw = self.build(raw=True, per_page=2)
     one, two = raw["rules/index.html"], raw["rules/page/2/index.html"]
@@ -545,11 +550,6 @@ class SiteTest(unittest.TestCase):
       ],
     )
     self.assertEqual(GROUP_ID.findall(two), ["1"])
-    self.assertIn(
-      '<li style="--level: 0"><a href="#group-1">R1 Group 1</a></li>\n</ul>',
-      two,
-    )
-    self.assertNotIn("#group-2", two)
     self.assertIn('<a href="../rules/page/2/">2</a>', one)
     self.assertIn('<a aria-current="page">2</a>', two)
 
@@ -579,11 +579,6 @@ class SiteTest(unittest.TestCase):
     )
     self.assertIn('data-status="active" data-domain="2" data-uses', page)
     self.assertEqual(page.count('data-domain="1" data-uses'), 3)
-    self.assertIn(
-      '<li style="--level: 0"><a href="#group-1">R1 Group 1</a></li>\n'
-      '<li style="--level: 1"><a href="#group-2">R2 Group 2</a></li>',
-      page,
-    )
     self.assertEqual(
       HEADING.findall(page),
       [
@@ -597,8 +592,7 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       '<a href="../rules/2/" aria-label="R2 Group 1, Group 2"><span'
       ' class="group-label">R2</span><span class="group-path"><span'
-      ' class="group-part" data-group="1" data-level="0" data-toc="R1 Group 1"'
-      ' id="group-1">Group 1</span><svg ',
+      ' class="group-part" data-group="1" id="group-1">Group 1</span><svg ',
       page,
     )
 
@@ -776,9 +770,8 @@ class SiteTest(unittest.TestCase):
     )
     # The legend: the rule set's marks and the quadrant.
     self.assertIn(
-      "Enabled The rule set of this site has it. Not enabled The rule set"
-      " of this site does not have it. Global public The quadrant of the"
-      " rule's source. The marks",
+      "Another option Rule set Enabled Not enabled Source Global public the"
+      " quadrant of the rule's source Row end",
       pages["rules/index.html"],
     )
     self.assertIn(
@@ -796,8 +789,7 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       '<h2 class="rules-group" data-group="source-demo"><span'
       ' class="group-path"><span class="group-part" data-group="source-demo"'
-      ' data-level="0" data-toc="Global private · demo"><span'
-      ' class="quadrant quadrant-global-private">Global private · demo'
+      '><span class="quadrant quadrant-global-private">Global private · demo'
       "</span></span></span></h2>",
       page,
     )
@@ -806,7 +798,6 @@ class SiteTest(unittest.TestCase):
       ' data-quadrant="global-private">',
       page,
     )
-    self.assertIn('href="#group-source-demo">Global private · demo</a>', page)
     # demo:4, under this repo's domain 1, is filtered by that domain.
     self.assertRegex(
       page,
