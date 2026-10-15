@@ -104,8 +104,16 @@ struct Run {
 }
 
 fn statute(home: &Path, dir: &Path, args: &[&str]) -> Run {
+    statute_with(home, dir, args, &[])
+}
+
+/// As `statute`, with the variables `vars` set.
+fn statute_with(home: &Path, dir: &Path, args: &[&str], vars: &[(&str, &Path)]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .env("HOME", home)
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_CACHE_HOME")
+        .envs(vars.iter().copied())
         .args(args)
         .current_dir(dir)
         .env_remove("GIT_DIR")
@@ -191,6 +199,8 @@ impl World {
         std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
         let out = Command::new(env!("CARGO_BIN_EXE_statute"))
             .env("HOME", &self.home)
+            .env_remove("XDG_CONFIG_HOME")
+            .env_remove("XDG_CACHE_HOME")
             .env(
                 "PATH",
                 format!("{}:{}", bin.display(), std::env::var("PATH").unwrap()),
@@ -218,7 +228,7 @@ impl World {
 
     /// Adds a source to the global configuration.
     fn configure(&self, line: &str) {
-        let path = self.home.join(".statute/config.toml");
+        let path = self.home.join(".config/statute/config.toml");
         let text = std::fs::read_to_string(&path).unwrap();
         std::fs::write(&path, format!("{text}{line}\n")).unwrap();
     }
@@ -227,7 +237,7 @@ impl World {
 #[test]
 fn init_global_writes_the_configuration_and_clones() {
     let w = world("init-global");
-    let config = read(&w.home, ".statute/config.toml");
+    let config = read(&w.home, ".config/statute/config.toml");
     assert!(
         config.contains(&format!(
             "R = {{ git = \"{}\", branch = \"main\" }}",
@@ -235,7 +245,7 @@ fn init_global_writes_the_configuration_and_clones() {
         )),
         "{config}"
     );
-    let repos: Vec<_> = std::fs::read_dir(w.home.join(".statute/repos"))
+    let repos: Vec<_> = std::fs::read_dir(w.home.join(".cache/statute/repos"))
         .unwrap()
         .map(|e| e.unwrap().file_name().into_string().unwrap())
         .collect();
@@ -246,7 +256,52 @@ fn init_global_writes_the_configuration_and_clones() {
         &statute(&w.home, &w.at, &["init", "--global"]),
         "already exists",
     );
-    assert_eq!(read(&w.home, ".statute/config.toml"), config);
+    assert_eq!(read(&w.home, ".config/statute/config.toml"), config);
+}
+
+#[test]
+fn the_xdg_variables_place_the_configuration_and_the_cache() {
+    let at = base("xdg");
+    let (_, address) = source(&at, "r", &[domain(1), rule(2, 1, "")]);
+    let init = ["init", "--global", "--source", address.as_str()];
+    // Unset: under the home directory.
+    let home = at.join("home");
+    let run = statute(&home, &at, &init);
+    ok(&run);
+    assert!(
+        run.stdout
+            .starts_with("wrote ~/.config/statute/config.toml\n"),
+        "{}",
+        run.stdout
+    );
+    assert!(home.join(".config/statute/config.toml").is_file());
+    assert!(home.join(".cache/statute/repos").is_dir());
+    // Set: there, and nothing under the home directory.
+    let home = at.join("home-xdg");
+    let (config, cache) = (at.join("config"), at.join("cache"));
+    let vars: &[(&str, &Path)] = &[("XDG_CONFIG_HOME", &config), ("XDG_CACHE_HOME", &cache)];
+    let run = statute_with(&home, &at, &init, vars);
+    ok(&run);
+    let wrote = format!("wrote {}\n", config.join("statute/config.toml").display());
+    assert!(run.stdout.starts_with(&wrote), "{}", run.stdout);
+    assert!(cache.join("statute/repos").is_dir());
+    let repo = at.join("repo");
+    std::fs::create_dir_all(&repo).unwrap();
+    git(&repo, &["init", "-q"]);
+    for args in [&["init", "--private"][..], &["add", "R2"], &["compile"]] {
+        ok(&statute_with(&home, &repo, args, vars));
+    }
+    let commit = git(&at.join("r"), &["rev-parse", "HEAD"]);
+    assert!(cache.join("statute/snapshots").join(&commit).is_dir());
+    assert!(!home.exists());
+    // Empty or relative: ignored, as the specification says.
+    let home = at.join("home-ignored");
+    let (empty, relative) = (Path::new(""), Path::new("config"));
+    let vars: &[(&str, &Path)] = &[("XDG_CONFIG_HOME", empty), ("XDG_CACHE_HOME", relative)];
+    ok(&statute_with(&home, &at, &init, vars));
+    assert!(home.join(".config/statute/config.toml").is_file());
+    assert!(home.join(".cache/statute/repos").is_dir());
+    assert!(!at.join("config/statute/repos").exists());
 }
 
 #[test]
@@ -274,7 +329,12 @@ fn a_repository_draws_on_the_global_first_party_source() {
         "{agents}"
     );
     // statute reads the commit's files, never a work tree of the clone.
-    assert!(w.home.join(".statute/snapshots").join(&commit).is_dir());
+    assert!(
+        w.home
+            .join(".cache/statute/snapshots")
+            .join(&commit)
+            .is_dir()
+    );
 }
 
 #[test]
@@ -330,7 +390,7 @@ fn a_lock_file_of_another_branch_is_stale() {
     ok(&w.run(&["init", "--private"]));
     ok(&w.run(&["add", "R2"]));
     git(&w.r, &["push", "-q", "origin", "main:other"]);
-    let path = w.home.join(".statute/config.toml");
+    let path = w.home.join(".config/statute/config.toml");
     let text = std::fs::read_to_string(&path).unwrap();
     std::fs::write(
         &path,
@@ -522,7 +582,7 @@ fn a_clone_of_the_users_own_is_read_as_its_last_fetch_left_it() {
     let home = at.join("home");
     write(
         &home,
-        ".statute/config.toml",
+        ".config/statute/config.toml",
         &format!(
             "[sources]\nR = {{ git = \"{}\", branch = \"main\", clone = \"{}\" }}\n",
             bare.display(),
@@ -535,7 +595,7 @@ fn a_clone_of_the_users_own_is_read_as_its_last_fetch_left_it() {
     ok(&statute(&home, &repo, &["init", "--private"]));
     ok(&statute(&home, &repo, &["add", "R2"]));
     assert!(read(&repo, "statute.lock").contains(&fetched));
-    assert!(!home.join(".statute/repos").exists());
+    assert!(!home.join(".cache/statute/repos").exists());
     // A recorded commit the clone lacks is fetched by the user, there.
     let lock = read(&repo, "statute.lock").replace(&fetched, &"0".repeat(40));
     std::fs::write(repo.join("statute.lock"), lock).unwrap();
@@ -549,7 +609,7 @@ fn a_clone_of_the_users_own_is_read_as_its_last_fetch_left_it() {
     // A clone of another address is refused.
     write(
         &home,
-        ".statute/config.toml",
+        ".config/statute/config.toml",
         &format!(
             "[sources]\nR = {{ git = \"https://example.test/other.git\", branch = \"main\", clone = \"{}\" }}\n",
             work.display()
@@ -702,7 +762,7 @@ fn source_add_in_a_private_repository_and_globally() {
     let (_, team) = source(&w.at, "team", &[domain(1), rule(7, 1, "")]);
     let run = w.run(&["source", "add", "--global", "--public", "team", &team]);
     ok(&run);
-    let config = read(&w.home, ".statute/config.toml");
+    let config = read(&w.home, ".config/statute/config.toml");
     assert!(
         config.contains(&format!(
             "team = {{ git = \"{team}\", branch = \"main\", public = true }}"
