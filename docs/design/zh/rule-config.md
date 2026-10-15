@@ -1,4 +1,4 @@
-<!-- en-sha256: 8a86f890fac7322d1f0b11fd1abe1bb4e70c35ab423fa5e6a46947a83f196647 -->
+<!-- en-sha256: 57a5ebc718eced6ff76d4b6bebdeb74c96460579ba05008f8eb54b16d1d6ca3f -->
 # 规定配置
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -304,7 +304,7 @@ uses = ["instructions", "review"]
 - one-of 的选项就是它的子节点，要么全是规定，要么全是领域，不能混。只有一条规定的选项就是那条规定，外面不套领域；需要几条规定的选项是一个以这个 one-of 为 parent 的领域，规定放在里面；它被选中时，其中的规定各按自己的 `default` 进来，与 `domains` 开启的领域一样。领域仍然最多嵌套两层，这样的领域算一层：子领域里的 one-of 只能以规定为选项。
 - 每个 one-of 都指定一个选项作为默认 (见[one-of 的默认](#in-the-rule-files))。
 - 选项在自己的 `parent` 里写它的 one-of；one-of 不列 `options`。树仍然只记在 `parent` 里 ([规定文件格式](rule-format.md#rule-file-format))，增加或移动一个选项只改一个文件。one-of 自己的文件里看不到它的选项；`statute explain` 和网站会列出来。
-- 编译出的 `AGENTS.md` 是一个平铺的列表，one-of 被选中的选项放在 one-of 的位置，不写任何指明 one-of 的内容：是规定的选项和别的规定一样是一项，是领域的选项给出它的规定 ([编译与网站](statute-command.md#compilation-and-the-site))。在网站上，one-of 是它所在领域列表里的一个框，列出每个选项并标出默认；选项只出现在这个框里，不在列表里再出现一次。是领域的选项，它的规定仍留在列表里，挂在它自己的标题下，比 one-of 所在的领域低一级；one-of 不作任何分组的小标题。编译出的 `AGENTS.md` 和两个网站都已经这样渲染。
+- 编译出的 `AGENTS.md` 是一个平铺的列表，one-of 被选中的选项放在 one-of 的位置，不写任何指明 one-of 的内容：是规定的选项和别的规定一样是一项，是领域的选项给出它的规定 ([编译与网站](statute-command.md#compilation-and-the-site))。在网站上，one-of 是它所在领域列表里的一个框，列出每个选项并标出默认；选项只出现在这个框里，不在列表里再出现一次。是领域的选项，它的规定仍留在列表里，挂在它自己的标题下，比 one-of 所在的领域低一级；one-of 不作任何分组的小标题。两个网站都已经这样渲染。
 
 **为什么。** 读网站的人，看到的每条规定都直接在领域或 one-of 下面，没有规定嵌在规定里；只有一条规定的选项也不需要自己的领域。规定的 parent 算作依赖的特例没有了；依赖穿过 one-of 传到 one-of 的 parent 的特例也没有了，因为那个 parent 总是领域。失去的是表示一条规定细化另一条的缩进；`requires` 保留了这层关系，网站在两条规定上都会显示。
 
@@ -320,7 +320,7 @@ uses = ["instructions", "review"]
 
 本地网站标出默认开关、每个 one-of 的默认选项、`uses` 和参数的取值 (见[本地网站](statute-command.md#the-local-site))；公开网站标出默认开关和每个 one-of 的默认选项，显示 `uses`，并能按它们筛选；它还为每个规定源设一个参数页，规定正文里的占位符链接到那里。
 
-编译出的 `AGENTS.md` 把每个 one-of 启用的选项放在 one-of 的位置，并加上写明 one-of 的那一行；两个网站都把 one-of 画成装着它的选项的框。
+编译出的 `AGENTS.md` 把每个 one-of 启用的选项里的规定放在 one-of 的位置，不写任何指明 one-of 的内容；两个网站都把 one-of 画成装着它的选项的框。
 
 这部分设计描述的内容都已实现。
 

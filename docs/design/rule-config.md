@@ -656,8 +656,7 @@ has this shape, and statute checks it when it reads a source:
   option and marks the default; an option appears in that box only, not
   again in the list. An option that is a domain keeps its rules in the
   list, under its own heading, a level below the one-of's domain; the
-  one-of heads no group. The compiled `AGENTS.md` and both sites are
-  built so.
+  one-of heads no group. Both sites are built so.
 
 **Why.** A reader of the site finds every rule
 directly under a domain or a one-of, with no rule nested under a rule,
@@ -701,9 +700,9 @@ marks the default switches and each one-of's default option and shows
 `uses`, with their filters, and has a page of parameters for each
 source, which the placeholders in the rules' texts link to.
 
-The compiled `AGENTS.md` puts each one-of's enabled option in the
-one-of's place, with the line that names the one-of, and both sites
-show a one-of as a box of its options.
+The compiled `AGENTS.md` puts the rules of each one-of's enabled option
+in the one-of's place, with nothing that names the one-of, and both
+sites show a one-of as a box of its options.
 
 Everything this design describes is built.
 

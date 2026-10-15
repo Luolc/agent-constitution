@@ -867,7 +867,7 @@ impl Manifest {
         let (agents_md, lang) = raw.compile.map_or((None, None), |c| (c.agents_md, c.lang));
         if agents_md.is_some() {
             errors.push(
-                "[compile] `agents-md` is not a setting: AGENTS.md is for agents and carries each rule's statement alone, the title, reason and verification only the site; delete the key".to_owned(),
+                "[compile] `agents-md` is not a setting: AGENTS.md is for agents and carries each rule's statement alone, while the title, reason and verification are for the site; delete the key".to_owned(),
             );
         }
         let lang = lang.unwrap_or_else(|| "en".to_owned());
