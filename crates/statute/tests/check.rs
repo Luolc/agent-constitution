@@ -236,7 +236,7 @@ fn r46_agrees_with_check_instruction_changes() {
     let cases: &[(&str, &[&str])] = &[
         ("instructions", &["AGENTS.md", "skills/a/SKILL.md"]),
         ("other", &["tools/build.py", "docs/design/README.md"]),
-        ("mixed", &["AGENTS.md", "tools/build.py"]),
+        ("mixed", &["CLAUDE.md", "tools/build.py"]),
         (
             "generated-with-tools",
             &[
