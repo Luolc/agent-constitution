@@ -1205,6 +1205,29 @@ fn a_citation_names_a_rule_in_force_with_its_namespace() {
         "3.toml",
         "[text.statement] cites `{@simplicity}` without `rule:` or `constitution:`",
     );
+    assert_error(
+        &load(&[domain(1), rule(2, 1, ""), citing("{@rule:domain-1}")]),
+        "3.toml",
+        "[text.statement] cites `{@rule:domain-1}`, which names no rule",
+    );
+}
+
+#[test]
+fn a_repealed_rule_may_cite_what_is_gone() {
+    let repeal =
+        |(id, text): (u64, String)| edit((id, text), "status = \"draft\"", "status = \"repealed\"");
+    let citing = |what: &str| {
+        repeal(edit(
+            rule(3, 1, ""),
+            "Do the thing 3.",
+            &format!("Do the thing 3, after {what}."),
+        ))
+    };
+    assert_clean(&load(&[
+        domain(1),
+        repeal(rule(2, 1, "")),
+        citing("{@rule:2} and {@rule:9}"),
+    ]));
 }
 
 #[test]

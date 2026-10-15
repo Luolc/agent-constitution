@@ -665,7 +665,8 @@ impl Checker<'_> {
 
     /// The citations of each node's texts: every language cites what the
     /// original cites, and each citation in any language has its
-    /// namespace and, when it is a rule of this source, names one that
+    /// namespace, names a rule by its number and, when it is a rule of
+    /// this source cited by a node that is not repealed, names one that
     /// exists and is not repealed. A rule of another source is checked
     /// with the rule set that names it.
     fn check_citations(&mut self) {
@@ -732,9 +733,24 @@ impl Checker<'_> {
                         }
                         continue;
                     };
-                    let Some(Ref::Local(id)) = node::cited_ref(r) else {
-                        continue;
+                    let id = match node::cited_ref(r) {
+                        Some(Ref::Local(id)) => id,
+                        Some(Ref::Foreign { .. }) => continue,
+                        None => {
+                            self.diags.error(
+                                &file,
+                                format!(
+                                    "[{field}] cites `{{@{c}}}`, which names no rule; write its number, as `{{@rule:12}}`, or `R12` or `team:7` for a rule of another source"
+                                ),
+                            );
+                            continue;
+                        }
                     };
+                    // The texts of a repealed node are kept as they were, so
+                    // what it cites may be gone or repealed with it.
+                    if node.status == Status::Repealed {
+                        continue;
+                    }
                     match source.get(id) {
                         None => self.diags.error(
                             &file,
