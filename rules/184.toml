@@ -1,0 +1,42 @@
+id = 184
+slug = "living-work-item-body"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["asking", "no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "While a work item is under discussion, edit its body"
+zh = "还在讨论的工作项直接改正文"
+
+[text.statement]
+en = "While a work item is under discussion, merge new content, decisions and corrections into its body, with a line at the top of the body giving its current state."
+zh = "还在讨论的工作项，把新内容、决定和更正并进正文，正文顶上写一行当前状态。"
+
+[text.reason]
+en = '''
+A discussion spread over dozens of comments has to be read from the start to learn where it stands now; merged into the body, the body is enough ({@constitution:asking}), and each decision is written in one place ({@constitution:no-restating}).
+'''
+zh = '''
+讨论散在几十条评论里，读的人要从头读完才知道现在定到哪一步；并进正文，读正文就够了 ({@constitution:asking})，每个决定也只写在一处 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+Comments are for a work item that settled long ago and whose body is not to change again. A report under {@rule:179} is not such a change and is still a comment: it records an attempt once it has settled, not a discussion still going on. The body serves only while the discussion lasts: when the task ends, the decisions and the knowledge still needed go into the repository through a pull request, and the work item links to them.
+
+Violated when a work item under discussion has a new decision or correction written only in a comment, when its body has no current state at the top, or when a decision to be kept after the task stays only in the work item instead of reaching the repository through a pull request.
+'''
+zh = '''
+评论只用于定型很久、不想再改正文的工作项。{@rule:179}的报告不在此列，仍写成评论：它是一次尝试定型之后的记录，不是还在进行的讨论。工作项的正文只是讨论期间的载体：任务结束时，还要用到的决定与知识经 pull request 写进仓库，工作项里链接过去。
+
+还在讨论的工作项把新的决定或更正只写在评论里，正文顶上没有当前状态，或者任务结束后还要留下的决定只留在工作项里、没有经 pull request 进仓库的，即为违反本规定。
+'''
+
+[translations]
+zh = "852c3de4fa7640de959d2d5509e862388451895c4e79bca0ecc41f02c018e114"

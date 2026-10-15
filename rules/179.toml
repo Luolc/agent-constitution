@@ -1,0 +1,42 @@
+id = 179
+slug = "report-on-child"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Leave a report on every child work item"
+zh = "每个子工作项都留一份报告"
+
+[text.statement]
+en = "When a child work item ends, leave a report of the attempt in a comment on it, on the ticketing system."
+zh = "子工作项结束时，在工单系统上这个子工作项的评论里留一份这次尝试的报告。"
+
+[text.reason]
+en = '''
+The agent responsible for the goal reads the reports to decide what comes next, and an attempt without one leaves no result behind ({@constitution:evidence.grounds}). What else a report holds is set by the instructions of each project.
+'''
+zh = '''
+负责这件事的 agent 读报告决定下一步，没有报告的尝试等于没留下结果 ({@constitution:evidence.grounds})。报告另外还写什么，由各项目的指令定。
+'''
+
+[text.verification]
+en = '''
+A report states at least what was done, its effect, why the attempt was judged done or abandoned, and the numbers.
+
+Violated when a child work item has moved to the status for a done or an abandoned attempt ({@rule:177}) and none of its comments is such a report.
+'''
+zh = '''
+报告至少写做了什么、效果、为什么判为完成或放弃，以及指标。
+
+子工作项已经转为完成或放弃的状态 ({@rule:177})，评论里却没有这样一份报告的，即为违反本规定。
+'''
+
+[translations]
+zh = "c890b906a7ee987787b989fe4c42ed7bb0bf61dc483f5cdabc29baf65060c19f"

@@ -1,0 +1,42 @@
+id = 180
+slug = "handover-new-child"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "When another agent takes over, open a new child work item"
+zh = "换人接手时开新的子工作项"
+
+[text.statement]
+en = "When another agent takes over an abandoned attempt, open a new child work item for it and link it to the abandoned one with the ticketing system's relation for related items."
+zh = "换一个 agent 接手被放弃的尝试时，为它开一个新的子工作项，并用工单系统表示相关的关系把它关联到被放弃的那个。"
+
+[text.reason]
+en = '''
+Whoever takes over makes a new attempt, and only a child work item of its own records its claim and its report apart ({@constitution:accountable-agent}); the relation lets a reader find from the new one what was tried before and why it was given up.
+'''
+zh = '''
+接手的一方做的是一次新的尝试，单独一个子工作项，才能单独记它的领取和报告 ({@constitution:accountable-agent})；关联让人从新的那个找得到之前试过什么、为什么放弃。
+'''
+
+[text.verification]
+en = '''
+The relation for related items is, for example, related in Linear.
+
+Violated when the agent taking over goes on in the abandoned child work item, or when the new child work item is not linked to the abandoned one by that relation.
+'''
+zh = '''
+表示相关的关系，例如 Linear 里的 related。
+
+接手的 agent 沿用被放弃的子工作项，或者新开的子工作项没有用这种关系关联被放弃的那个的，即为违反本规定。
+'''
+
+[translations]
+zh = "51832dda8520f7099e15026c259b003413dbf933f6b4516c9ec1a95391714048"
