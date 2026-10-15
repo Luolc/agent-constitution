@@ -292,6 +292,10 @@ file. It prints the path of `index.html`.
   global public, and is the repository's own rules as well: it is
   listed once, as global public, and the local public section says so
   and links there.
+  Every node, in the index and on its page, is marked with the kind of
+  its source: its name, in the language of the pages, on one of four
+  background colors. On the node's page the mark also names the source,
+  as in `Global private · me`.
 - **One page per node**, `<source>/<id>.html`: the statement, reason,
   verification and applicability; `requires`, `conflicts`, `overrides`
   and the successors; the path of parents and the children. A domain's
