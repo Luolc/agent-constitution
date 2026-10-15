@@ -594,7 +594,12 @@ class SiteTest(unittest.TestCase):
       '<button type="button" class="cites-button" aria-expanded="false"'
       ' aria-controls="cites-one-a" aria-label="Rules citing this provision:'
       ' 1" title="Rules citing this provision: 1"><span class="cites-box">R3'
-      '</span><span class="cites-toggle" aria-hidden="true"></span></button>'
+      '</span><span class="cites-toggle" aria-hidden="true"><svg viewBox="0 0'
+      ' 16 16" width="1em" height="1em"><circle cx="8" cy="8" r="6.5"'
+      ' fill="none" stroke="currentColor" stroke-width="1"/><path d="M5 8h6"'
+      ' stroke="currentColor" stroke-width="1" stroke-linecap="round"/><path'
+      ' class="cites-bar" d="M8 5v6" stroke="currentColor" stroke-width="1"'
+      ' stroke-linecap="round"/></svg></span></button>'
       '<span class="cites-list" id="cites-one-a" role="list">',
       page,
     )
