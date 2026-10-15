@@ -1,4 +1,4 @@
-<!-- en-sha256: 672fdcadf1cbb475a787ffa1115d6a9755d28c2c12e3f1f850e7f0e09d37b336 -->
+<!-- en-sha256: 00ab05ef2d5c8906a1515293e161b5f6ec34572353ebb69ad8316fed0948bdd0 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -117,7 +117,7 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
 
 - 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
 - 它有自己的锁文件 `private.lock`，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。这样所有 worktree 读私有规定源时用的是同一批 commit，而公开层各自以自己分支锁定的为准；如果锁文件把两层一起锁定，又由不同分支上的 worktree 共用，那它在除一个以外的所有 worktree 里都是过期的。
-- git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的东西都在 `.statute/` 下 (见下文)，写之前 statute 用 `git check-ignore` 确认 git 忽略了它要在那里写的每个文件。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
+- git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
 - 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute-checks.toml` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
 
 放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
@@ -145,13 +145,12 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 
 两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则什么都不写，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
 
-**`.statute/` 里既有要提交的，也有不提交的。** `.statute/rules/` 里仓库自己的规定要提交；私有输出、本地网站 (见[本地网站](statute-command.md#the-local-site)) 和 statute 先写在那里的临时文件不提交。所以仓库的 `.gitignore` 不写 `.statute/`：statute 自己写 `.statute/.gitignore`，就像 uv 在它建的 `.venv` 里、ruff 在它的 `.ruff_cache` 里那样，按名字列出生成文件：
+**`.statute/` 里既有要提交的，也有不提交的。** `.statute/rules/` 里仓库自己的规定要提交；私有输出和本地网站 (见[本地网站](statute-command.md#the-local-site)) 不提交。所以仓库的 `.gitignore` 不写 `.statute/`：statute 自己写 `.statute/.gitignore`，就像 uv 在它建的 `.venv` 里、ruff 在它的 `.ruff_cache` 里那样，按名字列出生成文件：
 
 ```gitignore
 # written by statute
 /AGENTS.full.md
 /site/
-/*.tmp
 ```
 
 这样，statute 以后新加的文件在名单写上它之前会被跟踪，在 `git status` 里看得见；写成 `*` 再加例外，它就被藏起来了。每个要往 `.statute/` 写生成文件的命令，在 `.statute/.gitignore` 不存在时先写它，它以 statute 的那一行开头但内容不同时重写它；不以那一行开头的 `.statute/.gitignore` 是仓库自己的，命令什么都不写并失败。这个文件要提交，这样新 clone 的仓库在 statute 第一次运行之前就会忽略这些生成文件。上面那项 `git check-ignore` 检查仍在写每个文件之前进行。尚未实现：现在由仓库的 `.gitignore` 写 `.statute/`，statute 只写 `.statute/site/.gitignore`。

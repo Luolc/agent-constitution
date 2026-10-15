@@ -58,7 +58,7 @@ statute check         # 列出已启用的规定，供审查
 statute site          # 在 .statute/site 生成本地的规定网站，私有规定也在内
 ```
 
-仓库用到的规定有两种。规定源把规定发布给别的仓库用，放在它顶层的 `rules/`，本仓就是这样；规定清单在 `[sources]` 里按 git 地址或路径声明它。仓库自己的规定只约束这个仓库：放在 `.statute/rules/`，写作 `L12`，别的仓库引用不到。
+仓库用到的规定有两种。规定源把规定发布给别的仓库用，放在它顶层的 `rules/`，本仓就是这样；规定清单在 `[sources]` 里按 git 地址或路径声明它。仓库自己的规定只约束这个仓库：放在 `.statute/rules/` (这一点还没实现，现在仍是 `statute.toml` 旁边的 `rules/`)，写作 `L12`，别的仓库引用不到。
 
 大多数规定没法用脚本判定，所以工作要逐条规定地审：审查方运行 `statute check`，拿到按 domain 分组的已启用规定，脚本判定不了的标 `review`，再逐条过。有脚本检查的规定结果是 `pass`、`violation` 或 `inconclusive`，有规定被违反时 `statute check` 的退出码为 1。它也可以在 CI 里运行，但不作为提交钩子，因为检查可能很慢。`statute explain <id>` 说明某条规定为什么被启用，其余命令见 `statute --help`。目前做到哪一步，见 [命令与第一版](docs/design/zh/statute-command.md#the-command-and-the-first-version)。
 

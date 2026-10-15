@@ -242,9 +242,11 @@ with `public = true`:
   stale in all but one of them.
 - git never tracks a file in its own directory, so the private rule set
   and its lock file cannot be committed, and need no `.gitignore` and no
-  check. What the private layer writes in the work tree is under
-  `.statute/` (below), and before writing it statute checks with
-  `git check-ignore` that git ignores each file it would write there.
+  check. What the private layer writes in the work tree is the private
+  output under `.statute/` and two links at the top (below); before
+  writing the file under `.statute/`, statute checks with
+  `git check-ignore` that git ignores it, and the links are checked as
+  below.
   A path whose last matching pattern is a negation (`!`) counts as not
   ignored. It writes no file at all, public or private, when one is not
   ignored or when git cannot tell.
@@ -331,9 +333,8 @@ left as it is, and the compile fails.
 
 **`.statute/` holds what is committed and what is not.** The
 repository's own rules in `.statute/rules/` are committed; the
-private output, the local site
-([The local site](statute-command.md#the-local-site)) and the
-temporary files statute writes there first are not. So the
+private output and the local site
+([The local site](statute-command.md#the-local-site)) are not. So the
 repository's `.gitignore` does not name `.statute/`: statute writes
 `.statute/.gitignore` itself, as uv does in the `.venv` it creates and
 ruff in its `.ruff_cache`, and it lists the generated files by name:
@@ -342,7 +343,6 @@ ruff in its `.ruff_cache`, and it lists the generated files by name:
 # written by statute
 /AGENTS.full.md
 /site/
-/*.tmp
 ```
 
 A file statute adds later is then tracked until the list names it,
