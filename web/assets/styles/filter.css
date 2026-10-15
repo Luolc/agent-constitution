@@ -1,69 +1,81 @@
 /* The controls above the list of the rules
    (layouts/_partials/rules/filter.html), as docs/design/frontend.md
-   (Components) draws them. The filter: a row of quiet buttons with a
-   border, one per field, each its name, what it chooses and
-   `chevron-down`, what it chooses in a badge when it differs from the
-   default filter; the row wraps on a narrow screen. A button opens a
-   popover under it, within the bar the row stands in
-   (assets/ts/rules-list.ts sets `--menu-start` and `--menu-top`, the
-   popover's place in the bar), the field's check boxes under its name and its All
-   and None, each box a row that the pointer fills, a long list
-   scrolling in the popover under its search box. Reset filter ends the
-   row, the number of fields changed in a badge. A popover enters from
-   scale(0.95) at its button, and only fades under reduced motion; it
-   lies over the list's sticky head and group rows (`z-popover`). The
-   controls' common look is controls.css's. */
-.rules .rules-controls {
+   (Components) draws them, after Ruff's: one row, wrapping on a narrow
+   screen, each control under its name in small muted type. The search
+   box first, then what the rows show (view.css), then a menu per field:
+   a button with a border saying what the field chooses, in a badge when
+   that differs from the default filter, and `chevron-down`; Clear
+   filters, a quiet button in the accent color, at the row's end. Under
+   the row, the number of rules shown, small and muted. A button opens a
+   popover under it, within the row (assets/ts/rules-list.ts sets
+   `--menu-start` and `--menu-top`, the popover's place in the row), the
+   field's check boxes under its name and its All and None, each box a
+   row that the pointer fills, a long list scrolling in the popover
+   under its search box. A popover enters from scale(0.95) at its
+   button, and only fades under reduced motion; it lies over the list's
+   sticky head and group rows (`z-popover`). The controls' common look
+   is controls.css's. */
+.rules .rules-bar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-space-2) var(--t-space-6);
-  margin-block: var(--t-space-4);
-  color: var(--t-text-muted);
+  align-items: end;
+  gap: var(--t-space-2) var(--t-space-3);
+  margin-block: var(--t-space-4) var(--t-space-1);
   font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
 }
-/* The bar the filter stands in is the box its popovers are placed in. */
-.rules .rules-bar { position: relative; }
+.rules .rules-bar [hidden] { display: none; }
+.rules :is(.rules-control, .rules-menu) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-space-1);
+}
+.rules .rules-control-label {
+  color: var(--t-text-muted);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-medium);
+}
+.rules .rules-find input { min-inline-size: 0; inline-size: 12.5rem; max-inline-size: 100%; box-sizing: border-box; line-height: inherit; }
 .rules .rules-filter {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-space-2);
+  align-items: end;
+  gap: var(--t-space-2) var(--t-space-3);
 }
 .rules .rules-menu-button {
   display: inline-flex;
   align-items: center;
   gap: var(--t-space-1);
+  justify-content: space-between;
+  min-inline-size: 4.5rem;
+  line-height: inherit;
   border: 1px solid var(--t-border-strong);
 }
 .rules .rules-menu-button .icon {
   width: var(--t-icon-sm);
   height: var(--t-icon-sm);
+  color: var(--t-text-muted);
   transition: rotate var(--t-duration-base) var(--t-ease-out);
 }
 .rules .rules-menu-button[aria-expanded="true"] .icon { rotate: 180deg; }
-.rules .rules-menu-value { color: var(--t-text-muted); }
-.rules .rules-menu-value,
-.rules .rules-filter-count {
-  min-inline-size: var(--t-icon-sm);
+.rules .rules-menu-value {
   padding: 0 var(--t-space-1);
-  font-size: var(--t-text-xs);
   font-variant-numeric: tabular-nums;
-  text-align: center;
+  white-space: nowrap;
   border-radius: var(--t-radius-full);
 }
-.rules .rules-menu-button.changed .rules-menu-value,
-.rules .rules-filter-count {
+.rules .rules-menu-button.changed .rules-menu-value {
   color: var(--t-accent);
   background: var(--t-bg-selected);
 }
-.rules .rules-filter-reset {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--t-space-1);
-  color: var(--t-accent);
+.rules .rules-filter-reset { margin-inline-start: auto; color: var(--t-accent); }
+.rules .rules-count {
+  margin: 0 0 var(--t-space-4);
+  color: var(--t-text-muted);
+  font-size: var(--t-text-sm);
+  font-variant-numeric: tabular-nums;
 }
-.rules .rules-filter-reset[hidden] { display: none; }
 .rules .rules-filter-group {
   position: absolute;
   z-index: var(--t-z-popover);
@@ -127,7 +139,6 @@
   cursor: pointer;
   transition: background-color var(--t-duration-fast) var(--t-ease-out);
 }
-.rules .rules-filter-group label[hidden] { display: none; }
 /* A domain's parent, after a title another node also has. */
 .rules .rules-filter-note { color: var(--t-text-muted); }
 @media (hover: hover) and (pointer: fine) {
@@ -140,6 +151,8 @@
 .rules .rules-filter-group button:active { color: var(--t-text); background-color: var(--t-bg-active); }
 .rules .rules-none-reset { color: var(--t-accent); }
 @media (max-width: 48rem) {
+  .rules .rules-find { flex-basis: 100%; }
+  .rules .rules-find input { inline-size: 100%; }
   .rules .rules-filter-group { inset-inline-start: 0; inline-size: 100%; max-inline-size: none; }
 }
 @media (prefers-reduced-motion: reduce) {

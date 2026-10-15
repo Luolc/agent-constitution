@@ -3,16 +3,17 @@
    each rule a row linked as a whole, its ID in a narrow column at the
    start in the muted color, its title cut to the row, its marks in four
    places at the end; a domain a group row on a band, the first level's
-   darker. The head and the group rows stick to the top of the window,
+   darker. The head is on `bg-panel`, with no border around the table.
+   The head and the group rows stick to the top of the window,
    under the top bar of a narrow screen. */
 .rules .rules-intro { color: var(--t-text-muted); }
 /* The list's page is a table, not text to read on: with no table of
    contents beside it, its column fills the page beside the sidebar, a
-   small margin on each side; its intro keeps the text's measure. */
+   small margin on each side, and all it holds, the intro too, is that
+   wide. */
 .rules.rules-index { max-width: none; }
 main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 .book-page:has(.rules-index) { padding-inline: var(--t-space-4); }
-.rules .rules-intro { max-width: var(--t-measure); }
 .rules .rules-params { margin-top: calc(-1 * var(--t-space-2)); }
 .rules .rules-none { color: var(--t-text-muted); }
 
@@ -73,7 +74,7 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
   block-size: var(--rules-row);
   color: var(--t-text-muted);
   font-weight: var(--t-weight-medium);
-  background: var(--t-bg-page);
+  background: var(--t-bg-panel);
   border-block-end-color: var(--t-border-strong);
 }
 .rules .rules-head > span { font-size: var(--t-text-sm); }
@@ -89,7 +90,8 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 
 /* A group row: a band, the first level's `bg-active`, a deeper one's
    `bg-panel-hover`, the label and the path in `text`, which keeps its
-   contrast there; the label in the ID's column. Under the pointer its
+   contrast there; the label in the ID's column; in the first place of
+   the marks, whether the defaults enable the group. Under the pointer its
    text is underlined, as `accent` is too faint on the band. */
 .rules .rules-group {
   position: sticky;
@@ -106,13 +108,14 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 .rules .rules-group > a {
   display: grid;
   grid-template-columns: subgrid;
-  grid-column: 1 / -1;
+  grid-column: 1 / 3;
   align-items: center;
   block-size: 100%;
   color: var(--t-text);
   text-decoration: none;
 }
 .rules .rules-group > .group-path { grid-column: 2 / -1; }
+.rules .rules-group > .rule-marks { grid-column: 3; font-weight: var(--t-weight-regular); }
 .rules .rules-group .group-label { text-align: end; font-variant-numeric: tabular-nums; }
 .rules .group-path {
   display: flex;
@@ -143,7 +146,10 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 /* Pressed, the row keeps its text above 4.5: the label turns from
    `text-muted` to `text`. */
 .rules a.rule-entry[href]:active :is(.rule-text, .rule-id) { color: var(--t-text); }
+/* A word too long for the row, such as a path in code, breaks
+   anywhere rather than run past the page's edge. */
 .rules .rule-title {
+  overflow-wrap: anywhere;
   display: flex;
   align-items: center;
   gap: var(--t-space-2);

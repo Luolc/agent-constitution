@@ -1151,3 +1151,73 @@ addEventListener("load", () => {
         "4 rules | 4 | 3/5 | All | - | folded | false/false | controls"
     );
 }
+
+/// A statement with a path in code longer than a phone's row wraps: the
+/// index, loaded 390px wide in a frame, as Chrome's headless window is
+/// at least 500px wide, does not scroll sideways, in either language.
+/// Skipped without Chrome, except in CI.
+#[test]
+fn site_fits_a_phone() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("phone");
+    let rule = dir.join("r/rules/7.toml");
+    let text = std::fs::read_to_string(&rule).unwrap();
+    let code = "`.claude/skills/<name>/references/alongfilename.md`";
+    std::fs::write(
+        &rule,
+        edit(
+            (7, text),
+            "Write in {$language.docs}.",
+            &format!("Write in {{$language.docs}}, in {code}."),
+        )
+        .1,
+    )
+    .unwrap();
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    for page in ["index.html", "zh/index.html"] {
+        assert!(read(&dir.join(".statute/site"), page).contains("alongfilename.md"));
+    }
+    let page = dir.join("phone.html");
+    std::fs::write(
+        &page,
+        r##"<!DOCTYPE html><body>
+<iframe src=".statute/site/index.html" style="width: 390px; height: 844px"></iframe>
+<iframe src=".statute/site/zh/index.html" style="width: 390px; height: 844px"></iframe>
+<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {
+    const root = f.contentDocument.documentElement;
+    done(`${root.clientWidth} ${root.scrollWidth <= root.clientWidth}`);
+  })))).then((r) => document.body.setAttribute("data-probe", r.join(" | ")));
+</script></body>"##,
+    )
+    .unwrap();
+    let out = Command::new(chrome)
+        .args([
+            "--headless",
+            "--no-proxy-server",
+            "--hide-scrollbars",
+            // The frames' documents, files too, are the page's to read.
+            "--allow-file-access-from-files",
+            "--window-size=1280,900",
+            "--virtual-time-budget=5000",
+        ])
+        .arg(format!("--user-data-dir={}", dir.join("profile").display()))
+        .arg("--dump-dom")
+        .arg(format!("file://{}", page.display()))
+        .output()
+        .unwrap();
+    let dom = String::from_utf8(out.stdout).unwrap();
+    let start = dom.find("data-probe=\"").expect(&dom) + 12;
+    assert_eq!(
+        &dom[start..start + dom[start..].find('"').unwrap()],
+        "390 true | 390 true"
+    );
+}

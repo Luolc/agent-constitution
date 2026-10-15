@@ -1,18 +1,22 @@
-{{- /* The controls above the list of the rules: the filter, a row of
-  menus, one per field, each a button that opens its group of check
-  boxes: the statuses, whether the defaults enable the rule, the values
-  of `uses`, the domains, indented by their depth, each with its
-  parent's title when another node has its title, and the quadrants
-  when the site has more than one source; then Reset filter, with the
-  number of fields changed from the default filter. The boxes are
+{{- /* The controls above the list of the rules, after Ruff's: one row,
+  each control under its name in small type. First the search, which
+  shows the rows whose text holds what is typed; then what the rows
+  show (rules/view.html); then the filter, a menu per field
+  (rules/filter-group.html): the statuses, whether the defaults enable
+  the rule, the values of `uses`, the domains, indented by their depth,
+  each with its parent's title when another node has its title, and the
+  quadrants when the site has more than one source; last, Clear
+  filters. Under the row, the number of rules shown. The boxes are
   checked as the default filter is, the statuses of rulesStatuses and
   every other value; assets/ts/rules-list.ts checks them as the address
-  says. Without scripts the controls stay hidden, as nothing could run
-  them. Takes (dict "page" the list's page "statuses" the statuses
-  checked by default "sources" the sources, as data/rules.json gives
-  them). */ -}}
-<div class="rules-controls" hidden>
-<div class="rules-filter" role="group" aria-label="{{ i18n "rules-filter" }}" data-every="{{ i18n "rules-filter-all" }}" data-nothing="{{ i18n "rules-filter-none" }}">
+  says. Without scripts only what the rows show is there, as nothing
+  could run the rest. Takes (dict "page" the list's page "statuses" the
+  statuses checked by default "sources" the sources, as data/rules.json
+  gives them). */ -}}
+<div class="rules-bar">
+<label class="rules-control rules-find" hidden><span class="rules-control-label">{{ i18n "rules-find" }}</span><input type="search" name="q" placeholder="{{ i18n "rules-find-placeholder" }}" autocomplete="off"></label>
+{{ partial "rules/view.html" }}
+<div class="rules-filter" role="group" aria-label="{{ i18n "rules-filter" }}" data-every="{{ i18n "rules-filter-all" }}" data-nothing="{{ i18n "rules-filter-none" }}" hidden>
 {{- $values := slice }}
 {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
   {{- $values = $values | append (dict "key" . "label" (i18n (printf "status-%s" .)) "checked" (in $.statuses .)) }}
@@ -38,6 +42,7 @@
   {{- end }}
   {{- partial "rules/filter-group.html" (dict "field" "quadrant" "legend" (i18n "rules-quadrants") "values" $values) }}
 {{- end }}
-<button type="button" class="rules-filter-reset">{{ i18n "rules-reset-filter" }}<span class="rules-filter-count" hidden></span></button>
 </div>
+<button type="button" class="rules-filter-reset" hidden>{{ i18n "rules-reset-filter" }}</button>
 </div>
+<p class="rules-count" data-singular="{{ i18n "rules-count-singular" }}" data-plural="{{ i18n "rules-count" }}" hidden></p>

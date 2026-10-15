@@ -6,7 +6,7 @@
   address's `view` names, or the one the reader chose last, and writes a
   change into the address. */ -}}
 <fieldset class="rules-view">
-<legend>{{ i18n "rules-view" }}</legend>
+<legend class="rules-control-label">{{ i18n "rules-view" }}</legend>
 <span class="rules-view-options">
 {{- range slice "both" "title" "statement" }}
 <label><input type="radio" name="view" value="{{ . }}"{{ if eq . "both" }} checked{{ end }}><span>{{ i18n (printf "rules-view-%s" .) }}</span></label>
