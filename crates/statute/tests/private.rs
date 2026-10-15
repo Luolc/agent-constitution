@@ -734,3 +734,27 @@ fn the_private_layer_enables_packs() {
         "`packs` lists `R1`, which statute.toml lists already",
     );
 }
+
+#[test]
+fn the_private_lock_file_records_a_sources_rules_dir() {
+    let dir = ignoring("rules-dir");
+    set_up(&dir);
+    std::fs::rename(dir.join("me/rules"), dir.join("me/policies")).unwrap();
+    write_private(
+        &dir,
+        &private(&dir)
+            .replace("rules = []", "rules = [\"me:4\"]")
+            .replace(
+                "public = false }",
+                "public = false, rules-dir = \"policies\" }",
+            ),
+    );
+    ok(&statute(&dir, &["lock"]));
+    let lock = read_private(&dir, "private.lock");
+    assert!(
+        lock.ends_with("public = false\nscope = \"global\"\nrules-dir = \"policies\"\n"),
+        "{lock}"
+    );
+    ok(&statute(&dir, &["compile"]));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("### Rule 4 (me:4)"));
+}
