@@ -219,16 +219,20 @@ def export(path: Path) -> dict[str, Any] | None:
     path: the directory, holding constitution/ or rules/.
 
   Returns:
-    Its constitution and its nodes, or None when statute cannot read or
-    check them; statute has then printed why.
+    Its constitution and its nodes, or None when cargo cannot run or
+    statute cannot read or check them; either has then printed why.
   """
-  run = subprocess.run(
-    [*STATUTE, "export", str(path)],
-    stdout=subprocess.PIPE,
-    text=True,
-    encoding="utf-8",
-    check=False,
-  )
+  try:
+    run = subprocess.run(
+      [*STATUTE, "export", str(path)],
+      stdout=subprocess.PIPE,
+      text=True,
+      encoding="utf-8",
+      check=False,
+    )
+  except OSError as e:
+    print(f"site-rules: error: cannot run cargo: {e}", file=sys.stderr)
+    return None
   return json.loads(run.stdout) if run.returncode == 0 else None
 
 

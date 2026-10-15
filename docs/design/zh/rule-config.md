@@ -1,7 +1,7 @@
-<!-- en-sha256: 9c3138db662189320bb23d41c6fb8174ab7f4844f83eb8d973badf9a1e1740bb -->
+<!-- en-sha256: 77a1cdbf831cc0d4ede8b41acaf91c0de2bdc11c2831ce4a4a54b58ed35fd593 -->
 # 规定配置
 
-状态：已定；还没有实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户 statute 目录里的[全局配置](global-configuration.md#the-global-configuration) `~/.statute/config.toml` 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
+状态：已定；还没有实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
 
 三样东西的目的相同：采用 statute 的仓库拿到的是一小套最通用、放在哪里都不太会出错的规定，其余的按需开启；只关乎某个人或某种环境的东西，是仓库设定的一个值或开启的一条规定，而不是要它去掉的一条规定。
 
@@ -17,17 +17,18 @@
 
 ## <a id="the-directory-of-local-rules"></a>本地规定的目录
 
-现在仓库自己的规定放在 `statute.toml` 旁边的 `rules/` 里 ([规定源与引用](rule-sets.md#sources-and-references))。规定清单顶层的 `local-rules` 可以指定另一个目录，相对于 `statute.toml` 所在的目录：
+仓库自己的规定 `L12` 放在 `statute.toml` 旁边的 `.statute/rules/` 里 (见[四类规定源](rule-sources.md#four-kinds-of-source))。规定清单顶层的 `local-rules` 可以指定另一个目录，相对于 `statute.toml` 所在的目录：
 
 ```toml
-local-rules = ".repo-rules"
+local-rules = "policy/agents"
 ```
 
-- 默认是 `"rules"`，所以没写这个键的规定清单读的还是现在读的那些。
-- 只有 `statute.toml` 能设定它。它描述的是仓库的布局，每台机器和 CI 都一样，所以全局配置里没有这个键；`statute.private.toml` 里也没有，因为私有层只增加。
-- 这个目录就是某个磁盘上的规定源的 `rules/` 时，比如 `R = { path = "." }` 加上默认值，其中的规定归那个规定源，与现在一样：本地引用其中一条会报错，并提示写成 `R12`。
+- 默认是 `".statute/rules"`。仓库顶层的 `rules/` 不当作仓库自己的规定读：它属于某个规定源，只有某个规定源就在那个目录时才读，比如 `R = { path = "." }`。`rules/` 这个名字太常见，statute 不该在用到它的仓库里占用它；放进 `.statute/`，这些规定就和 statute 的其他文件在一起，就像某个工具要提交的文件放在 `.claude/` 或 `.github/workflows/` 里一样。`.statute/rules/` 要提交；`.statute/` 只把 statute 生成的文件列为忽略 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
+- 只有 `statute.toml` 能设定它。它描述的是仓库的布局，每台机器和 CI 都一样，所以全局配置里没有这个键；私有规定清单里也没有，因为私有层只增加。
+- 磁盘上的规定源，比如 `R = { path = "." }`，仍从 `<path>/rules/` 或者它的 `rules-dir` 指定的目录读 (见[规定源与引用](rule-sets.md#sources-and-references))：那些是规定源的规定，不是本地规定。`local-rules` 指向同一个目录时，其中的规定归那个规定源：本地引用其中一条会报错，并提示写成 `R12`。
+- 这个目录里可以有 `params.toml`，即其中参数的声明 (见[参数](#parameters))；statute 不把它当作规定读。
 
-本仓是第一方规定源，以后也会放只管本仓开发的规定：这些规定约束本仓库，不是给别人用的通用规定。本仓有了规定清单之后，用 `R = { path = "." }` 指向 `rules/` 里的通用规定，用 `local-rules = ".repo-rules"` 指向自己的规定，写作 `L12`。这样它在第一方规定之外还有本地规定，四类规定源 ([四类规定源](rule-sources.md#four-kinds-of-source)) 在它这里都可能出现。[本地网站](statute-command.md#the-local-site) 把在 `.` 的规定源只列一次，归入全局公开，并在本地公开一节里说明仓库自己的规定在那里；改用 `.repo-rules/` 之后，本地公开一节直接列出仓库自己的规定。
+本仓是第一方规定源，也放只管本仓开发的规定：这些规定约束本仓库，不是给别人用的通用规定。本仓有了规定清单之后，用 `R = { path = "." }` 指向 `rules/` 里的通用规定，自己的规定 `L12` 按默认放在 `.statute/rules/`。这样它在第一方规定之外还有本地规定，四类规定源在它这里都可能出现。[本地网站](statute-command.md#the-local-site) 把第一方规定列为全局公开，把本仓自己的规定列在本地公开一节。
 
 ## <a id="parameters"></a>参数
 
@@ -96,7 +97,7 @@ communication = "zh"
 docs = "zh"
 ```
 
-- 只有 `statute.toml` 设定取值，`statute.private.toml` 一个也不设：它设的值会让全文里某条公开规定的文字与提交的 `AGENTS.md` 里的不一样，而私有层只增加 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
+- 只有 `statute.toml` 设定取值，`private.toml` 一个也不设：它设的值会让全文里某条公开规定的文字与提交的 `AGENTS.md` 里的不一样，而私有层只增加 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
 - 键不对应规定清单任何规定源的参数，报错；值的类型不对，或者是 statute 不知道名称的语言代码，也报错。为没有启用规定在用的参数设了值，给一个警告；这样关掉相关规定时，值可以留在原处。
 - [全局配置](global-configuration.md#the-global-configuration) 里也可以有同样的表。编译规定清单时不读其中的值：`statute init` 把它们写进新的 `statute.toml`，等用户级输出实现之后，它们就是那份输出的取值 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，「放在哪里」一段)。这样，提交的规定清单和锁文件单独就能说明编译出的 `AGENTS.md` 里有什么，没有全局配置的 CI 也能构建出同一个文件。
 
@@ -206,9 +207,9 @@ packs = ["R96"]
 - `packs` 与现在一样，开启整棵子树里的每条规定，不论它的 `default`；但在 one-of 处只开一个子节点：规定清单在 `rules` 里点名的那个，没有点名就是默认的那个，规定包只进入这个子节点的子树。`exclude` 可以关掉其中一部分。
 - 一条规定依赖某个 one-of，而规定清单没有启用这个 one-of 的任何子节点时，带进来的是默认子节点，与 statute 补上任何缺失的依赖一样，不再报错。
 - `statute add` 把领域写进 `domains`，把规定写进 `rules`；`statute remove` 从 `rules`、`domains` 或 `packs` 里去掉一项，这条规定或这个领域仍然默认开启时，把它写进 `exclude`。
-- `statute.private.toml` 可以有 `rules` 和 `domains`，它们只增加；不能有 `exclude`：私有层不去掉公开层的任何规定 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
+- `private.toml` 可以有 `rules` 和 `domains`，它们只增加；不能有 `exclude`：私有层不去掉公开层的任何规定 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
 
-**取谁的默认值。** 规定清单取第一方规定源 `R` 的默认值，不论 `R` 从哪里来；也取它自己的 `[sources]` 写了的每个规定源的默认值，即 `statute.toml` 里写的，私有层则是 `statute.private.toml` 里写的。只有全局配置登记的规定源不带进任何默认规定；要用它的规定就逐条列出，或者在规定清单里写上这个规定源，取它的默认值。否则，往全局配置里加一个规定源，就会在每个仓库里开启规定，而这些仓库的规定清单里没有任何一处写明。规定源条目写 `defaults = false`，就不取这个规定源的任何默认值：
+**取谁的默认值。** 规定清单取第一方规定源 `R` 的默认值，不论 `R` 从哪里来；也取它自己的 `[sources]` 写了的每个规定源的默认值，即 `statute.toml` 里写的，私有层则是 `private.toml` 里写的。只有全局配置登记的规定源不带进任何默认规定；要用它的规定就逐条列出，或者在规定清单里写上这个规定源，取它的默认值。否则，往全局配置里加一个规定源，就会在每个仓库里开启规定，而这些仓库的规定清单里没有任何一处写明。规定源条目写 `defaults = false`，就不取这个规定源的任何默认值：
 
 ```toml
 [sources]

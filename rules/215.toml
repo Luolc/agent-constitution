@@ -1,0 +1,42 @@
+id = 215
+slug = "date-values-that-go-stale"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give the date of a value that goes stale"
+zh = "会过期的值注明获取日期"
+
+[text.statement]
+en = "Write a value that goes stale, such as a version number, a price, a policy, the behavior of an outside platform or the current state of something, into text that stays only together with the date it was read."
+zh = "版本号、价格、政策、外部平台的行为、某样东西当前的状态这类会过期的值，写进会留下来的文字时，一定注明获取的日期。"
+
+[text.reason]
+en = '''
+Such a value is right when written and wrong some time later, and the reader cannot tell when it was read. With its date, the reader knows up to when it held and when to look it up again ({@constitution:evidence.facts}).
+'''
+zh = '''
+这类值写下时是对的，过一段时间就不对了，读者却看不出它是什么时候的读数。注明日期，读者就知道它截至哪天有效，需要时重新查证 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+Text that stays is that of documents in the repository, comments in code, pull request descriptions and the bodies of work items; an immediate answer in a conversation is not. A version pinned in a lock file or a configuration that tools read is not written into text in this sense. The date is given to the day, for example "(read 2026-10-14)".
+
+Violated when text that stays holds a value that goes stale without the date it was read.
+'''
+zh = '''
+会留下来的文字指进仓库的文档、代码注释、PR 描述和工作项正文；对话里的即时回答不在此列。版本号钉在锁文件或配置里、由工具读取的，不算这里说的写进文字。日期写到日，例如「(2026-10-14 查)」。
+
+会留下来的文字里写了会过期的值，又没有注明获取日期的，即为违反本规定。
+'''
+
+[translations]
+zh = "87c9c86e813791ca97cfe874ae26351f0ce6780b558f710dacfa723b314db520"

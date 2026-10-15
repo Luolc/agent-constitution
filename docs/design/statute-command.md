@@ -101,7 +101,10 @@ In the directory of the `AGENTS.md`, `statute compile` also writes:
   as `statute = "<version>"`, the binary whose built-in checks the
   rules use, and one `[[commands]]` table per enabled rule with
   `check = "command"`, ordered by ID, with its `rule` (`"R42"`),
-  `run` and `tools`. The file changes with statute's version.
+  `run` and `tools`. The file changes with statute's version. It stays
+  at the top of the repository rather than in `.statute/`: it is
+  committed, CI reads it, and a change to it is reviewed beside the
+  `AGENTS.md` it comes from.
 
 Each file starts with a comment that statute wrote it (`<!-- ... -->`
 in the `AGENTS.md`, `# ...` in `statute-checks.toml`). Before writing
@@ -166,11 +169,15 @@ be published anew. The rule set is `statute.toml`, the lock file
   the global configuration
   ([Adding a source](global-configuration.md#adding-a-source));
 - `add` and `remove`: enable a rule or take it out of the rule set, and
-  update the lock file; with `--private`, of `statute.private.toml`
+  update the lock file; with `--private`, of the private rule set
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository));
 - `lock`: resolve the rule set into the lock file;
 - `compile`: write the compiled output
-  ([Compilation and the site](#compilation-and-the-site));
+  ([Compilation and the site](#compilation-and-the-site)); with
+  `--private-only`, only the private output, for a git hook in a new
+  worktree, without the network and never failing
+  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
+  A new worktree; not built yet);
 - `check`: list the enabled rules for review by domain, with the outcome
   of those a script checks ([Checks](rule-checks.md#checks));
 - `upgrade`: move the sources and the constitution to newer versions
@@ -193,10 +200,13 @@ which try the whole process on real work.
 (built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
 which 43 and 46 supersede), and `site`, for sources on disk and git
 sources, as many as
-`[sources]` names, and `export`. The `rules/` next to `statute.toml` are the
-repository's own rules, `L12`, when no source is at `.`; with
+`[sources]` names, and `export`. The repository's own rules, `L12`, are read from the
+`rules/` next to `statute.toml` when no source is at `.`; with
 `R = { path = "." }` they are first-party, and a local reference fails
-with a note to write `R12`. A rule names a rule of another source in
+with a note to write `R12`. Reading them from `.statute/rules/`, or the
+directory `local-rules` names
+([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
+and a source's `rules-dir` are not built yet. A rule names a rule of another source in
 `requires`, `conflicts` and `{@rule:...}` as `R12` or `team:7`, with
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
@@ -205,11 +215,14 @@ with which rules may cite which in `requires`, `conflicts`,
 `overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's or a domain's `parent`
-in another source, and `statute.private.toml` with its lock file and
-output.
+in another source, and the private layer with its lock file and
+output, as `statute.private.toml` next to `statute.toml`: its place in
+git's directory, a lock file of its own sources alone,
+`.statute/.gitignore` and `compile --private-only` are not built yet.
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
-except that `upgrade` does not show the text of a changed rule yet.
+in `~/.statute/` rather than the XDG directories, and except that
+`upgrade` does not show the text of a changed rule yet.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -261,7 +274,7 @@ and compared, but not read in their place.
 `.statute/site/` next to `statute.toml`, to be opened in a browser from
 disk; it is never published, and it is not
 [the public site](static-site.md). It reads `statute.toml` and, when it
-is there, `statute.private.toml`, both layers resolved in memory, with
+is there, the private rule set, both layers resolved in memory, with
 each git source at the commit the lock file records
 ([Git sources](global-configuration.md#git-sources)); it writes no lock
 file. It prints the path of `index.html`.
@@ -270,9 +283,15 @@ file. It prints the path of `index.html`.
   no dependency beyond those statute has. Each run builds the site
   anew: it removes the old `.statute/site/` first, but only when that
   directory holds statute's `.gitignore` (below), and otherwise writes
-  nothing and fails. Nothing is written outside `.statute/site/`.
+  nothing and fails. Nothing is written outside `.statute/site/` but
+  `.statute/.gitignore`.
 - **Ignored by git.** statute writes `.statute/site/.gitignore`
-  holding `*`, so git ignores every file there, that one included.
+  holding `*`, so git ignores every file there, that one included,
+  and it marks the directory as statute's. It also writes
+  `.statute/.gitignore`, which lists `/site/`, as every command that
+  writes a generated file into `.statute/` does
+  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
+  not built yet).
   Before anything, in a git repository, it asks `git ls-files` about
   `.statute/site/`, and when git tracks a file there it writes nothing
   and fails, naming the file and the way out,
@@ -290,13 +309,17 @@ file. It prints the path of `index.html`.
   not enable, and one that shows superseded and repealed nodes, hidden
   by default, work through check boxes and the style sheet alone.
 - **The kind of a source** follows its two properties: local for the
-  repository's own `rules/` (`L`) and a source with `scope = "local"`,
+  repository's own rules (`L`) and a source with `scope = "local"`,
   global for any other, the global configuration's included; public as
   the source declares it, and for `L` as the rule set does. A source
   at `.`, as `R = { path = "." }` in this repo, is first-party and so
-  global public, and is the repository's own rules as well: it is
-  listed once, as global public, and the local public section says so
-  and links there.
+  global public. Today its `rules/` are the repository's own rules as
+  well: it is listed once, as global public, and the local public
+  section says so and links there. Once the repository's own rules are
+  read from `.statute/rules/` (not built yet), that holds only when
+  `local-rules` names the source's rules directory; otherwise the
+  repository's own rules are listed in the local section of their
+  kind.
   Every node, in the index and on its page, is marked with the kind of
   its source: its name, in the language of the pages, on one of four
   background colors. On the node's page the mark also names the source,

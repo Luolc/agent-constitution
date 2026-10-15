@@ -1,0 +1,42 @@
+id = 200
+slug = "documents-language"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write the repository's documents in the language set for them"
+zh = "仓库文档用为它设定的语言写"
+
+[text.statement]
+en = "Write the repository's text for people, such as documents, logs and the README, in the language set for documents (parameter `language.docs`, default `en`), whatever language the principal speaks to you in."
+zh = "仓库里面向人阅读的文字，如文档、日志和 README，用为文档设定的语言写 (参数 `language.docs`，默认 `en`)，不论委托人用什么语言跟你说话。"
+
+[text.reason]
+en = '''
+A repository's documents are written for its readers, who read fastest in the language chosen for them ({@constitution:purpose}); the language a principal speaks to an agent in does not say what the readers of the repository read.
+'''
+zh = '''
+仓库的文档是写给仓库的读者看的，用为他们选定的语言，他们读得最快 ({@constitution:purpose})；委托人跟 agent 说什么语言，说明不了仓库的读者读什么语言。
+'''
+
+[text.verification]
+en = '''
+Code, comments in code, commit messages and pull requests have rules of their own ({@rule:202}, {@rule:203}, {@rule:204}, {@rule:213}). A quotation kept in its original language ({@rule:214}) and text in another language that serves as data or test input (a sample the code processes, say) do not count.
+
+Violated when a document, a log or the README of the repository is written in another language than the one set.
+'''
+zh = '''
+代码、代码注释、commit message 和 PR 另有规定 ({@rule:202}、{@rule:203}、{@rule:204}、{@rule:213})。照原文保留的引文 ({@rule:214})，以及作为数据或测试输入出现的其他语言文字 (比如代码要处理的样本)，都不算违反。
+
+仓库的文档、日志或 README 没有用设定的语言写的，即为违反本规定。
+'''
+
+[translations]
+zh = "b7e94221cbd1ecf244c205053c18193db7618e3ff6cb589bd319e98da1d14981"

@@ -130,7 +130,7 @@ class SiteRulesTest(unittest.TestCase):
     # An English text on a Chinese page keeps English labels.
     self.assertEqual(
       zh[6]["text"]["statement"],
-      "Under five, see [Art. I §1(1)](../../#one-a.x).",
+      "Rule six, see [Art. I §1(1)](../../#one-a.x).",
     )
     self.assertEqual(
       zh[6]["authority"], [{"ref": "one-a.x", "label": "第一条第一款第一项"}]
@@ -285,7 +285,7 @@ class SiteRulesTest(unittest.TestCase):
       "After [rule R3](../3/), see [rule demo:2](../demo-2/).",
     )
     self.assertEqual(
-      nodes["demo:1"]["applicability"], "For every repository; see rule 3."
+      nodes["demo:1"]["applicability"], "For every repository; see rule R9."
     )
     self.assertEqual(
       [(label, nodes[label].get("enabled")) for label in ("R1", "R3", "R5")]

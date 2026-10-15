@@ -86,6 +86,13 @@ statute check         # list the enabled rules for review
 statute site          # a local site of every rule, private ones too, in .statute/site
 ```
 
+A repository can use two kinds of rules. A rule source publishes rules
+for other repositories, in `rules/` at its top as this repo does, and a
+rule set names it in `[sources]` by a git address or a path. A
+repository's own rules bind it alone: they live in `.statute/rules/`
+(today still `rules/` next to `statute.toml`, until that is built), are
+cited as `L12`, and no other repository can name them.
+
 Most rules cannot be decided by a script, so the work is reviewed rule
 by rule: the reviewer runs `statute check` to get the enabled rules by
 domain, marked `review` when no script can decide them, and goes through

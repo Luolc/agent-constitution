@@ -62,11 +62,11 @@ STATEMENTS = {
   ),
   4: ("Old.", None),
   5: ("New.", None),
-  6: ("Under five, see {@constitution:one-a.x}.", None),
+  6: ("Rule six, see {@constitution:one-a.x}.", None),
 }
 
 
-APPLICABILITY = "For every repository; see {@rule:3}."
+APPLICABILITY = "For every repository; see {{@rule:{rule}}}."
 
 
 def original(*texts: str) -> str:
@@ -81,15 +81,19 @@ def original(*texts: str) -> str:
   return hashlib.sha256("\0".join(texts).encode()).hexdigest()
 
 
-def group(node_id: int, kind: str, parent: int | None) -> str:
+def group(
+  node_id: int, kind: str, parent: int | None, cites: str = "3"
+) -> str:
   """Return the file of a domain or a one-of, translated.
 
-  A domain has an applicability that cites rule 3.
+  A domain has an applicability that cites a rule.
 
   Args:
     node_id: its ID.
     kind: domain or one-of.
     parent: its parent, None for a domain.
+    cites: the rule a domain's applicability cites, as `{@rule:...}`
+      names it.
 
   Returns:
     The TOML text.
@@ -103,9 +107,10 @@ def group(node_id: int, kind: str, parent: int | None) -> str:
     + f'\n[title]\nen = "{title}"\nzh = "组 {node_id}"\n'
   )
   if kind == "domain":
-    texts.append(APPLICABILITY)
-    text += f'\n[applicability]\nen = "{APPLICABILITY}"\n'
-    text += 'zh = "所有仓库，见{@rule:3}。"\n'
+    applicability = APPLICABILITY.format(rule=cites)
+    texts.append(applicability)
+    text += f'\n[applicability]\nen = "{applicability}"\n'
+    text += f'zh = "所有仓库，见{{@rule:{cites}}}。"\n'
   return text + f'\n[translations]\nzh = "{original(*texts)}"\n'
 
 
@@ -172,7 +177,7 @@ def write(root: Path) -> None:
 
 
 # A made-up second source, `demo`: 1, a domain, translated, whose
-# applicability cites a rule 3 the source does not have; 2, a rule under
+# applicability cites a first-party rule 9 that no source here has; 2, a rule under
 # it, untranslated, that requires and cites rule 3 of this repo and cites
 # itself; 4, the same rule under this repo's domain 1, in conflict with
 # this repo's rule 5.
@@ -202,7 +207,7 @@ en = "Why."
 en = "Violated when not."
 """
 OTHER_FILES = {
-  "rules/1.toml": group(1, "domain", None),
+  "rules/1.toml": group(1, "domain", None, "R9"),
   "rules/2.toml": OTHER_RULE,
   "rules/4.toml": OTHER_RULE.replace("id = 2", "id = 4")
   .replace("parent = 1", 'parent = "R1"')
