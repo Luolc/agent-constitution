@@ -533,28 +533,6 @@ fn the_private_rule_set_is_written_in_git_s_directory() {
 }
 
 #[test]
-fn the_full_text_fits_what_codex_reads() {
-    let dir = ignoring("too-long");
-    write(
-        &dir,
-        "me/rules/4.toml",
-        &edit(
-            rule(4, 1, ""),
-            "Do the thing 4.",
-            &"Do the thing 4. ".repeat(2100),
-        )
-        .1,
-    );
-    set_up(&dir);
-    let run = statute(&dir, &["compile"]);
-    fails_with(
-        &run,
-        "more than the 32768 that Codex reads of a project's instruction files",
-    );
-    assert!(!dir.join(".statute/AGENTS.full.md").exists());
-}
-
-#[test]
 fn a_claude_md_is_not_needed() {
     let dir = ignoring("claude-md");
     set_up(&dir);

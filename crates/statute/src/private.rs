@@ -31,9 +31,6 @@ pub const GITIGNORE: &str = "# written by statute\n/AGENTS.full.md\n/site/\n";
 /// `AGENTS.override.md` in place of `AGENTS.md`.
 pub const LINKS: [&str; 2] = ["CLAUDE.local.md", "AGENTS.override.md"];
 
-/// The most of a project's instruction files Codex reads by default.
-pub const MAX_BYTES: usize = 32 * 1024;
-
 /// The directory of the private rule set and its lock file for the work
 /// tree at `root`, the same from every worktree of a clone: `None`
 /// outside a git repository, where there is no private layer; an error
