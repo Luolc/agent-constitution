@@ -175,7 +175,8 @@ site-rules`, `uv run count-tokens` (the token count, below),
   button; a rule is shown when its status, its nearest domain and its
   quadrant are checked, its `uses` (`["instructions"]` when its file
   leaves it out) has a value checked, and, with that box, the defaults
-  enable it; and checking or unchecking a domain does the same to the domains under
+  enable it (a node whose answer depends on another source has no tag
+  and is left out by that box); and checking or unchecking a domain does the same to the domains under
   it. A node whose `parent` is in another source, and a
   rule with `overrides`, has no domain on the site: it is at the top
   of the tree, with no group above it. When its parent is a domain of a

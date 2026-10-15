@@ -178,7 +178,7 @@ fn rules_alone() {
     assert_eq!(data["constitution"], Value::Null);
     assert_eq!(data["nodes"][0]["fields"]["parent"], "R1");
     // On, but whether it comes in depends on R1, which is not here.
-    assert_eq!(data["nodes"][0]["on-by-default"], Value::Null);
+    assert_eq!(data["nodes"][0].get("on-by-default"), Some(&Value::Null));
 }
 
 #[test]
