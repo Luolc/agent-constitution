@@ -81,6 +81,8 @@ struct Words {
     /// rules of a chain of overrides.
     overrides: &'static str,
     which_overrides: &'static str,
+    /// Before the title of the one-of whose option stands in its place.
+    one_of: &'static str,
     end: &'static str,
 }
 
@@ -94,6 +96,7 @@ fn words(lang: &str) -> Words {
             rule: "规定",
             overrides: "覆盖 ",
             which_overrides: "，后者覆盖 ",
+            one_of: "择一：",
             end: "。",
         },
         _ => Words {
@@ -104,6 +107,7 @@ fn words(lang: &str) -> Words {
             rule: "rule",
             overrides: "Overrides ",
             which_overrides: ", which overrides ",
+            one_of: "One of: ",
             end: ".",
         },
     }
@@ -621,6 +625,10 @@ pub fn cited(
     })
 }
 
+/// Writes node `key` and what is below it at heading `level`. A one-of
+/// has no heading of its own: its enabled option stands in its place,
+/// with a line that names the one-of (`docs/design/rule-config.md`, No
+/// rule under a rule).
 fn render(
     project: &Project,
     w: &Words,
@@ -630,7 +638,33 @@ fn render(
     private: bool,
     out: &mut String,
 ) -> Result<(), String> {
-    if project.sources.get(key).is_none() || !shown(project, key) {
+    render_in(project, w, labels, key, level, private, None, out)
+}
+
+/// As `render`, for an option of the one-of `of`.
+#[allow(clippy::too_many_arguments)]
+fn render_in(
+    project: &Project,
+    w: &Words,
+    labels: &Labels,
+    key: &Key,
+    level: usize,
+    private: bool,
+    of: Option<&Key>,
+    out: &mut String,
+) -> Result<(), String> {
+    let Some(at) = project.sources.get(key) else {
+        return Ok(());
+    };
+    if !shown(project, key) {
+        return Ok(());
+    }
+    if at.kind == Kind::OneOf {
+        let mut options = project.sources.children(key);
+        options.sort();
+        for option in options {
+            render_in(project, w, labels, &option, level, private, Some(key), out)?;
+        }
         return Ok(());
     }
     // An overridden rule's place holds the rule that stands in it, with
@@ -643,7 +677,8 @@ fn render(
     };
     let lang = project.manifest.lang.as_str();
     out.push('\n');
-    for k in chain.iter().rev().chain([&standing]) {
+    // A link to the one-of lands on the option in its place.
+    for k in of.into_iter().chain(chain.iter().rev()).chain([&standing]) {
         let _ = writeln!(out, "<a id=\"{}\"></a>", anchor(k));
     }
     let _ = writeln!(
@@ -659,6 +694,15 @@ fn render(
             "\n{}{}{}",
             w.overrides,
             names.join(w.which_overrides),
+            w.end
+        );
+    }
+    if let Some(one_of) = of.and_then(|k| Some((k, project.sources.get(k)?))) {
+        let _ = writeln!(
+            out,
+            "\n{}{}{}",
+            w.one_of,
+            title(project, one_of.0, one_of.1, private),
             w.end
         );
     }

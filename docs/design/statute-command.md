@@ -11,7 +11,7 @@ and a rule set with its lock file, and writes:
 - an `AGENTS.md`, which opens with the repository, the edition and the
   revision of the constitution it rests on, and then has the enabled rules
   in nested blocks along the parent tree, one heading level per level of
-  the tree, each domain with an enabled rule below it as a top heading,
+  the tree, a one-of's enabled option at the one-of's level, each domain with an enabled rule below it as a top heading,
   followed by the domain's applicability when it has one; a
   subtree whose root is not enabled (for a one-of: none of its children
   is) contributes nothing, since none of its rules can be enabled without
@@ -49,9 +49,12 @@ to ([Private rules in a public repository](rule-sources.md#private-rules-in-a-pu
 file with the repository's private rules added." (in Chinese
 「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」). Each domain is a heading of level two, a subdomain one of
 level three ([Subdomains](rule-sources.md#subdomains)),
-and each level of the tree one level deeper, down to level six, where
-deeper levels stay;
-a one-of none of whose children is enabled does not appear. The
+and each level of the tree one level deeper. A one-of has no heading
+of its own: its enabled option stands at its place, after the one-of's
+anchor, and under the option's heading a line names the one-of,
+`One of: <its title>.` (in Chinese `择一：<its title>。`); an option
+that is a domain keeps its heading, with its rules below it. A one-of
+none of whose children is enabled does not appear. The
 first-party source's domains come first, then those of the other
 sources by the sources' names, then the repository's own. A node's
 heading is its title and its reference as statute shows it (`R42`),
@@ -239,7 +242,9 @@ default switches of a rule set are built, with `domains`, `exclude`,
 them; `default` is required where the rule files need it, and
 `check = "review"` fails; parameters are built, with their values in
 the lock file, `upgrade`, `explain <name>` and both outputs. Not built
-yet: the one-of's rendering, and the marks of the sites.
+yet: the one-of as a box on the sites, and the marks of the public
+site; the local site's marks and the one-of's place in the compiled
+`AGENTS.md` are built.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -282,8 +287,23 @@ the format of each node and parameter, the tree, the targets of its
 references, the translations, citations and placeholders, and the
 defaults. Each finding goes to standard error on a
 line of its own; an error makes it exit with status 1, and a clean run
-prints one line to standard output with the number of nodes. This repo
-runs `statute validate rules` as a commit hook.
+prints one line to standard output with the number of nodes. When
+`<dir>` has a `constitution/` beside it, it also reads that constitution
+and checks what the constitution decides of the rules: each node's
+status against `index.toml`'s, each `{@constitution:...}` citation and
+each `authority` entry, with the warning on an `authority` that names a
+provision and one above it; a constitution that does not load is one
+error, and its own errors are left to `constitution build`. With
+`--base <git-ref>` it also runs the rules part of check 7: when the
+numbering is compared, every node of the base still exists, a rule of
+the older format as the node whose slug is its name, and what was
+repealed or superseded still is; it skips the comparison, with the
+note, where check 7 does, and without a `constitution/` beside `<dir>`
+it fails. These findings are `rules/7.toml:12: error: <message>`, with
+the messages of `uv run constitution-build`, which runs these checks
+too; CI and the commit hooks still run that command for them, and moving
+them to `validate` is not done yet. This repo runs `statute validate
+rules` as a commit hook.
 
 **`constitution build`** does what `uv run constitution-build` does for
 the constitution: it checks the sources of the one edition under
@@ -296,8 +316,8 @@ compares the numbering and the revision with that commit; and `--root
 checks are checks 1 to 7 of [Checkers](checkers.md#checkers) as far as
 they concern the constitution, with the same messages. It does not read
 `rules/`: what that command checks of the rules, among them the rules'
-citations of the constitution and the rules a base commit had, is not
-built here. The generated files still name `uv run constitution-build`,
+citations of the constitution and the rules a base commit had, is
+`validate`'s (above). The generated files still name `uv run constitution-build`,
 which CI, the commit hooks and the rest of this design still run; the
 switch to `statute constitution build` and the removal of the Python
 command are not done yet.
@@ -374,6 +394,17 @@ file. It prints the path of `index.html`.
   compiled `AGENTS.md`. The pages are in the language of
   `[compile] lang`, the kind of each node included; a status is shown
   as the rule file writes it, `draft` or `trial`.
+- **The marks of [Rule configuration](rule-config.md).** Every domain
+  and rule, in the index and on its page, says whether it is on or off
+  by default, and an option of a one-of whether it is the one-of's
+  default. A rule's page says where it is used, `AGENTS.md`, review or
+  both, and two filters of the index hide the rules for either.
+  A placeholder shows the value this rule set gives the parameter, the
+  person's own where there is one, marked, with the parameter's name
+  on hover and a link to the page of its source's parameters,
+  `<source>/parameters.html`. That page lists each parameter's title,
+  name, type, scope and default, its value and where the value comes
+  from, and the enabled rules that use it.
 
 ## Export
 

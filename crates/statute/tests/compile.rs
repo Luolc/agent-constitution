@@ -130,10 +130,10 @@ Do the thing 2.
 Do the thing 3.
 
 <a id="rule-R4"></a>
-### One-of 4 (R4)
-
 <a id="rule-R5"></a>
-#### Rule 5 (R5)
+### Rule 5 (R5)
+
+One of: One-of 4.
 
 Do the thing 5.
 
@@ -222,6 +222,10 @@ fn compiles_in_the_language_of_the_rule_set() {
     // No translation: the original.
     assert!(out.contains("Do the thing 2.\n\n理由：Because.\n"), "{out}");
     assert!(out.contains("依赖：[One-of 4](#rule-R4)"), "{out}");
+    assert!(
+        out.contains("### Rule 5 (R5)\n\n择一：One-of 4。\n"),
+        "{out}"
+    );
 }
 
 #[test]
@@ -346,13 +350,15 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
 }
 
 #[test]
-fn the_deepest_tree_reaches_level_six() {
+fn an_option_stands_in_the_place_of_its_one_of() {
     let dir = repo(
         "deep",
         &manifest("").replace("\"R3\", \"R5\", \"R10\"", "\"R105\""),
     );
     // Under domain 1 (level 2): one-of 102, its option domain 103, one-of
-    // 104 in it, and rule 105, its option, at level 6.
+    // 104 in it, and rule 105, its option. A one-of has no heading: the
+    // option enabled stands in its place, an option that is a domain with
+    // its heading.
     let domain_option = edit(domain(103), "default = \"off\"", "parent = 102");
     for (id, text) in [
         one_of(102, 1, 103),
@@ -363,8 +369,11 @@ fn the_deepest_tree_reaches_level_six() {
         std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
     }
     let out = compiled(&dir);
-    assert!(out.contains("\n#### Domain 103 (R103)\n"), "{out}");
-    assert!(out.contains("\n###### Rule 105 (R105)\n"), "{out}");
+    assert!(
+        out.contains("<a id=\"rule-R102\"></a>\n<a id=\"rule-R103\"></a>\n### Domain 103 (R103)\n\nOne of: One-of 102.\n\n<a id=\"rule-R104\"></a>\n<a id=\"rule-R105\"></a>\n#### Rule 105 (R105)\n\nOne of: One-of 104.\n\nDo the thing 105.\n"),
+        "{out}"
+    );
+    assert!(!out.contains("One-of 102 (R102)"), "{out}");
 }
 
 /// Rule 3 of `nodes`, with a Chinese translation.

@@ -39,7 +39,7 @@ fn git_bytes(root: &Path, args: &[&str]) -> Result<Vec<u8>, Unreadable> {
     Ok(out.stdout)
 }
 
-fn git(root: &Path, args: &[&str]) -> Result<String, Unreadable> {
+pub(crate) fn git(root: &Path, args: &[&str]) -> Result<String, Unreadable> {
     git_bytes(root, args).map(|b| String::from_utf8_lossy(&b).into_owned())
 }
 
@@ -58,12 +58,12 @@ fn is_commit(root: &Path, reference: &str) -> bool {
 }
 
 /// The file `path` at the base, as text.
-fn show(root: &Path, reference: &str, path: &Path) -> Result<String, Unreadable> {
+pub(crate) fn show(root: &Path, reference: &str, path: &Path) -> Result<String, Unreadable> {
     git(root, &["show", &format!("{reference}:{}", path.display())])
 }
 
 /// The files under `paths` in the base commit, relative to the checkout.
-fn base_paths(
+pub(crate) fn base_paths(
     root: &Path,
     reference: &str,
     paths: &[PathBuf],
@@ -108,16 +108,25 @@ pub fn check_base(
     Ok(note)
 }
 
-/// The numbering part of check 7. Once the base is active: the edition
-/// is the base's or a later one; while it is the base's, every article,
-/// section and item of the base still exists, by ID, with the same number,
-/// a section in the same article, and what was repealed is still repealed.
-pub fn check_numbering(
+/// Whether check 7 compares what the base numbered: with the base's
+/// layout and its files under `index.toml` and `articles/`, or with the
+/// note to print, if any, when it does not.
+pub(crate) enum Gate {
+    Compare(Layout, BTreeSet<PathBuf>),
+    Stop(Option<String>),
+}
+
+/// What decides whether the numbering is compared: the base is a commit
+/// with an active `index.toml` and article directories, and the current
+/// edition is the base's. Errors when it is not a commit, its
+/// `index.toml` is not TOML, the status went back to draft or the edition
+/// is earlier.
+pub(crate) fn gate(
     root: &Path,
     reference: &str,
     src: &Sources,
     errors: &mut Errors,
-) -> Result<Option<String>, Unreadable> {
+) -> Result<Gate, Unreadable> {
     if !is_commit(root, reference) {
         errors.add(
             src.layout.index(),
@@ -125,12 +134,12 @@ pub fn check_numbering(
             7,
             format!("base `{reference}` is not a commit"),
         );
-        return Ok(None);
+        return Ok(Gate::Stop(None));
     }
     let Some(layout) = base_layout(root, reference)? else {
-        return Ok(Some(format!(
+        return Ok(Gate::Stop(Some(format!(
             "base {reference} has no {CONSTITUTION}/<YYYY-MM>/{INDEX_FILE}; numbering not compared"
-        )));
+        ))));
     };
     let (index, articles) = (layout.index(), layout.articles());
     let listing = base_paths(root, reference, &[index.clone(), articles.clone()])?;
@@ -146,29 +155,47 @@ pub fn check_numbering(
                     index.display()
                 ),
             );
-            return Ok(None);
+            return Ok(Gate::Stop(None));
         }
     };
     let status = base.get("status");
     if status.and_then(Value::as_str) != Some("active") {
-        return Ok(Some(format!(
+        return Ok(Gate::Stop(Some(format!(
             "base {reference} is {}; numbering not compared",
             shown(status)
-        )));
+        ))));
     }
     let has_article = listing.iter().any(|p| {
         p.file_name().is_some_and(|n| n == ARTICLE_FILE)
             && p.parent().and_then(Path::parent) == Some(articles.as_path())
     });
     if !has_article {
-        return Ok(Some(format!(
+        return Ok(Gate::Stop(Some(format!(
             "base {reference} has no {}/<NN>-<id>/{ARTICLE_FILE}; numbering not compared",
             articles.display()
-        )));
+        ))));
     }
     if let Some(stop) = check_edition(reference, src, &base, errors) {
-        return Ok(stop);
+        return Ok(Gate::Stop(stop));
     }
+    Ok(Gate::Compare(layout, listing))
+}
+
+/// The numbering part of check 7. Once the base is active: the edition
+/// is the base's or a later one; while it is the base's, every article,
+/// section and item of the base still exists, by ID, with the same number,
+/// a section in the same article, and what was repealed is still repealed.
+pub fn check_numbering(
+    root: &Path,
+    reference: &str,
+    src: &Sources,
+    errors: &mut Errors,
+) -> Result<Option<String>, Unreadable> {
+    let (layout, listing) = match gate(root, reference, src, errors)? {
+        Gate::Compare(layout, listing) => (layout, listing),
+        Gate::Stop(note) => return Ok(note),
+    };
+    let articles = layout.articles();
     let comparison = Comparison {
         root,
         reference,

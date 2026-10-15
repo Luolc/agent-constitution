@@ -12,7 +12,8 @@
 //! Errors are `path:line: check N: message`: check 1 is the format
 //! ([`load`]), 2 to 5 the IDs, the numbers, the languages and the
 //! citations ([`check`]), 6 the committed outputs and 7 the comparison
-//! with a base commit ([`base`]).
+//! with a base commit ([`base`]). What the constitution decides of the
+//! rules is in [`rules`], which `statute validate` runs.
 
 pub mod base;
 mod checks;
@@ -20,6 +21,7 @@ pub mod cli;
 pub(crate) mod lang;
 mod read;
 mod render;
+pub mod rules;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
