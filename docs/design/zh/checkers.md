@@ -1,4 +1,4 @@
-<!-- en-sha256: f56c37f8a12303b959efcb2245dd30816963926b863a4b592e3d7bc01d3b31da -->
+<!-- en-sha256: 900d4a3db127cea20ca55d5a14e08b3c2aba688b3491ca727de2f79d89c3b79b -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -36,7 +36,7 @@
 
 规定是[规定文件格式](rule-format.md#rule-file-format) 所定格式的 parent 树节点，各在一个 `rules/<id>.toml` 里。上面的检查只读其中由宪法决定的部分。检查 1：节点的状态与 `index.toml` 的关系同规定一样；检查 5：每个 `{@constitution:...}` 引用和 `authority` 的每一项 (不带命名空间) 都解析到一个没有废止的条文，`authority` 同时写了一个条文和它上级的，给出警告；检查 7：基准里的节点仍然存在，已经废止或被取代的仍然如此；基准早于 parent 树、规定以单词命名的，由 `slug` 等于那个单词的节点承接。`params.toml` 不是节点，构建跳过它。
 
-规定文件的其余部分由 `statute validate rules` 检查 ([命令与第一版](statute-command.md#the-command-and-the-first-version))，它是 `rules/` 或 crate 改动时运行的提交钩子，所以 CI 里也运行。它把这个目录当作第一方规定源读，检查单看一个规定源就能查的：每个节点的键按它的 `kind` 来，类型和取值正确，其中包括 `default` 和 `uses` ([规定配置](rule-config.md))；`id` 就是文件名，文件名不补零；slug 互不相同；每个 `parent`、`requires`、`conflicts`、`overrides` 和 `superseded-by` 都指向一个存在、种类也对的节点，parent 构成的树符合[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule) 和[子领域](rule-sources.md#subdomains) 所说的形状，`requires` 不成环、没有多余的项；文本的每种语言引用的与原文相同，每种译文语言都有每段文本，`[translations]` 里的哈希等于原文现在的哈希，不等时错误信息会打印新的哈希；每个 `{@rule:<id>}` 都指向本规定源里一条存在且没有废止的规定；规定源的默认值能单独解析 ([默认开关](rule-config.md#default-switches))；以及[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs) 所说的 warning。每条发现单独一行写到标准错误；有错误时以状态 1 退出。它跳过 `params.toml`；检查其中的参数还没有实现 ([参数](rule-config.md#parameters))。`crates/statute/tests/real_rules.rs` 也读本仓的 `rules/`，有任何 error 或 warning 都失败。
+规定文件的其余部分由 `statute validate rules` 检查 ([命令与第一版](statute-command.md#the-command-and-the-first-version))，它是 `rules/` 或 crate 改动时运行的提交钩子，所以 CI 里也运行。它把这个目录当作第一方规定源读，检查单看一个规定源就能查的：每个节点的键按它的 `kind` 来，类型和取值正确，其中包括 `default` 和 `uses` ([规定配置](rule-config.md))；`id` 就是文件名，文件名不补零；slug 互不相同；每个 `parent`、`requires`、`conflicts`、`overrides` 和 `superseded-by` 都指向一个存在、种类也对的节点，parent 构成的树符合[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule) 和[子领域](rule-sources.md#subdomains) 所说的形状，`requires` 不成环、没有多余的项；文本的每种语言引用的与原文相同，每种译文语言都有每段文本，`[translations]` 里的哈希等于原文现在的哈希，不等时错误信息会打印新的哈希；每个 `{@rule:<id>}` 都指向本规定源里一条存在且没有废止的规定；规定源的默认值能单独解析 ([默认开关](rule-config.md#default-switches))；以及[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs) 所说的 warning。每条发现单独一行写到标准错误；有错误时以状态 1 退出。它也读 `params.toml`，检查其中每个参数，并检查规定的每个占位符都对应其中一个参数 ([参数](rule-config.md#parameters))。`crates/statute/tests/real_rules.rs` 也读本仓的 `rules/`，有任何 error 或 warning 都失败。
 
 [规定源](rule-sources.md) 的检查也这样分。`statute validate` 检查单看一个规定源就能查的：规定有 `parent` 或 `overrides`，必须有一个，不能两个都有；`overrides` 是另一个规定源的一条规定，写作 `"team:7"`，不能是列表，也不能是数字，因为数字指的是同一规定源里的节点；指向另一个规定源的 `parent` 只有规定能有，写作 `"team:3"`，只检查写法，因为第一方规定源的领域是根 ([子领域](rule-sources.md#subdomains))；别的规定源的领域，statute 接受它指向另一个规定源的 `parent`。本仓就是第一方规定源，所以在这里 `overrides` 或 `parent` 里的 `"R200"` 指的是同一规定源的规定，会失败；`parent` 写成这样时提示改写成编号。要看别的规定源才能查的，在解析规定清单时查：引用方向、覆盖的级别、公开仓库的私有层所做的覆盖，以及另一个规定源里的 `parent` 是否存在。这些都已实现。
 

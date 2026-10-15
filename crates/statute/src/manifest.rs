@@ -297,6 +297,8 @@ impl SourceSpec {
 #[derive(Debug, Clone, Default)]
 pub struct Layers {
     pub global: Vec<SourceSpec>,
+    /// The parameter values of the global configuration, by name.
+    pub values: BTreeMap<String, String>,
     pub locked: Vec<SourceSpec>,
     /// Whether `R` is the built-in default when nothing names it.
     pub built_in: bool,
@@ -350,10 +352,17 @@ pub struct Manifest {
     pub agents_md: Vec<Part>,
     /// The language `compile` writes in.
     pub lang: String,
+    /// The parameter values `statute.toml` sets, by name
+    /// (`docs/design/rule-config.md`, Setting a value).
+    pub values: BTreeMap<String, String>,
+    /// Those of the global configuration.
+    pub global_values: BTreeMap<String, String>,
+    /// Those of the private rule set, in the private layer.
+    pub private_values: BTreeMap<String, String>,
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct RawManifest {
     constitution: RawConstitution,
     public: Option<bool>,
@@ -369,6 +378,36 @@ struct RawManifest {
     #[serde(default)]
     sources: BTreeMap<String, toml::Value>,
     compile: Option<RawCompile>,
+    /// The tables of parameter values, and any key unknown.
+    #[serde(flatten)]
+    rest: BTreeMap<String, toml::Value>,
+}
+
+/// The parameter values of a file's top-level tables `rest`, by name
+/// (`[language] docs = "zh"` as `language.docs`); a key that is not a
+/// table is unknown, and a value that is not a string fails.
+fn values(
+    rest: BTreeMap<String, toml::Value>,
+    errors: &mut Vec<String>,
+) -> BTreeMap<String, String> {
+    let mut out = BTreeMap::new();
+    for (table, value) in rest {
+        let toml::Value::Table(t) = value else {
+            errors.push(format!("unknown field `{table}`"));
+            continue;
+        };
+        for (key, value) in t {
+            match value {
+                toml::Value::String(v) => {
+                    out.insert(format!("{table}.{key}"), v);
+                }
+                other => errors.push(format!(
+                    "[{table}] `{key} = {other}`: a parameter's value is a string, as `{key} = \"zh\"`"
+                )),
+            }
+        }
+    }
+    out
 }
 
 #[derive(Deserialize)]
@@ -421,10 +460,25 @@ impl RawEntry {
 
 /// The global configuration.
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
 struct RawConfig {
     #[serde(default)]
     sources: BTreeMap<String, RawSource>,
+    #[serde(flatten)]
+    rest: BTreeMap<String, toml::Value>,
+}
+
+/// The parameter values of the global configuration, from its text, by
+/// name; every problem found is returned.
+pub fn config_values(text: &str) -> Result<BTreeMap<String, String>, Vec<String>> {
+    let raw: RawConfig =
+        toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
+    let mut errors = Vec::new();
+    let out = values(raw.rest, &mut errors);
+    if errors.is_empty() {
+        Ok(out)
+    } else {
+        Err(errors)
+    }
 }
 
 /// The sources of the global configuration, from its text; every problem
@@ -433,6 +487,7 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
     let raw: RawConfig =
         toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
     let mut errors = Vec::new();
+    values(raw.rest, &mut errors);
     for (name, s) in &raw.sources {
         if s.scope.is_some() {
             errors.push(format!(
@@ -463,7 +518,6 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
 
 /// `private.toml`.
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
 struct RawPrivate {
     #[serde(default)]
     rules: Vec<String>,
@@ -474,6 +528,8 @@ struct RawPrivate {
     exclude: Option<toml::Value>,
     #[serde(default)]
     sources: BTreeMap<String, RawSource>,
+    #[serde(flatten)]
+    rest: BTreeMap<String, toml::Value>,
 }
 
 #[derive(Deserialize)]
@@ -782,6 +838,7 @@ impl Manifest {
             ));
         }
 
+        let values = values(raw.rest, &mut errors);
         let local_rules = raw.local_rules.unwrap_or_else(|| LOCAL_RULES.to_owned());
         let mut refs = |field: &str, list: &[String]| -> Vec<Key> {
             let mut out = Vec::new();
@@ -848,6 +905,9 @@ impl Manifest {
             local_rules,
             agents_md,
             lang,
+            values,
+            global_values: layers.values.clone(),
+            private_values: BTreeMap::new(),
         })
     }
 
@@ -940,6 +1000,7 @@ impl Manifest {
         let rules = add("rules", &self.rules, &raw.rules);
         let packs = add("packs", &self.packs, &raw.packs);
         let domains = add("domains", &self.domains, &raw.domains);
+        let private_values = values(raw.rest, &mut errors);
         if raw.exclude.is_some() {
             errors.push(format!(
                 "`exclude` is for {FILE}: the private layer only adds, and leaves out no rule of the public one"
@@ -954,6 +1015,7 @@ impl Manifest {
             rules,
             packs,
             domains,
+            private_values,
             ..self.clone()
         })
     }

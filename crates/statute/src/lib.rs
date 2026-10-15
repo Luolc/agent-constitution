@@ -11,6 +11,7 @@ pub mod global;
 pub mod lock;
 pub mod manifest;
 pub mod node;
+pub mod param;
 pub mod private;
 pub mod project;
 pub mod resolve;

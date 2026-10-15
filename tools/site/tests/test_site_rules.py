@@ -312,7 +312,11 @@ class SiteRulesTest(unittest.TestCase):
 
     statute validates them; the site does not show them yet.
     """
-    params = '[[parameter]]\nname = "language.docs"\n'
+    params = (
+      '[[parameter]]\nname = "language.docs"\ntype = "language"\n'
+      'scope = "repo"\ndefault = "en"\n\n'
+      '[parameter.title]\nen = "Language of documents"\n'
+    )
     (self.root / "rules/params.toml").write_text(params, encoding="utf-8")
     site_fixture.write_other(self.root / "demo")
     (self.root / "demo/rules/params.toml").write_text(params, encoding="utf-8")

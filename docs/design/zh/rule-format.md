@@ -1,4 +1,4 @@
-<!-- en-sha256: d1c38c6bfbf57b919342774aec3666f5d8850b5535066a592a6a75ff1f5e0bdf -->
+<!-- en-sha256: fa8447a95f87f0f210ef77f8407d93789cab86d3459016e40ec8520db27bcf01 -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -24,7 +24,7 @@
 
 ## <a id="rule-file-format"></a>规定文件格式
 
-parent 树上的每个节点 (一条规定、一个 one-of 或一个领域) 是一个 TOML 文件 `rules/<id>.toml`，全部平铺在一个目录里：`rules/42.toml`，不补零，因为 ID 会一直增长，补到几位迟早都不够。树的结构只记在 `parent` 字段里，从不靠目录表达，所以把一条规定挪到另一个 parent 下只改一行，不搬文件。工具一律按数字给文件排序，不按文件名。目录里还可以有 `params.toml`，即规定源的参数 (见[声明参数](rule-config.md#declaring-a-parameter))；它不是节点，statute 读节点时跳过它。
+parent 树上的每个节点 (一条规定、一个 one-of 或一个领域) 是一个 TOML 文件 `rules/<id>.toml`，全部平铺在一个目录里：`rules/42.toml`，不补零，因为 ID 会一直增长，补到几位迟早都不够。树的结构只记在 `parent` 字段里，从不靠目录表达，所以把一条规定挪到另一个 parent 下只改一行，不搬文件。工具一律按数字给文件排序，不按文件名。目录里还可以有 `params.toml`，即规定源的参数 (见[声明参数](rule-config.md#declaring-a-parameter))；它不是节点。
 
 一条规定，这里的例子带了中文译文：
 

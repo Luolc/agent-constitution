@@ -2,12 +2,14 @@
 //! names with its own rules, and the constitution it rests on, read from
 //! disk together.
 
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
 use crate::diag::Diagnostics;
 use crate::manifest::{self, LOCAL, Layers, Manifest, SourceSpec};
+use crate::param::Setting;
 use crate::private;
 use crate::resolve::{self, Resolution};
 use crate::source::{Source, Sources};
@@ -23,6 +25,8 @@ pub struct Project {
     /// The constitution's revision as `index.toml` writes it.
     pub revision: String,
     pub resolution: Resolution,
+    /// The value of each parameter an enabled rule uses, by name.
+    pub values: BTreeMap<String, Setting>,
 }
 
 /// What a command reads besides the repository's own files
@@ -258,6 +262,7 @@ impl Project {
             return (None, diags);
         }
         let resolution = resolve::resolve(&sources, &manifest, number, &mut diags);
+        let values = crate::param::settle(&sources, &manifest, &resolution, &mut diags);
         if diags.has_errors() {
             return (None, diags);
         }
@@ -267,6 +272,7 @@ impl Project {
             sources,
             revision,
             resolution,
+            values,
         };
         (Some(project), diags)
     }
