@@ -19,6 +19,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -39,6 +40,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -69,6 +71,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -97,6 +100,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -117,6 +121,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -143,6 +148,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -162,6 +168,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -181,6 +188,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 applicability = "For repositories that use the tool."
 
 [title]
@@ -198,6 +206,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -217,6 +226,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 
 [title]
 en = "Tools"
@@ -234,6 +244,7 @@ revision = 1
 kind = "one-of"
 status = "draft"
 lang = "en"
+default = 21
 parent = 2
 
 [title]
@@ -251,6 +262,7 @@ revision = 1
 kind = "one-of"
 status = "draft"
 lang = "en"
+default = 21
 parent = 2
 
 [title]
@@ -269,11 +281,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 2
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Use the tool"
@@ -299,11 +312,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 2
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Use the tool"

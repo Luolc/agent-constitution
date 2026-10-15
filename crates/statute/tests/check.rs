@@ -14,7 +14,7 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 /// rule 21 (no program, for the reviewer, whose reason cites a provision
 /// and rule 20).
 fn nodes(command: &str) -> Vec<(u64, String)> {
-    let builtin = |id| edit(rule(id, 1, ""), "check = \"review\"", "check = \"builtin\"");
+    let builtin = |id| edit(rule(id, 1, ""), "check = \"none\"", "check = \"builtin\"");
     vec![
         domain(1),
         builtin(3),
@@ -27,7 +27,7 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
         builtin(71),
         edit(
             rule(20, 1, ""),
-            "check = \"review\"",
+            "check = \"none\"",
             &format!("check = \"command\"\nrun = {command:?}\ntools = [\"sh\"]"),
         ),
         edit(
@@ -509,7 +509,7 @@ fn a_built_in_check_is_the_first_party_rules_only() {
     }
     for (id, text) in [
         domain(1),
-        edit(rule(50, 1, ""), "check = \"review\"", "check = \"builtin\""),
+        edit(rule(50, 1, ""), "check = \"none\"", "check = \"builtin\""),
     ] {
         write(&dir, &format!("rules/{id}.toml"), &text);
     }

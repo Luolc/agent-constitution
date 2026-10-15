@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, one_of, rule};
+use common::{domain, edit, one_of, option, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -27,9 +27,9 @@ fn base() -> Vec<(&'static str, (u64, String))> {
         domain(1),
         rule(2, 1, "requires = [8]"),
         rule(3, 1, "requires = [2]"),
-        one_of(4, 1),
-        rule(5, 4, ""),
-        rule(6, 4, ""),
+        one_of(4, 1, 5),
+        option(5, 4, ""),
+        option(6, 4, ""),
         rule(8, 1, ""),
         rule(9, 1, "requires = [2]"),
         rule(10, 1, "conflicts = [2]"),
@@ -415,7 +415,7 @@ fn the_overridden_rule_has_no_conflicts_and_no_check() {
         "r/rules",
         edit(
             rule(2, 1, "requires = [8]"),
-            "check = \"review\"",
+            "check = \"none\"",
             "check = \"command\"\nrun = \"exit 1\"\ntools = [\"sh\"]",
         ),
     );

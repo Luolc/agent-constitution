@@ -7,7 +7,7 @@ use statute::node::original_hash;
 use statute::source::Source;
 
 mod common;
-use common::{domain, edit, one_of, rule};
+use common::{domain, edit, empty_one_of, one_of, option, rule, set_default};
 
 fn load(nodes: &[(u64, String)]) -> Diagnostics {
     let files = nodes
@@ -73,9 +73,9 @@ fn assert_warning(diags: &Diagnostics, file: &str, needle: &str) {
 fn each_kind_reads_cleanly() {
     assert_clean(&load(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
-        rule(4, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(4, 2, ""),
     ]));
 }
 
@@ -176,7 +176,8 @@ fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
         domain(1),
         under(2, "1"),
         rule(3, 2, ""),
-        one_of(4, 2),
+        one_of(4, 2, 5),
+        option(5, 4, ""),
     ]));
     assert_error(
         &load(&[domain(1), under(2, "1"), under(3, "2")]),
@@ -192,12 +193,17 @@ fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
     // not in a subdomain.
     assert_clean(&load(&[
         domain(1),
-        one_of(2, 1),
-        under(3, "2"),
+        one_of(2, 1, 3),
+        edit(under(3, "2"), "default = \"off\"\n", ""),
         rule(4, 3, ""),
     ]));
     assert_error(
-        &load(&[domain(1), under(2, "1"), one_of(3, 2), under(4, "3")]),
+        &load(&[
+            domain(1),
+            under(2, "1"),
+            one_of(3, 2, 4),
+            edit(under(4, "3"), "default = \"off\"\n", ""),
+        ]),
         "4.toml",
         "parent 3 is a one-of in domain 2, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of, so a one-of in a subdomain has rules as its options (under 1)",
     );
@@ -212,7 +218,8 @@ fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
     assert_error(
         &load(&[
             domain(1),
-            edit(one_of(2, 1), "parent = 1", "parent = \"team:7\""),
+            edit(one_of(2, 1, 3), "parent = 1", "parent = \"team:7\""),
+            option(3, 2, ""),
         ]),
         "2.toml",
         "a one-of's `parent` is a node of the same source, written as its number; only a rule's or a domain's may name a domain of another source",
@@ -223,7 +230,11 @@ fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
         "a rule needs a `parent`",
     );
     assert_error(
-        &load(&[domain(1), edit(one_of(2, 1), "parent = 1\n", "")]),
+        &load(&[
+            domain(1),
+            edit(one_of(2, 1, 3), "parent = 1\n", ""),
+            option(3, 2, ""),
+        ]),
         "2.toml",
         "a one-of needs a `parent`",
     );
@@ -235,7 +246,8 @@ fn domains_and_one_ofs_have_no_rule_fields() {
         &load(&[
             domain(1),
             rule(2, 1, ""),
-            edit(one_of(3, 1), "parent = 1", "parent = 1\nrequires = [2]"),
+            edit(one_of(3, 1, 4), "parent = 1", "parent = 1\nrequires = [2]"),
+            option(4, 3, ""),
         ]),
         "3.toml",
         "remove requires",
@@ -244,7 +256,7 @@ fn domains_and_one_ofs_have_no_rule_fields() {
         &load(&[edit(
             domain(1),
             "lang = \"en\"",
-            "lang = \"en\"\ncheck = \"review\"",
+            "lang = \"en\"\ncheck = \"none\"",
         )]),
         "1.toml",
         "remove check",
@@ -258,7 +270,7 @@ fn a_rule_has_its_required_fields() {
         "authority = [\"simplicity\"]\n",
         "constitution = \">=1\"\n",
         "level = \"project\"\n",
-        "check = \"review\"\n",
+        "check = \"none\"\n",
     ] {
         let name = field.split(' ').next().unwrap();
         assert_error(
@@ -290,7 +302,7 @@ fn a_rule_has_its_required_fields() {
 #[test]
 fn command_checks_need_run_and_tools() {
     let command = "check = \"command\"\nrun = \"uv run check\"\ntools = [\"uv\"]";
-    let r = edit(rule(2, 1, ""), "check = \"review\"", command);
+    let r = edit(rule(2, 1, ""), "check = \"none\"", command);
     assert_clean(&load(&[domain(1), r.clone()]));
     assert_error(
         &load(&[domain(1), edit(r.clone(), "tools = [\"uv\"]", "")]),
@@ -351,7 +363,7 @@ fn superseded_names_its_successor() {
         "superseded-by 3 does not exist",
     );
     assert_error(
-        &load(&[domain(1), old, one_of(3, 1)]),
+        &load(&[domain(1), old, one_of(3, 1, 4), option(4, 3, "")]),
         "2.toml",
         "superseded-by 3 is a one-of",
     );
@@ -504,10 +516,10 @@ fn a_domain_translation_hashes_the_title_alone() {
 fn references_must_exist_and_have_the_right_kind() {
     assert_clean(&load(&[
         domain(1),
-        one_of(2, 1),
+        one_of(2, 1, 5),
         rule(3, 1, "requires = [2]"),
         rule(4, 1, "conflicts = [3]"),
-        rule(5, 2, ""),
+        option(5, 2, ""),
     ]));
     assert_error(
         &load(&[domain(1), rule(3, 9, "")]),
@@ -525,7 +537,12 @@ fn references_must_exist_and_have_the_right_kind() {
         "a domain cannot be required",
     );
     assert_error(
-        &load(&[domain(1), one_of(2, 1), rule(3, 1, "conflicts = [2]")]),
+        &load(&[
+            domain(1),
+            one_of(2, 1, 4),
+            rule(3, 1, "conflicts = [2]"),
+            option(4, 2, ""),
+        ]),
         "3.toml",
         "can conflict only with a rule",
     );
@@ -685,7 +702,12 @@ fn a_conflict_written_on_both_sides_is_a_warning() {
 
 #[test]
 fn a_rule_that_needs_two_children_of_a_one_of_is_an_error() {
-    let base = [domain(1), one_of(2, 1), rule(3, 2, ""), rule(4, 2, "")];
+    let base = [
+        domain(1),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(4, 2, ""),
+    ];
     let mut ok = base.to_vec();
     ok.push(rule(5, 1, "requires = [3]"));
     assert_clean(&load(&ok));
@@ -699,9 +721,9 @@ fn a_rule_that_needs_two_children_of_a_one_of_is_an_error() {
     // A child that requires its sibling.
     let sibling = [
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, "requires = [4]"),
-        rule(4, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, "requires = [4]"),
+        option(4, 2, ""),
     ];
     assert_error(
         &load(&sibling),
@@ -712,7 +734,7 @@ fn a_rule_that_needs_two_children_of_a_one_of_is_an_error() {
 
 #[test]
 fn a_requirement_across_domains_should_name_a_one_of() {
-    let base = [domain(1), domain(2), one_of(3, 2), rule(4, 3, "")];
+    let base = [domain(1), domain(2), one_of(3, 2, 4), option(4, 3, "")];
     let mut ok = base.to_vec();
     ok.push(rule(5, 1, "requires = [3]"));
     assert_clean(&load(&ok));
@@ -742,12 +764,12 @@ fn files_other_than_toml_are_ignored_when_loading_a_directory() {
 fn a_required_one_of_has_children() {
     assert_clean(&load(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
         rule(4, 1, "requires = [2]"),
     ]));
     assert_error(
-        &load(&[domain(1), one_of(2, 1), rule(4, 1, "requires = [2]")]),
+        &load(&[domain(1), empty_one_of(2, 1), rule(4, 1, "requires = [2]")]),
         "4.toml",
         "names one-of 2, which has no children yet",
     );
@@ -756,12 +778,12 @@ fn a_required_one_of_has_children() {
 #[test]
 fn only_a_rule_is_superseded() {
     let superseded = edit(
-        one_of(2, 1),
+        one_of(2, 1, 3),
         "status = \"active\"",
         "status = \"superseded\"",
     );
     assert_error(
-        &load(&[domain(1), superseded]),
+        &load(&[domain(1), superseded, option(3, 2, "")]),
         "2.toml",
         "only a rule can be superseded; a one-of cannot",
     );
@@ -782,9 +804,9 @@ fn a_one_of_clash_is_reported_on_the_rule_that_makes_it() {
     // 5 brings in both children; 6 requires 5 and inherits the clash.
     let diags = load(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
-        rule(4, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(4, 2, ""),
         rule(5, 1, "requires = [3, 4]"),
         rule(6, 1, "requires = [5]"),
     ]);
@@ -900,8 +922,8 @@ fn a_rules_parent_is_a_domain_or_a_one_of() {
     assert_clean(&load(&[
         domain(1),
         rule(2, 1, ""),
-        one_of(3, 1),
-        rule(4, 3, ""),
+        one_of(3, 1, 4),
+        option(4, 3, ""),
     ]));
     assert_error(
         &load(&[domain(1), rule(2, 1, ""), rule(3, 2, "")]),
@@ -909,17 +931,17 @@ fn a_rules_parent_is_a_domain_or_a_one_of() {
         "parent 2 is a rule; a rule's parent is a domain or a one-of, and the rule it refines is written in `requires`",
     );
     assert_error(
-        &load(&[domain(1), rule(2, 1, ""), one_of(3, 2), rule(4, 3, "")]),
+        &load(&[domain(1), rule(2, 1, ""), one_of(3, 2, 4), option(4, 3, "")]),
         "3.toml",
         "parent 2 is a rule; a one-of's parent is a domain",
     );
     assert_error(
         &load(&[
             domain(1),
-            one_of(2, 1),
-            rule(3, 2, ""),
-            one_of(4, 2),
-            rule(5, 4, ""),
+            one_of(2, 1, 3),
+            option(3, 2, ""),
+            one_of(4, 2, 5),
+            option(5, 4, ""),
         ]),
         "4.toml",
         "parent 2 is a one-of; a one-of's parent is a domain",
@@ -928,15 +950,15 @@ fn a_rules_parent_is_a_domain_or_a_one_of() {
 
 #[test]
 fn a_one_ofs_options_are_all_rules_or_all_domains() {
-    let option = edit(domain(4), "lang = \"en\"", "lang = \"en\"\nparent = 2");
+    let domain_option = edit(domain(4), "default = \"off\"", "parent = 2");
     assert_clean(&load(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
-        rule(5, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(5, 2, ""),
     ]));
     assert_error(
-        &load(&[domain(1), one_of(2, 1), rule(3, 2, ""), option]),
+        &load(&[domain(1), one_of(2, 1, 3), option(3, 2, ""), domain_option]),
         "4.toml",
         "parent 2 is a one-of whose options are rules (3); the options of a one-of are all rules or all domains",
     );
@@ -944,19 +966,13 @@ fn a_one_ofs_options_are_all_rules_or_all_domains() {
 
 #[test]
 fn a_one_ofs_default_names_one_of_its_children() {
-    let with = |default: &str| {
-        edit(
-            one_of(2, 1),
-            "parent = 1",
-            &format!("parent = 1\ndefault = {default}"),
-        )
-    };
+    let with = |default: &str| set_default(one_of(2, 1, 3), default);
     let nodes = |one: (u64, String)| {
         [
             domain(1),
             one,
-            rule(3, 2, ""),
-            rule(4, 2, ""),
+            option(3, 2, ""),
+            option(4, 2, ""),
             rule(5, 1, ""),
         ]
     };
@@ -973,7 +989,7 @@ fn a_one_ofs_default_names_one_of_its_children() {
     );
     // A child has no `default` of its own.
     let mut child = nodes(with("4"));
-    child[2] = rule(3, 2, "default = \"on\"");
+    child[2] = option(3, 2, "default = \"on\"");
     assert_error(
         &load(&child),
         "3.toml",
@@ -985,22 +1001,60 @@ fn a_one_ofs_default_names_one_of_its_children() {
 
 #[test]
 fn a_domains_and_a_rules_default_is_on_or_off() {
-    let off = edit(
-        domain(1),
-        "lang = \"en\"",
-        "lang = \"en\"\ndefault = \"off\"",
-    );
-    assert_clean(&load(&[off.clone(), rule(2, 1, "default = \"on\"")]));
+    assert_clean(&load(&[domain(1), set_default(rule(2, 1, ""), "\"on\"")]));
     assert_error(
-        &load(&[domain(1), rule(2, 1, "default = \"yes\"")]),
+        &load(&[domain(1), set_default(rule(2, 1, ""), "\"yes\"")]),
         "2.toml",
         "`default = \"yes\"` must be \"on\" or \"off\"",
     );
     assert_error(
-        &load(&[domain(1), rule(2, 1, "default = 3")]),
+        &load(&[domain(1), set_default(rule(2, 1, ""), "3")]),
         "2.toml",
         "a rule's `default` is \"on\" or \"off\"",
     );
+}
+
+#[test]
+fn every_domain_and_rule_says_whether_it_is_on_by_default() {
+    let without = |node| edit(node, "default = \"off\"\n", "");
+    assert_error(
+        &load(&[without(domain(1))]),
+        "1.toml",
+        "a domain says whether it is on by default: `default = \"on\"` or `default = \"off\"`",
+    );
+    assert_error(
+        &load(&[domain(1), without(rule(2, 1, ""))]),
+        "2.toml",
+        "a rule says whether it is on by default: `default = \"on\"` or `default = \"off\"`",
+    );
+    // A superseded rule says so too.
+    let old = edit(
+        rule(2, 1, "superseded-by = 3"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    );
+    assert_error(
+        &load(&[domain(1), without(old), rule(3, 1, "")]),
+        "2.toml",
+        "a rule says whether it is on by default",
+    );
+    // A rule that overrides another stands in its place, without one.
+    let over = edit(rule(2, 1, "overrides = \"team:8\""), "parent = 1\n", "");
+    assert_clean(&load(&[domain(1), without(over)]));
+}
+
+#[test]
+fn a_one_of_with_children_names_its_default() {
+    assert_error(
+        &load(&[
+            domain(1),
+            edit(one_of(2, 1, 3), "default = 3\n", ""),
+            option(3, 2, ""),
+        ]),
+        "2.toml",
+        "a one-of names its default child, `default = <the ID of one of its children>`",
+    );
+    assert_clean(&load(&[domain(1), empty_one_of(2, 1)]));
 }
 
 #[test]
@@ -1038,23 +1092,23 @@ fn uses_lists_instructions_review_or_both() {
 }
 
 #[test]
-fn check_none_and_its_older_name_review() {
-    let none = edit(rule(2, 1, ""), "check = \"review\"", "check = \"none\"");
-    assert_clean(&load(&[domain(1), none]));
+fn check_none_and_not_its_older_name_review() {
     assert_clean(&load(&[domain(1), rule(2, 1, "")]));
+    assert_error(
+        &load(&[
+            domain(1),
+            edit(rule(2, 1, ""), "check = \"none\"", "check = \"review\""),
+        ]),
+        "2.toml",
+        "`check = \"review\"` is the older name of `check = \"none\"`; write that",
+    );
 }
 
 #[test]
 fn the_defaults_of_a_source_resolve_on_their_own() {
-    let switched = |id, default: &str| {
-        edit(
-            domain(id),
-            "lang = \"en\"",
-            &format!("lang = \"en\"\ndefault = \"{default}\""),
-        )
-    };
-    let on = |id, parent, extra: &str| rule(id, parent, &format!("default = \"on\"\n{extra}"));
-    let off_rule = |id, parent| rule(id, parent, "default = \"off\"");
+    let switched = |id, default: &str| set_default(domain(id), &format!("\"{default}\""));
+    let on = |id, parent, extra: &str| set_default(rule(id, parent, extra), "\"on\"");
+    let off_rule = |id, parent| rule(id, parent, "");
     // A rule the defaults enable requiring one they enable; one in a
     // domain that is off is not checked.
     assert_clean(&load(&[
@@ -1086,26 +1140,20 @@ fn the_defaults_of_a_source_resolve_on_their_own() {
         "rule 3 is enabled by default and requires rule 5, which is not",
     );
     // A one-of's default child is enabled by default when its domain is.
-    let one_of_default = |child| {
-        edit(
-            one_of(8, 1),
-            "parent = 1",
-            &format!("parent = 1\ndefault = {child}"),
-        )
-    };
+    let one_of_default = |child: u64| one_of(8, 1, child);
     assert_error(
         &load(&[
             switched(1, "on"),
             off_rule(2, 1),
             one_of_default(9),
-            rule(9, 8, "requires = [2]"),
-            rule(10, 8, ""),
+            option(9, 8, "requires = [2]"),
+            option(10, 8, ""),
         ]),
         "9.toml",
         "rule 9 is enabled by default and requires rule 2, which is not",
     );
-    // Where a `default` is missing on the way, nothing is checked; a
-    // required one-of counts as met.
+    // In a domain that is off, nothing is checked; a required one-of
+    // counts as met, and only its default child brings its requirements.
     assert_clean(&load(&[
         domain(1),
         off_rule(2, 1),
@@ -1113,9 +1161,10 @@ fn the_defaults_of_a_source_resolve_on_their_own() {
     ]));
     assert_clean(&load(&[
         switched(1, "on"),
-        one_of(11, 1),
+        one_of(11, 1, 14),
         off_rule(12, 1),
-        rule(13, 11, "requires = [12]"),
+        option(13, 11, "requires = [12]"),
+        option(14, 11, ""),
         on(3, 1, "requires = [11]"),
     ]));
 }
@@ -1240,7 +1289,12 @@ fn a_domain_under_an_option_is_too_deep() {
         )
     };
     assert_error(
-        &load(&[domain(1), one_of(2, 1), under(3, 2), under(4, 3)]),
+        &load(&[
+            domain(1),
+            one_of(2, 1, 3),
+            edit(under(3, 2), "default = \"off\"\n", ""),
+            under(4, 3),
+        ]),
         "4.toml",
         "parent 3 is the option of one-of 2, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of",
     );

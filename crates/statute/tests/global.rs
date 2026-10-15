@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, rule, set_default};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -873,7 +873,7 @@ fn source_add_takes_a_bare_repository_as_a_git_address() {
 #[test]
 fn only_the_rule_sets_own_sources_bring_their_defaults() {
     let w = world("defaults");
-    let on = |n: (u64, String)| edit(n, "lang = \"en\"", "lang = \"en\"\ndefault = \"on\"");
+    let on = |n: (u64, String)| set_default(n, "\"on\"");
     let (_, team) = source(&w.at, "team", &[on(domain(1)), on(rule(7, 1, ""))]);
     let entry = format!("team = {{ git = \"{team}\", branch = \"main\", public = true }}");
     w.configure(&entry);
