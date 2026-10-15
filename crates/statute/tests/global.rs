@@ -474,3 +474,75 @@ fn a_clone_of_the_users_own_is_read_as_its_last_fetch_left_it() {
         "not https://example.test/other.git",
     );
 }
+
+/// A repository that is itself the first-party source, `R = { path = "." }`
+/// as this one, with a private source of the global configuration: its
+/// site lists `R` once, as global public, and three quadrants hold
+/// something.
+#[test]
+fn site_of_the_first_party_source_with_a_global_private_source() {
+    let w = world("site-here");
+    let (_, me) = source(
+        &w.at,
+        "me",
+        &[
+            domain(1),
+            edit(rule(4, 1, ""), "Rule 4\"", "Private rule 4\""),
+        ],
+    );
+    w.configure(&format!(
+        "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
+    ));
+    write(&w.repo, "constitution/2026-10/index.toml", INDEX);
+    write(
+        &w.repo,
+        "constitution/2026-10/generated/constitution.en.agent.md",
+        "# The constitution\n",
+    );
+    write(
+        &w.repo,
+        "constitution/2026-10/articles/04-authority/article.toml",
+        "id = \"authority\"\n",
+    );
+    write(&w.repo, "rules/1.toml", &domain(1).1);
+    write(&w.repo, "rules/2.toml", &rule(2, 1, "").1);
+    write(
+        &w.repo,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
+    );
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["init", "--public", "--source", "."]));
+    write(&w.repo, "statute.private.toml", "base = \"statute.toml\"\n");
+    ok(&w.run(&["add", "R2"]));
+    ok(&w.run(&["add", "--private", "me:4"]));
+    ok(&w.run(&["compile"]));
+    ok(&w.run(&["site"]));
+    let index = read(&w.repo, ".statute/site/index.html");
+    let section = |class: &str| {
+        let start = format!("<section class=\"{class}\">");
+        let rest = &index[index.find(&start).unwrap()..];
+        rest[..rest.find("</section>").unwrap()].to_owned()
+    };
+    assert!(section("global-public").contains("id=\"source-R\""));
+    assert_eq!(index.matches("id=\"source-R\"").count(), 1, "{index}");
+    assert!(section("global-private").contains("Private rule 4"));
+    // The local public section points to `R` and lists no source of its own.
+    let local = section("local-public");
+    assert!(local.contains("<a href=\"#source-R\">R</a>"), "{local}");
+    assert!(!local.contains("<h3"), "{local}");
+    let held = [
+        "global-public",
+        "global-private",
+        "local-public",
+        "local-private",
+    ]
+    .iter()
+    .filter(|c| !section(c).contains("No source."))
+    .count();
+    assert_eq!(held, 3, "{index}");
+}
