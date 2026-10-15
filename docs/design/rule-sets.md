@@ -53,11 +53,13 @@ which git ignores, inherits `statute.toml` through
 `statute.private.lock`. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+[Rule configuration](rule-config.md) adds the directory of the local
+rules, parameters and default switches, not built yet.
 
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
 each source (its short name, address, the branch or tag it follows,
-commit and, but for `R`, `public`, which is not written yet;
+commit and, but for `R`, `public`;
 [Git sources](global-configuration.md#git-sources)), and each enabled rule,
 whether chosen directly or brought in by a requirement (its reference,
 written as the rule set writes it, `R42` or `team:7`, and `L12` for a
@@ -261,9 +263,8 @@ rules, as this one does, names itself this way. Its rules are in
 `rules/` below that directory and its constitution in
 `constitution/<edition>/`. A source may be a git repository as well,
 cloned into the user's statute directory and read at the commit the
-lock file pins ([Git sources](global-configuration.md#git-sources));
-statute reads sources on disk only so far, and reports a `git` source
-as not supported yet. Sources every rule set of a user may use, and the
+lock file pins ([Git sources](global-configuration.md#git-sources)).
+Sources every rule set of a user may use, and the
 first-party source's default address, come from the global
 configuration, which a rule set's own `[sources]` overrides by name
 ([Which source a name means](global-configuration.md#which-source-a-name-means));
@@ -395,7 +396,10 @@ Python at all; "one of" here never means "exactly one". The one-of
 "Python package manager" under Python has the children uv, Poetry and
 Bazel. A one-of has an ID, and adding one goes through review like adding
 a rule. A rule that requires a one-of is satisfied when any one of its
-children is enabled.
+children is enabled. Once built, every one-of names a default child,
+which a pack and a requirement take where the rule set names none, in
+place of contributing nothing or failing as below
+([A one-of's default](rule-config.md#in-the-rule-files)).
 
 **Conflicts found later.** Two rules that nobody saw as alternatives may
 turn out not to work together. An agent that suspects this reports it, and

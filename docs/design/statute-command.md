@@ -28,6 +28,10 @@ and a rule set with its lock file, and writes:
 - the version of the check binary to install, and the external commands
   of the enabled rules.
 
+Once built, the `AGENTS.md` holds only the enabled rules whose `uses`
+has `instructions`, with each placeholder replaced by its value
+([Rule configuration](rule-config.md)).
+
 `statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
 another file with `--output`, and the other two next to it (below),
 and only when the lock file is what `statute lock` would write now. The
@@ -185,7 +189,8 @@ which try the whole process on real work.
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
 (built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
-which 43 and 46 supersede), for sources on disk, as many as
+which 43 and 46 supersede), and `site`, for sources on disk and git
+sources, as many as
 `[sources]` names. The `rules/` next to `statute.toml` are the
 repository's own rules, `L12`, when no source is at `.`; with
 `R = { path = "." }` they are first-party, and a local reference fails
@@ -199,21 +204,22 @@ with which rules may cite which in `requires`, `conflicts`,
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's `parent` in another
 source, and `statute.private.toml` with its lock file and output.
-Inherited rule sets, path segments and git sources are not built, nor
-are the global configuration, `init --global`, `source add`, a domain's
-`parent` in another source ([Subdomains](rule-sources.md#subdomains)).
-`site` is built ([The local site](#the-local-site)), for sources on
-disk.
+The global configuration, `init --global` and git sources are built
+([Global configuration and git sources](global-configuration.md)),
+except that `upgrade` does not show the text of a changed rule yet.
+Inherited rule sets, path segments, `source add` and a domain's
+`parent` in another source ([Subdomains](rule-sources.md#subdomains))
+are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,
-an empty `rules`, and one source on disk, the first-party source `R`.
+an empty `rules`, and, with `--source`, one source on disk, the
+first-party source `R`.
 `public` is what `--public` or `--private` says (one of them at most),
 or else what `gh`
 shows for the repository, as in
 [Public or not](rule-sources.md#public-or-not). `--source <dir>` gives the source's directory, relative
-to the current one, `.` by default. Once git sources are built,
-`--source` has no default: without it, `init` writes no `[sources]`,
+to the current one. Without it, `init` writes no `[sources]`,
 and `R` is the global configuration's or the built-in default
 ([Which source a name means](global-configuration.md#which-source-a-name-means)),
 read at the head of the branch it follows. `--edition` names the edition;
@@ -249,8 +255,6 @@ hold; no topic switches first. Until then the compiled output is built
 and compared, but not read in their place.
 
 ## The local site
-
-Built, except for git sources, which are not built yet.
 
 `statute site` writes a site of the rules a rule set can draw on into
 `.statute/site/` next to `statute.toml`, to be opened in a browser from

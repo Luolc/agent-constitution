@@ -39,17 +39,18 @@ AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难�
 
 ## Command: `statute`
 
-`statute` 是规定体系的命令，用 Rust 写，在 [`crates/statute`](crates/statute/)。它还在开发中：目前只从本地磁盘上的源读规定，也就是本仓的一份检出；crates.io 上的版本还只是占位。从源码构建：
+`statute` 是规定体系的命令，用 Rust 写，在 [`crates/statute`](crates/statute/)。它还在开发中：它从自己放在 `~/.statute/` 里的一份克隆读本仓的规定；crates.io 上的版本还只是占位。从源码构建：
 
 ```sh
 git clone https://github.com/Luolc/agent-constitution.git
 cargo install --path agent-constitution/crates/statute
 ```
 
-然后在 agent 工作的那个仓库里 (这里假定克隆的目录就在它旁边)：
+然后每台机器做一次全局初始化，再在 agent 工作的那个仓库里初始化：
 
 ```sh
-statute init --source ../agent-constitution  # 写出 statute.toml；是否公开按 GitHub 显示的写，也可以用 --public / --private 指定
+statute init --global # 写出 ~/.statute/config.toml，并把本仓克隆到那里
+statute init          # 写出 statute.toml；是否公开按 GitHub 显示的写，也可以用 --public / --private 指定
 statute add R43       # 启用规定 43，并写出 statute.lock
 statute lock          # 手改 statute.toml 之后重新解析
 statute compile       # 写出 AGENTS.md、skill 和检查

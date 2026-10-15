@@ -112,6 +112,7 @@ fn statute(dir: &Path, args: &[&str]) -> Run {
 /// `statute` with `env` added to its environment.
 fn statute_with(dir: &Path, args: &[&str], env: &[(&str, &str)]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+        .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .args(args)
         .current_dir(dir)
         .env_remove("GIT_DIR")

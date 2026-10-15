@@ -3,7 +3,8 @@
 Status: draft. The rules of this repo are written in the
 [Rule file format](rule-format.md#rule-file-format), which
 `constitution-build` checks. The command, `statute`, builds part of
-the repository level of this design, for one source on disk: it writes,
+the repository level of this design, for sources on disk and git
+sources: it writes,
 resolves and upgrades a rule set and its lock file, compiles them into
 an `AGENTS.md` with the skills the enabled rules need, and runs the
 checks. What it builds so far, and what it does not build yet,

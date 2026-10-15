@@ -66,18 +66,19 @@ The format, the rule tree, packs and the review loop are in
 
 `statute` is the rule system's command, in Rust, in
 [`crates/statute`](crates/statute/). It is under development: it reads
-rules from a source on disk, a checkout of this repo, and its release on
-crates.io is still a placeholder. Build it from a clone:
+this repo's rules from a clone it keeps in `~/.statute/`, and its
+release on crates.io is still a placeholder. Build it from a clone:
 
 ```sh
 git clone https://github.com/Luolc/agent-constitution.git
 cargo install --path agent-constitution/crates/statute
 ```
 
-Then, in the repository the agents work in, with the clone next to it:
+Then, once per machine and in the repository the agents work in:
 
 ```sh
-statute init --source ../agent-constitution  # write statute.toml; public or not as GitHub shows it, or say --public / --private
+statute init --global # write ~/.statute/config.toml and clone this repo there
+statute init          # write statute.toml; public or not as GitHub shows it, or say --public / --private
 statute add R43       # enable rule 43, and write statute.lock
 statute lock          # resolve statute.toml again after editing it by hand
 statute compile       # write AGENTS.md, the skills and the checks
