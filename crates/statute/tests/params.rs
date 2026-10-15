@@ -506,6 +506,26 @@ fn upgrade_lists_a_changed_value_and_explain_says_where_it_comes_from() {
 }
 
 #[test]
+fn explain_fills_the_titles_of_the_rules_it_lists() {
+    let work = repo("explain-titles", false, "[language]\ndocs = \"zh\"\n");
+    let titled = edit(
+        saying(2, "Write documents in {$language.docs}."),
+        "en = \"Rule 2\"",
+        "en = \"Documents in {$language.docs}\"",
+    );
+    write(&work, "r/rules/2.toml", &titled.1);
+    ok(&statute(&work, &["lock"]));
+    let run = statute(&work, &["explain", "language.docs"]);
+    ok(&run);
+    assert!(
+        run.stdout
+            .ends_with("- used by: R2 (Documents in Chinese)\n"),
+        "{}",
+        run.stdout
+    );
+}
+
+#[test]
 fn a_persons_own_value_goes_to_the_private_output_only() {
     let work = repo("personal", true, "");
     global(&work, "[language]\ncommunication = \"zh\"\ndocs = \"zh\"\n");
