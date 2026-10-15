@@ -1,0 +1,32 @@
+id = 3
+slug = "design-translation-check"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R232"
+default = "on"
+requires = ["R21"]
+authority = ["discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Run the design translation check after every change to the design"
+
+[text.statement]
+en = "After any change under `docs/design/`, run `uv run check-design-translation`, and write the hash it prints on the first line of the translation, `<!-- en-sha256: <hex> -->`."
+
+[text.reason]
+en = '''
+The translation of the design in `docs/design/zh/` records the English it follows ({@rule:R21}); the check is how this repository tells that it does.
+'''
+
+[text.verification]
+en = '''
+The check fails when `docs/design/zh/` and `docs/design/` do not hold the same files, a translation's first line is not its English file's SHA-256 now, a heading's level or anchor differs from the English one's, or a relative link of the design leads to no file of the repository. Each heading below the title of a translation starts with the English heading's anchor (`## <a id="checks"></a>检查`), and a link out of `docs/design/` takes one more `../` in the translation than in the English.
+
+Violated when a change under `docs/design/` is pushed and the check fails on it.
+'''

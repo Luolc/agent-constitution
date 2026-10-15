@@ -1,0 +1,31 @@
+id = 5
+slug = "constitution-generated-files"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R16"
+default = "on"
+authority = ["text-and-sources.compiled"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Change the generated constitution only by rebuilding it"
+
+[text.statement]
+en = "Never edit a file in `constitution/<edition>/generated/` by hand: change the sources or the build script, run `uv run constitution-build`, and commit the sources and the generated files together."
+
+[text.reason]
+en = '''
+The generated files are what agents and readers read; one edited by hand no longer follows from the sources, and the next build undoes the edit.
+'''
+
+[text.verification]
+en = '''
+The generated files are `constitution.<lang>.md` (the full version) and `constitution.<lang>.agent.md` (the version for agents), two per language of `index.toml`. A finding of limae in one of them is fixed in the sources or the build script. `uv run constitution-build --check` fails when a generated file is stale.
+
+Violated when a generated file differs from what `uv run constitution-build` writes from the sources of the same commit.
+'''

@@ -1,0 +1,32 @@
+id = 11
+slug = "private-search-before-push"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R13"
+default = "on"
+requires = ["R51"]
+authority = ["discriminating-checks", "sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Search what you push for private material, and prove each search reads"
+
+[text.statement]
+en = "Before a push, search the diff, the commit messages and the pull request text for each class of private material that {@rule:R51} lists, and run each search once on a file where it must match."
+
+[text.reason]
+en = '''
+A search that finds nothing proves nothing until it is shown to find something where something is ({@constitution:discriminating-checks}).
+'''
+
+[text.verification]
+en = '''
+The classes are those of {@rule:R51}: names of machines, hosts and services, ports, secret-store paths, account names, issue-tracker items, chat channels and user IDs, people's names and email addresses outside the owner's public identity, private repositories, agent instances and sessions, and an agent's usage, quota, model or effort.
+
+Violated when a push to this repository went ahead without these searches, or with a search that was not shown to match.
+'''
