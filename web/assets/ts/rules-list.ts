@@ -5,8 +5,9 @@
 // panel's check boxes were built, and the page Hugo built. Every page
 // holds every rule, so this only shows the rules of the filter and page
 // on the rules' items (`.rule-item`, its values in `data-*`), and hides
-// the others; shows the group headings where the group changes and on
-// top of the page, with their ids; and makes the table of contents and
+// the others; shows an item's group row where the group changes and on
+// top of the page, each group of its path with its id the first time it
+// shows on the page; and makes the table of contents and
 // the links to the other pages again. A change to the filter, the page
 // size or the page applies at once and is written into the address: the
 // first change after the panel opens adds an entry to the history, the
@@ -30,6 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const select = controls.querySelector<HTMLSelectElement>("select[name='per']")!;
   const none = document.querySelector<HTMLElement>(".rules-none");
   const pager = document.querySelector<HTMLElement>(".rules-pager");
+  const icons = document.querySelector<HTMLTemplateElement>("template.rules-pager-icons");
+  const table = list.closest<HTMLElement>(".rules-table") ?? list;
   const items = Array.from(list.querySelectorAll<HTMLElement>(".rule-item"));
   const boxes = (field?: string): HTMLInputElement[] =>
     Array.from(panel.querySelectorAll<HTMLInputElement>(field ? `input[name='${field}']` : "input[type='checkbox']"));
@@ -88,34 +91,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const shown = matched.slice((page - 1) * size, page * size);
 
     for (const item of items) item.hidden = true;
-    for (const heading of list.querySelectorAll<HTMLElement>(".rules-group")) {
-      heading.hidden = true;
-      heading.removeAttribute("id");
-    }
-    let previous: (string | undefined)[] = [];
+    for (const heading of list.querySelectorAll<HTMLElement>(".rules-group")) heading.hidden = true;
+    for (const part of list.querySelectorAll<HTMLElement>(".group-part")) part.removeAttribute("id");
+    let previous: string | undefined;
+    const ids = new Set<string>();
     for (const item of shown) {
       item.hidden = false;
-      const groups = Array.from(item.querySelectorAll<HTMLElement>(".rules-group"));
-      let changed = false;
-      groups.forEach((heading, j) => {
-        changed = changed || previous[j] !== heading.dataset.group;
-        if (!changed) return;
+      const heading = item.querySelector<HTMLElement>(".rules-group");
+      const group = heading?.dataset.group;
+      if (heading && group && group !== previous) {
         heading.hidden = false;
-        heading.id = `group-${heading.dataset.group}`;
-      });
-      previous = groups.map((heading) => heading.dataset.group);
+        for (const part of heading.querySelectorAll<HTMLElement>(".group-part")) {
+          const key = part.dataset.group ?? "";
+          if (ids.has(key)) continue;
+          part.id = `group-${key}`;
+          ids.add(key);
+        }
+      }
+      previous = group;
     }
     if (none) none.hidden = shown.length > 0;
 
     const toc = document.querySelector("#TableOfContents ul");
     if (toc) {
       toc.textContent = "";
-      for (const heading of list.querySelectorAll<HTMLElement>(".rules-group[id]")) {
+      for (const part of list.querySelectorAll<HTMLElement>(".group-part[id]")) {
         const li = document.createElement("li");
-        li.style.setProperty("--level", String(Number(heading.tagName.slice(1)) - 2));
+        li.style.setProperty("--level", part.dataset.level ?? "0");
         const a = document.createElement("a");
-        a.href = `#${heading.id}`;
-        a.textContent = (heading.querySelector("a") ?? heading).textContent;
+        a.href = `#${part.id}`;
+        a.textContent = part.dataset.toc ?? "";
         li.append(a);
         toc.append(li);
       }
@@ -130,7 +135,11 @@ document.addEventListener("DOMContentLoaded", () => {
       pager.textContent = "";
       const link = (n: number, text: string, label?: string, rel?: string): void => {
         const a = document.createElement("a");
-        a.textContent = text;
+        // The previous and next pages' links show the icons the page
+        // keeps in a template, the others their number.
+        const icon = rel ? icons?.content.querySelector(`[data-rel='${rel}']`) : null;
+        if (icon) a.append(icon.cloneNode(true));
+        else a.textContent = text;
         if (n === page && !rel) {
           a.setAttribute("aria-current", "page");
         } else {
@@ -140,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
             page = n;
             save(true);
             show();
-            list.scrollIntoView();
+            table.scrollIntoView();
           });
         }
         if (label) a.setAttribute("aria-label", label);

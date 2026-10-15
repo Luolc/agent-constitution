@@ -1,30 +1,35 @@
-{{- /* The list of the rules, in the order of the parent tree, one line
-  each: the rule's label, its title, cut to the line by the style sheet,
-  its status and whether the defaults enable it, all linked to its page;
-  when the site has a rule set, whether it enables the rule, and when it
-  has more than one source, the quadrant of the rule's source. A one-of
-  stands in its domain's list as a box: its label and title after "One
-  of", its status and whether the defaults enable it, and a line for each
-  option, the default marked; a rule that is an option is not listed
-  again but filtered with its box, which carries the one-of's status,
-  domain and switch and the `uses` of its options. Domains are not
-  listed but head the rules below them, each with its label and whether
-  the defaults enable it, a level deeper for each domain above them: a
-  heading where a rule's group at that level differs from
-  the one of the rule shown before it, and on each page above its first
-  rule. With more than one source, each source heads its rules, as its
-  quadrant and name, a level above its domains.
+{{- /* The list of the rules, in the order of the parent tree, as a
+  table of three columns under a head: each rule a row linked to its
+  page, its label, its title, cut to the row by the style sheet, and its
+  marks (_partials/rules/marks.html); when the site has a rule set,
+  whether it enables the rule, and when it has more than one source, the
+  quadrant of the rule's source, after them. A rule under another rule
+  has `corner-down-right` before its title. A one-of stands in the table
+  as a box, "One of" on its border: its own row, then a row for each
+  option, `circle` before its title and `circle-dot` before the
+  default's, which also says Default option; a rule that is an option is
+  not listed again but filtered with its box, which carries the one-of's
+  status, domain and switch and the `uses` of its options. Domains are
+  not rows of their own: each rule carries a group row for its innermost
+  group, its label and the path of its groups, with a source as its
+  quadrant and name when the site has more than one, shown where that
+  group differs from the one of the rule shown before it, and on each
+  page above its first rule, so that the list coming back to a domain
+  from one under it shows the domain's row again. The head and the group
+  rows stick to the top as the page scrolls, each group row under the
+  head until the next one covers it.
 
   Above the list, its legend (_partials/rules/legend.html), then the
   filter and the page size (_partials/rules/filter.html). The rules
   shown are those of the filter, rulesPerPage of them a page; by default
   those of a status in rulesStatuses. Every page holds every rule, each
-  with all its group headings, the rules and headings not shown hidden,
-  so that assets/ts/rules-list.ts can
-  show another filter and page size, from the address, without a page of
-  their own. Without scripts the pages are Hugo's, of the rules of the
-  default filter, and the controls stay hidden. A heading shown has the id
-  `group-<key>`, which the table of contents at the right links. */ -}}
+  with its group row, the rules and rows not shown hidden, so that
+  assets/ts/rules-list.ts can show another filter and page size, from
+  the address, without a page of their own. Without scripts the pages
+  are Hugo's, of the rules of the default filter, and the controls stay
+  hidden. In a group row shown, each group of the path has the id
+  `group-<key>` the first time it shows on the page, which the table of
+  contents at the right links. */ -}}
 {{ define "main" }}
 {{- $all := where (where .Pages "Params.rule.kind" "in" (slice "rule" "one-of")) "Params.rule.boxed" "ne" true }}
 {{- $statuses := site.Params.rulesStatuses }}
@@ -44,9 +49,12 @@
 {{- range $all }}{{ if isset .Params.rule "enabled" }}{{ $enabled = true }}{{ end }}{{ end }}
 {{ partial "rules/legend.html" (dict "enabled" $enabled "many" $many) }}
 {{ partial "rules/filter.html" (dict "page" . "statuses" $statuses "size" $size "sources" $sources) }}
+<div class="rules-table">
+<div class="rules-head" aria-hidden="true"><span class="rule-id">{{ i18n "rule-id" }}</span><span class="rule-title">{{ i18n "rules-column-rule" }}</span></div>
 <div class="rules-list" data-size="{{ $size }}" data-first="{{ $first }}">
 {{- $k := 0 }}
-{{- $previous := slice }}
+{{- $previous := "" }}
+{{- $ids := dict }}
 {{- $toc := slice }}
 {{- range $all }}
   {{- $rule := .Params.rule }}
@@ -56,37 +64,49 @@
     {{- $k = add $k 1 }}
   {{- end }}
 <div class="rule-item{{ if eq $rule.kind "one-of" }} one-of-box{{ end }}" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}" data-uses="{{ delimit (or $rule.optionUses $rule.uses) " " }}" data-default="{{ cond (eq $rule.onByDefault true) "on" "off" }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
-  {{- $changed := false }}
-  {{- range $j, $group := $rule.groups }}
-    {{- $changed = or $changed (ge $j (len $previous)) (ne (index $previous $j).key $group.key) }}
-    {{- $shown := and $on $changed }}
-    {{- $source := eq $group.kind "source" }}
-    {{- $title := cond $source (printf "%s · %s" (i18n (printf "quadrant-%s" $group.quadrant)) $group.source) (printf "%s %s" $group.label $group.title) }}
-    {{- if $shown }}{{ $toc = $toc | append (dict "key" $group.key "title" $title "level" $j) }}{{ end }}
-<h{{ add $j 2 }} class="rules-group" data-group="{{ $group.key }}"{{ if $shown }} id="group-{{ $group.key }}"{{ else }} hidden{{ end }}>
-    {{- if $source }}{{ partial "rules/quadrant.html" (dict "quadrant" $group.quadrant "source" $group.source) }}
-    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}"><span class="group-label">{{ $group.label }}</span> {{ $group.title }}</a>{{ partial "rules/default.html" (site.GetPage (printf "/rules/%s" $group.key)).Params.rule }}{{ end -}}
-</h{{ add $j 2 }}>
+  {{- with $rule.groups }}
+    {{- $group := index . (sub (len .) 1) }}
+    {{- $shown := and $on (ne $group.key $previous) }}
+    {{- $path := slice }}
+    {{- $names := slice }}
+    {{- range $j, $g := . }}
+      {{- $source := eq $g.kind "source" }}
+      {{- $name := cond $source (printf "%s · %s" (i18n (printf "quadrant-%s" $g.quadrant)) $g.source) $g.title }}
+      {{- $tocTitle := cond $source $name (printf "%s %s" $g.label $g.title) }}
+      {{- $id := "" }}
+      {{- if and $shown (not (index $ids $g.key)) }}
+        {{- $ids = merge $ids (dict $g.key true) }}
+        {{- $id = printf ` id="group-%s"` $g.key }}
+        {{- $toc = $toc | append (dict "key" $g.key "title" $tocTitle "level" $j) }}
+      {{- end }}
+      {{- $part := cond $source (partial "rules/quadrant.html" (dict "quadrant" $g.quadrant "source" $g.source)) $g.titleHtml }}
+      {{- $path = $path | append (printf `<span class="group-part" data-group="%s" data-level="%d" data-toc="%s"%s>%s</span>` $g.key $j (htmlEscape $tocTitle) $id $part) }}
+      {{- $names = $names | append $name }}
+    {{- end }}
+    {{- $path = delimit $path (partial "icon.html" "lucide:chevron-right") }}
+<h{{ add (len .) 1 }} class="rules-group" data-group="{{ $group.key }}"{{ if not $shown }} hidden{{ end }}>
+    {{- if eq $group.kind "source" }}<span class="group-path">{{ $path | safeHTML }}</span>
+    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}" aria-label="{{ $group.label }} {{ delimit $names " › " }}"><span class="group-label">{{ $group.label }}</span><span class="group-path">{{ $path | safeHTML }}</span></a>{{ end -}}
+</h{{ add (len .) 1 }}>
+    {{- if $on }}{{ $previous = $group.key }}{{ end }}
   {{- end }}
-  {{- if $on }}{{ $previous = $rule.groups }}{{ end }}
-  {{- $nested := len (where $rule.groups "kind" "ne" "source") }}
-  {{- $indent := printf "--indent: %d" (int (sub $rule.depth $nested)) | safeCSS }}
   {{- if eq $rule.kind "one-of" }}
-<div class="one-of" style="{{ $indent }}">
-<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ i18n "one-of" }}{{ $rule.titleInLink | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>{{ partial "rules/default.html" $rule }}</a>
+<div class="one-of"><span class="one-of-label" aria-hidden="true">{{ i18n "one-of" }}</span>
+<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}"><span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>{{ partial "rules/marks.html" $rule | safeHTML }}</a>
 <ul class="one-of-options">
     {{- range $rule.options }}
       {{- $page := site.GetPage (printf "/rules/%s" .key) }}
       {{- $option := $page.Params.rule }}
-<li><a class="rule-entry" href="{{ $page.RelPermalink }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ $option.titleInLink | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $option.status) }}</span>{{ partial "rules/default.html" $option }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
+<li{{ if $option.optionDefault }} class="default"{{ end }}><a class="rule-entry" href="{{ $page.RelPermalink }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ partial "icon.html" (cond $option.optionDefault "lucide:circle-dot" "lucide:circle") }}<span class="rule-text">{{ $option.titleInLink | $.RenderString }}</span>{{ if $option.optionDefault }}<span class="rule-default-option">{{ partial "icon.html" "lucide:check" }}{{ i18n "default-option" }}</span>{{ end }}</span>{{ partial "rules/marks.html" $option | safeHTML }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
     {{- end }}
 </ul>
 </div>
 </div>
     {{- continue }}
   {{- end }}
-<a class="rule-entry" href="{{ .RelPermalink }}" style="{{ $indent }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ $rule.titleInLink | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>
-  {{- partial "rules/default.html" $rule }}
+  {{- $under := and $rule.parent (ne $rule.parent.key $rule.domain) }}
+<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ if $under }}{{ partial "icon.html" "lucide:corner-down-right" }}{{ end }}<span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>
+  {{- partial "rules/marks.html" $rule | safeHTML }}
   {{- partial "rules/enabled.html" $rule }}
   {{- if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" "") }}{{ end -}}
 </a>
@@ -94,11 +114,12 @@
 {{- end }}
 {{- $.Store.Set "toc" $toc }}
 </div>
+</div>
 <p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-reset" hidden>{{ i18n "rules-reset-filter" }}</button></p>
 <nav class="rules-pager" aria-label="{{ i18n "rules-pages" }}" data-previous="{{ i18n "rules-previous" }}" data-next="{{ i18n "rules-next" }}">
 {{- if gt $pager.TotalPages 1 }}
   {{- with $pager.Prev }}
-<a href="{{ .URL }}" rel="prev" aria-label="{{ i18n "rules-previous" }}">‹</a>
+<a href="{{ .URL }}" rel="prev" aria-label="{{ i18n "rules-previous" }}">{{ partial "icon.html" "lucide:chevron-left" }}</a>
   {{- end }}
   {{- range $pager.Pagers }}
     {{- if eq .PageNumber $pager.PageNumber }}
@@ -108,17 +129,18 @@
     {{- end }}
   {{- end }}
   {{- with $pager.Next }}
-<a href="{{ .URL }}" rel="next" aria-label="{{ i18n "rules-next" }}">›</a>
+<a href="{{ .URL }}" rel="next" aria-label="{{ i18n "rules-next" }}">{{ partial "icon.html" "lucide:chevron-right" }}</a>
   {{- end }}
 {{- end }}
 </nav>
+<template class="rules-pager-icons"><span data-rel="prev">{{ partial "icon.html" "lucide:chevron-left" }}</span><span data-rel="next">{{ partial "icon.html" "lucide:chevron-right" }}</span></template>
 </div>
 </article>
 {{ end }}
 
-{{- /* The table of contents: the group headings shown, as the list above
-  gathered them, each indented by its level; assets/rules-list.js makes
-  it again for another filter or page. */ -}}
+{{- /* The table of contents: the groups that have an id, as the
+  list above gathered them, each indented by its level; assets/ts/rules-list.ts
+  makes it again for another filter or page. */ -}}
 {{ define "toc" }}
 {{ partial "docs/inject/toc-before" . }}
 <nav id="TableOfContents"><ul>

@@ -1,23 +1,19 @@
 /* The list of the rules (layouts/rules/section.html) and the tags of a
-   rule, in the list and on its page. The list, dense: under a domain's or
-   one-of's heading, smaller than the design's and close to its rules, its
-   label muted, each rule one line linked as a whole, its ID in a narrow
-   column at the left in the muted color, its title cut to the line, then
-   its tags; a rule under another rule indented by its depth below its
-   domain. Below the list, the links to its pages, the current page
-   bold. */
+   rule, in the list and on its page. The list is a table under a head:
+   each rule a row linked as a whole, its ID in a narrow column at the
+   start in the muted color, its title cut to the row, its marks in four
+   places at the end; a domain a group row on a band, the first level's
+   darker. The head and the group rows stick to the top of the window,
+   under the top bar of a narrow screen. Below the list, the links to its
+   pages, the current page bold. */
 .rules .rules-intro { color: var(--t-text-muted); }
-.rules .rules-params { margin-top: -.5em; }
-.rules .rules-group { margin: 1.2em 0 .2em; font-size: 1.05em; }
-.rules :is(h3, h4).rules-group { margin-top: .8em; font-size: var(--t-text-md); }
-.rules .rules-group > a { display: inline-block; min-block-size: var(--t-target); }
-.rules .rules-group .group-label { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
+.rules .rules-params { margin-top: calc(-1 * var(--t-space-2)); }
 .rules .rules-pager {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: .3em 1em;
-  margin-top: 1.5em;
+  gap: var(--t-space-1) var(--t-space-4);
+  margin-top: var(--t-space-6);
   font-variant-numeric: tabular-nums;
 }
 .rules .rules-pager a {
@@ -30,62 +26,227 @@
   min-block-size: var(--t-target);
   text-decoration: none;
 }
+.rules .rules-pager span { display: inline-flex; }
 .rules .rules-pager a[aria-current] { font-weight: var(--t-weight-bold); color: var(--t-text); }
 .rules .rules-none { color: var(--t-text-muted); }
 
-/* A rule's tags, small and muted, in boxes: its status; whether the
+/* A rule's tags on its page, small and muted, in boxes: whether the
    defaults enable it and whether the rule set does, in the accent color
-   when they do; the quadrant of its source on the quadrant's color. */
-.rules :is(.rule-status, .rule-enabled, .rule-default, .quadrant) {
+   when they do; the quadrant of its source on the quadrant's color. The
+   last two also follow a row's marks in the list. */
+.rules :is(.rule-enabled, .rule-default, .quadrant) {
   flex: none;
   color: var(--t-text-muted);
   font-size: var(--t-text-xs);
   line-height: var(--t-line-height-ui);
   border: 1px solid var(--t-border-subtle);
   border-radius: var(--t-radius-sm);
-  padding: 0 .3em;
+  padding: 0 var(--t-space-1);
   white-space: nowrap;
 }
 .rules .rule-enabled:not(.off) { color: var(--t-accent); }
 .rules .rule-default:not(.off) { color: var(--t-accent); }
-.rules .rules-group .rule-default { margin-inline-start: .5em; font-size: .6em; vertical-align: middle; }
 .rules .quadrant { color: var(--t-text); border-color: transparent; background: var(--q); }
 .rules .quadrant-global-public { --q: var(--t-quadrant-global-public); }
 .rules .quadrant-global-private { --q: var(--t-quadrant-global-private); }
 .rules .quadrant-local-public { --q: var(--t-quadrant-local-public); }
 .rules .quadrant-local-private { --q: var(--t-quadrant-local-private); }
-.rules .rules-group .quadrant { font-size: .8em; }
-.rules .rule-tags { display: flex; flex-wrap: wrap; gap: var(--t-space-2); margin: -.5em 0 1em; }
+.rules .rule-tags { display: flex; flex-wrap: wrap; gap: var(--t-space-2); margin: calc(-1 * var(--t-space-2)) 0 var(--t-space-4); }
 
-/* The rows of the list, and a one-of as a box around its options. */
-.rules a.rule-entry[href] {
-  display: flex;
-  gap: .5em;
-  align-items: baseline;
-  margin: 0 0 0 calc(var(--indent, 0) * 1.6em);
-  line-height: 1.6;
-  text-decoration: none;
+/* The table. Every row of it, the head and the group rows included, is
+   one height on a wide screen, so that a group row sticks right under
+   the head; `--rules-top` is where the head sticks, under the top bar
+   of a narrow screen (site.css). A rule's item only carries its rows
+   (`display: contents`), so that they all stick within the one list. */
+.rules .rules-table {
+  --rules-top: 0px;
+  --rules-row: max(var(--t-target), calc(1em * var(--t-line-height-ui) + 2 * var(--t-space-2)));
+  margin-block: var(--t-space-4);
+  line-height: var(--t-line-height-ui);
+  scroll-margin-top: var(--rules-top);
 }
-@media (hover: hover) and (pointer: fine) {
-  .rules a.rule-entry[href]:hover .rule-title { color: var(--t-accent); }
+@media screen and (width <= 56rem) {
+  .rules .rules-table { --rules-top: var(--header-height); }
 }
-.rules .one-of {
-  margin: .3em 0 .3em calc(var(--indent, 0) * 1.6em);
-  padding: .1em .6em;
-  border: 1px solid var(--t-border-subtle);
-  border-radius: var(--t-radius-sm);
+.rules :is(.rules-head, .rule-entry, .rules-group) {
+  display: grid;
+  grid-template-columns: var(--t-width-label) minmax(0, 1fr) auto;
+  column-gap: var(--t-space-3);
+  align-items: center;
+  min-block-size: var(--rules-row);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 var(--t-space-2);
+  font-size: var(--t-text-md);
+  border-block-end: 1px solid var(--t-border-subtle);
 }
-.rules .one-of-options { list-style: none; margin: 0; padding: 0 0 0 1.2em; }
+.rules .rules-head {
+  position: sticky;
+  top: var(--rules-top);
+  z-index: 2;
+  block-size: var(--rules-row);
+  color: var(--t-text-muted);
+  font-weight: var(--t-weight-medium);
+  background: var(--t-bg-page);
+  border-block-end-color: var(--t-border-strong);
+}
+.rules .rules-head > span { font-size: var(--t-text-sm); }
+.rules .rule-item { display: contents; }
+.rules .rules-table [hidden] { display: none; }
 .rules .rule-id {
-  flex: none;
-  min-width: 2.6em;
   text-align: end;
   color: var(--t-text-muted);
   font-variant-numeric: tabular-nums;
-}
-.rules .rule-title {
-  min-width: 0;
   white-space: nowrap;
+}
+.rules .rules-head .rule-id { color: inherit; }
+
+/* A group row: a band, the first level's `bg-active`, a deeper one's
+   `bg-panel-hover`, the label and the path in `text`, which keeps its
+   contrast there; the label in the ID's column. Under the pointer its
+   text is underlined, as `accent` is too faint on the band. */
+.rules .rules-group {
+  position: sticky;
+  top: calc(var(--rules-top) + var(--rules-row));
+  z-index: 1;
+  block-size: var(--rules-row);
+  font-weight: var(--t-weight-bold);
+  background: var(--t-bg-panel-hover);
+  border-block-end-color: var(--t-border-strong);
+}
+.rules h2.rules-group { background: var(--t-bg-active); }
+/* A link to a group row lands it right under the head. */
+.rules .group-part[id] { scroll-margin-top: calc(var(--rules-top) + var(--rules-row)); }
+.rules .rules-group > a {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: center;
+  block-size: 100%;
+  color: var(--t-text);
+  text-decoration: none;
+}
+.rules .rules-group > .group-path { grid-column: 2 / -1; }
+.rules .rules-group .group-label { text-align: end; font-variant-numeric: tabular-nums; }
+.rules .group-path {
+  display: flex;
+  align-items: center;
+  gap: var(--t-space-1);
+  min-inline-size: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rules .group-path .icon { color: var(--t-text-muted); }
+.rules .group-part { overflow: hidden; text-overflow: ellipsis; }
+@media (hover: hover) and (pointer: fine) {
+  .rules .rules-group > a:hover .group-path { text-decoration: underline; text-underline-offset: .18em; }
+}
+
+/* A rule's row: the whole row is the link; under the pointer it fills
+   with `bg-hover` and its title turns to `accent`. */
+.rules a.rule-entry[href] {
+  color: var(--t-text);
+  text-decoration: none;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .rules a.rule-entry[href]:hover { background: var(--t-bg-hover); }
+  .rules a.rule-entry[href]:hover .rule-text { color: var(--t-accent); }
+}
+.rules a.rule-entry[href]:active { background: var(--t-bg-active); }
+/* Pressed, the row keeps its text above 4.5: the label turns from
+   `text-muted` to `text`. */
+.rules a.rule-entry[href]:active :is(.rule-text, .rule-id) { color: var(--t-text); }
+.rules .rule-title {
+  display: flex;
+  align-items: center;
+  gap: var(--t-space-2);
+  min-inline-size: 0;
+}
+.rules .rule-title > .icon { color: var(--t-text-faint); }
+.rules .rule-text { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rules .rule-entry > :is(.rule-enabled, .quadrant) { grid-row: 1; }
+.rules .rule-entry:has(> :is(.rule-enabled, .quadrant)) { grid-template-columns: var(--t-width-label) minmax(0, 1fr) auto auto; }
+
+/* The marks: four places of one width, each mark set in the middle of
+   its place, about four characters in all. The status in its color for
+   Active, Trial and Draft, else muted; the default a dot of `accent` or a ring
+   of `text-muted`; the uses muted. */
+.rules .rule-marks { display: grid; grid-template-columns: repeat(4, var(--t-width-mark)); align-items: center; justify-items: center; }
+.rules .rule-mark { display: inline-flex; align-items: center; justify-content: center; color: var(--t-text-muted); }
+.rules .rule-status.status-active { color: var(--t-status-active); }
+.rules .rule-status.status-trial { color: var(--t-status-trial); }
+.rules .rule-status.status-draft { color: var(--t-status-draft); }
+.rules .rule-dot {
+  inline-size: var(--t-size-dot);
+  block-size: var(--t-size-dot);
+  box-sizing: border-box;
+  border: 2px solid var(--t-text-muted);
+  border-radius: var(--t-radius-full);
+}
+.rules .rule-dot.on { background: var(--t-accent); border-color: var(--t-accent); }
+
+/* A one-of: a box of `border-strong` around its row and its options',
+   its rows lined up with the table's, One of on its top border. An
+   option starts with `circle`, the default with `circle-dot` in
+   `accent` and the words Default option after its title. */
+.rules .one-of {
+  position: relative;
+  margin: var(--t-space-3) calc(-1 * var(--t-space-2));
+  padding-block: var(--t-space-2) var(--t-space-1);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-md);
+}
+.rules .one-of .rule-entry {
+  padding-inline: calc(2 * var(--t-space-2) - 1px);
+  border-block-end: 0;
+  border-radius: var(--t-radius-sm);
+}
+.rules .one-of-label {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--t-space-3);
+  transform: translateY(-50%);
+  padding: 0 var(--t-space-1);
+  color: var(--t-text-muted);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-medium);
+  line-height: 1;
+  background: var(--t-bg-page);
+}
+.rules .one-of > .rule-entry .rule-text { font-weight: var(--t-weight-medium); }
+.rules .one-of-options { list-style: none; margin: 0; padding: 0; }
+.rules .one-of-options li { margin: 0; }
+.rules .one-of-options .rule-title {
+  display: grid;
+  grid-template-columns: auto minmax(0, max-content) auto;
+  justify-content: start;
+  padding-inline-start: var(--t-space-4);
+}
+.rules .one-of-options .rule-title > .icon { color: var(--t-text-muted); }
+.rules :is(.one-of-options .default .rule-title > .icon, .rule-default-option) { color: var(--t-accent); }
+.rules .rule-default-option {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--t-space-1);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-medium);
+  white-space: nowrap;
+}
+@media (hover: hover) and (pointer: fine) {
+  .rules .one-of-options a.rule-entry[href]:hover .rule-default-option { color: var(--t-accent); }
+}
+
+/* A narrow screen: a title takes as many lines as it needs, its row
+   growing; the head and the group rows keep one line. */
+/* An option's circle stays on the first line of a title of several:
+   the offset sets the glyph in its line. */
+.rules .one-of-options .rule-title > .icon { align-self: start; margin-block-start: calc((1lh - 1em) / 2); }
+@media screen and (width <= 48rem) {
+  .rules :is(.rules-head, .rule-entry, .rules-group) { column-gap: var(--t-space-2); }
+  .rules .rule-entry { padding-block: var(--t-space-1); }
+  .rules .rule-text { white-space: normal; }
+  .rules .one-of-options .rule-title { grid-template-columns: auto minmax(0, 1fr); padding-inline-start: var(--t-space-2); }
+  .rules .one-of-options .rule-default-option { grid-column: 2; }
 }

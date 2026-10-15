@@ -88,6 +88,11 @@ rules-legend-default-option: "The option of a one-of that a rule set gets unless
 rules-legend-enabled: "The rule set of this site has it."
 rules-legend-not-enabled: "The rule set of this site does not have it."
 rules-legend-quadrant: "The quadrant of the rule's source."
+rules-legend-uses-instructions: "Goes into the instructions an agent reads."
+rules-legend-uses-review: "A reviewer checks a change against it."
+rules-legend-slots: "The marks at the end of a row stand in four places, in this order: status, default, instructions, review; a place without its mark stays empty."
+# The heads of the list's columns; the column of the marks has none.
+rules-column-rule: "Rule"
 rules-reset-filter: "Reset filter"
 rules-defaults: "Defaults"
 rules-none: "No rule matches the filter."
@@ -127,5 +132,5 @@ param-rules: "Used by"
 default-on: "On by default"
 default-off: "Off by default"
 default-option: "Default option"
-# Before a one-of's title in the list of the rules, where it is a box.
-one-of: "One of: "
+# On the border of a one-of's box in the list of the rules.
+one-of: "One of"

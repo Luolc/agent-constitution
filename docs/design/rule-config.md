@@ -663,10 +663,11 @@ has this shape, and statute checks it when it reads a source:
   domain gives its rules
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
   On the sites, a one-of is a box in its domain's list that names each
-  option and marks the default; an option appears in that box only, not
-  again in the list. An option that is a domain keeps its rules in the
-  list, under its own heading, a level below the one-of's domain; the
-  one-of heads no group. Both sites are built so.
+  option and marks the default; an option that is a rule appears in
+  that box only, not again in the list. An option that is a domain also
+  keeps its rules in the list, under its own heading (on the public
+  site, its group row), a level below the one-of's domain; the one-of
+  heads no group. Both sites are built so.
 
 **Why.** A reader of the site finds every rule
 directly under a domain or a one-of, with no rule nested under a rule,

@@ -177,39 +177,42 @@ screenshots (Screenshots, below). The workflow
   `web/content/rules/_content.gotmpl` makes the list, `rules/`, and a
   page for each node, `rules/<id>/`, or `rules/<name>-<id>/` for a node
   of another source: the ID, not the `slug`, since the ID never changes.
-  The list (`web/layouts/rules/section.html`) is dense, one line a rule:
-  along the tree, each rule's label, its title, cut to the line by the
-  style sheet, its status and whether the source's defaults enable it
-  ("On by default", "Off by default", as `statute export` reckons it,
-  and "Default option" for the default option of a one-of), linked to
-  its page; then, with `--enabled`, whether it is enabled, and with more than one source,
-  the quadrant of its source, each a small tag. A rule under another rule
-  is indented under it. A one-of stands in its domain's list as a box
-  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)): its label and
-  title after "One of:", its status and whether the defaults enable it,
-  then a line for each option with its tags, the default marked; a rule
-  that is an option stands in that box only. An option that is a
-  domain is a line of the box too, and its rules stay in the list under
-  its heading, a level below its one-of's domain: no one-of heads a
-  group, so the one-of is not repeated as a heading. The filter treats the box
-  as one entry, with the one-of's status, domain and switch and the
-  `uses` of its rule options. Domains are not listed but head the rules
-  below them, each with its label (`R13`) and whether the
-  defaults enable it, a level deeper for each
-  domain above them, a subdomain under its domain's heading,
-  where the group changes and again at the top of each page; with more
-  than one source, each source heads its rules, as its quadrant and
-  name, a level above its domains. Above the list, a legend gives each
-  mark a rule carries there and what it means: the statuses, on and off
-  by default and the default option, and, when the site has them,
-  enabled or not and the quadrant. Below it, the filter, a button that
-  opens a panel of check boxes ([Frontend](frontend.md#components)), a
+  The list (`web/layouts/rules/section.html`) is a table under a head,
+  one row a rule, along the tree: each rule's label, its title, cut to
+  the row by the style sheet, and its marks, linked to its page: its
+  status, whether the source's defaults enable it (on or off, as
+  `statute export` reckons it), and its `uses`, each an icon or a dot in
+  a place of its own ([Frontend](frontend.md#components)); then, with
+  `--enabled`, whether it is enabled, and with more than one source, the
+  quadrant of its source, each a small tag. A rule under another rule
+  has an arrow before its title. A one-of stands in the table as a box
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)), "One
+  of" on its border: its own row, then a row for each option, the
+  default marked; a rule that is an option stands in that box only. An
+  option that is a domain is a row of the box too, and its rules stay in
+  the list under its group row, a level below its one-of's domain: no
+  one-of heads a group. The filter treats the box as one entry, with the
+  one-of's status, domain and switch and the `uses` of its rule
+  options. Domains are not rows of their own: each rule carries a group
+  row for its nearest domain, with that domain's label (`R13`) and the
+  path of its domains (`Documentation › Design`), shown where the group
+  changes from the rule shown before it and again at the top of each
+  page, so that the list coming back to a domain from one under it shows
+  the domain's row again; with more than one source, the path starts
+  with the source, as its quadrant and name. The head and the group rows
+  stick to the top of the window as it scrolls, a group row under the
+  head until the next one covers it, with the style sheet alone. Above
+  the list, a legend gives each mark a rule carries there and what it
+  means, in the order of the marks' places: the statuses, on and off by
+  default, the two `uses`, then the default option, and, when the site
+  has them, enabled or not and the quadrant. Below it, the filter, a
+  button that opens a panel of check boxes ([Frontend](frontend.md#components)), a
   group for each field: each status, on and off by default, each value
   of `uses` and each domain, and each quadrant when there is more than
   one source, each group with All and None. A rule is shown when, in
   every field, one of its values is checked: its status, whether the
   defaults enable it (a node whose answer depends on another source,
-  which has no tag, counts as off), its `uses`
+  whose place stays empty, counts as off), its `uses`
   (`["instructions"]` when its file leaves it out), its nearest domain
   and its quadrant; checking or unchecking a domain does the same to the
   domains under it. A change applies at once. A node whose `parent` is
@@ -218,7 +221,7 @@ screenshots (Screenshots, below). The workflow
   of the tree, with no group above it. When its parent is a domain of a
   source the site reads, the filter goes by that domain. Otherwise the
   filter shows it only while every domain is checked; without scripts
-  it appears under the heading before it. This repo has no such node
+  it appears under the group row before it. This repo has no such node
   yet; the pull request that first adds one fixes the list, and the
   first-party source overrides nothing. By default the filter checks
   the statuses of `params.rulesStatuses` in `web/hugo.toml` and every
@@ -226,12 +229,12 @@ screenshots (Screenshots, below). The workflow
   not checked. Beside the filter, a menu sets the page size: 100 by
   default, `params.rulesPerPage`, or 25, 50 or all; the rules are
   filtered first and then split into pages. Hugo builds the pages of
-  the default filter; each holds every rule, each rule with all its
-  group headings, those not shown hidden.
+  the default filter; each holds every rule, each rule with its group
+  row, those not shown hidden.
   `web/assets/ts/rules-list.ts`, bundled by Hugo
   ([Frontend](frontend.md#in-the-code)) and inlined in `<head>`, takes the
   filter, the size and the page from the address, shows that page's
-  rules and headings, makes the links to the pages and the table of
+  rules and group rows, makes the links to the pages and the table of
   contents again, and writes each change back into the address. The
   address holds only the fields whose check boxes differ from the
   default, each as the values checked, keys of `[a-z0-9-]` joined by
@@ -243,8 +246,8 @@ screenshots (Screenshots, below). The workflow
   as the same filter and rewritten in the new form. Without scripts the
   controls are hidden and Hugo's pages stay.
   The table of
-  contents at the right lists the headings on the page, each indented by
-  its level. A
+  contents at the right lists the domains of the group rows on the page,
+  each once, indented by its level. A
   rule's page (`web/layouts/rules/page.html`) gives its label and title,
   under it whether the defaults enable it, as in the list, with more
   than one source, the quadrant and name of its
