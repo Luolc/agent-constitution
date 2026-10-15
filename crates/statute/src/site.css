@@ -16,10 +16,11 @@ body {
   background: var(--t-bg-page);
 }
 /* Room on both sides that grows with the window (the `vw` term) between
-   two tokens. A page of text is a column; the index, whose rows carry
-   their tags at the right, and the table of parameters span the
-   window. */
+   two tokens. A page of text is a column; the table of parameters spans
+   the window, and the index spans it with one space at each side, its
+   text as wide as its tables. */
 main { padding: var(--t-space-8) clamp(var(--t-space-4), 5vw, var(--t-space-12)); }
+main.list { padding-inline: var(--t-space-6); }
 main.text { max-inline-size: var(--t-measure); margin-inline: auto; }
 h1 { margin: 0 0 var(--t-space-4); font-size: var(--t-text-2xl); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
 h2 { margin: 1.5em 0 .5em; font-size: var(--t-text-lg); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
@@ -88,26 +89,13 @@ nav { font-size: var(--t-text-sm); color: var(--t-text-muted); margin-block-end:
   .languages:hover { color: var(--t-text); background-color: var(--t-bg-hover); }
 }
 .languages:active { background-color: var(--t-bg-active); }
-/* The legend: each mark and its meaning on a line, in columns. */
-.legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--t-measure) / 2), 1fr));
-  gap: var(--t-space-1) var(--t-space-6);
-  margin-block: var(--t-space-4);
-  line-height: var(--t-line-height-ui);
-}
-.legend > div { display: flex; align-items: center; gap: var(--t-space-2); }
-.legend dt { flex: none; margin: 0; }
-.legend dd { margin: 0; font-size: var(--t-text-sm); color: var(--t-text-muted); }
+/* A source's heading: its name, where it is read from, and the link to
+   its parameters; a section per kind of source under a hairline. */
 .place { font-size: var(--t-text-sm); font-weight: var(--t-weight-regular); color: var(--t-text-muted); margin-inline-start: var(--t-space-2); }
 .params { font-size: var(--t-text-sm); font-weight: var(--t-weight-regular); margin-inline-start: var(--t-space-2); }
 section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-space-2); border-block-start: 1px solid var(--t-border-subtle); }
 
 /* Tags: small, one line each; different facts in different forms. */
-.tags { display: flex; flex: none; align-items: center; gap: var(--t-space-2); margin-inline-start: auto; }
-/* In a row, the word whose length varies first, so that the others line
-   up from one row to the next. */
-.tags > :is(.enabled, .default-option) { order: -1; }
 .tag-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t-space-2); margin-block: 0 var(--t-space-4); }
 :is(.status, .switch, .enabled, .default-option, .q, .kind, .slug, .untranslated) {
   display: inline-flex;
@@ -135,7 +123,6 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
 }
 .switch.on::before { background: var(--t-accent); }
 .switch.off::before { border: 1px solid var(--t-text-muted); }
-.tags > .switch { min-inline-size: var(--t-space-2); justify-content: center; }
 /* Enabled by the rule set: `check` and the word in the accent color;
    anything else, the word muted. */
 .enabled { color: var(--t-text-muted); }
@@ -148,70 +135,10 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
 .q.local-public { --q: var(--t-quadrant-local-public); }
 .q.local-private { --q: var(--t-quadrant-local-private); }
 
-/* The tree: each node a row, linked as a whole, its label in a column,
-   its title cut to the row, its tags at the right. The level of a domain
-   shows by size, weight and a bar, not by indentation. */
-.tree { list-style: none; margin: 0; padding: 0; }
-.row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--t-space-2);
-  min-block-size: var(--t-target);
-  padding-inline: var(--t-space-1);
-  line-height: var(--t-line-height-ui);
-  border-radius: var(--t-radius-sm);
-  transition: background-color var(--t-duration-fast) var(--t-ease-out);
-}
-.row > :is(a, h4, h5) { display: flex; flex: 0 1 auto; align-items: baseline; min-inline-size: 0; margin: 0; }
-.row a { text-decoration: none; }
-/* The row's link covers the row; a link among the tags stands above it. */
-.row > a::after, .row > :is(h4, h5) > a::after { content: ""; position: absolute; inset: 0; }
-.row .tags a { position: relative; text-decoration: underline; text-decoration-color: var(--t-border-subtle); }
-.row > a:focus-visible, .row > :is(h4, h5) > a:focus-visible { outline: none; }
-.row:has(> a:focus-visible, > :is(h4, h5) > a:focus-visible) { outline: 2px solid var(--t-accent); outline-offset: 2px; }
-.row > :is(a, h4 > a, h5 > a) .ref { flex: none; min-inline-size: var(--t-space-12); }
-.row > :is(a, h4 > a, h5 > a) .title { min-inline-size: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.row > .icon { color: var(--t-text-faint); }
-@media (hover: hover) and (pointer: fine) {
-  .row:hover { background-color: var(--t-bg-hover); }
-  .row:hover > :is(a, h4 > a, h5 > a) .title { color: var(--t-accent); }
-}
-/* A domain of the first level is a heading; one of the second level,
-   the deepest, is indented one step with a bar along its edge. */
-.domain > .row > :is(h4, h5) { font-weight: var(--t-weight-bold); }
-.d1 { margin-block-start: var(--t-space-8); }
-.d1 > .row > h4 { font-size: var(--t-text-xl); }
-.d2 { margin-block: var(--t-space-4); padding-inline-start: var(--t-space-4); border-inline-start: 2px solid var(--t-border-strong); }
-.d2 > .row > h5 { font-size: var(--t-text-lg); }
-/* A one-of: a box of its options, with its label on the top border. */
-.one-of {
-  position: relative;
-  margin-block: var(--t-space-4);
-  padding: var(--t-space-3);
-  border: 1px solid var(--t-border-strong);
-  border-radius: var(--t-radius-md);
-}
-.one-of.unset { border-color: var(--t-border-subtle); }
-.one-of > .row > a { font-weight: var(--t-weight-medium); }
-.one-of-label {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: var(--t-space-3);
-  translate: 0 -50%;
-  padding-inline: var(--t-space-1);
-  font-size: var(--t-text-xs);
-  font-weight: var(--t-weight-medium);
-  line-height: var(--t-line-height-ui);
-  color: var(--t-text-muted);
-  background: var(--t-bg-page);
-}
-.one-of > .tree > li > .row > .icon { color: var(--t-text-muted); }
-.one-of > .tree > li > .row > .icon.default { color: var(--t-accent); }
-
-/* Hidden from sight, still read by screen readers. */
-.views legend,
-body:has(#view-statement:checked) .has-statement > .row > a .title {
+/* What the script shows or hides; and, hidden from sight but still read
+   by screen readers, the title in the Statement view. */
+[hidden] { display: none !important; }
+body:has(#view-statement:checked) .has-statement .rule-text .title {
   position: absolute;
   inline-size: 1px;
   block-size: 1px;
@@ -220,18 +147,100 @@ body:has(#view-statement:checked) .has-statement > .row > a .title {
   white-space: nowrap;
 }
 
-/* The controls above the tree, on one line as room allows: the views,
-   then the filter. */
-.controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t-space-2) var(--t-space-4); margin-block-end: var(--t-space-4); }
+/* The legend, after Ruff's: a box with a hairline border, a button that
+   folds it, then a row per kind of mark, its name in a column of its own
+   and its marks after it on one line. */
+.legend {
+  margin-block: var(--t-space-4);
+  padding: 0 var(--t-space-4);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-md);
+}
+.legend > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-space-1);
+  min-block-size: var(--t-target);
+  color: var(--t-text-muted);
+  font-weight: var(--t-weight-medium);
+  list-style: none;
+  cursor: pointer;
+}
+.legend > summary::-webkit-details-marker { display: none; }
+.legend > summary > .icon { transition: rotate var(--t-duration-base) var(--t-ease-out); }
+.legend[open] > summary > .icon { rotate: 90deg; }
+@media (hover: hover) and (pointer: fine) {
+  .legend > summary:hover { color: var(--t-text); }
+}
+.legend dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--t-space-2) var(--t-space-6);
+  margin: 0 0 var(--t-space-3);
+}
+.legend dl > div { display: contents; }
+.legend dt { margin: 0; color: var(--t-text-muted); font-weight: var(--t-weight-medium); }
+.legend dd { display: flex; flex-wrap: wrap; gap: var(--t-space-1) var(--t-space-6); margin: 0; }
+.legend-item { display: inline-flex; align-items: center; gap: var(--t-space-2); }
+.legend-item > :is(.mark, .icon, .option) { flex: none; align-self: center; }
+.legend-item > .mark:not(.dot) { inline-size: auto; }
+.legend strong { font-weight: var(--t-weight-medium); }
+.legend .option { display: inline-flex; color: var(--t-text-muted); }
+.legend .places dd { color: var(--t-text-muted); }
+
+/* The controls, after Ruff's: on one line as room allows, each under
+   its name in small type: the search, the views, a menu per field of
+   the filter, and Clear filters at the end; under them, how many rules
+   are shown. */
+.controls { display: flex; flex-wrap: wrap; align-items: start; gap: var(--t-space-2) var(--t-space-4); margin-block: var(--t-space-4) var(--t-space-1); }
+.control { position: relative; display: flex; flex-direction: column; gap: var(--t-space-1); margin: 0; padding: 0; border: 0; }
+.control-label { padding: 0; font-size: var(--t-text-xs); font-weight: var(--t-weight-medium); line-height: var(--t-line-height-ui); color: var(--t-text-muted); }
+.find input {
+  min-block-size: var(--t-target);
+  padding: 0 var(--t-space-2);
+  font: inherit;
+  font-size: var(--t-text-sm);
+  color: var(--t-text);
+  background-color: var(--t-bg-page);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-sm);
+  transition: border-color var(--t-duration-fast) var(--t-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .find input:hover { border-color: var(--t-text-muted); }
+}
+.shown { margin: 0 0 var(--t-space-4); font-size: var(--t-text-sm); color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
+/* Quiet buttons: no fill, the text's color; under the pointer a fill. */
+:is(.clear, .reset, .menu .all button) {
+  min-block-size: var(--t-target);
+  padding: 0 var(--t-space-2);
+  font: inherit;
+  font-size: var(--t-text-sm);
+  color: var(--t-accent);
+  background: none;
+  border: 0;
+  border-radius: var(--t-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+.clear { align-self: end; margin-inline-start: auto; }
+@media (hover: hover) and (pointer: fine) {
+  :is(.clear, .reset):hover { background-color: var(--t-bg-hover); }
+  .menu .all button:hover { color: var(--t-text); background-color: var(--t-bg-panel-hover); }
+}
+:is(.clear, .reset, .menu .all button):active { color: var(--t-text); background-color: var(--t-bg-active); }
+.none { color: var(--t-text-muted); }
 
 /* The views: a segmented control, its radio buttons out of sight and
-   their labels quiet buttons side by side in one box; the chosen one in
-   `bg-selected`, its text in `accent`. */
-.views {
+   their labels quiet buttons side by side in one box, parted by
+   hairlines; the chosen one in `bg-selected`, its text in `accent`. Its
+   legend is laid out as the other controls' names. */
+.views > legend { float: inline-start; }
+.views .segments {
   position: relative;
   display: inline-flex;
-  margin: 0;
-  padding: 0;
   font-size: var(--t-text-sm);
   line-height: var(--t-line-height-ui);
   border: 1px solid var(--t-border-strong);
@@ -241,15 +250,17 @@ body:has(#view-statement:checked) .has-statement > .row > a .title {
 .views label {
   display: inline-flex;
   align-items: center;
-  min-block-size: var(--t-target);
+  min-block-size: calc(var(--t-target) - 2px);
   padding: 0 var(--t-space-3);
-  color: var(--t-text-muted);
-  border-radius: var(--t-radius-sm);
+  color: var(--t-text);
   cursor: pointer;
   transition-property: color, background-color;
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
+.views label + input + label { border-inline-start: 1px solid var(--t-border-subtle); }
+.views label:first-of-type { border-start-start-radius: var(--t-radius-sm); border-end-start-radius: var(--t-radius-sm); }
+.views label:last-of-type { border-start-end-radius: var(--t-radius-sm); border-end-end-radius: var(--t-radius-sm); }
 .views input:checked + label { color: var(--t-accent); font-weight: var(--t-weight-medium); background-color: var(--t-bg-selected); }
 .views input:focus-visible + label { outline: 2px solid var(--t-accent); outline-offset: 2px; }
 @media (hover: hover) and (pointer: fine) {
@@ -257,60 +268,43 @@ body:has(#view-statement:checked) .has-statement > .row > a .title {
 }
 .views label:active { color: var(--t-text); background-color: var(--t-bg-active); }
 
-/* A rule's row with its statement is a grid: the icon of an option, the
-   link, the tags, and on a line of its own the statement, in line with
-   the title, a size smaller and muted. Alone, it takes the title's
-   place, the size and color of the text. A text in another language
-   starts with `languages`; a link in it stands above the row's. */
-.has-statement > .row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; }
-.has-statement > .row > .icon { grid-column: 1; margin-inline-end: var(--t-space-2); }
-.has-statement > .row > a { grid-row: 1; grid-column: 2; }
-.has-statement > .row > .tags { grid-row: 1; grid-column: 3; margin-inline-start: var(--t-space-2); }
-.row > .statement { grid-row: 2; grid-column: 2 / -1; padding-inline-start: calc(var(--t-space-12) + var(--t-space-2)); padding-block-end: var(--t-space-2); }
-.statement > * { font-size: var(--t-text-sm); line-height: var(--t-line-height-ui); color: var(--t-text-muted); }
-.statement :is(p, ul) { margin: 0; }
-.statement > * + * { margin-block-start: var(--t-space-1); }
-.statement ul { padding-inline-start: var(--t-space-6); }
-.statement code { font-size: var(--t-text-md); }
-.statement > .untranslated { float: inline-start; block-size: calc(1em * var(--t-line-height-ui)); margin-inline-end: var(--t-space-1); }
-.row .statement a { position: relative; text-decoration: underline; text-decoration-color: var(--t-border-subtle); }
-.row .statement a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
-body:has(#view-title:checked) .row > .statement { display: none; }
-body:has(#view-statement:checked) .has-statement > .row { align-items: start; padding-block: var(--t-space-1); }
-body:has(#view-statement:checked) .row > .statement { grid-row: 1; grid-column: 2; padding-block-end: 0; }
-body:has(#view-statement:checked) .row > .statement > * { font-size: var(--t-text-md); color: var(--t-text); }
-
-/* The filter: a quiet button with `funnel`; open, a popover of a group
-   per field, its name and its values as check boxes. */
-.filter { position: relative; }
-.filter > summary {
+/* A menu: a button with a border, what it chooses and `chevron-down`,
+   what it chooses in `accent` when it differs from the default filter.
+   Open, a popover under it, over the tables' sticky rows: All and None,
+   then a row per value, the domains' scrolling under their search. */
+.menu > summary {
   display: inline-flex;
   align-items: center;
-  gap: var(--t-space-2);
+  gap: var(--t-space-1);
   min-block-size: var(--t-target);
-  padding: var(--t-space-1) var(--t-space-2);
+  padding: 0 var(--t-space-2);
   font-size: var(--t-text-sm);
   line-height: var(--t-line-height-ui);
+  background-color: var(--t-bg-page);
+  border: 1px solid var(--t-border-strong);
   border-radius: var(--t-radius-sm);
   list-style: none;
   cursor: pointer;
   transition: background-color var(--t-duration-fast) var(--t-ease-out);
 }
-.filter > summary::-webkit-details-marker { display: none; }
-.filter > summary > .icon { inline-size: var(--t-icon-md); block-size: var(--t-icon-md); }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu > summary > .icon { color: var(--t-text-muted); transition: rotate var(--t-duration-base) var(--t-ease-out); }
+.menu[open] > summary > .icon { rotate: 180deg; }
+.menu.changed .value { color: var(--t-accent); }
 @media (hover: hover) and (pointer: fine) {
-  .filter > summary:hover { background-color: var(--t-bg-hover); }
+  .menu > summary:hover { background-color: var(--t-bg-hover); }
 }
-.filter > summary:active { background-color: var(--t-bg-active); }
-.filter .panel {
+.menu > summary:active { background-color: var(--t-bg-active); }
+.menu-panel {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   inset-block-start: 100%;
   inset-inline-start: 0;
   display: grid;
-  gap: var(--t-space-3);
-  inline-size: var(--t-width-popover);
-  max-inline-size: 100%;
+  gap: var(--t-space-2);
+  inline-size: max-content;
+  min-inline-size: 100%;
+  max-inline-size: var(--t-width-popover);
   margin-block-start: var(--t-space-1);
   padding: var(--t-space-3) var(--t-space-4);
   font-size: var(--t-text-sm);
@@ -325,12 +319,200 @@ body:has(#view-statement:checked) .row > .statement > * { font-size: var(--t-tex
   transition-timing-function: var(--t-ease-out);
 }
 @starting-style {
-  .filter[open] .panel { opacity: 0; scale: .95; }
+  .menu[open] .menu-panel { opacity: 0; scale: .95; }
 }
-.filter fieldset { margin: 0; padding: 0; border: 0; }
-.filter legend { padding: 0; color: var(--t-text-muted); font-weight: var(--t-weight-medium); }
-.filter .values { display: flex; flex-wrap: wrap; column-gap: var(--t-space-3); }
-.filter label { display: inline-flex; align-items: center; gap: var(--t-space-2); min-block-size: var(--t-target); cursor: pointer; }
+.menu .all { display: flex; gap: var(--t-space-1); }
+.menu .all button { font-size: var(--t-text-xs); color: var(--t-text-muted); }
+.menu .search { min-block-size: var(--t-target); padding: 0 var(--t-space-2); font: inherit; color: var(--t-text); background: var(--t-bg-page); border: 1px solid var(--t-border-strong); border-radius: var(--t-radius-sm); }
+.menu .values { display: grid; max-block-size: 50vh; overflow-y: auto; overscroll-behavior: contain; }
+.menu label {
+  display: flex;
+  align-items: center;
+  gap: var(--t-space-2);
+  min-block-size: var(--t-target);
+  padding: 0 var(--t-space-2);
+  padding-inline-start: calc(var(--t-space-2) + var(--indent, 0) * var(--t-space-4));
+  border-radius: var(--t-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+.menu label .ref { margin-inline-end: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .menu label:hover { background-color: var(--t-bg-panel-hover); }
+}
+
+/* The table of a source's rules: a grid of four columns, the label
+   (at least `width-label`, as wide as the widest label), the title, the four places of the marks
+   (`width-mark` each) and whether the rule set enables a rule, as wide
+   as its widest; each row a subgrid of it, so that every column lines up
+   from row to row. The head sticks to the top of the window, on
+   `bg-page`; a group row sticks under it while its rows are in view. */
+.table {
+  --row: max(var(--t-target), calc(1em * var(--t-line-height-ui) + 2 * var(--t-space-2)));
+  display: grid;
+  grid-template-columns: minmax(var(--t-width-label), max-content) minmax(0, 1fr) calc(4 * var(--t-width-mark)) auto;
+  column-gap: var(--t-space-3);
+  margin-block: var(--t-space-2) var(--t-space-6);
+  line-height: var(--t-line-height-ui);
+}
+.table :is(.head, .block, .group, .entry, .one-of) { display: grid; grid-template-columns: subgrid; grid-column: 1 / -1; }
+.table :is(.item, .options, .options > li) { display: contents; }
+.table :is(.head, .group, .entry) { align-items: center; min-block-size: var(--row); margin: 0; border-block-end: 1px solid var(--t-border-subtle); }
+.table :is(.head, .entry, .group > a, .group) > .ref { margin: 0; padding-inline-start: var(--t-space-2); text-align: end; white-space: nowrap; }
+.head {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  block-size: var(--row);
+  color: var(--t-text-muted);
+  font-weight: var(--t-weight-medium);
+  background: var(--t-bg-page);
+  border-block-end-color: var(--t-border-strong);
+}
+.head > * { font-size: var(--t-text-sm); }
+.head > .ref { color: inherit; }
+
+/* A group row: a band, the first level's `bg-active`, a deeper one's
+   `bg-panel-hover`; the label and the path in `text`, joined by
+   `chevron-right`, the whole a link underlined under the pointer; in the
+   first place of the marks, whether the defaults enable the domain. */
+.group {
+  position: sticky;
+  inset-block-start: var(--row);
+  z-index: 1;
+  block-size: var(--row);
+  font-size: var(--t-text-md);
+  font-weight: var(--t-weight-bold);
+  background: var(--t-bg-panel-hover);
+  border-block-end-color: var(--t-border-strong);
+}
+.group.top { background: var(--t-bg-active); }
+.group > a { display: grid; grid-template-columns: subgrid; grid-column: 1 / 3; align-items: center; block-size: 100%; color: var(--t-text); text-decoration: none; }
+.group > .group-path { grid-column: 2; }
+.group > .marks { grid-column: 3; }
+.group .ref { color: var(--t-text); }
+.group-path { display: flex; align-items: center; gap: var(--t-space-1); min-inline-size: 0; overflow: hidden; white-space: nowrap; }
+.group-path .icon { color: var(--t-text-muted); }
+.group-path .q { font-weight: var(--t-weight-regular); }
+.group-part { overflow: hidden; text-overflow: ellipsis; }
+/* Short of room, the outer domains give way first. */
+.group-part:not(:last-child) { flex-shrink: 4; }
+@media (hover: hover) and (pointer: fine) {
+  .group > a:hover .group-path { text-decoration: underline; text-underline-offset: .18em; }
+}
+
+/* A rule's row: the title's link covers the row; under the pointer the
+   row fills with `bg-hover` and the title turns to `accent`. The title
+   keeps to one line, cut with an ellipsis, its whole text on hover; the
+   statement under it, a size smaller and muted, wraps. The label, the
+   icon before the title, the marks and the last column keep to the
+   first line. A link in the statement or the last column stands above
+   the row's. */
+.entry {
+  position: relative;
+  align-items: start;
+  padding-block: calc((var(--row) - 1lh) / 2);
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+.table .entry { align-items: start; }
+.entry > .ref { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
+.rule-title { display: flex; align-items: start; gap: var(--t-space-2); min-inline-size: 0; }
+.rule-title > .icon { color: var(--t-text-faint); margin-block-start: calc((1lh - 1em) / 2); }
+.rule-main { display: grid; flex: 1; min-inline-size: 0; }
+.rule-head { display: flex; align-items: center; gap: var(--t-space-2); min-inline-size: 0; }
+.rule-text { min-inline-size: 0; color: var(--t-text); text-decoration: none; }
+.rule-text .title { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.rule-text::after { content: ""; position: absolute; inset: 0; }
+.rule-text:focus-visible { outline: none; }
+.entry:has(.rule-text:focus-visible) { outline: 2px solid var(--t-accent); outline-offset: 2px; }
+.entry :is(.statement, .rule-enabled) a { position: relative; }
+.entry .marks, .rule-enabled { block-size: 1lh; }
+.rule-enabled { display: flex; align-items: center; padding-inline-end: var(--t-space-2); white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) {
+  .entry:hover { background-color: var(--t-bg-hover); }
+  .entry:hover .rule-text { color: var(--t-accent); }
+}
+.entry:active { background-color: var(--t-bg-active); }
+.entry:active :is(.rule-text, .ref) { color: var(--t-text); }
+.statement > * { font-size: var(--t-text-sm); line-height: var(--t-line-height-ui); color: var(--t-text-muted); }
+.statement :is(p, ul) { margin: 0; }
+.statement > * + * { margin-block-start: var(--t-space-1); }
+.statement ul { padding-inline-start: var(--t-space-6); }
+.statement code { font-size: var(--t-text-md); }
+.statement > .untranslated { float: inline-start; block-size: calc(1em * var(--t-line-height-ui)); margin-inline-end: var(--t-space-1); }
+body:has(#view-title:checked) .entry .statement { display: none; }
+body:has(#view-statement:checked) .entry .statement > * { font-size: var(--t-text-md); color: var(--t-text); }
+
+/* The marks: four places of `width-mark`, each mark in the middle of
+   its place: whether the defaults enable the node, a dot of `accent` or
+   a ring of `text-muted`; the status in its color for Active, Trial and
+   Draft, else muted; the uses muted. */
+.marks { display: grid; grid-template-columns: repeat(4, var(--t-width-mark)); align-items: center; justify-items: center; }
+.mark { display: inline-flex; align-items: center; justify-content: center; color: var(--t-text-muted); }
+.mark.status-active { color: var(--t-status-active); }
+.mark.status-trial { color: var(--t-status-trial); }
+.mark.status-draft { color: var(--t-status-draft); }
+.mark.dot {
+  inline-size: var(--t-size-dot);
+  block-size: var(--t-size-dot);
+  border: 2px solid var(--t-text-muted);
+  border-radius: var(--t-radius-full);
+}
+.mark.dot.on { background: var(--t-accent); border-color: var(--t-accent); }
+
+/* A one-of: a box of `border-strong` around its row and its options',
+   their columns the table's, One of on its top border; `border-subtle`
+   when none of its options is in use. An option starts with `circle`,
+   the default with `circle-dot` in `accent` and Default option after its
+   title. */
+.one-of {
+  position: relative;
+  margin-block: var(--t-space-3);
+  padding-block: var(--t-space-2) var(--t-space-1);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-md);
+}
+.one-of.unset { border-color: var(--t-border-subtle); }
+.one-of .entry { border-block-end: 0; border-radius: var(--t-radius-sm); }
+.one-of-label {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--t-space-3);
+  translate: 0 -50%;
+  padding: 0 var(--t-space-1);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-medium);
+  line-height: 1;
+  color: var(--t-text-muted);
+  background: var(--t-bg-page);
+}
+.one-of > .entry .rule-text { font-weight: var(--t-weight-medium); }
+.options .rule-title { padding-inline-start: var(--t-space-4); }
+.options .rule-title > .icon { color: var(--t-text-muted); }
+.options .default .rule-title > .icon { color: var(--t-accent); }
+
+/* Under reduced motion nothing changes size or turns; the fades stay. */
+@media (prefers-reduced-motion: reduce) {
+  .menu-panel { transition-property: opacity; }
+  @starting-style {
+    .menu[open] .menu-panel { scale: none; }
+  }
+  :is(.legend, .menu) > summary > .icon { transition: none; }
+}
+
+/* A narrow screen: a title takes as many lines as it needs, and whether
+   the rule set enables a rule goes under it; a group row leaves out the
+   quadrant and source, which the headings above it name, when it has
+   domains to show; a menu's popover spans the row. */
+@media (max-width: 48rem) {
+  .rule-text .title { white-space: normal; }
+  .group-path > .q:has(+ .icon) { display: none; }
+  .group-path > .q + .icon { display: none; }
+  .entry > .rule-enabled { grid-row: 2; grid-column: 2 / -1; padding-inline-end: 0; }
+  .control { position: static; }
+  .controls { position: relative; }
+  .menu-panel { inline-size: 100%; max-inline-size: none; }
+}
 
 /* Check boxes, drawn as controls.css of the public site draws them: a
    box on the page, filled with the accent color when checked, its check
@@ -365,26 +547,3 @@ input[type="checkbox"]:checked::before { opacity: 1; }
   input[type="checkbox"]:hover { border-color: var(--t-text-muted); }
   input[type="checkbox"]:checked:hover { background-color: var(--t-accent-hover); border-color: var(--t-accent-hover); }
 }
-
-/* Under reduced motion nothing changes size; the fades stay. */
-@media (prefers-reduced-motion: reduce) {
-  .filter .panel { transition-property: opacity; }
-  @starting-style {
-    .filter[open] .panel { scale: none; }
-  }
-}
-
-/* On a narrow screen the tags go under the title. */
-@media (max-width: 48rem) {
-  .row { flex-wrap: wrap; padding-block: var(--t-space-1); }
-  .row .tags { margin-inline-start: 0; flex-wrap: wrap; }
-  .has-statement > .row > .tags { grid-row: 2; grid-column: 2 / -1; }
-  .row > .statement { grid-row: 3; }
-}
-
-/* The filters: a node is hidden when its check box is clear. */
-body:has(#show-old:not(:checked)) .old,
-body:has(#show-off:not(:checked)) .off { display: none; }
-body:has(#show-instructions:not(:checked)) .u-i,
-body:has(#show-review:not(:checked)) .u-r,
-body:has(#show-instructions:not(:checked)):has(#show-review:not(:checked)) .u-ir { display: none; }

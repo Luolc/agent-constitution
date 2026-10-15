@@ -84,21 +84,43 @@ struct Words {
     untranslated: &'static str,
     title: &'static str,
     quadrants: [&'static str; 4],
-    /// The filter's button.
-    filter: &'static str,
-    /// The switch between the views of the rows, and each view, in the
-    /// order of `VIEWS`.
+    /// The lines of the legend: the status, the defaults, `uses`, the
+    /// one-of, this rule set and the places of the marks.
+    legend: [&'static str; 6],
+    /// The legend's own name, on the button that folds it.
+    legend_name: &'static str,
+    /// What the places of the marks hold, in order.
+    slots: &'static str,
+    /// After each use's name in the legend, what it means.
+    use_meanings: [&'static str; 2],
+    /// In the legend, what a one-of is, and an option not its default.
+    one_of_meaning: &'static str,
+    another_option: &'static str,
+    /// The switch between the views of the rows, and each view: title
+    /// and statement, title, statement.
     view: &'static str,
     views: [&'static str; 3],
-    /// What each mark of the legend means: the five statuses, on and
-    /// off by default, the default option, enabled and not enabled, and
-    /// the quadrant.
-    meanings: [&'static str; 11],
-    /// The fields of the filter: the kind of source, `uses`, and the
-    /// nodes it shows besides.
-    fields: [&'static str; 3],
-    show_off: &'static str,
-    show_old: &'static str,
+    /// The head of a table: the label and the rule.
+    columns: [&'static str; 2],
+    /// The menus of the filter, in the order of `FIELDS`.
+    fields: [&'static str; 6],
+    /// In a menu: choose every value, and none; search the domains.
+    all: &'static str,
+    /// What a menu shows when it chooses every value, and none.
+    every: &'static str,
+    nothing: &'static str,
+    none: &'static str,
+    search: &'static str,
+    /// The search of the rows: its name and what it searches.
+    find: &'static str,
+    find_placeholder: &'static str,
+    /// The button that brings back the default filter, at the end of the
+    /// row, and the number of rules shown, `{}` the number.
+    clear: &'static str,
+    shown: &'static str,
+    /// When the filter leaves no row, and the button that resets it.
+    no_match: &'static str,
+    reset: &'static str,
     empty: &'static str,
     /// Before and after the name of the source at `.`, in the local
     /// section of its visibility.
@@ -147,25 +169,27 @@ fn words(lang: &str) -> Words {
             untranslated: "无中文",
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
-            filter: "筛选",
+            legend: ["默认", "状态", "用途", "择一", "规定清单", "行末"],
+            legend_name: "图例",
+            use_meanings: ["：写进 agent 的指令", "：审查方按它审查"],
+            slots: "依次是默认、状态、指令、审查，没有的留空",
+            one_of_meaning: "规定清单恰好取其中一个选项",
+            another_option: "其他选项",
             view: "显示",
-            views: ["标题与规定", "标题", "规定"],
-            meanings: [
-                "已经生效。",
-                "在实际工作中试用，还没有定型。",
-                "还不用于实际工作。",
-                "由它页面上列出的规定取代。",
-                "已撤销，没有替代。",
-                "新的规定清单不必列出就有它。",
-                "规定清单要列出它才有。",
-                "规定清单不另选时得到的 one-of 选项。",
-                "本仓的规定清单有它。",
-                "本仓的规定清单没有它。",
-                "规定所在规定源的象限。",
-            ],
-            fields: ["规定源的类别", "用在", "也显示"],
-            show_off: "未启用的规定",
-            show_old: "已被取代与已废止的",
+            views: ["标题和要求", "标题", "要求"],
+            columns: ["编号", "规定"],
+            fields: ["状态", "默认", "用途", "领域", "象限", "规定清单"],
+            all: "全选",
+            every: "全部",
+            nothing: "无",
+            none: "不选",
+            search: "搜索领域",
+            find: "搜索",
+            find_placeholder: "编号、标题或要求",
+            clear: "清除筛选",
+            shown: "{} 条规定",
+            no_match: "没有符合筛选的规定。",
+            reset: "重置筛选",
             empty: "没有规定源。",
             here: ["本仓自己的规定就是规定源 ", "。"],
             enabled: "已启用",
@@ -205,25 +229,32 @@ fn words(lang: &str) -> Words {
                 "Local public",
                 "Local private",
             ],
-            filter: "Filter",
+            legend: ["Default", "Status", "Uses", "One of", "Rule set", "Row end"],
+            legend_name: "Legend",
+            use_meanings: [
+                ": goes into the agent's instructions",
+                ": a reviewer checks it",
+            ],
+            slots: "default, status, instructions, review, in this order; empty where a rule has none",
+            one_of_meaning: "the rule set takes exactly one option",
+            another_option: "Another option",
             view: "Show",
             views: ["Title and statement", "Title", "Statement"],
-            meanings: [
-                "In force.",
-                "Being tried on real work before it settles.",
-                "Not meant for real work yet.",
-                "Replaced by the rules its page names.",
-                "Withdrawn, with nothing in its place.",
-                "A new rule set gets it without listing it.",
-                "A rule set gets it only by listing it.",
-                "The option of a one-of that a rule set gets unless it chooses another.",
-                "This repository's rule set has it.",
-                "This repository's rule set does not have it.",
-                "The quadrant of the rule's source.",
+            columns: ["ID", "Rule"],
+            fields: [
+                "Status", "Default", "Uses", "Domain", "Quadrant", "Rule set",
             ],
-            fields: ["Kind of source", "Used in", "Also show"],
-            show_off: "rules not enabled",
-            show_old: "superseded and repealed",
+            all: "All",
+            every: "All",
+            nothing: "None",
+            none: "None",
+            search: "Search domains",
+            find: "Search",
+            find_placeholder: "ID, title or statement",
+            clear: "Clear filters",
+            shown: "{} rules",
+            no_match: "No rule matches the filter.",
+            reset: "Reset filter",
             empty: "No source.",
             here: ["This repository's own rules are source ", "."],
             enabled: "enabled",
@@ -277,11 +308,20 @@ const TOKENS: &str = include_str!("../assets/tokens.css");
 const STYLE: &str = include_str!("site.css");
 
 /// The Lucide icons the pages show (`assets/icons/lucide`).
+const ARROW_RIGHT_LEFT: &str = include_str!("../assets/icons/lucide/arrow-right-left.svg");
 const CHECK: &str = include_str!("../assets/icons/lucide/check.svg");
+const CHEVRON_DOWN: &str = include_str!("../assets/icons/lucide/chevron-down.svg");
+const CHEVRON_RIGHT: &str = include_str!("../assets/icons/lucide/chevron-right.svg");
 const CIRCLE: &str = include_str!("../assets/icons/lucide/circle.svg");
+const CIRCLE_CHECK: &str = include_str!("../assets/icons/lucide/circle-check.svg");
 const CIRCLE_DOT: &str = include_str!("../assets/icons/lucide/circle-dot.svg");
-const FUNNEL: &str = include_str!("../assets/icons/lucide/funnel.svg");
+const CIRCLE_SLASH: &str = include_str!("../assets/icons/lucide/circle-slash.svg");
+const CORNER_DOWN_RIGHT: &str = include_str!("../assets/icons/lucide/corner-down-right.svg");
+const FLASK_CONICAL: &str = include_str!("../assets/icons/lucide/flask-conical.svg");
 const LANGUAGES: &str = include_str!("../assets/icons/lucide/languages.svg");
+const PENCIL: &str = include_str!("../assets/icons/lucide/pencil.svg");
+const SCAN_EYE: &str = include_str!("../assets/icons/lucide/scan-eye.svg");
+const SCROLL_TEXT: &str = include_str!("../assets/icons/lucide/scroll-text.svg");
 
 /// An icon's SVG on one line.
 fn one_line(svg: &str) -> String {
@@ -535,13 +575,102 @@ fn head(title: &str, lang: &str, class: &str, switch: &str) -> String {
     )
 }
 
-/// The ways the index shows a rule, each the value of its radio button
-/// and of `view` in the address: its title and statement, its title, its
-/// statement.
+/// The fields of the index's filter, in the order of their menus: each
+/// one's name in the address and in its items' `data-` attribute.
+const FIELDS: [&str; 6] = ["status", "default", "uses", "domain", "quadrant", "enabled"];
+
+const STATUSES: [Status; 5] = [
+    Status::Active,
+    Status::Trial,
+    Status::Draft,
+    Status::Superseded,
+    Status::Repealed,
+];
+
+/// The ways the index shows a rule, its value in the address and the
+/// radio button's: its title and statement, its title, its statement.
 const VIEWS: [&str; 3] = ["both", "title", "statement"];
 
-/// The script of the index: the view in the address and kept for the next
-/// index opened.
+/// A row of the index: a rule or a one-of, with its options, and the
+/// domains above it, outermost first; `under` when its parent is a rule.
+struct Item<'a> {
+    node: &'a Node,
+    groups: Vec<&'a Node>,
+    under: bool,
+}
+
+/// The rows of a node and of the nodes below it in its own source, in
+/// the order of the tree: a domain is no row, but the group of those
+/// below it; a one-of's options are in its row, and what stands below
+/// them follows it.
+fn items<'a>(
+    source: &'a Source,
+    node: &'a Node,
+    groups: &[&'a Node],
+    under: bool,
+    out: &mut Vec<Item<'a>>,
+) {
+    match node.kind {
+        Kind::Domain => {
+            let mut inner = groups.to_vec();
+            inner.push(node);
+            for child in source.children(node.id) {
+                items(source, child, &inner, false, out);
+            }
+        }
+        Kind::OneOf => {
+            out.push(Item {
+                node,
+                groups: groups.to_vec(),
+                under,
+            });
+            for option in source.children(node.id) {
+                if option.kind == Kind::Rule {
+                    for child in source.children(option.id) {
+                        items(source, child, groups, true, out);
+                    }
+                } else {
+                    items(source, option, groups, false, out);
+                }
+            }
+        }
+        Kind::Rule => {
+            out.push(Item {
+                node,
+                groups: groups.to_vec(),
+                under,
+            });
+            for child in source.children(node.id) {
+                items(source, child, groups, true, out);
+            }
+        }
+    }
+}
+
+/// The domains of a source in the order of the tree, each with its depth
+/// and the nearest domain above it.
+fn domains<'a>(
+    source: &'a Source,
+    node: &'a Node,
+    above: Option<&'a Node>,
+    depth: usize,
+    out: &mut Vec<(&'a Node, Option<&'a Node>, usize)>,
+) {
+    let (above, depth) = if node.kind == Kind::Domain {
+        out.push((node, above, depth));
+        (Some(node), depth + 1)
+    } else {
+        (above, depth)
+    };
+    for child in source.children(node.id) {
+        domains(source, child, above, depth, out);
+    }
+}
+
+/// The script of the index: the filter and the view in the address, All
+/// and None, the counts, the domains below one checked or cleared with
+/// it, the search, the menus closing, the legend kept folded or open,
+/// and the groups the filter empties hidden.
 const SCRIPT: &str = include_str!("site.js");
 
 /// The script as the index inlines it, without its comments, which are
@@ -563,62 +692,17 @@ struct Site<'a> {
 }
 
 fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> Result<String, String> {
+    let site = Site { project, l, langs };
     let w = &l.w;
     let mut out = head(w.title, l.code, "list", switch);
     let _ = writeln!(out, "<h1>{}</h1>", w.title);
-    // The filter: a button that opens one row per field, its values as
-    // check boxes, joined by and; the style sheet hides what a clear
-    // box leaves out.
-    let checkbox = |id: &str, checked: bool, label: &str| {
-        let checked = if checked { " checked" } else { "" };
-        format!("<label><input type=\"checkbox\" id=\"show-{id}\"{checked}> {label}</label>")
-    };
-    let fields = [
-        QUADRANTS
-            .iter()
-            .map(|q| checkbox(q.class(), true, q.name(w)))
-            .collect::<String>(),
-        checkbox("instructions", true, w.use_names[0]) + &checkbox("review", true, w.use_names[1]),
-        checkbox("off", true, w.show_off) + &checkbox("old", false, w.show_old),
-    ];
-    // The views beside the filter: radio buttons, which the style sheet
-    // follows.
-    let _ = write!(
-        out,
-        "<div class=\"controls\">\n<fieldset class=\"views\"><legend>{}</legend>",
-        w.view
-    );
-    for (i, (view, name)) in VIEWS.iter().zip(w.views).enumerate() {
-        let checked = if i == 0 { " checked" } else { "" };
-        let _ = write!(
-            out,
-            "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
-        );
-    }
-    let _ = write!(
-        out,
-        "</fieldset>\n<details class=\"filter\"><summary>{}{}</summary>\n<div class=\"panel\">\n",
-        icon(FUNNEL, ""),
-        w.filter
-    );
-    for (field, values) in w.fields.iter().zip(&fields) {
-        let _ = writeln!(
-            out,
-            "<fieldset><legend>{field}</legend><span class=\"values\">{values}</span></fieldset>"
-        );
-    }
-    out.push_str("</div></details>\n</div>\n");
     out.push_str(&legend(w));
-    // The filters by quadrant, which the style sheet cannot list.
-    out.push_str("<style>");
-    for q in QUADRANTS {
-        let _ = write!(
-            out,
-            "body:has(#show-{0}:not(:checked)) section.{0}{{display:none}}",
-            q.class()
-        );
-    }
-    out.push_str("</style>\n");
+    out.push_str(&controls(project, l));
+    let _ = writeln!(
+        out,
+        "<p class=\"none\" hidden>{} <button type=\"button\" class=\"reset\">{}</button></p>",
+        w.no_match, w.reset
+    );
     // The source at `.` is global, and also this repository's own rules:
     // it is listed once, and the local section of its visibility points
     // to it.
@@ -654,40 +738,7 @@ fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> Result<St
         }
         for source in project.sources.iter().filter(|s| Quadrant::of(s) == q) {
             any = true;
-            // As in the compiled `AGENTS.md`: a git source by its address
-            // and commit, not the snapshot directory it is read from.
-            let place = match project.manifest.spec(&source.name) {
-                Some(spec) => match &spec.git {
-                    Some(git) => format!(
-                        "{}{}{}",
-                        git.address,
-                        w.at,
-                        git.commit.as_deref().unwrap_or("")
-                    ),
-                    None => spec.path.clone(),
-                },
-                None => source.path.clone(),
-            };
-            let params = if source.params.is_empty() {
-                String::new()
-            } else {
-                format!(
-                    "<a class=\"params\" href=\"{}\">{}</a>",
-                    params_page(&source.name).display(),
-                    w.parameters
-                )
-            };
-            let _ = writeln!(
-                out,
-                "<h3 id=\"source-{0}\">{0}<span class=\"place\">{1}</span>{params}</h3>\n<ul class=\"tree\">",
-                escape(&source.name),
-                escape(&place)
-            );
-            let site = Site { project, l, langs };
-            for node in source.nodes.values().filter(|n| n.parent.is_none()) {
-                tree(&site, source, node, 1, "", &mut out)?;
-            }
-            out.push_str("</ul>\n");
+            table(&site, source, &mut out)?;
         }
         if !any {
             let _ = writeln!(out, "<p>{}</p>", w.empty);
@@ -702,102 +753,254 @@ fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> Result<St
     Ok(out)
 }
 
-/// A node and the nodes below it in its own source, as list items, each
-/// a row: `lead`, the icon in front of its label, its link and its
-/// tags, and for a rule its statement. A domain's `level` (1 at the
-/// top) sets its heading and its bar (`docs/design/frontend.md`,
-/// Components, The tree of rules).
-fn tree(
-    site: &Site,
-    source: &Source,
-    node: &Node,
-    level: usize,
-    lead: &str,
-    out: &mut String,
-) -> Result<(), String> {
-    let (project, l) = (site.project, site.l);
-    let w = &l.w;
-    let key = Key::new(&source.name, node.id);
-    let children: Vec<&Node> = source.children(node.id).collect();
-    let mut class = Vec::new();
-    match node.kind {
-        // A domain below the second level looks like one at the second.
-        Kind::Domain => class.push(if level == 1 { "domain d1" } else { "domain d2" }),
-        // A one-of is a box that holds its options, the default marked
-        // (`docs/design/rule-config.md`, No rule under a rule), lighter
-        // when none of them is in use.
-        Kind::OneOf => {
-            class.push("one-of");
-            if !children.iter().any(|c| in_use(project, source, c)) {
-                class.push("unset");
-            }
-        }
-        Kind::Rule => {}
-    }
-    if matches!(node.status, Status::Superseded | Status::Repealed) {
-        class.push("old");
-    }
-    if node.kind == Kind::Rule && !project.resolution.enabled.contains_key(&key) {
-        class.push("off");
-    }
-    if let Some(rule) = &node.rule {
-        class.push("has-statement");
-        class.push(match (rule.uses.instructions, rule.uses.review) {
-            (true, true) => "u-ir",
-            (false, true) => "u-r",
-            _ => "u-i",
-        });
-    }
-    let class = match class.as_slice() {
-        [] => String::new(),
-        c => format!(" class=\"{}\"", c.join(" ")),
+/// A source in the index: its name, where it is read from and the link
+/// to its parameters, then the table of its rules under a head, in
+/// blocks of the rows of one group, each led by the group's row
+/// (`docs/design/frontend.md`, Components, The table of rules).
+fn table(site: &Site, source: &Source, out: &mut String) -> Result<(), String> {
+    let (project, w) = (site.project, &site.l.w);
+    // As in the compiled `AGENTS.md`: a git source by its address and
+    // commit, not the snapshot directory it is read from.
+    let place = match project.manifest.spec(&source.name) {
+        Some(spec) => match &spec.git {
+            Some(git) => format!(
+                "{}{}{}",
+                git.address,
+                w.at,
+                git.commit.as_deref().unwrap_or("")
+            ),
+            None => spec.path.clone(),
+        },
+        None => source.path.clone(),
     };
-    let mut title = link(project, &key, "", l.code);
-    if node.kind == Kind::Domain {
-        let h = 3 + level.min(2);
-        title = format!("<h{h}>{title}</h{h}>");
-    }
-    let _ = write!(out, "<li{class}>");
-    if node.kind == Kind::OneOf {
-        let _ = write!(out, "<span class=\"one-of-label\">{}</span>", w.one_of);
-    }
-    let statement = match &node.rule {
-        Some(rule) => statement(site, &key, node, &rule.statement)?,
-        None => String::new(),
+    let params = if source.params.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "<a class=\"params\" href=\"{}\">{}</a>",
+            params_page(&source.name).display(),
+            w.parameters
+        )
     };
-    let _ = write!(
+    let _ = writeln!(
         out,
-        "<div class=\"row\">{lead}{title}<span class=\"tags\">{}{}</span>{statement}</div>",
-        tags(project, l, &key, node, "", true),
-        mark(project, w, &key, false)
+        "<div class=\"source\">\n<h3 id=\"source-{0}\">{0}<span class=\"place\">{1}</span>{params}</h3>\n<div class=\"table\">\n<div class=\"head\" aria-hidden=\"true\"><span class=\"ref\">{2}</span><span>{3}</span></div>",
+        escape(&source.name),
+        escape(&place),
+        w.columns[0],
+        w.columns[1]
     );
-    if !children.is_empty() {
-        out.push_str("\n<ul class=\"tree\">\n");
-        for child in children {
-            // An option of a one-of is led by a circle, the default by
-            // one with a dot.
-            let lead = match node.kind {
-                Kind::OneOf if node.default_child == Some(child.id) => icon(CIRCLE_DOT, "default"),
-                Kind::OneOf => icon(CIRCLE, ""),
-                _ => String::new(),
-            };
-            let level = if node.kind == Kind::Domain {
-                level + 1
-            } else {
-                level
-            };
-            tree(site, source, child, level, &lead, out)?;
-        }
-        out.push_str("</ul>");
+    let mut rows = Vec::new();
+    for node in source.nodes.values().filter(|n| n.parent.is_none()) {
+        items(source, node, &[], false, &mut rows);
     }
-    out.push_str("</li>\n");
+    let mut previous: Option<&[&Node]> = None;
+    for item in &rows {
+        if !previous.is_some_and(|p| same(p, &item.groups)) {
+            if previous.is_some() {
+                out.push_str("</div>\n");
+            }
+            out.push_str("<div class=\"block\">\n");
+            out.push_str(&group(site, source, &item.groups));
+            previous = Some(&item.groups);
+        }
+        out.push_str(&row(site, source, item)?);
+    }
+    if previous.is_some() {
+        out.push_str("</div>\n");
+    }
+    out.push_str("</div>\n</div>\n");
     Ok(())
 }
 
-/// A rule's statement in the index, at the end of its row: in the page's
-/// language or, marked with `languages`, in the rule's own, its
-/// placeholders filled with the values the compiled `AGENTS.md` has.
-/// Fails when it cites a rule or provision that is not there.
+fn same(a: &[&Node], b: &[&Node]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).all(|(x, y)| x.id == y.id)
+}
+
+/// The row of a group: the innermost domain's label, the path from the
+/// source, its quadrant and name, through the domains, the whole a link
+/// to the innermost domain's page, and in the first place of the marks
+/// whether the defaults enable that domain; a band, the darker for a
+/// group of the first level.
+fn group(site: &Site, source: &Source, groups: &[&Node]) -> String {
+    let (project, l) = (site.project, site.l);
+    let chevron = icon(CHEVRON_RIGHT, "");
+    let mut path = quadrant_tag(&l.w, source);
+    let mut names = Vec::new();
+    for domain in groups {
+        let key = Key::new(&source.name, domain.id);
+        let (title, title_lang) = pick_lang(&domain.title, domain, l.code);
+        let title = filled(project, &key, title, true, title_lang);
+        let _ = write!(
+            path,
+            "{chevron}<span class=\"group-part\"{}>{}</span>",
+            lang_attr(title_lang, l.code),
+            escape(&title)
+        );
+        names.push(title);
+    }
+    // Under the source's `h3`, one level deeper per group of the path, to
+    // `h6` at most.
+    let level = (3 + groups.len()).min(6);
+    let band = if groups.len() > 1 { "deep" } else { "top" };
+    let dot = groups.last().map_or_else(
+        || "<span class=\"mark\"></span>".to_owned(),
+        |d| dot(&l.w, d),
+    );
+    let marks = format!(
+        "<span class=\"marks\">{dot}<span class=\"mark\"></span><span class=\"mark\"></span><span class=\"mark\"></span></span>"
+    );
+    match groups.last() {
+        Some(domain) => {
+            let key = Key::new(&source.name, domain.id);
+            format!(
+                "<h{level} class=\"group {band}\"><a href=\"{}\" aria-label=\"{} {}\"><span class=\"ref\">{}</span><span class=\"group-path\">{path}</span></a>{marks}</h{level}>\n",
+                page(&key).display(),
+                escape(&key.to_string()),
+                escape(&names.join(", ")),
+                escape(&key.to_string()),
+            )
+        }
+        None => format!(
+            "<h{level} class=\"group {band}\"><span class=\"ref\"></span><span class=\"group-path\">{path}</span>{marks}</h{level}>\n"
+        ),
+    }
+}
+
+/// A rule's or a one-of's row, its values for the filter in `data-`
+/// attributes and its text, for the search, in `data-text`; a one-of a
+/// box of its own row and its options'.
+fn row(site: &Site, source: &Source, item: &Item) -> Result<String, String> {
+    let project = site.project;
+    let node = item.node;
+    let key = Key::new(&source.name, node.id);
+    let options: Vec<&Node> = if node.kind == Kind::OneOf {
+        source.children(node.id).collect()
+    } else {
+        Vec::new()
+    };
+    // A one-of is used as its options are.
+    let uses = |n: &Node| {
+        n.rule
+            .as_ref()
+            .map(|r| (r.uses.instructions, r.uses.review))
+    };
+    let (instructions, review) = uses(node).unwrap_or_else(|| {
+        options
+            .iter()
+            .filter_map(|o| uses(o))
+            .fold((false, false), |(i, r), (oi, or)| (i || oi, r || or))
+    });
+    let names: Vec<&str> = [(instructions, "instructions"), (review, "review")]
+        .into_iter()
+        .filter_map(|(on, name)| on.then_some(name))
+        .collect();
+    let enabled = match node.kind {
+        Kind::OneOf => in_use(project, source, node),
+        _ => project.resolution.enabled.contains_key(&key),
+    };
+    let domain = item
+        .groups
+        .last()
+        .map(|d| Key::new(&source.name, d.id).to_string())
+        .unwrap_or_default();
+    let mut out = format!(
+        "<div class=\"item\" data-status=\"{}\" data-default=\"{}\" data-uses=\"{}\" data-domain=\"{}\" data-enabled=\"{}\">",
+        status(node.status),
+        on_off(node.default == Some(Switch::On)),
+        names.join(" "),
+        escape(&domain),
+        on_off(enabled)
+    );
+    let lead = if item.under {
+        icon(CORNER_DOWN_RIGHT, "")
+    } else {
+        String::new()
+    };
+    let own = entry(site, &key, node, &lead, (instructions, review))?;
+    if node.kind != Kind::OneOf {
+        out.push_str(&own);
+        out.push_str("</div>\n");
+        return Ok(out);
+    }
+    let id = format!("one-of-{}-{}", escape(&source.name), node.id);
+    let unset = if in_use(project, source, node) {
+        ""
+    } else {
+        " unset"
+    };
+    let _ = write!(
+        out,
+        "<div class=\"one-of{unset}\" role=\"group\" aria-labelledby=\"{id}\"><span class=\"one-of-label\" id=\"{id}\">{}</span>{own}<ul class=\"options\">",
+        site.l.w.one_of
+    );
+    for option in options {
+        let default = node.default_child == Some(option.id);
+        let (class, lead) = if default {
+            (" class=\"default\"", icon(CIRCLE_DOT, "default"))
+        } else {
+            ("", icon(CIRCLE, ""))
+        };
+        let uses = uses(option).unwrap_or((false, false));
+        let option_key = Key::new(&source.name, option.id);
+        let _ = write!(
+            out,
+            "<li{class}>{}</li>",
+            entry(site, &option_key, option, &lead, uses)?
+        );
+    }
+    out.push_str("</ul></div></div>\n");
+    Ok(out)
+}
+
+fn on_off(on: bool) -> &'static str {
+    if on { "on" } else { "off" }
+}
+
+/// The cells of a row: the label; `lead`, the title, with its whole text
+/// on hover, and for a rule its statement; the four places of the marks;
+/// and for a rule whether the rule set enables it. The title's link
+/// covers the row.
+fn entry(
+    site: &Site,
+    key: &Key,
+    node: &Node,
+    lead: &str,
+    uses: (bool, bool),
+) -> Result<String, String> {
+    let (project, l) = (site.project, site.l);
+    let w = &l.w;
+    let (title, title_lang) = pick_lang(&node.title, node, l.code);
+    let title = escape(&filled(project, key, title, true, title_lang));
+    let default_option = match switch(project, w, key, node) {
+        Some(mark @ Mark::DefaultOption(_)) => mark.tag(),
+        _ => String::new(),
+    };
+    let (class, statement) = match &node.rule {
+        Some(rule) => (
+            "entry has-statement",
+            statement(site, key, node, &rule.statement)?,
+        ),
+        None => ("entry", String::new()),
+    };
+    let enabled = if node.kind == Kind::Rule {
+        enabled(project, l, key, "")
+    } else {
+        String::new()
+    };
+    Ok(format!(
+        "<div class=\"{class}\"><span class=\"ref\">{}</span><span class=\"rule-title\">{lead}<span class=\"rule-main\"><span class=\"rule-head\"><a class=\"rule-text\" href=\"{}\"><span class=\"title\"{} title=\"{title}\">{title}</span></a>{default_option}</span>{statement}</span></span>{}<span class=\"rule-enabled\">{enabled}</span></div>",
+        escape(&key.to_string()),
+        page(key).display(),
+        lang_attr(title_lang, l.code),
+        marks(w, node, uses)
+    ))
+}
+
+/// A rule's statement in the index, in the page's language or, marked
+/// with `languages`, in the rule's own; its placeholders filled with the
+/// values the compiled `AGENTS.md` has. Fails when it cites a rule or
+/// provision that is not there.
 fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Result<String, String> {
     let l = site.l;
     let (text, text_lang) = pick_lang(text, node, l.code);
@@ -817,6 +1020,252 @@ fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Result<String,
         l.w.untranslated,
         l.code
     ))
+}
+
+/// Whether the defaults enable a node, as a mark: a dot, filled or a
+/// ring, named by its words, or an empty place.
+fn dot(w: &Words, node: &Node) -> String {
+    let (class, name) = match node.default {
+        Some(Switch::On) => ("dot on", w.on_by_default),
+        Some(Switch::Off) => ("dot", w.off_by_default),
+        None => return "<span class=\"mark\"></span>".to_owned(),
+    };
+    format!(
+        "<span class=\"mark {class}\" role=\"img\" aria-label=\"{name}\" title=\"{name}\"></span>"
+    )
+}
+
+/// A row's marks in four places: whether the defaults enable it, its
+/// status, and its uses, each place empty without its mark.
+fn marks(w: &Words, node: &Node, (instructions, review): (bool, bool)) -> String {
+    let mut out = String::from("<span class=\"marks\">");
+    out.push_str(&dot(w, node));
+    out.push_str(&status_mark(node.status));
+    for (on, name, svg) in [
+        (instructions, w.use_names[0], SCROLL_TEXT),
+        (review, w.use_names[1], SCAN_EYE),
+    ] {
+        out.push_str(&if on {
+            format!(
+                "<span class=\"mark use\" role=\"img\" aria-label=\"{name}\" title=\"{name}\">{}</span>",
+                icon(svg, "")
+            )
+        } else {
+            "<span class=\"mark\"></span>".to_owned()
+        });
+    }
+    out.push_str("</span>");
+    out
+}
+
+/// A status as its icon in its color, beside its word.
+fn status_icon(s: Status) -> String {
+    let svg = match s {
+        Status::Active => CIRCLE_CHECK,
+        Status::Trial => FLASK_CONICAL,
+        Status::Draft => PENCIL,
+        Status::Superseded => ARROW_RIGHT_LEFT,
+        Status::Repealed => CIRCLE_SLASH,
+    };
+    format!(
+        "<span class=\"mark status-{}\">{}</span>",
+        status(s),
+        icon(svg, "")
+    )
+}
+
+/// A status as its icon alone, named by its word.
+fn status_mark(s: Status) -> String {
+    let word = status(s);
+    status_icon(s).replacen(
+        "\">",
+        &format!("\" role=\"img\" aria-label=\"{word}\" title=\"{word}\">"),
+        1,
+    )
+}
+
+/// A value of a field of the filter: its key, its label as HTML, whether
+/// the default filter chooses it, and for a domain the nearest domain
+/// above it and its depth.
+struct Value {
+    key: String,
+    html: String,
+    checked: bool,
+    above: Option<String>,
+    depth: usize,
+}
+
+/// The controls above the tables: the switch between the three views,
+/// then a menu of check boxes per field of the filter, and the style
+/// sheet that hides the rows a clear box leaves out, so that the filter
+/// works without the script.
+fn controls(project: &Project, l: &Lang) -> String {
+    let w = &l.w;
+    // The search, which needs the script, comes first; the view and the
+    // menus, each under its name; then Clear filters, which needs the
+    // script too; under the row, how many rules are shown.
+    let mut out = format!(
+        "<div class=\"controls\">\n<label class=\"control find\" hidden><span class=\"control-label\">{}</span><input type=\"search\" name=\"q\" placeholder=\"{}\" autocomplete=\"off\"></label>\n<fieldset class=\"control views\"><legend class=\"control-label\">{}</legend><span class=\"segments\">",
+        w.find, w.find_placeholder, w.view
+    );
+    for (i, (view, name)) in VIEWS.iter().zip(w.views).enumerate() {
+        let checked = if i == 0 { " checked" } else { "" };
+        let _ = write!(
+            out,
+            "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
+        );
+    }
+    out.push_str("</span></fieldset>\n");
+    let plain = |key: &str, html: String| Value {
+        key: key.to_owned(),
+        html,
+        checked: true,
+        above: None,
+        depth: 0,
+    };
+    let mut fields: Vec<Vec<Value>> = Vec::new();
+    fields.push(
+        STATUSES
+            .iter()
+            .map(|&s| Value {
+                checked: !matches!(s, Status::Superseded | Status::Repealed),
+                ..plain(status(s), format!("{}{}", status_icon(s), status(s)))
+            })
+            .collect(),
+    );
+    fields.push(vec![
+        plain(
+            "on",
+            format!("<span class=\"mark dot on\"></span>{}", w.on_by_default),
+        ),
+        plain(
+            "off",
+            format!("<span class=\"mark dot\"></span>{}", w.off_by_default),
+        ),
+    ]);
+    fields.push(vec![
+        plain(
+            "instructions",
+            format!("{}{}", icon(SCROLL_TEXT, ""), w.use_names[0]),
+        ),
+        plain(
+            "review",
+            format!("{}{}", icon(SCAN_EYE, ""), w.use_names[1]),
+        ),
+    ]);
+    let mut list = Vec::new();
+    for source in project.sources.iter() {
+        let mut found = Vec::new();
+        for node in source.nodes.values().filter(|n| n.parent.is_none()) {
+            domains(source, node, None, 0, &mut found);
+        }
+        for (domain, above, depth) in found {
+            let key = Key::new(&source.name, domain.id);
+            let (title, title_lang) = pick_lang(&domain.title, domain, l.code);
+            let title = filled(project, &key, title, true, title_lang);
+            let html = format!(
+                "<span class=\"ref\">{}</span><span{}>{}</span>",
+                escape(&key.to_string()),
+                lang_attr(title_lang, l.code),
+                escape(&title)
+            );
+            list.push(Value {
+                above: above.map(|a| Key::new(&source.name, a.id).to_string()),
+                depth,
+                ..plain(&key.to_string(), html)
+            });
+        }
+    }
+    fields.push(list);
+    fields.push(
+        QUADRANTS
+            .iter()
+            .map(|q| plain(q.class(), q.name(w).to_owned()))
+            .collect(),
+    );
+    fields.push(vec![
+        plain("on", enabled_tag(w.enabled, true)),
+        plain("off", enabled_tag(w.not_enabled, false)),
+    ]);
+    let mut style = String::from("<style>");
+    for ((field, label), values) in FIELDS.iter().zip(w.fields).zip(&fields) {
+        // What the menu chooses: All, or how many of its values.
+        let chosen = values.iter().filter(|v| v.checked).count();
+        let shown = if chosen == values.len() {
+            w.every.to_owned()
+        } else {
+            format!("{chosen}/{}", values.len())
+        };
+        let _ = write!(
+            out,
+            "<div class=\"control\"><span class=\"control-label\" id=\"label-{field}\">{label}</span><details class=\"menu\" data-field=\"{field}\" data-all=\"{}\" data-none=\"{}\"><summary aria-labelledby=\"label-{field} value-{field}\" aria-controls=\"menu-{field}\"><span class=\"value\" id=\"value-{field}\">{shown}</span>{}</summary>\n<div class=\"menu-panel\" id=\"menu-{field}\" role=\"group\" aria-label=\"{label}\">",
+            w.every,
+            w.nothing,
+            icon(CHEVRON_DOWN, "")
+        );
+        if *field == "domain" {
+            let _ = write!(
+                out,
+                "<input type=\"search\" class=\"search\" placeholder=\"{}\" aria-label=\"{}\" hidden>",
+                w.search, w.search
+            );
+        }
+        let _ = write!(
+            out,
+            "<span class=\"all\" hidden><button type=\"button\" data-all=\"true\">{}</button><button type=\"button\" data-all=\"false\">{}</button></span><span class=\"values\">",
+            w.all, w.none
+        );
+        for (i, v) in values.iter().enumerate() {
+            let (value, html, depth) = (&v.key, &v.html, v.depth);
+            let id = format!("f-{field}-{i}");
+            let checked = if v.checked { " checked" } else { "" };
+            let above = v
+                .above
+                .as_ref()
+                .map(|a| format!(" data-above=\"{}\"", escape(a)))
+                .unwrap_or_default();
+            let indent = if depth > 0 {
+                format!(" style=\"--indent: {depth}\"")
+            } else {
+                String::new()
+            };
+            let _ = write!(
+                out,
+                "<label{indent}><input type=\"checkbox\" id=\"{id}\" name=\"{field}\" value=\"{}\"{above}{checked}>{html}</label>",
+                escape(value)
+            );
+            let hidden = format!("body:has(#{id}:not(:checked))");
+            match *field {
+                "quadrant" => {
+                    let _ = write!(style, "{hidden} section.{value}{{display:none}}");
+                }
+                // A rule for both uses goes only when both are cleared.
+                "uses" => {
+                    let _ = write!(
+                        style,
+                        "{hidden} .item[data-uses=\"{value}\"]{{display:none}}"
+                    );
+                }
+                _ => {
+                    let _ = write!(
+                        style,
+                        "{hidden} .item[data-{field}=\"{}\"]{{display:none}}",
+                        escape(value)
+                    );
+                }
+            }
+        }
+        out.push_str("</span></div></details></div>\n");
+    }
+    style.push_str(
+        "body:has(#f-uses-0:not(:checked)):has(#f-uses-1:not(:checked)) .item[data-uses=\"instructions review\"]{display:none}",
+    );
+    let _ = write!(
+        out,
+        "<button type=\"button\" class=\"clear\" hidden>{}</button>\n</div>\n<p class=\"shown\" data-words=\"{}\" hidden></p>\n{style}</style>\n",
+        w.clear, w.shown
+    );
+    out
 }
 
 /// Whether the rule set uses a node: an enabled rule, a domain or
@@ -846,46 +1295,49 @@ fn link(project: &Project, key: &Key, up: &str, lang: &str) -> String {
     )
 }
 
-/// The quadrant of a node's source, and with `named` the source's name:
-/// the class gives the mark its color, and the words say it without one.
-fn mark(project: &Project, w: &Words, key: &Key, named: bool) -> String {
-    let Some(source) = project.sources.source(&key.source) else {
-        return String::new();
-    };
+/// The quadrant of a source and its name: the class gives the mark its
+/// color, and the words say it without one.
+fn quadrant_tag(w: &Words, source: &Source) -> String {
     let q = Quadrant::of(source);
-    let name = if named {
-        format!(" · {}", escape(&source.name))
-    } else {
-        String::new()
-    };
-    format!("<span class=\"q {}\">{}{name}</span>", q.class(), q.name(w))
+    format!(
+        "<span class=\"q {}\">{} · {}</span>",
+        q.class(),
+        q.name(w),
+        escape(&source.name)
+    )
 }
 
-/// A node's status and, for a rule, what this rule set does with it;
-/// unless `dense`, as in the tree, also its kind. Each fact has its own
-/// form (`docs/design/frontend.md`, Components, Tags): the status a
-/// pill, a default switch a dot, which in the tree stands alone with
-/// its word as its name.
-fn tags(project: &Project, l: &Lang, key: &Key, node: &Node, up: &str, dense: bool) -> String {
+/// On a node's page, its kind unless it is a rule, its status and
+/// whether the defaults enable it, and for a rule what this rule set does
+/// with it. Each fact has its own form (`docs/design/frontend.md`,
+/// Components, Tags): the status a pill, a default switch a dot.
+fn tags(project: &Project, l: &Lang, key: &Key, node: &Node) -> String {
     let w = &l.w;
     let mut out = String::new();
-    if node.kind != Kind::Rule && !dense {
+    if node.kind != Kind::Rule {
         let _ = write!(out, "<span class=\"kind\">{}</span>", kind(w, node.kind));
     }
     out.push_str(&status_tag(node.status));
     if let Some(mark) = switch(project, w, key, node) {
-        out.push_str(&mark.tag(dense));
+        out.push_str(&mark.tag());
     }
     if node.kind == Kind::Rule {
-        let res = &project.resolution;
-        let what = match res.overridden.get(key) {
-            Some(by) => format!("{}{}", w.overridden_by, link(project, by, up, l.code)),
-            None if res.enabled.contains_key(key) => w.enabled.to_owned(),
-            None => w.not_enabled.to_owned(),
-        };
-        out.push_str(&enabled_tag(&what, res.in_force(key)));
+        out.push_str(&enabled(project, l, key, "../"));
     }
     out
+}
+
+/// What this rule set does with a rule, from a page `up` below the
+/// directory of its language: enables it, leaves it out, or has another
+/// rule override it.
+fn enabled(project: &Project, l: &Lang, key: &Key, up: &str) -> String {
+    let (w, res) = (&l.w, &project.resolution);
+    let what = match res.overridden.get(key) {
+        Some(by) => format!("{}{}", w.overridden_by, link(project, by, up, l.code)),
+        None if res.enabled.contains_key(key) => w.enabled.to_owned(),
+        None => w.not_enabled.to_owned(),
+    };
+    enabled_tag(&what, res.in_force(key))
 }
 
 fn status_tag(s: Status) -> String {
@@ -905,35 +1357,79 @@ fn enabled_tag(what: &str, on: bool) -> String {
     }
 }
 
-/// The legend above the tree: each mark as the tree draws it, and what
-/// it means.
+/// The legend above the tables, after Ruff's, open until the reader
+/// folds it: a box of a line per kind of mark, its name in a column,
+/// then each mark as the rows draw it with its word, the defaults first
+/// as in a row.
 fn legend(w: &Words) -> String {
-    let marks = [
-        Status::Active,
-        Status::Trial,
-        Status::Draft,
-        Status::Superseded,
-        Status::Repealed,
-    ]
-    .into_iter()
-    .map(status_tag)
-    .chain([
-        Mark::Switch("on", w.on_by_default).tag(true),
-        Mark::Switch("off", w.off_by_default).tag(true),
-        Mark::DefaultOption(w.default_option).tag(true),
-        enabled_tag(w.enabled, true),
-        enabled_tag(w.not_enabled, false),
-        format!(
-            "<span class=\"q {}\">{}</span>",
-            Quadrant::GlobalPublic.class(),
-            Quadrant::GlobalPublic.name(w)
+    let [defaults, statuses, uses, one_of, enabled, places] = w.legend;
+    let item = |html: String| format!("<span class=\"legend-item\">{html}</span>");
+    let lines = [
+        (
+            defaults,
+            item(format!(
+                "<span class=\"mark dot on\"></span>{}",
+                w.on_by_default
+            )) + &item(format!(
+                "<span class=\"mark dot\"></span>{}",
+                w.off_by_default
+            )),
         ),
-    ]);
-    let mut out = String::from("<dl class=\"legend\">\n");
-    for (mark, meaning) in marks.zip(w.meanings) {
-        let _ = writeln!(out, "<div><dt>{mark}</dt><dd>{meaning}</dd></div>");
+        (
+            statuses,
+            STATUSES
+                .iter()
+                .map(|&s| item(format!("{}{}", status_icon(s), status(s))))
+                .collect::<String>(),
+        ),
+        (
+            uses,
+            [(SCROLL_TEXT, 0), (SCAN_EYE, 1)]
+                .into_iter()
+                .map(|(svg, i)| {
+                    item(format!(
+                        "<span class=\"mark use\">{}</span><span><strong>{}</strong>{}</span>",
+                        icon(svg, ""),
+                        w.use_names[i],
+                        w.use_meanings[i]
+                    ))
+                })
+                .collect(),
+        ),
+        (
+            one_of,
+            item(w.one_of_meaning.to_owned())
+                + &item(format!(
+                    "<span class=\"default-option\">{}{}</span>",
+                    icon(CIRCLE_DOT, ""),
+                    w.default_option
+                ))
+                + &item(format!(
+                    "<span class=\"option\">{}</span>{}",
+                    icon(CIRCLE, ""),
+                    w.another_option
+                )),
+        ),
+        (
+            enabled,
+            item(enabled_tag(w.enabled, true)) + &item(enabled_tag(w.not_enabled, false)),
+        ),
+        (places, w.slots.to_owned()),
+    ];
+    let mut out = format!(
+        "<details class=\"legend\" open><summary aria-controls=\"legend-list\">{}{}</summary>\n<dl id=\"legend-list\">\n",
+        icon(CHEVRON_RIGHT, ""),
+        w.legend_name
+    );
+    for (name, marks) in lines {
+        let class = if name == places {
+            " class=\"places\""
+        } else {
+            ""
+        };
+        let _ = writeln!(out, "<div{class}><dt>{name}</dt><dd>{marks}</dd></div>");
     }
-    out.push_str("</dl>\n");
+    out.push_str("</dl>\n</details>\n");
     out
 }
 
@@ -946,13 +1442,9 @@ enum Mark {
 }
 
 impl Mark {
-    /// The mark as a tag; when `dense`, as in the tree, a default switch
-    /// is its dot alone, the words its name.
-    fn tag(&self, dense: bool) -> String {
+    /// The mark as a tag: a default switch its dot before its words.
+    fn tag(&self) -> String {
         match *self {
-            Mark::Switch(class, word) if dense => format!(
-                "<span class=\"switch {class}\" role=\"img\" aria-label=\"{word}\" title=\"{word}\"></span>"
-            ),
             Mark::Switch(class, word) => format!("<span class=\"switch {class}\">{word}</span>"),
             Mark::DefaultOption(word) => format!(
                 "<span class=\"default-option\">{}{word}</span>",
@@ -1040,8 +1532,12 @@ fn node_page(
         "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p class=\"tag-line\">{}{}",
         escape(&key.to_string()),
         in_lang(&escape(title), title_lang, lang),
-        mark(project, w, key, true),
-        tags(project, l, key, node, "../", false)
+        project
+            .sources
+            .source(&key.source)
+            .map(|s| quadrant_tag(w, s))
+            .unwrap_or_default(),
+        tags(project, l, key, node)
     );
     if untranslated {
         let _ = write!(
@@ -1112,10 +1608,9 @@ fn node_page(
     Ok(out)
 }
 
-/// A rule's text, in `lang`, as HTML on a page `up` below the directory
-/// of its language: paragraphs, lists whose items start with `- `, and
-/// code in backticks; each citation of a rule a link to its page, each of
-/// a provision its label.
+/// A rule's text, in `lang`, as HTML: paragraphs, lists whose items
+/// start with `- `, and code in backticks; each citation of a rule a link
+/// to its page, each of a provision its label.
 fn text_html(
     project: &Project,
     labels: &Labels,
