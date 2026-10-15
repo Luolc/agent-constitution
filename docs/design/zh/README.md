@@ -1,4 +1,4 @@
-<!-- en-sha256: b269a828be6930cad1416e30d86b891248cb841ea9ada51ae868d3cdaa4d5d4e -->
+<!-- en-sha256: b1d760f238afce1f3b74f5aa11ecaf93ea730dd6ad2819f0dbd7d9a8552b9402 -->
 # agent-constitution 设计
 
 状态：草案。这是本仓唯一的一份设计，由下面列出的几个文件组成。宪法本身从它的版目录 `constitution/2026-10/` 下的 `index.toml` 和 `articles/` 构建成两个版本：[英文版](../../../constitution/2026-10/generated/constitution.en.md)、[中文版](../../../constitution/2026-10/generated/constitution.zh.md)；本设计只按 ID 引用宪法 (见[源文件格式的 ID 一节](source-formats.md#ids))，从不复述它的内容。
@@ -28,4 +28,4 @@
 - [statute 命令](statute-command.md)：编译与网站、命令与第一版、为什么用 Rust。
 - [规定源](rule-sources.md)：四类规定源 (全局或本仓、公开或私有)、哪些规定可以引用哪些、覆盖、子领域，以及从手写的指南切换过来；部分已实现。
 - [全局配置与 git 规定源](global-configuration.md)：家目录里 statute 的目录、全局配置、一个名字指哪个规定源、git 规定源和添加规定源；部分已实现。
-- [规定配置](rule-config.md)：本地规定的目录、语言这类参数、哪些领域和规定默认开启、规定用在哪里，以及规定不挂在规定下面；部分已实现。
+- [规定配置](rule-config.md)：本地规定的目录、语言这类参数、哪些领域和规定默认开启、规定用在哪里，以及规定不挂在规定下面；已实现。
