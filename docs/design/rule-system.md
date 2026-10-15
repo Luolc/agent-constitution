@@ -107,3 +107,6 @@ lands.
   file names the directory it applies to.
 - Rules at the user level: where a rule whose default level is the user
   level is chosen, where it is locked and where it is compiled to.
+- A switch that enables only stable rules: statute has none. Whether to
+  build one, and what it would do with a domain enabled for its stable
+  rules that also holds trial ones, is not decided.

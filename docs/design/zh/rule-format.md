@@ -1,4 +1,4 @@
-<!-- en-sha256: b32ff497073526279dce4e7d1aba041e73ff2970d8d1a0fe114f426e304912df -->
+<!-- en-sha256: aadb88d1fd658b7409cb6a71f19540f1e5f23400ad4ea6563fc2ef6da75dbe0b -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -18,7 +18,7 @@
 - 没有改变，就原地修改这条规定，修订号加一。改写措辞、增加一个例子、修复检查里的一个 bug：原来合规的仍然合规，原来违反的仍然违反。
 - 改变了，修改后的规定就取一个新 ID。旧规定标为被取代，写明取代它的规定 (拆成几条时写明这几条)，并永久留在规定源里。只有同一规定源的规定才能取代它 (见[规定源与引用](rule-sets.md#sources-and-references))。
 
-所以一条规定的 ID 始终代表同一项要求。修订号是每条规定各自的一个数字，从 1 起算；它与宪法的修订号无关。规定的状态是 `draft`、`trial`、`active`、`superseded` 或 `repealed` 之一。宪法还是草案时，每条规定都是 `draft`；宪法现行之后，新规定从 `trial` 开始，也就是在定型之前先在实际工作中试用 (见[试行规定](rule-checks.md#trial-rules))，`draft` 只留给还不打算用于实际工作的规定，例如 [检查程序](checkers.md) 里的金丝雀规定。规定从 `draft` 转为 `trial`，只改状态，不改什么算合规，所以和上面说的同类改动一样，原地修改，修订号加一。撤销而没有替代的规定为废止，它与被取代的规定一样，保留自己的 ID 和文件。
+所以一条规定的 ID 始终代表同一项要求。修订号是每条规定各自的一个数字，从 1 起算；它与宪法的修订号无关。规定的状态是 `draft`、`trial`、`active`、`superseded` 或 `repealed` 之一。宪法还是草案时，每条规定都是 `draft`；宪法现行之后，新规定从 `trial` 开始，也就是先在实际工作中试用，稳定之后再改为 `active` (两者的含义、由谁来改，见[试行规定](rule-checks.md#trial-rules))，`draft` 只留给还不打算用于实际工作的规定，例如 [检查程序](checkers.md) 里的金丝雀规定。规定从 `draft` 转为 `trial`，只改状态，不改什么算合规，所以和上面说的同类改动一样，原地修改，修订号加一。撤销而没有替代的规定为废止，它与被取代的规定一样，保留自己的 ID 和文件。
 
 只改规定译文的改动，修订号不变：修订号跟着原文和文字以外的字段走，改译文两样都不动 (见[规定文件格式](#rule-file-format) 里的「语言」)。锁文件除了记每条规定文件的 SHA-256，还记去掉译文之后的规定的 SHA-256，statute 靠它分清这两种改动 (见[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
 
@@ -134,7 +134,7 @@ it.
 - `[text.statement]`、`[text.reason]` 和 `[text.verification]`：正文的三部分 ([一条规定包含什么](#what-one-rule-holds))。
 - `[translations]` (可选)：每种译文语言一个键，原文语言不在其中；值是这份译文所依据的原文的 SHA-256。
 
-领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (one-of 都有，领域只在作为子领域或选项时有)、`default` (领域上是 `on` 或 `off`，作为 one-of 的选项时没有；one-of 上是它默认启用的那个选项的 ID)、`[title]`、`[applicability]` (只有领域有，可选)，以及有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
+领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (one-of 都有，领域只在作为子领域或选项时有)、`default` (领域上是 `on` 或 `off`，作为 one-of 的选项时没有；one-of 上是它默认启用的那个选项的 ID)、`[title]`、`[applicability]` (只有领域有，可选)，以及有译文时的 `[translations]`。它们没有正文、检查或别的元数据。它们的 `status` 只说节点本身，不说其中的规定 ([试行规定](rule-checks.md#trial-rules))。
 
 **语言。** 每段文字，即 `[title]`、`[applicability]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这个节点在这种语言里的每段文字 (规定是标题和全部三部分，领域是标题和 applicability，如果有的话)，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把文件里的每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同；转义写出的 `\r\n` 不是行尾，原样保留)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；有 applicability 的领域对 `title` 和 `applicability` 计算，连接方式相同，其他领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
 

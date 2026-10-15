@@ -42,8 +42,9 @@ is a number per rule, counted from 1; it has nothing to do with the
 revision of the constitution. A rule's status is one of `draft`,
 `trial`, `active`, `superseded` or `repealed`. `draft` is what every rule
 is while the constitution is a draft; once the constitution is active, a
-new rule starts as `trial`, a rule being tried on real work before it
-settles (see [Trial rules](rule-checks.md#trial-rules)), and `draft` stays only for a
+new rule starts as `trial`, a rule still being tried on real work, and
+moves to `active` once it is stable (what the two mean and who moves a
+rule are in [Trial rules](rule-checks.md#trial-rules)), and `draft` stays only for a
 rule that is not meant for real work yet, such as the canary rule in
 [Checkers](checkers.md). Moving a rule
 from `draft` to `trial` changes only its status, not what counts as
@@ -244,7 +245,8 @@ subdomain or an option), `default` (on a domain `on` or `off`, unless
 it is an option of a one-of; on a one-of the ID of the option it
 enables by default), `[title]`, `[applicability]` (a domain only, and
 optional) and, when they are translated, `[translations]`. They have no text,
-check or other metadata.
+check or other metadata. Their `status` is about the node alone, not
+its rules ([Trial rules](rule-checks.md#trial-rules)).
 
 **Languages.** Each text, `[title]`, `[applicability]` and the three parts, is a table whose
 keys are language codes, as in [Source formats](source-formats.md). The
