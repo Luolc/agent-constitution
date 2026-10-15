@@ -1,4 +1,4 @@
-<!-- en-sha256: 43577d6acda265c5e729d46ee1d661c72bc1e54255f0d88c1d9baeea235d42bc -->
+<!-- en-sha256: cceefdfb9d39d060a230983a775343f001ee0a0071001aa0c4f08a48192c4ff8 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -17,7 +17,7 @@
 
 在 `AGENTS.md` 所在的目录里，`statute compile` 还会写：
 
-- 启用的规定需要的每个 skill ([规定与 skill](rule-format.md#rules-and-skills))：把规定所在规定源里的 `skills/<name>/` 整个复制到 `.agents/skills/<name>/` (需要的两个 skill 同名、来自两个规定源时，命令失败)，加一个文件 `.statute-generated`，再建一个指向这份副本的软链 `.claude/skills/<name>`，目标写成相对路径 `../../.agents/skills/<name>`。每个 skill 各有一个软链，不给整个目录建一个，也不只链 `SKILL.md`；Claude Code 只从 `.claude/skills/` 读仓库的 skill (2026-10-14 读取)。只有 Unix 系统上才建软链：在别的系统上，规定清单需要 skill 时命令失败。skill 里只能有目录和普通文件；
+- 启用的规定需要的每个 skill ([规定与 skill](rule-format.md#rules-and-skills))：把规定所在规定源里的 `skills/<name>/` (本仓库自己的规定取仓库顶层的 `skills/`；但若某个规定源就是这个目录，如 `R = { path = "." }`，这些 skill 归该规定源，本仓库自己的规定没有 skill) 整个复制到 `.agents/skills/<name>/` (需要的两个 skill 同名、来自两个规定源时，命令失败)，加一个文件 `.statute-generated`，再建一个指向这份副本的软链 `.claude/skills/<name>`，目标写成相对路径 `../../.agents/skills/<name>`。每个 skill 各有一个软链，不给整个目录建一个，也不只链 `SKILL.md`；Claude Code 只从 `.claude/skills/` 读仓库的 skill (2026-10-14 读取)。只有 Unix 系统上才建软链：在别的系统上，规定清单需要 skill 时命令失败。skill 里只能有目录和普通文件；
 - `statute-checks.toml`：编译它的 statute 的版本，写成 `statute = "<version>"`，规定用到的内置检查就在这个二进制里；然后每条 `check = "command"` 的启用规定一张 `[[commands]]` 表，按 ID 排序，写明它的 `rule` (`"R42"`)、`run` 和 `tools`。这个文件随 statute 的版本变化。它放在仓库顶层，不放进 `.statute/`：它要提交，CI 要读，改动它时要和生成它的 `AGENTS.md` 放在一起审。
 
 每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，`statute-checks.toml` 里是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
