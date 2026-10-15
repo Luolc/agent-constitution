@@ -1,0 +1,43 @@
+id = 249
+slug = "write-to-a-person-in-the-set-language"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Write to a person in the language set for it"
+zh = "写给人的文字用为它设定的语言"
+
+[text.statement]
+en = "Write what you address to a person, such as replies, questions and reports, in {$language.communication}, whatever language their messages are in, and use it for the whole text, summaries and follow-up questions included."
+zh = "写给人的文字，如回复、提问和报告，用{$language.communication}写，不论对方的消息用什么语言；整段文字 (包括总结与追问) 都用这种语言。"
+
+[text.reason]
+en = '''
+The language set is the one the person chose to read ({@constitution:purpose}). The language of their latest message says less: a message may quote another text or be written in whatever language came to hand, and replies that followed it would change language from one turn to the next.
+'''
+zh = '''
+设定的语言是这个人自己选的阅读语言 ({@constitution:purpose})。对方最近一条消息的语言说明不了多少：消息可能引了别的文字，也可能随手用了哪种语言，回复跟着它走，语言就会一轮一轮地变。
+'''
+
+[text.verification]
+en = '''
+What an agent addresses to a person is what it writes for that person to read directly: its replies in a conversation, the questions it puts and the reports it gives, a message on a chat channel included. Text that goes into the repository, onto a work item or onto a pull request has rules of its own ({@rule:200}, {@rule:176}, {@rule:213}); a report that a tool posts as a comment on a work item is such text. The language the person writes in, the language rules or instructions are written in and that of earlier turns do not decide. Code, commands, paths, identifiers and quotations stay as they are.
+
+Violated when the body, a summary or a follow-up question of what an agent addresses to a person is in another language than the one set.
+'''
+zh = '''
+写给人的文字，指 agent 写来让这个人直接读的东西：它在对话里的回复、提出的问题和给出的报告，聊天频道里的消息也算。进仓库、进工作项或进 PR 的文字另有规定 ({@rule:200}、{@rule:176}、{@rule:213})；工具替 agent 发成工作项评论的报告属于这类文字。对方用什么语言写、规定或指令的原文语言、此前几轮对话的语言，都不决定所用的语言。其中的代码、命令、路径、标识符和引文保持原样。
+
+agent 写给人的文字，正文、总结或追问用的语言与设定的语言不同的，即为违反本规定。
+'''
+
+[translations]
+zh = "c6cb2974a7fc2b25f4a00ebb160ce9a2976a7d406e029a2a2258a7210c172d9f"
