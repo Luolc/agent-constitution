@@ -1187,7 +1187,8 @@ fn switch_state(project: &Project, sw: &Switches, key: &Key) -> String {
     let switch = match node.default {
         Some(statute::node::Switch::On) => "on by default",
         Some(statute::node::Switch::Off) => "off by default",
-        None => "off by default (it has no `default`)",
+        // An option of a one-of, or a rule that overrides another.
+        None => "without a `default` of its own",
     };
     if let Some(off) = sw
         .excluded(key)

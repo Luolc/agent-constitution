@@ -16,6 +16,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 2
 
 [title]
@@ -31,6 +32,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 2
 
 [title]
@@ -46,11 +48,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 4
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -89,11 +92,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = "team:7"
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -138,7 +142,7 @@ overrides = "team:8"
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -164,6 +168,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 4
 
 [title]
@@ -196,6 +201,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 10
 
 [title]
@@ -213,6 +219,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 20
 
 [title]
@@ -230,6 +237,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 99
 
 [title]
@@ -249,6 +257,7 @@ revision = 1
 kind = "domain"
 status = "draft"
 lang = "en"
+default = "off"
 parent = "team:7"
 
 [title]
@@ -306,7 +315,7 @@ overrides = "team:8"
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -332,10 +341,11 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -365,7 +375,7 @@ overrides = 10
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -395,7 +405,7 @@ overrides = 20
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -425,7 +435,7 @@ overrides = "seven"
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -455,7 +465,7 @@ overrides = ["team:8", "team:9"]
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -481,11 +491,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = "seven"
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -511,11 +522,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = true
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"
@@ -541,11 +553,12 @@ revision = 1
 kind = "rule"
 status = "draft"
 lang = "en"
+default = "off"
 parent = 10
 authority = ["alpha"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Node"

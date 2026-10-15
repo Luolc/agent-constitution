@@ -134,7 +134,11 @@ fn repo(name: &str) -> PathBuf {
         ),
         (
             "me/rules",
-            edit(rule(5, 1, ""), "parent = 1", "overrides = \"R2\""),
+            edit(
+                rule(5, 1, ""),
+                "parent = 1\ndefault = \"off\"",
+                "overrides = \"R2\"",
+            ),
         ),
     ];
     for (sub, (id, text)) in nodes {
@@ -333,7 +337,12 @@ fn the_private_layer_overrides_no_public_rule() {
     write(
         &dir,
         "me/rules/5.toml",
-        &edit(rule(5, 1, ""), "parent = 1", "overrides = \"R6\"").1,
+        &edit(
+            rule(5, 1, ""),
+            "parent = 1\ndefault = \"off\"",
+            "overrides = \"R6\"",
+        )
+        .1,
     );
     write_private(
         &dir,

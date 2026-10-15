@@ -8,16 +8,9 @@ use statute::resolve::{Reason, Resolution, resolve};
 use statute::source::Sources;
 
 mod common;
-use common::{domain, edit, one_of, rule, source};
+use common::{domain, edit, one_of, option, rule, source};
 
-/// The node with `default = <value>` after its `lang`.
-fn default(node: (u64, String), value: &str) -> (u64, String) {
-    edit(
-        node,
-        "lang = \"en\"",
-        &format!("lang = \"en\"\ndefault = {value}"),
-    )
-}
+use common::set_default as default;
 
 /// Domain 1, on: rule 2 on, rule 3 off, one-of 4 whose default is 5 of
 /// its children 5 and 6, and rule 9 off, which requires 2. Domain 10,
@@ -32,18 +25,18 @@ fn tree_files() -> Vec<(u64, String)> {
         default(domain(1), "\"on\""),
         default(rule(2, 1, ""), "\"on\""),
         default(rule(3, 1, ""), "\"off\""),
-        default(one_of(4, 1), "5"),
-        rule(5, 4, ""),
-        rule(6, 4, ""),
+        default(one_of(4, 1, 5), "5"),
+        option(5, 4, ""),
+        option(6, 4, ""),
         default(rule(7, 1, "requires = [14]"), "\"off\""),
         default(rule(9, 1, "requires = [2]"), "\"off\""),
         default(domain(10), "\"off\""),
         default(rule(11, 10, ""), "\"on\""),
         default(rule(12, 10, ""), "\"off\""),
         default(rule(13, 10, "requires = [11]"), "\"on\""),
-        default(one_of(14, 10), "15"),
-        rule(15, 14, ""),
-        rule(16, 14, ""),
+        default(one_of(14, 10, 15), "15"),
+        option(15, 14, ""),
+        option(16, 14, ""),
     ]
 }
 
@@ -129,6 +122,30 @@ fn domains_turns_on_a_domain_that_is_off() {
         Severity::Error,
         "`domains` names rule",
     );
+}
+
+#[test]
+fn domains_picks_a_domain_that_is_the_option_of_a_one_of() {
+    // Domain 20, on: one-of 21 whose default is domain 22 of its options
+    // 22 and 23, each with a rule on.
+    let domain_option = |id| edit(domain(id), "default = \"off\"", "parent = 21");
+    let s = source(&[
+        default(domain(20), "\"on\""),
+        one_of(21, 20, 22),
+        domain_option(22),
+        domain_option(23),
+        default(rule(24, 22, ""), "\"on\""),
+        default(rule(25, 23, ""), "\"on\""),
+    ]);
+    let enabled = |extra: &str| {
+        let mut diags = Diagnostics::default();
+        let m = manifest_with(extra, "{ path = \".\" }");
+        let res = resolve(&s, &m, 1, &mut diags);
+        assert!(diags.0.is_empty(), "{:#?}", diags.0);
+        res.enabled.keys().map(|k| k.id).collect::<Vec<_>>()
+    };
+    assert_eq!(enabled(""), [24]);
+    assert_eq!(enabled("domains = [\"R23\"]"), [25]);
 }
 
 #[test]

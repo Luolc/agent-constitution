@@ -234,9 +234,9 @@ Of [Rule configuration](rule-config.md), the rule files' `default`,
 default switches of a rule set are built, with `domains`, `exclude`,
 `local-rules` and a source entry's `defaults`, and what `add`,
 `remove`, `explain` (`--defaults` included) and the lock file do with
-them. Not built yet: picking an option of a one-of that is a domain
-through `domains`, `default` as a required field, parameters, and the
-marks of the sites.
+them; `default` is required where the rule files need it, and
+`check = "review"` fails. Not built yet: parameters, the one-of's
+rendering, and the marks of the sites.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the

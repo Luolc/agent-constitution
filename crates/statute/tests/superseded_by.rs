@@ -8,7 +8,7 @@ use statute::diag::Severity;
 use statute::source::Source;
 
 mod common;
-use common::{domain, edit, one_of, rule};
+use common::{domain, edit, empty_one_of, rule};
 
 #[derive(Deserialize)]
 struct Cases {
@@ -35,7 +35,7 @@ fn the_compilers_cases() {
         );
         let files = [
             domain(2),
-            one_of(3, 2),
+            empty_one_of(3, 2),
             rule(10, 2, ""),
             eleven,
             rule(12, 2, ""),

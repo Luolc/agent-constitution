@@ -1,4 +1,4 @@
-<!-- en-sha256: 938dbda189a010f07dfe7a02b26b575fc1056460ce49d5dbb7ae406566222eb9 -->
+<!-- en-sha256: bb3c178fe84c5b73393ffd0547f77a839c18d6fcec8f5e8608b8ed67024914f4 -->
 # 规定配置
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -194,12 +194,12 @@ default = "on"
 ```
 
 - 取 `on` 或 `off`。one-of 的子节点没有 `default`；由 one-of 指定其中一个作为默认 (见下)。
-- 带 `overrides` 的规定也没有 `default`：它顶替被覆盖的规定 ([覆盖](rule-sources.md#overrides))，进不进来由被覆盖的那条规定的位置决定；被覆盖的规定是 one-of 的选项时，它自己再写一个开关，就会与 one-of 的默认相矛盾。尚未实现：statute 还不会因为它写了 `default` 而报错。
+- 带 `overrides` 的规定也没有 `default`：它顶替被覆盖的规定 ([覆盖](rule-sources.md#overrides))，进不进来由被覆盖的那条规定的位置决定；被覆盖的规定是 one-of 的选项时，它自己再写一个开关，就会与 one-of 的默认相矛盾。
 - 只适用于部分仓库或部分工作方式的领域是 `off`，比如 Fleet 只适用于在多个 agent 之间分工的工作：规定清单开启它之前，它的规定一条也不进来。子领域的 `default` 在它的领域开启之后才起作用。
 - 一条规定只有属于最通用、放在哪里都最不容易出错的那一类时才是 `on`。依赖某个人的偏好或环境 (共用的机器、一个审查方、某种 CI 服务、某个工具) 的规定是 `off`。
-- 规定源的默认值开启的规定必须能单独解析，statute 会检查这一点。一条仍有效 (既没被取代也没被废止) 的规定，自己的 `default` 是 `on`，上面每个领域都是 `on`，途经的每个 one-of 的默认都是通往它的那个选项，它就是按默认启用的。这样的规定依赖的同一规定源里的每条规定，也必须按默认启用；依赖一个 one-of 算作满足。途中缺了某个 `default`，就不查。
+- 规定源的默认值开启的规定必须能单独解析，statute 会检查这一点。一条仍有效 (既没被取代也没被废止) 的规定，自己的 `default` 是 `on`，上面每个领域都是 `on`，途经的每个 one-of 的默认都是通往它的那个选项，它就是按默认启用的。这样的规定依赖的同一规定源里的每条规定，也必须按默认启用；依赖一个 one-of 算作满足。
 
-statute 读 `default`，做上面和下面的检查。它仍接受没有 `default` 的节点，按 `off` 算；也接受没有 `default` 的 one-of，这时它没有默认选项。把这个字段改为必填还没有实现。第一方的规定、领域和 one-of 都已经写了它：规定文件就是第一方默认值的记录，`statute explain --defaults` 列出一份规定清单从这些默认值得到什么 (见下)。
+statute 读 `default`，节点缺了它、或者在上面所说不该有的地方写了它，都报错，并做上面和下面的检查；还没有选项的 one-of 没有可以点名的 `default`。第一方的规定、领域和 one-of 都写了它：规定文件就是第一方默认值的记录，`statute explain --defaults` 列出一份规定清单从这些默认值得到什么 (见下)。
 
 **one-of 的默认。** 每个 one-of 都在一个必填字段里指定它的一个选项，即一个子节点，作为默认：
 
@@ -219,7 +219,7 @@ default = 81
 
 ### <a id="in-the-rule-set"></a>规定清单里
 
-已经实现，只有两处除外：通过 `domains` 选 one-of 的领域选项，以及网站上的标记 (见下)。
+已经实现，只有网站上的标记除外 (见下)。
 
 规定清单只列出与默认值不同的地方：
 
@@ -283,7 +283,7 @@ uses = ["instructions", "review"]
 - `review`：`statute check` 把这条规定连同理由和核验方法列给审查方。
 - 没写 `uses` 的规定取 `["instructions"]`；要 `review` 就写出来。空列表报错，这两个以外的值或者同一个值写两次也报错。领域和 one-of 没有 `uses`，参数不是节点，也没有。
 
-`uses` 与 `check` 是两回事。`check` 说的是由程序怎样检查这条规定：`builtin`、`command`，或者 `none`，即没有程序 ([规定文件格式](rule-format.md#rule-file-format))。`statute check` 运行每条有程序的启用规定的程序，不论它的 `uses`；列给审查方的只有 `uses` 含 `review` 的规定。`uses` 出现之前，`none` 叫 `review`；statute 仍把 `check = "review"` 当作 `none` 读，去掉这个旧名还没有实现。改 `uses` 不改变什么算合规，所以原地修改，修订号加一。
+`uses` 与 `check` 是两回事。`check` 说的是由程序怎样检查这条规定：`builtin`、`command`，或者 `none`，即没有程序 ([规定文件格式](rule-format.md#rule-file-format))。`statute check` 运行每条有程序的启用规定的程序，不论它的 `uses`；列给审查方的只有 `uses` 含 `review` 的规定。`uses` 出现之前，`none` 叫 `review`；写 `check = "review"` 时 statute 报错，提示改写成 `none`。改 `uses` 不改变什么算合规，所以原地修改，修订号加一。
 
 **怎么选。** 规定 R233 (`rules/233.toml`) 说明了：只有凭 diff 和 pull request 描述就能判断有没有违反的规定，才标 `review`；只有 agent 干活时需要知道的规定，才标 `instructions`。
 
@@ -312,11 +312,11 @@ uses = ["instructions", "review"]
 
 ## <a id="what-this-changes"></a>它改变什么
 
-已经实现：statute 读领域、规定和 one-of 上的 `default`、`uses` 与 `check = "none"`，做上面关于默认值和规定树的检查，编译出的 `AGENTS.md` 和 `statute check` 按 `uses` 来；`statute validate` ([命令与第一版](statute-command.md#the-command-and-the-first-version)) 对一个规定目录做这些检查。第一方规定都写了 `default` 和 `uses`，`rules/params.toml` 声明了它们的参数。
+已经实现：statute 读领域、规定和 one-of 上的 `default` (规定文件需要它的地方必填)、`uses` 与 `check = "none"`，`check = "review"` 报错，做上面关于默认值和规定树的检查，编译出的 `AGENTS.md` 和 `statute check` 按 `uses` 来；`statute validate` ([命令与第一版](statute-command.md#the-command-and-the-first-version)) 对一个规定目录做这些检查。第一方规定都写了 `default` 和 `uses`，`rules/params.toml` 声明了它们的参数。
 
 规定清单的默认开关也已经实现：`domains`、`exclude`、`local-rules` 和规定源条目的 `defaults`，默认值生效，锁文件里的 `by = "default"`，以及 `statute add`、`remove`、`explain` (包括 `--defaults`) 对它们的处理。
 
-还没有实现：`default` 改为必填、去掉 `check = "review"`；通过 `domains` 选 one-of 的领域选项；参数 (跳过 `params.toml` 之外)，它们在规定清单、锁文件和输出里的表；one-of 的渲染；以及网站对这些内容的显示。
+还没有实现：参数 (跳过 `params.toml` 之外)，它们在规定清单、锁文件和输出里的表；one-of 的渲染；以及网站对这些内容的显示。
 
 这部分设计改动了设计的以下部分：
 

@@ -280,12 +280,18 @@ fn the_compilers_source_cases() {
     let cases: SourceCases = toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
     assert!(!cases.cases.is_empty());
     for case in cases.cases {
+        // One-of 3 has node 20 as its default when that is its option.
+        let three = if case.node.contains("\nparent = 3\n") && !case.node.contains("\"one-of\"") {
+            common::one_of(3, 2, 20)
+        } else {
+            common::empty_one_of(3, 2)
+        };
         let dir = repo(
             "source-cases",
             &manifest("", ""),
             &[
                 ("rules", domain(2)),
-                ("rules", common::one_of(3, 2)),
+                ("rules", three),
                 ("rules", rule(10, 2, "")),
                 ("rules", (4, cases.subdomain.clone())),
                 ("rules", (20, case.node.clone())),

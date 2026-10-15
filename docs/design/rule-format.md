@@ -216,15 +216,11 @@ The fields:
   rule has a module in this repo's crate. `command`: an external command,
   given by two more fields, `run`, the command line, and `tools`, the list
   of tools it needs (`["uv"]`). `none`: there is no automatic check;
-  whether the reviewer gets the rule is up to `uses`. statute still
-  reads `review`, the older name of `none`; taking it out is not built
-  yet.
-- `default`: whether the rule is on by default, `on` or `off`; a child
-  of a one-of has none, nor does a rule with `overrides`, though statute
-  does not fail on one yet
-  ([Default switches](rule-config.md#default-switches)). Required, but
-  statute still accepts a node without it, which counts as `off`;
-  making it required is not built yet.
+  whether the reviewer gets the rule is up to `uses`. `review`, the
+  older name of `none`, fails.
+- `default`: required, whether the rule is on by default, `on` or
+  `off`; a child of a one-of has none, nor does a rule with `overrides`
+  ([Default switches](rule-config.md#default-switches)).
 - `uses` (optional, a rule only): where the rule goes, a non-empty list
   of `instructions` and `review`; `["instructions"]` when left out
   ([Where a rule is used](rule-config.md#where-a-rule-is-used)).

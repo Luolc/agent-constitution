@@ -242,8 +242,7 @@ impl<'a> Switches<'a> {
                 .any(|k| self.manifest.domains.contains(k))
     }
 
-    /// Whether a domain or a rule is on by its own `default`; one without
-    /// it is off, until every node carries one.
+    /// Whether a domain or a rule is on by its own `default`.
     pub fn switched_on(&self, key: &Key) -> bool {
         self.sources
             .get(key)
@@ -303,17 +302,18 @@ impl<'a> Switches<'a> {
             .map(|n| n.kind);
         match node.kind {
             Kind::Domain if self.manifest.domains.contains(key) => true,
-            Kind::Domain => {
-                let placed = match (&parent, parent_kind) {
-                    (None, _) => true,
-                    (Some(p), Some(Kind::Domain)) => self.is_on(p, depth + 1),
-                    (Some(p), Some(Kind::OneOf)) => {
-                        self.is_on(p, depth + 1) && self.chosen(p).as_ref() == Some(key)
-                    }
-                    _ => false,
-                };
-                placed && self.switched_on(key) && self.counts(key)
-            }
+            // An option of a one-of has no `default` of its own: it is on
+            // when its one-of is and has chosen it.
+            Kind::Domain => match (&parent, parent_kind) {
+                (Some(p), Some(Kind::OneOf)) => {
+                    self.is_on(p, depth + 1) && self.chosen(p).as_ref() == Some(key)
+                }
+                (None, _) => self.switched_on(key) && self.counts(key),
+                (Some(p), Some(Kind::Domain)) => {
+                    self.is_on(p, depth + 1) && self.switched_on(key) && self.counts(key)
+                }
+                _ => false,
+            },
             Kind::OneOf => parent.is_some_and(|p| self.is_on(&p, depth + 1)),
             Kind::Rule => false,
         }
@@ -676,7 +676,7 @@ pub fn resolve(
             diags.error(
                 file,
                 format!(
-                    "rule {} requires one-of {}, which names no default, and the rule set enables none of its children; add one of them to `rules`: {}",
+                    "rule {} requires one-of {}, whose default brings in no rule in force, and the rule set enables none of its children; add one of them to `rules`: {}",
                     label(sources, &rule),
                     label(sources, &one_of),
                     children_list(sources, &one_of)

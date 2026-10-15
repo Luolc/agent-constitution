@@ -393,8 +393,7 @@ default = "on"
   of the rule it overrides
   ([Overrides](rule-sources.md#overrides)), whose place decides whether
   it comes in, and when that rule is an option of a one-of, a switch of
-  its own would contradict the one-of's default. Not built yet: statute
-  does not yet fail on one.
+  its own would contradict the one-of's default.
 - A domain is `off` when it is for some repositories or some ways of
   working only, as Fleet is for work divided among agents: none of its
   rules comes in until a rule set turns it on. A subdomain's `default`
@@ -409,14 +408,12 @@ default = "on"
   domain above it is `on`, and every one-of on the way names as its
   default the option that leads to it. Each rule of the same source
   that such a rule requires must be enabled by default too; a required
-  one-of counts as met. Where a `default` on the way is missing,
-  nothing is checked.
+  one-of counts as met.
 
-statute reads `default` and makes the checks above and below. It still
-accepts a node without `default`, which counts as `off`, and a one-of
-without one, which then has no default option; making the field
-required is not built yet. Every first-party rule, domain and one-of
-carries it already: the rule files are the record of the first-party
+statute reads `default`, fails on a node that lacks it or has it where
+the list above says it has none, and makes the checks above and below;
+a one-of with no option yet has no `default` to name. Every first-party
+rule, domain and one-of carries it: the rule files are the record of the first-party
 defaults, and `statute explain --defaults` lists what a rule set gets
 from them (below).
 
@@ -452,8 +449,7 @@ requirement brings in.
 
 ### In the rule set
 
-Built, but for picking an option of a one-of that is a domain through
-`domains`, and for the marks of the sites (below).
+Built, but for the marks of the sites (below).
 
 The rule set lists only what differs from the defaults:
 
@@ -601,9 +597,8 @@ program: `builtin`, `command`, or `none` for no program at all
 ([Rule file format](rule-format.md#rule-file-format)). `statute check`
 runs the program of every enabled rule that has one, whatever its
 `uses`, and lists for review only the rules whose `uses` has `review`.
-`none` was called `review` before `uses` existed; statute still reads
-`check = "review"` as `none`, and taking that older name out is not
-built yet.
+`none` was called `review` before `uses` existed; statute fails on
+`check = "review"` and says to write `none`.
 Changing `uses` does not change what counts as compliant, so the rule
 is changed in place and its revision goes up by one.
 
@@ -678,8 +673,9 @@ a requirement; the lock file did not change.
 
 ## What this changes
 
-Built: statute reads `default` on domains, rules and one-ofs, `uses`
-and `check = "none"`, makes the checks of the defaults and of the tree
+Built: statute reads `default` on domains, rules and one-ofs, required
+where the rule files need it, `uses` and `check = "none"`, fails on
+`check = "review"`, makes the checks of the defaults and of the tree
 above, and follows `uses` in the compiled `AGENTS.md` and in
 `statute check`; `statute validate`
 ([The command and the first version](statute-command.md#the-command-and-the-first-version))
@@ -692,9 +688,7 @@ The default switches of a rule set are built too: `domains`,
 taking effect, `by = "default"` in the lock file, and what `statute
 add`, `remove` and `explain` (`--defaults` included) do with them.
 
-Not built yet: `default` as a required field and the end of
-`check = "review"`; picking an option of a one-of that is a domain
-through `domains`; parameters (beyond skipping `params.toml`), their
+Not built yet: parameters (beyond skipping `params.toml`), their
 tables in the rule set, the lock file and the outputs; the one-of's
 rendering; and everything the sites show of these.
 
