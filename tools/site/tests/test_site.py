@@ -1214,6 +1214,49 @@ window.addEventListener("load", () => {
       )
     self.assertNotIn("还没有中文译文", pages["zh/rules/3/index.html"])
 
+  def test_rule_paths(self):
+    """A node's page has its path; a title two nodes share names the parent."""
+    raw = self.build(raw=True, edit_rules=site_fixture.shared_titles)
+    four = raw["rules/4/index.html"]
+    # The breadcrumb, the nodes above it linked and itself last.
+    self.assertIn(
+      '<nav class="rule-breadcrumb" aria-label="Breadcrumb"><ol>\n'
+      '<li><a href="../8/">Group 8</a><svg ',
+      four,
+    )
+    self.assertIn('<li><a href="../9/">Tiers</a><svg ', four)
+    self.assertIn(
+      '<li><span aria-current="page" lang="en">Rule 4</span></li>\n'
+      "</ol></nav>\n<h1>",
+      four,
+    )
+    self.assertIn('aria-label="所在位置"', raw["zh/rules/4/index.html"])
+    self.assertNotIn("rule-breadcrumb", raw["rules/1/index.html"])
+    # The title of the tab and of a shared link.
+    self.assertIn("<title>R4 Group 8 › Tiers › Rule 4 • ", four)
+    self.assertIn(
+      '<meta property="og:title" content="R4 Group 8 › Tiers › Rule 4">', four
+    )
+    self.assertIn("<title>R1 Group 1 • ", raw["rules/1/index.html"])
+    # A shared title in the relations and in the filter, with its parent's.
+    for lang, one, tiers in (("", "Group 1", "Tiers"), ("zh/", "组 1", "层级")):
+      with self.subTest(lang):
+        page = raw[f"{lang}rules/1/index.html"]
+        self.assertIn(
+          f'<a href="../7/">R7 {tiers} <span class="rule-parent-title">'
+          f"({one})</span></a>",
+          page,
+        )
+        self.assertIn('<a href="../5/">R5 ', page)
+        self.assertNotIn('../5/">R5 Rule 5 <span', page)
+        page = raw[f"{lang}rules/index.html"]
+        self.assertIn(
+          f'> R7 {tiers} <span class="rules-filter-note">'
+          f"({one})</span></label>",
+          page,
+        )
+        self.assertRegex(page, r"> R8 (Group|组) 8</label>")
+
   def test_rules_group_current(self):
     """The rules group is marked current on all of its pages, only there."""
     raw = self.build(raw=True)
@@ -1318,9 +1361,11 @@ window.addEventListener("load", () => {
     self.assertEqual(raw["index.html"].count(f'aria-label="R3 {escaped}"'), 2)
     self.assertIn(f'<a href="../3/">R3 {shown}</a>', raw["rules/5/index.html"])
     page = raw["rules/3/index.html"]
-    self.assertIn(f"<title>{escaped}", page)
-    self.assertIn(f'<meta property="og:title" content="{escaped}">', page)
-    self.assertIn(f'<meta itemprop="name" content="{escaped}">', page)
+    # The page's title is its label and path.
+    titled = f"R3 Group 1 › Group 2 › {escaped}"
+    self.assertIn(f"<title>{titled}", page)
+    self.assertIn(f'<meta property="og:title" content="{titled}">', page)
+    self.assertIn(f'<meta itemprop="name" content="{titled}">', page)
     for path in ("index.html", "rules/5/index.html", "rules/3/index.html"):
       with self.subTest(path=path):
         self.assertNotIn("&amp;lt;", raw[path])

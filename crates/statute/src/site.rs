@@ -1164,10 +1164,11 @@ fn controls(project: &Project, l: &Lang) -> String {
             let (title, title_lang) = pick_lang(&domain.title, domain, l.code);
             let title = filled(project, &key, title, true, title_lang);
             let html = format!(
-                "<span class=\"ref\">{}</span><span{}>{}</span>",
+                "<span class=\"ref\">{}</span><span{}>{}</span>{}",
                 escape(&key.to_string()),
                 lang_attr(title_lang, l.code),
-                escape(&title)
+                escape(&title),
+                parent_title(project, &key, l.code)
             );
             list.push(Value {
                 above: above.map(|a| Key::new(&source.name, a.id).to_string()),
@@ -1280,18 +1281,53 @@ fn in_use(project: &Project, source: &Source, node: &Node) -> bool {
 
 /// A link to a node's page from a page `up` below the directory of its
 /// language (`""` or `"../"`), in text in `lang`: its reference and its
-/// title in `lang`, else in the node's own language.
+/// title in `lang`, else in the node's own language, and its parent's
+/// title when another node has its title (`parent_title`).
 fn link(project: &Project, key: &Key, up: &str, lang: &str) -> String {
+    title_link(project, key, up, lang, &parent_title(project, key, lang))
+}
+
+/// A link as `link` makes it, with `after` after the title in place of
+/// the parent's.
+fn title_link(project: &Project, key: &Key, up: &str, lang: &str, after: &str) -> String {
     let (title, title_lang) = project.sources.get(key).map_or((String::new(), lang), |n| {
         let (title, title_lang) = pick_lang(&n.title, n, lang);
         (filled(project, key, title, true, title_lang), title_lang)
     });
     format!(
-        "<a href=\"{up}{}\"><span class=\"ref\">{}</span><span class=\"title\"{}>{}</span></a>",
+        "<a href=\"{up}{}\"><span class=\"ref\">{}</span><span class=\"title\"{}>{}</span>{after}</a>",
         page(key).display(),
         escape(&key.to_string()),
         lang_attr(title_lang, lang),
-        escape(&title)
+        escape(&title),
+    )
+}
+
+/// A node's parent's title, in `lang` as `link` gives a title, muted in
+/// parentheses after a space, when a node under another parent has the
+/// node's title in `lang`, so that the two are told apart where a title
+/// stands alone; under one parent their references tell them apart.
+/// Else nothing.
+fn parent_title(project: &Project, key: &Key, lang: &str) -> String {
+    let sources = &project.sources;
+    let Some((node, parent_key)) = sources.get(key).zip(sources.parent(key)) else {
+        return String::new();
+    };
+    let Some(parent) = sources.get(&parent_key) else {
+        return String::new();
+    };
+    let title = pick_lang(&node.title, node, lang).0;
+    let shared = sources.nodes().any(|(k, n)| {
+        pick_lang(&n.title, n, lang).0 == title && sources.parent(&k).as_ref() != Some(&parent_key)
+    });
+    if !shared {
+        return String::new();
+    }
+    let (title, title_lang) = pick_lang(&parent.title, parent, lang);
+    format!(
+        " <span class=\"parent\"{}>({})</span>",
+        lang_attr(title_lang, lang),
+        escape(&filled(project, &parent_key, title, true, title_lang))
     )
 }
 
@@ -1517,7 +1553,8 @@ fn node_page(
     }
     let _ = write!(out, "<nav><a href=\"../index.html\">{}</a>", w.index);
     for parent in above.iter().rev() {
-        let _ = write!(out, " / {}", link(project, parent, "../", lang));
+        // The path names each node's parents: no parent's title after one.
+        let _ = write!(out, " / {}", title_link(project, parent, "../", lang, ""));
     }
     let texts = [node.applicability.as_ref()].into_iter().flatten().chain(
         node.rule

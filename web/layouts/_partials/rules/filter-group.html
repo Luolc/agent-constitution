@@ -4,7 +4,7 @@
   All and None, and, given "search", a box that narrows the check boxes
   to those whose label holds what is typed. Takes (dict "field" its name
   "legend" its title "values" a list of (dict "key" "label" "checked",
-  and for a domain "parent" and "depth"), and "search" the search box's
+  and for a domain "parent", "depth" and "note", muted after the label), and "search" the search box's
   label where the field has one). */ -}}
 <div class="rules-menu">
 <button type="button" class="rules-menu-button" aria-expanded="false" aria-controls="rules-filter-{{ .field }}">{{ .legend }}<span class="rules-menu-value"></span>{{ partial "icon.html" "lucide:chevron-down" }}</button>
@@ -15,7 +15,7 @@
   {{- end }}
 <div class="rules-filter-options">
   {{- range .values }}
-<label{{ with .depth }} style="{{ printf "--indent: %d" (int .) | safeCSS }}"{{ end }}><input type="checkbox" name="{{ $.field }}" value="{{ .key }}"{{ with .parent }} data-parent="{{ . }}"{{ end }}{{ if .checked }} checked{{ end }}> {{ .label }}</label>
+<label{{ with .depth }} style="{{ printf "--indent: %d" (int .) | safeCSS }}"{{ end }}><input type="checkbox" name="{{ $.field }}" value="{{ .key }}"{{ with .parent }} data-parent="{{ . }}"{{ end }}{{ if .checked }} checked{{ end }}> {{ .label }}{{ with .note }} <span class="rules-filter-note">({{ . }})</span>{{ end }}</label>
   {{- end }}
 </div>
 </fieldset>
