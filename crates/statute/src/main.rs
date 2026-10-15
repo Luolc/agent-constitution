@@ -843,7 +843,6 @@ fn why(project: &Project, key: &Key) -> String {
         .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
             Reason::Pack(root) => format!("in pack {}", label(sources, root)),
-            Reason::ParentOf(c) => format!("the parent of {}", label(sources, c)),
             Reason::RequiredBy(b) => format!("required by {}", label(sources, b)),
             Reason::OverriddenBy(b) => format!("overridden by {}", label(sources, b)),
         })
@@ -1022,13 +1021,6 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
             Reason::Pack(root) => {
                 out.push_str(&format!("{indent}- in pack {}\n", label(sources, root)));
                 continue;
-            }
-            Reason::ParentOf(child) => {
-                out.push_str(&format!(
-                    "{indent}- the parent of {}, which is enabled:\n",
-                    label(sources, child)
-                ));
-                child
             }
             Reason::RequiredBy(by) => {
                 out.push_str(&format!(

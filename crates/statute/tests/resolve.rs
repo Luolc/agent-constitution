@@ -90,32 +90,9 @@ fn reasons(res: &Resolution, id: u64) -> BTreeSet<Reason> {
 // Parents.
 
 #[test]
-fn a_parent_rule_is_brought_in() {
-    let s = source(&[domain(1), rule(2, 1, ""), rule(3, 2, "")]);
-    let res = enabled(&s, &[3], &[]);
-    assert_eq!(ids(&res), [2, 3]);
-    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::ParentOf(r(3))]));
-    assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::Direct]));
-}
-
-#[test]
 fn a_domain_parent_brings_in_nothing() {
     let s = source(&[domain(1), rule(2, 1, "")]);
     assert_eq!(ids(&enabled(&s, &[2], &[])), [2]);
-}
-
-#[test]
-fn the_parent_requirement_passes_through_a_one_of() {
-    let s = source(&[
-        domain(1),
-        rule(2, 1, ""),
-        one_of(3, 2),
-        rule(4, 3, ""),
-        rule(5, 3, ""),
-    ]);
-    let res = enabled(&s, &[4], &[]);
-    assert_eq!(ids(&res), [2, 4]);
-    assert_eq!(reasons(&res, 2), BTreeSet::from([Reason::ParentOf(r(4))]));
 }
 
 // Requirements.
@@ -242,7 +219,7 @@ fn a_rule_brought_in_must_accept_the_revision_too() {
     let s = source(&[
         domain(1),
         edit(rule(2, 1, ""), ">=1", ">=2"),
-        rule(3, 2, ""),
+        rule(3, 1, "requires = [2]"),
     ]);
     fails(&s, &[3], &[], 1, "rule R2 (Rule 2) is compatible");
 }
@@ -250,16 +227,15 @@ fn a_rule_brought_in_must_accept_the_revision_too() {
 // Packs.
 
 fn pack_source() -> Sources {
-    // Domain 1: rule 2, its child 3; one-of 4 with children 5 and 6, and 7
-    // under 5; rule 8 superseded by 2.
+    // Domain 1: rule 2, rule 3 requiring it; one-of 4 with children 5 and
+    // 6; rule 8 superseded by 2.
     source(&[
         domain(1),
         rule(2, 1, ""),
-        rule(3, 2, ""),
+        rule(3, 1, "requires = [2]"),
         one_of(4, 1),
         rule(5, 4, ""),
         rule(6, 4, ""),
-        rule(7, 5, ""),
         edit(
             rule(8, 1, "superseded-by = 2"),
             "status = \"draft\"",
@@ -282,17 +258,17 @@ fn a_pack_enables_its_subtree_but_no_child_of_a_one_of_unchosen() {
 fn a_pack_goes_through_the_chosen_child_of_a_one_of() {
     let s = pack_source();
     let res = enabled(&s, &[5], &[1]);
-    assert_eq!(ids(&res), [2, 3, 5, 7]);
+    assert_eq!(ids(&res), [2, 3, 5]);
     assert_eq!(
         reasons(&res, 5),
-        BTreeSet::from([Reason::Direct, Reason::Pack(r(1)), Reason::ParentOf(r(7))])
+        BTreeSet::from([Reason::Direct, Reason::Pack(r(1))])
     );
 }
 
 #[test]
 fn a_pack_rooted_at_a_rule() {
     let s = pack_source();
-    assert_eq!(ids(&enabled(&s, &[], &[2])), [2, 3]);
+    assert_eq!(ids(&enabled(&s, &[], &[2])), [2]);
     assert_eq!(ids(&enabled(&s, &[], &[9])), [10]);
 }
 
@@ -462,7 +438,7 @@ fn a_repealed_rule_is_a_warning() {
 
 #[test]
 fn a_superseded_rule_brought_in_names_what_brings_it_in() {
-    let mut nodes = vec![
+    let nodes = [
         domain(1),
         rule(2, 1, ""),
         edit(
@@ -470,15 +446,22 @@ fn a_superseded_rule_brought_in_names_what_brings_it_in() {
             "status = \"draft\"",
             "status = \"superseded\"",
         ),
+        rule(9, 1, "requires = [8]"),
     ];
-    // Under the superseded rule: a requirement of it would draw a warning
-    // of the source already.
-    nodes.push(rule(9, 8, ""));
-    let s = source(&nodes);
+    // The requirement draws a warning of the source, which the rule set
+    // does not repeat.
+    let files = nodes
+        .iter()
+        .map(|(id, text)| (format!("rules/{id}.toml"), text.clone().into_bytes()))
+        .collect();
+    let (mut one, diags) = statute::source::Source::from_files(files);
+    assert!(!diags.has_errors(), "{:#?}", diags.0);
+    one.name = "R".to_owned();
+    let s = Sources::new(vec![one]);
     warns(
         &s,
         &[9],
-        "rule R8 (Rule 8) (parent of R9) is superseded by R2 (Rule 2); it stays as long as R9 (Rule 9) is enabled, which brings it in",
+        "rule R8 (Rule 8) (required by R9) is superseded by R2 (Rule 2); it stays as long as R9 (Rule 9) is enabled, which brings it in",
     );
     let (_, diags) = run(&s, &[9], &[], 1);
     assert!(

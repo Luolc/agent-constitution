@@ -146,21 +146,19 @@ impl Source {
         self.nodes.get(&id)
     }
 
-    /// The nodes a node leads to directly: its parent, and for a rule the
-    /// nodes of this source it requires. Missing nodes are left out.
+    /// The nodes a node leads to directly: for a rule, the nodes of this
+    /// source it requires. Missing nodes are left out.
     pub fn edges(&self, id: Id) -> Vec<Id> {
-        let Some(node) = self.get(id) else {
+        let Some(rule) = self.get(id).and_then(|n| n.rule.as_ref()) else {
             return Vec::new();
         };
-        let mut out: Vec<Id> = node.parent.into_iter().collect();
-        if let Some(rule) = &node.rule {
-            out.extend(rule.requires.iter().filter_map(|r| match r {
-                Ref::Local(id) => Some(*id),
-                Ref::Foreign { .. } => None,
-            }));
-        }
-        out.retain(|id| self.nodes.contains_key(id));
-        out
+        rule.requires
+            .iter()
+            .filter_map(|r| match r {
+                Ref::Local(id) if self.nodes.contains_key(id) => Some(*id),
+                _ => None,
+            })
+            .collect()
     }
 
     /// Every node reachable from `starts` along `edges`, the starts
@@ -454,19 +452,17 @@ impl Sources {
         self.check_overrides_brought_in(diags);
     }
 
-    /// The nodes a node leads to: its parent, the parent of its place
-    /// for a rule that overrides another, and what it requires.
+    /// The nodes a node leads to: what it requires.
     fn edges(&self, key: &Key) -> Vec<Key> {
-        self.parent(&self.place(key))
+        self.requires(key)
             .into_iter()
-            .chain(self.requires(key))
             .filter(|k| self.get(k).is_some())
             .collect()
     }
 
     /// Fails a rule that overrides a rule which brings it in, along
-    /// `parent` and `requires`: it would stand in the place of the very
-    /// rule that enables it.
+    /// `requires`: it would stand in the place of the very rule that
+    /// enables it.
     fn check_overrides_brought_in(&self, diags: &mut Diagnostics) {
         for (key, _) in self.nodes() {
             let Some(target) = self.overrides(&key) else {
@@ -483,7 +479,7 @@ impl Sources {
                 diags.error(
                     self.file(&key),
                     format!(
-                        "`overrides` names \"{target}\", which brings in {key} along `parent` or `requires`; a rule cannot take the place of a rule it is enabled through"
+                        "`overrides` names \"{target}\", which brings in {key} along `requires`; a rule cannot take the place of a rule it is enabled through"
                     ),
                 );
             }
@@ -491,8 +487,7 @@ impl Sources {
     }
 
     /// Fails a cycle of requirements that goes through more than one
-    /// source, a parent counting as a requirement; each source has found
-    /// those within it already.
+    /// source; each source has found those within it already.
     fn check_cycles(&self, diags: &mut Diagnostics) {
         let edges = |key: &Key| self.edges(key);
         // 0: not visited, 1: on the path, 2: done.
@@ -526,7 +521,7 @@ impl Sources {
                             diags.error(
                                 self.file(first),
                                 format!(
-                                    "the requirements form a cycle across sources (a parent counts as a requirement): {}",
+                                    "the requirements form a cycle across sources: {}",
                                     shown.join(" -> ")
                                 ),
                             );
@@ -658,6 +653,7 @@ impl Checker<'_> {
             self.check_conflicts();
             self.check_one_ofs();
             self.check_crossing_requirements();
+            self.check_defaults();
         }
     }
 
@@ -674,36 +670,13 @@ impl Checker<'_> {
                     format!("parent {parent} does not exist in this source"),
                 );
             }
-            // A subdomain's parent is a domain with no parent: two levels.
-            if node.kind == Kind::Domain
-                && let Some(parent) = node.parent.and_then(|p| source.get(p))
+            if let Some(parent) = node.parent.and_then(|p| source.get(p))
                 && parent.id != node.id
             {
-                match (parent.kind, parent.parent) {
-                    (Kind::Domain, None) if parent.foreign_parent.is_none() => {}
-                    (Kind::Domain, None) => self.diags.error(
-                        &file,
-                        format!(
-                            "parent {} is a subdomain already, under a domain of another source; domains nest two levels at most, so name a domain with no parent",
-                            parent.id
-                        ),
-                    ),
-                    (Kind::Domain, Some(above)) => self.diags.error(
-                        &file,
-                        format!(
-                            "parent {} is a subdomain already, under {above}; domains nest two levels at most, so name a domain with no parent",
-                            parent.id
-                        ),
-                    ),
-                    (kind, _) => self.diags.error(
-                        &file,
-                        format!(
-                            "parent {} is a {}; a domain's parent is a domain",
-                            parent.id,
-                            kind.name()
-                        ),
-                    ),
-                }
+                self.check_parent(node, parent);
+            }
+            if node.kind == Kind::OneOf {
+                self.check_one_of(node);
             }
             for &next in &node.superseded_by {
                 match source.get(next) {
@@ -736,6 +709,194 @@ impl Checker<'_> {
                         ),
                         Some(target) => judge(source, field, target, false, &file, self.diags),
                     }
+                }
+            }
+        }
+    }
+
+    /// What a node's parent of this source may be
+    /// (`docs/design/rule-config.md`, Proposed: no rule under a rule): a
+    /// rule's is a domain or a one-of, a one-of's a domain, a domain's a
+    /// domain with no parent or a one-of in one, so that domains nest two
+    /// levels at most, counting a domain that is an option of a one-of.
+    fn check_parent(&mut self, node: &Node, parent: &Node) {
+        let file = self.file(node.id);
+        let id = parent.id;
+        let message = match (node.kind, parent.kind) {
+            (Kind::Rule, Kind::Domain | Kind::OneOf) | (Kind::OneOf, Kind::Domain) => return,
+            (Kind::Rule, _) => format!(
+                "parent {id} is a rule; a rule's parent is a domain or a one-of, and the rule it refines is written in `requires`"
+            ),
+            (Kind::OneOf, kind) => {
+                format!(
+                    "parent {id} is a {}; a one-of's parent is a domain",
+                    kind.name()
+                )
+            }
+            (Kind::Domain, Kind::Rule) => format!(
+                "parent {id} is a rule; a domain's parent is a domain, or a one-of of which it is an option"
+            ),
+            (Kind::Domain, kind) => {
+                // The domain the subdomain or the option would be in.
+                let above = if kind == Kind::OneOf {
+                    match parent.parent.and_then(|p| self.source.get(p)) {
+                        Some(domain) => domain,
+                        None => return,
+                    }
+                } else {
+                    parent
+                };
+                let how = if kind == Kind::OneOf {
+                    format!(
+                        "parent {id} is a one-of in domain {}, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of, so a one-of in a subdomain has rules as its options",
+                        above.id
+                    )
+                } else {
+                    format!("parent {id} is a subdomain already")
+                };
+                match (above.parent, &above.foreign_parent) {
+                    (None, None) => return,
+                    (None, Some(_)) => format!(
+                        "{how}, under a domain of another source; domains nest two levels at most, so name a domain with no parent"
+                    ),
+                    (Some(over), _) if kind == Kind::OneOf => format!("{how} (under {over})"),
+                    (Some(over), _) => format!(
+                        "{how}, under {over}; domains nest two levels at most, so name a domain with no parent"
+                    ),
+                }
+            }
+        };
+        self.diags.error(&file, message);
+    }
+
+    /// A one-of's options are all rules or all domains, and its `default`
+    /// names one of them; an option has no `default` of its own.
+    fn check_one_of(&mut self, one_of: &Node) {
+        let source = self.source;
+        let file = self.file(one_of.id);
+        // A one-of under a one-of is reported as such.
+        let children: Vec<&Node> = source
+            .children(one_of.id)
+            .filter(|c| c.kind != Kind::OneOf)
+            .collect();
+        // An option of another kind than the first is the one out of place.
+        if let Some(first) = children.first() {
+            let like: Vec<String> = children
+                .iter()
+                .filter(|c| c.kind == first.kind)
+                .map(|c| c.id.to_string())
+                .collect();
+            for child in children.iter().filter(|c| c.kind != first.kind) {
+                self.diags.error(
+                    self.file(child.id),
+                    format!(
+                        "parent {} is a one-of whose options are {}s ({}); the options of a one-of are all rules or all domains",
+                        one_of.id,
+                        first.kind.name(),
+                        like.join(", ")
+                    ),
+                );
+            }
+        }
+        if let Some(default) = one_of.default_child
+            && !children.iter().any(|c| c.id == default)
+        {
+            self.diags.error(
+                &file,
+                format!(
+                    "`default = {default}` names {}, which is not a child of this one-of; name one of its children",
+                    self.describe(default)
+                ),
+            );
+        }
+        for child in children.iter().filter(|c| c.default.is_some()) {
+            self.diags.error(
+                self.file(child.id),
+                format!(
+                    "a child of a one-of has no `default`: one-of {} names its default child; remove `default`",
+                    one_of.id
+                ),
+            );
+        }
+    }
+
+    /// The rules a source's defaults enable resolve on their own
+    /// (`docs/design/rule-config.md`, In the rule files): an `on` rule,
+    /// and a rule that is a one-of's default, requires no rule that is
+    /// `off`, and no rule in a domain that is `off` while its own domain
+    /// is `on`. Only what the files write is judged: a node without
+    /// `default` counts as neither.
+    fn check_defaults(&mut self) {
+        let source = self.source;
+        // The domain off by default that a node is in, if any.
+        let off_domain = |mut id: Id| -> Option<Id> {
+            for _ in 0..=source.nodes.len() {
+                let node = source.get(id)?;
+                if node.kind == Kind::Domain && node.default == Some(node::Switch::Off) {
+                    return Some(id);
+                }
+                id = node.parent?;
+            }
+            None
+        };
+        // A required one-of stands for its default child.
+        let target_of = |id: Id| -> Option<&Node> {
+            let node = source.get(id)?;
+            match node.kind {
+                Kind::OneOf => source.get(node.default_child?),
+                _ => Some(node),
+            }
+        };
+        for node in source.nodes.values() {
+            let Some(rule) = &node.rule else { continue };
+            let on = node.default == Some(node::Switch::On)
+                || node
+                    .parent
+                    .and_then(|p| source.get(p))
+                    .is_some_and(|p| p.default_child == Some(node.id));
+            if !on || matches!(node.status, Status::Superseded | Status::Repealed) {
+                continue;
+            }
+            let why = if node.default == Some(node::Switch::On) {
+                format!("rule {} is on by default", node.id)
+            } else {
+                format!(
+                    "rule {} is the default of one-of {}",
+                    node.id,
+                    node.parent.unwrap_or_default()
+                )
+            };
+            for r in &rule.requires {
+                let Ref::Local(required) = *r else { continue };
+                let Some(target) = target_of(required) else {
+                    continue;
+                };
+                if target.kind != Kind::Rule {
+                    continue;
+                }
+                let via = if target.id == required {
+                    String::new()
+                } else {
+                    format!(", the default of one-of {required},")
+                };
+                if target.default == Some(node::Switch::Off) {
+                    self.diags.error(
+                        self.file(node.id),
+                        format!(
+                            "{why} and requires rule {}{via} which is off by default; turn {} on, or this rule off",
+                            target.id, target.id
+                        ),
+                    );
+                } else if let Some(domain) = off_domain(target.id)
+                    && off_domain(node.id).is_none()
+                {
+                    self.diags.error(
+                        self.file(node.id),
+                        format!(
+                            "{why}, in a domain that is on, and requires rule {}{via} in domain {domain}, which is off by default; the defaults would not resolve on their own",
+                            target.id
+                        ),
+                    );
                 }
             }
         }
@@ -799,10 +960,7 @@ impl Checker<'_> {
                         if reported.insert(first) {
                             self.diags.error(
                                 self.file(first),
-                                format!(
-                                    "the requirements form a cycle (a parent counts as a requirement): {}",
-                                    show_cycle(cycle, id)
-                                ),
+                                format!("the requirements form a cycle: {}", show_cycle(cycle, id)),
                             );
                         }
                     }
@@ -831,29 +989,9 @@ impl Checker<'_> {
                 })
                 .collect();
             for &target in &required {
-                let others = node
-                    .parent
-                    .filter(|p| source.get(*p).is_some())
-                    .map(|p| (p, true))
-                    .into_iter()
-                    .chain(
-                        required
-                            .iter()
-                            .filter(|&&r| r != target)
-                            .map(|&r| (r, false)),
-                    );
-                for (via, is_parent) in others {
+                for via in required.iter().copied().filter(|&r| r != target) {
                     if source.reach([via]).contains(&target) {
-                        let how = match (is_parent, via == target) {
-                            (true, true) => {
-                                "it is the parent, which already counts as a requirement".to_owned()
-                            }
-                            (true, false) => format!(
-                                "it already follows from the parent, {}",
-                                self.describe(via)
-                            ),
-                            (false, _) => format!("it already follows from {}", self.describe(via)),
-                        };
+                        let how = format!("it already follows from {}", self.describe(via));
                         self.diags.error(
                             self.file(node.id),
                             format!("`requires` lists {target} needlessly: {how}; remove {target} from `requires`"),
@@ -887,13 +1025,13 @@ impl Checker<'_> {
                     reported.insert(pair);
                     self.diags.error(
                         &file,
-                        format!("conflicts with {other}, which enabling {} brings in along `parent` or `requires`; the two can never be used apart, so remove the conflict or the requirement", node.id),
+                        format!("conflicts with {other}, which enabling {} brings in along `requires`; the two can never be used apart, so remove the conflict or the requirement", node.id),
                     );
                 } else if source.reach([other]).contains(&node.id) {
                     reported.insert(pair);
                     self.diags.error(
                         &file,
-                        format!("conflicts with {other}, which brings in {} along `parent` or `requires`; the two can never be used apart, so remove the conflict or the requirement", node.id),
+                        format!("conflicts with {other}, which brings in {} along `requires`; the two can never be used apart, so remove the conflict or the requirement", node.id),
                     );
                 }
                 let declared_back = other_node

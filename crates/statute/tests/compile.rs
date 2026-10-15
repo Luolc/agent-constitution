@@ -28,13 +28,13 @@ const ARTICLES: [(&str, &str); 5] = [
     ),
 ];
 
-/// Domain 1: rule 2 and its child 3, one-of 4 with children 5 and 6.
+/// Domain 1: rule 2, rule 3 requiring it, one-of 4 with children 5 and 6.
 /// Domain 9: rule 10, which requires the one-of. Domain 11: rule 12.
 fn nodes() -> Vec<(u64, String)> {
     vec![
         domain(1),
         rule(2, 1, ""),
-        rule(3, 2, ""),
+        rule(3, 1, "requires = [2]"),
         one_of(4, 1),
         rule(5, 4, ""),
         rule(6, 4, ""),
@@ -122,7 +122,7 @@ const RULES_EN: &str = r#"# Rules
 Do the thing 2.
 
 <a id="rule-R3"></a>
-#### Rule 3 (R3)
+### Rule 3 (R3)
 
 Do the thing 3.
 
@@ -154,6 +154,32 @@ fn compiles_the_rules_along_the_tree() {
     assert_eq!(compiled(&dir), expected);
     // AGENTS.md is written only without --output.
     assert!(!dir.join("AGENTS.md").exists());
+}
+
+#[test]
+fn a_rule_only_for_review_is_not_compiled() {
+    let dir = repo(
+        "review-only",
+        &manifest("").replace("\"R10\"]", "\"R10\", \"R12\"]"),
+    );
+    // Rule 12, the only rule of domain 11, goes to the reviewer alone;
+    // rule 10 requires and cites it.
+    let r12 = rule(12, 11, "uses = [\"review\"]");
+    let r10 = edit(
+        rule(10, 9, "requires = [4, 12]"),
+        "Do the thing 10.",
+        "Do the thing 10, after {@rule:12}.",
+    );
+    for (id, text) in [r12, r10] {
+        std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
+    }
+    let out = compiled(&dir);
+    assert!(!out.contains("(R12)\n"), "{out}");
+    assert!(!out.contains("Domain 11"), "{out}");
+    assert!(
+        out.contains("Do the thing 10, after Rule 12 (rule R12).\n\nRequires: [One-of 4](#rule-R4), Rule 12 (rule R12)\n"),
+        "{out}"
+    );
 }
 
 #[test]
@@ -301,28 +327,20 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
 }
 
 #[test]
-fn headings_stop_at_level_six() {
+fn the_deepest_tree_reaches_level_six() {
     let dir = repo(
         "deep",
-        &manifest("").replace("\"R3\", \"R5\", \"R10\"", "\"R107\""),
+        &manifest("").replace("\"R3\", \"R5\", \"R10\"", "\"R105\""),
     );
-    // A chain under domain 1 (level 2): 102 to 107, each under the one
-    // before, 105 at level 6.
-    for (id, parent) in [
-        (102, 1),
-        (103, 102),
-        (104, 103),
-        (105, 104),
-        (106, 105),
-        (107, 106),
-    ] {
-        std::fs::write(dir.join(format!("rules/{id}.toml")), rule(id, parent, "").1).unwrap();
+    // Under domain 1 (level 2): one-of 102, its option domain 103, one-of
+    // 104 in it, and rule 105, its option, at level 6.
+    let option = edit(domain(103), "lang = \"en\"", "lang = \"en\"\nparent = 102");
+    for (id, text) in [one_of(102, 1), option, one_of(104, 103), rule(105, 104, "")] {
+        std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
     }
     let out = compiled(&dir);
-    assert!(out.contains("\n##### Rule 104 (R104)\n"), "{out}");
+    assert!(out.contains("\n#### Domain 103 (R103)\n"), "{out}");
     assert!(out.contains("\n###### Rule 105 (R105)\n"), "{out}");
-    assert!(out.contains("\n###### Rule 106 (R106)\n"), "{out}");
-    assert!(out.contains("\n###### Rule 107 (R107)\n"), "{out}");
 }
 
 /// Rule 3 of `nodes`, with a Chinese translation.
@@ -333,7 +351,7 @@ fn rule_3_in_chinese() -> String {
         "Because.\n",
         "Violated when the thing is not done.",
     ]);
-    let r = rule(3, 2, "");
+    let r = rule(3, 1, "requires = [2]");
     let r = edit(r, "en = \"Rule 3\"", "en = \"Rule 3\"\nzh = \"规定 3\"");
     let r = edit(
         r,
@@ -356,7 +374,7 @@ fn a_translation_is_used_in_its_language() {
     std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
     let out = compiled(&dir);
     assert!(
-        out.contains("#### 规定 3 (R3)\n\n做事 3。\n\n理由：因为。\n"),
+        out.contains("### 规定 3 (R3)\n\n做事 3。\n\n理由：因为。\n"),
         "{out}"
     );
     // Rule 2 has no translation: its original.
@@ -369,7 +387,7 @@ fn a_translation_is_used_in_its_language() {
     std::fs::write(dir.join("rules/3.toml"), rule_3_in_chinese()).unwrap();
     let out = compiled(&dir);
     assert!(
-        out.contains("#### Rule 3 (R3)\n\nDo the thing 3.\n"),
+        out.contains("### Rule 3 (R3)\n\nDo the thing 3.\n"),
         "{out}"
     );
 }
@@ -529,10 +547,19 @@ fn the_compilers_applicability_cases() {
         toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
     assert!(!cases.cases.is_empty());
     for case in cases.cases {
-        let manifest = manifest("").replace("\"R10\"]", "\"R10\", \"R21\"]");
+        // Node 20's parent is 2, a domain in the cases; rule 21 is under
+        // node 20 unless that is a rule, which is then enabled itself.
+        let (enabled, parent) = if case.node.contains("kind = \"rule\"") {
+            ("\"R20\"", 1)
+        } else {
+            ("\"R21\"", 20)
+        };
+        let manifest = manifest("").replace("\"R3\", \"R5\", \"R10\"", enabled);
         let dir = repo("applicability", &manifest);
+        std::fs::write(dir.join("rules/2.toml"), domain(2).1).unwrap();
+        std::fs::write(dir.join("rules/3.toml"), rule(3, 1, "").1).unwrap();
         std::fs::write(dir.join("rules/20.toml"), &case.node).unwrap();
-        std::fs::write(dir.join("rules/21.toml"), rule(21, 20, "").1).unwrap();
+        std::fs::write(dir.join("rules/21.toml"), rule(21, parent, "").1).unwrap();
         let lock = statute(&dir, &["lock"]);
         let run = if lock.code == 0 {
             statute(&dir, &["compile", "--output", "out.md"])

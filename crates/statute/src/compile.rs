@@ -468,11 +468,19 @@ fn anchor(key: &Key) -> String {
     format!("rule-{}", key.to_string().replace(':', "-"))
 }
 
-/// Whether a node appears: a rule when enabled, a one-of or a domain when
-/// something below it does.
+/// Whether a node appears: a rule when enabled and the rule in its place
+/// goes to the agents (its `uses` has `instructions`), a one-of or a
+/// domain when something below it does.
 fn shown(project: &Project, key: &Key) -> bool {
     match project.sources.get(key).map(|n| n.kind) {
-        Some(Kind::Rule) => project.resolution.enabled.contains_key(key),
+        Some(Kind::Rule) => {
+            project.resolution.enabled.contains_key(key)
+                && project
+                    .sources
+                    .get(&project.resolution.standing(key))
+                    .and_then(|n| n.rule.as_ref())
+                    .is_some_and(|r| r.uses.instructions)
+        }
         Some(Kind::OneOf | Kind::Domain) => project
             .sources
             .children(key)
@@ -624,13 +632,17 @@ fn render(
             .into_iter()
             .filter(|target| project.sources.domain(target) != domain)
             .filter_map(|target| {
+                // A rule not in the file, one that only the reviewer
+                // reads, is named as a citation of it is.
+                let in_file = shown(project, &target);
                 let target = res.standing(&target);
                 let n = project.sources.get(&target)?;
-                Some(format!(
-                    "[{}](#{})",
-                    pick(&n.title, n, lang),
-                    anchor(&target)
-                ))
+                let title = pick(&n.title, n, lang);
+                Some(if in_file {
+                    format!("[{title}](#{})", anchor(&target))
+                } else {
+                    format!("{title} ({} {target})", w.rule)
+                })
             })
             .collect();
         if !crossing.is_empty() {

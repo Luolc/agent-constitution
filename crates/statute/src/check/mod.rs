@@ -28,7 +28,8 @@ pub enum Outcome {
     /// The check could not decide: a missing tool, an error, a timeout, or
     /// a part of the rule the check does not cover.
     Inconclusive,
-    /// The rule has no automatic check (`check = "review"`).
+    /// The rule has no automatic check (`check = "none"`) and goes to the
+    /// reviewer (its `uses` has `review`).
     Review,
 }
 
@@ -91,7 +92,8 @@ impl Context<'_> {
 }
 
 /// The checks of every enabled rule that is not overridden, in order of
-/// key. A built-in check
+/// key: the program of each rule that has one, and each rule without one
+/// whose `uses` has `review`, for the reviewer. A built-in check
 /// belongs to a rule of the first-party source; a rule of another source
 /// with `check = "builtin"` has none in statute.
 pub fn run(project: &Project, ctx: &Context) -> Vec<(Key, Report)> {
@@ -104,7 +106,8 @@ pub fn run(project: &Project, ctx: &Context) -> Vec<(Key, Report)> {
             let rule = project.sources.get(key)?.rule.as_ref()?;
             let first_party = key.source == FIRST_PARTY;
             let report = match &rule.check {
-                Check::Review => Report::new(Outcome::Review, "no automatic check"),
+                Check::None if !rule.uses.review => return None,
+                Check::None => Report::new(Outcome::Review, "no automatic check"),
                 Check::Builtin => match key.id {
                     3 if first_party => r3::check(ctx),
                     7 if first_party => r7::check(ctx),

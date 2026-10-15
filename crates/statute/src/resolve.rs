@@ -16,8 +16,6 @@ pub enum Reason {
     Direct,
     /// Inside the pack with this root.
     Pack(Key),
-    /// The parent, or the rule above a one-of, of this enabled rule.
-    ParentOf(Key),
     /// Listed under `requires` of this enabled rule.
     RequiredBy(Key),
     /// Overridden by this enabled rule, which stands in its place.
@@ -67,20 +65,6 @@ impl Resolution {
     pub fn in_force(&self, key: &Key) -> bool {
         self.enabled.contains_key(key) && !self.overridden.contains_key(key)
     }
-}
-
-/// The rule a node's parent requirement lands on: the parent when it is a
-/// rule, through any one-of to the rule above it, and nothing when the
-/// chain ends at a domain.
-pub fn parent_rule(sources: &Sources, key: &Key) -> Option<Key> {
-    // A rule that overrides another has that one's parent.
-    let mut parent = sources.parent(&sources.place(key))?;
-    let mut steps = 0;
-    while sources.get(&parent)?.kind == Kind::OneOf && steps <= sources.nodes().count() {
-        parent = sources.parent(&parent)?;
-        steps += 1;
-    }
-    (sources.get(&parent)?.kind == Kind::Rule).then_some(parent)
 }
 
 fn title(node: &Node) -> &str {
@@ -303,9 +287,6 @@ pub fn resolve(
             if overridden.contains_key(&key) {
                 continue;
             }
-            if let Some(parent) = parent_rule(sources, &key) {
-                add(parent, Reason::ParentOf(key.clone()), &mut queue);
-            }
             for target in sources.requires(&key) {
                 match sources.get(&target).map(|n| n.kind) {
                     Some(Kind::Rule) => add(target, Reason::RequiredBy(key.clone()), &mut queue),
@@ -507,9 +488,7 @@ pub fn resolve(
             ),
             (false, _) => {
                 let by = reasons.iter().find_map(|r| match r {
-                    Reason::ParentOf(b) | Reason::RequiredBy(b) | Reason::OverriddenBy(b) => {
-                        Some(b)
-                    }
+                    Reason::RequiredBy(b) | Reason::OverriddenBy(b) => Some(b),
                     _ => None,
                 });
                 match by {
@@ -574,7 +553,6 @@ pub fn how(res: &Resolution, key: &Key) -> String {
         .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
             Reason::Pack(root) => format!("in pack {root}"),
-            Reason::ParentOf(child) => format!("parent of {child}"),
             Reason::RequiredBy(by) => format!("required by {by}"),
             Reason::OverriddenBy(by) => format!("overridden by {by}"),
         })
