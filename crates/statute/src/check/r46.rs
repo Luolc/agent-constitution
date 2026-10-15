@@ -38,13 +38,20 @@ const GENERIC: &[&str] = &[
     r"(.*/)?[^/]+\.legacy\.md",
 ];
 
-/// statute's files beside the rule set, relative to its directory, which
-/// the instructions are compiled from: the rule set, its lock file and
-/// `.statute/`, with the local rules. The lock file is no generated file:
+/// statute's files beside the rule set, relative to its directory: the
+/// rule set, its lock file and `.statute/`, with the local rules, which
+/// the instructions are compiled from, and `statute-checks.toml`, which
+/// counts as generated only while it equals the compile (`Classes`). The
+/// lock file is no generated file:
 /// it pins the commit of each git source, and `statute upgrade` moves a
 /// source to newer rules by rewriting the lock file alone, which
 /// `statute compile --check` accepts.
-const STATUTE: &[&str] = &[r"statute\.toml", r"statute\.lock", r"\.statute/.+"];
+const STATUTE: &[&str] = &[
+    r"statute\.toml",
+    r"statute\.lock",
+    r"\.statute/.+",
+    r"statute-checks\.toml",
+];
 
 /// This repository's own instruction files: the constitution, rule and
 /// skill sources.

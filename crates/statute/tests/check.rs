@@ -304,6 +304,23 @@ fn r46_compiled_files_go_with_the_side_that_changed_them() {
             )),
             "{sub}: {l}"
         );
+        // Edited by hand, each compiled file is an instruction file again.
+        for file in ["AGENTS.md", "statute-checks.toml"] {
+            git(&dir, &["tag", "-f", "compiled"]);
+            change(&dir, &[file, "tools/build.py"]);
+            let run = statute(&dir, &["check", "--base", "compiled"], None);
+            assert_eq!(run.code, 1, "{sub} {file}: {}", run.stdout);
+            assert!(
+                run.stdout.contains(&format!(
+                    "M {}: an instruction file, not what statute compiles now, in the same change",
+                    at(file)
+                )),
+                "{sub} {file}: {}",
+                run.stdout
+            );
+            git(&dir, &["checkout", "-q", "compiled", "--", "."]);
+            git(&dir, &["commit", "-qm", "undo"]);
+        }
     }
 }
 
