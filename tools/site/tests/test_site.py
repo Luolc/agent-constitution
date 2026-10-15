@@ -795,6 +795,41 @@ class SiteTest(unittest.TestCase):
     self.assertNotIn('class="cites"', raw["agent/index.html"])
     self.assertIn('class="cites"', raw["zh/index.html"])
 
+  def test_a_code_span_in_a_title_is_escaped_once(self):
+    """A title's code span with `<` shows as code, its text escaped once.
+
+    Rule 3 is under the article's heading and under the section's item on
+    the home page, and named on rule 5's page.
+    """
+    title = "Rule `<x>/<y>` 3"
+    parts = (site_fixture.STATEMENTS[3][0], "Why.", "Violated when not.")
+
+    def edit(root):
+      rule = root / "rules/3.toml"
+      text = rule.read_text(encoding="utf-8")
+      text = text.replace('en = "Rule 3"', f'en = "{title}"').replace(
+        site_fixture.original("Rule 3", *parts),
+        site_fixture.original(title, *parts),
+      )
+      rule.write_text(text, encoding="utf-8")
+
+    raw = self.build(raw=True, edit_rules=edit)
+    shown = "Rule <code>&lt;x&gt;/&lt;y&gt;</code> 3"
+    self.assertEqual(
+      raw["index.html"].count(
+        f'<span class="cites-label">R3</span>{shown}</a>'
+      ),
+      2,
+    )
+    self.assertIn(f'<a href="../3/">R3 {shown}</a>', raw["rules/5/index.html"])
+    self.assertIn(
+      "<title>Rule &lt;x&gt;/&lt;y&gt; 3", raw["rules/3/index.html"]
+    )
+    for path in ("index.html", "rules/5/index.html", "rules/3/index.html"):
+      with self.subTest(path=path):
+        self.assertNotIn("&amp;lt;", raw[path])
+        self.assertNotIn("`", visible(raw[path]))
+
   def test_no_rules_data(self):
     """Without data/rules.json the build fails."""
     with self.assertRaises(subprocess.CalledProcessError):
