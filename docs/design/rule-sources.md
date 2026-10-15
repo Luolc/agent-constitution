@@ -38,21 +38,38 @@ give four kinds:
 | | Public | Private |
 | --- | --- | --- |
 | Global | This repo's rules, written `R42` | A source of the person's or team's own, such as a private repository: the names of their bots and machines, how their secret store is laid out, where directories go on their machines |
-| Local | The `rules/` next to a public repository's rule set, written `L12` | The `rules/` of a private repository, written `L12`; or, for a public repository, a source outside it (below) |
+| Local | The `.statute/rules/` of a public repository, written `L12` | The `.statute/rules/` of a private repository, written `L12`; or, for a public repository, a source outside it (below) |
 
 - **Global public** is the first-party source, `R`, and any public
   source of another team, `team:7`.
 - **Global private** is a source the rule set names in `[sources]`, with
   `public = false`: a private git repository, or a directory on disk.
-- **Local public** is the repository's own `rules/` when the repository
-  is public. The exception is a repository that is itself the
-  first-party source, `R = { path = "." }` as this one: its `rules/` are
-  first-party, `R12`
-  ([Sources and references](rule-sets.md#sources-and-references)).
-- **Local private** is the repository's own `rules/` when the repository
+- **Local public** is the repository's own rules, in `.statute/rules/`
+  ([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
+  when the repository is public.
+- **Local private** is the repository's own rules when the repository
   is private. A public repository keeps its private rules in a source
   outside it, named with `scope = "local"`, as in
   [Private rules in a public repository](#private-rules-in-a-public-repository).
+
+**A source and a repository's own rules** are two different things, and
+a repository may have both:
+
+- A source publishes rules for other repositories to use. Its rules are
+  in `rules/` at its top, or in the directory its entry names with
+  `rules-dir` ([Sources and references](rule-sets.md#sources-and-references)),
+  and a rule set that wants them names the source in `[sources]`, by a
+  git address or a path, and cites them as `R42` or `team:7`.
+- A repository's own rules bind that repository alone. They are in
+  `.statute/rules/`, cited as `L12`, and compiled into that
+  repository's output only. No other repository can name them: there
+  is no reference form for another repository's own rules, and
+  `rules-dir` may not lead into `.statute/`.
+
+This repo is both: it publishes the first-party rules in `rules/`, and
+keeps rules for its own development in `.statute/rules/`. A rule that
+another repository should follow belongs in a source; one that only
+makes sense here is a local rule.
 
 Every rule, of whichever kind, is self-contained: it cites other rules
 only through `parent`, `requires`, `conflicts`, `overrides` and
@@ -118,7 +135,7 @@ gives no clear answer:
 When a source is added, `statute source add` asks `gh` in the same
 way, with the safe side reversed: `INTERNAL`, no answer and a directory
 in no GitHub repository count as private, and a private source of a
-public repository is written to `statute.private.toml` rather than
+public repository is written to the private rule set rather than
 stopping the command
 ([Adding a source](global-configuration.md#adding-a-source)).
 
@@ -160,53 +177,77 @@ compiled into `AGENTS.md` would publish their text. So, in a rule set
 with `public = true`:
 
 - `statute.toml` names only public sources; a source with
-  `public = false` fails, with a note to name it in
-  `statute.private.toml`.
+  `public = false` fails, with a note to name it in the private rule
+  set.
 - A private source holds only what is private. It copies no public rule:
   it cites one, as any rule cites another.
-- Private sources go in `statute.private.toml`, next to `statute.toml`,
-  which git ignores. It names `statute.toml` as its base with
-  `base = "statute.toml"`, a new field for the inheritance that
-  [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)
+- Private sources go in the private rule set, `private.toml`, which
+  lives in git's own directory, not in the work tree:
+
+  ```text
+  $(git rev-parse --git-path common/statute)/
+    private.toml          the private rule set
+    private.lock          its lock file
+  ```
+
+  In a clone that is `.git/common/statute/`, from the main checkout
+  and from each linked worktree alike. The private rule set builds on
+  the `statute.toml` of the worktree statute runs in, which it inherits
+  as [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)
   describes, and adds sources and rules:
 
   ```toml
-  base = "statute.toml"
   rules = ["me:4", "here:2"]
 
   [sources]
-  me = { path = "../my-rules", public = false }
-  here = { path = "../my-rules/repos/example", public = false, scope = "local" }
+  me = { path = "/home/me/my-rules", public = false }
+  here = { path = "~/my-rules/repos/example", public = false, scope = "local" }
   ```
 
   It may list `packs` as `statute.toml` does, rooted in a node of any
   source of either layer, so that a private source's new rules are
   enabled with it; a pack may enable public rules, which the private
   layer alone then enables, as a rule it lists may. It has no
-  `[compile]`, since its output's place is fixed (below). Its sources'
-  names may not repeat those of `statute.toml`, nor its rules and packs
-  those `statute.toml` lists. In a private
-  repository (`public = false`) the file fails: there `statute.toml`
-  names everything. `statute add --private` and `statute remove
-  --private` change it.
+  `[compile]`, since its output's place is fixed (below), and no
+  `base`, since its base is always the `statute.toml` beside which the
+  command runs. A `path` in it is absolute or starts with `~/`; a
+  relative one fails, since the file serves every worktree and a
+  relative path would lead somewhere else from each. `statute source
+  add` writes the absolute path. Its sources' names may not repeat those
+  of `statute.toml`, nor its rules and packs those `statute.toml` lists.
+  In a private repository (`public = false`) the file fails: there
+  `statute.toml` names everything. Outside a git repository there is
+  no private layer, and a command with `--private` fails. `statute add
+  --private` and `statute remove --private` change it, writing a
+  temporary file in the same directory first and renaming it into
+  place.
 
 - This private layer only adds to the public one. It may not override a
   rule of `statute.toml`, nor leave one out
   ([Overrides](#overrides)): the committed `AGENTS.md` holds that rule
   whatever the private layer does, and an agent that read both files
   would find two rules that disagree.
-- It has its own lock file, `statute.private.lock`, which pins both
-  layers together; `statute lock` writes it with `statute.lock`, the
-  commands that change either rule set write it again, and `statute
-  compile` checks the full text against it. It has its own output,
-  below. Before writing any of these, statute checks with
-  `git check-ignore` that git ignores `statute.private.toml`,
-  `statute.private.lock`, each file it would write and the files
-  `add --private` and `remove --private` write first under `.statute/`
-  and then move into place. A path whose last matching pattern is a
-  negation (`!`) counts as not ignored. It writes no file at all, public
-  or private, when one is not ignored or when git cannot tell, as
-  outside a git repository.
+- It has its own lock file, `private.lock`, which pins the private
+  layer's own sources and nothing else: each as `statute.lock` records a
+  source, a git source by its address, its branch or tag and the commit,
+  with `public` and `scope`. It records no rule and nothing of the
+  public layer. `statute lock` writes it with `statute.lock`, and the
+  commands that change the private rule set or its sources write it
+  again. The two layers together are resolved in memory each time a
+  command needs them, from the `statute.lock` of the worktree and
+  `private.lock`, and that resolution is never written down. So every
+  worktree reads the private sources at the same commits, while each
+  reads the public layer its own branch pins; a lock file of both
+  layers together, shared by worktrees on different branches, would be
+  stale in all but one of them.
+- git never tracks a file in its own directory, so the private rule set
+  and its lock file cannot be committed, and need no `.gitignore` and no
+  check. What the private layer writes in the work tree is under
+  `.statute/` (below), and before writing it statute checks with
+  `git check-ignore` that git ignores each file it would write there.
+  A path whose last matching pattern is a negation (`!`) counts as not
+  ignored. It writes no file at all, public or private, when one is not
+  ignored or when git cannot tell.
 - The skills and the `check = "command"` checks of the rules only the
   private layer enables are left out of the committed files,
   `.agents/skills/` and `statute-checks.toml`
@@ -214,15 +255,41 @@ with `public = true`:
   `statute check` runs those checks all the same. How a private rule's
   skills are installed is an open question.
 
+The place in git's directory is chosen so that every worktree of a
+clone shares one private rule set. git shares everything under
+`common/` of its common directory between the worktrees of a clone
+(gitrepository-layout(5)), and `git rev-parse --git-path common/...`
+names that place from any worktree, where a path git does not know,
+such as `--git-path statute`, would name a directory of each worktree
+alone. A file in the work tree does not come with `git worktree add`, which checks out only what git
+tracks, so each new worktree would need a copy that then drifts. A
+directory in the home directory keyed by the repository's path would
+also be shared, but it is orphaned when the clone moves or is deleted,
+and needs an encoding of paths into names; one keyed by the remote's
+address would join two clones of one remote that are meant to differ,
+and has no key for a repository without one. The cost of git's
+directory is that the files are out of sight: the commands that write
+them print their full path. A clone made anew, or copied without git,
+starts without them.
+
+**The names stay `private`.** `local` already means a scope in statute
+(`scope = "local"`, `L12` and the local kinds of source), so a name
+such as `statute.local.toml`, as other tools name a machine's own
+settings, would read as the configuration of the local rules. What
+sets these files apart is that they must not be published, which
+`private` says.
+
 **The private output** is one file, `.statute/AGENTS.full.md`: the
 committed `AGENTS.md` with the rules only the private layer brings in
 (its own rules and the public rules that only it enables), each at its
-place in the tree. `.statute/` is a directory that the public
-`.gitignore` names. Two links lead to the file:
+place in the tree. Two links lead to the file:
 
 ```text
 .statute/
+  .gitignore              written by statute, committed: the generated files below
+  rules/                  the repository's own rules, committed
   AGENTS.full.md          the public rules and the private ones
+  site/                   the local site
 CLAUDE.local.md -> .statute/AGENTS.full.md
 AGENTS.override.md -> .statute/AGENTS.full.md
 ```
@@ -245,11 +312,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
   it reads the public rules twice with such a link as without it.
   `statute compile` warns of a `CLAUDE.md`
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
-- OpenCode reads `AGENTS.md`, or `CLAUDE.md` when there is no
-  `AGENTS.md`, and neither link name. It reads the full text when its
-  global configuration lists `.statute/AGENTS.full.md` under
-  `instructions`, after `AGENTS.md`, so it too reads the public rules
-  twice; that is the machine's configuration, not statute's.
+- OpenCode is not supported yet.
 - The committed `AGENTS.md` ends with one fixed line, the same in every
   public repository, that tells an agent to read `.statute/AGENTS.full.md`
   when it exists. The path is in backticks, so that Claude Code does not
@@ -265,6 +328,35 @@ matches, judging by the link's own path, and does not read
 `.gitignore`, and writes nothing otherwise, naming the lines to add to
 `.git/info/exclude`. A file at either path that is not such a link is
 left as it is, and the compile fails.
+
+**`.statute/` holds what is committed and what is not.** The
+repository's own rules in `.statute/rules/` are committed; the
+private output, the local site
+([The local site](statute-command.md#the-local-site)) and the
+temporary files statute writes there first are not. So the
+repository's `.gitignore` does not name `.statute/`: statute writes
+`.statute/.gitignore` itself, as uv does in the `.venv` it creates and
+ruff in its `.ruff_cache`, and it lists the generated files by name:
+
+```gitignore
+# written by statute
+/AGENTS.full.md
+/site/
+/*.tmp
+```
+
+A file statute adds later is then tracked until the list names it,
+which is seen in `git status`, where a pattern of `*` with exceptions
+would hide it. Every command that writes a generated file into
+`.statute/` writes `.statute/.gitignore` first when it is missing, and
+rewrites it when it starts with statute's line and differs; a
+`.statute/.gitignore` that does not start with that line is the
+repository's own, and the command writes nothing and fails. The file is
+committed, so that a fresh clone ignores the generated files before
+statute first runs there. The check with `git check-ignore` above
+still runs on each file before it is written. Not built yet: today the
+repository's `.gitignore` names `.statute/`, and statute writes only
+`.statute/site/.gitignore`.
 
 By default Codex reads at most 32 KiB of a project's instruction files,
 from the repository's root down to the working directory together, and
@@ -285,12 +377,51 @@ Claude Code does not load it and that its rules belong in the rule
 set. statute does not compile their content into
 the full text.
 
-Files git does not track do not come with `git worktree add`. Each
-worktree needs its own `statute compile` to write `.statute/` and the
-two links; `.git/info/exclude` is shared by the worktrees of a clone.
-Running it when a worktree is opened is the caller's part, not
-statute's. The links are relative and lead to the worktree's own
-`.statute/`.
+**A new worktree.** The private rule set, its lock file and
+`.git/info/exclude` are shared by the worktrees of a clone, but the
+private output and the two links are files of one work tree, and
+`git worktree add` checks out only what git tracks. A git
+`post-checkout` hook writes them. git runs it after `git worktree add`
+(unless with `--no-checkout`) and after each
+`git switch` or `git checkout` of a branch, in the top of the work tree
+(githooks(5)); the hooks are in the common directory, so one hook
+serves every worktree of the clone. The hook runs one command,
+`statute compile --private-only`:
+
+```sh
+#!/bin/sh
+[ "$3" = 1 ] && statute compile --private-only; exit 0
+```
+
+`$3` is 1 for a checkout of a branch and 0 for one of files, so the
+private output follows the branch, whose `statute.toml` may differ.
+The hook's path is what `git rev-parse --git-path hooks/post-checkout`
+prints, which follows `core.hooksPath`; a repository whose hook
+manager owns that file adds the line there, and pre-commit can install
+a hook of this type. statute does not install the hook: the user does,
+once per clone. `--private-only`:
+
+- writes only `.statute/.gitignore`, `.statute/AGENTS.full.md` and the
+  two links, never `AGENTS.md`, the skills or `statute-checks.toml`;
+- reads `statute.toml` and `statute.lock` of the worktree and the
+  private rule set and its lock file, and needs no network: a git
+  source is read from statute's cache
+  ([The statute directories](global-configuration.md#the-statute-directories)),
+  and nothing is fetched;
+- does nothing and exits 0, silently, when there is no `statute.toml`,
+  the repository is private (`public = false`) or there is no private
+  rule set;
+- otherwise writes nothing, prints a warning that names the cause and
+  the command to run, and exits 0, whenever the plain `statute compile`
+  would fail or need the network: a lock file that is stale, a commit
+  missing from the cache, a link not ignored through
+  `.git/info/exclude`, a rule set that does not resolve. A hook that
+  fails would make `git worktree add` and `git switch` exit with its
+  status (githooks(5)), so it never does.
+
+The links are relative and lead to the worktree's own `.statute/`. Not
+built yet: `--private-only`; until it is, running `statute compile` in
+a new worktree is the caller's part.
 
 The private rules only add to the public ones and never contradict
 them, as the private layer only adds rules (above): Grok reads the
@@ -300,14 +431,14 @@ in addition gave no reliable priority to either when they disagreed.
 The agents' behavior was measured on 2026-10-14 in non-interactive mode
 on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
 folder-trust check turned off for each run (without it, Grok loads no
-project instructions in non-interactive mode), and on Pi 1.2.0 and
-OpenCode 1.19.0 in one run per case; the 32 KiB of Codex is from its
+project instructions in non-interactive mode), and on Pi 1.2.0 in one
+run per case; the 32 KiB of Codex is from its
 documentation and source. In runs of one small task, Codex and Grok
 read the file a fallback line with an `@` path names, two runs each,
 and Claude Code loaded it as an import; with a line of the same kind
 but other wording than statute's, the path in backticks and no `@`,
-Claude Code (two runs) and OpenCode (two runs) read the full text when
-nothing else loaded it, each time the model's own read. Every run had
+Claude Code read the full text in two runs when nothing else loaded
+it, each time the model's own read. Every run had
 the user's own instruction files and skills in place, which also urge
 an agent to find its instructions. The layout itself, with a stand-in
 for the full text:
@@ -328,17 +459,12 @@ for the full text:
 - Pi loaded the full text alone through `AGENTS.override.md`, the link
   ignored through `.git/info/exclude` or through a `.gitignore`, and not
   `AGENTS.md`.
-- OpenCode loaded `AGENTS.md` and not the two links. With
-  `instructions` naming `.statute/AGENTS.full.md` in its configuration,
-  set for the run through its environment, it loaded the full text as
-  well, ignored either way; without it, it did not.
 - Claude Code, in the full layout with its default setting, loaded the
   full text alone, and neither the root's nor a subdirectory's
   `AGENTS.md`.
 
 Not measured: interactive mode; the fallback line where no user-level
-instructions or skills are present; OpenCode's `instructions` written in
-its global configuration file, or naming a link; a
+instructions or skills are present; a
 `CLAUDE.md -> AGENTS.md` in a subdirectory, and whether it
 brings that subdirectory's rules back to Claude Code; Claude Code's
 setting that reads `AGENTS.md` beside `CLAUDE.md`, for subdirectories;
@@ -346,7 +472,14 @@ and Grok's reading of a subdirectory's `AGENTS.md` under this layout.
 Each negative result holds only for the runs counted; the others are
 one run each.
 
-The private layer is built as described here.
+The private layer is built as described here, except what this
+section marks as not built yet and its place: today the private rule
+set is `statute.private.toml` and its lock file
+`statute.private.lock`, next to `statute.toml`, with `base =
+"statute.toml"`; git must ignore both, which statute checks with
+`git check-ignore`, and the lock file pins both layers together. Moving
+them into git's directory and the lock file down to the private
+sources is not built yet.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
@@ -406,8 +539,8 @@ may override only a rule of a lower rank:
    own rules may replace a first-party rule for all of their
    repositories (a private source's rules, in a public repository, only
    a rule that the private layer alone enables, below);
-3. local rules: the repository's `rules/` and any source with
-   `scope = "local"`.
+3. local rules: the repository's own, in `.statute/rules/`, and any
+   source with `scope = "local"`.
 
 Two rules of the same rank cannot override each other, and within one
 source a rule is changed in place or superseded, never overridden. A
@@ -427,7 +560,7 @@ a rule it enables fails when it overrides a rule of the public layer,
 one that `statute.toml` enables, directly or through a requirement:
 
 ```text
-error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `statute.private.toml` may only add rules
+error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `private.toml` may only add rules
 ```
 
 Within the private layer, a rule may override any rule of a lower rank
@@ -635,8 +768,8 @@ marking what is not built:
   its own source or another, and
   a rule may have `overrides` in place of `parent`.
 - [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file):
-  `public`, `scope`, `statute.private.toml`, `base` and `overridden-by`
-  in the lock file.
+  `public`, `scope`, the private rule set and `overridden-by` in the
+  lock file.
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
   two levels of domains.
 - [Compilation and the site](statute-command.md#compilation-and-the-site):
@@ -648,5 +781,7 @@ marking what is not built:
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
 
-Building the rest replaces what the tools do today: statute fails
-`base` anywhere but in `statute.private.toml`.
+Building the rest replaces what the tools do today: statute reads the
+private rule set from `statute.private.toml` next to `statute.toml`,
+where it needs `base = "statute.toml"`, and its lock file pins both
+layers ([Private rules in a public repository](#private-rules-in-a-public-repository)).
