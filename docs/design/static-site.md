@@ -170,7 +170,9 @@ site-rules`, `uv run count-tokens` (the token count, below),
   and checking or unchecking a domain does the same to the domains under
   it. A node whose `parent` is in another source, and a
   rule with `overrides`, has no domain on the site: it is at the top
-  of the tree, with no group above it. The filter does not show it yet,
+  of the tree, with no group above it. When its parent is a domain of a
+  source the site reads, the filter goes by that domain. Otherwise the
+  filter does not show it yet,
   since it shows only the rules of a checked domain; without scripts it
   appears under the heading before it. This repo has no such node yet;
   the pull request that first adds one fixes the list, and the

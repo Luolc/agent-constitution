@@ -18,8 +18,10 @@ With `--source`, the rules of other sources join them, each source with
 its name and quadrant: their nodes follow this repo's, source by source
 in the order of the quadrants, each node with its source and quadrant,
 and a node of another source cited, required or named as a parent links
-to its page. With `--enabled`, each rule says whether the rule set of a
-statute.lock enables it. Without either, the pages are this repo's alone
+to its page; a conflict across sources shows on both sides. Each node
+also names its nearest domain, of another source when its parent is.
+With `--enabled`, each rule says whether the rule set of a statute.lock
+enables it. Without either, the pages are this repo's alone
 and say neither.
 
 Errors print as `path:line: check 1: message`, as constitution-build
@@ -311,6 +313,16 @@ class _Language:
       if parent.kind != "rule":
         groups.insert(0, self.ref(parent.id, name) | {"kind": parent.kind})
       ancestor = parent.parent
+    # The nearest domain, which the filter goes by, may be another
+    # source's: a node under it heads a tree of its own here, with no
+    # group, but is shown with that domain.
+    domain = next(
+      (g["key"] for g in reversed(groups) if g["kind"] == "domain"), ""
+    )
+    if isinstance(ancestor, str):
+      above = self.ref(ancestor, name)
+      if "key" in above and self.nodes[other_ref(ancestor)].kind == "domain":
+        domain = above["key"]
     if self.many:
       groups.insert(
         0,
@@ -359,6 +371,7 @@ class _Language:
           for ref in specific(node.authority, self.src)
         ],
         "key": page_key(node.id, name),
+        "domain": domain,
         "source": name,
         "quadrant": source.quadrant,
       }
@@ -378,12 +391,16 @@ def both_sides(sources: list[Source]) -> dict[tuple[str, int], list[int | str]]:
     conflicts with, as either side writes them.
   """
   conflicts: dict[tuple[str, int], list[int | str]] = defaultdict(list)
+  names = {s.name for s in sources}
   for s in sources:
     for n in s.nodes:
       for target in n.doc.data.get("conflicts", []):
         conflicts[(s.name, n.id)].append(target)
         if isinstance(target, int):
           conflicts[(s.name, target)].append(n.id)
+        elif (other := other_ref(target))[0] in names:
+          # On the other side, a reference to this source, as its label.
+          conflicts[other].append(rule_label(n.id, s.name))
   return conflicts
 
 
