@@ -98,6 +98,12 @@ enum Command {
     /// included, to .statute/site, which git ignores; open its
     /// index.html in a browser.
     Site,
+    /// Build or check the constitution of this repository from its
+    /// sources.
+    Constitution {
+        #[command(subcommand)]
+        action: statute::constitution::cli::Action,
+    },
     /// Name a source of rules.
     Source {
         #[command(subcommand)]
@@ -182,6 +188,7 @@ fn main() -> ExitCode {
         ),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
+        Command::Constitution { action } => statute::constitution::cli::run(action).map_err(|_| ()),
         Command::Source {
             action:
                 SourceAction::Add {

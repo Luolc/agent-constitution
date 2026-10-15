@@ -177,7 +177,9 @@ be published anew. The rule set is `statute.toml`, the lock file
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file));
 - `explain`: say why a rule is enabled and which rules require it;
 - `site`: write a local site of the rules the rule set can draw on
-  ([The local site](#the-local-site)).
+  ([The local site](#the-local-site));
+- `constitution build`: build the constitution of the repository it runs
+  in from its sources, or check it (below).
 
 **The first version** builds the repository level only. The user level,
 whose instruction files in the user's home directory the private overlay
@@ -189,7 +191,7 @@ which try the whole process on real work.
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
 (built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
-which 43 and 46 supersede), and `site`, for sources on disk and git
+which 43 and 46 supersede), `site` and `constitution build`, for sources on disk and git
 sources, as many as
 `[sources]` names. The `rules/` next to `statute.toml` are the
 repository's own rules, `L12`, when no source is at `.`; with
@@ -242,6 +244,23 @@ the chain reaches a rule with more than one successor, the entry is left
 as it is and the successors are listed, for the user to choose with
 `add` and `remove`. A repealed rule is left for the user to take out. When the changed rule
 set does not resolve, neither file is changed.
+
+**`constitution build`** does what `uv run constitution-build` does for
+the constitution: it checks the sources of the one edition under
+`constitution/` and writes the full version and the version for agents
+in each language to its `generated/`, byte for byte as that command
+does; with `--check` it writes nothing and fails when a committed file
+differs from a fresh build; with `--check --base <git-ref>` it also
+compares the numbering and the revision with that commit; and `--root
+<dir>` runs it on another checkout than the current directory. Its
+checks are checks 1 to 7 of [Checkers](checkers.md#checkers) as far as
+they concern the constitution, with the same messages. It does not read
+`rules/`: what that command checks of the rules, among them the rules'
+citations of the constitution and the rules a base commit had, is not
+built here. The generated files still name `uv run constitution-build`,
+which CI, the commit hooks and the rest of this design still run; the
+switch to `statute constitution build` and the removal of the Python
+command are not done yet.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that
