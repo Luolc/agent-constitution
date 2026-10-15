@@ -241,11 +241,19 @@ screenshots (Screenshots, below). The workflow
   marked as a value: a link to the parameter's entry on its source's
   page of parameters, the parameter's name as its title, shown on hover;
   in a code span the span becomes HTML around the link. A title stands
-  inside a link in the list and in a one-of's box, so there the value
-  is marked as a span with the parameter's name as its title, escaped,
-  and not linked; on the rule's own page it is marked and linked as in
-  the text, and elsewhere, in a node named on a page, the value stands
-  alone. Each source with parameters has
+  inside a link in the list, in a one-of's box, in a node named on a
+  page and in the home page's lists of the rules under a provision, so
+  there the value is marked as a span with the parameter's name as its
+  title, escaped, and not linked; on the rule's own page it is marked
+  and linked as in the text, and elsewhere the value stands alone. A
+  title's code spans show as code wherever it is shown in the page;
+  Hugo renders the title in the list and on the rule's own page, and
+  `site-rules` gives each node named in a rule's data and each rule
+  under a provision its title as HTML as well (`titleHtml`: the text
+  escaped once, each code span a `<code>`), since the home page's
+  content adapter cannot render Markdown. A page's own title, in the
+  browser's tab, is its title as text, without the backticks. Each
+  source with parameters has
   that page, `rules/params/` for this repo's, `rules/<name>-params/` for
   another's (`web/layouts/_partials/rules/params.html`), linked above
   the list: each parameter under a heading of its title, anchored by its
