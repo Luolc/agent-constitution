@@ -1,5 +1,5 @@
-//! `superseded-by`, one ID or a list: statute and the compiler agree on
-//! the cases of `tools/compiler/tests/superseded_by_cases.toml`.
+//! `superseded-by`, one ID or a list: the cases of
+//! `tests/cases/superseded_by_cases.toml`.
 
 use std::path::Path;
 
@@ -22,9 +22,8 @@ struct Case {
 }
 
 #[test]
-fn the_compilers_cases() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tools/compiler/tests/superseded_by_cases.toml");
+fn the_cases() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/cases/superseded_by_cases.toml");
     let cases: Cases = toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
     assert!(!cases.cases.is_empty());
     for case in cases.cases {

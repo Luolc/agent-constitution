@@ -97,6 +97,18 @@ quadrant-local-public: "Local public"
 quadrant-local-private: "Local private"
 rule-enabled: "Enabled"
 rule-not-enabled: "Not enabled"
+# A source's page of parameters, linked above the list
+# (layouts/_partials/rules/params.html).
+params: "Parameters"
+params-intro: "The values the rules leave to each rule set. In a rule's text a parameter shows its default, marked; its name shows on hover and the mark links here."
+param-name: "Name"
+param-type: "Type"
+param-values: "Values"
+param-scope: "Scope"
+param-scope-repo: "The repository's, the same for everyone"
+param-scope-personal: "Each person's own"
+param-default: "Default"
+param-rules: "Used by"
 # Whether a source's defaults enable a node, and a one-of's default option
 # (layouts/_partials/rules/default.html).
 default-on: "On by default"

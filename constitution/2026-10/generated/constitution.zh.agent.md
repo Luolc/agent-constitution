@@ -1,4 +1,4 @@
-本文件由 `uv run constitution-build` 从 `constitution/2026-10/index.toml` 和 `constitution/2026-10/articles/` 生成，是给 agent 的版本，不收写给人读的条款的正文；不要手改，改源文件后重新生成。修订号：1。语言：中文。
+本文件由 `cargo run -p statute -- constitution build` 从 `constitution/2026-10/index.toml` 和 `constitution/2026-10/articles/` 生成，是给 agent 的版本，不收写给人读的条款的正文；不要手改，改源文件后重新生成。修订号：1。语言：中文。
 
 # Agent 宪法 (2026-10 版)
 

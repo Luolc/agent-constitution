@@ -2,8 +2,6 @@
 //! language means adding one entry to [`LANGUAGES`] and listing it in
 //! `index.toml`.
 
-use crate::cite::{roman, zh_number};
-
 /// The strings and numbering of one output language. In the templates,
 /// `{name}` is replaced by a value; `{command}` is [`super::BUILD_COMMAND`].
 pub(crate) struct Language {
@@ -65,11 +63,54 @@ const EN_MONTHS: [&str; 12] = [
     "December",
 ];
 
+fn roman(mut n: u32) -> String {
+    const ROMAN: [(u32, &str); 13] = [
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    ];
+    let mut out = String::new();
+    for (value, symbol) in ROMAN {
+        while n >= value {
+            out.push_str(symbol);
+            n -= value;
+        }
+    }
+    out
+}
+
+/// n in Chinese numerals, for 1 to 99: 十四, 二十.
+fn zh_number(n: u32) -> Option<String> {
+    const DIGITS: [&str; 10] = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    if !(1..100).contains(&n) {
+        return None;
+    }
+    let (tens, ones) = ((n / 10) as usize, (n % 10) as usize);
+    if tens == 0 {
+        return Some(DIGITS[ones].to_string());
+    }
+    Some(format!(
+        "{}十{}",
+        if tens == 1 { "" } else { DIGITS[tens] },
+        if ones == 0 { "" } else { DIGITS[ones] }
+    ))
+}
+
 /// n in Chinese numerals; n itself where there is none (from 100).
 fn zh(n: u64) -> String {
     u32::try_from(n)
         .ok()
-        .and_then(|n| zh_number(n).ok())
+        .and_then(zh_number)
         .unwrap_or_else(|| n.to_string())
 }
 
@@ -153,8 +194,41 @@ pub(crate) const LANGUAGES: &[Language] = &[
     },
 ];
 
+impl Language {
+    /// How a citation of an article is labeled: `Art. IV`.
+    pub(crate) fn article_label(&self, n: u64, suffix: &str) -> String {
+        fill(
+            self.article_ref,
+            &[("number", &(self.article_number)(n, suffix))],
+        )
+    }
+
+    /// How a citation of a section of the article labeled `article` is
+    /// labeled: `Art. IV §1`.
+    pub(crate) fn section_label(&self, article: &str, n: u64, suffix: &str) -> String {
+        fill(
+            self.section_ref,
+            &[
+                ("article", article),
+                ("section", &(self.section_number)(n, suffix)),
+            ],
+        )
+    }
+
+    /// How a citation of an item of the section labeled `section` is
+    /// labeled: `Art. IV §1(2)`.
+    pub(crate) fn item_label(&self, section: &str, n: u64, suffix: &str) -> String {
+        section.to_string() + &(self.item_ref)(n, suffix)
+    }
+}
+
 pub(crate) fn language(code: &str) -> Option<&'static Language> {
     LANGUAGES.iter().find(|l| l.code == code)
+}
+
+/// The language `code`, or English when there is none for it.
+pub(crate) fn language_or_default(code: &str) -> &'static Language {
+    language(code).unwrap_or(&LANGUAGES[0])
 }
 
 /// The template with each `{name}` of `values` replaced, in one pass, so

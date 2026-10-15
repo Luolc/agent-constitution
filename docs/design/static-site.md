@@ -33,7 +33,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
 - Input: the generated `constitution.<lang>.md` in the edition
   directory's `generated/` ([The constitution](constitution.md)), not the
   sources: the citations, numbers and anchors are rendered once, by
-  `constitution-build`. `web/hugo.toml` mounts them and the edition
+  `statute constitution build`. `web/hugo.toml` mounts them and the edition
   directory's `index.toml` from `constitution/` as assets, and the partial
   `web/layouts/_partials/constitution/source.html` finds each by name,
   failing the build unless exactly one file matches; Python writes no
@@ -148,7 +148,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
   `authority` that names a provision and one above it (an item and its
   section or article, a section and its article) counts only the
   narrower one, so a rule is listed under the most specific provisions it
-  names, and its page lists only those; `constitution-build` warns of
+  names, and its page lists only those; `statute validate rules` warns of
   such a pair ([Checkers](checkers.md#checkers), check 5). A
   superseded or repealed rule has a page and is in the list, but not
   under a provision. The content adapter
@@ -225,7 +225,20 @@ site-rules`, `uv run count-tokens` (the token count, below),
   page's headings. In the texts,
   `{@constitution:...}` becomes a link to the provision's anchor, labeled
   as the full version labels it, in the language of the text, and
-  `{@rule:N}` a link to the rule's page ("rule N", 「规定 N」). A page
+  `{@rule:N}` a link to the rule's page ("rule N", 「规定 N」). A
+  placeholder, `{$language.docs}`, becomes its parameter's default as
+  the outputs write it in the text's language ("English", 「英文」),
+  marked as a value: a link to the parameter's entry on its source's
+  page of parameters, the parameter's name as its title, shown on hover;
+  in a code span the span becomes HTML around the link. A title, which
+  the list and other pages show inside a link, gets the value alone, and
+  is marked only on the rule's own page. Each source with parameters has
+  that page, `rules/params/` for this repo's, `rules/<name>-params/` for
+  another's (`web/layouts/_partials/rules/params.html`), linked above
+  the list: each parameter under a heading of its title, anchored by its
+  name, with its name, type, values for a `choice`, scope, default and
+  the rules whose texts name it. A placeholder of another source's rule
+  names that source's parameter, or else this repo's. A page
   shows a node's texts in its own language when the node is written in
   it or has a translation into it; otherwise it shows the original, under a line
   that names its language (`这条规定还没有中文译文，下面是原文

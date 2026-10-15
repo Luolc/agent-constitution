@@ -29,6 +29,13 @@ reckons it; a domain or a rule gives its own `default`, a one-of its
 default option, an option whether it is that one, and a rule its `uses`
 (docs/design/rule-config.md, Default switches and Where a rule is used).
 
+Each source with parameters has a page of them, each parameter with its
+title, name, type, scope, default (and values) and the rules that use
+it. In a rule's texts a placeholder, `{$<name>}`, becomes the default,
+as statute writes it in the text's language, marked as a value: a link
+to its entry on that page, the name on hover; in a title, where no link
+can go, the value alone (docs/design/rule-config.md, Parameters).
+
 statute reads and checks the sources (`statute export`, built from this
 checkout with cargo) and prints what is wrong with them; the exit status
 is 1 when they cannot be read.
@@ -37,6 +44,7 @@ is 1 when they cannot be read.
 import argparse
 from collections import defaultdict
 from dataclasses import dataclass
+import html
 import json
 from pathlib import Path
 import re
@@ -87,6 +95,10 @@ MARK = re.compile(
 # `{@rule:R12}`, `{@rule:team:7}`.
 OTHER_RULE = re.compile(r"\{@rule:(R[1-9][0-9]*|" + ID + r":[1-9][0-9]*)\}")
 FIRST_PARTY_REF = re.compile(r"R[1-9][0-9]*")
+# A placeholder, `{$language.docs}`, and a Markdown code span, in which
+# one is no Markdown but stays literal.
+PLACEHOLDER = re.compile(r"\{\$(" + ID + r"\." + ID + r")\}")
+CODE_SPAN = re.compile(r"(`+)(.+?)\1", re.S)
 
 
 @dataclass(frozen=True)
@@ -261,6 +273,29 @@ def first_party(value: object) -> bool:
   return isinstance(value, str) and FIRST_PARTY_REF.fullmatch(value) is not None
 
 
+@dataclass(frozen=True)
+class Param:
+  """One parameter of a source, as `statute export` gives it.
+
+  Attributes:
+    name: its name, `language.docs`.
+    type: language, string or choice.
+    values: a choice's values; None for the other types.
+    scope: repo or personal.
+    default: its default, as the rule set writes a value.
+    title: its title by language.
+    shown: its default as statute writes it in each language.
+  """
+
+  name: str
+  type: str
+  values: list[str] | None
+  scope: str
+  default: str
+  title: dict[str, str]
+  shown: dict[str, str]
+
+
 class Source(NamedTuple):
   """The rules of one source.
 
@@ -268,11 +303,25 @@ class Source(NamedTuple):
     name: its name, as the rules of the other sources name it.
     quadrant: one of QUADRANTS.
     nodes: its rule tree.
+    params: the parameters its params.toml declares.
   """
 
   name: str
   quadrant: str
   nodes: list[Node]
+  params: tuple[Param, ...] = ()
+
+
+def params_key(source: str = FIRST_PARTY) -> str:
+  """Return the path of a source's page of parameters under rules/.
+
+  Args:
+    source: the name of the source.
+
+  Returns:
+    `params` for this repo's, `team-params` for another source's.
+  """
+  return "params" if source == FIRST_PARTY else f"{source}-params"
 
 
 def rule_label(node_id: int, source: str = FIRST_PARTY) -> str:
@@ -388,6 +437,7 @@ class _Language:
     """
     self.lang, self.src = lang, src
     self.nodes = {(s.name, n.id): n for s in sources for n in s.nodes}
+    self.params = {(s.name, p.name): p for s in sources for p in s.params}
     self.many = len(sources) > 1
     self.labels = src.labels
 
@@ -409,6 +459,8 @@ class _Language:
   def title(self, key: tuple[str, int]) -> str:
     """Return a node's title as this language's pages show it.
 
+    Each placeholder is its parameter's default.
+
     Args:
       key: its source's name and its ID.
 
@@ -416,7 +468,67 @@ class _Language:
       The title.
     """
     node = self.nodes[key]
-    return node.title[self.shown(node)]
+    shown = self.shown(node)
+    return self.values(node.title[shown], shown, key[0], marked=False)
+
+  def param(self, name: str, source: str) -> tuple[str, Param] | None:
+    """Return the parameter a placeholder of a source's rule names.
+
+    It is the source's own, or else the first-party source's.
+
+    Args:
+      name: the parameter's name.
+      source: the name of the source of the rule.
+
+    Returns:
+      The name of the parameter's source and the parameter, or None when
+      neither declares it.
+    """
+    for where in (source, FIRST_PARTY):
+      if (where, name) in self.params:
+        return where, self.params[(where, name)]
+    return None
+
+  def values(
+    self, text: str, text_lang: str, source: str, marked: bool = True
+  ) -> str:
+    """Return a text with each placeholder as its parameter's default.
+
+    Marked, a default is a link to the parameter's entry on its page of
+    parameters, with the name as its title, in a code span as well,
+    which becomes HTML for it; else the default alone.
+
+    Args:
+      text: the text, its citations already links.
+      text_lang: its language.
+      source: the name of the source of the node that holds it.
+      marked: whether to mark the defaults.
+
+    Returns:
+      The text; a placeholder of no parameter stays as it is.
+    """
+
+    def value(m: re.Match[str]) -> str:
+      found = self.param(m.group(1), source)
+      if found is None:
+        return m.group(0)
+      where, p = found
+      shown = p.shown.get(text_lang, p.default)
+      if not marked:
+        return shown
+      return (
+        f'<a class="param-value" href="../{params_key(where)}/#{p.name}"'
+        f' title="{p.name}">{html.escape(shown)}</a>'
+      )
+
+    def code(m: re.Match[str]) -> str:
+      if not PLACEHOLDER.search(m.group(2)) or not marked:
+        return m.group(0)
+      # Escaping leaves a placeholder as it is.
+      inner = html.escape(m.group(2), quote=False)
+      return f"<code>{PLACEHOLDER.sub(value, inner)}</code>"
+
+    return PLACEHOLDER.sub(value, CODE_SPAN.sub(code, text))
 
   def ref(
     self, target: int | str, source: str = FIRST_PARTY
@@ -474,6 +586,47 @@ class _Language:
       return f"[{label}]({PROVISION_LINK.format(ref=target)})"
 
     return OTHER_RULE.sub(lambda m: rule_link(m.group(1)), MARK.sub(link, text))
+
+  def params_page(
+    self, source: Source, used: dict[tuple[str, str], list[tuple[str, int]]]
+  ) -> dict[str, object]:
+    """Return what a source's page of parameters shows.
+
+    Args:
+      source: the source.
+      used: for each parameter, by its source's name and its name, the
+        rules whose texts name it, by their source's name and ID.
+
+    Returns:
+      The page's key, the source's name and quadrant, and each parameter
+      with its title in this language where it has one, else in the
+      other, its default as written and as shown, and the rules that use
+      it.
+    """
+    params = []
+    for p in source.params:
+      lang = self.lang if self.lang in p.title else next(iter(p.title))
+      params.append(
+        {
+          "name": p.name,
+          "type": p.type,
+          "values": p.values,
+          "scope": p.scope,
+          "default": p.default,
+          "shown": p.shown.get(self.lang, p.default),
+          "title": p.title[lang],
+          "lang": lang,
+          "rules": [
+            self.ref(i, name) for name, i in used[(source.name, p.name)]
+          ],
+        }
+      )
+    return {
+      "key": params_key(source.name),
+      "source": source.name,
+      "quadrant": source.quadrant,
+      "params": params,
+    }
 
   def switches(self, node: Node, source: str) -> dict[str, object]:
     """Return a node's `default` and, for a rule, its `uses`.
@@ -564,12 +717,15 @@ class _Language:
         "translations": node.translations,
         "depth": depth,
         "groups": groups,
-        "title": node.title[shown],
+        "title": self.title((name, node.id)),
+        "titleMarked": self.values(node.title[shown], shown, name),
         "applicability": self.links(node.applicability[shown], shown, name)
         if node.applicability
         else None,
         "text": {
-          part: self.links(node.text[part][shown], shown, name)
+          part: self.values(
+            self.links(node.text[part][shown], shown, name), shown, name
+          )
           for part in PARTS
           if node.text
         },
@@ -625,6 +781,7 @@ def site_data(
   nodes: list[Node],
   others: list[Source] | None = None,
   enabled: set[str] | None = None,
+  params: tuple[Param, ...] = (),
 ) -> dict[str, Any]:
   """Return the data of every language of the site.
 
@@ -633,17 +790,22 @@ def site_data(
     nodes: this repo's rule tree.
     others: the rules of other sources, if any.
     enabled: the labels of the rules a rule set enables, or None.
+    params: this repo's parameters.
 
   Returns:
     For each language, its sources, each with its name and quadrant
-    (`sources`); its nodes in tree order, source by source; for each
+    (`sources`); its nodes in tree order, source by source; the page of
+    parameters of each source that has some (`params`); for each
     provision a listed rule names in `authority`, those rules
     (`citedBy`); and for each article that or a provision under it
     names, those rules (`citedWithin`); each list in order of source and
     ID, without repeats. With other sources, each node's groups start
     with its source.
   """
-  sources = [Source(FIRST_PARTY, QUADRANTS[0], nodes), *(others or [])]
+  sources = [
+    Source(FIRST_PARTY, QUADRANTS[0], nodes, params),
+    *(others or []),
+  ]
   sources.sort(key=lambda s: QUADRANTS.index(s.quadrant))
   rank = {s.name: i for i, s in enumerate(sources)}
   order = [(s, n, depth) for s in sources for n, depth in tree_order(s.nodes)]
@@ -668,6 +830,16 @@ def site_data(
   data: dict[str, Any] = {}
   for lang in src.languages:
     language = _Language(lang, src, sources)
+    # A translation names the parameters its original names, so the
+    # original tells which rules use which.
+    used: dict[tuple[str, str], list[tuple[str, int]]] = defaultdict(list)
+    for s, n, _ in order:
+      texts = [n.title[n.lang], *(t[n.lang] for t in n.text.values())]
+      for name in dict.fromkeys(
+        m.group(1) for t in texts for m in PLACEHOLDER.finditer(t)
+      ):
+        if (found := language.param(name, s.name)) is not None:
+          used[(found[0], name)].append((s.name, n.id))
     data[lang] = {
       "sources": [{"name": s.name, "quadrant": s.quadrant} for s in sources],
       "nodes": [
@@ -684,19 +856,22 @@ def site_data(
         ref: [language.ref(i, name) for name, i in ordered(keys)]
         for ref, keys in within.items()
       },
+      "params": [language.params_page(s, used) for s in sources if s.params],
     }
   return data
 
 
-def load(path: Path) -> tuple[Constitution | None, list[Node]] | None:
+def load(
+  path: Path,
+) -> tuple[Constitution | None, list[Node], tuple[Param, ...]] | None:
   """Read the constitution and the rules of a directory through statute.
 
   Args:
     path: the directory.
 
   Returns:
-    Its constitution, None when it has none, and its rule tree; or None
-    when statute cannot read or check them.
+    Its constitution, None when it has none, its rule tree and its
+    parameters; or None when statute cannot read or check them.
   """
   data = export(path)
   if data is None:
@@ -705,6 +880,7 @@ def load(path: Path) -> tuple[Constitution | None, list[Node]] | None:
   return (
     None if src is None else constitution(src),
     [node(n) for n in data["nodes"]],
+    tuple(Param(**p) for p in data["params"]),
   )
 
 
@@ -789,7 +965,7 @@ def main(argv: list[str] | None = None) -> int:
   read = load(args.root)
   if read is None:
     return 1
-  src, nodes = read
+  src, nodes, params = read
   if src is None:
     print(f"{args.root}: error: no constitution/", file=sys.stderr)
     return 1
@@ -798,9 +974,9 @@ def main(argv: list[str] | None = None) -> int:
     other = load(path)
     if other is None:
       return 1
-    others.append(Source(name, quadrant, other[1]))
+    others.append(Source(name, quadrant, other[1], other[2]))
   enabled = enabled_rules(args.enabled) if args.enabled else None
-  data = site_data(src, nodes, others, enabled)
+  data = site_data(src, nodes, others, enabled, params)
   args.out.parent.mkdir(parents=True, exist_ok=True)
   args.out.write_text(
     json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

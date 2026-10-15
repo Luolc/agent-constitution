@@ -150,8 +150,8 @@ still says that a migration renames either kind.
 
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).
-The constitution's compiler stays in Python for now
-([Compilation](compilation.md)) and moves into that command later.
+The same command builds the constitution, `statute constitution
+build`.
 
 **The public site** lists every rule, so that people can choose from
 the full list, with a filter that leaves superseded and repealed rules
@@ -299,28 +299,23 @@ numbering is compared, every node of the base still exists, a rule of
 the older format as the node whose slug is its name, and what was
 repealed or superseded still is; it skips the comparison, with the
 note, where check 7 does, and without a `constitution/` beside `<dir>`
-it fails. These findings are `rules/7.toml:12: error: <message>`, with
-the messages of `uv run constitution-build`, which runs these checks
-too; CI and the commit hooks still run that command for them, and moving
-them to `validate` is not done yet. This repo runs `statute validate
-rules` as a commit hook.
+it fails. These findings are `rules/7.toml:12: error: <message>`.
+This repo runs `statute validate rules` as a commit hook, and CI runs
+it with `--base` too.
 
-**`constitution build`** does what `uv run constitution-build` does for
-the constitution: it checks the sources of the one edition under
+**`constitution build`** checks the sources of the one edition under
 `constitution/` and writes the full version and the version for agents
-in each language to its `generated/`, byte for byte as that command
-does; with `--check` it writes nothing and fails when a committed file
+in each language to its `generated/`, whose first line names the
+command that wrote them, `cargo run -p statute -- constitution build`;
+with `--check` it writes nothing and fails when a committed file
 differs from a fresh build; with `--check --base <git-ref>` it also
 compares the numbering and the revision with that commit; and `--root
 <dir>` runs it on another checkout than the current directory. Its
 checks are checks 1 to 7 of [Checkers](checkers.md#checkers) as far as
-they concern the constitution, with the same messages. It does not read
-`rules/`: what that command checks of the rules, among them the rules'
-citations of the constitution and the rules a base commit had, is
-`validate`'s (above). The generated files still name `uv run constitution-build`,
-which CI, the commit hooks and the rest of this design still run; the
-switch to `statute constitution build` and the removal of the Python
-command are not done yet.
+they concern the constitution. It does not read `rules/`: what the
+rules say of the constitution, and the rules a base commit had, are
+`validate`'s (above). This repo runs `constitution build --check` as a
+commit hook, and CI runs it with `--base` too.
 
 **Moving over.** Today agents read the user-level instruction files of
 the private overlay. These will gain a provision: in a repository that
@@ -430,6 +425,13 @@ directory is a source, holding `constitution/`, `rules/` or both.
   ([Default switches](rule-config.md#default-switches)), never for a
   superseded or repealed rule, and `null` when that depends on a node
   of another source.
+- `params`: the parameters of `rules/params.toml`
+  ([Parameters](rule-config.md#parameters)) in the order of the file,
+  each with its `name`, `type`, `values` (a `choice`'s, else `null`),
+  `scope`, `default` and `title` by language, and `shown`: the default
+  as the outputs write it, by each language a title of the source is
+  written in (a language by its name, "Chinese", 「中文」); empty without
+  that file.
 
 Before it prints anything, statute checks the rules as it checks any
 source ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));

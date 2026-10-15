@@ -263,20 +263,17 @@ struct SourceCases {
 struct SourceCase {
     name: String,
     passes: bool,
-    /// Where statute, reading node 20 as a local rule, differs.
-    statute_passes: Option<bool>,
     node: String,
     statute: Option<String>,
 }
 
-/// The compiler's cases of what one source shows
-/// (`tools/compiler/tests/source_cases.toml`): node 20 in the repository's
+/// The cases of what one source shows
+/// (`tests/cases/source_cases.toml`): node 20 in the repository's
 /// own rules, with domain 2, one-of 3, rule 10 and
 /// subdomain 4; `team` holds domain 7 and rule 8.
 #[test]
-fn the_compilers_source_cases() {
-    let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/compiler/tests/source_cases.toml");
+fn the_source_cases() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/cases/source_cases.toml");
     let cases: SourceCases = toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
     assert!(!cases.cases.is_empty());
     for case in cases.cases {
@@ -300,9 +297,8 @@ fn the_compilers_source_cases() {
             ],
         );
         let run = statute(&dir, &["lock"]);
-        let passes = case.statute_passes.unwrap_or(case.passes);
-        assert_eq!(run.code == 0, passes, "{}: {}", case.name, run.stderr);
-        if !passes {
+        assert_eq!(run.code == 0, case.passes, "{}: {}", case.name, run.stderr);
+        if !case.passes {
             let errors: Vec<&str> = run
                 .stderr
                 .lines()

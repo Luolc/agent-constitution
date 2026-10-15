@@ -1,14 +1,11 @@
 # Node 20, a domain, a one-of or a rule, with and without
-# `[applicability]`, in a source that also holds rules 2 and 10. The
-# compiler (test_rule_tree.py) builds the source with each node; statute
-# (crates/statute/tests/compile.rs) locks it and compiles it with a rule
-# 21 under node 20 enabled, so that a domain's applicability is rendered
-# and its citations followed. Both agree on whether each case passes. A
-# case that fails draws errors on rules/20.toml, among them one holding
-# its `compiler` text from the compiler and one holding its `statute`
-# text from statute; the compiler reports no other file, and statute
-# reports rules/21.toml too when node 20 cannot be read at all, as in
-# the two cases whose value has the wrong type.
+# `[applicability]`, in a source that also holds rules 2 and 10. statute
+# (compile.rs) locks it and compiles it with a rule 21 under node 20
+# enabled, so that a domain's applicability is rendered and its
+# citations followed. A case that fails draws errors on rules/20.toml,
+# among them one holding its `statute` text, and on rules/21.toml too
+# when node 20 cannot be read at all, as in the two cases whose value
+# has the wrong type.
 
 [[cases]]
 name = "a domain with applicability in its original"
@@ -63,7 +60,6 @@ zh = "a7f2ecaa74661015ca7837df9f84a98aa8d174f0b1f9d1f7ebcbdabf49563c5d"
 [[cases]]
 name = "a translation whose hash leaves the applicability out"
 passes = false
-compiler = 'the `zh` translation was made from another original'
 statute = 'the `zh` translation follows another original than the current one'
 node = """
 id = 20
@@ -113,7 +109,6 @@ zh = "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
 [[cases]]
 name = "a translation that lacks the applicability"
 passes = false
-compiler = '`applicability` lacks its translation into `zh`'
 statute = 'it is missing in [applicability]'
 node = """
 id = 20
@@ -140,7 +135,6 @@ zh = "a7f2ecaa74661015ca7837df9f84a98aa8d174f0b1f9d1f7ebcbdabf49563c5d"
 [[cases]]
 name = "applicability without its original"
 passes = false
-compiler = '`applicability` lacks its text in `en`'
 statute = '[applicability] has no `en`'
 node = """
 id = 20
@@ -160,7 +154,6 @@ zh = "用这个工具的仓库启用。"
 [[cases]]
 name = "an empty applicability"
 passes = false
-compiler = '`applicability` lacks its text in `en`'
 statute = '[applicability] `en` is empty'
 node = """
 id = 20
@@ -180,7 +173,6 @@ en = ""
 [[cases]]
 name = "applicability that is a string, not a table"
 passes = false
-compiler = '`applicability` must be a table of language to text'
 statute = 'expected a map'
 node = """
 id = 20
@@ -198,7 +190,6 @@ en = "Tools"
 [[cases]]
 name = "applicability whose text is a number"
 passes = false
-compiler = '`applicability` must be a table of language to text'
 statute = 'invalid type: integer `3`, expected a string'
 node = """
 id = 20
@@ -218,7 +209,6 @@ en = 3
 [[cases]]
 name = "applicability that cites a rule the source does not have"
 passes = false
-compiler = 'cites undefined rule:99'
 statute = 'cites `{@rule:99}`'
 node = """
 id = 20
@@ -254,7 +244,6 @@ en = "Tools"
 [[cases]]
 name = "a one-of with applicability"
 passes = false
-compiler = 'unknown key `applicability`'
 statute = 'only a domain has [applicability]'
 node = """
 id = 20
@@ -304,7 +293,6 @@ en = "Violated when not."
 [[cases]]
 name = "a rule with applicability"
 passes = false
-compiler = 'unknown key `applicability`'
 statute = 'only a domain has [applicability]'
 node = """
 id = 20

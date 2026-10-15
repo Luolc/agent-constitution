@@ -246,3 +246,52 @@ def write_other(root: Path) -> None:
     path = root / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+PARAMS = """\
+[[parameter]]
+name = "language.docs"
+type = "language"
+scope = "repo"
+default = "zh"
+
+[parameter.title]
+en = "Language of documents"
+
+[[parameter]]
+name = "work-items.label-done"
+type = "string"
+scope = "repo"
+default = "done & dusted"
+
+[parameter.title]
+en = "Label of a done item"
+zh = "完成项的标签"
+
+[parameter.translations]
+zh = "{sha}"
+""".replace("{sha}", original("Label of a done item"))
+
+
+def params(root: Path) -> None:
+  """Declare two parameters and name them in rule 6's statement.
+
+  `language.docs`, a language, and `work-items.label-done`, a string
+  with a character HTML escapes, which the statement names in a code
+  span.
+
+  Args:
+    root: the checkout.
+  """
+  (root / "rules/params.toml").write_text(PARAMS, encoding="utf-8")
+  rule = root / "rules/6.toml"
+  text = rule.read_text(encoding="utf-8")
+  old = 'en = "Rule six, see {@constitution:one-a.x}."'
+  assert old in text
+  rule.write_text(
+    text.replace(
+      old,
+      'en = "Write in {$language.docs}; label `x {$work-items.label-done}`."',
+    ),
+    encoding="utf-8",
+  )

@@ -213,8 +213,7 @@ class HookEnvironment(unittest.TestCase):
 
   They run from a git hook, which in a worktree sets GIT_DIR and
   GIT_INDEX_FILE to the worktree's; they must leave its repository alone.
-  One test of the script covers its git calls and its test helper's; the
-  compiler's tests have the same check for theirs.
+  One test of the script covers its git calls and its test helper's.
   """
 
   def test_repository_of_the_hook_untouched(self):

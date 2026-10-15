@@ -479,8 +479,9 @@ fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
     let constitution = std::fs::read_to_string(project.root.join(&spec.path).join(&relative))
         .map_err(|e| {
             format!(
-                "cannot read {relative} of source `{}`: {e}; `uv run constitution-build` writes it",
-                spec.name
+                "cannot read {relative} of source `{}`: {e}; `{}` writes it",
+                spec.name,
+                crate::constitution::BUILD_COMMAND
             )
         })?;
 

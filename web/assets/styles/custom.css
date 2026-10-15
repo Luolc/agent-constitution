@@ -475,6 +475,15 @@
 }
 .rules dl.rule-meta :is(dt, dd) { margin: 0; }
 .rules dl.rule-meta dt { color: var(--c-muted); font-weight: inherit; }
+.rules a.param-value {
+  color: inherit;
+  text-decoration: underline dotted var(--c-accent);
+  text-underline-offset: .2em;
+  background: color-mix(in srgb, var(--c-accent) 10%, transparent);
+  border-radius: .2em;
+  padding: 0 .15em;
+}
+.rules .rules-params { margin-top: -.5em; }
 
 /* The rules under a provision that cites them, on a line of their own,
    smaller and muted: a button of their labels in boxes, or of a count,
