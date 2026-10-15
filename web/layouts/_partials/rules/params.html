@@ -1,0 +1,25 @@
+{{- /* A source's page of parameters (content/rules/_content.gotmpl):
+  its title and, for each parameter, a heading with its title, its
+  anchor its name, and its name, type, values for a choice, scope,
+  default, as the rules' texts show it and as written, and the rules
+  that use it. Takes (dict "page" the page "data" the page's data, as
+  data/rules.json gives it). */ -}}
+{{- $data := .data }}
+<article class="markdown book-article"><div class="design rules rule params">
+<h1>{{ .page.Title }}</h1>
+<p class="rules-intro">{{ i18n "params-intro" }}</p>
+{{- range $data.params }}
+<h2 id="{{ .name }}"><span lang="{{ .lang }}">{{ .title }}</span></h2>
+<dl class="rule-meta">
+<dt>{{ i18n "param-name" }}</dt><dd><code>{{ .name }}</code></dd>
+<dt>{{ i18n "param-type" }}</dt><dd><code>{{ .type }}</code></dd>
+  {{- with .values }}
+<dt>{{ i18n "param-values" }}</dt><dd>{{ range $i, $v := . }}{{ if $i }}, {{ end }}<code>{{ $v }}</code>{{ end }}</dd>
+  {{- end }}
+<dt>{{ i18n "param-scope" }}</dt><dd>{{ i18n (printf "param-scope-%s" .scope) }} <code>{{ .scope }}</code></dd>
+<dt>{{ i18n "param-default" }}</dt><dd>{{ if ne .shown .default }}{{ .shown }} {{ end }}<code>{{ .default }}</code></dd>
+<dt>{{ i18n "param-rules" }}</dt><dd>{{ range $i, $r := .rules }}{{ if $i }}<br>{{ end }}{{ partial "rules/link.html" $r }}{{ else }}{{ i18n "rule-none" }}{{ end }}</dd>
+</dl>
+{{- end }}
+</div>
+</article>

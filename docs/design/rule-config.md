@@ -80,7 +80,7 @@ in its local public section.
 
 ## Parameters
 
-Built, but for what the public site shows of parameters (below).
+Built.
 
 A rule that states a principle leaves its concrete values to the
 layers below (`rules/101.toml`). Some values are the same kind of
@@ -356,7 +356,7 @@ output, so a person's own value there is not used, and
 private rule set or the global configuration, with both values when
 they differ) and which enabled rules use it.
 
-**The public site** (not built yet) has a page of parameters for each
+**The public site** has a page of parameters for each
 source: each parameter's title, name, type, scope, default (and
 values, for a `choice`) and the rules that use it. A placeholder shows
 its default, marked as a value, with the parameter's name on hover,
@@ -697,13 +697,13 @@ The local site marks the default switches, each one-of's default
 option, `uses` and the values of parameters
 ([The local site](statute-command.md#the-local-site)); the public site
 marks the default switches and each one-of's default option and shows
-`uses`, with their filters.
+`uses`, with their filters, and has a page of parameters for each
+source, which the placeholders in the rules' texts link to.
 
 The compiled `AGENTS.md` puts each one-of's enabled option in the
 one-of's place, with the line that names the one-of.
 
-Not built yet: the one-of as a box on the sites, and what the public
-site shows of parameters.
+Not built yet: the one-of as a box on the sites.
 
 The parts of the design this one changes:
 

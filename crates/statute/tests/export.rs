@@ -7,7 +7,7 @@ use std::process::Command;
 use serde_json::{Value, json};
 
 mod common;
-use common::{domain, edit, one_of, option, rule, set_default};
+use common::{domain, edit, one_of, option, param, rule, set_default};
 
 const INDEX: &str = r#"status = "active"
 edition = "2026-10"
@@ -163,6 +163,43 @@ fn on_by_default() {
             (9, &json!(false)),
         ]
     );
+}
+
+#[test]
+fn params() {
+    // A domain written in Chinese: each default is shown in both.
+    let zh = edit(domain(1), "lang = \"en\"", "lang = \"zh\"");
+    let zh = edit(zh, "en = \"Domain 1\"", "zh = \"领域 1\"");
+    let dir = dir("params", false, &[zh]);
+    let declared = [
+        param("language.docs", "type = \"language\"", "repo", "zh"),
+        param(
+            "style.quotes",
+            "type = \"choice\"\nvalues = [\"double\", \"single\"]",
+            "personal",
+            "single",
+        ),
+    ]
+    .concat();
+    std::fs::write(dir.join("rules/params.toml"), declared).unwrap();
+    let (code, stdout, stderr) = export(&dir);
+    assert_eq!((code, stderr.as_str()), (0, ""));
+    let data: Value = serde_json::from_str(&stdout).unwrap();
+    // In the file's order; a language shown by its name, a choice as it is.
+    assert_eq!(
+        data["params"],
+        json!([
+            {"name": "language.docs", "type": "language", "values": null,
+             "scope": "repo", "default": "zh",
+             "title": {"en": "The language.docs"},
+             "shown": {"en": "Chinese", "zh": "中文"}},
+            {"name": "style.quotes", "type": "choice", "values": ["double", "single"],
+             "scope": "personal", "default": "single",
+             "title": {"en": "The style.quotes"},
+             "shown": {"en": "single", "zh": "single"}},
+        ])
+    );
+    assert_eq!(data["nodes"].as_array().unwrap().len(), 1);
 }
 
 #[test]
