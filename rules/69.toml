@@ -1,11 +1,11 @@
 id = 69
 slug = "no-agent-tool-memory"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 16
-default = "off"
+default = "on"
 authority = ["separate-instruction-changes", "independent-review"]
 constitution = ">=1"
 level = "project"
