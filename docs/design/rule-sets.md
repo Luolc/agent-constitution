@@ -31,12 +31,12 @@ is the one at the commit of that source the lock file pins, and the lock
 file records it. `rules` lists the rules chosen directly and `packs` the
 roots of the packs enabled, each as a reference
 ([Sources and references](#sources-and-references)): here `R42` and
-`R51` are first-party rules and `12` is one of the repository's own. A
-child of a one-of is chosen by listing it in `rules`, here `R51`; there
-is no other
-field for it. A domain or a one-of listed in `rules` fails the build,
-which says to enable the domain as a pack and the one-of through one of
-its children. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
+`R51` are first-party rules and `12` is one of the repository's own. An
+option of a one-of that is a rule is chosen by listing it in `rules`,
+here `R51`; one that is a domain, through `domains`
+([In the rule set](rule-config.md#in-the-rule-set), not built yet). A domain or a
+one-of listed in `rules` fails the build, which says to enable the
+domain as a pack and the one-of through one of its options. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
 by default only `statement`; adding `reason` or `verification` puts those
 parts in as well ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 `lang` in `[compile]` names the language it is written in, `en` by
@@ -58,7 +58,8 @@ down. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 [Rule configuration](rule-config.md) adds the directory of the local
-rules, parameters and default switches, not built yet.
+rules, parameters and default switches, which it marks where they are
+not built yet.
 
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
@@ -381,9 +382,9 @@ This comes late and is not part of the first version.
 Rules are related in two ways, and the tree has two more kinds of node,
 domains and one-ofs:
 
-- `parent`: every rule has exactly one parent, either another rule, a
-  one-of or a domain (below), so the rules form a tree, each domain
-  refined level by level. A rule that overrides a rule of another source
+- `parent`: every rule has exactly one parent, a one-of or a domain
+  (below), never another rule, and every one-of a domain, so the rules
+  form a tree under the domains. A rule that overrides a rule of another source
   has none and stands in that rule's place
   ([Overrides](rule-sources.md#overrides)). The tree decides where a rule stands in the
   compiled text and on the site, which block it is compiled in and which
@@ -397,8 +398,10 @@ domains and one-ofs:
 
 One parent is not enough on its own because many rules span domains: "in
 CI, run `uv sync --locked` first" depends both on uv and on the CI
-service. It sits under the uv rule and requires the one-of "CI service",
-satisfied by any of its children, such as a GitHub Actions rule.
+service. It sits in the Python domain, requires the uv rule, which it
+refines, and requires the one-of "CI service", satisfied by any of its
+options, such as a GitHub Actions rule. A rule that refines another is
+never its child ([No rule under a rule](rule-config.md#no-rule-under-a-rule)).
 
 **Domains.** A domain is a node at the top of the tree, such as Python,
 CI, Git or security. Besides its ID and title it has only the few fields
@@ -409,19 +412,22 @@ below it is enabled, the domain appears in the compiled output as a heading. A
 domain may sit under a domain that has no parent, as a subdomain, so
 domains nest two levels deep and no deeper
 ([Subdomains](rule-sources.md#subdomains)); a finer
-grouping is a rule or a one-of under the domain.
+grouping is a one-of under the domain.
 
-**One-ofs.** A one-of is a node of the parent tree of which at most one
-child is enabled within one rule set (or one path segment of it).
-Enabling none of its children is allowed, as in a repository with no
-Python at all; "one of" here never means "exactly one". The one-of
-"Python package manager" under Python has the children uv, Poetry and
-Bazel. A one-of has an ID, and adding one goes through review like adding
-a rule. A rule that requires a one-of is satisfied when any one of its
-children is enabled. Once built, every one-of names a default child,
-which a pack and a requirement take where the rule set names none, in
-place of contributing nothing or failing as below
-([A one-of's default](rule-config.md#in-the-rule-files)).
+**One-ofs.** A one-of is a node of the parent tree, under a domain, of
+which at most one child, an option, is enabled within one rule set (or
+one path segment of it). Enabling none of its options is allowed, as in
+a repository with no Python at all; "one of" here never means "exactly
+one". The one-of "Python package manager" under Python has the options
+uv, Poetry and Bazel. The options of a one-of are all rules or all
+domains: an option that needs several rules is a domain under the
+one-of, which counts as a level of the two that domains may nest. A
+one-of has an ID, and adding one goes through review like adding a
+rule. A rule that requires a one-of is satisfied when any one of its
+options is enabled. Every one-of names a default option
+([A one-of's default](rule-config.md#in-the-rule-files)), which statute
+reads; a pack and a requirement take it where the rule set names
+none, in place of contributing nothing or failing as below.
 
 **Conflicts found later.** Two rules that nobody saw as alternatives may
 turn out not to work together. An agent that suspects this reports it, and
@@ -439,7 +445,7 @@ is written in one place (`no-restating`), and another source's files
 cannot be changed. Three or more rules at one place that conflict with
 each other are alternatives, and are collected under a one-of instead. A
 rule may not be declared in conflict with one that enabling it brings in
-along `parent` or `requires`, directly or through other rules, since
+along `requires`, directly or through other rules, since
 enabling the one would enable the other; the build fails on it. Sibling
 rules under one parent may conflict.
 
@@ -447,25 +453,24 @@ The build checks these constraints:
 
 - No cycle, in the tree or in the requirements, within one source or
   across sources.
-- A domain has no parent, or, as a subdomain, a domain that has none;
-  every rule and one-of has one, except a rule with `overrides`.
-- A rule's parent, when it is a rule, counts as one of its requirements:
-  enabling a rule requires enabling its parent, and the parent is not
-  written again under `requires`. When the parent is a one-of, the
-  requirement passes through it to the one-of's own parent: enabling uv
-  under "Python package manager" still requires the rule above that
-  one-of. A parent that is a domain requires nothing. A one-of counts as
-  enabled when one of its children is.
+- A domain has no parent, or, as a subdomain, a domain that has none,
+  or, as an option, a one-of; every rule and one-of has one, except a
+  rule with `overrides`. A rule's parent is a domain or a one-of, a
+  one-of's a domain, and a one-of's options are all rules or all
+  domains ([No rule under a rule](rule-config.md#no-rule-under-a-rule)).
+- A parent requires nothing: enabling a rule enables no other rule
+  along the tree. A one-of counts as enabled when one of its options
+  is.
 - No redundant requirement: if A requires B and B requires C, A does not
   also list C.
 - A requirement that crosses to another subtree should name a one-of, not
   a particular rule. The number of such requirements has no hard limit;
   the build warns about them.
 - At most one child of a one-of is enabled in a rule set or path segment,
-  and no two enabled rules conflict. A rule that brings in two children of
-  one one-of, along `parent` or `requires`, could never be enabled, and
+  and no two enabled rules conflict. A rule that brings in two options of
+  one one-of, along `requires`, could never be enabled, and
   the build fails on it; so it does on a rule that requires a one-of with
-  no children yet.
+  no options yet.
 - A rule that requires a superseded or repealed rule draws a warning,
   which names the successors when there are any.
 
@@ -473,21 +478,21 @@ The build checks these constraints:
 without one it requires, statute adds the missing rule, as a package
 manager adds a dependency: the rule set lists only the rules chosen
 directly, the lock file records the ones brought in, and an upgrade's
-diff shows them. This applies equally to a parent that counts as a
-requirement. Among missing requirements, the one case that fails is a
-requirement of a one-of when the rule set has enabled none of its
-children: statute cannot choose for
-the user, so it fails and lists the children to choose from.
+diff shows them. Among missing requirements, the one case that fails
+is a requirement of a one-of when the rule set has enabled none of its
+options and the one-of names no default: statute does not choose for
+the user, so it fails and lists the options to choose from. A one-of
+that names a default brings in its default option.
 
 Packs: a pack is a subtree, named by its root, and a rule set can enable
 it as a whole, by listing the root in `packs`. A one-of in the pack of
-which the rule set names no child contributes nothing, like any one-of
-with no child enabled; the build fails only when an enabled rule requires
-that one-of, as above. When the rule set names a child in `rules`, the
-pack goes on into that child's subtree. In the first version that is the
-only way into a one-of: a child enabled only because a rule requires it
-does not take the pack into its subtree, and a one-of that is a child of
-a one-of is never entered. A superseded or repealed rule of the pack is
+which the rule set names no option contributes nothing, like any one-of
+with no option enabled; the build fails only when an enabled rule requires
+that one-of, as above. When the rule set names an option, the pack
+enables it. In the first version that is the only way into a one-of: an
+option enabled only because a rule requires it does not take the pack
+into it. Where the rule set names none, the pack takes the one-of's
+default option. A superseded or repealed rule of the pack is
 left out, with the rules below it; a pack whose root is superseded or
 repealed enables nothing, and the build warns as it does for such a rule
 in `rules`.

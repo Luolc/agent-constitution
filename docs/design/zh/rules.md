@@ -1,4 +1,4 @@
-<!-- en-sha256: 4ab88f6593821d2090ad0c1520e8b6db369b0bec8e220aded290d8ef38d6e5b6 -->
+<!-- en-sha256: 66288469887d82f5c777659ed490cadb7fdb71a52b4455caff6711ebd6349080 -->
 # 规定与放宽
 
 ## <a id="rules"></a>规定
@@ -40,4 +40,4 @@ overlay 里的私有规定格式相同，放在它自己的规定源里 ([规定
 
 ## <a id="local-parameters"></a>本地参数
 
-需要本地取值的规定，不写取值，而写参数名：`{{ models.reviewer.default }}`。overlay 的 `params.toml` 提供这些值。参数只是普通的值，从来不是规定的文字，这样私有一侧改一个模型名或一份机器列表，不必动任何规定。未解析或者未使用的参数会让构建失败。[参数](rule-config.md#parameters) 实现之后取代这一节：参数是规定源里的一个节点，取值由规定清单设定。
+需要本地取值的规定，不写取值，而写参数名：`{{ models.reviewer.default }}`。overlay 的 `params.toml` 提供这些值。参数只是普通的值，从来不是规定的文字，这样私有一侧改一个模型名或一份机器列表，不必动任何规定。未解析或者未使用的参数会让构建失败。[参数](rule-config.md#parameters) 实现之后取代这一节：规定源在自己的 `params.toml` 里声明参数，取值由规定清单设定，`personal` 参数则由这个人设定。

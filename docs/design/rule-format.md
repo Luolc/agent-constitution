@@ -68,9 +68,9 @@ zero padding, since the IDs keep growing and any fixed width would one
 day be too short. The tree is recorded only in the `parent` field, never
 in directories, so moving a rule under another parent changes one line
 and moves no file. Tools always sort the files by number, not by name.
-[Rule configuration](rule-config.md) adds the kind `parameter`,
-`default` on domains, rules and one-ofs, and `uses` on rules, none of
-them built yet.
+The directory may also hold `params.toml`, the source's parameters
+([Declaring a parameter](rule-config.md#declaring-a-parameter)), which
+is no node and which statute skips when it reads the nodes.
 
 A rule, here one that a translation into Chinese accompanies:
 
@@ -87,6 +87,8 @@ authority = ["simplicity"]
 constitution = ">=1"
 level = "project"
 check = "builtin"
+default = "on"
+uses = ["instructions", "review"]
 
 [title]
 en = "Sync from the lock file first in CI"
@@ -128,6 +130,7 @@ kind = "one-of"
 status = "active"
 lang = "en"
 parent = 3
+default = 6
 
 [title]
 en = "Python package manager"
@@ -140,6 +143,7 @@ revision = 1
 kind = "domain"
 status = "active"
 lang = "en"
+default = "off"
 
 [title]
 en = "Python"
@@ -172,14 +176,18 @@ The fields:
   empty.
 - `lang`: the language the rule was written in, its original, as a
   language code such as `"en"` or `"zh"`.
-- `parent`: the ID of the parent node, a rule, a one-of or a domain of the
-  same source. A rule's parent may also be a domain or a subdomain of
-  another source, written as `requires` writes one (`"team:3"`). Every
-  rule and one-of has one, except a rule with `overrides`; a domain has
-  none, or, as a subdomain, a domain that has none, of the same source
-  or, written as `requires` writes one, of another
-  ([Subdomains](rule-sources.md#subdomains)). The build accepts both
-  ([Checkers](checkers.md#checkers)), and so does statute.
+- `parent`: the ID of the parent node of the same source: for a rule a
+  domain or a one-of, never a rule; for a one-of a domain. A rule's
+  parent may also be a domain or a subdomain of another source, written
+  as `requires` writes one (`"team:3"`). Every rule and one-of has one,
+  except a rule with `overrides`; a domain has none, or, as a
+  subdomain, a domain that has none, of the same source or, written as
+  `requires` writes one, of another
+  ([Subdomains](rule-sources.md#subdomains)), or, as an option, a
+  one-of. The options of a one-of are all rules or all domains, and
+  domains nest two levels at most, an option counting as one
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)).
+  statute checks all of it.
 - `overrides` (optional, a rule only): the rule of another source that
   this rule takes the place of in a rule set that enables it, written as
   `requires` writes one (`"R200"`); a rule with it has no `parent`
@@ -207,8 +215,19 @@ The fields:
 - `check`: how compliance is checked ([Checks](rule-checks.md#checks)). `builtin`: the
   rule has a module in this repo's crate. `command`: an external command,
   given by two more fields, `run`, the command line, and `tools`, the list
-  of tools it needs (`["uv"]`). `review`: there is no automatic check, and
-  the rule goes straight to the reviewer.
+  of tools it needs (`["uv"]`). `none`: there is no automatic check;
+  whether the reviewer gets the rule is up to `uses`. statute still
+  reads `review`, the older name of `none`; taking it out is not built
+  yet.
+- `default`: whether the rule is on by default, `on` or `off`; a child
+  of a one-of has none, nor does a rule with `overrides`, though statute
+  does not fail on one yet
+  ([Default switches](rule-config.md#default-switches)). Required, but
+  statute still accepts a node without it, which counts as `off`;
+  making it required is not built yet.
+- `uses` (optional, a rule only): where the rule goes, a non-empty list
+  of `instructions` and `review`; `["instructions"]` when left out
+  ([Where a rule is used](rule-config.md#where-a-rule-is-used)).
 - `[title]`: a short title, on one line (a multi-line string may end in a
   newline).
 - `[applicability]` (optional, a domain only): a sentence or two on what
@@ -227,8 +246,10 @@ The fields:
 
 A domain and a one-of have only `id`, `slug`, `revision`, `kind`,
 `status`, `lang`, `parent` (a one-of always, a domain only as a
-subdomain), `[title]`, `[applicability]` (a domain only, and optional)
-and, when they are translated, `[translations]`. They have no text,
+subdomain or an option), `default` (on a domain `on` or `off`, unless
+it is an option of a one-of; on a one-of the ID of the option it
+enables by default), `[title]`, `[applicability]` (a domain only, and
+optional) and, when they are translated, `[translations]`. They have no text,
 check or other metadata.
 
 **Languages.** Each text, `[title]`, `[applicability]` and the three parts, is a table whose
