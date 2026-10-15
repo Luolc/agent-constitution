@@ -10,6 +10,9 @@ use crate::diag::Diagnostics;
 use crate::manifest::{FIRST_PARTY, Key, LOCAL};
 use crate::node::{self, Id, Kind, Node, Ref, Status, show_ref};
 
+/// The file of a source's parameters, beside its rule files.
+pub const PARAMS: &str = "params.toml";
+
 #[derive(Debug, Default)]
 pub struct Source {
     pub nodes: BTreeMap<Id, Node>,
@@ -55,7 +58,9 @@ impl Source {
             let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
                 continue;
             };
-            if !name.ends_with(".toml") {
+            // The source's parameters are declared in `params.toml`, next
+            // to the rule files (`docs/design/rule-config.md`, Parameters).
+            if !name.ends_with(".toml") || name == PARAMS {
                 continue;
             }
             let file = format!("{label}/{name}");
@@ -647,6 +652,7 @@ impl Checker<'_> {
 
     fn run(&mut self) {
         self.check_references();
+        self.check_citations();
         let tree_ok = self.check_tree_cycles();
         if tree_ok && self.check_requirement_cycles() {
             self.check_redundant_requirements();
@@ -654,6 +660,96 @@ impl Checker<'_> {
             self.check_one_ofs();
             self.check_crossing_requirements();
             self.check_defaults();
+        }
+    }
+
+    /// The citations of each node's texts: every language cites what the
+    /// original cites, and each citation in any language has its
+    /// namespace and, when it is a rule of this source, names one that
+    /// exists and is not repealed. A rule of another source is checked
+    /// with the rule set that names it.
+    fn check_citations(&mut self) {
+        let source = self.source;
+        for node in source.nodes.values() {
+            let file = self.file(node.id);
+            let mut texts: Vec<(&str, &node::Text)> = vec![("title", &node.title)];
+            if let Some(a) = &node.applicability {
+                texts.push(("applicability", a));
+            }
+            if let Some(rule) = &node.rule {
+                texts.extend([
+                    ("text.statement", &rule.statement),
+                    ("text.reason", &rule.reason),
+                    ("text.verification", &rule.verification),
+                ]);
+            }
+            for (field, text) in texts {
+                let mut by_lang: BTreeMap<&str, BTreeSet<String>> = BTreeMap::new();
+                for (lang, value) in text {
+                    let cited = by_lang.entry(lang.as_str()).or_default();
+                    let _ = cite::replace(value, |c| {
+                        cited.insert(match c {
+                            Citation::Rule(r) => format!("rule:{r}"),
+                            Citation::Constitution(id) => format!("constitution:{id}"),
+                            Citation::Bare(id) => id.to_owned(),
+                        });
+                        Ok(String::new())
+                    });
+                }
+                let Some(original) = by_lang.get(node.lang.as_str()) else {
+                    continue;
+                };
+                for (lang, cited) in &by_lang {
+                    for missing in original.difference(cited) {
+                        self.diags.error(
+                            &file,
+                            format!(
+                                "[{field}] `{}` cites `{{@{missing}}}`, and `{lang}` does not",
+                                node.lang
+                            ),
+                        );
+                    }
+                    for extra in cited.difference(original) {
+                        self.diags.error(
+                            &file,
+                            format!(
+                                "[{field}] `{lang}` cites `{{@{extra}}}`, and `{}` does not",
+                                node.lang
+                            ),
+                        );
+                    }
+                }
+                let every: BTreeSet<&String> = by_lang.values().flatten().collect();
+                for c in every {
+                    let Some(r) = c.strip_prefix("rule:") else {
+                        if !c.starts_with("constitution:") {
+                            self.diags.error(
+                                &file,
+                                format!(
+                                    "[{field}] cites `{{@{c}}}` without `rule:` or `constitution:`"
+                                ),
+                            );
+                        }
+                        continue;
+                    };
+                    let Some(Ref::Local(id)) = node::cited_ref(r) else {
+                        continue;
+                    };
+                    match source.get(id) {
+                        None => self.diags.error(
+                            &file,
+                            format!(
+                                "[{field}] cites `{{@{c}}}`, which does not exist in this source"
+                            ),
+                        ),
+                        Some(n) if n.status == Status::Repealed => self.diags.error(
+                            &file,
+                            format!("[{field}] cites `{{@{c}}}`, which is repealed"),
+                        ),
+                        _ => {}
+                    }
+                }
+            }
         }
     }
 
@@ -760,6 +856,13 @@ impl Checker<'_> {
                         "{how}, under a domain of another source; domains nest two levels at most, so name a domain with no parent"
                     ),
                     (Some(over), _) if kind == Kind::OneOf => format!("{how} (under {over})"),
+                    (Some(over), _)
+                        if self.source.get(over).is_some_and(|n| n.kind == Kind::OneOf) =>
+                    {
+                        format!(
+                            "parent {id} is the option of one-of {over}, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of"
+                        )
+                    }
                     (Some(over), _) => format!(
                         "{how}, under {over}; domains nest two levels at most, so name a domain with no parent"
                     ),
