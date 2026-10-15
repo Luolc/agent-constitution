@@ -1,0 +1,44 @@
+id = 248
+slug = "frontend-hover-fine-pointer"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Apply hover styles only where the pointer can hover"
+zh = "悬停样式只在指针能悬停时生效"
+
+[text.statement]
+en = "Put every hover style of a page under the media query `(hover: hover) and (pointer: fine)`, so that it applies only where there is a fine pointer that can hover."
+zh = "页面的悬停 (hover) 样式都放在媒体查询 `(hover: hover) and (pointer: fine)` 之下，只在有能悬停的精确指针时生效。"
+
+[text.reason]
+en = '''
+On a touch screen a tap sets the hover state and leaves it behind, so the element still looks as if it were under the pointer after the finger has gone, and the reader has to work out what the page is showing ({@constitution:purpose}).
+'''
+zh = '''
+在触摸屏上，轻触一下就会触发悬停状态并一直留着，手指离开后元素看上去仍像在指针下，读者还得琢磨页面到底在显示什么 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+A hover style is a style rule whose selector holds `:hover`, or its equivalent in the framework the site uses, such as a hover variant of a utility class.
+
+Violated when a change adds or changes a hover style that applies outside `(hover: hover) and (pointer: fine)`.
+'''
+zh = '''
+悬停样式指选择器里含有 `:hover` 的样式规则，或者网站所用框架里与之等价的写法，比如工具类 (utility class) 的悬停变体。
+
+变更加入或修改的悬停样式在 `(hover: hover) and (pointer: fine)` 之外也生效的，即为违反本规定。
+'''
+
+[translations]
+zh = "24b2b5b602e8b32c5b6bfa0aebd82ba00a4be0ec2b927d95df0ceac964b82c10"

@@ -1,0 +1,23 @@
+id = 240
+slug = "frontend"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 83
+default = "off"
+
+[title]
+en = "Frontend"
+zh = "前端"
+
+[applicability]
+en = '''
+Covers the pages of a website or a web interface: their styles, icons and motion, how they behave under the pointer and for assistive technology, and the screenshots and review of a change to them. Enable it in a repository that has such pages; a repository without them does not need it.
+'''
+zh = '''
+管网站或网页界面的页面：页面的样式、图标和动效，在指针下和辅助技术里的表现，以及改动页面时的截图和审查。仓库里有这样的页面，就要启用；没有的仓库不需要。
+'''
+
+[translations]
+zh = "6c7bb7eda9d76d72ab69122a23ed41a395720d4ecf7b1b51ae54e82ea4885fe0"
