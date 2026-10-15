@@ -348,42 +348,48 @@ struct RawPin {
 }
 
 /// The git sources a lock file's text records, each with its commit
-/// (`docs/design/global-configuration.md`, Which source a name means);
-/// none when the text cannot be read. A source without `public`, as in
-/// a lock file written before it was recorded, counts as private, the
-/// side on which a public rule cannot cite it.
-pub fn sources(text: &str) -> Vec<SourceSpec> {
-    let Ok(raw) = toml::from_str::<RawPins>(text) else {
-        return Vec::new();
-    };
-    raw.sources
-        .into_iter()
-        .filter_map(|p| {
-            let follow = match (p.branch, p.tag) {
-                (Some(b), None) => Follow::Branch(b),
-                (None, Some(t)) => Follow::Tag(t),
-                _ => return None,
-            };
-            let rules_dir = match p.rules_dir {
-                Some(dir) => manifest::rules_dir(&dir).ok()?,
-                None => RULES_DIR.to_owned(),
-            };
-            let first_party = p.name == FIRST_PARTY;
-            Some(SourceSpec {
-                git: Some(Git {
-                    address: p.git?,
-                    follow,
-                    clone: None,
-                    commit: Some(p.commit?),
-                }),
-                path: p.path.unwrap_or_default(),
-                public: first_party || p.public == Some(true),
-                name: p.name,
-                declared: Declared::Lock,
-                local: p.scope.as_deref() == Some("local"),
-                defaults: true,
-                rules_dir,
-            })
-        })
-        .collect()
+/// (`docs/design/global-configuration.md`, Which source a name means).
+/// A source without `public`, as in a lock file written before it was
+/// recorded, counts as private, the side on which a public rule cannot
+/// cite it. Text that is not a lock file, or a git source without its
+/// commit or without exactly one of branch and tag, is an error rather
+/// than no record, so that a broken lock file never moves a source.
+pub fn sources(text: &str) -> Result<Vec<SourceSpec>, String> {
+    let raw: RawPins = toml::from_str(text).map_err(|e| e.to_string().trim_end().to_owned())?;
+    let mut specs = Vec::new();
+    for p in raw.sources {
+        let Some(address) = p.git else {
+            continue;
+        };
+        let fail = |what: &str| format!("source `{}` {what}", p.name);
+        let follow = match (p.branch, p.tag) {
+            (Some(b), None) => Follow::Branch(b),
+            (None, Some(t)) => Follow::Tag(t),
+            _ => return Err(fail("records neither or both of `branch` and `tag`")),
+        };
+        let Some(commit) = p.commit else {
+            return Err(fail("records no `commit`"));
+        };
+        let rules_dir = match p.rules_dir {
+            Some(dir) => manifest::rules_dir(&dir).map_err(|e| fail(&e))?,
+            None => RULES_DIR.to_owned(),
+        };
+        let first_party = p.name == FIRST_PARTY;
+        specs.push(SourceSpec {
+            git: Some(Git {
+                address,
+                follow,
+                clone: None,
+                commit: Some(commit),
+            }),
+            path: p.path.unwrap_or_default(),
+            public: first_party || p.public == Some(true),
+            name: p.name,
+            declared: Declared::Lock,
+            local: p.scope.as_deref() == Some("local"),
+            defaults: true,
+            rules_dir,
+        });
+    }
+    Ok(specs)
 }

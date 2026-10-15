@@ -512,7 +512,9 @@ fn site_marks_defaults_uses_and_values() {
     assert_eq!(index.matches("<a href=\"R/5.html\">").count(), 1, "{index}");
     // A rule only for review is hidden with its filter.
     assert!(
-        index.contains("<li class=\"off u-r\"><div class=\"row\"><a href=\"R/3.html\">"),
+        index.contains(
+            "<li class=\"off has-statement u-r\"><div class=\"row\"><a href=\"R/3.html\">"
+        ),
         "{index}"
     );
     assert!(index.contains("<input type=\"checkbox\" id=\"show-review\" checked>"));
@@ -578,7 +580,7 @@ fn site_draws_the_tree_by_level() {
         assert!(index.contains(&row), "{row}: {index}");
     }
     assert!(
-        index.contains("<li class=\"u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
+        index.contains("<li class=\"has-statement u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
         "{index}"
     );
     // A one-of none of whose options is enabled is drawn lighter.
@@ -735,4 +737,205 @@ fn site_writes_both_languages() {
     let r5 = read(&site, "here/5.html");
     assert!(r5.contains("<span lang=\"zh\">规定 5</span></h1>"), "{r5}");
     assert!(r5.contains("Not translated</span>"), "{r5}");
+}
+
+/// The statement under each rule's row, its placeholders filled as in
+/// `AGENTS.md`, in the page's language or marked as not translated, and
+/// the three views of the rows, chosen by radio buttons the style sheet
+/// follows.
+/// A site whose rules have statements: R2 in English and Chinese, R7 in
+/// English only, with a placeholder the rule set gives `zh`.
+fn statements(name: &str) -> PathBuf {
+    let dir = repo(name, "r/");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R2\", \"R7\"]\n\n[language]\ndocs = \"zh\"\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    write(
+        &dir,
+        "r/rules/params.toml",
+        &param("language.docs", "type = \"language\"", "repo", "en"),
+    );
+    put(&dir, "r/rules", domain(1));
+    let hash = statute::node::original_hash(&[
+        "Rule 2",
+        "Do the thing 2.",
+        "Because.\n",
+        "Violated when the thing is not done.",
+    ]);
+    let r2 = rule(2, 1, "");
+    let r2 = edit(r2, "en = \"Rule 2\"", "en = \"Rule 2\"\nzh = \"规定 2\"");
+    let r2 = edit(
+        r2,
+        "en = \"Do the thing 2.\"",
+        "en = \"Do the thing 2.\"\nzh = \"做事 2。\"",
+    );
+    let r2 = edit(r2, "Because.\n'''", "Because.\n'''\nzh = \"因为。\"");
+    let r2 = edit(
+        r2,
+        "en = \"Violated when the thing is not done.\"",
+        "en = \"Violated when the thing is not done.\"\nzh = \"没做即为违反。\"",
+    );
+    write(
+        &dir,
+        "r/rules/2.toml",
+        &format!("{}\n[translations]\nzh = \"{hash}\"\n", r2.1),
+    );
+    put(
+        &dir,
+        "r/rules",
+        edit(
+            rule(7, 1, ""),
+            "Do the thing 7.",
+            "Write in {$language.docs}.",
+        ),
+    );
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    dir
+}
+
+#[test]
+fn site_shows_statements_in_three_views() {
+    let site = statements("statements").join(".statute/site");
+    // The statement of a rule, at the end of its row.
+    let statement = |index: &str, id: u64| {
+        let at = index.find(&format!("<a href=\"R/{id}.html\">")).unwrap();
+        let start = at + index[at..].find("<div class=\"statement\"").unwrap();
+        let end = start + index[start..].find("</div></div></li>").unwrap() + "</div>".len();
+        index[start..end].to_owned()
+    };
+    let index = read(&site, "index.html");
+    assert_eq!(
+        statement(&index, 7),
+        "<div class=\"statement\">\n<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>\n</div>"
+    );
+    assert_eq!(
+        statement(&index, 2),
+        "<div class=\"statement\">\n<p>Do the thing 2.</p>\n</div>"
+    );
+    let zh = read(&site, "zh/index.html");
+    assert_eq!(
+        statement(&zh, 2),
+        "<div class=\"statement\">\n<p>做事 2。</p>\n</div>"
+    );
+    let r7 = statement(&zh, 7);
+    assert!(
+        r7.starts_with("<div class=\"statement\" lang=\"en\">\n<span class=\"untranslated\" role=\"img\" aria-label=\"无中文\" title=\"无中文\" lang=\"zh\"><svg class=\"icon\""),
+        "{r7}"
+    );
+    assert!(
+        r7.contains("<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"),
+        "{r7}"
+    );
+    // Three radio buttons, the title and the statement checked; the
+    // style sheet hides the statements or the titles by them, and the
+    // script keeps the choice in the address.
+    for (page, names) in [
+        (&index, ["Title and statement", "Title", "Statement"]),
+        (&zh, ["标题与规定", "标题", "规定"]),
+    ] {
+        for (i, (view, name)) in ["both", "title", "statement"].iter().zip(names).enumerate() {
+            let checked = if i == 0 { " checked" } else { "" };
+            let radio = format!(
+                "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
+            );
+            assert!(page.contains(&radio), "{radio}");
+        }
+        assert!(
+            page.contains("body:has(#view-title:checked) .row > .statement { display: none; }")
+        );
+        assert!(
+            page.contains("body:has(#view-statement:checked) .has-statement > .row > a .title {")
+        );
+        assert!(page.contains("query.set(\"view\", view.value)"));
+    }
+    // A rule's own page is as it was.
+    assert!(read(&site, "R/7.html").contains(
+        "<p>Write in <a class=\"value\" href=\"../R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"
+    ));
+}
+
+/// Google Chrome or Chromium on `PATH`; `None` lets a test skip, but not
+/// in CI, which has Chrome.
+fn chrome() -> Option<PathBuf> {
+    let path = std::env::var_os("PATH").unwrap_or_default();
+    let found = std::env::split_paths(&path)
+        .flat_map(|dir| {
+            [
+                "google-chrome",
+                "google-chrome-stable",
+                "chromium",
+                "chromium-browser",
+            ]
+            .map(|name| dir.join(name))
+        })
+        .find(|path| path.is_file());
+    assert!(
+        found.is_some() || std::env::var_os("CI").is_none(),
+        "no Chrome in CI"
+    );
+    found
+}
+
+/// The view in the address, in headless Chrome, which runs the index's
+/// script: an address without a view shows the default, also on the way
+/// back to it; an index opened at such an address shows the view kept
+/// and writes it in; an address's own view wins. A script added to the
+/// page records what it shows on `<body data-probe>`. Skipped without
+/// Chrome, except in CI.
+#[test]
+fn site_keeps_the_view_in_the_address() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("view");
+    let index = read(&dir, ".statute/site/index.html");
+    let probe = r##"<script>
+const shown = () => document.querySelector("input[name='view']:checked").value;
+const done = (r) => document.body.setAttribute("data-probe", r.join(" "));
+addEventListener("load", () => {
+  const r = [shown(), location.search || "-"];
+  if (location.hash !== "#click") return done(r);
+  document.querySelector("label[for='view-title']").click();
+  r.push(shown(), location.search || "-");
+  addEventListener("popstate", () => done([...r, shown(), location.search || "-"]), { once: true });
+  history.back();
+});
+</script></body>"##;
+    let page = dir.join("probe.html");
+    std::fs::write(&page, index.replace("</body>", probe)).unwrap();
+    let profile = dir.join("profile");
+    let run = |query: &str| {
+        let out = Command::new(&chrome)
+            .args([
+                "--headless",
+                "--no-proxy-server",
+                "--virtual-time-budget=5000",
+            ])
+            .arg(format!("--user-data-dir={}", profile.display()))
+            .arg("--dump-dom")
+            .arg(format!("file://{}{query}", page.display()))
+            .output()
+            .unwrap();
+        let dom = String::from_utf8(out.stdout).unwrap();
+        let start = dom.find("data-probe=\"").expect(&dom) + 12;
+        dom[start..start + dom[start..].find('"').unwrap()].replace("&amp;", "&")
+    };
+    // A fresh profile: the default; a click writes Title into the
+    // address, and back returns to the address without a view, and so to
+    // the default, though Title is kept.
+    assert_eq!(
+        run("?x=1#click"),
+        "both ?x=1 title ?x=1&view=title both ?x=1"
+    );
+    // Opened again at an address without a view: the view kept, written
+    // into the address.
+    assert_eq!(run("?x=1"), "title ?x=1&view=title");
+    // An address with a view: that view.
+    assert_eq!(run("?view=statement"), "statement ?view=statement");
 }

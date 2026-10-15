@@ -719,7 +719,10 @@ turned off (disabled), where it has these.
   for the target `es2018`, minified, and the page inlines it in its
   head as it does the other scripts; there is no source map, as the
   script is small and its source is in the repository. The short
-  scripts stay JavaScript in `web/assets/`, minified by Hugo. Read on
+  scripts stay JavaScript in `web/assets/`, minified by Hugo. The local
+  site has no build step: the index's one script,
+  `crates/statute/src/site.js`, is JavaScript that `statute` inlines
+  with `include_str!`, and the page works without it. Read on
   2026-10-15 with Hugo 0.167.0: `js.Build` strips the types and
   type-only imports, bundles the imports between the files, lowers `?.`
   and `??` to the target, and fails the build on a syntax error.
@@ -759,7 +762,9 @@ of its style sheet named by one; the one-of of
 button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
 popover; the language switch and the tag of a text not in the page's
-language. Not built yet, and what each replaces:
+language; the switch between a rule's title and statement, its choice
+in the address as `view`, and kept for the next index opened only when
+it opens at an address without one. Not built yet, and what each replaces:
 
 - On the public site, the tags of a rule's page, and enabled and the
   quadrant in the list, are boxes of one look; the tags of
