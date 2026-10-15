@@ -389,13 +389,15 @@ def page_title(label: str, path: list[str], title: str) -> str:
   Returns:
     The title, as `R7 Security › Credentials › Tiers`.
   """
-  for cut in range(max(len(path), 1)):
-    text = (
-      f"{label} {' › '.join([*(['…'] if cut else []), *path[cut:], title])}"
-    )
-    if len(text) <= PAGE_TITLE_LENGTH:
-      break
-  return text
+
+  def text(cut: int) -> str:
+    shown = [*(["…"] if cut else []), *path[cut:], title]
+    return f"{label} {' › '.join(shown)}"
+
+  cut = 0
+  while cut < len(path) - 1 and len(text(cut)) > PAGE_TITLE_LENGTH:
+    cut += 1
+  return text(cut)
 
 
 def specific(authority: list[str], src: Constitution) -> list[str]:
@@ -543,7 +545,7 @@ class _Language:
       return other_ref(parent)
     return None
 
-  def parent_title(self, key: tuple[str, int]) -> dict[str, str]:
+  def parent_title(self, key: tuple[str, int]) -> dict[str, object]:
     """Return what tells a node apart from another of the same title.
 
     Args:
