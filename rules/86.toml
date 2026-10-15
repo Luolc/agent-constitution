@@ -1,8 +1,9 @@
 id = 86
 slug = "no-tests-for-unreasonable-input"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 252
 lang = "en"
 parent = 83
 default = "off"

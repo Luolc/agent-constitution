@@ -1,11 +1,11 @@
 id = 62
 slug = "author-never-merges"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
-default = "off"
+default = "on"
 authority = ["accountable-agent.own-work", "independent-review.another-party"]
 constitution = ">=1"
 level = "project"

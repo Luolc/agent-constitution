@@ -8,10 +8,17 @@
 {{- else }}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap">
 {{- end }}
-{{- range slice "theme.js" "count-info.js" "cites.js" "rules-list.js" "toc-current.js" "sidebars.js" }}
-{{- with resources.Get . | resources.Minify }}
-<script>{{ .Content | safeJS }}</script>
-{{- end }}
+{{- /* The scripts, in this order; one in TypeScript is bundled by Hugo's
+  js.Build (esbuild), which strips its types without checking them
+  (docs/design/frontend.md, In the code). */ -}}
+{{- range slice "theme.js" "count-info.js" "cites.js" "ts/rules-list.ts" "toc-current.js" "sidebars.js" }}
+  {{- $script := resources.Get . }}
+  {{- if strings.HasSuffix . ".ts" }}
+    {{- $script = $script | js.Build (dict "target" "es2018" "minify" true) }}
+  {{- else }}
+    {{- $script = $script | resources.Minify }}
+  {{- end }}
+<script>{{ $script.Content | safeJS }}</script>
 {{- end }}
 {{- /* The check of a check box (assets/styles/controls.css): Lucide's
   `check` as a mask, drawn at the stroke of every icon, `icon-stroke`. */}}

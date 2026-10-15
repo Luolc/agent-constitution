@@ -1,0 +1,43 @@
+id = 258
+slug = "check-evidence-after-verdict-before-merge"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+default = "off"
+authority = ["independent-review.reviewed-version", "evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Before a merge, read what arrived after the approving verdict"
+zh = "合并之前，读批准的 verdict 之后新到的东西"
+
+[text.statement]
+en = "Before you merge a change, read what reached its pull request after the approving verdict, and do not merge while any of it contradicts the verdict or the description."
+zh = "合并一个变更之前，读批准的 verdict 之后到达它的 pull request 的东西；其中有任何一样与 verdict 或描述相矛盾，就不合并。"
+
+[text.reason]
+en = '''
+A verdict approves the change on the evidence its reviewer had. A failing CI run, a new comment or a finding that arrives later can show that the approved version is not what the verdict and the description say it is; merging it then puts into effect a version whose review no longer holds ({@constitution:independent-review.reviewed-version}, {@constitution:evidence.grounds}).
+'''
+zh = '''
+verdict 是根据审查方当时掌握的证据批准变更的。之后到达的失败的 CI run、新评论或新的审查意见，可能说明批准的版本并不是 verdict 和描述所说的那样；这时合并，生效的就是审查已经站不住的版本 ({@constitution:independent-review.reviewed-version}、{@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+What reached the pull request after the verdict is each comment, review, check result and change of its description that the code host shows with a later time than the approving verdict. It contradicts the verdict or the description when it states a failure, a finding or a value that the verdict or the description says is not there, such as a red check the description gives as passing, or a finding on the approved version that the verdict does not answer. The contradiction is resolved by a new verdict on it, or by a correction that the reviewer accepts in a comment.
+
+Violated when a change is merged while something that reached its pull request after the approving verdict contradicts the verdict or the description and is not resolved.
+'''
+zh = '''
+verdict 之后到达 pull request 的东西，指代码托管服务显示的、时间晚于批准的 verdict 的每一条评论、每一份审查、每一个检查结果和每一次描述的改动。它写到的失败、审查意见或数值，是 verdict 或描述说没有的，就与之相矛盾，例如描述说通过了、实际变红的检查，或者针对批准版本、verdict 没有答复的审查意见。矛盾的了结方式是：针对它给出新的 verdict，或者给出审查方在评论里接受的更正。
+
+在 verdict 之后到达 pull request 的东西与 verdict 或描述相矛盾、又没有了结的情况下合并了变更的，即为违反本规定。
+'''
+
+[translations]
+zh = "f6985b98e4380eeaf1f46c0afa89f084ea60fad6f77d5955528bb56fe75e5f41"

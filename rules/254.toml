@@ -1,0 +1,43 @@
+id = 254
+slug = "release-find-why-first-attempt-failed"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+default = "off"
+authority = ["discriminating-checks", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "When a release passes over a commit whose CI passed only on a rerun, find out why the first attempt failed"
+zh = "发版跳过 CI 重跑才通过的 commit 时，查清第一次为什么失败"
+
+[text.statement]
+en = "When you pass over a commit for a release because its CI run for the push to the main branch succeeded only on a later attempt, read the logs of the earlier attempts and record why the first one failed."
+zh = "因为某个 commit 推到主分支触发的 CI run 重跑之后才成功而在发版时跳过它的，读之前各次 attempt 的日志，把第一次失败的原因记下来。"
+
+[text.reason]
+en = '''
+A run that failed and then passed may hide a fault that shows only sometimes. Passing over the commit keeps that run out of the release, but the fault can still be in the code of the commits after it, and their runs passing is no proof that it is gone ({@constitution:discriminating-checks}); what is recorded is what the logs show ({@constitution:evidence.facts}).
+'''
+zh = '''
+先失败、后通过的 run，可能藏着一个只是偶尔出现的故障。跳过这个 commit，只是不让这次 run 进入发版；故障可能仍在之后各个 commit 的代码里，它们的 run 通过了，也证明不了故障已经没有了 ({@constitution:discriminating-checks})；记下来的，是日志里实际看到的 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+The run is the one that the push of the commit to the main branch started, of the workflow whose result the repository takes as CI's verdict on a commit. The record is one that outlasts the release: its notes, an issue or the task's record. It names the run and gives the cause found in the logs of the earlier attempts, or says that the cause is still unknown after reading them.
+
+Violated when a commit is passed over for a release for this reason and no such record names its run.
+'''
+zh = '''
+这里的 run，指这个 commit 推到主分支时触发的那一次 run，属于仓库用来判定 CI 对一个 commit 结论的那个 workflow。记录要比这次发版留得久：发布说明、issue 或任务的记录。记录写明是哪次 run，给出从之前各次 attempt 的日志里查到的原因，或者写明读过日志之后原因仍然不明。
+
+因为这个原因在发版时跳过了某个 commit，却没有任何这样的记录写明它的 run 的，即为违反本规定。
+'''
+
+[translations]
+zh = "28e4cbea49d923ef3f23fecb1308a6a04f46ed3c1d67882f393189bb9b77c196"

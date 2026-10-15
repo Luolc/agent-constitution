@@ -1,0 +1,44 @@
+id = 252
+slug = "tests-only-happy-path-and-set-boundaries"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 83
+default = "off"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Test only the happy path and the boundaries the requirements set"
+zh = "测试只测 happy path 和需求规定的边界"
+
+[text.statement]
+en = "Apart from a regression test for a bug that occurred, write tests only of what code does on its happy path and at the boundaries its requirements set."
+zh = "除了针对实际发生过的 bug 的回归测试，测试只测代码在 happy path 上和在需求规定的边界上的行为。"
+
+[text.reason]
+en = '''
+Every test is code that is run, read and kept up for as long as it stays ({@constitution:simplicity}). A test of what no caller does and no requirement names fixes behavior nobody needs and adds that cost for nothing.
+'''
+zh = '''
+每个测试都是代码，只要还在，就要运行、阅读和维护 ({@constitution:simplicity})。为没有调用方会做、也没有需求提到的事写测试，是把谁都不需要的行为固定下来，白白多出这份成本。
+'''
+
+[text.verification]
+en = '''
+The happy path is what the code does with the ordinary input its callers give, as its requirements describe. A boundary the requirements set is an edge or a failure that a requirement, a specification or a record of a bug names: an empty list the code must accept, a limit it must enforce, input from outside that it must reject. Input that is plainly unreasonable, which no caller gives or could be expected to, such as a negative count of files, a path that is a number or a type the signature excludes, is neither. A regression test is one whose purpose is to keep a past failure from coming back; {@rule:84} governs it.
+
+Violated when a change adds a test, other than a regression test, of what code does off its happy path and at no boundary its requirements set.
+'''
+zh = '''
+happy path，指代码对调用方给的普通输入所做的事，以需求的描述为准。需求规定的边界，指需求、规格或 bug 记录提到的边缘情况或失败情况：代码必须接受的空列表，必须执行的上限，必须拒绝的外部输入。明显不合理的输入，即调用方不会给、也不会被指望给的输入，例如为负数的文件个数、一个是数字的路径、函数签名已经排除的类型，两者都不是。回归测试，指目的是防止过去的失败再次出现的测试，由 {@rule:84} 管。
+
+变更加入的测试不是回归测试，测的又既不是代码在 happy path 上的行为，也不是它在需求规定的边界上的行为的，即为违反本规定。
+'''
+
+[translations]
+zh = "c6936c3d3589779ca13d41b4f69c8e802bd6cc8ec9525b2f504674db4c10b7c6"

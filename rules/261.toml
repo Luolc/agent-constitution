@@ -1,0 +1,43 @@
+id = 261
+slug = "claim-matches-its-reading"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 260
+default = "on"
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Cite for a claim only an output that matches it in object, scope, time and measure"
+zh = "主张只引用在对象、范围、时间和度量上都对得上的输出"
+
+[text.statement]
+en = "Before you write a claim that carries a reading, such as a number, a SHA, a list or \"all the others\", check that the output you rest it on has the same object, scope, time or version and measure as the claim; where one differs, narrow the claim to what that output supports or run a command for this claim."
+zh = "写一句带读数的主张之前，例如一个数字、一个 SHA、一份列表或者「其余都是」，先核对它所依据的输出与这句主张的对象、范围、时间或版本、度量是否相同；有一项不同的，把主张缩窄到那份输出支持得住的范围，或者为这句主张另跑一条命令。"
+
+[text.reason]
+en = '''
+The facts in a claim are as actually looked up ({@constitution:evidence.facts}). An output about another object, another range, another version or another measure reads like the fact claimed, and is not it.
+'''
+zh = '''
+主张里的事实，要按实际查到的写 ({@constitution:evidence.facts})。关于另一个对象、另一个范围、另一个版本或另一种度量的输出，读起来像是所主张的事实，其实不是。
+'''
+
+[text.verification]
+en = '''
+The object is what the claim is about: a repository, a branch, a file, a machine. The scope is which items the output covers and how they were picked: a filter, a page, a directory. The time or version is when the output was read, or which commit, release or revision it describes. The measure is what is counted or compared: files or lines, failed runs or failed tests. A claim is one written in a report, a pull request, a document or a message to another agent.
+
+Violated when a claim that carries a reading rests on an output that differs from it in object, scope, time or version, or measure, and the claim is not narrowed to what that output supports.
+'''
+zh = '''
+对象，指主张说的是什么：一个仓库、一个分支、一个文件、一台机器。范围，指输出涵盖哪些条目、这些条目是怎么选出来的：过滤条件、分页、目录。时间或版本，指输出是什么时候读的，或者它描述的是哪个 commit、哪次发布、哪个修订版。度量，指数的或比较的是什么：文件数还是行数，失败的 run 还是失败的测试。主张，指写在报告、pull request、文档或者给另一个 agent 的消息里的话。
+
+带读数的主张所依据的输出，在对象、范围、时间或版本、度量上与它有不同，而主张又没有缩窄到那份输出支持得住的范围的，即为违反本规定。
+'''
+
+[translations]
+zh = "f1dc53a9b662622592f764eaec070f1e2c6cb8fb8e5ee4f3cf70a62a09ee7554"

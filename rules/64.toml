@@ -1,8 +1,9 @@
 id = 64
 slug = "review-round-limit"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 255
 lang = "en"
 parent = 14
 default = "off"

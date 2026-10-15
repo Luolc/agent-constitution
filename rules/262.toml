@@ -1,0 +1,43 @@
+id = 262
+slug = "list-claim-says-how-the-list-was-made"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 260
+default = "on"
+authority = ["evidence.facts", "evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Say how a list was made before asserting something of all its items"
+zh = "断言一份列表的全体之前，说明列表是怎么来的"
+
+[text.statement]
+en = "When you assert something of every item of a list, or that there are no others, say how the list was produced and whether it covers the whole range you assert it of."
+zh = "断言一份列表里每一项都怎样，或者断言没有别的项时，说明这份列表是怎么产生的，以及它是否涵盖所断言的整个范围。"
+
+[text.reason]
+en = '''
+An assertion of "all" or "none" is only as good as the list behind it. A list made by a filter, a sample or a summary may leave out what the assertion is about; the facts are as actually looked up ({@constitution:evidence.facts}), and the reader needs to know how to check the list ({@constitution:evidence.grounds}).
+'''
+zh = '''
+「全都是」「一个也没有」这样的断言，可靠程度取决于它背后的列表。经过滤、抽样或摘要得到的列表，可能恰好漏掉断言所说的那些项。事实要按实际查到的写 ({@constitution:evidence.facts})，读者也要知道怎样去核对这份列表 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+An assertion over a list says that all, none or the rest of some items are so, or that there are exactly so many. How the list was produced is the command, query or search whose output gave it, with its filters; a list restated from memory has no such answer. It covers the range when every item the assertion is about could appear in that output. Output that is not exhaustive, such as a sample, a first page, or a summary a tool gives of a document, covers only what it shows, and an assertion resting on it is narrowed to that.
+
+Violated when such an assertion does not say how its list was produced, or whether that covers the range it is asserted of.
+'''
+zh = '''
+对列表的断言，指说某些项全都怎样、一个也不怎样、其余都怎样，或者恰好有多少项。列表怎么产生的，指输出了这份列表的命令、查询或搜索，连同过滤条件；凭记忆复述的列表答不出这一点。断言所说的每一项都有可能出现在那份输出里，列表就涵盖了这个范围。不穷尽的输出，例如抽样、第一页，或者工具对一份文档给出的摘要，只涵盖它显示出来的部分，以它为依据的断言要缩窄到这一部分。
+
+这样的断言没有说明列表是怎么产生的，或者没有说明它是否涵盖所断言的范围的，即为违反本规定。
+'''
+
+[translations]
+zh = "fab5a5b0569cf84b2058196bcf9cbdb18f6a2472023ea01809cb7b5600661195"
