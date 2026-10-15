@@ -71,8 +71,8 @@ it overrides, which is not in the file. A rule uses its translation
 into the language when it has one, and its original otherwise. The
 citations in a statement are rendered ([IDs](source-formats.md#ids)):
 `{@rule:<id>}` as the cited rule's reference, `R42`, whether the rule is
-in the file or not, and as the rule in its place when it is overridden;
-and `{@constitution:<id>}` as the provision's label in the language, in
+in the file or not, and as the rule in its place when it is overridden,
+unless that rule is the one citing it, which names it as itself; and `{@constitution:<id>}` as the provision's label in the language, in
 plain text as in the version for agents, such as `Art. IV §1(2)`. The labels
 come from the edition's sources, the numbers of the articles' and
 sections' names and the items' `number`, by the same rules as in the
