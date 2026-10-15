@@ -48,13 +48,13 @@ CI configuration, git commit hook configuration and tool code are not instructio
 The migration change is the change before which no instruction file of the repository is compiled from a rule set and after which one is; the instructions it moves away from, such as hand-written files kept as legacy copies, are instruction files too. With statute it is the change that adds `statute.toml` to a repository whose base has none, which a check can tell from the changed files; a later change that redoes the rule set is no migration change. The migration change holds only the move and the compile check:
 
 - the instruction files the move touches: the rule set, its lock file and the repository's own rules, the files the build writes (the compiled instruction files, the skills it installs and the like), and the instructions it moves away from, deleted, renamed or kept as legacy copies;
-- the changes to commit hook configuration and CI configuration that add the check that the compiled files equal what their sources compile to (with statute, `statute compile --check`), to each of the two the repository has at the base of the change, and nothing else in that configuration; the review checks that they do nothing else.
+- the changes to commit hook configuration and CI configuration that add the check that the compiled files equal what their sources compile to (with statute, `statute compile --check`), to each of the two the repository has at the base of the change, and nothing else in that configuration; a CI that runs every commit hook gets the check from the hook, and its configuration needs no change. The review checks that they do nothing else.
 
 Every other change (a pull request) whose changed files include both instruction files and other files does not comply ({@constitution:separate-instruction-changes}); a rename counts as removing the old path and adding the new one. The agent splits it in two ({@rule:48}). The rule holds whether or not the repository has a check for it ({@rule:49}); where it has none, review enforces it.
 
 When unsure whether a file is an instruction file, treat it as one.
 
-Violated when the changed files of a change other than the migration change include both instruction files and other files, or when the migration change holds anything besides the move and the compile check, or does not add the compile check to the commit hooks or the CI that the repository has at its base.
+Violated when the changed files of a change other than the migration change include both instruction files and other files, or when the migration change holds anything besides the move and the compile check, or does not add the compile check to each of the commit hooks and the CI that the repository has at its base.
 '''
 zh = '''
 指令文件是指示或约束 agent 的文件：
@@ -71,14 +71,14 @@ CI 配置、git 的 commit hook 配置和工具代码不属于指令文件。生
 迁移变更，是指在它之前仓库没有任何指令文件由规则集编译生成、在它之后有的那个变更；它迁走的旧指令，例如留作 legacy 副本的手写文件，也是指令文件。用 statute 的仓库，它就是在 base 上没有 `statute.toml` 的仓库里新增 `statute.toml` 的变更，检查可以从改动的文件认出它；之后重做规则集的变更不是迁移变更。迁移变更里只放迁移本身和编译检查：
 
 - 迁移涉及的指令文件：规则集、它的锁文件和仓库自己的规定，构建写出的文件 (编出的指令文件、它安装的 skill 等)，以及迁走的旧指令，无论删除、改名还是留作 legacy 副本；
-- commit hook 配置和 CI 配置里加上检查编出的文件与其源文件编译结果一致的检查 (用 statute 的，即 `statute compile --check`) 的修改，变更的 base 上仓库有这两者中的哪一个，就加进哪一个，这些配置里不做别的修改；由审查核对它们没有做别的事。
+- commit hook 配置和 CI 配置里加上检查编出的文件与其源文件编译结果一致的检查 (用 statute 的，即 `statute compile --check`) 的修改，变更的 base 上仓库有这两者中的哪一个，就加进哪一个，这些配置里不做别的修改；CI 本来就运行全部 commit hook 的，加上 hook 即算加进了 CI，CI 配置不必改。由审查核对它们没有做别的事。
 
 其他变更 (pull request) 改动的文件里既有指令文件、又有其他文件的，不合规 ({@constitution:separate-instruction-changes})；改名按删除旧路径、新增新路径两项计。agent 把它拆成两个变更 ({@rule:48})。无论仓库有没有这项检查 ({@rule:49})，本规定都要遵守；没有检查的，由审查把关。
 
 不确定某个文件是否属于指令文件的，按属于处理。
 
-迁移变更以外的变更，改动的文件里既有指令文件、又有其他文件的，或者迁移变更里放了迁移本身和编译检查以外的内容，或者没有把编译检查加进变更的 base 上仓库已有的 commit hook 或 CI 的，即为违反本规定。
+迁移变更以外的变更，改动的文件里既有指令文件、又有其他文件的，或者迁移变更里放了迁移本身和编译检查以外的内容，或者没有把编译检查分别加进变更的 base 上仓库已有的 commit hook 和 CI 的，即为违反本规定。
 '''
 
 [translations]
-zh = "e0f8f82b6e45e4baf4d16ff6456f408d89247f793c8dc6ebd9a2e38fcb9fac8a"
+zh = "1bfef9368dcacdb1654889e94ba9e48910f90ef528a6d6e886e297fbb60e2b01"
