@@ -81,10 +81,9 @@ struct Words {
     quadrants: [&'static str; 4],
     /// The filter's button.
     filter: &'static str,
-    /// The legend's name, and what each mark means: the five statuses,
-    /// on and off by default, the default option, enabled and not
-    /// enabled, and the quadrant.
-    legend: &'static str,
+    /// What each mark of the legend means: the five statuses, on and
+    /// off by default, the default option, enabled and not enabled, and
+    /// the quadrant.
     meanings: [&'static str; 11],
     /// The fields of the filter: the kind of source, `uses`, and the
     /// nodes it shows besides.
@@ -134,7 +133,6 @@ fn words(lang: &str) -> Words {
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
             filter: "筛选",
-            legend: "图例",
             meanings: [
                 "已经生效。",
                 "在实际工作中试用，还没有定型。",
@@ -187,7 +185,6 @@ fn words(lang: &str) -> Words {
                 "Local private",
             ],
             filter: "Filter",
-            legend: "Legend",
             meanings: [
                 "In force.",
                 "Being tried on real work before it settles.",
@@ -566,14 +563,10 @@ fn tree(
         Kind::Domain => class.push(if level == 1 { "domain d1" } else { "domain d2" }),
         // A one-of is a box that holds its options, the default marked
         // (`docs/design/rule-config.md`, No rule under a rule), lighter
-        // when the rule set enables none of them.
+        // when none of them is in use.
         Kind::OneOf => {
             class.push("one-of");
-            let enabled = &project.resolution.enabled;
-            if !children
-                .iter()
-                .any(|c| enabled.contains_key(&Key::new(&source.name, c.id)))
-            {
+            if !children.iter().any(|c| in_use(project, source, c)) {
                 class.push("unset");
             }
         }
@@ -631,6 +624,16 @@ fn tree(
         out.push_str("</ul>");
     }
     out.push_str("</li>\n");
+}
+
+/// Whether the rule set uses a node: an enabled rule, a domain or
+/// one-of that is on, or one that holds an enabled rule.
+fn in_use(project: &Project, source: &Source, node: &Node) -> bool {
+    let key = Key::new(&source.name, node.id);
+    let res = &project.resolution;
+    res.enabled.contains_key(&key)
+        || res.on.contains(&key)
+        || source.children(node.id).any(|c| in_use(project, source, c))
 }
 
 /// A link to a node's page from a page `up` below the site's directory
@@ -734,7 +737,7 @@ fn legend(w: &Words) -> String {
             Quadrant::GlobalPublic.name(w)
         ),
     ]);
-    let mut out = format!("<dl class=\"legend\" aria-label=\"{}\">\n", w.legend);
+    let mut out = String::from("<dl class=\"legend\">\n");
     for (mark, meaning) in marks.zip(w.meanings) {
         let _ = writeln!(out, "<div><dt>{mark}</dt><dd>{meaning}</dd></div>");
     }

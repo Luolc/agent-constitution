@@ -544,7 +544,7 @@ fn site_draws_the_tree_by_level() {
     write(
         &dir,
         "statute.toml",
-        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R4\"]\n\n[sources]\nR = { path = \"r\" }\n",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R4\", \"R12\"]\n\n[sources]\nR = { path = \"r\" }\n",
     );
     put(&dir, "r/rules", domain(1));
     put(
@@ -555,6 +555,19 @@ fn site_draws_the_tree_by_level() {
     put(&dir, "r/rules", rule(4, 2, ""));
     put(&dir, "r/rules", one_of(5, 2, 6));
     put(&dir, "r/rules", option(6, 5, ""));
+    // A one-of whose options are domains, one of them on.
+    put(&dir, "r/rules", one_of(9, 1, 10));
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(10), "default = \"off\"", "parent = 9"),
+    );
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(11), "default = \"off\"", "parent = 9"),
+    );
+    put(&dir, "r/rules", rule(12, 10, ""));
     let r = statute(&dir, &["site"]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     let index = read(&dir, ".statute/site/index.html");
@@ -570,15 +583,18 @@ fn site_draws_the_tree_by_level() {
     );
     // A one-of none of whose options is enabled is drawn lighter.
     assert!(index.contains("<li class=\"one-of unset\">"), "{index}");
+    // One with a domain on is not.
+    assert!(
+        index.contains("<li class=\"one-of\"><span class=\"one-of-label\">One of</span><div class=\"row\"><a href=\"R/9.html\">"),
+        "{index}"
+    );
     // Every page carries the tokens, as the public site has them.
     let tokens = include_str!("../assets/tokens.css");
     assert!(index.contains(tokens));
     assert!(read(&dir, ".statute/site/R/4.html").contains(tokens));
     assert!(index.contains("--icon-check: url(\"data:image/svg+xml,%3Csvg "));
     // The legend draws each mark as the tree does and says what it means.
-    let legend = &index[index
-        .find("<dl class=\"legend\" aria-label=\"Legend\">")
-        .expect(&index)..];
+    let legend = &index[index.find("<dl class=\"legend\">").expect(&index)..];
     let legend = &legend[..legend.find("</dl>").unwrap()];
     assert_eq!(legend.matches("<div><dt>").count(), 11, "{legend}");
     assert!(legend.contains("<dt><span class=\"switch on\" role=\"img\" aria-label=\"on by default\" title=\"on by default\"></span></dt><dd>A new rule set gets it without listing it.</dd>"), "{legend}");
