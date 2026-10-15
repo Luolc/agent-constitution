@@ -6,7 +6,9 @@ This part of the design says three things a rule set can set beyond
 the list of its rules: the directory of the repository's own rules,
 the values of parameters that rules leave open (the languages first),
 and which domains and rules come in without being listed, through a
-switch each of them declares. It builds on
+switch each of them declares; and one thing each rule says of itself,
+whether it goes to the agents at work, to the reviewer or to both. It
+builds on
 [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
 [Rule file format](rule-format.md#rule-file-format) and
 [Rule sources](rule-sources.md), and on
@@ -25,6 +27,7 @@ has to take out.
 - [The directory of local rules](#the-directory-of-local-rules)
 - [Parameters](#parameters)
 - [Default switches](#default-switches)
+- [Where a rule is used](#where-a-rule-is-used)
 - [Recommended defaults for the first-party rules](#recommended-defaults-for-the-first-party-rules)
 - [Proposed: no rule under a rule](#proposed-no-rule-under-a-rule)
 - [What this changes](#what-this-changes)
@@ -444,11 +447,71 @@ listed. The first `lock` after the switch lists them, and the move
 puts each in the second list or keeps it. The skill that guides the
 migration (not written yet) goes through the three lists in this order.
 
+## Where a rule is used
+
+A rule serves two readers: the agent at work, which reads the compiled
+`AGENTS.md`, and the reviewer, which goes through the list that
+`statute check` prints ([Outcomes and the review loop](rule-checks.md#outcomes-and-the-review-loop)).
+Not every rule serves both. "Pass no credential from one agent to
+another" (`rules/45.toml`) is something an agent must know while it
+works, but a reviewer who has the diff and the pull request
+description cannot tell whether it was broken. A requirement such as
+"the head named in the description is the head reviewed" is only of
+use to the reviewer. Most rules need not be reviewed at all.
+
+**In the rule file**, `uses` lists where a rule goes, a non-empty
+subset of two values:
+
+```toml
+uses = ["instructions", "review"]
+```
+
+- `instructions`: `statute compile` writes the rule into the compiled
+  `AGENTS.md`.
+- `review`: `statute check` lists the rule for the reviewer, with its
+  reason and verification.
+- Without `uses`, a rule has `["instructions"]`; `review` is added by
+  writing it. An empty list fails the build, as does a value other
+  than these two. Domains, one-ofs and parameters have no `uses`.
+
+`uses` is apart from `check`, which says how a rule is checked by a
+program: `builtin`, `command`, or `review` for no program at all
+([Rule file format](rule-format.md#rule-file-format)). `statute check`
+runs the program of every enabled rule that has one, whatever its
+`uses`, and lists for review only the rules whose `uses` has `review`.
+`check = "review"` then means only "no automatic check"; renaming it to
+`none` would say so, and is left to the change that builds `uses`.
+Changing `uses` does not change what counts as compliant, so the rule
+is changed in place and its revision goes up by one.
+
+**Which to choose.** A rule for domain R96 is proposed, to be written
+with the change that adds `uses` to the rules: mark a rule `review`
+only when a reviewer can decide from the diff and the pull request
+description alone whether it was broken, and `instructions` only when
+an agent needs to know it while it works.
+
+**What follows from it.**
+
+- The compiled `AGENTS.md` holds the enabled rules whose `uses` has
+  `instructions`. A domain whose enabled rules are all review-only has
+  no heading there, and a requirement or a citation of a review-only
+  rule renders as one of a rule outside the file, its title followed
+  by "(rule R42)".
+- `statute check` lists, in its domains, the enabled rules whose
+  `uses` has `review` and the outcome of every program it ran.
+- `statute explain <rule>` says where an enabled rule goes: "R43 is
+  compiled into `AGENTS.md` and listed for review".
+- The lock file records nothing new: `uses` is part of the rule file,
+  whose SHA-256 it pins.
+- The sites show `uses` on a rule's page, and the list of rules gets a
+  filter by it.
+
 ## Recommended defaults for the first-party rules
 
 The first-party rules do not carry `default` yet. The table below is
 the recommendation that the change adding the field follows; from then
-on the rule files are the record, and this section goes. It covers the
+on the rule files are the record, and this section goes; the same
+holds for `uses`. It covers the
 rules on the main branch on 2026-10-14, up to R126; superseded rules
 are left out, since they are never enabled. A rule not listed below
 under its domain is recommended `on`.
@@ -511,6 +574,13 @@ apart and every difference is marked, since it holds for a design
 written before or after the code, while R80 asks every change to carry
 its design along.
 
+**Uses.** The rules recommended `["instructions", "review"]`, by the
+proposed rule above: R1, R19, R21, R43, R46, R47, R50, R51, R56, R72,
+R75, R80, R81, R84 to R89, R92, R97 to R106, R108 to R114, R122 to
+R126. None is recommended review-only: each of these is also something
+an agent needs while it works. The rest keep the default,
+`["instructions"]`.
+
 ## Proposed: no rule under a rule
 
 Open, for the person to decide. Until it is decided, the tree of
@@ -568,7 +638,8 @@ built.
 
 Not built: everything in this file. statute reads none of
 `local-rules`, `domains`, `exclude`, `defaults` or the `[language]`
-table, nor `kind = "parameter"`, `default` on a node or a placeholder,
+table, nor `kind = "parameter"`, `default` on a node, `uses` or a
+placeholder,
 and `constitution-build` checks none of them; the rule set and the
 rule files fail on these keys today. The first-party rules have no
 parameter and no `default` yet.
@@ -586,6 +657,13 @@ The parts of the design this one changes:
   parameters' tables, a source entry `defaults`, and the lock file
   `by` and `value`.
 - [Rule file format](rule-format.md#rule-file-format): the kind
-  `parameter`, and `default` on domains, rules and one-ofs.
+  `parameter`, `default` on domains, rules and one-ofs, and `uses` on
+  rules.
+- [Outcomes and the review loop](rule-checks.md#outcomes-and-the-review-loop):
+  `statute check` lists for review only the rules whose `uses` has
+  `review`, and runs every rule's program as before.
+- [Compilation and the site](statute-command.md#compilation-and-the-site):
+  the compiled `AGENTS.md` holds only the rules whose `uses` has
+  `instructions`.
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
   a one-of enables its default child when the rule set picks none.

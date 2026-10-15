@@ -1,7 +1,7 @@
-<!-- en-sha256: 66d971f912f10c142edd5d763f4f257031d662332018584e4bc0019ce828e0e9 -->
+<!-- en-sha256: 58e24cd0abf7f20e42a1b8c973554c7ca6570aa389e781b8165f4a38e504cfad -->
 # 规定配置
 
-状态：已定；还没有实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户 statute 目录里的[全局配置](global-configuration.md#the-global-configuration) `~/.statute/config.toml` 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
+状态：已定；还没有实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户 statute 目录里的[全局配置](global-configuration.md#the-global-configuration) `~/.statute/config.toml` 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
 
 三样东西的目的相同：采用 statute 的仓库拿到的是一小套最通用、放在哪里都不太会出错的规定，其余的按需开启；只关乎某个人或某种环境的东西，是仓库设定的一个值或开启的一条规定，而不是要它去掉的一条规定。
 
@@ -10,6 +10,7 @@
 - [本地规定的目录](#the-directory-of-local-rules)
 - [参数](#parameters)
 - [默认开关](#default-switches)
+- [规定用在哪里](#where-a-rule-is-used)
 - [第一方规定的推荐默认值](#recommended-defaults-for-the-first-party-rules)
 - [提议：规定不挂在规定下面](#proposed-no-rule-under-a-rule)
 - [它改变什么](#what-this-changes)
@@ -237,9 +238,35 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 
 默认开关出现之前写的规定清单，把用到的每条规定都列在 `rules` 和 `packs` 里；按默认值，它还可能得到从没列过的规定。默认开关上线后的第一次 `lock` 会列出它们，迁移时把每一条放进第二张列表，或者保留。指导迁移的 skill (还没有写) 按这个顺序过这三张列表。
 
+## <a id="where-a-rule-is-used"></a>规定用在哪里
+
+一条规定有两类读者：干活的 agent 读编译出的 `AGENTS.md`，审查方过 `statute check` 打出的清单 ([结果与审查回路](rule-checks.md#outcomes-and-the-review-loop))。不是每条规定两边都用得上。「不在 agent 之间传递凭证」(`rules/45.toml`) 是 agent 干活时必须知道的，但手里只有 diff 和 pull request 描述的审查方判断不了它有没有被违反。「描述里写的 head 就是审查的 head」这类要求则只对审查方有用。大部分规定根本不必进审查。
+
+**规定文件里**用 `uses` 列出规定去哪里，取下面两个值的非空子集：
+
+```toml
+uses = ["instructions", "review"]
+```
+
+- `instructions`：`statute compile` 把这条规定写进编译出的 `AGENTS.md`。
+- `review`：`statute check` 把这条规定连同理由和核验方法列给审查方。
+- 没写 `uses` 的规定取 `["instructions"]`；要 `review` 就写出来。空列表报错，这两个以外的值也报错。领域、one-of 和参数没有 `uses`。
+
+`uses` 与 `check` 是两回事。`check` 说的是由程序怎样检查这条规定：`builtin`、`command`，或者 `review`，即没有程序 ([规定文件格式](rule-format.md#rule-file-format))。`statute check` 运行每条有程序的启用规定的程序，不论它的 `uses`；列给审查方的只有 `uses` 含 `review` 的规定。这样 `check = "review"` 只表示「没有自动检查」；改名为 `none` 能把这一点说清楚，留给实现 `uses` 的那次改动。改 `uses` 不改变什么算合规，所以原地修改，修订号加一。
+
+**怎么选。** 提议给领域 R96 加一条规定，与给规定加 `uses` 的那次改动一起写：只有凭 diff 和 pull request 描述就能判断有没有违反的规定，才标 `review`；只有 agent 干活时需要知道的规定，才标 `instructions`。
+
+**由此而来的。**
+
+- 编译出的 `AGENTS.md` 收录 `uses` 含 `instructions` 的启用规定。一个领域里启用的规定全都只进审查时，那里没有它的标题；对只进审查的规定的依赖或引用，按引用文件之外的规定渲染，即它的标题后面加「(规定 R42)」。
+- `statute check` 在各个领域里列出 `uses` 含 `review` 的启用规定，以及它运行的每个程序的结果。
+- `statute explain <rule>` 说明一条启用的规定去哪里：「R43 编进 `AGENTS.md`，并列给审查方」。
+- 锁文件不记新东西：`uses` 是规定文件的一部分，锁文件已经用 SHA-256 钉住了它。
+- 网站在规定详情页显示 `uses`，规定列表加一个按它筛选的选项。
+
 ## <a id="recommended-defaults-for-the-first-party-rules"></a>第一方规定的推荐默认值
 
-第一方规定还没有 `default`。下面的表是推荐值，给这些规定加这个字段的那次改动照它来；从那以后以规定文件为准，这一节删掉。它覆盖 2026-10-14 主分支上的规定，到 R126 为止；被取代的规定不列，因为它们从不会启用。一条规定没有列在它的领域下面，推荐值就是 `on`。
+第一方规定还没有 `default`。下面的表是推荐值，给这些规定加这个字段的那次改动照它来；从那以后以规定文件为准，这一节删掉；`uses` 也一样。它覆盖 2026-10-14 主分支上的规定，到 R126 为止；被取代的规定不列，因为它们从不会启用。一条规定没有列在它的领域下面，推荐值就是 `on`。
 
 | 领域 | 默认 | 理由 |
 | --- | --- | --- |
@@ -287,6 +314,8 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 
 **one-of。** R79「让设计与代码保持一致」是目前唯一的 one-of。推荐默认 R81，即代码和设计可以分开改、每处差异都标出来：设计写在代码之前还是之后它都适用，而 R80 要求每次改动都带上设计。
 
+**uses。** 按上面提议的规定，推荐为 `["instructions", "review"]` 的规定：R1、R19、R21、R43、R46、R47、R50、R51、R56、R72、R75、R80、R81、R84 到 R89、R92、R97 到 R106、R108 到 R114、R122 到 R126。没有推荐只进审查的：这些规定也都是 agent 干活时需要知道的。其余的保持默认 `["instructions"]`。
+
 ## <a id="proposed-no-rule-under-a-rule"></a>提议：规定不挂在规定下面
 
 待人决定。决定之前，[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs) 和[规定文件格式](rule-format.md#rule-file-format) 里的树照旧，上面的默认开关也是按它写的；提议一旦采纳，由一次改动把这两部分设计改过来。
@@ -306,12 +335,14 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 
 ## <a id="what-this-changes"></a>它改变什么
 
-还没有实现：本文件里的一切。statute 不读 `local-rules`、`domains`、`exclude`、`defaults` 和 `[language]` 表，也不读 `kind = "parameter"`、节点上的 `default` 和占位符，`constitution-build` 也一样都不检查；现在规定清单和规定文件遇到这些键会报错。第一方规定目前没有参数，也没有 `default`。
+还没有实现：本文件里的一切。statute 不读 `local-rules`、`domains`、`exclude`、`defaults` 和 `[language]` 表，也不读 `kind = "parameter"`、节点上的 `default`、`uses` 和占位符，`constitution-build` 也一样都不检查；现在规定清单和规定文件遇到这些键会报错。第一方规定目前没有参数，也没有 `default`。
 
 受这一部分影响的其他设计：
 
 - [选用规定](rules.md#choosing-rules)：法域使用全部通用规定、逐条点名去掉的推荐做法，让位于默认开关。
 - [本地参数](rules.md#local-parameters)：参数是规定源里的节点，占位符是 `{$<name>}`，取值来自规定清单，而不是 overlay 的 `params.toml`。
 - [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：规定清单多了 `local-rules`、`domains`、`exclude` 和参数的表，规定源条目多了 `defaults`，锁文件多了 `by` 和 `value`。
-- [规定文件格式](rule-format.md#rule-file-format)：多了 `parameter` 这一种节点，领域、规定和 one-of 多了 `default`。
+- [规定文件格式](rule-format.md#rule-file-format)：多了 `parameter` 这一种节点，领域、规定和 one-of 多了 `default`，规定多了 `uses`。
+- [结果与审查回路](rule-checks.md#outcomes-and-the-review-loop)：`statute check` 只把 `uses` 含 `review` 的规定列给审查方，每条规定的程序照旧运行。
+- [编译与网站](statute-command.md#compilation-and-the-site)：编译出的 `AGENTS.md` 只收录 `uses` 含 `instructions` 的规定。
 - [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：规定清单没有选时，one-of 启用它的默认子节点。
