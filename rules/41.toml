@@ -1,8 +1,9 @@
 id = 41
 slug = "take-the-reviewed-route"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 282
 lang = "en"
 parent = 13
 default = "on"

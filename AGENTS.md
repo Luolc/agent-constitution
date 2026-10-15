@@ -201,10 +201,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 
 # Rules
 
-- R41 When a guard blocks an action, take the reviewed route instead of getting around the block.
-- R42 Change instructions, skills and agent tool settings in their source, through review, never in an installed copy.
-- R93 Write a message, a body or a commit message that you pass to a command through a shell into a file with a quoted heredoc first, and pass the file.
-- R94 When you check text you passed through a shell, compare what arrived with the file you passed it from.
+- R282 When a guard blocks you and no reviewed route is open to you, tell whoever delegated the work, an agent or a person, what blocks you, and ask for a way forward.
 - R22 To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status.
 - R23 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
 - R36 Never ask for, read or repeat a credential's value.
@@ -300,6 +297,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R219 Commit no large data file to a repository; commit only a pointer to it in the data directory (R131), with its SHA-256.
 - R220 When a repository has a data directory (R131), say in its instructions what that directory holds and when it is cleared.
 - R221 Keep nothing but others' sources in the root for third-party sources (R132).
+- R42 To change instructions, skills or agent tool settings, change their source through review, never an installed copy.
 - R157 Install a project's skills only inside the project, never into a user-level skills directory.
 - R158 Do not install a skill from outside; distill its good practices into a skill of your own.
 - R159 Keep among the user-level skills only tool skills that are of use in any project and need not be turned off in any.
@@ -437,3 +435,4 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R49 Where a repository has a check that a change keeps instruction files apart from other files, run it in CI and have it fail a change that mixes them.
 - L28 Change instruction files in a change of their own, never together with changes to other files, and count the `AGENTS.md` at the root of this repository, which this repository's statute compiles and `statute compile --check` in CI proves equal to a recompile, as a generated file (R47), not as an instruction file (for example, a change to statute's code commits it together with that code), while a change to `statute.toml`, `statute.lock`, `.statute/`, `rules/` or the sources of the constitution stays a change to instructions.
 - L27 Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml` as a generated file (R47), not as an instruction file.
+- R285 Write a text that you pass to a command through a shell, when it runs over more than one line or holds `$`, a backtick, a backslash, a quote or `!`, into a file with a quoted heredoc first, and pass the file to the command.
