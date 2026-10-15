@@ -1,0 +1,42 @@
+id = 158
+slug = "distill-external-skills"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 149
+authority = ["skills.third-party"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Do not install skills from outside; distill what is good in them into skills of your own"
+zh = "外部 skill 不直接装，好的做法提炼进自有 skill"
+
+[text.statement]
+en = "Do not install a skill from outside; distill its good practices into a skill of your own."
+zh = "不直接安装外部的 skill，把其中好的做法提炼进自有 skill。"
+
+[text.reason]
+en = '''
+What a skill from outside has an agent do, read, write and connect to is decided by someone else, and changes silently as its upstream changes ({@constitution:skills.third-party}). Distilled into a skill of your own, the content is reviewed and maintained like any other.
+'''
+zh = '''
+外部 skill 会让 agent 做什么、读写什么、连到哪里，都由别人决定，而且会随着上游的更新悄悄改变 ({@constitution:skills.third-party})。提炼进自有 skill，内容就和其他自有 skill 一样经过审查、由自己维护。
+'''
+
+[text.verification]
+en = '''
+A skill from outside is one that neither the jurisdiction nor one of its projects writes and maintains.
+
+Violated when an agent installs such a skill into a project or a home directory, by copying it, by a symlink, or with a plugin or a package manager.
+'''
+zh = '''
+外部 skill，指既不是法域、也不是它的某个项目自己编写和维护的 skill。
+
+agent 把这样的 skill 装进了项目或家目录 (包括复制、软链，以及用插件或包管理器安装) 的，即为违反本规定。
+'''
+
+[translations]
+zh = "0b5590b13774c2e13e6c58fefe1b74d2d18bd9f0fa7b5ff99c0fc04c255ba68b"

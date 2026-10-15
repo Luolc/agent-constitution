@@ -1,0 +1,42 @@
+id = 155
+slug = "verify-login-account"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 150
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "After logging in, check the account in the configuration file"
+zh = "登录之后读配置文件核对账号"
+
+[text.statement]
+en = "After any `/login`, or any experiment that touches the login state, read `oauthAccount.emailAddress` in `.claude.json` at once, check which account is logged in and report it to the principal."
+zh = "任何 `/login` 或涉及登录态的实验之后，立刻读 `.claude.json` 里的 `oauthAccount.emailAddress`，核对登的是哪个账号，并报告委托人。"
+
+[text.reason]
+en = '''
+Which account is logged in is what Claude Code actually wrote to its configuration; what a system prompt says may be out of date. Logged in to the wrong account, the usage and the data that follow are charged to someone else's account.
+'''
+zh = '''
+登到了哪个账号，要以 Claude Code 实际写下的配置为准；系统提示里的说法可能是旧的。登错账号，接下来的用量和数据都会记在别的账号上。
+'''
+
+[text.verification]
+en = '''
+`.claude.json` is in the directory `CLAUDE_CONFIG_DIR` names; without that variable it is `~/.claude.json`. The address is only checked and reported, never written into a repository.
+
+Violated when, after logging in or such an experiment, an agent reports the account without reading this field, judges the account by what a system prompt says, or writes the address it read into a repository.
+'''
+zh = '''
+`.claude.json` 在 `CLAUDE_CONFIG_DIR` 指向的目录下；没设这个变量时是 `~/.claude.json`。邮箱只核对、报告，不写进仓库。
+
+登录或这类实验之后没有读这个字段就报告了账号，凭系统提示判断账号，或者把读到的邮箱写进仓库的，即为违反本规定。
+'''
+
+[translations]
+zh = "de53531e8e02e77d036f33be2430b5bbfd016754ca99edbdfe05119663c303ca"
