@@ -404,7 +404,7 @@ fn a_rule_three_levels_down_is_on_when_each_domain_above_it_is() {
         ]
     };
     let dir = repo("three-levels", &manifest("", ""), &tree(0));
-    ok(&statute(&dir, &["lock"]));
+    assert_eq!(numbers(&dir), ["R44", "me:31"]);
     assert_eq!(locked(&dir), ["R44", "me:31"]);
     ok(&statute(&dir, &["site"]));
     let index = std::fs::read_to_string(dir.join(".statute/site/index.html")).unwrap();
@@ -413,7 +413,7 @@ fn a_rule_three_levels_down_is_on_when_each_domain_above_it_is() {
     }
     // One domain above them off, and neither is on.
     let dir = repo("three-levels-off", &manifest("", ""), &tree(42));
-    ok(&statute(&dir, &["lock"]));
+    assert_eq!(numbers(&dir), Vec::<String>::new());
     assert_eq!(locked(&dir), Vec::<String>::new());
 }
 
