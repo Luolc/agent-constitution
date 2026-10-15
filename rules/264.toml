@@ -1,0 +1,43 @@
+id = 264
+slug = "check-in-the-environment-of-what-it-checks"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 260
+default = "on"
+authority = ["discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Once a check differs between environments meant to be alike, rely on its run where the checked thing runs"
+zh = "检查在本该等价的环境里结论不同时，只认它在被检查对象所在环境里的结果"
+
+[text.statement]
+en = "Once a check has given different results in two environments that were meant to be equivalent, rely only on its result from the environment in which what it checks runs, or one set up the same way."
+zh = "一项检查在两个本该等价的环境里给出了不同结论之后，只认它在被检查对象运行的环境里、或者照那个环境搭建的环境里得出的结果。"
+
+[text.reason]
+en = '''
+A check that is blind in one environment passes there however often it runs, so running it again there cannot show the fault; only a run in the environment of what it checks can ({@constitution:discriminating-checks}).
+'''
+zh = '''
+在某个环境里失明的检查，在那里跑多少次都会通过，所以在那里重跑看不出故障；只有在被检查对象所在的环境里跑，才看得出来 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
+en = '''
+Two environments are meant to be equivalent when the check is expected to give the same result in both: a developer machine and CI, two machines of one role, a container and its host. The environment in which the checked thing runs is the one it is used in: the CI runner for a CI workflow, the target machine for a deployment, the container for a service run in one. An environment is set up the same way when it has the same image, tool versions and configuration. A run that did not happen is no result: before taking the two results as a difference between environments, the agent confirms that the check ran in both.
+
+Violated when, after such a difference is known to the agent, it cites as evidence about the checked thing a result of the check from an environment that is neither the one the thing runs in nor set up the same way.
+'''
+zh = '''
+检查在两个环境里本该给出相同结论的，这两个环境就是本该等价的：开发机和 CI，同一角色的两台机器，容器和它的宿主机。被检查对象运行的环境，指它实际被使用的环境：CI workflow 的是 CI runner，部署的是目标机器，在容器里运行的服务的是那个容器。镜像、工具版本和配置都相同的环境，算照那个环境搭建的。没有跑的检查不是结论：把两个结果当成环境之间的差别之前，agent 先确认这项检查在两个环境里都真的跑了。
+
+agent 知道有这种差别之后，仍把这项检查在既非被检查对象运行的环境、也不是照它搭建的环境里得出的结果，当作关于被检查对象的证据引用的，即为违反本规定。
+'''
+
+[translations]
+zh = "c8783b4ed0e746bbf1fd1664c4b7418f1bd240c35292fef489f5823687c0fd7e"
