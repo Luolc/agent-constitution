@@ -3,7 +3,7 @@
 [constitution]
 path = "."
 edition = "2026-10"
-revision = "2"
+revision = "3"
 
 [[sources]]
 name = "R"

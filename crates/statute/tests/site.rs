@@ -1156,6 +1156,44 @@ addEventListener("load", () => {
     );
 }
 
+/// The menu of the status, clicked in headless Chrome on the four rules
+/// of `four`, all drafts: opening it keeps what it chooses, a click on
+/// Draft clears it and so every row, and None and All choose none and
+/// every value. Skipped without Chrome, except in CI.
+#[test]
+fn site_menu_keeps_its_choice_and_takes_clicks() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = four("menu");
+    assert_eq!(statute(&dir, &["site"]).code, 0);
+    let index = read(&dir, ".statute/site/index.html");
+    let probe = r##"<script>
+const menu = document.querySelector("details.menu[data-field=status]");
+const r = [];
+const state = () => r.push(`${menu.querySelector(".value").textContent} ${document.querySelector(".shown").textContent}`);
+addEventListener("load", () => {
+  menu.querySelector("summary").click();
+  state();
+  menu.querySelector("input[value=draft]").closest("label").click();
+  state();
+  const [all, none] = menu.querySelectorAll(".all button");
+  none.click();
+  state();
+  all.click();
+  state();
+  document.body.setAttribute("data-probe", r.join(" | "));
+});
+</script></body>"##;
+    let page = dir.join("probe.html");
+    std::fs::write(&page, index.replace("</body>", probe)).unwrap();
+    assert_eq!(
+        probe_run(&chrome, &dir, &page, ""),
+        "3/5 4 rules | 2/5 0 rules | None 0 rules | All 4 rules"
+    );
+}
+
 /// A statement with a path in code longer than a phone's row wraps: the
 /// index, loaded 390px wide in a frame, as Chrome's headless window is
 /// at least 500px wide, does not scroll sideways, in either language.
