@@ -13,7 +13,8 @@ builds on
 [Rule file format](rule-format.md#rule-file-format) and
 [Rule sources](rule-sources.md), and on
 [the global configuration](global-configuration.md#the-global-configuration)
-in the user's statute directory, `~/.statute/config.toml`, which names
+in the user's configuration directory, `$XDG_CONFIG_HOME/statute/config.toml`
+(`~/.config/statute/config.toml` by default), which names
 sources for every rule set of the user and enables no rule.
 
 The aim behind all three: a repository that adopts statute gets a
@@ -34,37 +35,47 @@ has to take out.
 
 ## The directory of local rules
 
-The repository's own rules are in `rules/` next to `statute.toml`
-today ([Sources and references](rule-sets.md#sources-and-references)).
+The repository's own rules, `L12`, are in `.statute/rules/` next to
+`statute.toml` ([Four kinds of source](rule-sources.md#four-kinds-of-source)).
 `local-rules` at the top of the rule set names another directory,
 relative to that of `statute.toml`:
 
 ```toml
-local-rules = ".repo-rules"
+local-rules = "policy/agents"
 ```
 
-- The default is `"rules"`, so a rule set without the key reads what
-  it reads today.
+- The default is `".statute/rules"`. The `rules/` at the top of a
+  repository is not read as its own rules: it is a source's, read only
+  when a source is at that directory, as `R = { path = "." }`.
+  `rules/` is too common a name for statute to claim in a repository
+  that uses it, and in `.statute/` the rules sit with statute's other
+  files, as a tool's committed files sit in `.claude/` or
+  `.github/workflows/`. `.statute/rules/` is committed; `.statute/`
+  lists only the files statute generates as ignored
+  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 - Only `statute.toml` sets it. It describes the repository's layout,
   which every machine and CI share, so the global configuration has no
-  such key, and `statute.private.toml` neither, since the private layer
+  such key, and the private rule set neither, since the private layer
   only adds.
-- When the directory is the `rules/` of a source on disk, as in
-  `R = { path = "." }` with the default, those rules belong to that
-  source, as they do today: a local reference to one fails with a note
-  to write `R12`.
+- A source on disk, as `R = { path = "." }`, is still read from
+  `<path>/rules/`, or the directory its `rules-dir` names
+  ([Sources and references](rule-sets.md#sources-and-references)):
+  those are the source's rules, not local ones. When `local-rules`
+  names that same directory, the rules belong to the source: a local
+  reference to one fails with a note to write `R12`.
+- The directory may hold `params.toml`, the declarations of its
+  parameters ([Parameters](#parameters)); statute does not read it as
+  a rule.
 
-This repo is the first-party source and will hold rules for its own
+This repo is the first-party source and holds rules for its own
 development as well, rules that bind this repository and are no
 general rule for others. Its rule set, once it has one, names
-`R = { path = "." }` for the general rules in `rules/` and
-`local-rules = ".repo-rules"` for its own, `L12`. It then has local
-rules beside the first-party ones, and all four kinds of source
-([Four kinds of source](rule-sources.md#four-kinds-of-source)) can
+`R = { path = "." }` for the general rules in `rules/` and keeps its
+own, `L12`, in `.statute/rules/` with the default. It then has local
+rules beside the first-party ones, and all four kinds of source can
 occur in it. [The local site](statute-command.md#the-local-site)
-lists a source at `.` once, as global public, and says in its local public section
-that the repository's own rules are there; with `.repo-rules/`, the
-local public section lists the repository's own rules itself.
+lists the first-party rules as global public and this repo's own rules
+in its local public section.
 
 ## Parameters
 
@@ -184,7 +195,7 @@ communication = "zh"
 docs = "zh"
 ```
 
-- `statute.toml` alone sets values. `statute.private.toml` sets none:
+- `statute.toml` alone sets values. `private.toml` sets none:
   a value it set would change the text of a public rule in the full
   text, against the rule as the committed `AGENTS.md` writes it, and
   the private layer only adds
@@ -381,14 +392,14 @@ packs = ["R96"]
   `statute remove` takes an entry out of `rules`, `domains` or `packs`,
   and when the rule or domain is still enabled by default, writes it to
   `exclude`.
-- `statute.private.toml` may have `rules` and `domains`, which only
+- `private.toml` may have `rules` and `domains`, which only
   add, and no `exclude`: the private layer leaves out no rule of the
   public one
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 
 **Whose defaults.** A rule set takes the defaults of the first-party
 source, `R`, wherever it comes from, and of each source its own
-`[sources]` names: in `statute.toml`, or in `statute.private.toml` for
+`[sources]` names: in `statute.toml`, or in `private.toml` for
 the private layer. A source that only the global configuration names
 brings no default rule in; its rules are listed, or the rule set names
 the source to take its defaults. Otherwise a source added to the
