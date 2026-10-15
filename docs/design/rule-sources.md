@@ -357,8 +357,8 @@ statute first runs there. The check with `git check-ignore` above
 still runs on each file before it is written.
 
 Codex reads a project's instruction files, from the repository's root
-down to the working directory, up to the total of bytes its own
-configuration sets, `project_doc_max_bytes`, and cuts off the rest;
+down to the working directory, up to the number of bytes set in its
+own configuration, `project_doc_max_bytes`, and cuts off the rest;
 statute sets no limit on the full text.
 
 Where `CLAUDE.local.md` exists, Claude Code loads no `AGENTS.md` of a
@@ -427,8 +427,8 @@ The agents' behavior was measured on 2026-10-14 in non-interactive mode
 on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
 folder-trust check turned off for each run (without it, Grok loads no
 project instructions in non-interactive mode), and on Pi 1.2.0 in one
-run per case; the limit of Codex is from its
-documentation and source. In runs of one small task, Codex and Grok
+run per case; Codex's `project_doc_max_bytes` is from
+its documentation and source. In runs of one small task, Codex and Grok
 read the file a fallback line with an `@` path names, two runs each,
 and Claude Code loaded it as an import; with a line of the same kind
 but other wording than statute's, the path in backticks and no `@`,
