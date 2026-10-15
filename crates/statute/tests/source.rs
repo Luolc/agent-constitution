@@ -193,28 +193,22 @@ fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
         "3.toml",
         "parent 2 is a one-of; a domain's parent is a domain",
     );
-    // Only a rule's parent may be in another source.
+    // A rule's or a domain's parent may be in another source, a one-of's
+    // not; which domains may have one is the rule set's to check, with the
+    // other source.
     assert_clean(&load(&[
         domain(1),
         edit(rule(2, 1, ""), "parent = 1", "parent = \"team:7\""),
     ]));
-    for node in [
-        under(2, "\"team:7\""),
-        edit(one_of(2, 1), "parent = 1", "parent = \"team:7\""),
-    ] {
-        let kind = if node.1.contains("domain") {
-            "domain"
-        } else {
-            "one-of"
-        };
-        assert_error(
-            &load(&[domain(1), node]),
-            "2.toml",
-            &format!(
-                "a {kind}'s `parent` is a node of the same source, written as its number; only a rule's may name a domain of another source"
-            ),
-        );
-    }
+    assert_clean(&load(&[domain(1), under(2, "\"team:7\"")]));
+    assert_error(
+        &load(&[
+            domain(1),
+            edit(one_of(2, 1), "parent = 1", "parent = \"team:7\""),
+        ]),
+        "2.toml",
+        "a one-of's `parent` is a node of the same source, written as its number; only a rule's or a domain's may name a domain of another source",
+    );
     assert_error(
         &load(&[domain(1), edit(rule(2, 1, ""), "parent = 1\n", "")]),
         "2.toml",

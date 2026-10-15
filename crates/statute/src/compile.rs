@@ -450,7 +450,7 @@ fn agents_md(project: &Project, lock_file: &str, fallback: bool) -> Result<Strin
     let domains: Vec<Key> = project
         .sources
         .nodes()
-        .filter(|(_, n)| n.kind == Kind::Domain && n.parent.is_none())
+        .filter(|(_, n)| n.kind == Kind::Domain && n.parent.is_none() && n.foreign_parent.is_none())
         .map(|(key, _)| key)
         .collect();
     for domain in &domains {
