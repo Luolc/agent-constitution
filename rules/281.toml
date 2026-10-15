@@ -1,0 +1,23 @@
+id = 281
+slug = "change-batching"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 273
+default = "on"
+
+[title]
+en = "Change batching"
+zh = "改动分批"
+
+[applicability]
+en = '''
+How work is cut into changes: what goes into one change, what goes into a change of its own, and in what order the changes are merged. Enable it in every repository whose changes are reviewed one by one. Keeping the design in step with the code is under the design ({@rule:79}), since it holds only where a repository keeps one.
+'''
+zh = '''
+一项工作怎么切成变更：哪些内容放进同一个变更，哪些要单独成一个变更，各个变更按什么先后合入。改动逐个审查的仓库都要启用。设计与代码怎么保持一致放在设计下 ({@rule:79})，因为只有维护设计的仓库才适用。
+'''
+
+[translations]
+zh = "b24bb88df8ca74cf0b63fd6cb3839c2a698fc2df3da127b966331b857af413c7"
