@@ -56,8 +56,9 @@ REPO = [
 # `statute compile --check` proves it equals a compile of the rule set, and
 # it changes with statute's version, which the tools set. The AGENTS.md
 # at the top is another: the same check proves it, and it changes with how
-# statute renders the rule set as well as with the rule set. Another repo
-# declares them with --generated once its CI runs that check.
+# statute renders the rule set as well as with the rule set; this repo's
+# rule L28, in place of R46, counts it so. Another repo declares them with
+# --generated once its CI runs that check.
 GENERATED = [
   r"constitution/[^/]+/generated/constitution\.[^/]+\.md",
   r"statute-checks\.toml",

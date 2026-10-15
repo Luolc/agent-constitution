@@ -1,4 +1,4 @@
-<!-- en-sha256: 2a37f7422961d9576f87596d588dea48ecaaca9ddf0241bfe1e12c676d0aef0a -->
+<!-- en-sha256: 2523a8f7b2ace793e8d0de96b478f3d171073dc0c61c6ca23958241cf4d0d861 -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -46,7 +46,7 @@
 
 修订号部分的可靠程度取决于这个基准。必需检查 `check` 不是严格模式：pull request 落后于 `main` 也能合并，所以它的 CI 运行可能没见过在它上次运行之后合并的修正案，两个修正案可能都用同一个修订号通过检查。pull request 上的运行排除不了这种情况；发现它的是 `main` 上的推送运行，它对每个合并提交做同样的检查，对照的是它之前的那个提交。如果它因为修订号重复而变红，合并方提一个更正的修正案，给正文一个自己的修订号。历史里已经重复的修订号就留着；每次推送只按它自己的提交判断。
 
-指令文件单独变更的检查 (`check-instruction-changes`) 把 agent 当作指令读的改动与其他所有改动分开，使两者都能单独审查、单独撤销。哪些路径是指令文件、哪些是生成文件、哪些是其他文件，写在脚本顶部的一张表里：一部分是在任何仓库都成立的通用部分，一部分是本仓自己的 (宪法、规定和 skill 的源文件)，还有本仓的生成文件。通用部分包括 agent harness 在任何目录下读的文件，以及仓库顶层 statute 的文件：用来编译指令文件的 `statute.toml`、`statute.lock` 和 `.statute/`；`statute compile` 在规定清单旁写出的 `statute-checks.toml`；还有任何目录下的旧版副本 `<name>.legacy.md` (见 [statute-migrate](../../../skills/statute-migrate/SKILL.md) 的 Files 表)。生成文件跟着改动它的那一边走：与宪法源文件一起改，就是修正案；只与工具一起改，就是工具的改动。本仓的生成文件是构建出的宪法、`statute-checks.toml` 和仓库顶层的 `AGENTS.md`，后两者通用部分也列了，先按生成文件算：`statute compile --check` 证明它们都是规定清单编译的结果，而它们除了随规定清单变，也随 statute 变 (`statute-checks.toml` 随它的版本，`AGENTS.md` 随它渲染规定的方式)。子目录里的 `AGENTS.md` 仍算指令文件。脚本比较 `HEAD` 与 `--base` (`git diff <base>...HEAD`，关闭改名检测)，两类混在一起时把两组文件都列出来，通过时列出生成文件，供审查方核对。CI 用与检查 7 相同的基准运行它；一次推送到 `main` 同时带了几项变更的，作为一项来检查。
+指令文件单独变更的检查 (`check-instruction-changes`) 把 agent 当作指令读的改动与其他所有改动分开，使两者都能单独审查、单独撤销。哪些路径是指令文件、哪些是生成文件、哪些是其他文件，写在脚本顶部的一张表里：一部分是在任何仓库都成立的通用部分，一部分是本仓自己的 (宪法、规定和 skill 的源文件)，还有本仓的生成文件。通用部分包括 agent harness 在任何目录下读的文件，以及仓库顶层 statute 的文件：用来编译指令文件的 `statute.toml`、`statute.lock` 和 `.statute/`；`statute compile` 在规定清单旁写出的 `statute-checks.toml`；还有任何目录下的旧版副本 `<name>.legacy.md` (见 [statute-migrate](../../../skills/statute-migrate/SKILL.md) 的 Files 表)。生成文件跟着改动它的那一边走：与宪法源文件一起改，就是修正案；只与工具一起改，就是工具的改动。本仓的生成文件是构建出的宪法、`statute-checks.toml` 和仓库顶层的 `AGENTS.md`，后两者通用部分也列了，先按生成文件算：`statute compile --check` 证明它们都是规定清单编译的结果，而它们除了随规定清单变，也随 statute 变 (`statute-checks.toml` 随它的版本，`AGENTS.md` 随它渲染规定的方式)，这是本仓规定 L28 代替 R46 所定的。子目录里的 `AGENTS.md` 仍算指令文件。脚本比较 `HEAD` 与 `--base` (`git diff <base>...HEAD`，关闭改名检测)，两类混在一起时把两组文件都列出来，通过时列出生成文件，供审查方核对。CI 用与检查 7 相同的基准运行它；一次推送到 `main` 同时带了几项变更的，作为一项来检查。
 
 别的仓库在自己的 CI 里运行同一项检查：它按固定的 tag 和提交 SHA 取回本仓，就像 overlay 固定核心的版本那样 (见「发布与版本」)，然后在自己的检出目录里运行 `PYTHONPATH=<core>/tools/checks/src python3 -m repo_checks.check_instruction_changes --root . --base <base>`：这个脚本只需要标准库，所以那个仓库既不需要 uv，也不需要本仓的 workspace。通用部分始终适用。那个仓库在自己的 `AGENTS.md` 里用写给 agent 看的文字声明自己的指令路径，再把同样的路径以 `--instructions <regex>` 传给脚本，一个路径一个，把它的生成文件以 `--generated <regex>` 传入；两个选项都会替换掉本仓自己的那部分和本仓的生成文件。在那个仓库里，`statute-checks.toml` 和顶层的 `AGENTS.md` 仍算指令文件，等它的 CI 跑了 `statute compile --check`，再用 `--generated` 声明它们。
 

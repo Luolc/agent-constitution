@@ -182,8 +182,9 @@ tools change. This repo's generated files are the built constitution,
 the generic part also lists: generated counts first, since `statute
 compile --check` proves each is a compile of the rule set, and each
 changes with statute as well as with the rule set (`statute-checks.toml`
-with its version, `AGENTS.md` with how it renders the rules). An
-`AGENTS.md` in a subdirectory stays an instruction file. The
+with its version, `AGENTS.md` with how it renders the rules), as this
+repo's rule L28 provides in place of R46. An `AGENTS.md` in a
+subdirectory stays an instruction file. The
 script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
 off), lists both groups when they mix, and on a pass names the
 generated files, for the reviewer. CI runs
