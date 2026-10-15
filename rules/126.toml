@@ -5,30 +5,30 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 96
-authority = ["division-of-instructions.rules", "sensitive-info"]
+authority = ["division-of-instructions.rules"]
 constitution = ">=1"
 level = "project"
 check = "review"
 
 [title]
-en = "Write a requirement into a public source, and only private assets into a private one"
-zh = "要求写进公开来源，私有来源只放私有资产"
+en = "Keep in a private source only the private assets a requirement rests on"
+zh = "私有来源只留要求所依赖的私有资产"
 
 [text.statement]
-en = "Write into a private source only the private assets a requirement rests on, and the rest of the requirement into a public source."
-zh = "私有来源只写一项要求所依赖的私有资产，要求的其余部分写进公开来源。"
+en = "Keep in a private source only the private assets a requirement rests on, and write the rest of the requirement into a public source."
+zh = "私有来源只留一项要求所依赖的私有资产，要求的其余部分写进公开来源。"
 
 [text.reason]
 en = '''
-A requirement in a private source is read only by those who can read the source: other users cannot adopt it, review it or improve it, and it is kept twice wherever another user needs it too. A private asset in a public source is published, and with it what it gives away about the user's environment ({@constitution:sensitive-info}). Rules divide the work by how far they reach ({@constitution:division-of-instructions.rules}), and a requirement reaches further than the values one user plugs into it.
+A rule applies to every project in a jurisdiction that adopts it ({@constitution:division-of-instructions.rules}), but only those who can read a private source can adopt its rules: a requirement kept there cannot be adopted, reviewed or improved by other users, and is written again wherever another user needs it. A private source is there for what may not be published, and that is the private assets alone.
 '''
 zh = '''
-私有来源里的要求只有读得到这个来源的人才读得到：别的使用者没法采纳、审查或改进它，别的使用者也需要时，就得再写一份。私有资产写进公开来源就被公开了，它透露出的使用者环境的信息也跟着公开 ({@constitution:sensitive-info})。规定按适用范围分工 ({@constitution:division-of-instructions.rules})，一项要求的适用范围比某个使用者往里填的取值更广。
+规定适用于采纳它的管辖范围内的每个项目 ({@constitution:division-of-instructions.rules})，但私有来源里的规定只有读得到这个来源的人才能采纳：要求放在那里，别的使用者就没法采纳、审查或改进它，别的使用者也需要时，就得再写一份。私有来源是为不能公开的东西准备的，而不能公开的只有私有资产。
 '''
 
 [text.verification]
 en = '''
-A private asset is a value that belongs to one user's environment and that would leak information or assets if published: for example a machine's host name, an account, which accounts the user holds and where, the name of a private repository, the layout and paths of a secret store, the name of a bot or an agent.
+A private asset is what {@rule:51} keeps out of a public repository: for example a host name, an account, the name of a private repository, a path in a secret store, the name of an agent. That rule, not this one, keeps private assets out of a public source.
 
 The test: take the private assets out of the requirement and see what is left.
 
@@ -36,12 +36,12 @@ The test: take the private assets out of the requirement and see what is left.
 2. A principle, whose concrete values are private assets: the principle goes into a public source as a rule of its own, and the private source keeps only a rule that sets those values and names the public rule in `requires`.
 3. Nothing: the rule stays in the private source.
 
-When the test does not settle where a part goes, the author asks a competent principal ({@constitution:middle-ground.judgment}) and keeps that part in the private source until the answer comes; the author does not decide it alone.
+When the test does not settle whether a part of a requirement goes into a public source, the author asks a competent principal ({@constitution:middle-ground.judgment}) and keeps that part in the private source until the answer comes; the author does not decide it alone, and the answer settles it.
 
-Violated when a change adds or rewrites a rule so that a private source holds a part of a requirement that the test puts into a public source, or a public source holds a private asset, without the principal's answer that allows it.
+Violated when a change adds or rewrites a rule so that a private source holds a part of a requirement that the test, or a principal's answer, puts into a public source.
 '''
 zh = '''
-私有资产，指属于某个使用者的环境、公开出去就会泄漏信息或资产的值：比如机器的主机名、账号、使用者在哪里开了哪些账户、私有仓库的名字、密钥库的布局和路径、bot 或 agent 的名字。
+私有资产，指 {@rule:51} 不许写进公开仓库的那些内容：比如主机名、账号、私有仓库的名字、密钥库里的路径、agent 的名字。把私有资产挡在公开来源之外的是那条规定，不是本规定。
 
 判据：把私有资产从这项要求里去掉，看还剩下什么。
 
@@ -49,10 +49,10 @@ zh = '''
 2. 剩下一条原则，具体取值是私有资产：原则作为单独一条规定写进公开来源，私有来源只留一条写这些取值的规定，并在 `requires` 里点名那条公开规定。
 3. 什么也不剩：规定留在私有来源。
 
-判据定不了某一部分写在哪里的，作者询问有权委托人 ({@constitution:middle-ground.judgment})，答复之前这一部分先留在私有来源；作者不自己定。
+判据定不了一项要求的某一部分该不该写进公开来源的，作者询问有权委托人 ({@constitution:middle-ground.judgment})，答复之前这一部分先留在私有来源；作者不自己定，以委托人的答复为准。
 
-变更新增或改写规定后，私有来源里有判据归入公开来源的要求，或者公开来源里有私有资产，而又没有委托人允许这样做的答复的，即为违反本规定。
+变更新增或改写规定后，私有来源里留着某项要求的一部分，而判据或委托人的答复把这一部分归入公开来源的，即为违反本规定。
 '''
 
 [translations]
-zh = "66a29bc3dbed4015c9f0d7147939a744a20dd2812d602a865e584f2e692c0e08"
+zh = "9ed598f702f34fe75e034b91399120285326aa04bd3f5493644925311ea74eb7"
