@@ -125,7 +125,7 @@ fn label(lang: &str, level: Level, number: &str) -> Result<String, String> {
     })
 }
 
-fn roman(mut n: u32) -> String {
+pub(crate) fn roman(mut n: u32) -> String {
     const ROMAN: [(u32, &str); 13] = [
         (1000, "M"),
         (900, "CM"),
@@ -152,7 +152,7 @@ fn roman(mut n: u32) -> String {
 }
 
 /// n in Chinese numerals, for 1 to 99: 十四, 二十.
-fn zh_number(n: u32) -> Result<String, String> {
+pub(crate) fn zh_number(n: u32) -> Result<String, String> {
     const DIGITS: [&str; 10] = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
     if !(1..100).contains(&n) {
         return Err(format!("no Chinese numeral for {n}"));
