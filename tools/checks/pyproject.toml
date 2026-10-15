@@ -8,6 +8,7 @@ dependencies = []
 [project.scripts]
 check-design-translation = "repo_checks.check_design_translation:main"
 check-instruction-changes = "repo_checks.check_instruction_changes:main"
+check-release-tag = "repo_checks.check_release_tag:main"
 lint-zh-sources = "repo_checks.lint_zh_sources:main"
 
 [build-system]
