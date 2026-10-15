@@ -11,9 +11,10 @@ directory to be the one directory under `constitution/` that holds an
 `index.toml`, and fail when there is none or more than one, so its name is
 written nowhere in them.
 
-The constitution is compiled by `uv run constitution-build`, the
-workspace member `tools/compiler` (Python standard library only), from
-those sources. It writes two files for each language in `index.toml` to
+The constitution is compiled by `statute constitution build`
+([The command and the first version](statute-command.md#the-command-and-the-first-version)),
+run here as `cargo run -p statute -- constitution build`, from those
+sources. It writes two files for each language in `index.toml` to
 the edition directory's `generated/`, `constitution.<lang>.md` (the full
 version) and `constitution.<lang>.agent.md` (the version for agents, see
 The version for agents), committed and never edited by hand; `--check`

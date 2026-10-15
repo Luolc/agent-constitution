@@ -1,8 +1,7 @@
 # Values of `superseded-by` for rule 11, a superseded rule, in a source
-# that also holds domain 2, one-of 3 and rules 10 and 12. The compiler
-# (test_rule_tree.py) and statute (crates/statute/tests/superseded_by.rs)
-# each read rule 11 with every value, and agree on whether it passes: a
-# value that fails draws errors on rules/11.toml and on no other file.
+# that also holds domain 2, one-of 3 and rules 10 and 12. statute
+# (superseded_by.rs) reads rule 11 with every value: a value that fails
+# draws errors on rules/11.toml and on no other file.
 
 [[cases]]
 value = "10"

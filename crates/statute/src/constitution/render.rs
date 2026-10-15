@@ -5,7 +5,7 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 
-use super::lang::{Language, fill, language};
+use super::lang::{Language, fill, language_or_default};
 use super::{AGENT, Article, Item, MARK, MONTH, Section, Sources, number_key};
 
 /// List markers padded to the indent, so that a section's or an item's
@@ -56,7 +56,7 @@ struct Renderer<'a> {
 
 impl<'a> Renderer<'a> {
     fn new(lang: &'a str, src: &'a Sources, agent: bool) -> Self {
-        let lng = language(lang).unwrap_or(&super::lang::LANGUAGES[0]);
+        let lng = language_or_default(lang);
         let mut r = Renderer {
             lang,
             src,
@@ -71,25 +71,22 @@ impl<'a> Renderer<'a> {
         for a in &src.articles {
             let (n, s) = number_key(&a.number);
             let number = (lng.article_number)(n, &s);
-            r.labels
-                .insert(a.id.clone(), fill(lng.article_ref, &[("number", &number)]));
+            r.labels.insert(a.id.clone(), lng.article_label(n, &s));
             r.numbers.insert(a.id.clone(), number);
         }
         for s in &src.sections {
             let (n, suffix) = number_key(&s.number);
             let number = (lng.section_number)(n, &suffix);
             let article = r.labels.get(&s.article).cloned().unwrap_or_default();
-            let label = fill(
-                lng.section_ref,
-                &[("article", &article), ("section", &number)],
-            );
+            let label = lng.section_label(&article, n, &suffix);
             r.numbers.insert(s.id.clone(), number.clone());
             r.short.insert(s.id.clone(), number);
             r.parent.insert(s.id.clone(), s.article.clone());
             for i in &s.items {
                 let (n, suffix) = number_key(&i.number);
                 let short = (lng.item_ref)(n, &suffix);
-                r.labels.insert(i.cite(), label.clone() + &short);
+                r.labels
+                    .insert(i.cite(), lng.item_label(&label, n, &suffix));
                 r.short.insert(i.cite(), short);
                 r.parent.insert(i.cite(), s.id.clone());
             }

@@ -13,16 +13,19 @@ pub struct Labels(BTreeMap<String, String>);
 impl Labels {
     /// Reads the numbers from the edition's sources, `articles` its
     /// `articles` directory: an article's and a section's from the prefix
-    /// of its name, an item's from its `number`.
+    /// of its name, an item's from its `number`. The labels are those of
+    /// the constitution's build (`constitution::labels`), which has no
+    /// language table for `lang` labels in English.
     pub fn load(articles: &Path, lang: &str) -> Result<Labels, String> {
+        let lng = crate::constitution::lang::language_or_default(lang);
         let mut labels = BTreeMap::new();
         for (article_number, article_id, dir) in named(articles, false)? {
-            let article = label(lang, Level::Article, &article_number)
-                .map_err(|e| format!("{}: {e}", dir.display()))?;
+            let (n, s) = number(&article_number).map_err(|e| format!("{}: {e}", dir.display()))?;
+            let article = lng.article_label(n, &s);
             for (section_number, section_id, file) in named(&dir, true)? {
-                let section = article.clone()
-                    + &label(lang, Level::Section, &section_number)
-                        .map_err(|e| format!("{}: {e}", file.display()))?;
+                let (n, s) =
+                    number(&section_number).map_err(|e| format!("{}: {e}", file.display()))?;
+                let section = lng.section_label(&article, n, &s);
                 let text = std::fs::read_to_string(&file)
                     .map_err(|e| format!("cannot read {}: {e}", file.display()))?;
                 let doc: toml::Table = toml::from_str(&text)
@@ -34,15 +37,18 @@ impl Labels {
                     .flatten()
                 {
                     let field = |k: &str| item.get(k).and_then(|v| v.as_str());
-                    let (Some(id), Some(number)) = (field("id"), field("number")) else {
+                    let (Some(id), Some(item_number)) = (field("id"), field("number")) else {
                         return Err(format!(
                             "{}: an item without a string `id` and `number`",
                             file.display()
                         ));
                     };
-                    let short = label(lang, Level::Item, number)
-                        .map_err(|e| format!("{}: {e}", file.display()))?;
-                    labels.insert(format!("{section_id}.{id}"), section.clone() + &short);
+                    let (n, s) =
+                        number(item_number).map_err(|e| format!("{}: {e}", file.display()))?;
+                    labels.insert(
+                        format!("{section_id}.{id}"),
+                        lng.item_label(&section, n, &s),
+                    );
                 }
                 labels.insert(section_id, section);
             }
@@ -86,86 +92,19 @@ pub(crate) fn named(dir: &Path, sections: bool) -> Result<Vec<(String, String, P
     Ok(out)
 }
 
-#[derive(Clone, Copy)]
-enum Level {
-    Article,
-    Section,
-    Item,
-}
-
-/// The label of one level of a provision's number, `2a` as `§2a`: the
-/// whole label of an article, the part a section adds to its article's,
-/// and the part an item adds to its section's. Languages other than
-/// Chinese are labeled in English.
-fn label(lang: &str, level: Level, number: &str) -> Result<String, String> {
+/// A number as a name prefix or an item's `number` writes it, `02a` or
+/// `2a`, as its value and its letter suffix.
+fn number(number: &str) -> Result<(u64, String), String> {
     let split = number
         .find(|c: char| !c.is_ascii_digit())
         .unwrap_or(number.len());
     let (digits, suffix) = number.split_at(split);
-    let n: u32 = match digits.parse() {
-        Ok(n) if n > 0 && suffix.len() <= 1 && suffix.bytes().all(|b| b.is_ascii_lowercase()) => n,
-        _ => return Err(format!("`{number}` is not a number such as 2 or 2a")),
-    };
-    Ok(match (lang, level) {
-        ("zh", level) => {
-            let suffix = match suffix.bytes().next() {
-                Some(b) => format!("之{}", zh_number(u32::from(b - b'a') + 1)?),
-                None => String::new(),
-            };
-            let unit = match level {
-                Level::Article => "条",
-                Level::Section => "款",
-                Level::Item => "项",
-            };
-            format!("第{}{unit}{suffix}", zh_number(n)?)
+    match digits.parse() {
+        Ok(n) if n > 0 && suffix.len() <= 1 && suffix.bytes().all(|b| b.is_ascii_lowercase()) => {
+            Ok((n, suffix.to_string()))
         }
-        (_, Level::Article) => format!("Art. {}{suffix}", roman(n)),
-        (_, Level::Section) => format!(" §{n}{suffix}"),
-        (_, Level::Item) => format!("({n}{suffix})"),
-    })
-}
-
-pub(crate) fn roman(mut n: u32) -> String {
-    const ROMAN: [(u32, &str); 13] = [
-        (1000, "M"),
-        (900, "CM"),
-        (500, "D"),
-        (400, "CD"),
-        (100, "C"),
-        (90, "XC"),
-        (50, "L"),
-        (40, "XL"),
-        (10, "X"),
-        (9, "IX"),
-        (5, "V"),
-        (4, "IV"),
-        (1, "I"),
-    ];
-    let mut out = String::new();
-    for (value, symbol) in ROMAN {
-        while n >= value {
-            out.push_str(symbol);
-            n -= value;
-        }
+        _ => Err(format!("`{number}` is not a number such as 2 or 2a")),
     }
-    out
-}
-
-/// n in Chinese numerals, for 1 to 99: 十四, 二十.
-pub(crate) fn zh_number(n: u32) -> Result<String, String> {
-    const DIGITS: [&str; 10] = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-    if !(1..100).contains(&n) {
-        return Err(format!("no Chinese numeral for {n}"));
-    }
-    let (tens, ones) = ((n / 10) as usize, (n % 10) as usize);
-    if tens == 0 {
-        return Ok(DIGITS[ones].to_string());
-    }
-    Ok(format!(
-        "{}十{}",
-        if tens == 1 { "" } else { DIGITS[tens] },
-        if ones == 0 { "" } else { DIGITS[ones] }
-    ))
 }
 
 /// One citation in a text.

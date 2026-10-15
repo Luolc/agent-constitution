@@ -1,11 +1,11 @@
-<!-- en-sha256: 75c279b6d51c7b2f8d3de84433a9520a4d3597d51c94e1fba2c24f90709709a5 -->
+<!-- en-sha256: 613bc81d5cbd0f3424ed6db57b7bdfea5820c0367c6aabb7254a3feccfb3ff58 -->
 # 宪法
 
 ## <a id="constitution"></a>宪法
 
 宪法的源文件在它的版目录 `constitution/<YYYY-MM>/` 下，目前是 `constitution/2026-10/`：一个 `index.toml`，以及 `articles/` 下每条一个目录。目录以版命名，草案获批准后也不改名；状态只记在 `index.toml` 里。工具把 `constitution/` 下唯一一个含有 `index.toml` 的目录当作版目录，一个都没有或者不止一个时报错，所以工具里任何地方都不写这个目录名。
 
-宪法由 `uv run constitution-build` 从这些源文件编译，它是 workspace 成员 `tools/compiler` (只用 Python 标准库)。它为 `index.toml` 里的每种语言向版目录的 `generated/` 写两个文件：`constitution.<lang>.md` (完整版) 和 `constitution.<lang>.agent.md` (agent 版，见「agent 版」一节)，两者都提交进仓库，从不手改；`--check` 不写任何文件，只运行检查，检查项见[检查程序](checkers.md#checkers)。
+宪法由 `statute constitution build` ([命令与第一版](statute-command.md#the-command-and-the-first-version)) 从这些源文件编译，在本仓里以 `cargo run -p statute -- constitution build` 运行。它为 `index.toml` 里的每种语言向版目录的 `generated/` 写两个文件：`constitution.<lang>.md` (完整版) 和 `constitution.<lang>.agent.md` (agent 版，见「agent 版」一节)，两者都提交进仓库，从不手改；`--check` 不写任何文件，只运行检查，检查项见[检查程序](checkers.md#checkers)。
 
 ```text
 constitution/2026-10/

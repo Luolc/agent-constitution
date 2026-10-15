@@ -1,4 +1,4 @@
-# The uv workspace of tools/: its three members, each with a pyproject.toml
+# The uv workspace of tools/: its two members, each with a pyproject.toml
 # of its own, and the development tools the commit hooks run, pinned here
 # for all of them. One uv.lock, at this root, locks the whole workspace;
 # `uv sync` installs the members and the tools into .venv. The interpreter's
@@ -7,16 +7,15 @@
 name = "agent-constitution-tools"
 version = "0.0.0"
 requires-python = ">=3.14"
-dependencies = ["constitution-compiler", "constitution-site", "repo-checks"]
+dependencies = ["constitution-site", "repo-checks"]
 
 [tool.uv]
 package = false
 
 [tool.uv.workspace]
-members = ["tools/compiler", "tools/site", "tools/checks"]
+members = ["tools/site", "tools/checks"]
 
 [tool.uv.sources]
-constitution-compiler = { workspace = true }
 constitution-site = { workspace = true }
 repo-checks = { workspace = true }
 
@@ -80,7 +79,6 @@ venv = ".venv"
 typeCheckingMode = "standard"
 include = ["tools"]
 executionEnvironments = [
-    { root = "tools/compiler/tests" },
     { root = "tools/site/tests" },
     { root = "tools/checks/tests" },
 ]
