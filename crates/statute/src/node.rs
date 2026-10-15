@@ -137,6 +137,8 @@ pub struct Node {
     /// Whether the file writes `default`, well formed or not, so that a
     /// malformed one is not also reported missing.
     pub default_written: bool,
+    /// Whether the file writes `overrides`, well formed or not.
+    pub overrides_written: bool,
     /// Which repositories a domain is for; only a domain has it.
     pub applicability: Option<Text>,
     pub translations: BTreeMap<String, String>,
@@ -516,6 +518,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         default,
         default_child,
         default_written: raw.default.is_some(),
+        overrides_written: raw.overrides.is_some(),
         applicability: raw.applicability,
         translations,
         rule,

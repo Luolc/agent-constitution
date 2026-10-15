@@ -828,7 +828,7 @@ impl Checker<'_> {
     }
 
     /// What a node's parent of this source may be
-    /// (`docs/design/rule-config.md`, Proposed: no rule under a rule): a
+    /// (`docs/design/rule-config.md`, No rule under a rule): a
     /// rule's is a domain or a one-of, a one-of's a domain, a domain's a
     /// domain with no parent or a one-of in one, so that domains nest two
     /// levels at most, counting a domain that is an option of a one-of.
@@ -891,20 +891,26 @@ impl Checker<'_> {
 
     /// Every domain and rule says whether it is on by default, but an
     /// option of a one-of, whose one-of names its default, and a rule that
-    /// overrides another and stands in its place
+    /// overrides another, which stands in its place and has no `default`
     /// (`docs/design/rule-config.md`, In the rule files).
     fn check_default(&mut self, node: &Node) {
         let option = node
             .parent
             .and_then(|p| self.source.get(p))
             .is_some_and(|p| p.kind == Kind::OneOf);
-        if matches!(node.kind, Kind::Domain | Kind::Rule)
-            && !node.default_written
-            && !option
-            && node.overrides.is_none()
+        let file = self.file(node.id);
+        if node.overrides_written {
+            if node.default_written {
+                self.diags.error(
+                    file,
+                    "a rule with `overrides` has no `default`: it stands in the place of the rule it overrides; remove `default`"
+                        .to_owned(),
+                );
+            }
+        } else if matches!(node.kind, Kind::Domain | Kind::Rule) && !node.default_written && !option
         {
             self.diags.error(
-                self.file(node.id),
+                file,
                 format!(
                     "a {} says whether it is on by default: `default = \"on\"` or `default = \"off\"`",
                     node.kind.name()

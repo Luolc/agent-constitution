@@ -1,4 +1,4 @@
-<!-- en-sha256: fd3adb9f0c9d99d6ededa8da6f0c3d495a748c735da7405fc486402da163363f -->
+<!-- en-sha256: d85e42a1970d71dc65c47440a52bcd160003b4a562b2c7836f2122e48f938605 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -21,7 +21,7 @@ R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 agents-md = ["statement"]
 ```
 
-规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。one-of 的选项是规定时，选它就是把它写进 `rules`，这里是 `R51`；是领域时，通过 `domains` 选 ([规定清单里](rule-config.md#in-the-rule-set)，尚未实现)。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个选项启用。`[compile]` 设定编译出的 `AGENTS.md` 收录每条规定的哪些部分：默认只收 `statement`；加上 `reason` 或 `verification`，这些部分也会收进去 ([编译与网站](statute-command.md#compilation-and-the-site))。`[compile]` 里的 `lang` 指定用哪种语言写，默认 `en`。
+规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。one-of 的选项是规定时，选它就是把它写进 `rules`，这里是 `R51`；是领域时，通过 `domains` 选 ([规定清单里](rule-config.md#in-the-rule-set))。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个选项启用。`[compile]` 设定编译出的 `AGENTS.md` 收录每条规定的哪些部分：默认只收 `statement`；加上 `reason` 或 `verification`，这些部分也会收进去 ([编译与网站](statute-command.md#compilation-and-the-site))。`[compile]` 里的 `lang` 指定用哪种语言写，默认 `en`。
 
 [规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，有自己的锁文件 `private.lock`。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，哪些还没有实现，它在相应处标明。
 

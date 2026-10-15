@@ -49,7 +49,7 @@ fn base() -> Vec<(&'static str, (u64, String))> {
 fn overriding(id: u64, target: &str, extra: &str) -> (u64, String) {
     edit(
         rule(id, 1, extra),
-        "parent = 1",
+        "parent = 1\ndefault = \"off\"",
         &format!("overrides = \"{target}\""),
     )
 }
@@ -337,7 +337,11 @@ fn only_a_rule_is_overridden_and_an_overriding_rule_has_no_parent() {
         &dir,
         ".statute/rules/20.toml: error: a rule with `overrides` has no `parent`: it stands where the rule it overrides stands",
     );
-    let same = edit(rule(20, 1, ""), "parent = 1", "overrides = 3");
+    let same = edit(
+        rule(20, 1, ""),
+        "parent = 1\ndefault = \"off\"",
+        "overrides = 3",
+    );
     let dir = repo("same-source", &manifest(""), &[("rules", same)]);
     fails(
         &dir,

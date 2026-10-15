@@ -1,4 +1,4 @@
-<!-- en-sha256: 6631c859eac6390c2a5e1b752984170bc0020727945bdb744daf49d55b8290ab -->
+<!-- en-sha256: d1c38c6bfbf57b919342774aec3666f5d8850b5535066a592a6a75ff1f5e0bdf -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -126,8 +126,8 @@ it.
 - `authority`：这条规定所细化的宪法条文的 ID，写法与宪法引用自身时相同，不带命名空间 (`"simplicity"`、`"must-ask.capital"`)。这是字段的值，不是正文里的 `{@...}` 引用，所以 [ID](source-formats.md#ids) 要求规定的引用带命名空间，这一条不适用于它；规定正文里的引用照旧带命名空间 (`{@constitution:simplicity}`)。
 - `constitution`：这条规定兼容的宪法修订号，写成 Python 的版本说明符 (`">=1"`、`">=1,<4"`；见[从规定追溯到宪法](#tracing-rules-to-the-constitution))。
 - `level`：默认层级，`project` 或 `user` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
-- `check`：怎样检查是否合规 ([检查](rule-checks.md#checks))。`builtin`：这条规定在本仓的 crate 里有一个模块。`command`：外部命令，另由两个字段给出，`run` 是命令行，`tools` 是它需要的工具列表 (`["uv"]`)。`none`：没有自动检查；审查方是否拿到这条规定，由 `uses` 决定。statute 仍读 `review`，即 `none` 的旧名；去掉它还没有实现。
-- `default`：规定是否默认开启，`on` 或 `off`；one-of 的子节点没有，带 `overrides` 的规定也没有，只是 statute 现在还不会因此报错 (见[默认开关](rule-config.md#default-switches))。必填，但 statute 仍接受没有它的节点，按 `off` 算；改为必填还没有实现。
+- `check`：怎样检查是否合规 ([检查](rule-checks.md#checks))。`builtin`：这条规定在本仓的 crate 里有一个模块。`command`：外部命令，另由两个字段给出，`run` 是命令行，`tools` 是它需要的工具列表 (`["uv"]`)。`none`：没有自动检查；审查方是否拿到这条规定，由 `uses` 决定。`review` 是 `none` 的旧名，写了就报错。
+- `default`：必填，规定是否默认开启，`on` 或 `off`；one-of 的子节点没有，带 `overrides` 的规定也没有 (见[默认开关](rule-config.md#default-switches))。
 - `uses` (可选，只有规定有)：规定去哪里，由 `instructions` 和 `review` 组成的非空列表；不写就是 `["instructions"]` (见[规定用在哪里](rule-config.md#where-a-rule-is-used))。
 - `[title]`：简短的标题，只占一行 (多行字符串可以以换行结尾)。
 - `[applicability]` (可选，只有领域有)：一两句话，说明这个领域管什么、哪些仓库该启用它、什么情况下不必启用。它可以像规定正文一样引用规定 (`{@rule:<id>}`) 和条款 ([ID](source-formats.md#ids))。编译出的 `AGENTS.md` 把它放在领域的标题下面 ([编译与网站](statute-command.md#compilation-and-the-site))，网站把它放在领域详情页的标题下面 ([静态网站](static-site.md))。

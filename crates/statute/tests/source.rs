@@ -1038,9 +1038,14 @@ fn every_domain_and_rule_says_whether_it_is_on_by_default() {
         "2.toml",
         "a rule says whether it is on by default",
     );
-    // A rule that overrides another stands in its place, without one.
+    // A rule that overrides another stands in its place and has none.
     let over = edit(rule(2, 1, "overrides = \"team:8\""), "parent = 1\n", "");
-    assert_clean(&load(&[domain(1), without(over)]));
+    assert_clean(&load(&[domain(1), without(over.clone())]));
+    assert_error(
+        &load(&[domain(1), over]),
+        "2.toml",
+        "a rule with `overrides` has no `default`: it stands in the place of the rule it overrides; remove `default`",
+    );
 }
 
 #[test]

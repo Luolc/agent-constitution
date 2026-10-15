@@ -34,7 +34,7 @@ roots of the packs enabled, each as a reference
 `R51` are first-party rules and `12` is one of the repository's own. An
 option of a one-of that is a rule is chosen by listing it in `rules`,
 here `R51`; one that is a domain, through `domains`
-([In the rule set](rule-config.md#in-the-rule-set), not built yet). A domain or a
+([In the rule set](rule-config.md#in-the-rule-set)). A domain or a
 one-of listed in `rules` fails the build, which says to enable the
 domain as a pack and the one-of through one of its options. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
 by default only `statement`; adding `reason` or `verification` puts those
