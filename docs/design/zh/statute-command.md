@@ -1,4 +1,4 @@
-<!-- en-sha256: c5e0485b0ea818fffe51b8d88bd8e8fb550d3b7848d9b489bb524c68e7b67ad8 -->
+<!-- en-sha256: 2308928118cc8b3860cbf6b7b5062d2aced6879cb506f8cb964d9d7ab0e30157 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -11,7 +11,7 @@
 - 启用的规定需要的 skill 目录；
 - 要安装的检查二进制文件的版本，以及启用规定的外部命令。
 
-实现之后，`AGENTS.md` 只收录 `uses` 含 `instructions` 的启用规定，每个占位符都换成它的取值 ([规定配置](rule-config.md))。
+`AGENTS.md` 只收录 `uses` 含 `instructions` 的启用规定 ([规定用在哪里](rule-config.md#where-a-rule-is-used))；参数实现之后，每个占位符都换成它的取值 ([参数](rule-config.md#parameters))。
 
 `statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外两样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释；一行写明宪法的版、修订号和规定源；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。在公开仓库里，它最后还多一行，给找不到指向全文的软链的 agent 看，全文由私有层编译而成 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))：「If `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.」(中文是「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」)。每个 domain 是二级标题，子领域是三级标题 (见[子领域](rule-sources.md#subdomains))，树每深一层标题降一级，到六级为止，更深的层级停在六级；一个子节点都没启用的 one-of 不出现。第一方规定源的领域排在最前，接着是其他规定源的领域，按规定源的名字排，最后是仓库自己的。节点的标题是它的标题和 statute 显示的引用 (`R42`)，前面放锚点，由 `rule-` 加上这个引用组成，引用里的冒号换成连字符：`rule-R42`、`rule-L12`、`rule-team-7`，所以不同规定源的锚点不会重复。覆盖别的规定的规定 ([覆盖](rule-sources.md#overrides)) 站在被覆盖的那条规定的位置上，覆盖链上每条规定的锚点都放在它的标题前面，所以指向 `#rule-R2` 的链接会落到它上面；链上每条规定的子节点都放在它下面。标题下面有一行写明它覆盖了什么：`Overrides R2.`，在一条链上则是 `Overrides team:7, which overrides R2.` (中文是 `覆盖 team:7，后者覆盖 R2。`)。对被覆盖的规定的依赖和引用，都渲染成站在它位置上的那条规定。依赖的节点在发出依赖的规定所在的最近一级 domain 或子领域之外时，写一行「依赖：」并链接到那个锚点；在它之内的依赖不写出来。规定有该语言的译文就用译文，没有就用原文。领域有 applicability ([规定文件格式](rule-format.md#rule-file-format)) 时，它作为一段文字放在领域标题下面，与标题用同一种语言，其中的引用按规定正文的方式渲染。规定正文里的引用会渲染出来 ([ID](source-formats.md#ids))：`{@rule:<id>}` 写成被引节点的标题，与它的标题行一样选语言，节点在文件里就链接到它的锚点，不在就在后面加「(规定 R42)」；`{@constitution:<id>}` 写成该条款在这种语言里的标签，与 agent 版一样是纯文本，例如 `第四条第一款第二项`。标签按这一版宪法的源算出：条和款的编号取自文件名，项的编号取自 `number`，算法与宪法构建相同 ([编译](compilation.md))；与宪法构建不同的是，连着的几处引用不缩写 (`第四条第一款、第四条第二款`)。引用了不存在的节点或条款时命令失败，并指出是哪条规定的哪一部分。规定文件和锁文件里的哈希都不变。
 
@@ -41,15 +41,18 @@
 - `upgrade`：把规定源和宪法移到更新的版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；
 - `explain`：说明一条规定为什么被启用、哪些规定依赖它；
 - `site`：为规定清单能用到的规定生成一个本地网站 ([本地网站](#the-local-site))；
-- `constitution build`：从源文件构建所在仓库的宪法，或者检查它 (见下文)。
+- `constitution build`：从源文件构建所在仓库的宪法，或者检查它 (见下文)；
+- `validate <dir>`：单独检查一个规定目录，当作一个规定源，不需要规定清单 (见下文)。
 
 **第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
-**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site` 和 `constitution build`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个。没有规定源在 `.` 时，仓库自己的规定 `L12` 从 `statute.toml` 旁边的 `rules/` 读；有 `R = { path = "." }` 时，它们是第一方规定，本地引用会报错并提示写成 `R12`。从 `.statute/rules/` 或 `local-rules` 指定的目录读仓库自己的规定 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))，还没有实现。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定或领域指向另一个规定源的 `parent`，以及放在 git 目录里的私有层连同它的锁文件、它的输出、`.statute/.gitignore` 和 `compile --private-only`，也都已实现。全局配置、`init --global`、git 规定源和 `source add` 已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。继承规定清单和按路径分段还没有实现。
+**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site`、`constitution build` 和 `validate`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个。没有规定源在 `.` 时，仓库自己的规定 `L12` 从 `statute.toml` 旁边的 `rules/` 读；有 `R = { path = "." }` 时，它们是第一方规定，本地引用会报错并提示写成 `R12`。从 `.statute/rules/` 或 `local-rules` 指定的目录读仓库自己的规定 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))，还没有实现。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定或领域指向另一个规定源的 `parent`，以及放在 git 目录里的私有层连同它的锁文件、它的输出、`.statute/.gitignore` 和 `compile --private-only`，也都已实现。全局配置、`init --global`、git 规定源和 `source add` 已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。[规定配置](rule-config.md) 里，规定文件的 `default`、`uses` 和 `check = "none"` 已经读取并检查，连同[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule) 的树形，`compile` 写什么、`check` 列什么也按 `uses` 来；规定清单的默认开关，连同 `domains`、`exclude` 和 `local-rules`，`add`、`remove`、`explain` 和锁文件对它们的处理，以及参数，都还没有实现。继承规定清单和按路径分段还没有实现。
 
 **`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，`public = true` 或 `public = false`，空的 `rules`，以及给了 `--source` 时的一个磁盘上的规定源，即第一方规定源 `R`。`public` 取 `--public` 或 `--private` 指定的值 (两者最多给一个)，没有指定时取 `gh` 显示的这个仓库的情况，见[公开与否](rule-sources.md#public-or-not)。`--source <dir>` 指定规定源的目录，相对于当前目录。不给它时，`init` 不写 `[sources]`，`R` 取全局配置里的或内置默认的那个 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))，读它所跟踪分支的最新提交。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
 
 **`upgrade`** 把解析结果与 `statute.lock` 比较，打印变了什么 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))，没有变化就说锁文件已是最新，然后像 `lock` 一样写锁文件。没有 `statute.lock` 时没有可比的东西，以退出码 1 退出。加上 `--replace-superseded` 时，它先在 `rules` 和 `packs` 里把每条被取代的规定换成它的后继规定，顺着取代链找到最后一条，文件其余部分保持原样；后继规定已经列出的，只去掉旧的那一项。取代链走到一条有多个后继规定的规定时，这一项保持不动，把这几条后继规定列出来，由用户用 `add` 和 `remove` 自己选。已废止的规定留给用户自己去掉。改过的规定清单解析不通过时，两个文件都不改。
+
+**`validate <dir>`** 把一个目录里的规定文件当作第一方规定源读，跳过 `params.toml`，做所有不需要规定清单的检查 ([检查程序](checkers.md#checkers))：每个节点的格式、规定树、引用的目标、译文和引用，以及默认值。每条发现单独一行写到标准错误；有错误时以状态 1 退出，没有问题时向标准输出打一行，写明节点数。本仓把 `statute validate rules` 作为 commit 钩子运行。
 
 **`constitution build`** 在宪法上做的事与 `uv run constitution-build` 相同：检查 `constitution/` 下唯一一版的源文件，为每种语言把完整版和 agent 版写到这一版的 `generated/` 里，与那个命令写出的逐字节相同；加 `--check` 时什么都不写，已提交的文件与重新构建的结果不同就失败；加 `--check --base <git-ref>` 时还要与那个提交比较编号和修订号；`--root <dir>` 让它在当前目录以外的检出上运行。它做的检查是[检查程序](checkers.md#checkers) 里第 1 至第 7 项中关于宪法的部分，报错文字也相同。它不读 `rules/`：那个命令对规定的检查，包括规定对宪法的引用和 base 提交里已有的规定，这里都没有实现。生成文件里写的仍是 `uv run constitution-build`，CI、提交钩子和本设计的其他部分也仍然运行它；换成 `statute constitution build`、删掉 Python 的命令，都还没有做。
 

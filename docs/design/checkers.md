@@ -7,7 +7,8 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`constitution-build --check`) | Each constitution and rule source has the format and the name in [Source formats](source-formats.md), [The constitution](constitution.md) and [Rules](rules.md#rules); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation and authority resolves to a provision or rule that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Constitution (`constitution-build --check`) | Each constitution source has the format and the name in [Source formats](source-formats.md) and [The constitution](constitution.md); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation of the constitution and every rule's authority resolves to a provision that is not repealed, the constitution citing only itself, and each rule's status agrees with the constitution's; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Rules (`statute validate rules`) | Each rule file has the format of [Rule file format](rule-format.md#rule-file-format), the tree the shape of [No rule under a rule](rule-config.md#no-rule-under-a-rule), every reference a target of the right kind, every translation the original's hash and citations, and the defaults resolve on their own (below) | That a rule says what it should, or that two rules that nobody marked as conflicting work together |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint-zh-sources`; limae on every Markdown file of the repo) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text gets limae's rules too, which mostly find nothing there |
@@ -88,61 +89,54 @@ first one that finds errors, printing all of that one's errors:
 
 The rules are nodes of the rule tree in the format of
 [Rule file format](rule-format.md#rule-file-format), each in
-`rules/<id>.toml`, read in the order of their numbers. The checks above
-cover them as follows. 1: the keys of the node's `kind`, with
-their types; `id` is the file name, which has no leading zeros; `revision` is
-1 or more; `kind`, `status`, `level` and `check` take one of their values
-(`superseded` for a rule only), and the status agrees with `index.toml` as
-a rule's does; `superseded-by` is there exactly when the status is
-`superseded`, `run` and `tools` exactly when `check` is `command`;
-`authority` is a non-empty list of strings, `tools` a list of strings, and
-`constitution` a specifier of whole revisions
-([Tracing rules to the constitution](rule-format.md#tracing-rules-to-the-constitution)),
-none above 18446744073709551615 (2^64 − 1, the largest statute reads);
-each entry of `requires` and `conflicts` is a number from 1 or a string
-`"<source>:<id>"`, names a node other than the rule itself and is listed
-once; `lang` and the keys of every text are language codes (`en`, `zh`,
-`zh-Hant`); the title and the three parts have a text in the original's
-language, no text is empty, and `[translations]` has no key for the
-original's language. 2: a
-`slug` has the shape of an ID and is unique among the slugs. 3: each `parent` and
-each entry of `superseded-by` names a node, the latter a rule other
-than itself, and
-following the parents never leads back to a node. 4: each language of a
-text cites what the original cites, every translated language has the
-title and the three parts and a hash in `[translations]`, and each hash is
-the original's now; when one is not, the error prints the new hash. 5: a
-`{@rule:<id>}` with a number resolves to a node that is not repealed, and
-each `authority` entry, without a namespace, to a provision that is not
-repealed. 7: a node of the base still exists, and stays repealed or
-superseded once it was; a rule of a base from before the rule tree,
-named by a word, lives on as the node whose `slug` is that word.
+`rules/<id>.toml`. The checks above read of them only what the
+constitution decides: 1: a node's status agrees with `index.toml` as a
+rule's does; 5: each `{@constitution:...}` citation and each
+`authority` entry, without a namespace, resolves to a provision that is
+not repealed, with the warning on an `authority` that names a provision
+and one above it; 7: a node of the base still exists, and stays
+repealed or superseded once it was; a rule of a base from before the
+rule tree, named by a word, lives on as the node whose `slug` is that
+word. `params.toml` is no node, and the build skips it.
 
-The relations between the nodes are not checked here but by `statute`
-([The command and the first version](statute-command.md#the-command-and-the-first-version)):
-the targets of `requires` and `conflicts` exist and are of the right kind,
-in another source too, `requires` has no cycle, within a source or across
-sources, and nothing redundant, a rule conflicts with
-nothing it brings in, and the warnings of
+Everything else of the rule files is checked by `statute validate
+rules` ([The command and the first version](statute-command.md#the-command-and-the-first-version)),
+a commit hook when `rules/` or the crates change, and so in CI. It
+reads the directory as the first-party source and checks what one
+source shows: the keys of each node's `kind`, with their types and
+values, among them `default` and `uses`
+([Rule configuration](rule-config.md)); `id` is the file name, with no
+leading zeros; the slugs are unique; each `parent`, `requires`,
+`conflicts`, `overrides` and `superseded-by` names a node that exists
+and is of the right kind, the parents form a tree of the shape of
+[No rule under a rule](rule-config.md#no-rule-under-a-rule) and
+[Subdomains](rule-sources.md#subdomains), and `requires` has no cycle
+and nothing redundant; each language of a text cites what the original
+cites, every translated language has every text and a hash in
+`[translations]` that is the original's now, and when one is not, the
+error prints the new hash; each `{@rule:<id>}` names a rule of the
+source that exists and is not repealed; the defaults of the source
+resolve on their own ([Default switches](rule-config.md#default-switches)),
+and the warnings of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
-In CI, `crates/statute/tests/real_rules.rs` reads this repo's `rules/`
-with `statute` and fails on any error or warning.
+Each finding is a line on standard error; an error makes it exit with
+status 1. It skips `params.toml`; checking the parameters there is not
+built yet ([Parameters](rule-config.md#parameters)).
+`crates/statute/tests/real_rules.rs` also reads this repo's `rules/`
+and fails on any error or warning.
 
-[Rule sources](rule-sources.md) divides its checks the same way. The
-build accepts `overrides` on a rule, a `parent` on a domain and a rule's
-`parent` in another source, and checks what one source shows: each
-field's type; a domain's `parent` is the number of a domain of the same
-source that has no parent (check 3); a rule has `parent` or
-`overrides`, one of them and never both; `overrides` is one rule of
+[Rule sources](rule-sources.md) divides its checks the same way.
+`statute validate` checks what one source shows: a rule has `parent`
+or `overrides`, one of them and never both; `overrides` is one rule of
 another source, `"team:7"`, never a list nor a number, which would name
-a node of the same source; and a `parent` in another source is a rule's
-only, written `"team:3"`, checked for its form alone, since the
+a node of the same source; and a `parent` in another source is a
+rule's only, written `"team:3"`, checked for its form alone, since the
 first-party source's domains are the roots
 ([Subdomains](rule-sources.md#subdomains)); statute accepts one on a
-domain of any other source. Since this repo is
-the first-party source, `"R200"` in `overrides` or `parent` names a rule
-of the same source here and fails, with a note to write the number for a
-`parent`. What needs another source is statute's: the reference
+domain of any other source. Since this repo is the first-party source,
+`"R200"` in `overrides` or `parent` names a rule of the same source here
+and fails, with a note to write the number for a `parent`. What needs
+another source is checked when a rule set is resolved: the reference
 direction, the ranks of an override, an override by the private layer
 of a public repository, and whether a `parent` in another source exists.
 All of these are built.
@@ -150,7 +144,9 @@ All of these are built.
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
 (`tests/test_constitution_checks.py`, `tests/test_constitution_base.py`
-and, for the rule tree, `tests/test_rule_tree.py` of `tools/compiler`).
+and, for what they read of the rules, `tests/test_rule_tree.py` of
+`tools/compiler`; `statute validate` in `crates/statute/tests/validate.rs`
+and the crate's other tests).
 Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
 CI only, on a pull request against the tip of the base branch the
 checked-out merge commit was made on (its first parent), on a push to

@@ -28,9 +28,10 @@ and a rule set with its lock file, and writes:
 - the version of the check binary to install, and the external commands
   of the enabled rules.
 
-Once built, the `AGENTS.md` holds only the enabled rules whose `uses`
-has `instructions`, with each placeholder replaced by its value
-([Rule configuration](rule-config.md)).
+The `AGENTS.md` holds only the enabled rules whose `uses` has
+`instructions` ([Where a rule is used](rule-config.md#where-a-rule-is-used));
+once parameters are built, each placeholder is replaced by its value
+([Parameters](rule-config.md#parameters)).
 
 `statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
 another file with `--output`, and the other two next to it (below),
@@ -186,7 +187,9 @@ be published anew. The rule set is `statute.toml`, the lock file
 - `site`: write a local site of the rules the rule set can draw on
   ([The local site](#the-local-site));
 - `constitution build`: build the constitution of the repository it runs
-  in from its sources, or check it (below).
+  in from its sources, or check it (below);
+- `validate <dir>`: check a directory of rule files on its own, as one
+  source, without a rule set (below).
 
 **The first version** builds the repository level only. The user level,
 whose instruction files in the user's home directory the private overlay
@@ -198,7 +201,8 @@ which try the whole process on real work.
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
 (built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
-which 43 and 46 supersede), `site` and `constitution build`, for sources on disk and git
+which 43 and 46 supersede), `site`, `constitution build` and
+`validate`, for sources on disk and git
 sources, as many as
 `[sources]` names. The repository's own rules, `L12`, are read from the
 `rules/` next to `statute.toml` when no source is at `.`; with
@@ -221,6 +225,13 @@ directory, its output, `.statute/.gitignore` and
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
 except that `upgrade` does not show the text of a changed rule yet.
+Of [Rule configuration](rule-config.md), the rule files' `default`,
+`uses` and `check = "none"` are read and checked, with the tree of
+[No rule under a rule](rule-config.md#no-rule-under-a-rule), and
+`uses` decides what `compile` writes and `check` lists; the default
+switches of a rule set, with `domains`, `exclude` and `local-rules`,
+what `add`, `remove`, `explain` and the lock file do with them, and
+parameters are not built yet.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -255,6 +266,15 @@ the chain reaches a rule with more than one successor, the entry is left
 as it is and the successors are listed, for the user to choose with
 `add` and `remove`. A repealed rule is left for the user to take out. When the changed rule
 set does not resolve, neither file is changed.
+
+**`validate <dir>`** reads the rule files of one directory as the
+first-party source, skipping `params.toml`, and runs every check that
+needs no rule set ([Checkers](checkers.md#checkers)): the format of each
+node, the tree, the targets of its references, the translations and
+citations, and the defaults. Each finding goes to standard error on a
+line of its own; an error makes it exit with status 1, and a clean run
+prints one line to standard output with the number of nodes. This repo
+runs `statute validate rules` as a commit hook.
 
 **`constitution build`** does what `uv run constitution-build` does for
 the constitution: it checks the sources of the one edition under
