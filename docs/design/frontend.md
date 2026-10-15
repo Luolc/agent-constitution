@@ -446,13 +446,15 @@ turned off (disabled), where it has these.
   chosen, `text-xs` with tabular figures, in `text-muted` while the
   field is as the default filter has it and in a badge (`radius-full`,
   `accent` on `bg-selected`) while it differs. The button opens a
-  popover under it, as wide as its content up to `width-popover` (the
-  column's width on a narrow screen, so that it never leaves the
-  screen), holding the field's name, All and None, quiet buttons, and
+  popover under it, as wide as its content up to `width-popover`, moved
+  toward the row's start as far as it must to stay within the row (the
+  column's width on a narrow screen), so that it never leaves the
+  screen, holding the field's name, All and None, quiet buttons, and
   the field's check boxes. The domains' boxes are indented by their
   depth; their list, which is long, scrolls inside the popover, at most
   `height-popover` tall, under a search box that shows only the domains
-  whose label or name holds what is typed. One menu is open at a time:
+  whose label or name holds what is typed; closing the menu clears the
+  search. One menu is open at a time:
   opening one closes another. Within a field a rule needs one of the
   values checked; across fields it needs that in each, and a field with
   every value checked filters nothing. Checking or unchecking a domain

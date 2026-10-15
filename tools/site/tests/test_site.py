@@ -649,10 +649,10 @@ class SiteTest(unittest.TestCase):
     Loaded in headless Chrome with the site's style sheets and a script
     that clicks through them: a menu opens under its button and lies
     over the table's head where they meet; opening another closes it;
-    the domains' search box narrows the boxes; Escape closes a menu and
-    gives the focus back to its button, and so does a click outside;
-    each button says what its field chooses, and Reset filter shows
-    while a field differs from the default.
+    the domains' search box narrows the boxes; Escape closes a menu,
+    clears its search and gives the focus back to its button, and so
+    does a click outside; each button says what its field chooses, and
+    Reset filter shows while a field differs from the default.
     Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
@@ -682,15 +682,16 @@ window.addEventListener("load", () => {
   const shown = () =>
     Array.from($("#rules-filter-domain").querySelectorAll("label"))
       .filter((l) => !l.hidden).length;
-  search.value = "nothing";
+  search.value = "group";
   search.dispatchEvent(new Event("input", { bubbles: true }));
   out.found = [shown()];
-  search.value = "group";
+  search.value = "nothing";
   search.dispatchEvent(new Event("input", { bubbles: true }));
   out.found.push(shown());
   search.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   out.escaped = [state(), document.activeElement === button("domain")];
+  out.cleared = [search.value, shown()];
   button("uses").click();
   document.body.dispatchEvent(
     new PointerEvent("pointerdown", { bubbles: true }));
@@ -743,14 +744,84 @@ window.addEventListener("load", () => {
         "over": True,
         "domain": ["domain"],
         "searchFocused": True,
-        "found": [0, 1],
+        "found": [1, 0],
         "escaped": [[], True],
+        "cleared": ["", 1],
         "outside": [],
         "values": ["2", "All", True],
         "none": ["None", True, False, "1"],
         "reset": ["2", True],
       },
     )
+
+  def test_rules_filter_in_the_page(self):
+    """No popover of the filter runs past the page's edge.
+
+    The domain's long title makes the domains' popover as wide as a
+    popover gets. At each width, from a phone's to a wide screen's, the
+    page does not scroll sideways, with the menus shut and with the
+    domains' open, and the open popover stays within the filter's row.
+    Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True, edit_rules=site_fixture.long_domain)
+    script = """<script>
+window.addEventListener("load", () => {
+  const root = document.documentElement;
+  const out = { width: window.innerWidth };
+  out.shut = root.scrollWidth <= root.clientWidth;
+  document.querySelector("[aria-controls='rules-filter-domain']").click();
+  const row = document.querySelector(".rules-filter").getBoundingClientRect();
+  const popover = document.getElementById("rules-filter-domain")
+    .getBoundingClientRect();
+  out.open = root.scrollWidth <= root.clientWidth;
+  out.within = popover.left >= row.left - 1 && popover.right <= row.right + 1;
+  out.wide = popover.width;
+  document.body.dataset.result = JSON.stringify(out);
+});
+</script>"""
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css"):
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "rules/index.html"
+      page.parent.mkdir(exist_ok=True)
+      page.write_text(
+        raw["rules/index.html"].replace("</body>", script + "</body>"),
+        encoding="utf-8",
+      )
+      # Chrome's headless window is at least 500px wide.
+      for width in (500, 768, 920, 1280, 1920):
+        with self.subTest(width):
+          dom = subprocess.run(
+            [
+              chrome,
+              "--headless",
+              "--no-proxy-server",
+              "--hide-scrollbars",
+              f"--user-data-dir={Path(tmp) / 'profile'}",
+              f"--window-size={width},900",
+              "--dump-dom",
+              page.as_uri(),
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+            timeout=CHROME_TIMEOUT,
+          ).stdout
+          found = re.search(r'data-result="([^"]*)"', dom)
+          assert found, "the script wrote no result"
+          result = json.loads(html.unescape(found.group(1)))
+          self.assertEqual(result["width"], width)
+          self.assertEqual(
+            (result["shut"], result["open"], result["within"]),
+            (True, True, True),
+            result,
+          )
 
   def test_params(self):
     """A page of parameters; a placeholder marked, linked to its entry."""

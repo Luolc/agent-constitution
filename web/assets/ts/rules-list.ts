@@ -164,7 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // The menus, each opened and closed by its button, one open at a
   // time: Escape, a click outside or the focus leaving it closes it,
-  // Escape and the button giving the focus back to the button.
+  // Escape and the button giving the focus back to the button. Closing
+  // a menu clears its search.
   type Menu = (typeof menus)[number];
   let current: Menu | undefined;
   const close = (refocus: boolean): void => {
@@ -173,6 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
     current = undefined;
     button.setAttribute("aria-expanded", "false");
     group.classList.remove("open");
+    const search = group.querySelector<HTMLInputElement>("input[type='search']");
+    if (search?.value) {
+      search.value = "";
+      for (const label of group.querySelectorAll<HTMLElement>("label")) label.hidden = false;
+    }
     if (refocus) button.focus();
   };
   const openMenu = (menu: Menu): void => {
@@ -181,6 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
     pushed = false;
     menu.button.setAttribute("aria-expanded", "true");
     menu.group.classList.add("open");
+    // Under its button, but within the row, so that it never runs past
+    // the page's edge.
+    const row = filter.getBoundingClientRect();
+    const start = menu.button.getBoundingClientRect().left - row.left;
+    const room = row.width - menu.group.offsetWidth;
+    menu.group.style.setProperty("--menu-start", `${Math.max(0, Math.min(start, room))}px`);
     (menu.group.querySelector<HTMLElement>("input[type='search']") ?? menu.group.querySelector<HTMLElement>("input, button"))?.focus();
   };
   for (const menu of menus) {
