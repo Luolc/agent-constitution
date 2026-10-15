@@ -14,7 +14,7 @@
 // Checking or unchecking a domain does the same to the domains under it.
 // Inlined in <head>; it runs before assets/toc-current.js, which then
 // finds the headings shown.
-import { type Fields, type Filter, filtering, matches, read, write } from "./filter";
+import { differing, type Fields, type Filter, matches, read, write } from "./filter";
 
 const SIZES = ["25", "50", "100", "all"];
 
@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const list = document.querySelector<HTMLElement>(".rules-list");
   const controls = document.querySelector<HTMLElement>(".rules-controls");
   if (!list || !controls) return;
+  // The controls below are in the partial that made `controls`
+  // (layouts/_partials/rules/filter.html), so they are there.
   const button = controls.querySelector<HTMLButtonElement>(".rules-filter-button")!;
   const badge = controls.querySelector<HTMLElement>(".rules-filter-count")!;
   const panel = controls.querySelector<HTMLElement>(".rules-filter-panel")!;
@@ -120,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     select.value = per;
-    const n = filtering(filter, fields).length;
+    const n = differing(filter, fields, defaults).length;
     badge.textContent = String(n);
     badge.hidden = n === 0;
 
@@ -164,7 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const box of boxes(field)) box.checked = checked;
     changed();
   };
+  // Back to the default filter, as the address without it.
+  const reset = (): void => {
+    for (const box of boxes()) box.checked = defaults.get(box.name)?.has(box.value) ?? false;
+    changed();
+  };
 
+  // The panel's events come from its check boxes and buttons alone.
   panel.addEventListener("change", (event) => {
     const box = event.target as HTMLInputElement;
     if (box.name === "domain") {
@@ -182,16 +190,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const all = (event.target as Element).closest<HTMLElement>("[data-all]");
     if (all) checkAll(all.dataset.all === "true", all.closest<HTMLElement>("[data-field]")?.dataset.field);
   });
-  const clear = (): void => checkAll(true);
-  panel.querySelector(".rules-filter-clear")?.addEventListener("click", clear);
-  const reset = document.querySelector<HTMLButtonElement>(".rules-none-clear");
-  reset?.addEventListener("click", clear);
-  if (reset) reset.hidden = false;
+  panel.querySelector(".rules-filter-reset")?.addEventListener("click", reset);
+  const again = document.querySelector<HTMLButtonElement>(".rules-none-reset");
+  again?.addEventListener("click", reset);
+  if (again) again.hidden = false;
 
   // The panel, opened and closed by its button: Escape, a click outside
   // or the focus leaving it closes it, Escape and the button giving the
   // focus back to the button.
   const filter = controls.querySelector<HTMLElement>(".rules-filter")!;
+  // A pointer or focus event's target and related target are nodes.
   const open = (): boolean => button.getAttribute("aria-expanded") === "true";
   const toggle = (show: boolean, refocus: boolean): void => {
     button.setAttribute("aria-expanded", String(show));

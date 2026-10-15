@@ -25,7 +25,7 @@
   --t-accent-hover: light-dark(#6b381e, #d9ae8f);
   --t-text-on-accent: light-dark(#dde6d5, #1e2520);
   --t-border-subtle: light-dark(#b5c4aa, #38453a);
-  --t-border-strong: light-dark(#6d7968, #717971);
+  --t-border-strong: light-dark(#6d7968, #717970);
   --t-status-active: light-dark(#245a20, #9fd39a);
   --t-status-active-bg: light-dark(#c3d2bc, #303d31);
   --t-status-trial: light-dark(#66460a, #e2c07a);
@@ -62,6 +62,7 @@
   --t-space-6: 1.5rem;
   --t-space-8: 2rem;
   --t-space-12: 3rem;
+  --t-width-popover: 28rem;
   --t-radius-sm: 0.25rem;
   --t-radius-md: 0.5rem;
   --t-radius-full: 9999px;

@@ -86,7 +86,7 @@ below.
 | `accent-hover` | `#6b381e` | `#d9ae8f` | A primary button under the pointer. |
 | `text-on-accent` | `#dde6d5` | `#1e2520` | Text on an `accent` background. |
 | `border-subtle` | `#b5c4aa` | `#38453a` | Hairlines: the rules between parts, a link's underline, a tag's outline. |
-| `border-strong` | `#6d7968` | `#717971` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
+| `border-strong` | `#6d7968` | `#717970` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
 | `status-active` | `#245a20` | `#9fd39a` | The text of an Active tag. |
 | `status-active-bg` | `#c3d2bc` | `#303d31` | Its background. |
 | `status-trial` | `#66460a` | `#e2c07a` | The text of a Trial tag. |
@@ -127,7 +127,7 @@ The contrast the values must keep, in both themes:
 - `accent` on `bg-selected`: at least 4.5 (4.80 light, 4.92 dark).
 - `border-strong`, the edge of a control (an unchecked box, an input, a
   menu), on `bg-page` and on `bg-panel`: at least 3, the floor of WCAG
-  for the boundary of a control (3.57 and 3.22 light, 3.49 and 3.15
+  for the boundary of a control (3.57 and 3.22 light, 3.48 and 3.15
   dark).
 - A state never lowers the contrast of the text it holds below 4.5.
   `text-muted` keeps it only on `bg-hover` (4.69 light, 4.77 dark); on
@@ -208,6 +208,10 @@ heading) stays in em, a multiple of the text size.
 | `space-6` | `1.5rem` |
 | `space-8` | `2rem` |
 | `space-12` | `3rem` |
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
 
 | Token | Value | Use |
 | --- | --- | --- |
@@ -340,7 +344,7 @@ target still fades from `bg-target`.
   scripts fail or never run still shows all its text, with the parts
   that scripts fold open left open.
 - **Empty and loading.** A list that the filter leaves empty says so and
-  offers the next step, Clear filter. Should a page ever load something
+  offers the next step, Reset filter. Should a page ever load something
   while the reader waits, its indicator appears only after about 150 to
   300 ms and then stays at least 300 to 500 ms, so it does not flicker;
   the sites load nothing that way today.
@@ -385,17 +389,20 @@ turned off (disabled), where it has these.
   it goes by the marks only, not by how the list is laid out.
 - **The filter**, as far as Ruff's list of rules goes, no further: no
   conditions to combine. Shut, it is one button: `funnel` (`icon-md`),
-  the word Filter, and, when a field filters, the number of such fields
-  in a badge (`radius-full`, `accent` on `bg-selected`). Open, it is a
-  popover under the button, about `28rem` wide (the column's width on a
-  narrow screen), holding a group of check boxes per field: the status,
+  the word Filter, and, when the reader has changed a field from the
+  default filter, the number of such fields in a badge (`radius-full`,
+  `accent` on `bg-selected`); the default filter shows no badge. Open,
+  it is a popover under the button, `width-popover` wide (the column's
+  width on a narrow screen), holding a group of check boxes per field: the status,
   the defaults (on, off), the use, the domain, its boxes indented by its
   depth, and the quadrant when there is more than one source. Each
   group has its name, then All and None, quiet buttons. Within a field
   a rule needs one of the values checked; across fields it needs that
   in each, and a field with every value checked filters nothing.
   Checking or unchecking a domain does the same to the domains under it.
-  Under the groups, Clear filter, which checks every box. A change
+  Under the groups, Reset filter, which brings back the default filter,
+  the list as its address without a filter shows it; to see every
+  status, the reader checks All in its group. A change
   applies at once and is written into the address, so a filtered list
   can be linked; there is no Apply button. Escape, a click outside or
   the focus leaving it closes it. A site without scripts, as the local
@@ -589,6 +596,8 @@ built yet, and what each replaces:
 - Until the three above are built, `rules-list.css` writes some sizes
   and spaces as values, and the list's pages are
   linked by the characters ‹ and ›.
+- The local site's filter: the popover with its groups, applied with a
+  primary button, replaces its panel of check boxes.
 - The local site's style sheet writes its own values; it includes
   neither the tokens nor the icons yet.
 

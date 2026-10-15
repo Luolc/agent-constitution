@@ -20,8 +20,14 @@ export type Fields = ReadonlyMap<string, readonly string[]>;
 export type Values = (field: string) => readonly string[];
 
 // The fields that filter: those with a value not chosen.
-export function filtering(filter: Filter, fields: Fields): string[] {
+function filtering(filter: Filter, fields: Fields): string[] {
   return [...fields].filter(([f, offered]) => (filter.get(f)?.size ?? 0) < offered.length).map(([f]) => f);
+}
+
+// The fields whose values differ from the default filter's, the number
+// on the filter's button.
+export function differing(filter: Filter, fields: Fields, defaults: Filter): string[] {
+  return write(filter, fields, defaults).map((param) => param.slice(0, param.indexOf("=")));
 }
 
 // Whether a rule's values meet the filter.

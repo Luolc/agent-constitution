@@ -27,7 +27,7 @@
 }
 .rules .rules-filter-button .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
 .rules .rules-filter-count {
-  min-inline-size: 1.5em;
+  min-inline-size: var(--t-icon-sm);
   padding: 0 var(--t-space-1);
   font-size: var(--t-text-xs);
   font-variant-numeric: tabular-nums;
@@ -41,9 +41,7 @@
   z-index: 2;
   top: 100%;
   inset-inline-start: 0;
-  inline-size: 28rem;
-  max-block-size: 70vh;
-  overflow-y: auto;
+  inline-size: var(--t-width-popover);
   margin-top: var(--t-space-1);
   padding: var(--t-space-3) var(--t-space-4);
   color: var(--t-text);
@@ -96,13 +94,14 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .rules .rules-filter-panel button:hover,
-  .rules .rules-filter-group label:hover { background-color: var(--t-bg-panel-hover); }
+  .rules .rules-filter-group label:hover {
+    color: var(--t-text);
+    background-color: var(--t-bg-panel-hover);
+  }
 }
-.rules .rules-filter-panel button:active { background-color: var(--t-bg-active); }
-.rules .rules-filter-group label:hover,
-.rules .rules-filter-panel button:is(:hover, :active) { color: var(--t-text); }
+.rules .rules-filter-panel button:active { color: var(--t-text); background-color: var(--t-bg-active); }
 .rules .rules-size .select { margin-inline-start: var(--t-space-1); }
-.rules .rules-none-clear { color: var(--t-accent); }
+.rules .rules-none-reset { color: var(--t-accent); }
 @media (max-width: 48rem) {
   .rules .rules-filter { position: static; }
   .rules .rules-controls { position: relative; }
@@ -115,7 +114,7 @@
 
 .rules .rules-legend {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--t-measure) / 2), 1fr));
   gap: var(--t-space-1) var(--t-space-6);
   margin-block: var(--t-space-4);
   font-size: var(--t-text-sm);

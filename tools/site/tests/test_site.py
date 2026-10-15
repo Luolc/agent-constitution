@@ -358,19 +358,19 @@ class SiteTest(unittest.TestCase):
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "The filter above the list chooses the statuses, uses and domains"
-      " shown, or only the rules on by default. Active In force. Trial Being"
-      " tried on real work before it settles. Draft Not meant for real work"
-      " yet. Superseded Replaced by the rules its page names. Repealed"
-      " Withdrawn, with nothing in its place. On by default A new rule set"
-      " gets it without listing it. Off by default A rule set gets it only by"
-      " listing it. Default option The option of a one-of that a rule set"
-      " gets unless it chooses another. Filter Status All None Active Trial"
-      " Draft Superseded Repealed Defaults All None On by default Off by"
-      " default Uses All None Instructions Review Domains All None R1 Group 1"
-      " Clear filter Rules per page 25 50 100 All R1 Group 1 Off by default"
-      " R2 One of: Group 2 Active"
-      " Off by default R3 Rule 3 Active Off by default Default option R1",
+      "The legend says what each mark means; the filter chooses the statuses,"
+      " defaults, uses and domains shown. Active In force. Trial Being tried"
+      " on real work before it settles. Draft Not meant for real work yet."
+      " Superseded Replaced by the rules its page names. Repealed Withdrawn,"
+      " with nothing in its place. On by default A new rule set gets it"
+      " without listing it. Off by default A rule set gets it only by listing"
+      " it. Default option The option of a one-of that a rule set gets unless"
+      " it chooses another. Filter Status All None Active Trial Draft"
+      " Superseded Repealed Defaults All None On by default Off by default"
+      " Uses All None Instructions Review Domains All None R1 Group 1 Reset"
+      " filter Rules per page 25 50 100 All R1 Group 1 Off by default R2 One"
+      " of: Group 2 Active Off by default R3 Rule 3 Active Off by default"
+      " Default option R1",
       pages["rules/index.html"],
     )
     # The one-of is a box in its domain's list, its option inside it and
@@ -535,8 +535,8 @@ class SiteTest(unittest.TestCase):
     Loaded in headless Chrome, which runs the page's scripts: one value
     or several of a field, two fields, none of a field, a domain alone
     or with the one under it, the old address of the form, and the
-    number of fields that filter on the filter's button. Skipped
-    without Chrome, except in CI.
+    number of fields changed from the default on the filter's button.
+    Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
     if chrome is None and not os.environ.get("CI"):
@@ -549,15 +549,15 @@ class SiteTest(unittest.TestCase):
       page = Path(tmp) / "rules.html"
       page.write_text(raw["rules/index.html"], encoding="utf-8")
       for query, rules, fields in (
-        ("", ["3", "5", "6"], "1"),
+        ("", ["3", "5", "6"], "0"),
         (
           "?status=active,trial,draft,superseded,repealed",
           ["3", "4", "5", "6"],
-          "0",
+          "1",
         ),
         ("?status=superseded", ["4"], "1"),
         ("?status=", [], "1"),
-        ("?domain=2", ["3"], "2"),
+        ("?domain=2", ["3"], "1"),
         ("?status=active,superseded&domain=1", ["4", "5", "6"], "2"),
         ("?status=active,superseded&default=on", [], "2"),
         (
@@ -683,7 +683,7 @@ class SiteTest(unittest.TestCase):
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "Quadrants All None Global public Global private Clear filter",
+      "Quadrants All None Global public Global private Reset filter",
       pages["rules/index.html"],
     )
     # The legend: the rule set's marks and the quadrant.

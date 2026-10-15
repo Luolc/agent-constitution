@@ -94,7 +94,7 @@
 {{- end }}
 {{- $.Store.Set "toc" $toc }}
 </div>
-<p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-clear" hidden>{{ i18n "rules-clear-filter" }}</button></p>
+<p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-reset" hidden>{{ i18n "rules-reset-filter" }}</button></p>
 <nav class="rules-pager" aria-label="{{ i18n "rules-pages" }}" data-previous="{{ i18n "rules-previous" }}" data-next="{{ i18n "rules-next" }}">
 {{- if gt $pager.TotalPages 1 }}
   {{- with $pager.Prev }}
