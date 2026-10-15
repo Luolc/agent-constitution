@@ -279,8 +279,8 @@ screenshots (Screenshots, below). The workflow
   `default`, and a domain's metadata gives its `default`; a domain's
   page gives its applicability, when it has one, under its title, its
   citations linked as in a rule's text. A node named on
-  a page shows its label and title, and its parent's title when another
-  node has that title (`parentTitle`), as a domain in the filter does; the table of contents lists the
+  a page shows its label and title, and its parent's title when a node
+  under another parent has that title (`parentTitle`), as a domain in the filter does; the table of contents lists the
   page's headings. In the texts,
   `{@constitution:...}` becomes a link to the provision's anchor, labeled
   as the full version labels it, in the language of the text, and

@@ -27,8 +27,9 @@ and say neither.
 
 Each node gives the path of nodes above it, which its page's
 breadcrumb shows, and the title of its page, its label and that path
-(docs/design/frontend.md, Components). A node whose title another node
-also has is named with its parent's title wherever it is named alone.
+(docs/design/frontend.md, Components). A node whose title a node under
+another parent also has is named with its parent's title wherever it is
+named alone.
 
 Each node says whether its source's defaults enable it, as statute
 reckons it; a domain or a rule gives its own `default`, a one-of its
@@ -48,7 +49,7 @@ is 1 when they cannot be read.
 """
 
 import argparse
-from collections import Counter, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass
 import html
 import json
@@ -475,8 +476,12 @@ class _Language:
     self.params = {(s.name, p.name): p for s in sources for p in s.params}
     self.many = len(sources) > 1
     self.labels = src.labels
-    counts = Counter(self.title(key) for key in self.nodes)
-    self.shared = {title for title, count in counts.items() if count > 1}
+    # A title that nodes under different parents share: their parents'
+    # titles tell them apart, as their labels alone do under one parent.
+    parents: dict[str, set[tuple[str, int] | None]] = defaultdict(set)
+    for key in self.nodes:
+      parents[self.title(key)].add(self.parent(key))
+    self.shared = {title for title, above in parents.items() if len(above) > 1}
 
   def shown(self, node: Node) -> str:
     """Return the language the node is shown in on this language's pages.
@@ -553,8 +558,8 @@ class _Language:
 
     Returns:
       Its parent's title and title as HTML (`parentTitle`,
-      `parentTitleHtml`) when another node has its title in this
-      language and it has a parent; else nothing.
+      `parentTitleHtml`) when a node under another parent has its title
+      in this language and it has a parent; else nothing.
     """
     parent = self.parent(key)
     if parent is None or self.title(key) not in self.shared:

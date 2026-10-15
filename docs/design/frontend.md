@@ -574,10 +574,11 @@ turned off (disabled), where it has these.
     stay whole.
   - Where a node's title stands alone (in a page's relations, the rules
     of a parameter, the filter's domains, the local site's links and
-    its menu of domains), a title that another node of the site has in
-    that language is followed by the parent's title in parentheses, in
-    `text-muted` (`Tiers (Credentials)`); a title no other node has
-    stands alone. A breadcrumb or a path does not add it, as it names
+    its menu of domains), a title that a node of the site under another
+    parent has in that language is followed by the parent's title in
+    parentheses, in `text-muted` (`Tiers (Credentials)`); a title no
+    other node has, or only nodes under the same parent, which their
+    labels tell apart, stands alone. A breadcrumb or a path does not add it, as it names
     the parents.
 - **Popovers** (the filter's menus, the info on the length): `bg-panel`,
   `1px` of `border-subtle`, `radius-md`, `shadow-popover`, padding
@@ -820,8 +821,8 @@ its group rows and head that stick, the one-of and the legend of
 closing on Escape or a click outside; the check boxes; hover only on
 fine pointers, the sizes of targets, the focus ring, and the motion of
 the filter's popovers; the language switch and the tag of a text not
-in the page's language; the parent's title after a title two nodes
-have; the view of the list of [Components](#components), its choice
+in the page's language; the parent's title after a title that nodes
+under two parents have; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
 it opens at an address without one. Not built yet, and what each replaces:
 

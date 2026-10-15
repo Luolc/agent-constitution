@@ -1304,26 +1304,25 @@ fn title_link(project: &Project, key: &Key, up: &str, lang: &str, after: &str) -
 }
 
 /// A node's parent's title, in `lang` as `link` gives a title, muted in
-/// parentheses after a space, when another node of the project has the
+/// parentheses after a space, when a node under another parent has the
 /// node's title in `lang`, so that the two are told apart where a title
-/// stands alone; else nothing.
+/// stands alone; under one parent their references tell them apart.
+/// Else nothing.
 fn parent_title(project: &Project, key: &Key, lang: &str) -> String {
     let sources = &project.sources;
-    let Some(node) = sources.get(key) else {
+    let Some((node, parent_key)) = sources.get(key).zip(sources.parent(key)) else {
+        return String::new();
+    };
+    let Some(parent) = sources.get(&parent_key) else {
         return String::new();
     };
     let title = pick_lang(&node.title, node, lang).0;
-    let shared = sources
-        .nodes()
-        .filter(|(_, n)| pick_lang(&n.title, n, lang).0 == title)
-        .nth(1)
-        .is_some();
-    let parent = sources
-        .parent(key)
-        .and_then(|k| Some((sources.get(&k)?, k)));
-    let (true, Some((parent, parent_key))) = (shared, parent) else {
+    let shared = sources.nodes().any(|(k, n)| {
+        pick_lang(&n.title, n, lang).0 == title && sources.parent(&k).as_ref() != Some(&parent_key)
+    });
+    if !shared {
         return String::new();
-    };
+    }
     let (title, title_lang) = pick_lang(&parent.title, parent, lang);
     format!(
         " <span class=\"parent\"{}>({})</span>",

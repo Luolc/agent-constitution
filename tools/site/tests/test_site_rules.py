@@ -98,6 +98,18 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(nodes[1]["pageTitle"], "R1 Group 1")
     self.assertNotIn("parentTitle", nodes[8])
 
+  def test_shared_title_under_one_parent(self):
+    """Two nodes of one title under one parent are named alone."""
+    rule = self.root / "rules/6.toml"
+    text = rule.read_text(encoding="utf-8")
+    rule.write_text(text.replace('en = "Rule 6"', 'en = "Rule 5"'), "utf-8")
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual(nodes[6]["title"], nodes[5]["title"])
+    self.assertNotIn("parentTitle", nodes[6])
+    self.assertEqual(
+      [c.get("parentTitle") for c in nodes[1]["children"]], [None] * 4
+    )
+
   def test_page_title_leaves_out_the_farthest(self):
     title = site_rules.page_title("R7", ["A" * 30, "B" * 30], "C" * 5)
     self.assertEqual(title, f"R7 … › {'B' * 30} › CCCCC")

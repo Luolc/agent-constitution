@@ -710,6 +710,12 @@ fn site_names_the_parent_of_a_shared_title() {
     }
     put(&dir, "r/rules", rule(5, 3, ""));
     put(&dir, "r/rules", rule(6, 4, "requires = [5]"));
+    // Rule 8, beside rule 5 under domain 3, has its title.
+    put(
+        &dir,
+        "r/rules",
+        edit(rule(8, 3, ""), "Rule 8\"", "Rule 5\""),
+    );
     let r = statute(&dir, &["site"]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     let site = dir.join(".statute/site");
@@ -733,9 +739,12 @@ fn site_names_the_parent_of_a_shared_title() {
     let nav = &five[five.find("<nav>").unwrap()..five.find("</nav>").unwrap()];
     assert!(nav.contains("Tiers</span></a>"), "{nav}");
     assert!(!nav.contains("class=\"parent\""), "{nav}");
-    // A rule whose title no other has is named alone.
+    // Two rules of one title under one parent are told apart by their
+    // references, not by their parent's title, which they share.
     let six = std::fs::read_to_string(site.join("R/6.html")).unwrap();
     assert!(six.contains("Rule 5</span></a>"), "{six}");
+    let three = std::fs::read_to_string(site.join("R/3.html")).unwrap();
+    assert_eq!(three.matches("Rule 5</span></a>").count(), 2, "{three}");
 }
 
 /// The path of the page the language switch of the page at `path` leads
