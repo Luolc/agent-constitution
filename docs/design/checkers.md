@@ -185,7 +185,8 @@ changes with statute as well as with the rule set (`statute-checks.toml`
 with its version, `AGENTS.md` with how it renders the rules). An
 `AGENTS.md` in a subdirectory stays an instruction file. The
 script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
-off) and lists both groups when they mix. CI runs
+off), lists both groups when they mix, and on a pass names the
+generated files, for the reviewer. CI runs
 it against the same base as check 7; a push to `main` that carries
 several changes at once is checked as one.
 

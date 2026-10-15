@@ -37,7 +37,11 @@ const REPO: &[&str] = &[
     r"skills/.+",
 ];
 
-/// Generated files, which go with whichever side changed them.
+/// Generated files, which go with whichever side changed them. The
+/// script also counts this repository's top `AGENTS.md` as one, as
+/// `statute compile --check` proves it a compile of the rule set (rule
+/// 47); a repository without that check in CI cannot rely on it, so
+/// here it stays an instruction file.
 const GENERATED: &[&str] = &[r"constitution/[^/]+/generated/constitution\.[^/]+\.md"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

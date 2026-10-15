@@ -127,7 +127,16 @@ class Change(unittest.TestCase):
       "tools/build_constitution.py",
       "constitution/2026-10/generated/constitution.en.md",
     )
-    self.assertEqual(self.run_check()[0], 0)
+    self.assertEqual(
+      self.run_check(),
+      (
+        0,
+        "instruction-only check: other files only since base"
+        " (0 instruction, 1 other, 1 generated)\n"
+        "generated files:\n  M"
+        " constitution/2026-10/generated/constitution.en.md\n",
+      ),
+    )
 
   def test_mixed_fails(self):
     self.change(

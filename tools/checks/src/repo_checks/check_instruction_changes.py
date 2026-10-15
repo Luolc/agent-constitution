@@ -182,6 +182,11 @@ def main(argv: list[str] | None = None) -> int:
     f" ({len(groups['instruction'])} instruction, {len(groups['other'])} other,"
     f" {len(groups['generated'])} generated)"
   )
+  # A reviewer checks that a generated file changed only in rendering
+  # when tools changed it, so the pass names them.
+  if groups["generated"]:
+    print("generated files:")
+    print("\n".join(f"  {line}" for line in groups["generated"]))
   return 0
 
 
