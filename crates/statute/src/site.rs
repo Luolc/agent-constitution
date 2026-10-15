@@ -85,8 +85,10 @@ struct Words {
     title: &'static str,
     quadrants: [&'static str; 4],
     /// The lines of the legend: the status, the defaults, `uses`, the
-    /// one-of and this rule set.
-    legend: [&'static str; 5],
+    /// one-of, this rule set and the places of the marks.
+    legend: [&'static str; 6],
+    /// What the places of the marks hold, in order.
+    slots: &'static str,
     /// After each use's name in the legend, what it means.
     use_meanings: [&'static str; 2],
     /// In the legend, what a one-of is, and an option not its default.
@@ -155,14 +157,15 @@ fn words(lang: &str) -> Words {
             untranslated: "无中文",
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
-            legend: ["状态", "默认", "用在", "择一", "本仓"],
-            use_meanings: ["：写进 agent 的指令", "：审查方据它审查"],
-            one_of_meaning: "规定清单只取其中一个选项",
+            legend: ["状态", "默认", "用途", "择一", "规定清单", "行末"],
+            use_meanings: ["：写进 agent 的指令", "：审查方按它审查"],
+            slots: "依次是状态、默认、指令、审查，没有的留空",
+            one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
             view: "显示",
             views: ["标题与规定", "标题", "规定"],
             columns: ["编号", "规定"],
-            fields: ["状态", "默认", "用在", "领域", "象限", "本仓"],
+            fields: ["状态", "默认", "用途", "领域", "象限", "规定清单"],
             all: "全选",
             none: "全不选",
             search: "搜索领域",
@@ -207,13 +210,14 @@ fn words(lang: &str) -> Words {
                 "Local public",
                 "Local private",
             ],
-            legend: ["Status", "Default", "Uses", "One of", "Rule set"],
+            legend: ["Status", "Default", "Uses", "One of", "Rule set", "Row end"],
             use_meanings: [
                 ": goes into the agent's instructions",
                 ": a reviewer checks it",
             ],
+            slots: "status, default, instructions, review, in this order; empty where a rule has none",
             one_of_meaning: "the rule set takes exactly one option",
-            another_option: "another option",
+            another_option: "Another option",
             view: "Show",
             views: ["Title and statement", "Title", "Statement"],
             columns: ["ID", "Rule"],
@@ -1292,7 +1296,7 @@ fn enabled_tag(what: &str, on: bool) -> String {
 /// of mark, its name in a column, then each mark as the rows draw it
 /// with its word.
 fn legend(w: &Words) -> String {
-    let [statuses, defaults, uses, one_of, enabled] = w.legend;
+    let [statuses, defaults, uses, one_of, enabled, places] = w.legend;
     let item = |html: String| format!("<span class=\"legend-item\">{html}</span>");
     let lines = [
         (
@@ -1334,16 +1338,26 @@ fn legend(w: &Words) -> String {
                     icon(CIRCLE_DOT, ""),
                     w.default_option
                 ))
-                + &item(format!("{}{}", icon(CIRCLE, ""), w.another_option)),
+                + &item(format!(
+                    "<span class=\"option\">{}</span>{}",
+                    icon(CIRCLE, ""),
+                    w.another_option
+                )),
         ),
         (
             enabled,
             item(enabled_tag(w.enabled, true)) + &item(enabled_tag(w.not_enabled, false)),
         ),
+        (places, w.slots.to_owned()),
     ];
     let mut out = String::from("<dl class=\"legend\">\n");
     for (name, marks) in lines {
-        let _ = writeln!(out, "<div><dt>{name}</dt><dd>{marks}</dd></div>");
+        let class = if name == places {
+            " class=\"places\""
+        } else {
+            ""
+        };
+        let _ = writeln!(out, "<div{class}><dt>{name}</dt><dd>{marks}</dd></div>");
     }
     out.push_str("</dl>\n");
     out
