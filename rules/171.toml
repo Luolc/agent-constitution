@@ -5,7 +5,6 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
-requires = [1]
 authority = ["evidence", "accountable-agent.whole-task"]
 constitution = ">=1"
 level = "project"

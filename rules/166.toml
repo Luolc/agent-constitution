@@ -5,7 +5,6 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
-requires = [64]
 authority = ["asking", "asking-principals", "decide-yourself.changing-approach"]
 constitution = ">=1"
 level = "project"
