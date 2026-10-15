@@ -131,6 +131,8 @@ struct Words {
     committed: &'static str,
     /// Between the items of a list.
     and: &'static str,
+    /// Between a git source's address and its commit.
+    at: &'static str,
     unused: &'static str,
 }
 
@@ -184,6 +186,7 @@ fn words(lang: &str) -> Words {
             origins: ["statute.toml", "默认值", "私有规定清单", "全局配置"],
             committed: "；AGENTS.md 里是 ",
             and: "、",
+            at: "，提交 ",
             unused: "没有启用的规定用到它",
         },
         _ => Words {
@@ -244,6 +247,7 @@ fn words(lang: &str) -> Words {
             ],
             committed: "; AGENTS.md has ",
             and: ", ",
+            at: " at ",
             unused: "no enabled rule uses it",
         },
     }
@@ -604,7 +608,15 @@ fn index(project: &Project, l: &Lang, switch: &str) -> String {
             // As in the compiled `AGENTS.md`: a git source by its address
             // and commit, not the snapshot directory it is read from.
             let place = match project.manifest.spec(&source.name) {
-                Some(spec) => spec.place(),
+                Some(spec) => match &spec.git {
+                    Some(git) => format!(
+                        "{}{}{}",
+                        git.address,
+                        w.at,
+                        git.commit.as_deref().unwrap_or("")
+                    ),
+                    None => spec.path.clone(),
+                },
                 None => source.path.clone(),
             };
             let params = if source.params.is_empty() {
