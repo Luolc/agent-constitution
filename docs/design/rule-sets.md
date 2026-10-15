@@ -56,9 +56,7 @@ commit; the two layers together are resolved in memory in each
 worktree, from its `statute.lock` and `private.lock`, and never written
 down. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
-([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
-today still `statute.private.toml` and a lock file of both layers,
-next to `statute.toml`).
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 [Rule configuration](rule-config.md) adds the directory of the local
 rules, parameters and default switches, not built yet.
 

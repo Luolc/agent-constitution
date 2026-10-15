@@ -39,6 +39,9 @@ pub struct Env {
     /// Whether each git source is read at its newest commit, as `upgrade`
     /// does, rather than at the one the lock file records.
     pub newest: bool,
+    /// Whether each git source is read from statute's cache alone, at the
+    /// commit the lock file records, without the network.
+    pub offline: bool,
 }
 
 #[derive(Deserialize)]
@@ -77,7 +80,7 @@ impl Project {
     /// set can be tried before it is written.
     pub fn with_manifest(root: &Path, text: &str, env: &Env) -> (Option<Project>, Diagnostics) {
         let mut diags = Diagnostics::default();
-        let locked = locked_sources(root, crate::lock::FILE);
+        let locked = locked_sources(&root.join(crate::lock::FILE));
         let mut layers = env.layers.clone();
         if env.from_lock {
             layers.locked = locked.clone();
@@ -94,49 +97,56 @@ impl Project {
         Project::from_manifest(root, manifest, diags, env, &locked)
     }
 
-    /// The private layer of the public `project`, read from
-    /// `statute.private.toml` next to it, with the public rule set: `None`
-    /// and no finding when there is no such file. It fails when a rule
-    /// that only it enables overrides one that the public rule set
+    /// The private layer of the public `project`, read from the private
+    /// rule set in `dir` ([`private::dir`]), with the public rule set:
+    /// `None` and no finding when there is no such file. It fails when a
+    /// rule that only it enables overrides one that the public rule set
     /// enables (`docs/design/rule-sources.md`, Overrides). Its findings
     /// leave out those of `given`, the public rule set's.
     pub fn load_private(
         project: &Project,
         given: &Diagnostics,
         env: &Env,
+        dir: &Path,
     ) -> (Option<Project>, Diagnostics) {
-        let root = &project.root;
         let mut diags = Diagnostics::default();
-        match std::fs::read_to_string(root.join(private::MANIFEST)) {
-            Ok(text) => Project::with_private(project, given, &text, env),
+        let path = dir.join(private::MANIFEST);
+        match std::fs::read_to_string(&path) {
+            Ok(text) => Project::with_private(project, given, &text, env, dir),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => (None, diags),
             Err(e) => {
-                diags.error(private::MANIFEST, format!("cannot read: {e}"));
+                diags.error(path.display().to_string(), format!("cannot read: {e}"));
                 (None, diags)
             }
         }
     }
 
-    /// As `load_private`, with the text of `statute.private.toml` given.
+    /// As `load_private`, with the text of `private.toml` given. Each git
+    /// source is read at the commit that `private.lock` records for it,
+    /// or `statute.lock` for a source of the public layer.
     pub fn with_private(
         project: &Project,
         given: &Diagnostics,
         text: &str,
         env: &Env,
+        dir: &Path,
     ) -> (Option<Project>, Diagnostics) {
         let root = &project.root;
         let mut diags = Diagnostics::default();
-        let locked = locked_sources(root, private::LOCK);
-        let fallback = if env.from_lock { &locked[..] } else { &[] };
+        let shown = dir.join(private::MANIFEST).display().to_string();
+        let own = locked_sources(&dir.join(private::LOCK));
+        let fallback = if env.from_lock { &own[..] } else { &[] };
         let manifest = match project.manifest.with_private_from(text, fallback) {
             Ok(m) => m,
             Err(errors) => {
                 for e in errors {
-                    diags.error(private::MANIFEST, e);
+                    diags.error(&shown, e);
                 }
                 return (None, diags);
             }
         };
+        let mut locked = locked_sources(&root.join(crate::lock::FILE));
+        locked.extend(own);
         let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
         diags.0.retain(|d| !given.0.contains(d));
         let Some(combined) = combined else {
@@ -146,7 +156,7 @@ impl Project {
         for (target, by) in &combined.resolution.overridden {
             if public.contains_key(target) && !public.contains_key(by) {
                 diags.error(
-                    private::MANIFEST,
+                    &shown,
                     format!(
                         "`{by}` overrides \"{target}\", a rule of the public rule set `{}`; in a public repository (`public = true`), `{}` may only add rules",
                         manifest::FILE,
@@ -262,10 +272,10 @@ impl Project {
     }
 }
 
-/// The git sources the lock file `name` in `root` records; none when it
-/// is missing or cannot be read.
-fn locked_sources(root: &Path, name: &str) -> Vec<SourceSpec> {
-    std::fs::read_to_string(root.join(name))
+/// The git sources the lock file at `path` records; none when it is
+/// missing or cannot be read.
+fn locked_sources(path: &Path) -> Vec<SourceSpec> {
+    std::fs::read_to_string(path)
         .map(|text| crate::lock::sources(&text))
         .unwrap_or_default()
 }
@@ -286,16 +296,20 @@ fn pick_commit(spec: &mut SourceSpec, locked: &[SourceSpec], env: &Env) -> Resul
         Some(r) if r.address == git.address && r.follow == git.follow => r.commit.clone(),
         Some(r) if env.from_lock => {
             return Err(format!(
-                "source `{}` is {} at {}, and {} records {} at {}; run `statute lock`",
-                spec.name,
-                git.follow,
-                git.address,
-                crate::lock::FILE,
-                r.follow,
-                r.address
+                "source `{}` is {} at {}, and the lock file records {} at {}; run `statute lock`",
+                spec.name, git.follow, git.address, r.follow, r.address
             ));
         }
         _ => None,
     };
+    if env.offline {
+        return match commit {
+            Some(commit) => crate::global::cached(spec, &commit),
+            None => Err(format!(
+                "source `{}`: the lock file records no commit of it, and nothing is fetched; run `statute lock`",
+                spec.name
+            )),
+        };
+    }
     crate::global::materialize(spec, commit.as_deref(), env.newest)
 }

@@ -11,6 +11,11 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
+/// The private rule set and its lock file of a repository made with
+/// `git init`.
+const PRIVATE: &str = ".git/common/statute/private.toml";
+const PRIVATE_LOCK: &str = ".git/common/statute/private.lock";
+
 fn base(name: &str) -> PathBuf {
     let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("global")
@@ -467,22 +472,25 @@ fn a_private_global_source_joins_the_private_layer_of_a_public_repository() {
     ok(&w.run(&["init", "--public"]));
     // The public rule set cannot enable it.
     fails(&w.run(&["add", "me:4"]), "statute add --private me:4");
-    write(
-        &w.repo,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
-    );
-    write(&w.repo, "statute.private.toml", "base = \"statute.toml\"\n");
     ok(&w.run(&["add", "--private", "me:4"]));
     let public_lock = std::fs::read_to_string(w.repo.join("statute.lock")).unwrap_or_default();
     assert!(!public_lock.contains("name = \"me\""), "{public_lock}");
-    assert!(read(&w.repo, "statute.private.lock").contains("name = \"me\""));
+    let private_lock = read(&w.repo, PRIVATE_LOCK);
+    assert!(
+        private_lock.contains(&format!(
+            "name = \"me\"\ngit = \"{me}\"\nbranch = \"main\"\ncommit = "
+        )),
+        "{private_lock}"
+    );
     // The private layer adds names only.
-    std::fs::write(
-        w.repo.join("statute.private.toml"),
-        "base = \"statute.toml\"\nrules = [\"me:4\"]\n\n[sources]\nR = { path = \"../r\", public = true }\n",
-    )
-    .unwrap();
+    write(
+        &w.repo,
+        PRIVATE,
+        &format!(
+            "rules = [\"me:4\"]\n\n[sources]\nR = {{ path = \"{}\", public = true }}\n",
+            w.r.display()
+        ),
+    );
     fails(
         &w.run(&["lock"]),
         "`R` is a source of the public layer already",
@@ -513,13 +521,11 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
     write(&w.at, "here/rules/5.toml", &rule(5, 1, "").1);
     write(
         &w.repo,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/*\n!/.statute/rules/\n",
-    );
-    write(
-        &w.repo,
-        "statute.private.toml",
-        "base = \"statute.toml\"\n\n[sources]\nhere = { path = \"../here\", public = false, scope = \"local\" }\n",
+        PRIVATE,
+        &format!(
+            "[sources]\nhere = {{ path = \"{}\", public = false, scope = \"local\" }}\n",
+            w.at.join("here").display()
+        ),
     );
     write(
         &w.repo,
@@ -556,7 +562,7 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
         ("R", format!("{} at {r_commit}", w.r_address)),
         ("me", format!("{me} at {me_commit}")),
         ("L", ".".to_owned()),
-        ("here", "../here".to_owned()),
+        ("here", w.at.join("here").display().to_string()),
     ] {
         let heading =
             format!("<h3 id=\"source-{source}\">{source} <span class=\"tag\">{place}</span></h3>");
@@ -654,16 +660,10 @@ fn site_of_the_first_party_source_with_a_global_private_source() {
     write(&w.repo, "rules/2.toml", &rule(2, 1, "").1);
     write(
         &w.repo,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
-    );
-    write(
-        &w.repo,
         ".git/info/exclude",
         "/CLAUDE.local.md\n/AGENTS.override.md\n",
     );
     ok(&w.run(&["init", "--public", "--source", "."]));
-    write(&w.repo, "statute.private.toml", "base = \"statute.toml\"\n");
     ok(&w.run(&["add", "R2"]));
     ok(&w.run(&["add", "--private", "me:4"]));
     ok(&w.run(&["compile"]));
@@ -697,11 +697,6 @@ fn site_of_the_first_party_source_with_a_global_private_source() {
 fn source_add_writes_where_its_visibility_says() {
     let w = world("source-add");
     ok(&w.run(&["init", "--public"]));
-    write(
-        &w.repo,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
-    );
     ok(&w.run(&["add", "R2"]));
     w.on_disk("team", 7);
     w.on_disk("me", 4);
@@ -715,7 +710,8 @@ fn source_add_writes_where_its_visibility_says() {
         "{manifest}"
     );
     assert!(read(&w.repo, "statute.lock").contains("name = \"team\""));
-    // INTERNAL: private, so statute.private.toml, made with its base.
+    // INTERNAL: private, so the private rule set, made with the source's
+    // absolute path.
     let run = w.run_gh(&["source", "add", "me", "../me"], Some("INTERNAL"));
     ok(&run);
     assert!(
@@ -723,12 +719,23 @@ fn source_add_writes_where_its_visibility_says() {
         "{}",
         run.stdout
     );
-    let private = read(&w.repo, "statute.private.toml");
-    assert!(private.starts_with("base = \"statute.toml\""), "{private}");
     assert!(
-        private.contains("me = { path = \"../me\", public = false }"),
-        "{private}"
+        run.stdout.contains(&format!(
+            "`me` is private, so it is named in the private rule set, {}, in git's directory",
+            w.repo.join(PRIVATE).display()
+        )),
+        "{}",
+        run.stdout
     );
+    let private = read(&w.repo, PRIVATE);
+    assert_eq!(
+        private,
+        format!(
+            "[sources]\nme = {{ path = \"{}\", public = false }}\n",
+            w.at.join("me").canonicalize().unwrap().display()
+        )
+    );
+    assert!(read(&w.repo, PRIVATE_LOCK).contains("name = \"me\""));
     assert!(!read(&w.repo, "statute.toml").contains("me ="));
     // No answer: private as well.
     let run = w.run_gh(&["source", "add", "ours", "../ours"], None);
@@ -738,7 +745,7 @@ fn source_add_writes_where_its_visibility_says() {
         "{}",
         run.stdout
     );
-    assert!(read(&w.repo, "statute.private.toml").contains("ours = { path"));
+    assert!(read(&w.repo, PRIVATE).contains("ours = { path"));
     // A name the file holds, or the public layer has, fails.
     fails(
         &w.run(&["source", "add", "team", "../team", "--public"]),
@@ -757,7 +764,7 @@ fn source_add_in_a_private_repository_and_globally() {
     w.on_disk("me", 4);
     ok(&w.run(&["source", "add", "me", "../me", "--private"]));
     assert!(read(&w.repo, "statute.toml").contains("me = { path = \"../me\", public = false }"));
-    assert!(!w.repo.join("statute.private.toml").exists());
+    assert!(!w.repo.join(PRIVATE).exists());
     // --global: a git address, its default branch written out.
     let (_, team) = source(&w.at, "team", &[domain(1), rule(7, 1, "")]);
     let run = w.run(&["source", "add", "--global", "--public", "team", &team]);
@@ -821,17 +828,15 @@ fn github_addresses() {
 fn source_add_writes_nothing_when_the_private_layer_would_fail() {
     let w = world("source-add-clash");
     ok(&w.run(&["init", "--public"]));
-    write(
-        &w.repo,
-        ".gitignore",
-        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
-    );
     ok(&w.run(&["add", "R2"]));
     w.on_disk("team", 7);
     write(
         &w.repo,
-        "statute.private.toml",
-        "base = \"statute.toml\"\n\n[sources]\nteam = { path = \"../team\", public = false }\n",
+        PRIVATE,
+        &format!(
+            "[sources]\nteam = {{ path = \"{}\", public = false }}\n",
+            w.at.join("team").display()
+        ),
     );
     ok(&w.run(&["lock"]));
     let before = (read(&w.repo, "statute.toml"), read(&w.repo, "statute.lock"));

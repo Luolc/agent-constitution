@@ -382,14 +382,9 @@ fn the_private_layer_has_domains_and_no_exclude() {
         "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\n\n[sources]\nR = { path = \".\" }\n",
     )
     .unwrap();
-    let private = base
-        .with_private("base = \"statute.toml\"\ndomains = [\"R10\"]\n")
-        .unwrap();
+    let private = base.with_private("domains = [\"R10\"]\n").unwrap();
     assert_eq!(private.domains, [r(10)]);
-    let errors = base
-        .with_private("base = \"statute.toml\"\nexclude = [\"R2\"]\n")
-        .err()
-        .unwrap();
+    let errors = base.with_private("exclude = [\"R2\"]\n").err().unwrap();
     assert!(
         errors
             .iter()

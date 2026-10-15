@@ -532,8 +532,8 @@ fn escape(text: &str) -> String {
 }
 
 /// Writes the pages to the site's directory below `root`, the directory
-/// of `statute.toml`, in place of what was there, after the
-/// directory's `.gitignore`. Writes nothing when git tracks a file in
+/// of `statute.toml`, in place of what was there, after
+/// `.statute/.gitignore` and the directory's own. Writes nothing when git tracks a file in
 /// the directory or cannot tell whether it does, or when the directory is there without statute's
 /// `.gitignore`. Returns the index's path.
 pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
@@ -570,7 +570,8 @@ pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
             dir().display()
         ));
     }
-    if site.symlink_metadata().is_ok() {
+    let there = site.symlink_metadata().is_ok();
+    if there {
         let ours = site.symlink_metadata().is_ok_and(|m| m.is_dir())
             && std::fs::read_to_string(&gitignore).is_ok_and(|t| t == GITIGNORE);
         if !ours {
@@ -579,6 +580,9 @@ pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
                 dir().display()
             ));
         }
+    }
+    crate::private::write_gitignore(root)?;
+    if there {
         std::fs::remove_dir_all(&site).map_err(|e| fail(&site, e))?;
     }
     std::fs::create_dir_all(&site).map_err(|e| fail(&site, e))?;

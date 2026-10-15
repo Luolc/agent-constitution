@@ -461,11 +461,10 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
     Ok(sources)
 }
 
-/// `statute.private.toml`.
+/// `private.toml`.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RawPrivate {
-    base: String,
     #[serde(default)]
     rules: Vec<String>,
     #[serde(default)]
@@ -487,7 +486,7 @@ struct RawCompile {
 /// The sources of a `[sources]` table, each problem in `errors`.
 /// `public_rule_set` is the `public` of `statute.toml`, which names no
 /// private source when it is true; `None` for the table of
-/// `statute.private.toml`, which may.
+/// `private.toml`, which may.
 fn read_sources(
     raw: &BTreeMap<String, RawSource>,
     public_rule_set: Option<bool>,
@@ -548,7 +547,7 @@ fn read_sources(
         };
         if public_rule_set == Some(true) && !source_public {
             errors.push(format!(
-                "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in {}, next to statute.toml",
+                "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in the private rule set, {}, as `statute source add` does",
                 crate::private::MANIFEST
             ));
             continue;
@@ -852,7 +851,7 @@ impl Manifest {
         })
     }
 
-    /// The rule set with the private layer of `statute.private.toml`, from
+    /// The rule set with the private layer of `private.toml`, from
     /// its text, added: its sources and its rules after those of
     /// `statute.toml` (`docs/design/rule-sources.md`, Private rules in a
     /// public repository). Every problem found is returned.
@@ -876,14 +875,22 @@ impl Manifest {
                 crate::private::MANIFEST
             ));
         }
-        if raw.base != FILE {
-            errors.push(format!(
-                "`base = \"{}\"`: the private layer adds to the rule set next to it, `base = \"{FILE}\"`",
-                raw.base
-            ));
-        }
         let mut sources = self.sources.clone();
-        let own = read_sources(&raw.sources, None, Declared::RuleSet, &mut errors);
+        let mut own = read_sources(&raw.sources, None, Declared::RuleSet, &mut errors);
+        // The file serves every worktree of a clone, from which a relative
+        // path would lead to different places.
+        for spec in own.iter_mut().filter(|s| s.git.is_none()) {
+            if spec.path.starts_with("~/") {
+                spec.path = crate::global::expand(&spec.path)
+                    .to_string_lossy()
+                    .into_owned();
+            } else if !Path::new(&spec.path).is_absolute() {
+                errors.push(format!(
+                    "[sources] `{}`: `path = \"{}\"` is relative; the private rule set serves every worktree, so a path in it is absolute or starts with `~/`",
+                    spec.name, spec.path
+                ));
+            }
+        }
         for spec in &own {
             match self.spec(&spec.name) {
                 Some(have) if have.declared == Declared::RuleSet => errors.push(format!(
