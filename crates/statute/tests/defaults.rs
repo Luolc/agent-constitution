@@ -268,6 +268,9 @@ fn statute(dir: &Path, args: &[&str]) -> Run {
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .env_remove("XDG_CONFIG_HOME")
         .env_remove("XDG_CACHE_HOME")
+        // git looks for a repository no further up than the tests' directory,
+        // which lies inside this repository's work tree.
+        .env("GIT_CEILING_DIRECTORIES", env!("CARGO_TARGET_TMPDIR"))
         .args(args)
         .current_dir(dir)
         .output()
