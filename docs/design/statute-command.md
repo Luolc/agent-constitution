@@ -206,7 +206,7 @@ sources, as many as
 with a note to write `R12`. Reading them from `.statute/rules/`, or the
 directory `local-rules` names
 ([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
-and a source's `rules-dir` are not built yet. A rule names a rule of another source in
+is not built yet. A rule names a rule of another source in
 `requires`, `conflicts` and `{@rule:...}` as `R12` or `team:7`, with
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
