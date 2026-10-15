@@ -3,7 +3,9 @@
 The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
-`site/zh/agent/index.html`), and so is this design, under `design/`
+`site/zh/agent/index.html`) and the full version again under
+`editions/<edition>/` (`site/editions/2026-10/index.html`,
+`site/zh/editions/2026-10/index.html`), and so is this design, under `design/`
 (`site/design/index.html`, `site/zh/design/index.html`), and so are the
 rules, under `rules/` (`site/rules/index.html`,
 `site/zh/rules/index.html`). Hugo builds them with `hugo-0.167.0 -s
@@ -78,6 +80,22 @@ screenshots (Screenshots, below). The workflow
   The sidebar, the language switch (to the other language's version for
   agents), the color switch and the table of contents are as on the home
   page, the table of contents linking to the IDs Hugo gives the headings.
+- The edition's page: the full version is also the page
+  `editions/<edition>/` of its language, an address that keeps this
+  edition when a later one takes the home page; a link to an edition from
+  outside the site goes there. The content adapter adds it with the home
+  page's text, title and params, and its layout,
+  `web/layouts/editions/page.html`, sets them as the home page's does,
+  both through `web/layouts/_partials/constitution/full.html`. It has no
+  entry in the sidebar, `bookHidden` hides it from the theme's own list,
+  and the section `editions/` gets no page (`build` with `render` and
+  `list` `never`). As the home page has the same text, the edition's page
+  carries `<meta name="robots" content="noindex">`
+  (`web/layouts/_partials/docs/inject/head.html`), so search engines
+  index the text once, on the home page. The links in the lists of the
+  rules under the provisions start at the site's root (`relLangURL`),
+  which `relativeURLs` makes relative to each page, so they lead to the
+  rules' pages from both.
 - Design: the files of `docs/design/` become the pages under `design/`
   of each language, read where they are: `web/hugo.toml` mounts
   `docs/design/*.md` and `docs/design/zh/*.md` as assets, and the content
@@ -383,9 +401,11 @@ screenshots (Screenshots, below). The workflow
   the content adapter adds each page's entry to the menu, named from
   `index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
   by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
-  edition's year and month, negated. Today that is the one edition, the
-  home page; a page per edition, once there are several, is not built
-  yet. The version for agents is not listed, as
+  edition's year and month, negated. Today that is the one edition, whose
+  entry links the home page; the edition's page is not listed. A site of
+  several editions, an older one on its own page alone and indexed there,
+  is not built yet: the site reads one edition (Input, above). The
+  version for agents is not listed, as
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
   theme's own list with `bookHidden`, as it hides the design's pages,

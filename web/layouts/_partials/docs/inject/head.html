@@ -28,3 +28,8 @@
 {{- /* Without scripts, the lists of the rules under the provisions
   are open, since nothing could open them (assets/cites.js). */}}
 <noscript><style>.cites-list { display: block; } .cites-toggle { display: none; }</style></noscript>
+{{- /* An edition's page has the home page's text (content/_content.gotmpl),
+  which search engines index on the home page only. */}}
+{{- if .Params.noindex }}
+<meta name="robots" content="noindex">
+{{- end }}
