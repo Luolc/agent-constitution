@@ -234,12 +234,12 @@
 
 .constitution code { font-size: var(--t-text-sm); }
 
-/* The rules under a provision that cite them, on a line of their own,
-   smaller and muted: a button of their labels in boxes, or of a count,
-   with `circle-plus` after them, which turns to `circle-minus` while the
-   list under it is open (layouts/_partials/rules/cites.html). The button
-   is as tall as a target. In the list, each rule's label in the muted
-   color before its title. */
+/* The rules under a provision that cite them, on a row of their own,
+   smaller and muted, wrapping as it needs: a link for each, its label in
+   a pill, as tall as a target; then the rules that cite only a provision
+   under it, hidden, and the button of their count, with `circle-plus`
+   before it, which turns to `circle-minus` while they are shown
+   (layouts/_partials/rules/cites.html). */
 .constitution .cited-by {
   display: block;
   margin: .2em 0 .4em;
@@ -247,54 +247,69 @@
   line-height: var(--t-line-height-ui);
   color: var(--t-text-muted);
 }
-.constitution p.cited-by { text-align: start; }
-.constitution .cites + .cites { margin-inline-start: var(--t-space-4); }
-.constitution .cites-button {
-  display: inline-flex;
+.constitution p.cited-by { text-align: start; text-indent: 0; }
+.constitution .cites {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--t-space-1);
+  column-gap: var(--t-space-1);
+}
+.constitution .cites-more { display: none; }
+.constitution .cites.open .cites-more { display: contents; }
+.constitution .cites-rule,
+.constitution .cites-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
   min-block-size: var(--t-target);
-  font: inherit;
   color: inherit;
+  border-radius: var(--t-radius-sm);
+}
+/* Not underlined as the links in the text are, nor dimmed under the
+   pointer as the theme dims every link. */
+.constitution .cites a.cites-rule[href] { text-decoration: none; opacity: 1; }
+.constitution .cites-box {
+  padding: 0 var(--t-space-2);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-full);
+  font-size: var(--t-text-xs);
+  line-height: var(--t-line-height-ui);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition-property: color, background-color, border-color;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
+}
+.constitution .cites-button {
+  gap: var(--t-space-1);
+  font: inherit;
   text-align: start;
   background: none;
   border: 0;
-  border-radius: var(--t-radius-sm);
   padding: 0 var(--t-space-1);
-  margin-inline-start: calc(-1 * var(--t-space-1));
   cursor: pointer;
   transition-property: color, background-color;
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
+  .constitution .cites-rule:hover .cites-box {
+    color: var(--t-accent);
+    background-color: var(--t-bg-hover);
+    border-color: var(--t-border-strong);
+  }
   .constitution .cites-button:hover { color: var(--t-text); background-color: var(--t-bg-hover); }
 }
-.constitution .cites.open .cites-button { color: var(--t-text); }
+/* A button alone on its row keeps its text in line with the text above. */
+.constitution .cites:not(.open) > .cites-more:first-child + .cites-button {
+  margin-inline-start: calc(-1 * var(--t-space-1));
+}
+.constitution .cites-rule:active .cites-box,
 .constitution .cites-button:active { background-color: var(--t-bg-active); }
-.constitution .cites-box {
-  padding: 0 var(--t-space-1);
-  border: 1px solid var(--t-border-subtle);
-  border-radius: var(--t-radius-sm);
-  font-size: var(--t-text-xs);
-  line-height: var(--t-line-height-ui);
-  font-variant-numeric: tabular-nums;
-}
-.constitution .cites-toggle { display: inline-flex; }
-.constitution .cites-toggle .icon:last-child,
-.constitution .cites.open .cites-toggle .icon:first-child { display: none; }
-.constitution .cites.open .cites-toggle .icon:last-child { display: block; }
-.constitution .cites-list { display: none; margin: .3em 0 .2em; }
-.constitution .cites.open .cites-list { display: block; }
-.constitution .cites-item { display: block; }
-.constitution .cites-label {
-  display: inline-block;
-  min-width: 2.6em;
-  margin-inline-end: var(--t-space-2);
-  color: var(--t-text-muted);
-  font-variant-numeric: tabular-nums;
-}
+.constitution .cites.open .cites-button { color: var(--t-text); }
+.constitution .cites-button .icon:nth-child(2),
+.constitution .cites.open .cites-button .icon:first-child { display: none; }
+.constitution .cites.open .cites-button .icon:nth-child(2) { display: block; }
 
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text

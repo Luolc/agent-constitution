@@ -209,10 +209,15 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual([r["id"] for r in cited["one-a"]], [3])
     self.assertNotIn(3, [r["id"] for r in cited["one"]])
 
-  def test_cited_within_an_article(self):
-    """An article counts the rules that cite it or a provision under it."""
+  def test_cited_within_a_provision(self):
+    """A provision with one under it counts the rules citing either.
+
+    The article, and its section with the item rule 6 cites; not the
+    item, with nothing under it.
+    """
     within = self.data["zh"]["citedWithin"]
-    self.assertEqual(list(within), ["one"])
+    self.assertEqual(list(within), ["one", "one-a"])
+    self.assertEqual([r["id"] for r in within["one-a"]], [3, 6])
     self.assertEqual(
       within["one"],
       [

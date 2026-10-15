@@ -273,7 +273,7 @@ class SiteTest(unittest.TestCase):
         self.assertIn(robots, raw[edition])
         self.assertNotIn(robots, raw[home])
     self.assertIn(
-      '<a href="../../rules/3/"><span class="cites-label">R3</span>',
+      '<a class="cites-rule" href="../../rules/3/"',
       raw["editions/2026-10/index.html"],
     )
     self.assertNotIn("editions/index.html", raw)
@@ -867,44 +867,71 @@ class SiteTest(unittest.TestCase):
         self.assertIn(f'href="{href}" class="menu-group{mark}"', raw[page])
 
   def test_rules_under_provisions(self):
-    """Under each provision, the rules not superseded that cite it, folded.
+    """Under each provision, the rules not superseded that cite it, one row.
 
     Rule 3 names `one` and `one-a`, under it, so it is under `one-a`
-    alone; the article also counts the rules that cite a provision under
-    it, which the section, with nothing under it cited, does not.
+    alone; rule 6 names an item under `one-a`. The article's row and the
+    section's show the rules that name them, then a button that shows
+    those that name only a provision under them, hidden at first, in the
+    same row.
     """
     raw = self.build(raw=True)
     pages = {p: visible(t) for p, t in raw.items()}
     self.assertIn(
-      "Article One * R5 R5 Rule 5 3 rules cite this article or a provision"
-      " under it R3 Rule 3 R5 Rule 5 R6 Rule 6 One two three. §1 Section. R3"
-      " R3 Rule 3 On this page",
+      "Article One * R5 R3 R6 +2 citing provisions under it One two three."
+      " §1 Section. R3 R6 +1 citing a provision under it On this page",
       pages["index.html"],
     )
     page = raw["index.html"]
     self.assertIn(
-      '<button type="button" class="cites-button" aria-expanded="false"'
-      ' aria-controls="cites-one-a" aria-label="Rules citing this provision:'
-      ' 1" title="Rules citing this provision: 1"><span class="cites-box">R3'
-      '</span><span class="cites-toggle"><svg class="icon" aria-hidden="true"'
-      ' focusable="false"',
+      '<span class="cites" role="group" aria-label="Rules citing this'
+      ' provision"><a class="cites-rule" href="./rules/3/" aria-label="R3'
+      ' Rule 3"><span class="cites-box">R3</span></a><span'
+      ' class="cites-more" id="cites-one-a"><a class="cites-rule"'
+      ' href="./rules/6/" aria-label="R6 Rule 6"><span'
+      ' class="cites-box">R6</span></a></span><button type="button"'
+      ' class="cites-button" aria-expanded="false"'
+      ' aria-controls="cites-one-a"><svg class="icon"',
       page,
     )
     self.assertRegex(
       page,
-      r'<span class="cites-toggle">(<svg class="icon" [^>]*>(?:<[^s/][^>]*>)+'
-      r"</svg>){2}</span></button>"
-      r'<span class="cites-list" id="cites-one-a" role="list">',
+      r'aria-controls="cites-one-a">(<svg class="icon" [^>]*>'
+      r"(?:<[^s/][^>]*>)+</svg>){2}<span>\+1 citing a provision under it"
+      r"</span></button></span>",
+    )
+    self.assertEqual(page.count('class="cites-button"'), 2)
+    self.assertIn(
+      "第一条 R5 R3 R6 另有 2 条引用下级条款", pages["zh/index.html"]
+    )
+    self.assertNotIn('class="cites"', raw["agent/index.html"])
+
+  def test_rules_only_under_a_provision(self):
+    """With no rule naming the article, its row is the button alone."""
+
+    def edit(root):
+      rule = root / "rules/5.toml"
+      text = rule.read_text(encoding="utf-8")
+      rule.write_text(
+        text.replace('authority = ["one"]', 'authority = ["one-a"]'),
+        encoding="utf-8",
+      )
+
+    raw = self.build(raw=True, edit_rules=edit)
+    self.assertIn(
+      '<p class="cited-by"><span class="cites" role="group"'
+      ' aria-label="Rules citing this provision"><span class="cites-more"'
+      ' id="cites-one">',
+      raw["index.html"],
     )
     self.assertIn(
-      '<a href="./rules/3/"><span class="cites-label">R3</span>Rule 3</a>', page
+      "Article One * R3 R5 R6 3 rules cite provisions under it One two"
+      " three. §1 Section. R3 R5 R6 +1 citing a provision under it",
+      visible(raw["index.html"]),
     )
-    self.assertEqual(page.count('aria-controls="cites-within-'), 1)
-    self.assertIn('id="cites-within-one"', page)
-    self.assertNotIn('id="cites-within-one-a"', page)
-    self.assertIn("本条及其下各款、项共被 3 条规定引用", pages["zh/index.html"])
-    self.assertNotIn('class="cites"', raw["agent/index.html"])
-    self.assertIn('class="cites"', raw["zh/index.html"])
+    self.assertIn(
+      "R3 R5 R6 3 条规定引用下级条款", visible(raw["zh/index.html"])
+    )
 
   def test_a_code_span_in_a_title_is_escaped_once(self):
     """A title's code span with `<` shows as code, its text escaped once.
@@ -927,15 +954,10 @@ class SiteTest(unittest.TestCase):
 
     raw = self.build(raw=True, edit_rules=edit)
     shown = "Rule <code>&lt;x&gt;/&lt;y&gt;</code> 3"
-    self.assertEqual(
-      raw["index.html"].count(
-        f'<span class="cites-label">R3</span>{shown}</a>'
-      ),
-      2,
-    )
+    escaped = "Rule &lt;x&gt;/&lt;y&gt; 3"
+    self.assertEqual(raw["index.html"].count(f'aria-label="R3 {escaped}"'), 2)
     self.assertIn(f'<a href="../3/">R3 {shown}</a>', raw["rules/5/index.html"])
     page = raw["rules/3/index.html"]
-    escaped = "Rule &lt;x&gt;/&lt;y&gt; 3"
     self.assertIn(f"<title>{escaped}", page)
     self.assertIn(f'<meta property="og:title" content="{escaped}">', page)
     self.assertIn(f'<meta itemprop="name" content="{escaped}">', page)
