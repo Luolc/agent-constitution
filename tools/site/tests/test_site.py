@@ -150,6 +150,10 @@ class SiteTest(unittest.TestCase):
       )
       (root / "web/themes").mkdir()
       (root / "web/themes/hugo-book").symlink_to(ROOT / "web/themes/hugo-book")
+      (root / "crates/statute").mkdir(parents=True)
+      (root / "crates/statute/assets").symlink_to(
+        ROOT / "crates/statute/assets"
+      )
       sources = root / "constitution/2026-10"
       generated = sources / "generated"
       generated.mkdir(parents=True)
@@ -776,14 +780,15 @@ class SiteTest(unittest.TestCase):
       '<button type="button" class="cites-button" aria-expanded="false"'
       ' aria-controls="cites-one-a" aria-label="Rules citing this provision:'
       ' 1" title="Rules citing this provision: 1"><span class="cites-box">R3'
-      '</span><span class="cites-toggle" aria-hidden="true"><svg viewBox="0 0'
-      ' 16 16" width="1em" height="1em"><circle cx="8" cy="8" r="6.5"'
-      ' fill="none" stroke="currentColor" stroke-width="1"/><path d="M5 8h6"'
-      ' stroke="currentColor" stroke-width="1" stroke-linecap="round"/><path'
-      ' class="cites-bar" d="M8 5v6" stroke="currentColor" stroke-width="1"'
-      ' stroke-linecap="round"/></svg></span></button>'
-      '<span class="cites-list" id="cites-one-a" role="list">',
+      '</span><span class="cites-toggle"><svg class="icon" aria-hidden="true"'
+      ' focusable="false"',
       page,
+    )
+    self.assertRegex(
+      page,
+      r'<span class="cites-toggle">(<svg class="icon" [^>]*>(?:<[^s/][^>]*>)+'
+      r"</svg>){2}</span></button>"
+      r'<span class="cites-list" id="cites-one-a" role="list">',
     )
     self.assertIn(
       '<a href="rules/3/"><span class="cites-label">R3</span>Rule 3</a>', page
@@ -799,7 +804,8 @@ class SiteTest(unittest.TestCase):
     """A title's code span with `<` shows as code, its text escaped once.
 
     Rule 3 is under the article's heading and under the section's item on
-    the home page, and named on rule 5's page.
+    the home page, and named on rule 5's page; its own page's title, and
+    the title its link preview and its metadata give, are text.
     """
     title = "Rule `<x>/<y>` 3"
     parts = (site_fixture.STATEMENTS[3][0], "Why.", "Violated when not.")
@@ -822,9 +828,11 @@ class SiteTest(unittest.TestCase):
       2,
     )
     self.assertIn(f'<a href="../3/">R3 {shown}</a>', raw["rules/5/index.html"])
-    self.assertIn(
-      "<title>Rule &lt;x&gt;/&lt;y&gt; 3", raw["rules/3/index.html"]
-    )
+    page = raw["rules/3/index.html"]
+    escaped = "Rule &lt;x&gt;/&lt;y&gt; 3"
+    self.assertIn(f"<title>{escaped}", page)
+    self.assertIn(f'<meta property="og:title" content="{escaped}">', page)
+    self.assertIn(f'<meta itemprop="name" content="{escaped}">', page)
     for path in ("index.html", "rules/5/index.html", "rules/3/index.html"):
       with self.subTest(path=path):
         self.assertNotIn("&amp;lt;", raw[path])

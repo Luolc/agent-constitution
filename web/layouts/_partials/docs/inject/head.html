@@ -13,6 +13,11 @@
 <script>{{ .Content | safeJS }}</script>
 {{- end }}
 {{- end }}
+{{- /* The check of a check box (assets/styles/controls.css): Lucide's
+  `check` as a mask, drawn at the stroke of every icon, `icon-stroke`. */}}
+{{- with resources.Get "icons/lucide/check.svg" }}
+<style>:root { --icon-lucide-check: url("data:image/svg+xml;base64,{{ replace .Content `stroke-width="2"` `stroke-width="1.75"` | base64Encode }}"); }</style>
+{{- end }}
 {{- /* Without scripts, the lists of the rules under the provisions
   are open, since nothing could open them (assets/cites.js). */}}
 <noscript><style>.cites-list { display: block; } .cites-toggle { display: none; }</style></noscript>

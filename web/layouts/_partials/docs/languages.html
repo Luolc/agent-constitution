@@ -1,0 +1,37 @@
+{{- /* hugo-book's language switch, its icons Lucide's
+  (layouts/_partials/icon.html): `languages` before the language's name
+  and `chevron-right` at the end, turned a quarter while the list of
+  languages is open. */ -}}
+{{ $bookTranslatedOnly := default false .Site.Params.BookTranslatedOnly }}
+{{ $translations := dict }}
+{{ if (eq $bookTranslatedOnly false ) }}
+  {{ range .Site.Home.Translations }}
+    {{ $translations = merge $translations (dict .Language.Name .) }}
+  {{ end }}
+{{ end }}
+{{ range .Translations }}
+  {{ $translations = merge $translations (dict .Language.Name .) }}
+{{ end }}
+
+<ul class="book-languages">
+  <li>
+    <input type="checkbox" id="languages" class="toggle" />
+    <label for="languages" class="flex">
+      <a role="button">
+        {{- partial "icon.html" "lucide:languages" }}
+        {{ $.Site.Language.Label -}}
+      </a>
+      {{- partial "icon.html" "lucide:chevron-right" }}
+    </label>
+
+    <ul>
+      {{ range hugo.Sites }}{{ with index $translations .Language.Name }}
+      <li>
+        <a href="{{ cond hugo.IsMultihost .Permalink .RelPermalink }}" class="flex flex-auto">
+          {{ .Language.Label }}
+        </a>
+      </li>
+      {{ end }}{{ end }}
+    </ul>
+  </li>
+</ul>

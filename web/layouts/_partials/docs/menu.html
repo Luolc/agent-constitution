@@ -1,13 +1,11 @@
 {{- /* hugo-book's sidebar, with a link to the source repository between
-  the site's title and the language switch, and the color theme's button
-  on the language switch's row. The icons are Octicons (MIT license), in
-  assets/icons: GitHub's mark, github.svg, and sun.svg, moon.svg and
-  device-desktop.svg for the color themes. */ -}}
+  the site's title and the language switch, its icon GitHub's mark, and
+  the color theme's button on the language switch's row. */ -}}
 <nav>
 {{ partial "docs/brand" . }}
 {{ with .Site.Params.SourceRepo }}
 <a class="source-link" href="{{ . }}" target="_blank" rel="noopener">
-  <svg class="book-icon" aria-hidden="true">{{ partial "docs/icon" "github" }}</svg>
+  {{- partial "icon.html" "octicons:mark-github" }}
   {{- i18n "source-link" -}}
 </a>
 {{ end }}

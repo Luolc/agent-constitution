@@ -1,0 +1,91 @@
+/* The list of the rules (layouts/rules/section.html) and the tags of a
+   rule, in the list and on its page. The list, dense: under a domain's or
+   one-of's heading, smaller than the design's and close to its rules, its
+   label muted, each rule one line linked as a whole, its ID in a narrow
+   column at the left in the muted color, its title cut to the line, then
+   its tags; a rule under another rule indented by its depth below its
+   domain. Below the list, the links to its pages, the current page
+   bold. */
+.rules .rules-intro { color: var(--t-text-muted); }
+.rules .rules-params { margin-top: -.5em; }
+.rules .rules-group { margin: 1.2em 0 .2em; font-size: 1.05em; }
+.rules :is(h3, h4).rules-group { margin-top: .8em; font-size: var(--t-text-md); }
+.rules .rules-group > a { display: inline-block; min-block-size: var(--t-target); }
+.rules .rules-group .group-label { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
+.rules .rules-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .3em 1em;
+  margin-top: 1.5em;
+  font-variant-numeric: tabular-nums;
+}
+.rules .rules-pager a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: auto;
+  min-inline-size: var(--t-target);
+  min-block-size: var(--t-target);
+  text-decoration: none;
+}
+.rules .rules-pager a[aria-current] { font-weight: var(--t-weight-bold); color: var(--t-text); }
+.rules .rules-none { color: var(--t-text-muted); }
+
+/* A rule's tags, small and muted, in boxes: its status; whether the
+   defaults enable it and whether the rule set does, in the accent color
+   when they do; the quadrant of its source on the quadrant's color. */
+.rules :is(.rule-status, .rule-enabled, .rule-default, .quadrant) {
+  flex: none;
+  color: var(--t-text-muted);
+  font-size: var(--t-text-xs);
+  line-height: var(--t-line-height-ui);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-sm);
+  padding: 0 .3em;
+  white-space: nowrap;
+}
+.rules .rule-enabled:not(.off) { color: var(--t-accent); }
+.rules .rule-default:not(.off) { color: var(--t-accent); }
+.rules .rules-group .rule-default { margin-inline-start: .5em; font-size: .6em; vertical-align: middle; }
+.rules .quadrant { color: var(--t-text); border-color: transparent; background: var(--q); }
+.rules .quadrant-global-public { --q: var(--t-quadrant-global-public); }
+.rules .quadrant-global-private { --q: var(--t-quadrant-global-private); }
+.rules .quadrant-local-public { --q: var(--t-quadrant-local-public); }
+.rules .quadrant-local-private { --q: var(--t-quadrant-local-private); }
+.rules .rules-group .quadrant { font-size: .8em; }
+.rules .rule-tags { display: flex; flex-wrap: wrap; gap: var(--t-space-2); margin: -.5em 0 1em; }
+
+/* The rows of the list, and a one-of as a box around its options. */
+.rules a.rule-entry[href] {
+  display: flex;
+  gap: .5em;
+  align-items: baseline;
+  margin: 0 0 0 calc(var(--indent, 0) * 1.6em);
+  line-height: 1.6;
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .rules a.rule-entry[href]:hover .rule-title { color: var(--t-accent); }
+}
+.rules .one-of {
+  margin: .3em 0 .3em calc(var(--indent, 0) * 1.6em);
+  padding: .1em .6em;
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-sm);
+}
+.rules .one-of-options { list-style: none; margin: 0; padding: 0 0 0 1.2em; }
+.rules .rule-id {
+  flex: none;
+  min-width: 2.6em;
+  text-align: end;
+  color: var(--t-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.rules .rule-title {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

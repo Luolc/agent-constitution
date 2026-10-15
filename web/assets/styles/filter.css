@@ -1,0 +1,59 @@
+/* The form above the list of the rules
+   (layouts/_partials/rules/filter.html), in the muted color: the filter,
+   a button that folds open a panel of checkboxes over the list, and the
+   page size. Their controls' common look is controls.css's. */
+.rules .rules-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .5em 1.5em;
+  color: var(--t-text-muted);
+  font-size: var(--t-text-sm);
+}
+.rules .rules-filter { position: relative; margin: 0; padding: 0; border: 0; background: none; }
+.rules .rules-filter summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-space-1);
+  min-block-size: var(--t-target);
+  margin: 0;
+  line-height: inherit;
+  padding: 0 .5em;
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-sm);
+  color: var(--t-text);
+}
+.rules .rules-filter-panel {
+  position: absolute;
+  z-index: 2;
+  top: 100%;
+  left: 0;
+  margin-top: .4em;
+  padding: .6em 1em .8em;
+  min-width: 16em;
+  color: var(--t-text);
+  background: var(--t-bg-panel);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-md);
+  box-shadow: var(--t-shadow-popover);
+}
+.rules .rules-filter fieldset { border: 0; margin: 0 0 .6em; padding: 0; }
+.rules .rules-filter legend { color: var(--t-text-muted); padding: 0; margin-bottom: .2em; }
+.rules .rules-filter label {
+  display: block;
+  margin-inline-start: calc(var(--indent, 0) * 1.2em);
+  white-space: nowrap;
+}
+.rules .rules-filter button {
+  font: inherit;
+  color: var(--t-text-on-accent);
+  background: var(--t-accent);
+  border: 0;
+  border-radius: var(--t-radius-sm);
+  padding: .15em .9em;
+  cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  .rules .rules-filter button:hover { background: var(--t-accent-hover); }
+}
+.rules .rules-size .select { margin-inline-start: .3em; }
