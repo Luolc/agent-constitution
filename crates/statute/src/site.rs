@@ -7,9 +7,10 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::cite::{self, Citation, Labels};
-use crate::compile::{labels, pick};
+use crate::compile::{filled, labels, pick};
 use crate::manifest::Key;
-use crate::node::{self, Kind, Node, Status};
+use crate::node::{self, Kind, Node, Status, Switch};
+use crate::param::{self, Origin, Scope, Type};
 use crate::private;
 use crate::project::Project;
 use crate::source::Source;
@@ -99,6 +100,22 @@ struct Words {
     /// A one-of and a domain; a status is shown as the rule file
     /// writes it.
     kinds: [&'static str; 2],
+    on_by_default: &'static str,
+    off_by_default: &'static str,
+    /// The option a one-of enables when the rule set picks none.
+    default_option: &'static str,
+    uses: &'static str,
+    /// Where a rule goes: `AGENTS.md`, and review.
+    use_names: [&'static str; 2],
+    /// The filters by `uses`.
+    show_uses: [&'static str; 2],
+    parameters: &'static str,
+    /// The columns of the page of parameters.
+    param_columns: [&'static str; 5],
+    origins: [&'static str; 4],
+    /// Before the committed value, when the person's own differs.
+    committed: &'static str,
+    unused: &'static str,
 }
 
 fn words(lang: &str) -> Words {
@@ -123,6 +140,17 @@ fn words(lang: &str) -> Words {
             children: "下级",
             index: "全部规定",
             kinds: ["one-of", "领域"],
+            on_by_default: "默认开启",
+            off_by_default: "默认关闭",
+            default_option: "默认选项",
+            uses: "用在",
+            use_names: ["AGENTS.md", "审查"],
+            show_uses: ["显示写进 AGENTS.md 的", "显示列给审查的"],
+            parameters: "参数",
+            param_columns: ["参数", "类型与范围", "默认值", "取值", "用到它的规定"],
+            origins: ["statute.toml", "默认值", "私有规定清单", "全局配置"],
+            committed: "AGENTS.md 里是 ",
+            unused: "没有启用的规定用到它",
         },
         _ => Words {
             title: "Rules of this repository",
@@ -149,6 +177,22 @@ fn words(lang: &str) -> Words {
             children: "Below it",
             index: "All rules",
             kinds: ["one-of", "domain"],
+            on_by_default: "on by default",
+            off_by_default: "off by default",
+            default_option: "default option",
+            uses: "Used in",
+            use_names: ["AGENTS.md", "review"],
+            show_uses: ["Show rules for AGENTS.md", "Show rules for review"],
+            parameters: "Parameters",
+            param_columns: ["Parameter", "Type and scope", "Default", "Value", "Used by"],
+            origins: [
+                "statute.toml",
+                "the default",
+                "the private rule set",
+                "the global configuration",
+            ],
+            committed: "AGENTS.md has ",
+            unused: "no enabled rule uses it",
         },
     }
 }
@@ -162,7 +206,11 @@ section{border-top:1px solid #ddd;margin-top:1.5rem}\
 .q{font-size:.8em;margin-left:.4em;padding:0 .4em;border-radius:3px;white-space:nowrap}\
 .q.global-public{background:#dbeafe;color:#1e3a8a}.q.global-private{background:#fde7c8;color:#7c2d12}\
 .q.local-public{background:#dcfce7;color:#14532d}.q.local-private{background:#f3e3f9;color:#581c87}\
-body:has(#show-old:not(:checked)) .old,body:has(#show-off:not(:checked)) .off{display:none}";
+.value{border-bottom:1px dotted #080;color:#080;text-decoration:none}\
+table{border-collapse:collapse}td,th{border-top:1px solid #ddd;padding:.2em .6em;text-align:left;vertical-align:top}\
+body:has(#show-old:not(:checked)) .old,body:has(#show-off:not(:checked)) .off{display:none}\
+body:has(#show-instructions:not(:checked)) .u-i,body:has(#show-review:not(:checked)) .u-r,\
+body:has(#show-instructions:not(:checked)):has(#show-review:not(:checked)) .u-ir{display:none}";
 
 /// One page of the site: its path below the site's directory, and its
 /// HTML.
@@ -189,7 +237,109 @@ pub fn pages(project: &Project) -> Result<Vec<Page>, String> {
             html: node_page(project, &w, &labels, &key, node)?,
         });
     }
+    for source in project.sources.iter().filter(|s| !s.params.is_empty()) {
+        pages.push(Page {
+            path: params_page(&source.name),
+            html: parameters(project, &w, source),
+        });
+    }
     Ok(pages)
+}
+
+/// The page of a source's parameters, relative to the site's directory.
+fn params_page(source: &str) -> PathBuf {
+    Path::new(source).join("parameters.html")
+}
+
+/// The page of a source's parameters: each one's title, name, type,
+/// scope, default and values, the value this rule set gives it and where
+/// that comes from, and the enabled rules that use it
+/// (`docs/design/rule-config.md`, Values in the lock file and the
+/// outputs).
+fn parameters(project: &Project, w: &Words, source: &Source) -> String {
+    let lang = project.manifest.lang.as_str();
+    let title = format!("{} · {}", w.parameters, source.name);
+    let mut out = head(&title, lang);
+    let _ = writeln!(
+        out,
+        "<nav><a href=\"../index.html\">{}</a></nav>\n<h1>{}</h1>\n<table>\n<tr>{}</tr>",
+        w.index,
+        escape(&title),
+        w.param_columns
+            .iter()
+            .map(|c| format!("<th>{c}</th>"))
+            .collect::<String>()
+    );
+    for p in &source.params {
+        let title = p
+            .title
+            .get(lang)
+            .or_else(|| p.title.values().next())
+            .map_or("", String::as_str);
+        let scope = match p.scope {
+            Scope::Repo => "repo",
+            Scope::Personal => "personal",
+        };
+        let mut kind = p.kind.name().to_owned();
+        if let Type::Choice(values) = &p.kind {
+            let _ = write!(
+                kind,
+                ": {}",
+                values
+                    .iter()
+                    .map(|v| code(&escape(&format!("`{v}`"))))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
+        }
+        // The setting is this source's when a rule of the rule set uses
+        // the parameter of this source.
+        let setting = project
+            .values
+            .get(&p.name)
+            .filter(|s| s.source == source.name);
+        let (value, rules) = match setting {
+            Some(s) => {
+                let mut value = format!(
+                    "<code>{}</code> ({})",
+                    escape(s.private_value()),
+                    origin(w, s.personal.as_ref().map_or(s.from, |(_, o)| *o))
+                );
+                if s.personal.is_some() && s.private_value() != s.value {
+                    let _ = write!(
+                        value,
+                        "; {}<code>{}</code> ({})",
+                        w.committed,
+                        escape(&s.value),
+                        origin(w, s.from)
+                    );
+                }
+                let rules: Vec<String> = s.rules.iter().map(|k| link(project, k, "../")).collect();
+                (value, rules.join(", "))
+            }
+            None => (String::new(), w.unused.to_owned()),
+        };
+        let _ = writeln!(
+            out,
+            "<tr id=\"{name}\"><td>{}<br><code>{name}</code></td><td>{} · {scope}</td><td><code>{}</code></td><td>{value}</td><td>{rules}</td></tr>",
+            escape(title),
+            kind,
+            escape(&p.default),
+            name = escape(&p.name),
+        );
+    }
+    out.push_str("</table>\n</body>\n</html>\n");
+    out
+}
+
+fn origin(w: &Words, from: Origin) -> &'static str {
+    let [rule_set, default, private, global] = w.origins;
+    match from {
+        Origin::RuleSet => rule_set,
+        Origin::Default => default,
+        Origin::Private => private,
+        Origin::Global => global,
+    }
 }
 
 /// The page of a node, relative to the site's directory.
@@ -218,8 +368,13 @@ fn index(project: &Project, w: &Words) -> String {
     }
     let _ = writeln!(
         out,
-        "<label><input type=\"checkbox\" id=\"show-off\" checked> {}</label>\n<label><input type=\"checkbox\" id=\"show-old\"> {}</label>\n</nav>",
+        "<label><input type=\"checkbox\" id=\"show-off\" checked> {}</label>\n<label><input type=\"checkbox\" id=\"show-old\"> {}</label>",
         w.show_off, w.show_old
+    );
+    let _ = writeln!(
+        out,
+        "<label><input type=\"checkbox\" id=\"show-instructions\" checked> {}</label>\n<label><input type=\"checkbox\" id=\"show-review\" checked> {}</label>\n</nav>",
+        w.show_uses[0], w.show_uses[1]
     );
     // The filters by quadrant, which the style sheet cannot list.
     out.push_str("<style>");
@@ -271,9 +426,18 @@ fn index(project: &Project, w: &Words) -> String {
                 Some(spec) => spec.place(),
                 None => source.path.clone(),
             };
+            let params = if source.params.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    " <a class=\"tag\" href=\"{}\">{}</a>",
+                    params_page(&source.name).display(),
+                    w.parameters
+                )
+            };
             let _ = writeln!(
                 out,
-                "<h3 id=\"source-{0}\">{0} <span class=\"tag\">{1}</span></h3>\n<ul class=\"tree\">",
+                "<h3 id=\"source-{0}\">{0} <span class=\"tag\">{1}</span>{params}</h3>\n<ul class=\"tree\">",
                 escape(&source.name),
                 escape(&place)
             );
@@ -301,6 +465,13 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
     if node.kind == Kind::Rule && !project.resolution.enabled.contains_key(&key) {
         class.push("off");
     }
+    if let Some(rule) = &node.rule {
+        class.push(match (rule.uses.instructions, rule.uses.review) {
+            (true, true) => "u-ir",
+            (false, true) => "u-r",
+            _ => "u-i",
+        });
+    }
     let class = match class.as_slice() {
         [] => String::new(),
         c => format!(" class=\"{}\"", c.join(" ")),
@@ -322,15 +493,19 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
 /// A link to a node's page from a page `up` below the site's directory
 /// (`""` or `"../"`): its reference and title.
 fn link(project: &Project, key: &Key, up: &str) -> String {
-    let title = project
-        .sources
-        .get(key)
-        .map_or("", |n| pick(&n.title, n, &project.manifest.lang));
+    let title = project.sources.get(key).map_or(String::new(), |n| {
+        filled(
+            project,
+            key,
+            pick(&n.title, n, &project.manifest.lang),
+            true,
+        )
+    });
     format!(
         "<a href=\"{up}{}\"><span class=\"ref\">{}</span>{}</a>",
         page(key).display(),
         escape(&key.to_string()),
-        escape(title)
+        escape(&title)
     )
 }
 
@@ -357,6 +532,9 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> Strin
         let _ = write!(out, "<span class=\"tag\">{}</span>", kind(w, node.kind));
     }
     let _ = write!(out, "<span class=\"tag\">{}</span>", status(node.status));
+    if let Some(switch) = switch(project, w, key, node) {
+        let _ = write!(out, "<span class=\"tag\">{switch}</span>");
+    }
     if node.kind == Kind::Rule {
         let res = &project.resolution;
         let what = match res.overridden.get(key) {
@@ -368,6 +546,22 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> Strin
         let _ = write!(out, "<span class=\"{class}\">{what}</span>");
     }
     out
+}
+
+/// Whether a domain or a rule is on by default, by its own `default`
+/// (`docs/design/rule-config.md`, Default switches), or for an option of
+/// a one-of whether it is the one-of's default.
+fn switch(project: &Project, w: &Words, key: &Key, node: &Node) -> Option<&'static str> {
+    match node.default {
+        Some(Switch::On) => Some(w.on_by_default),
+        Some(Switch::Off) => Some(w.off_by_default),
+        None => {
+            let parent = project.sources.parent(key)?;
+            let one_of = project.sources.get(&parent)?;
+            (one_of.kind == Kind::OneOf && one_of.default_child == Some(node.id))
+                .then_some(w.default_option)
+        }
+    }
 }
 
 fn kind(w: &Words, kind: Kind) -> &'static str {
@@ -396,7 +590,8 @@ fn node_page(
     node: &Node,
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
-    let title = pick(&node.title, node, lang);
+    let title = filled(project, key, pick(&node.title, node, lang), true);
+    let title = title.as_str();
     let mut out = head(&format!("{key} {title}"), lang);
     let sources = &project.sources;
     // The path from the top of the tree down to the node.
@@ -429,6 +624,14 @@ fn node_page(
         );
     }
     out.push_str("</p>\n");
+    if let Some(rule) = &node.rule {
+        let uses: Vec<&str> = [rule.uses.instructions, rule.uses.review]
+            .into_iter()
+            .zip(w.use_names)
+            .filter_map(|(on, name)| on.then_some(name))
+            .collect();
+        let _ = writeln!(out, "<p>{}: {}</p>", w.uses, uses.join(", "));
+    }
     let text = |part: &str, text: &str| text_html(project, labels, key, part, text);
     if let Some(applicability) = &node.applicability {
         out.push_str(&text("applicability", pick(applicability, node, lang))?);
@@ -476,9 +679,26 @@ fn text_html(
     text: &str,
 ) -> Result<String, String> {
     let fail = |what: String| Err(format!("{}: {part}: {what}", project.sources.file(key)));
-    // Escaping leaves the citations as they are: they hold no character
-    // HTML treats specially.
-    let text = cite::replace(&escape(text), |c| match c {
+    // Escaping leaves the citations and the placeholders as they are:
+    // they hold no character HTML treats specially. A placeholder shows
+    // the value, marked, with the parameter's name on hover, linked to
+    // its entry on the page of parameters.
+    let text = param::fill(&escape(text), |name| {
+        let lang = project.manifest.lang.as_str();
+        let (source, shown) = match project.values.get(name) {
+            Some(s) => (s.source.clone(), s.param.shown(s.private_value(), lang)),
+            None => match project.sources.param(&key.source, name) {
+                Ok((source, p)) => (source.to_owned(), p.shown(&p.default, lang)),
+                Err(_) => return format!("{{${name}}}"),
+            },
+        };
+        format!(
+            "<a class=\"value\" href=\"../{}#{name}\" title=\"{name}\">{}</a>",
+            params_page(&source).display(),
+            escape(&shown)
+        )
+    });
+    let text = cite::replace(&text, |c| match c {
         Citation::Rule(text) => match node::cited_ref(text).map(|r| r.key(&key.source)) {
             Some(cited) if project.sources.get(&cited).is_some() => {
                 Ok(link(project, &cited, "../"))

@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, one_of, option, param, rule, set_default};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -413,4 +413,90 @@ fn site_outside_a_git_repository_writes_the_pages() {
     let r = statute_with(&dir, &["site"], &[("GIT_CEILING_DIRECTORIES", &ceiling)]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     assert!(dir.join(".statute/site/index.html").is_file());
+}
+
+/// The marks of `rule-config.md`: default switches, a one-of's default
+/// option, `uses` and the values of parameters.
+#[test]
+fn site_marks_defaults_uses_and_values() {
+    let dir = repo("marks", "r/");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R7\"]\n\n[language]\ndocs = \"zh\"\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    write(
+        &dir,
+        "r/rules/params.toml",
+        &param("language.docs", "type = \"language\"", "repo", "en"),
+    );
+    put(&dir, "r/rules", set_default(domain(1), "\"on\""));
+    put(&dir, "r/rules", set_default(rule(2, 1, ""), "\"on\""));
+    put(&dir, "r/rules", rule(3, 1, "uses = [\"review\"]"));
+    put(&dir, "r/rules", one_of(4, 1, 5));
+    put(&dir, "r/rules", option(5, 4, ""));
+    put(&dir, "r/rules", option(6, 4, ""));
+    put(
+        &dir,
+        "r/rules",
+        edit(
+            rule(7, 1, ""),
+            "Do the thing 7.",
+            "Write in {$language.docs}.",
+        ),
+    );
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    let site = dir.join(".statute/site");
+    let index = read(&site, "index.html");
+    let item = |id: u64| {
+        let start = index
+            .find(&format!("<a href=\"R/{id}.html\">"))
+            .unwrap_or_else(|| panic!("R{id}: {index}"));
+        let end = index[start..]
+            .find("</li>")
+            .map_or(index.len(), |e| start + e);
+        &index[start..end]
+    };
+    assert!(
+        item(2).contains("<span class=\"tag\">on by default</span>"),
+        "{}",
+        item(2)
+    );
+    assert!(
+        item(3).contains("<span class=\"tag\">off by default</span>"),
+        "{}",
+        item(3)
+    );
+    assert!(
+        item(5).contains("<span class=\"tag\">default option</span>"),
+        "{}",
+        item(5)
+    );
+    assert!(!item(6).contains("default"), "{}", item(6));
+    // A rule only for review is hidden with its filter.
+    assert!(
+        index.contains("<li class=\"off u-r\"><a href=\"R/3.html\">"),
+        "{index}"
+    );
+    assert!(index.contains("<input type=\"checkbox\" id=\"show-review\" checked>"));
+    assert!(index.contains(" <a class=\"tag\" href=\"R/parameters.html\">Parameters</a>"));
+    assert!(read(&site, "R/3.html").contains("<p>Used in: review</p>"));
+    assert!(read(&site, "R/2.html").contains("<p>Used in: AGENTS.md</p>"));
+    assert!(
+        read(&site, "R/7.html").contains(
+            "<p>Write in <a class=\"value\" href=\"../R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"
+        ),
+        "{}",
+        read(&site, "R/7.html")
+    );
+    let params = read(&site, "R/parameters.html");
+    assert!(
+        params.contains(
+            "<tr id=\"language.docs\"><td>The language.docs<br><code>language.docs</code></td><td>language · repo</td><td><code>en</code></td><td><code>zh</code> (statute.toml)</td><td><a href=\"../R/7.html\">"
+        ),
+        "{params}"
+    );
 }
