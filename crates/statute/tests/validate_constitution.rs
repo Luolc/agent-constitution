@@ -291,6 +291,16 @@ fn authority_resolves() {
         &[],
         &["rules/10.toml:8: error: authority cites undefined alpha-one.cash"],
     );
+    // A namespace is the node format's error, reported once.
+    tree.edit(
+        "rules/10.toml",
+        "\"alpha-one.cash\"",
+        "\"constitution:alpha\"",
+    );
+    tree.assert_fails(
+        &[],
+        &["rules/10.toml: error: `authority` entry `constitution:alpha` must be a provision ID without a namespace, such as \"simplicity\" or \"must-ask.capital\""],
+    );
 }
 
 #[test]

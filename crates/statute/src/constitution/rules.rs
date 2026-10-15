@@ -164,7 +164,8 @@ impl<'a> Rules<'a> {
                 }
             }
             let authority = n.rule.as_ref().map_or(&[][..], |r| &r.authority[..]);
-            for a in authority {
+            // An entry with a namespace fails the node's own format check.
+            for a in authority.iter().filter(|a| !a.contains(':')) {
                 if let Some(found) = problem(a, a) {
                     diags.error(
                         self.at(id, &["authority ="]),
