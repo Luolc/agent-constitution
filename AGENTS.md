@@ -316,7 +316,8 @@ passed, `check` fails; rerun the workflow once that run has passed
 - A pull request that bumps the version is not a release; pushing the tag
   `statute-v<version>` is.
 - A patch release is allowed in advance: the lead may push the tag of a
-  patch version without asking, on a commit that meets the conditions for
+  version that bumps only the patch number of the last release without
+  asking, on a commit that meets the conditions for
   a release tag (`docs/design/amendments-and-releases.md`, Releases and
   versions), which the job `check` of `release.yml` checks again.
 - A minor or major release (0.2.0, 1.0.0) needs a person's yes, given at
