@@ -338,7 +338,7 @@ fn the_private_layer_overrides_no_public_rule() {
     fails_with(
         &run,
         &format!(
-            "{}: error: `me:5` overrides \"R2\", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `private.toml` may only add rules",
+            "{}: error: `me:5` overrides \"R2\", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), a rule `private.toml` enables overrides no rule of the public layer",
             common(&dir).join("private.toml").display()
         ),
     );
@@ -934,4 +934,162 @@ fn a_rule_of_a_local_private_source_is_listed_in_the_private_rule_set() {
         "{}",
         run.stderr
     );
+}
+
+/// `ignoring` with R1 and R6 on by default, so that the defaults enable
+/// R6, and the rule sets of `set_up`, R2 and L3 public and me:4 private.
+fn r6_on_by_default(name: &str) -> PathBuf {
+    let dir = ignoring(name);
+    write(&dir, "r/rules/1.toml", &set_default(domain(1), "\"on\"").1);
+    write(
+        &dir,
+        "r/rules/6.toml",
+        &set_default(rule(6, 1, ""), "\"on\"").1,
+    );
+    ok(&statute(&dir, &["init", "--public", "--source", "r"]));
+    ok(&statute(&dir, &["add", "R2"]));
+    ok(&statute(&dir, &["add", "3"]));
+    std::fs::create_dir_all(common(&dir)).unwrap();
+    write_private(&dir, &private(&dir));
+    ok(&statute(&dir, &["add", "--private", "me:4"]));
+    dir
+}
+
+#[test]
+fn exclude_in_the_private_rule_set_changes_the_private_output_alone() {
+    let dir = r6_on_by_default("private-exclude");
+    ok(&statute(&dir, &["compile"]));
+    let agents = read(&dir, "AGENTS.md");
+    let lock = read(&dir, "statute.lock");
+    assert!(agents.contains("\n- R6 "), "{agents}");
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
+
+    // Turned off in the private rule set: the private output alone
+    // changes.
+    let run = statute(&dir, &["remove", "--private", "R6"]);
+    ok(&run);
+    assert!(
+        run.stdout
+            .contains("added R6 to `exclude`, as the public layer enables it"),
+        "{}",
+        run.stdout
+    );
+    assert!(read_private(&dir, "private.toml").contains("exclude = [\"R6\"]"));
+    ok(&statute(&dir, &["compile"]));
+    assert_eq!(read(&dir, "AGENTS.md"), agents);
+    assert_eq!(read(&dir, "statute.lock"), lock);
+    let full = read(&dir, ".statute/AGENTS.full.md");
+    assert!(!full.contains("\n- R6 "), "{full}");
+    assert!(
+        full.contains("\n- me:4 ") && full.contains("\n- R2 "),
+        "{full}"
+    );
+    // The local site, of both layers, marks it as not enabled.
+    ok(&statute(&dir, &["site"]));
+    assert!(read(&dir, ".statute/site/R/6.html").contains("not enabled"));
+    assert!(!read(&dir, ".statute/site/R/2.html").contains("not enabled"));
+
+    // `add --private` takes it out of `exclude` again.
+    ok(&statute(&dir, &["add", "--private", "R6"]));
+    assert!(!read_private(&dir, "private.toml").contains("\"R6\""));
+    ok(&statute(&dir, &["compile"]));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
+
+    // The control: the same entry in statute.toml changes AGENTS.md.
+    ok(&statute(&dir, &["remove", "R6"]));
+    assert!(read(&dir, "statute.toml").contains("exclude = [\"R6\"]"));
+    ok(&statute(&dir, &["compile"]));
+    assert!(!read(&dir, "AGENTS.md").contains("\n- R6 "));
+    assert_ne!(read(&dir, "statute.lock"), lock);
+}
+
+#[test]
+fn the_private_rule_set_turns_on_what_statute_toml_excludes() {
+    let dir = r6_on_by_default("private-reopen");
+    ok(&statute(&dir, &["remove", "R6"]));
+    ok(&statute(&dir, &["compile"]));
+    let agents = read(&dir, "AGENTS.md");
+    assert!(!agents.contains("\n- R6 "), "{agents}");
+    let run = statute(&dir, &["add", "--private", "R6"]);
+    ok(&run);
+    assert!(read_private(&dir, "private.toml").contains("\"R6\""));
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(!run.stderr.contains("take it out"), "{}", run.stderr);
+    assert_eq!(read(&dir, "AGENTS.md"), agents);
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
+}
+
+#[test]
+fn the_private_rule_set_turns_off_no_rule_an_enabled_rule_requires() {
+    let dir = r6_on_by_default("private-exclude-required");
+    let shown = common(&dir).join("private.toml").display().to_string();
+    // R2 is required by L3 of the public layer and me:4 of the private.
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\"]\nexclude = [\"R2\"]"),
+    );
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        &format!(
+            "{shown}: error: rule R2 (Rule 2) cannot be turned off: rule L3 (Rule 3) requires it"
+        ),
+    );
+    assert!(run.stderr.contains(&format!(
+        "{shown}: error: rule R2 (Rule 2) cannot be turned off: rule me:4 (Rule 4) requires it"
+    )));
+    // An entry of both `exclude` and `rules`, and one statute.toml
+    // excludes already.
+    write_private(
+        &dir,
+        &private(&dir).replace(
+            "rules = []",
+            "rules = [\"me:4\", \"R6\"]\nexclude = [\"R6\"]",
+        ),
+    );
+    fails_with(
+        &statute(&dir, &["compile"]),
+        &format!("{shown}: error: `rules` lists R6 (Rule 6) and `exclude` turns it off; keep one"),
+    );
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\"]"),
+    );
+    ok(&statute(&dir, &["remove", "R6"]));
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\"]\nexclude = [\"R6\"]"),
+    );
+    fails_with(
+        &statute(&dir, &["compile"]),
+        "`exclude` lists `R6`, which statute.toml lists already",
+    );
+}
+
+#[test]
+fn a_private_rule_needs_a_rule_statute_toml_excludes_in_private_rules() {
+    let dir = r6_on_by_default("private-requires-excluded");
+    write(
+        &dir,
+        "me/rules/7.toml",
+        &rule(7, 1, "requires = [\"R6\"]").1,
+    );
+    ok(&statute(&dir, &["remove", "R6"]));
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:7\"]"),
+    );
+    fails_with(
+        &statute(&dir, &["compile"]),
+        "statute.toml: error: rule R6 (Rule 6) cannot be turned off: rule me:7 (Rule 7) requires it; take it out of `exclude`, or turn off me:7 too; or, for the private output alone, list it in `rules` of private.toml: `statute add --private R6`\n",
+    );
+    // Listed there, it is in the private output alone.
+    write_private(
+        &dir,
+        &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:7\", \"R6\"]"),
+    );
+    ok(&statute(&dir, &["compile"]));
+    assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
+    assert!(!read(&dir, "AGENTS.md").contains("\n- R6 "));
 }

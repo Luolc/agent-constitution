@@ -194,7 +194,7 @@ with `public = true`:
   and from each linked worktree alike. The private rule set builds on
   the `statute.toml` of the worktree statute runs in, which it inherits
   as [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)
-  describes, and adds sources and rules:
+  describes, adds sources, and turns rules on or off:
 
   ```toml
   rules = ["me:4", "here:2"]
@@ -214,7 +214,10 @@ with `public = true`:
   relative one fails, since the file serves every worktree and a
   relative path would lead somewhere else from each. `statute source
   add` writes the absolute path. Its sources' names may not repeat those
-  of `statute.toml`, nor its rules and packs those `statute.toml` lists.
+  of `statute.toml`, nor each of its lists the same list of
+  `statute.toml`. It may list `exclude` too, which turns off, in the
+  private output alone, a node the defaults or `statute.toml` enable
+  ([In the rule set](rule-config.md#in-the-rule-set)).
   In a private repository (`public = false`) the file fails: there
   `statute.toml` names everything. Outside a git repository there is
   no private layer, and a command with `--private` fails. `statute add
@@ -222,11 +225,15 @@ with `public = true`:
   temporary file in the same directory first and renaming it into
   place.
 
-- This private layer only adds to the public one. It may not override a
-  rule of `statute.toml`, nor leave one out
-  ([Overrides](#overrides)): the committed `AGENTS.md` holds that rule
-  whatever the private layer does, and an agent that read both files
-  would find two rules that disagree.
+- This private layer changes the private output alone. It may turn a
+  rule of the public layer off there, or turn on there one that
+  `statute.toml` excludes, but it may not override a rule of the
+  public layer ([Overrides](#overrides)): the committed `AGENTS.md`
+  holds that rule whatever the private layer does, and an agent that
+  read both files would find two rules that disagree. A rule it turns
+  off is left out of the full text, so an agent that reads the full
+  text alone no longer has it; Grok, which reads `AGENTS.md` as well
+  (below), still has it.
 - It has its own lock file, `private.lock`, which pins the private
   layer's own sources and nothing else: each as `statute.lock` records a
   source, a git source by its address, its branch or tag and the commit,
@@ -254,7 +261,9 @@ with `public = true`:
   private layer enables are left out of the committed files,
   `.agents/skills/` and `statute-checks.toml`
   ([Compilation and the site](statute-command.md#compilation-and-the-site));
-  `statute check` runs those checks all the same. How a private rule's
+  `statute check` runs those checks all the same. Those of a public
+  rule the private layer turns off stay in the committed files, and
+  `statute check` does not run its check. How a private rule's
   skills are installed is an open question.
 
 The place in git's directory is chosen so that every worktree of a
@@ -284,7 +293,8 @@ sets these files apart is that they must not be published, which
 **The private output** is one file, `.statute/AGENTS.full.md`: the
 committed `AGENTS.md` with the rules only the private layer brings in
 (its own rules and the public rules that only it enables), each at its
-place in the tree. Two links lead to the file:
+place in the tree, and without the rules its `exclude` turns off. Two
+links lead to the file:
 
 ```text
 .statute/
@@ -421,20 +431,26 @@ does not install the hooks: the user does, once per clone.
 - does nothing and exits 0, silently, when there is no `statute.toml`,
   the repository is private (`public = false`) or there is no private
   rule set;
-- otherwise writes nothing, prints a warning that names the cause and
-  the command to run, and exits 0, whenever the plain `statute compile`
+- otherwise writes nothing, prints an error that names the cause and
+  the command to run, and exits 1, whenever the plain `statute compile`
   would fail or need the network: a lock file that is stale, a commit
   missing from the cache, a link not ignored through
-  `.git/info/exclude`, a rule set that does not resolve. A hook that
-  fails would make `git worktree add` and `git switch` exit with its
-  status (githooks(5)), so it never does.
+  `.git/info/exclude`, a rule set that does not resolve. The last
+  line it prints is `statute: error: the private output is not
+  written; …`. A hook that fails would make `git worktree add` and
+  `git switch` exit with its status (githooks(5)), so both hook lines
+  above end with `exit 0`, and a checkout succeeds whatever the
+  command does.
 
 The links are relative and lead to the worktree's own `.statute/`.
 
-The private rules only add to the public ones and never contradict
-them, as the private layer only adds rules (above): Grok reads the
-public rules apart from the full text, and an agent that read two files
-in addition gave no reliable priority to either when they disagreed.
+The private rules never contradict the public ones, as the private
+layer overrides no public rule (above): Grok reads the public rules
+apart from the full text, and an agent that read two files in addition
+gave no reliable priority to either when they disagreed. For the same
+reason, a public rule that `exclude` in `private.toml` turns off still
+reaches Grok through `AGENTS.md`; the private layer turns it off for
+the agents that read the full text alone.
 
 The agents' behavior was measured on 2026-10-14 in non-interactive mode
 on Claude Code 2.1.296, Codex 0.159.3 and Grok 1.0.50, with Grok's
@@ -556,13 +572,14 @@ cannot override a private one.
 compiled into the same output. In a private repository every layer is
 compiled into one file, so any rule may override one of a lower rank:
 the overridden rule does not appear, and the overriding rule says which
-one it overrides. In a public repository, the private layer only adds
-rules ([Private rules in a public repository](#private-rules-in-a-public-repository)):
+one it overrides. In a public repository, the private layer overrides
+no rule of the public layer
+([Private rules in a public repository](#private-rules-in-a-public-repository)):
 a rule it enables fails when it overrides a rule of the public layer,
 one that `statute.toml` enables, directly or through a requirement:
 
 ```text
-error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `private.toml` may only add rules
+error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), a rule `private.toml` enables overrides no rule of the public layer
 ```
 
 Within the private layer, a rule may override any rule of a lower rank

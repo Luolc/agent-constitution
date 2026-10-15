@@ -1,4 +1,4 @@
-<!-- en-sha256: 9cab1f85b9c63f7681b38e9eb1a7827d662d05ab4c73eff947fa461c021c4bcb -->
+<!-- en-sha256: 9a054b5ccbb2158587e890544840b762c2a474225ba17baf2f7da604d6811634 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -103,7 +103,7 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
     private.lock          它的锁文件
   ```
 
-  在一个 clone 里，这个路径就是 `.git/common/statute/`，主检出和每个 linked worktree 都一样。私有规定清单以 statute 运行所在 worktree 的 `statute.toml` 为基础，按[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的方式继承它，再加上规定源和规定：
+  在一个 clone 里，这个路径就是 `.git/common/statute/`，主检出和每个 linked worktree 都一样。私有规定清单以 statute 运行所在 worktree 的 `statute.toml` 为基础，按[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的方式继承它，再加上规定源，并开启或关掉规定：
 
   ```toml
   rules = ["me:4", "here:2"]
@@ -113,18 +113,18 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
   here = { path = "~/my-rules/repos/example", public = false, scope = "local" }
   ```
 
-  它可以像 `statute.toml` 那样列 `packs`，根可以是两层中任何一个规定源的节点，这样私有规定源新加的规定会跟着启用；规定包也可以启用公开规定，这时只有私有层启用它们，和它列出的规定一样。它没有 `[compile]`，因为它的输出位置是固定的 (见下文)；也没有 `base`，因为它的基础总是命令运行处的那份 `statute.toml`。其中的 `path` 要么是绝对路径，要么以 `~/` 开头；写相对路径会报错，因为这个文件供所有 worktree 共用，相对路径从每个 worktree 出发会指到不同的地方。`statute source add` 写的是绝对路径。它的规定源不能与 `statute.toml` 的重名，它的规定和规定包也不能与 `statute.toml` 列出的重复。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。不在 git 仓库里就没有私有层，带 `--private` 的命令会失败。`statute add --private` 和 `statute remove --private` 修改它，先在同一目录写一个临时文件，再改名替换。
+  它可以像 `statute.toml` 那样列 `packs`，根可以是两层中任何一个规定源的节点，这样私有规定源新加的规定会跟着启用；规定包也可以启用公开规定，这时只有私有层启用它们，和它列出的规定一样。它没有 `[compile]`，因为它的输出位置是固定的 (见下文)；也没有 `base`，因为它的基础总是命令运行处的那份 `statute.toml`。其中的 `path` 要么是绝对路径，要么以 `~/` 开头；写相对路径会报错，因为这个文件供所有 worktree 共用，相对路径从每个 worktree 出发会指到不同的地方。`statute source add` 写的是绝对路径。它的规定源不能与 `statute.toml` 的重名，它的每个列表也不能与 `statute.toml` 的同名列表重复。它也可以列 `exclude`，只在私有输出里关掉默认值或 `statute.toml` 开启的节点 (见[规定清单里](rule-config.md#in-the-rule-set))。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。不在 git 仓库里就没有私有层，带 `--private` 的命令会失败。`statute add --private` 和 `statute remove --private` 修改它，先在同一目录写一个临时文件，再改名替换。
 
-- 这个私有层只在公开层之上增加规定。它不能覆盖 `statute.toml` 里的规定，也不能去掉其中的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。
+- 这个私有层只改变私有输出。它可以在那里关掉公开层的规定，或者重新开启 `statute.toml` 排除的规定，但不能覆盖公开层的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。它关掉的规定不出现在全文里，所以只读全文的 agent 不再有这条规定；Grok 还读 `AGENTS.md` (见下文)，仍然有它。
 - 它有自己的锁文件 `private.lock`，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。这样所有 worktree 读私有规定源时用的是同一批 commit，而公开层各自以自己分支锁定的为准；如果锁文件把两层一起锁定，又由不同分支上的 worktree 共用，那它在除一个以外的所有 worktree 里都是过期的。
 - git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
-- 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute-checks.toml` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
+- 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute-checks.toml` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有层关掉的公开规定，它的 skill 和检查留在提交的文件里，`statute check` 不运行它的检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
 
 放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
 
 **名字仍叫 `private`。** `local` 在 statute 里已经指一种范围 (`scope = "local"`、`L12` 和本地的两类规定源)，所以像别的工具给一台机器自己的设置起名那样叫 `statute.local.toml`，会被读成本地规定的配置。这两个文件的特点是不能公开，`private` 说的正是这一点。
 
-**私有输出**是一个文件 `.statute/AGENTS.full.md`：提交进仓库的 `AGENTS.md` 加上只由私有层带进来的规定 (它自己的规定，以及只由它启用的公开规定)，每条放在它在规定树里的位置。有两个软链指向这个文件：
+**私有输出**是一个文件 `.statute/AGENTS.full.md`：提交进仓库的 `AGENTS.md` 加上只由私有层带进来的规定 (它自己的规定，以及只由它启用的公开规定)，每条放在它在规定树里的位置，并去掉它的 `exclude` 关掉的规定。有两个软链指向这个文件：
 
 ```text
 .statute/
@@ -180,11 +180,11 @@ statute compile --private-only; exit 0
 - 只写 `.statute/.gitignore`、`.statute/AGENTS.full.md` 和两个软链，从不写 `AGENTS.md`、skill 或 `statute-checks.toml`；
 - 读这个 worktree 的 `statute.toml` 和 `statute.lock`，以及私有规定清单和它的锁文件，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
 - 没有 `statute.toml`、仓库是私有的 (`public = false`)，或者没有私有规定清单时，什么都不做，不出声，退出码为 0；
-- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 warning，说明原因和要运行的命令，退出码为 0：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以它从不失败。
+- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
 
 软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
-私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
+私有规定从不与公开规定矛盾，因为私有层不覆盖任何公开规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。同样的原因，`private.toml` 的 `exclude` 关掉的公开规定，仍经 `AGENTS.md` 到达 Grok；私有层只对只读全文的 agent 关掉它。
 
 各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；Pi 1.2.0 每种情况跑了一次；Codex 的 `project_doc_max_bytes` 依据它的文档和源码。在一个小任务的几次运行里，兜底那一行写成 `@` 路径时，Codex 和 Grok 各两次都读了它指向的文件，Claude Code 则当作导入加载了它；换成同一类、但措辞与 statute 写的不同的一行 (路径写在反引号里，没有 `@`) 时，在别的都没加载全文的情况下，Claude Code 两次都读了全文，每次都是模型自己去读的。每次运行时用户自己的指令文件和 skill 都在，它们本身也催 agent 去找指令。布局本身用一份代替全文的文件测过：
 
@@ -224,10 +224,10 @@ overrides = "R200"
 
 同一级的两条规定不能相互覆盖；同一个规定源里的规定只能原地修改或者被取代，不能被覆盖。允许一层套一层：本地规定可以覆盖 `team:7`，而 `team:7` 覆盖 `R200`；编译出的文件里只出现这条本地规定，那一行写「Overrides team:7, which overrides R200」。引用方向 (见[哪些规定可以引用哪些](#which-rules-may-cite-which)) 同样适用：公开规定不能覆盖私有规定。
 
-**只在同一份输出里覆盖。** 覆盖只发生在编译进同一份输出的规定之间。私有仓库把所有层编译进一个文件，所以任何规定都可以覆盖级别更低的规定：被覆盖的规定不出现，覆盖方写明它覆盖了哪条。公开仓库里，私有层只增加规定 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))：它启用的规定覆盖了公开层的规定，即 `statute.toml` 直接启用或经依赖带进来的规定，就报错：
+**只在同一份输出里覆盖。** 覆盖只发生在编译进同一份输出的规定之间。私有仓库把所有层编译进一个文件，所以任何规定都可以覆盖级别更低的规定：被覆盖的规定不出现，覆盖方写明它覆盖了哪条。公开仓库里，私有层不覆盖公开层的任何规定 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))：它启用的规定覆盖了公开层的规定，即 `statute.toml` 直接启用或经依赖带进来的规定，就报错：
 
 ```text
-error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), `private.toml` may only add rules
+error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), a rule `private.toml` enables overrides no rule of the public layer
 ```
 
 在私有层内部，一条规定可以覆盖任何只由私有层启用、级别更低的规定，因为两者都编译进私有输出；在公开层内部，一条规定可以覆盖级别更低的公开规定。两者都与私有仓库一样。公开层的规定也可以覆盖只由私有层启用的规定：公开输出里，覆盖方编在目标本该出现的位置，并带下文那条「没有别的规定启用目标」的警告；私有输出里，覆盖方顶替目标。

@@ -417,21 +417,26 @@ fn an_unknown_key_of_a_source_entry_is_named() {
     );
 }
 
-/// The private layer may turn on a domain, and turns off nothing.
+/// The private layer may turn on a domain, and turn off what the public
+/// one enables or turn on again what it excludes.
 #[test]
-fn the_private_layer_has_domains_and_no_exclude() {
+fn the_private_layer_has_domains_and_exclude() {
     let base = Manifest::parse(
-        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\n\n[sources]\nR = { path = \".\" }\n",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = true\nrules = [\"R3\"]\nexclude = [\"R2\"]\n\n[sources]\nR = { path = \".\" }\n",
     )
     .unwrap();
     let private = base.with_private("domains = [\"R10\"]\n").unwrap();
     assert_eq!(private.domains, [r(10)]);
-    let errors = base.with_private("exclude = [\"R2\"]\n").err().unwrap();
-    assert!(
-        errors
-            .iter()
-            .any(|e| e.contains("`exclude` is for statute.toml")),
-        "{errors:#?}"
+    let private = base
+        .with_private("rules = [\"R2\"]\nexclude = [\"R3\"]\n")
+        .unwrap();
+    assert_eq!(private.rules, [r(2)]);
+    assert_eq!(private.exclude, [r(3)]);
+    assert_eq!(private.reopened, [r(2)]);
+    // statute.toml is unchanged.
+    assert_eq!(
+        (base.rules.as_slice(), base.exclude.as_slice()),
+        (&[r(3)][..], &[r(2)][..])
     );
 }
 
