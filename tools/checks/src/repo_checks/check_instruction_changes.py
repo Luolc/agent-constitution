@@ -40,6 +40,7 @@ REPO = [
   r"constitution/[^/]+/index\.toml",
   r"constitution/[^/]+/articles/.+",
   r"rules/.+",
+  r"\.statute/rules/.+",
   r"skills/.+",
 ]
 # Generated files: CI proves they equal a build of the sources with the
