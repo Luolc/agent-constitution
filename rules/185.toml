@@ -1,0 +1,42 @@
+id = 185
+slug = "cross-repository-blocked-by"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Show a wait on another repository with the blocking relation"
+zh = "跨仓库的依赖用阻塞关系表示"
+
+[text.statement]
+en = "When a work item of one repository has to wait until a work item of another repository is done, link the two with the ticketing system's blocking relation."
+zh = "一个仓库的工作项要等另一个仓库的工作项做完时，用工单系统的阻塞关系把两者关联起来。"
+
+[text.reason]
+en = '''
+A relation the ticketing system records shows on both work items and can be filtered on ({@constitution:evidence.facts}); a "waits for that one" written in the body does not show on the other work item.
+'''
+zh = '''
+工单系统记下的关系在两个工作项上都看得到，也能按它筛选 ({@constitution:evidence.facts})；写在正文里的「等那一个做完」，在另一个工作项上看不到。
+'''
+
+[text.verification]
+en = '''
+The blocking relation is, for example, blocked by in Linear.
+
+Violated when the body or a comment of a work item says that it waits for a work item of another repository, and the two are not linked by that relation.
+'''
+zh = '''
+阻塞关系，例如 Linear 里的 blocked by。
+
+工作项的正文或评论写了要等另一个仓库的工作项，两者之间却没有这种关系的，即为违反本规定。
+'''
+
+[translations]
+zh = "eaf273d3444faa8f19ba41bbcc27403ed53656330741be0d8acd68b1cde91f82"

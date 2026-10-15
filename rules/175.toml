@@ -1,0 +1,21 @@
+id = 175
+slug = "tickets"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Tickets"
+zh = "工单"
+
+[applicability]
+en = '''
+Covers how agents record their work on a ticketing system: what a parent and a child work item stand for, how an attempt ends, which labels mark what waits for a principal, the reports, taking and releasing work items, and the language the items are written in. Linear and GitHub Issues are examples of such systems. Enable it in a repository whose agents get their work from a ticketing system or record its results there; one that keeps no agent work on such a system need not.
+'''
+zh = '''
+管 agent 怎样在工单系统里记录自己的工作：父工作项和子工作项各代表什么，一次尝试怎样结束，哪些标签标出等委托人处理的事，报告，工作项的领取与释放，以及工作项用什么语言写。Linear、GitHub Issues 都是这类系统的例子。agent 从工单系统领活、或者把结果记在那里的仓库启用；不在这类系统里记 agent 工作的仓库不必启用。
+'''
+
+[translations]
+zh = "592167fdabe1f2796844afd84200ad6c118d83cdabdf19c32c11774b3d584426"
