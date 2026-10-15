@@ -1,0 +1,10 @@
+{{- /* One field's group of check boxes in the filter's panel, with All
+  and None. Takes (dict "field" its name "legend" its title "values" a
+  list of (dict "key" "label" "checked", and for a domain "parent" and
+  "depth")). */ -}}
+<fieldset class="rules-filter-group" data-field="{{ .field }}"><legend>{{ .legend }}</legend>
+<span class="rules-filter-all"><button type="button" data-all="true">{{ i18n "rules-all-chosen" }}</button><button type="button" data-all="false">{{ i18n "rules-none-chosen" }}</button></span>
+  {{- range .values }}
+<label{{ with .depth }} style="{{ printf "--indent: %d" (int .) | safeCSS }}"{{ end }}><input type="checkbox" name="{{ $.field }}" value="{{ .key }}"{{ with .parent }} data-parent="{{ . }}"{{ end }}{{ if .checked }} checked{{ end }}> {{ .label }}</label>
+  {{- end }}
+</fieldset>

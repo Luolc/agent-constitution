@@ -1,8 +1,8 @@
 # Rule configuration
 
-Status: decided; partly built. What is built is under
+Status: decided; built. What is built is under
 [The command and the first version](statute-command.md#the-command-and-the-first-version),
-and [What this changes](#what-this-changes) lists what is not.
+and [What this changes](#what-this-changes) lists it.
 This part of the design says three things a rule set can set beyond
 the list of its rules: the directory of the repository's own rules,
 the values of parameters that rules leave open (the languages first),
@@ -313,10 +313,7 @@ scope `repo` name them, each with a common name as its default:
 | `work-items.status-done` | `Done` | the status of an attempt that ended as done |
 | `work-items.status-abandoned` | `Abandoned` | the status of an attempt that was given up |
 
-The ten parameters are declared in `rules/params.toml`, where
-`language.work-items` still has the scope `repo`: its scope
-`personal` is not built yet.
-The table
+The ten parameters are declared in `rules/params.toml`. The table
 `work-items` and the key `language.work-items` do not collide: one is
 a table of the rule set, the other a key in the table `language`.
 
@@ -717,9 +714,7 @@ The compiled `AGENTS.md` puts the rules of each one-of's enabled option
 in the one-of's place, with nothing that names the one-of, and both
 sites show a one-of as a box of its options.
 
-Everything this design describes is built, except the scope
-`personal` of `language.work-items`
-([The language parameters](#setting-a-value)).
+Everything this design describes is built.
 
 The parts of the design this one changes:
 

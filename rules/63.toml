@@ -1,6 +1,6 @@
 id = 63
 slug = "review-in-change-comments"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -31,17 +31,17 @@ zh = '''
 en = '''
 The comments are those of the change itself, such as the comments of a pull request; a change has them once, for example, its pull request is open. The reviewer writes there each finding and each verdict; the author writes there its answer to each finding, a fix or a reason not to fix. What is said elsewhere, for example in a message between agents, counts for the review only once it is written there too.
 
-A review held before the change had comments, such as the review before a push to a public repository ({@rule:52}), is recorded there once they exist, by its outcome and the version it passed. A finding whose text would publish what must not be published, such as a private name the review caught in a public repository ({@rule:51}), is recorded by where it is and what kind it is, never by quoting it.
+A review held before the change had comments, such as the review before a push to a public repository ({@rule:52}), is recorded there once they exist, by its outcome and the version it passed. A finding whose text would publish what must not be published, such as a private name the review caught in a public repository ({@rule:259}), is recorded by where it is and what kind it is, never by quoting it.
 
 Violated when, on a change that has comments, a finding, an answer to it or a verdict exists only outside them, or an earlier review of it is not recorded there.
 '''
 zh = '''
 这里的评论是变更自身的评论，例如 pull request 的评论；例如 pull request 开出之后，变更就有了评论区。审查方在那里写下每条审查意见和每份 verdict；作者在那里逐条答复审查意见，说明怎么修的，或者为什么不修。在别处说的话，例如 agent 之间的消息，要在那里也写下来，才算进审查。
 
-变更有评论区之前做的审查，例如向公开仓库 push 之前的审查 ({@rule:52})，在评论区出现之后记到那里，写明结论和它通过的版本。审查意见的原文一旦写出就会公开不该公开的内容的，例如审查在公开仓库里发现的私密名称 ({@rule:51})，只记位置和类别，不引原文。
+变更有评论区之前做的审查，例如向公开仓库 push 之前的审查 ({@rule:52})，在评论区出现之后记到那里，写明结论和它通过的版本。审查意见的原文一旦写出就会公开不该公开的内容的，例如审查在公开仓库里发现的私密名称 ({@rule:259})，只记位置和类别，不引原文。
 
 在已有评论区的变更上，审查意见、对它的答复或者 verdict 只存在于评论区之外，或者此前的审查没有记到评论区的，即为违反本规定。
 '''
 
 [translations]
-zh = "69a1ac0b34043b8787cade6f4442abbbacc51d3cc31cfb3c48fe1c3cee2d3a87"
+zh = "37bc98829b4e4caca27fc1432c7607c3f6edbfac82a1b6f404a63de7d26d9a4f"

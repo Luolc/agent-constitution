@@ -1,0 +1,23 @@
+id = 260
+slug = "readings"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 15
+default = "on"
+
+[title]
+en = "Readings and claims"
+zh = "读数与主张"
+
+[applicability]
+en = '''
+Covers how agents take the readings a claim rests on and how far a claim may go beyond them: matching a claim to the output it cites, saying how a list was made, naming the repository a command reads, and the environment a check runs in. Enable it wherever agents report what commands and checks showed; a repository where agents report no such readings can leave it off.
+'''
+zh = '''
+管 agent 怎样取得主张所依据的读数，以及主张最多能说到哪里：主张要与它引用的输出对得上，要说明列表是怎么来的，命令读的是哪个仓库要写明，检查要在什么环境里跑。agent 要报告命令和检查结果的地方，都要启用；agent 不报告这类读数的仓库可以不启用。
+'''
+
+[translations]
+zh = "d14458537e489d43d6873a2fb74f09dd44623b6c4c97bd5e7073e09000ae1824"

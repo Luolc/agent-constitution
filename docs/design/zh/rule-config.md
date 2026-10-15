@@ -1,7 +1,7 @@
-<!-- en-sha256: 3e87f026148c9ea6a6c4e7d2cce84137ad73dcef2ca24c863af7e712ed3f7998 -->
+<!-- en-sha256: 83731f15797c8986d46546cbec06b22d89ebc08161bfbd34f12c3b051383ba19 -->
 # 规定配置
 
-状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
+状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
 
 三样东西的目的相同：采用 statute 的仓库拿到的是一小套最通用、放在哪里都不太会出错的规定，其余的按需开启；只关乎某个人或某种环境的东西，是仓库设定的一个值或开启的一条规定，而不是要它去掉的一条规定。
 
@@ -149,7 +149,7 @@ commit message 与 pull request 描述分成两个参数，是因为常见的做
 | `work-items.status-done` | `Done` | 以完成告终的一次尝试的状态 |
 | `work-items.status-abandoned` | `Abandoned` | 被放弃的一次尝试的状态 |
 
-这十个参数都声明在 `rules/params.toml` 里；那里 `language.work-items` 的范围仍是 `repo`，范围 `personal` 还没实现。表 `work-items` 与键 `language.work-items` 不冲突：一个是规定清单的表，一个是表 `language` 里的键。
+这十个参数都声明在 `rules/params.toml` 里。表 `work-items` 与键 `language.work-items` 不冲突：一个是规定清单的表，一个是表 `language` 里的键。
 
 `[compile] lang` 与语言参数分开：它指定编译出的 `AGENTS.md` 用哪种语言写，关乎 agent 读什么；参数说的是 agent 写什么。
 
@@ -322,7 +322,7 @@ uses = ["instructions", "review"]
 
 编译出的 `AGENTS.md` 把每个 one-of 启用的选项里的规定放在 one-of 的位置，不写任何指明 one-of 的内容；两个网站都把 one-of 画成装着它的选项的框。
 
-这部分设计描述的内容都已实现，只有 `language.work-items` 的范围 `personal` 除外 ([语言参数](#setting-a-value))。
+这部分设计描述的内容都已实现。
 
 这部分设计改动了设计的以下部分：
 

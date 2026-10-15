@@ -1,0 +1,43 @@
+id = 256
+slug = "tell-collaborators-after-history-rewrite"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+default = "on"
+authority = ["must-ask.irreversible-effects"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "After rewriting a shared branch's history, tell those who work on it"
+zh = "改写共享分支的历史之后，告诉在它上面工作的人"
+
+[text.statement]
+en = "Once you have rewritten the pushed history of a branch that others work on, tell each of them, before your task ends, to clone again or to reset to the new history before they go on."
+zh = "改写了别人也在用的分支上已经 push 的历史之后，在任务结束之前告诉其中每一个人，先重新 clone 或者 reset 到新的历史，再继续工作。"
+
+[text.reason]
+en = '''
+A rewrite of shared history reaches everyone who has the old history ({@constitution:must-ask.irreversible-effects}): their next pull or push mixes the two histories, and can bring back what the rewrite removed, such as a leaked secret or a large file.
+'''
+zh = '''
+改写共享的历史，波及手里有旧历史的每一个人 ({@constitution:must-ask.irreversible-effects})：他们下一次 pull 或 push 会把两份历史混在一起，还可能把改写去掉的东西带回来，例如泄露的凭证或误提交的大文件。
+'''
+
+[text.verification]
+en = '''
+History is rewritten when a push replaces commits that the branch already had, as a force push does. Those who work on the branch are the people and agents known to have it checked out or to have pushed to it, and, on a branch every collaborator of the repository uses such as the main branch, all of the repository's collaborators. The message goes where they read work messages, names the branch and the new head, and says what to do with work based on the old history.
+
+Violated when the task in which such a rewrite was made ends while someone who works on the branch has not been told.
+'''
+zh = '''
+一次 push 替换了分支上原有的 commit，例如 force push，就是改写了历史。在分支上工作的人，指已知检出了它、或者向它 push 过的人和 agent；主分支这类仓库所有协作者都在用的分支，则是仓库的全部协作者。消息发到他们看工作消息的地方，写明是哪个分支、新的 head 是什么，并说明基于旧历史的工作怎么处理。
+
+做了这样改写的任务结束时，仍有在分支上工作的人没有被告知的，即为违反本规定。
+'''
+
+[translations]
+zh = "ddff8da0b67b83de976104b4c5ce929493840e019b8dd0b62548bff3ff68a51b"
