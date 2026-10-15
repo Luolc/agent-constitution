@@ -608,7 +608,13 @@ class _Language:
       "key": page_key(key[1], key[0]),
     }
 
-  def links(self, text: str, text_lang: str, source: str = FIRST_PARTY) -> str:
+  def links(
+    self,
+    text: str,
+    text_lang: str,
+    source: str = FIRST_PARTY,
+    link: bool = True,
+  ) -> str:
     """Return a text with each citation as a Markdown link.
 
     A provision's label is in the language of the text, or of the page
@@ -619,6 +625,8 @@ class _Language:
       text: the text, as the sources hold it.
       text_lang: its language.
       source: the source of the node that holds the text.
+      link: False for the label alone, for a text that stands inside a
+        link.
 
     Returns:
       The Markdown text.
@@ -630,17 +638,19 @@ class _Language:
       ref = self.ref(int(target) if target.isdigit() else target, source)
       if "key" not in ref:
         return rule.format(id=target)
-      name = target if source == FIRST_PARTY else ref["label"]
-      return f"[{rule.format(id=name)}]({RULE_LINK.format(id=ref['key'])})"
+      name = rule.format(id=target if source == FIRST_PARTY else ref["label"])
+      return f"[{name}]({RULE_LINK.format(id=ref['key'])})" if link else name
 
-    def link(m: re.Match[str]) -> str:
+    def cite(m: re.Match[str]) -> str:
       namespace, target = m.group(1), m.group(2)
       if namespace == "rule":
         return rule_link(target)
       label = labels.get(target, target)
-      return f"[{label}]({PROVISION_LINK.format(ref=target)})"
+      return (
+        f"[{label}]({PROVISION_LINK.format(ref=target)})" if link else label
+      )
 
-    return OTHER_RULE.sub(lambda m: rule_link(m.group(1)), MARK.sub(link, text))
+    return OTHER_RULE.sub(lambda m: rule_link(m.group(1)), MARK.sub(cite, text))
 
   def params_page(
     self, source: Source, used: dict[tuple[str, str], list[tuple[str, int]]]
@@ -794,6 +804,15 @@ class _Language:
         "titleInLink": self.values(node.title[shown], shown, name, "span"),
         "applicability": self.links(node.applicability[shown], shown, name)
         if node.applicability
+        else None,
+        # The statement in the list, where the whole row is the link.
+        "statementInLink": self.values(
+          self.links(node.text["statement"][shown], shown, name, link=False),
+          shown,
+          name,
+          "span",
+        )
+        if node.text
         else None,
         "text": {
           part: self.values(

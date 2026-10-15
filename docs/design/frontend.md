@@ -27,7 +27,7 @@ tokens, the icons and the scripts are written in the code is in
   target sizes, hover on devices that have it, names and states for
   assistive technology, pages that work without scripts.
 - [Components](#components): marks and tags, the legend, the filter,
-  the table of rules, the one-of, popovers, the sidebar and buttons.
+  the view of the list, the table of rules, the one-of, popovers, the sidebar and buttons.
 - [Not done](#not-done): what the pages never do.
 - [Screenshots and review](#screenshots-and-review): what a pull request
   that changes the pages attaches, what CI runs, what the reviewer
@@ -198,6 +198,7 @@ its weight and its band ([Components](#components)):
 | A one-of's own row in its box | `text-md` | `weight-medium` | `text` |
 | A rule's row | `text-md` | `weight-regular` | `text` |
 | A rule's label (`R13`) | the size of its row | the weight of its row | `text-muted`, tabular figures, aligned to the end |
+| A rule's statement, under its title | `text-sm` | `weight-regular` | `text-muted`; `text-md` in `text` when it stands alone, in place of the title |
 | The head of the table | `text-sm` | `weight-medium` | `text-muted` |
 
 ## Space, radius and shadow
@@ -353,8 +354,8 @@ target still fades from `bg-target`.
   is shown, the next one under the pointer appears at once. A tip never
   holds what the page says nowhere else: what it says is also the
   element's accessible name or in a legend.
-- **State in the address.** The filter, the page size and the page of
-  the list are in the address, so a list can be linked, and back and
+- **State in the address.** The filter, the page size, the page of
+  the list and what its rows show are in the address, so a list can be linked, and back and
   forward return to the list as it was.
 - **Without scripts.** The content is visible by default: a page whose
   scripts fail or never run still shows all its text, with the parts
@@ -448,18 +449,47 @@ turned off (disabled), where it has these.
   superseded or repealed, shown besides; and it has no groups for the
   status, the defaults and the domain, no All and None, and no badge
   ([Status](#status)).
+- **The view of the list**, after the filter in its bar: what each
+  row of the table of rules shows. A segmented control, the word Show /
+  「显示」 in `text-sm` and `text-muted`, then three segments in one box
+  (`1px` of `border-strong`, `radius-sm`), parted by `1px` of
+  `border-subtle`: Title and statement / 「标题和要求」, the default;
+  Title / 「标题」; Statement / 「要求」. They are radio buttons of one
+  group, a `fieldset` named by its `legend`, so the arrow keys move
+  between them and Tab enters and leaves the group; each segment is the
+  button's label, `text-sm`, padding `0 space-3`, at least a target
+  tall, the button itself not drawn. At rest `text`; under the pointer
+  `bg-hover`; pressed `bg-active` with `text`; chosen `bg-selected` with
+  its text in `accent` and `weight-medium`; focus the ring around the
+  segment. The rows change at once. The choice is in the address as
+  `view`, `title` or `statement`, left out for the default; arriving
+  at an address without it, the reader's last choice, kept in the
+  browser, applies and is written into the address, and back and
+  forward return to the view of their address, the default where it has
+  none. Without scripts the style sheet still applies the choice; the
+  address does not. On a narrow screen the control takes a row of its
+  own, its segments sharing it.
 - **The table of rules**, as ESLint's list of rules is a table: a
   head, then one row a rule, three columns, the label (`width-label`,
   `text-muted`, aligned to the end), the title, cut to the row with an
   ellipsis, and the marks; the head names the first two, `text-sm`,
   `weight-medium`, `text-muted`, over a line of `border-strong`. Every
   row is at least as tall as a target, with a hairline of
-  `border-subtle` under it, and the same height on a wide screen. A
+  `border-subtle` under it, and a row that shows only its title is the
+  same height as the others on a wide screen. A
   rule under another rule is not indented: `corner-down-right`
   (`icon-sm`, `text-faint`) in front of its title shows it. The whole
   row is the link: hover fills it with `bg-hover` and turns the title
-  to `accent`, active fills it with `bg-active` and turns the title and
-  the label to `text`; focus puts the ring around the row. A domain is not a row of
+  to `accent`, active fills it with `bg-active` and turns the title,
+  the label and the statement to `text`; focus puts the ring around the
+  row. Under its title a rule's row shows its statement, as the view of
+  the list says: wrapped, never cut, lined up with the title's text,
+  after the icon before it; the row is then as tall as it needs, its
+  label, its icon and its marks on the title's first line. With the
+  statement alone, it takes the title's place, as large and dark as a
+  title, and turns to `accent` under the pointer; a one-of's own row,
+  which has no statement, keeps its title, and an option's Default
+  option stays on its first line. A domain is not a row of
   its own but a group row over its rules, a band across the table:
   `bg-active` for a domain of the first level, `bg-panel-hover` below
   it, the domain's label in the label column and the path of its
@@ -658,7 +688,8 @@ turned off (disabled), where it has these.
   `constitution.css`, `design.css` (the design and a rule's page),
   `rules-list.css` (the list of the rules, its marks and the tags),
   `filter.css` (the filter and the page size above the list) and
-  `legend.css` (the legend above them), whose markup is in
+  `legend.css` (the legend above them) and `view.css` (the view of the
+  list and the statements in its rows), whose markup is in
   `web/layouts/_partials/rules/`. Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
   `web/assets/styles/index.yaml`. The local site's own is
@@ -678,8 +709,8 @@ turned off (disabled), where it has these.
   the files it needs in the same way, built into `statute` with
   `include_str!`.
 - **Scripts.** A script that holds more than a few lines of logic, the
-  list of the rules and its filter and the sidebar and its drawers
-  today, is written in TypeScript in
+  list of the rules, its filter and its view, and the sidebar and its
+  drawers today, is written in TypeScript in
   `web/assets/ts/`, the logic that needs no page (the filter's choice
   and the address) in a file of its own. Hugo's `js.Build`, the esbuild
   that Hugo carries, bundles each one, with no Node and no npm package,
@@ -718,7 +749,8 @@ the drawers of [Components](#components); the native controls; the
 fonts, the text size and the column, and the breakpoints; the rows of
 the rules under a provision; the filter, the legend, the table of rules
 with its marks and its group rows and head that stick, and the one-of;
-the filter and the page in the address, pages readable without
+the view of the list and the statements in its rows; the filter, the
+page and the view in the address, pages readable without
 scripts, tabular figures, and `aria-expanded` with `aria-controls` on
 the info button, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's
@@ -728,7 +760,7 @@ of its style sheet named by one; the one-of of
 button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
 popover; the language switch and the tag of a text not in the page's
-language; the switch between a rule's title and statement, its choice
+language; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
 it opens at an address without one. Not built yet, and what each replaces:
 
@@ -749,6 +781,8 @@ it opens at an address without one. Not built yet, and what each replaces:
   once, stand in for. Its popover closes at once, by a click on the
   button. Its pages load no font and set the text in the local serif
   fonts.
+- On the local site, the view of the list says 「标题与规定」 and 「规定」
+  in Chinese; 「标题和要求」 and 「要求」 replace them.
 
 ## Open questions
 
