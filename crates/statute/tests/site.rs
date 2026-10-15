@@ -512,7 +512,9 @@ fn site_marks_defaults_uses_and_values() {
     assert_eq!(index.matches("<a href=\"R/5.html\">").count(), 1, "{index}");
     // A rule only for review is hidden with its filter.
     assert!(
-        index.contains("<li class=\"off u-r\"><div class=\"row\"><a href=\"R/3.html\">"),
+        index.contains(
+            "<li class=\"off has-statement u-r\"><div class=\"row\"><a href=\"R/3.html\">"
+        ),
         "{index}"
     );
     assert!(index.contains("<input type=\"checkbox\" id=\"show-review\" checked>"));
@@ -578,7 +580,7 @@ fn site_draws_the_tree_by_level() {
         assert!(index.contains(&row), "{row}: {index}");
     }
     assert!(
-        index.contains("<li class=\"u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
+        index.contains("<li class=\"has-statement u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
         "{index}"
     );
     // A one-of none of whose options is enabled is drawn lighter.
@@ -735,4 +737,113 @@ fn site_writes_both_languages() {
     let r5 = read(&site, "here/5.html");
     assert!(r5.contains("<span lang=\"zh\">规定 5</span></h1>"), "{r5}");
     assert!(r5.contains("Not translated</span>"), "{r5}");
+}
+
+/// The statement under each rule's row, its placeholders filled as in
+/// `AGENTS.md`, in the page's language or marked as not translated, and
+/// the three views of the rows, chosen by radio buttons the style sheet
+/// follows.
+#[test]
+fn site_shows_statements_in_three_views() {
+    let dir = repo("statements", "r/");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R2\", \"R7\"]\n\n[language]\ndocs = \"zh\"\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    write(
+        &dir,
+        "r/rules/params.toml",
+        &param("language.docs", "type = \"language\"", "repo", "en"),
+    );
+    put(&dir, "r/rules", domain(1));
+    let hash = statute::node::original_hash(&[
+        "Rule 2",
+        "Do the thing 2.",
+        "Because.\n",
+        "Violated when the thing is not done.",
+    ]);
+    let r2 = rule(2, 1, "");
+    let r2 = edit(r2, "en = \"Rule 2\"", "en = \"Rule 2\"\nzh = \"规定 2\"");
+    let r2 = edit(
+        r2,
+        "en = \"Do the thing 2.\"",
+        "en = \"Do the thing 2.\"\nzh = \"做事 2。\"",
+    );
+    let r2 = edit(r2, "Because.\n'''", "Because.\n'''\nzh = \"因为。\"");
+    let r2 = edit(
+        r2,
+        "en = \"Violated when the thing is not done.\"",
+        "en = \"Violated when the thing is not done.\"\nzh = \"没做即为违反。\"",
+    );
+    write(
+        &dir,
+        "r/rules/2.toml",
+        &format!("{}\n[translations]\nzh = \"{hash}\"\n", r2.1),
+    );
+    put(
+        &dir,
+        "r/rules",
+        edit(
+            rule(7, 1, ""),
+            "Do the thing 7.",
+            "Write in {$language.docs}.",
+        ),
+    );
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    let site = dir.join(".statute/site");
+    // The statement of a rule, after its row and before the next one.
+    let statement = |index: &str, id: u64| {
+        let at = index.find(&format!("<a href=\"R/{id}.html\">")).unwrap();
+        let row = at + index[at..].find("</div>").unwrap() + "</div>".len();
+        index[row..row + index[row..].find("</li>").unwrap()].to_owned()
+    };
+    let index = read(&site, "index.html");
+    assert_eq!(
+        statement(&index, 7),
+        "<div class=\"statement\">\n<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>\n</div>\n"
+    );
+    assert_eq!(
+        statement(&index, 2),
+        "<div class=\"statement\">\n<p>Do the thing 2.</p>\n</div>\n"
+    );
+    let zh = read(&site, "zh/index.html");
+    assert_eq!(
+        statement(&zh, 2),
+        "<div class=\"statement\">\n<p>做事 2。</p>\n</div>\n"
+    );
+    let r7 = statement(&zh, 7);
+    assert!(
+        r7.starts_with("<div class=\"statement\" lang=\"en\">\n<span class=\"untranslated\" role=\"img\" aria-label=\"无中文\" title=\"无中文\" lang=\"zh\"><svg class=\"icon\""),
+        "{r7}"
+    );
+    assert!(
+        r7.contains("<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"),
+        "{r7}"
+    );
+    // Three radio buttons, the title and the statement checked; the
+    // style sheet hides the statements or the titles by them, and the
+    // script keeps the choice in the address.
+    for (page, names) in [
+        (&index, ["Title and statement", "Title", "Statement"]),
+        (&zh, ["标题与规定", "标题", "规定"]),
+    ] {
+        for (i, (view, name)) in ["both", "title", "statement"].iter().zip(names).enumerate() {
+            let checked = if i == 0 { " checked" } else { "" };
+            let radio = format!(
+                "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
+            );
+            assert!(page.contains(&radio), "{radio}");
+        }
+        assert!(page.contains("body:has(#view-title:checked) .tree .statement { display: none; }"));
+        assert!(page.contains("body:has(#view-statement:checked) .has-statement > .row .title {"));
+        assert!(page.contains("query.set(\"view\", view.value)"));
+    }
+    // A rule's own page is as it was.
+    assert!(read(&site, "R/7.html").contains(
+        "<p>Write in <a class=\"value\" href=\"../R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"
+    ));
 }

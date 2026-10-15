@@ -86,6 +86,10 @@ struct Words {
     quadrants: [&'static str; 4],
     /// The filter's button.
     filter: &'static str,
+    /// The switch between the views of the rows, and each view, in the
+    /// order of `VIEWS`.
+    view: &'static str,
+    views: [&'static str; 3],
     /// What each mark of the legend means: the five statuses, on and
     /// off by default, the default option, enabled and not enabled, and
     /// the quadrant.
@@ -144,6 +148,8 @@ fn words(lang: &str) -> Words {
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
             filter: "筛选",
+            view: "显示",
+            views: ["标题与规定", "标题", "规定"],
             meanings: [
                 "已经生效。",
                 "在实际工作中试用，还没有定型。",
@@ -200,6 +206,8 @@ fn words(lang: &str) -> Words {
                 "Local private",
             ],
             filter: "Filter",
+            view: "Show",
+            views: ["Title and statement", "Title", "Statement"],
             meanings: [
                 "In force.",
                 "Being tried on real work before it settles.",
@@ -345,7 +353,7 @@ pub fn pages(project: &Project) -> Result<Vec<Page>, String> {
         let at = |path: &Path| Path::new(&l.dir).join(path);
         let path = PathBuf::from("index.html");
         pages.push(Page {
-            html: index(project, l, &languages(l, other, &path)),
+            html: index(project, l, &langs, &languages(l, other, &path)),
             path: at(&path),
         });
         for (key, node) in project.sources.nodes() {
@@ -527,7 +535,24 @@ fn head(title: &str, lang: &str, class: &str, switch: &str) -> String {
     )
 }
 
-fn index(project: &Project, l: &Lang, switch: &str) -> String {
+/// The ways the index shows a rule, each the value of its radio button
+/// and of `view` in the address: its title and statement, its title, its
+/// statement.
+const VIEWS: [&str; 3] = ["both", "title", "statement"];
+
+/// The script of the index: the view in the address and kept for the next
+/// index opened.
+const SCRIPT: &str = include_str!("site.js");
+
+/// What the rows of the index are drawn from: the project, the page's
+/// language and every language of the site.
+struct Site<'a> {
+    project: &'a Project,
+    l: &'a Lang<'a>,
+    langs: &'a [Lang<'a>],
+}
+
+fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
     let w = &l.w;
     let mut out = head(w.title, l.code, "list", switch);
     let _ = writeln!(out, "<h1>{}</h1>", w.title);
@@ -546,9 +571,23 @@ fn index(project: &Project, l: &Lang, switch: &str) -> String {
         checkbox("instructions", true, w.use_names[0]) + &checkbox("review", true, w.use_names[1]),
         checkbox("off", true, w.show_off) + &checkbox("old", false, w.show_old),
     ];
+    // The views beside the filter: radio buttons, which the style sheet
+    // follows.
     let _ = write!(
         out,
-        "<details class=\"filter\"><summary>{}{}</summary>\n<div class=\"panel\">\n",
+        "<div class=\"controls\">\n<fieldset class=\"views\"><legend>{}</legend>",
+        w.view
+    );
+    for (i, (view, name)) in VIEWS.iter().zip(w.views).enumerate() {
+        let checked = if i == 0 { " checked" } else { "" };
+        let _ = write!(
+            out,
+            "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
+        );
+    }
+    let _ = write!(
+        out,
+        "</fieldset>\n<details class=\"filter\"><summary>{}{}</summary>\n<div class=\"panel\">\n",
         icon(FUNNEL, ""),
         w.filter
     );
@@ -558,7 +597,7 @@ fn index(project: &Project, l: &Lang, switch: &str) -> String {
             "<fieldset><legend>{field}</legend><span class=\"values\">{values}</span></fieldset>"
         );
     }
-    out.push_str("</div></details>\n");
+    out.push_str("</div></details>\n</div>\n");
     out.push_str(&legend(w));
     // The filters by quadrant, which the style sheet cannot list.
     out.push_str("<style>");
@@ -634,8 +673,9 @@ fn index(project: &Project, l: &Lang, switch: &str) -> String {
                 escape(&source.name),
                 escape(&place)
             );
+            let site = Site { project, l, langs };
             for node in source.nodes.values().filter(|n| n.parent.is_none()) {
-                tree(project, l, source, node, 1, "", &mut out);
+                tree(&site, source, node, 1, "", &mut out);
             }
             out.push_str("</ul>\n");
         }
@@ -644,23 +684,20 @@ fn index(project: &Project, l: &Lang, switch: &str) -> String {
         }
         out.push_str("</section>\n");
     }
-    out.push_str("</main>\n</body>\n</html>\n");
+    let _ = write!(
+        out,
+        "</main>\n<script>{SCRIPT}</script>\n</body>\n</html>\n"
+    );
     out
 }
 
 /// A node and the nodes below it in its own source, as list items, each
 /// a row: `lead`, the icon in front of its label, its link and its
-/// tags. A domain's `level` (1 at the top) sets its heading and its bar
-/// (`docs/design/frontend.md`, Components, The tree of rules).
-fn tree(
-    project: &Project,
-    l: &Lang,
-    source: &Source,
-    node: &Node,
-    level: usize,
-    lead: &str,
-    out: &mut String,
-) {
+/// tags; under a rule's row, its statement. A domain's `level` (1 at the
+/// top) sets its heading and its bar (`docs/design/frontend.md`,
+/// Components, The tree of rules).
+fn tree(site: &Site, source: &Source, node: &Node, level: usize, lead: &str, out: &mut String) {
+    let (project, l) = (site.project, site.l);
     let w = &l.w;
     let key = Key::new(&source.name, node.id);
     let children: Vec<&Node> = source.children(node.id).collect();
@@ -686,6 +723,7 @@ fn tree(
         class.push("off");
     }
     if let Some(rule) = &node.rule {
+        class.push("has-statement");
         class.push(match (rule.uses.instructions, rule.uses.review) {
             (true, true) => "u-ir",
             (false, true) => "u-r",
@@ -711,6 +749,13 @@ fn tree(
         tags(project, l, &key, node, "", true),
         mark(project, w, &key, false)
     );
+    if let Some(html) = node
+        .rule
+        .as_ref()
+        .and_then(|r| statement(site, &key, node, &r.statement))
+    {
+        out.push_str(&html);
+    }
     if !children.is_empty() {
         out.push_str("\n<ul class=\"tree\">\n");
         for child in children {
@@ -726,11 +771,37 @@ fn tree(
             } else {
                 level
             };
-            tree(project, l, source, child, level, &lead, out);
+            tree(site, source, child, level, &lead, out);
         }
         out.push_str("</ul>");
     }
     out.push_str("</li>\n");
+}
+
+/// A rule's statement in the index, under its row: in the page's
+/// language or, marked with `languages`, in the rule's own, its
+/// placeholders filled with the values the compiled `AGENTS.md` has.
+/// `None` when it cites what is not there, which the rule's page fails
+/// on.
+fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Option<String> {
+    let l = site.l;
+    let (text, text_lang) = pick_lang(text, node, l.code);
+    let labels = site
+        .langs
+        .iter()
+        .find(|l| l.code == text_lang)
+        .map_or(&l.labels, |l| &l.labels);
+    let html = text_html(site.project, labels, key, "statement", text, text_lang, "").ok()?;
+    if text_lang == l.code {
+        return Some(format!("<div class=\"statement\">\n{html}</div>\n"));
+    }
+    Some(format!(
+        "<div class=\"statement\"{}>\n<span class=\"untranslated\" role=\"img\" aria-label=\"{2}\" title=\"{2}\" lang=\"{3}\">{}</span>{html}</div>\n",
+        lang_attr(text_lang, l.code),
+        icon(LANGUAGES, ""),
+        l.w.untranslated,
+        l.code
+    ))
 }
 
 /// Whether the rule set uses a node: an enabled rule, a domain or
@@ -985,7 +1056,7 @@ fn node_page(
             .iter()
             .find(|l| l.code == text_lang)
             .map_or(&l.labels, |l| &l.labels);
-        let html = text_html(project, labels, key, part, text, text_lang)?;
+        let html = text_html(project, labels, key, part, text, text_lang, "../")?;
         Ok::<_, String>(match text_lang {
             t if t == lang => html,
             t => format!("<div{}>\n{html}</div>\n", lang_attr(t, lang)),
@@ -1026,9 +1097,10 @@ fn node_page(
     Ok(out)
 }
 
-/// A rule's text, in `lang`, as HTML: paragraphs, lists whose items
-/// start with `- `, and code in backticks; each citation of a rule a link
-/// to its page, each of a provision its label.
+/// A rule's text, in `lang`, as HTML on a page `up` below the directory
+/// of its language: paragraphs, lists whose items start with `- `, and
+/// code in backticks; each citation of a rule a link to its page, each of
+/// a provision its label.
 fn text_html(
     project: &Project,
     labels: &Labels,
@@ -1036,6 +1108,7 @@ fn text_html(
     part: &str,
     text: &str,
     lang: &str,
+    up: &str,
 ) -> Result<String, String> {
     let fail = |what: String| Err(format!("{}: {part}: {what}", project.sources.file(key)));
     // Escaping leaves the citations and the placeholders as they are:
@@ -1051,7 +1124,7 @@ fn text_html(
             },
         };
         format!(
-            "<a class=\"value\" href=\"../{}#{name}\" title=\"{name}\">{}</a>",
+            "<a class=\"value\" href=\"{up}{}#{name}\" title=\"{name}\">{}</a>",
             params_page(&source).display(),
             escape(&shown)
         )
@@ -1059,7 +1132,7 @@ fn text_html(
     let text = cite::replace(&text, |c| match c {
         Citation::Rule(text) => match node::cited_ref(text).map(|r| r.key(&key.source)) {
             Some(cited) if project.sources.get(&cited).is_some() => {
-                Ok(link(project, &cited, "../", lang))
+                Ok(link(project, &cited, up, lang))
             }
             _ => fail(format!("cites `{{@rule:{text}}}`, which is not there")),
         },
