@@ -1,0 +1,42 @@
+id = 204
+slug = "commits-language"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write commit messages and pull request titles in the language set for them"
+zh = "commit message 与 PR 标题用为它们设定的语言写"
+
+[text.statement]
+en = "Write commit messages and pull request titles in the language set for commits (parameter `language.commits`, default `en`)."
+zh = "commit message 与 PR 标题用为 commit 设定的语言写 (参数 `language.commits`，默认 `en`)。"
+
+[text.reason]
+en = '''
+Commit messages make up the history, which tools and readers of every language read, and a pull request's title often becomes the subject of the commit that merges it; the rule set chooses one language for both ({@constitution:purpose}).
+'''
+zh = '''
+commit message 组成仓库的历史，各种工具和说各种语言的读者都会读它；PR 的标题又常常成为合并它的那个 commit 的标题。两者用什么语言，由规则集选定一种 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+Code, paths, commands, identifiers and quotations in them stay as they are.
+
+Violated when a commit message or a pull request title is written in another language than the one set.
+'''
+zh = '''
+其中的代码、路径、命令、标识符和引文保持原样。
+
+commit message 或 PR 标题没有用设定的语言写的，即为违反本规定。
+'''
+
+[translations]
+zh = "65fb9a27a8543af6ffb6ba03b329f7c6ea5d975c1edc47b8d4a72ebcb4725413"

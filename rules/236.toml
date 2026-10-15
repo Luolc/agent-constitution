@@ -1,0 +1,42 @@
+id = 236
+slug = "translated-proper-noun-with-original"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Give the original beside a translated proper noun"
+zh = "专有名词用译名时附上原文"
+
+[text.statement]
+en = "When a text gives a proper noun in translation, put its original beside it at its first occurrence and at the key places; where there is no established translation or you are unsure of one, write the original alone."
+zh = "文字里用译名写专有名词时，在首次出现和关键位置附上原文；没有通行译名或拿不准的，直接用原文。"
+
+[text.reason]
+en = '''
+With the original beside it, a reader can search for the noun and match it against the documentation written in its language ({@constitution:purpose}).
+'''
+zh = '''
+附上原文，读者就能拿原词去搜索，去对照用那种语言写的文档 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+This holds for text in the repository and for replies. Code, paths and commands are not proper nouns here.
+
+Violated when a proper noun appears in a text for the first time in translation without its original beside it.
+'''
+zh = '''
+本规定适用于仓库里的文字和回复。代码、路径和命令不算这里说的专有名词。
+
+专有名词在文字里首次出现时用的是译名、旁边却没有附上原文的，即为违反本规定。
+'''
+
+[translations]
+zh = "38da4a7dfe06e21bb5445ff02649fcd54a733a5e0e9596cdd44300f80fbda339"

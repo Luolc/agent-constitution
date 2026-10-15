@@ -1,0 +1,42 @@
+id = 203
+slug = "code-comments-language"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write comments in code in the language set for them"
+zh = "代码注释用为它设定的语言写"
+
+[text.statement]
+en = "Write comments in code in the language set for code comments (parameter `language.code-comments`, default `en`)."
+zh = "代码注释用为代码注释设定的语言写 (参数 `language.code-comments`，默认 `en`)。"
+
+[text.reason]
+en = '''
+Comments are read with the code, by whoever works on it, and the rule set chooses the language those readers share ({@constitution:purpose}).
+'''
+zh = '''
+注释是和代码一起读的，读的是改这份代码的人，用什么语言由规则集按这些读者共同的语言来选 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+Docstrings count as comments. A quotation kept in its original language ({@rule:214}) and text in another language that serves as data or test input do not count.
+
+Violated when a comment in code is written in another language than the one set.
+'''
+zh = '''
+docstring 也算注释。照原文保留的引文 ({@rule:214})，以及作为数据或测试输入出现的其他语言文字，都不算违反。
+
+代码注释没有用设定的语言写的，即为违反本规定。
+'''
+
+[translations]
+zh = "b9422f1c84e047f8aabb3e7df2a94228d23510b23fcef19d9c6240ca5f20a581"

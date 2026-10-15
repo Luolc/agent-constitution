@@ -1,0 +1,42 @@
+id = 213
+slug = "pull-request-text-language"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write pull request descriptions and comments in the language set for them"
+zh = "PR 正文与评论用为它们设定的语言写"
+
+[text.statement]
+en = "Write pull request descriptions and the comments on pull requests, reviews included, in the language set for pull requests (parameter `language.pull-requests`, default `en`)."
+zh = "PR 正文和 PR 上的评论 (包括审查意见) 用为 PR 设定的语言写 (参数 `language.pull-requests`，默认 `en`)。"
+
+[text.reason]
+en = '''
+A pull request's description and its discussion are written for the people who read the repository, and the rule set chooses the language they read ({@constitution:purpose}).
+'''
+zh = '''
+PR 的正文和其中的讨论是写给仓库的读者看的，用什么语言由规则集按他们读的语言来选 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+The title of a pull request has a rule of its own ({@rule:204}). Code, paths, commands, identifiers and quotations stay as they are.
+
+Violated when a pull request description or a comment on a pull request is written in another language than the one set.
+'''
+zh = '''
+PR 的标题另有规定 ({@rule:204})。其中的代码、路径、命令、标识符和引文保持原样。
+
+PR 正文或 PR 上的评论没有用设定的语言写的，即为违反本规定。
+'''
+
+[translations]
+zh = "7f0ab8a33e58e7caf063a75bb0aaaf432450a565b1fc2461298df2d8a1dfd3ff"

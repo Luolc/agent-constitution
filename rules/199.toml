@@ -1,0 +1,42 @@
+id = 199
+slug = "read-the-writing-guide"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Read the writing guide before starting a task"
+zh = "开始任务之前先读写作指南"
+
+[text.statement]
+en = "Before starting a task, read the writing guide that the rules in force name, together with the parts it names for the language you will write in, and write all text that people read by it."
+zh = "开始任务之前，先读现行规定指定的写作指南，连同它为要写的语言指定的部分一起读；写给人读的文字都按它写。"
+
+[text.reason]
+en = '''
+Text that reads like a machine translation or a model's draft costs a person more effort to read and is easier to misread ({@constitution:purpose}). A writing guide holds the faults already found and their fixes; read before writing, it saves rewriting afterwards.
+'''
+zh = '''
+读起来像机器翻译或模型草稿的文字，人要多花工夫才读得懂，还容易读错 ({@constitution:purpose})。写作指南收了已经查实的毛病和改法，写之前读，比写完再改省事。
+'''
+
+[text.verification]
+en = '''
+The guide is a skill or a document that a rule enabled in the rule set names, with where to find it; where no enabled rule names one, this rule requires nothing. Text that people read includes replies, documents, comments in code, commit messages and messages between agents. The wording follows the guide; punctuation and spacing are left to the formatter the repository uses (limae, for example), and no sentence is rewritten for their sake.
+
+Violated when an agent writes text that people read without having read, at the start of the task, the guide and the parts it names for the language written, or when the text uses a wording that the guide lists as a fault and gives a fix for.
+'''
+zh = '''
+写作指南是规则集里启用的某条规定指定的 skill 或文档，那条规定同时写明它在哪里；没有启用的规定指定写作指南的，本规定不提出要求。写给人读的文字包括回复、文档、代码注释、commit message 和 agent 之间的消息。措辞按指南写；标点与空格交给仓库用的格式化工具 (比如 limae)，不为排版改写句子。
+
+agent 写了给人读的文字，而开始这次任务时没有读指南以及它为所写语言指定的部分的，或者文字里出现了指南列为毛病、给了改法的说法的，即为违反本规定。
+'''
+
+[translations]
+zh = "f1f5626396226fb73120d3dec99db65b1fac15bbb963149b257e379813814f0d"

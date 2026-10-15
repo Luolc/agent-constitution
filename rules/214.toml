@@ -1,0 +1,42 @@
+id = 214
+slug = "quote-originals"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Quote provisions, specifications and official definitions in the original"
+zh = "条款、规范和官方定义引原文"
+
+[text.statement]
+en = "When quoting a key original such as a provision, a specification or an official definition, quote the original text rather than a translation of it, and add a summary after it where one is needed."
+zh = "引用条款、规范、官方定义这类关键原文时，直接引原文，不强行翻译；需要的话在后面附概述。"
+
+[text.reason]
+en = '''
+A translation changes the wording, and the force of a provision or a definition often lies in its wording. Quoted in the original, it lets the reader check the text itself, not a translator's reading of it ({@constitution:evidence.facts}).
+'''
+zh = '''
+翻译会改变措辞，而条款与定义的效力往往就在措辞上。照原文引，读者核对的是原文本身，不是译者的理解 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+The quotation is marked with quotation marks or as a block quote and keeps the language and the words of the original; a summary stands outside it and does not pass for the original.
+
+Violated when a text gives a provision, a specification or an official definition in the form of a quotation, but in translation and without the original.
+'''
+zh = '''
+引文用引号或引用块标出，保留原文的语言和字句；概述写在引文之外，不冒充原文。
+
+文字以引用的形式给出条款、规范或官方定义，而给出的是译文、没有原文的，即为违反本规定。
+'''
+
+[translations]
+zh = "325e7542afb2db7b180fd61a6248fb6e6518055fca32dfc24ffacecb429be477"

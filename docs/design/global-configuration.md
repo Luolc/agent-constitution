@@ -11,20 +11,21 @@ and [Rule sources](rule-sources.md).
 
 ## Contents
 
-- [The statute directory](#the-statute-directory)
+- [The statute directories](#the-statute-directories)
 - [The global configuration](#the-global-configuration)
 - [Which source a name means](#which-source-a-name-means)
 - [Git sources](#git-sources)
 - [Adding a source](#adding-a-source)
 
-## The statute directory
+## The statute directories
 
-statute keeps its own files in `~/.statute/`, as Claude Code keeps
-its own in `~/.claude/`:
+statute keeps its own files in two directories of the home directory,
+after the XDG Base Directory Specification, on Linux and macOS alike:
 
 ```text
-~/.statute/
+$XDG_CONFIG_HOME/statute/           ~/.config/statute/ by default
   config.toml                       the global configuration
+$XDG_CACHE_HOME/statute/            ~/.cache/statute/ by default
   repos/<name>-<hash>/              a bare clone of each git source
   snapshots/<commit>/               the files of one commit, written once
 ```
@@ -40,9 +41,21 @@ its own in `~/.claude/`:
   after; a commit names its content, so the same snapshot serves every
   clone that has the commit.
 
-Everything under `repos/` and `snapshots/` can be deleted at any time:
-statute clones and writes it again when it needs it. The home
-directory is the one the system reports (`HOME` on Unix).
+Everything in the cache directory can be deleted at any time: statute
+clones and writes it again when it needs it. That is what a cache is,
+and the specification keeps it apart from the configuration, which the
+user writes and keeps; a backup or a synced set of dotfiles takes the
+one and leaves the other. `XDG_CONFIG_HOME` and `XDG_CACHE_HOME` are
+used when set to an absolute path; unset, empty or relative, which the
+specification says to ignore, they fall back to `.config` and `.cache`
+in the home directory, the one the system reports (`HOME` on Unix).
+macOS takes the same paths, not `~/Library`, as uv, ruff and mise do
+for a command-line tool whose configuration the user edits by hand.
+A directory named `~/.statute/` would also have the name of the
+`.statute/` statute keeps in a repository, and the two would meet when
+statute runs in the home directory. There is no migration from
+`~/.statute/`: no repository used statute before. Not built yet:
+today statute keeps all three in `~/.statute/`.
 
 `statute init --global` writes `config.toml` with the built-in default
 written out (below), or with `R` at the git address `--source` gives,
@@ -93,7 +106,7 @@ once it does, the default follows the newest tag.
 **Which layer a global source joins.** A public source of the global
 configuration joins the rule set of `statute.toml`. A private one joins
 it in a private repository (`public = false`), and in a public one only
-the private layer of `statute.private.toml`
+the private layer of the private rule set
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)):
 the committed files of a public repository never name it. Enabling a rule
 of a private source in a public `statute.toml` fails, naming two ways:
@@ -111,12 +124,12 @@ the source:
 4. the built-in default, for `R`.
 
 Resolving `statute.toml`, its lock file and its `AGENTS.md` never reads
-`statute.private.toml`. The private layer only adds names, as
+the private rule set, `private.toml`. The private layer only adds names, as
 [Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)
-says: `statute.private.toml` may not name a source the public layer
+says: `private.toml` may not name a source the public layer
 has, whichever of the four gave it, and a name it gives is otherwise
 looked up in it first, then in the global configuration's private
-sources the layer holds, then in `statute.private.lock`.
+sources the layer holds, then in `private.lock`.
 
 A rule set that names a source replaces the global configuration's
 entry whole: fields are not merged across layers. `name = false` in a
@@ -152,7 +165,9 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
   tests use, with no network.
 - One of `branch` and `tag` says what to follow. `path` and `git` in one
   entry fail, as before.
-- Its rules are in `rules/` at the top of the repository, its
+- Its rules are in `rules/` at the top of the repository, or the
+  directory `rules-dir` names
+  ([Sources and references](rule-sets.md#sources-and-references)), its
   constitution in `constitution/<edition>/`, and its skills in
   `skills/<name>/`, as in a source on disk.
 
@@ -202,7 +217,7 @@ Every source but `R` has its `public` there, a source on disk as well.
   and fail at once, asking the user to fetch in that clone.
 
 **Reading.** statute clones a source once, `git clone --bare`, into
-`repos/` ([The statute directory](#the-statute-directory)), and fetches
+`repos/` ([The statute directories](#the-statute-directories)), and fetches
 into that clone, `git fetch` with the branches and tags of the remote,
 whenever a command above needs a commit the clone lacks or the newest
 one. It reads a commit through its snapshot, writing the commit's files
@@ -250,9 +265,9 @@ their text into public files
 
 | | Written to |
 | --- | --- |
-| `--global` | `~/.statute/config.toml` |
+| `--global` | `$XDG_CONFIG_HOME/statute/config.toml` |
 | a public source, or any source of a private repository | `statute.toml` |
-| a private source of a public repository | `statute.private.toml`, which is created with `base = "statute.toml"` when it is not there, after the check that git ignores it |
+| a private source of a public repository | the private rule set, `$(git rev-parse --git-path common/statute)/private.toml`, created when it is not there, with the source's `path` made absolute; the command prints the file's path (not built yet: today `statute.private.toml`, next to `statute.toml`) |
 
 A private source in a public repository goes to the private layer
 rather than stopping the command: nothing in that layer reaches a
@@ -260,9 +275,9 @@ committed file, and a private overlay is the usual reason to add a
 private source. The note says where it went and that `--public` writes
 it to `statute.toml`. A name the file being written already holds fails
 the command, and so does a name the public layer holds when the source
-goes to `statute.private.toml`, since the private layer only adds. A
+goes to the private rule set, since the private layer only adds. A
 name that only the global configuration holds is replaced in
-`statute.toml` or `statute.private.toml`, as
+`statute.toml` or `private.toml`, as
 [Which source a name means](#which-source-a-name-means) says, and the
 note says so. When a lock file is there, it is written again, as `add`
 writes it.
