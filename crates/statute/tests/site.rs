@@ -620,6 +620,10 @@ fn site_draws_the_tree_by_level() {
         top.starts_with("<h4 class=\"group top\"><a href=\"R/1.html\" aria-label=\"R1 Domain 1\">"),
         "{top}"
     );
+    // Below domain 1, the one-of 9 comes before the subdomain 2, though
+    // its number is higher.
+    let at = |page: &str| index.find(&format!("href=\"R/{page}.html\"")).expect(page);
+    assert!(at("9") < at("2"), "{index}");
     let deep = group(&index, "R/4.html");
     assert!(
         deep.starts_with(
