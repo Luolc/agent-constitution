@@ -86,7 +86,8 @@ def group(
   kind: str,
   parent: int | None,
   cites: str = "3",
-  titles: tuple[str, str] | None = None,
+  title: str | None = None,
+  zh: str | None = None,
 ) -> str:
   """Return the file of a domain or a one-of, translated.
 
@@ -99,12 +100,14 @@ def group(
     parent: its parent, None for a domain.
     cites: the rule a domain's applicability cites, as `{@rule:...}`
       names it.
-    titles: its title in English and in Chinese, if not `Group <id>`.
+    title: its English title, `Group <id>` when None.
+    zh: its Chinese title, `组 <id>` when None.
 
   Returns:
     The TOML text.
   """
-  title, zh = titles or (f"Group {node_id}", f"组 {node_id}")
+  title = title or f"Group {node_id}"
+  zh = zh or f"组 {node_id}"
   texts = [title]
   text = (
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
@@ -174,6 +177,18 @@ FILES = {
 }
 
 
+def long_domain(root: Path) -> None:
+  """Give the domain 1 a title as long as the longest of this repo's.
+
+  Args:
+    root: the checkout.
+  """
+  title = "Agent instructions, skills and the settings of their tools"
+  (root / "rules/1.toml").write_text(
+    group(1, "domain", None, title=title), encoding="utf-8"
+  )
+
+
 def subdomain(root: Path) -> None:
   """Make the one-of 2 a domain under the domain 1.
 
@@ -200,11 +215,10 @@ def shared_titles(root: Path) -> None:
   Args:
     root: the checkout.
   """
-  tiers = ("Tiers", "层级")
   files = {
-    7: group(7, "domain", 1, titles=tiers),
+    7: group(7, "domain", 1, title="Tiers", zh="层级"),
     8: group(8, "domain", None),
-    9: group(9, "domain", 8, titles=tiers),
+    9: group(9, "domain", 8, title="Tiers", zh="层级"),
   }
   for node_id, text in files.items():
     (root / f"rules/{node_id}.toml").write_text(text, encoding="utf-8")
