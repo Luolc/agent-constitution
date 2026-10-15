@@ -331,6 +331,9 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         .map(statute::compile::full_text)
         .transpose()
         .map_err(|e| eprintln!("statute: error: {e}"))?;
+    if full.is_some() {
+        private::check_ignored(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+    }
     let mut written = statute::compile::compile(&project)
         .and_then(|out| statute::compile::write(&out, &path))
         .map_err(|e| {
@@ -681,11 +684,13 @@ fn lock_command(root: &Path) -> Result<(), ()> {
             );
         }
     }
-    write_lock(root, &project)?;
-    match both {
-        Some(both) => write_private_lock(root, &project, &both),
-        None => Ok(()),
+    // Both layers are resolved; git is asked before either lock file is
+    // written.
+    if both.is_some() {
+        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     }
+    write_lock(root, &project)?;
+    relock_private(root, &project, both.as_ref())
 }
 
 /// What to do about a rule edited without a new revision
