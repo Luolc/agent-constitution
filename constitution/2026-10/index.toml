@@ -1,11 +1,15 @@
 status = "active"
 edition = "2026-10"
-revision = "1"
+revision = "2"
 languages = ["en", "zh"]
 
 [title]
 en = "Agent Constitution"
 zh = "Agent 宪法"
+
+[url]
+en = "https://agent-constitution.luolc.com/editions/2026-10/"
+zh = "https://agent-constitution.luolc.com/zh/editions/2026-10/"
 
 [front]
 en = '''
