@@ -626,8 +626,13 @@ fn export(dir: &Path) -> Result<(), ()> {
 fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     use statute::check::{Context, Outcome};
     let (public, private) = load_layers(root, &env(Mode::Read)?)?;
+    let compiled = statute::compile::compile(&public).ok();
     let project = private.map_or(public, |p| p.both);
-    let ctx = Context { root, base };
+    let ctx = Context {
+        root,
+        base,
+        compiled: compiled.as_ref(),
+    };
     let visibility = statute::check::visibility(&project, &ctx);
     let reports = statute::check::run(&project, &ctx);
     let sources = &project.sources;
