@@ -271,7 +271,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R104 In `authority`, cite the most specific provisions of the constitution that the rule refines, and never a provision together with one above it.
 - R105 Give each domain an `[applicability]` that says what it governs, which repositories should enable it and when one need not.
 - R106 While the constitution is active, add a new rule meant for real work with `status = "trial"`.
-- R107 Move a trial rule to `active` only once it has been used in real work at least 5 times with no false positive left unresolved in that time.
 - R108 When a change to a rule changes what counts as compliant, write the new requirement as a rule with a new ID, and mark the old rule superseded, naming the rules that take its place.
 - R109 When a change to a rule's original text or fields keeps what counts as compliant, edit the rule in place and raise its revision by one.
 - R110 When a change to a rule touches only its translations, keep its revision.
@@ -280,6 +279,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R230 When the ways of meeting a need differ only in one value filled into the same sentence, write one rule that names a parameter for that value; when they differ in the requirement itself, write a one-of whose options are each a complete rule. Write no condition on a parameter's value into a rule's text.
 - R233 Put `review` in a rule's `uses` only when a reviewer can decide from the diff and the pull request description alone whether the rule was broken, and `instructions` only when an agent needs to know the rule while it works.
 - R239 Write a rule's statement so that it can be read and followed on its own, as one line of the compiled instructions, resting on nothing that line does not show, such as the rule's title, reason or verification, its domain, its place in the tree or its `requires`. Name another rule in it only by a citation, never by its position, as in "the rule above" or "the other options".
+- R289 Move a trial rule to `active` only once a principal has said explicitly that it may move.
 - L6 Keep each rule, one-of and domain of the first-party source in `rules/<id>.toml`, named by its ID without zero padding, and never delete one or reuse its ID: a rule that goes is superseded or repealed.
 - L7 In a first-party rule, cite a rule as `{@rule:<id>}` and the constitution as `{@constitution:<id>}`, and in the constitution cite without a prefix; never cite a rule by its slug.
 - R129 Put each worktree of a repository at `<root>/<repo>/<slug>/`, under the root the jurisdiction designates for worktrees, never inside a repository's directory.
