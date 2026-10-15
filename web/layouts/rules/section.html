@@ -38,6 +38,9 @@
 <article class="markdown book-article"><div class="design rules">
 {{ printf "# %s {anchor=false}" .Title | .RenderString }}
 <p class="rules-intro">{{ i18n "rules-intro" }}</p>
+{{- with (index hugo.Data.rules site.Language.Lang).params }}
+<p class="rules-params">{{ range $i, $page := . }}{{ if $i }} · {{ end }}<a href="{{ (site.GetPage (printf "/rules/%s" $page.key)).RelPermalink }}">{{ (site.GetPage (printf "/rules/%s" $page.key)).Title }}</a>{{ end }}</p>
+{{- end }}
 <form class="rules-controls" action="{{ .RelPermalink }}" method="get" hidden>
 <input type="hidden" name="filter" value="1">
 <details class="rules-filter"><summary>{{ i18n "rules-filter" }}</summary>

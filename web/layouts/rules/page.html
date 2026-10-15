@@ -10,15 +10,19 @@
   and, for an option of a one-of, whether it is the default one; when
   the site has more than one source, the quadrant and the name of the
   node's source, and when it has a rule set, whether the set enables the
-  rule. A one-of marks its default option among the nodes below it, and
+  rule. A placeholder in the title is marked here as in the text, and
+  only here. A page of parameters is
+  layouts/_partials/rules/params.html instead. A one-of marks its default option
+  among the nodes below it, and
   its metadata names it; a domain's or a rule's gives its own `default`,
   and a rule's its `uses`. The table of contents at
   the right lists the headings below it. */ -}}
 {{ define "main" }}
+{{- with .Params.paramsPage }}{{ partial "rules/params.html" (dict "page" $ "data" .) }}{{ else }}
 {{- $rule := .Params.rule }}
 {{- $lang := site.Language.Lang }}
 <article class="markdown book-article"><div class="design rules rule">
-<h1><span class="rule-label">{{ $rule.label }}</span> <span lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</span></h1>
+<h1><span class="rule-label">{{ $rule.label }}</span> <span lang="{{ $rule.shown }}">{{ $rule.titleMarked | .RenderString }}</span></h1>
 {{- $many := gt (len (index hugo.Data.rules $lang).sources) 1 }}
 <p class="rule-tags">{{ partial "rules/default.html" $rule }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" $rule.source) }}{{ end }}{{ partial "rules/enabled.html" $rule }}</p>
 {{- with $rule.supersededBy }}
@@ -83,11 +87,20 @@
 </dl>
 </div>
 </article>
+{{- end }}
 {{ end }}
 
-{{- /* The table of contents: the page's headings, as above. */ -}}
+{{- /* The table of contents: the page's headings, as above, or the
+  parameters of a page of them. */ -}}
 {{ define "toc" }}
 {{ partial "docs/inject/toc-before" . }}
+{{- with .Params.paramsPage }}
+<nav id="TableOfContents"><ul>
+  {{- range .params }}
+<li><a href="#{{ .name }}">{{ .title }}</a></li>
+  {{- end }}
+</ul></nav>
+{{- else }}
 {{- $rule := .Params.rule }}
 <nav id="TableOfContents"><ul>
 {{- range slice "reason" "verification" "authority" "relations" "metadata" }}
@@ -96,4 +109,5 @@
   {{- end }}
 {{- end }}
 </ul></nav>
+{{- end }}
 {{ end }}
