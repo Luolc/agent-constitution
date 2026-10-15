@@ -8,10 +8,10 @@ use toml_edit::{Array, DocumentMut, Item, Value};
 use statute::diag::Diagnostics;
 use statute::lock;
 use statute::manifest::{self, Key, Manifest};
-use statute::node::{Kind, Status};
+use statute::node::Kind;
 use statute::private;
 use statute::project::{Env, Project};
-use statute::resolve::{Reason, label, refs};
+use statute::resolve::{Reason, current_successors, label, refs};
 use statute::source::describe;
 
 /// Compile a constitution and the rules a repository chooses into the
@@ -785,31 +785,10 @@ fn why(project: &Project, key: &Key) -> String {
         .join("; ")
 }
 
-/// What takes the place of superseded `key`, following the chain while
-/// each rule on it has one successor: nothing when `key` is not
-/// superseded, the rule at the end of the chain, or the successors of the
-/// rule where the chain splits.
-fn successors(project: &Project, key: &Key) -> Vec<Key> {
-    let mut seen = vec![key.clone()];
-    let mut at = key.clone();
-    while let Some(node) = project.sources.get(&at)
-        && node.status == Status::Superseded
-    {
-        match statute::resolve::successors(&at, node).as_slice() {
-            [next] if !seen.contains(next) => {
-                seen.push(next.clone());
-                at = next.clone();
-            }
-            [_] | [] => break,
-            many => return many.to_vec(),
-        }
-    }
-    if at == *key { Vec::new() } else { vec![at] }
-}
-
 /// The rule set with each superseded entry of `rules` and `packs` replaced
 /// by its successor, or taken out when the successor is listed already; an
-/// entry with more than one successor is left for the user to choose:
+/// entry that several rules together take the place of is left for the
+/// user to replace with them:
 /// the original text, the changed one and a line per replacement. `None`
 /// when nothing is superseded.
 fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec<String>)>, ()> {
@@ -833,12 +812,12 @@ fn replace(root: &Path, project: &Project) -> Result<Option<(String, String, Vec
         let mut listed = keys.clone();
         for i in (0..keys.len()).rev() {
             let Some(old) = &keys[i] else { continue };
-            let new = match successors(project, old).as_slice() {
+            let new = match current_successors(&project.sources, old).as_slice() {
                 [] => continue,
                 [new] => new.clone(),
                 many => {
                     lines.push(format!(
-                        "left {old} in `{field}`: superseded by {}; choose among them with `statute add` and `statute remove`",
+                        "left {old} in `{field}`: superseded by {}, which together take its place; add them with `statute add`, leaving out any that does not apply, and take {old} out with `statute remove`",
                         refs(many)
                     ));
                     continue;

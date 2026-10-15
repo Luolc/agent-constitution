@@ -116,7 +116,7 @@ rust-toolchain.toml       the Rust toolchain version, read by rustup
 ```
 
 The design is split into files by topic, so that changes to different
-topics touch different files, as rule 82 (`design-files-by-topic`) asks.
+topics touch different files, as rule 113 (`design-file-per-topic`) asks.
 [Rule system](rule-system.md) is the overview of the files that describe
 the rule system, each listed in the index
 ([agent-constitution design](README.md)).
