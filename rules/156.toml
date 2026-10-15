@@ -1,0 +1,42 @@
+id = 156
+slug = "project-skill-layout"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 150
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep project skills in `.agents/skills/` and link each from `.claude/skills/`"
+zh = "项目 skill 的源文件在 `.agents/skills/`，`.claude/skills/` 逐个软链过去"
+
+[text.statement]
+en = "Keep the source of each project skill at `.agents/skills/<name>/SKILL.md` in the repository, and make `.claude/skills/<name>` a relative symlink to the directory `../../.agents/skills/<name>`, one per skill."
+zh = "项目 skill 的源文件放在仓内 `.agents/skills/<name>/SKILL.md`，`.claude/skills/<name>` 是指向目录 `../../.agents/skills/<name>` 的相对软链，每个 skill 一条。"
+
+[text.reason]
+en = '''
+Codex and Grok read `.agents/skills/`, Claude Code reads `.claude/skills/` (read 2026-10-14). With one copy of the source, which Claude Code reaches through the symlinks, the two places cannot drift into two versions ({@constitution:no-restating}).
+'''
+zh = '''
+Codex 和 Grok 读 `.agents/skills/`，Claude Code 读 `.claude/skills/` (2026-10-14 读到的)。源文件只放一份，Claude Code 经软链读到同一份，两边不会写成两个版本 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+The symlink points at the skill's directory, not at the whole `.agents/skills/` directory and not at `SKILL.md`; the path is relative, so it still resolves in a checkout elsewhere.
+
+Violated when a project skill's source is not in `.agents/skills/<name>/`, `.claude/skills/` holds copied files instead of symlinks, a symlink points at the whole directory or at `SKILL.md`, or a symlink uses an absolute path.
+'''
+zh = '''
+软链指向 skill 的目录，不是整个 `.agents/skills/` 目录，也不是 `SKILL.md` 文件；用相对路径，换一个检出位置也不会断。
+
+项目 skill 的源文件不在 `.agents/skills/<name>/`，`.claude/skills/` 下是复制的文件而不是软链，软链链了整个目录或 `SKILL.md` 文件，或者软链用了绝对路径的，即为违反本规定。
+'''
+
+[translations]
+zh = "d1a0a8e8d89284adcd5bb11877c595f8cc487a02e7072e8eb3b2de54910f2809"

@@ -1,0 +1,22 @@
+id = 150
+slug = "claude-code"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 149
+
+[title]
+en = "Claude Code"
+zh = "Claude Code"
+
+[applicability]
+en = '''
+Covers what holds only where agents use Claude Code. Enable it in a repository or on a machine where agents use Claude Code; where none does, leave it off.
+'''
+zh = '''
+管只在 agent 使用 Claude Code 时才成立的做法。agent 使用 Claude Code 的仓库或机器启用；没有 agent 使用它的，不启用。
+'''
+
+[translations]
+zh = "34a9afa2246baffc0c871716f0179a9d70ceba07ba9fa04b8b2433edb234ec08"

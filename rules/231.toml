@@ -1,0 +1,42 @@
+id = 231
+slug = "user-skills-one-source"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 149
+authority = ["separate-instruction-changes"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Install user-level skills only from their one designated source"
+zh = "用户级 skill 只从指定的那一个源安装"
+
+[text.statement]
+en = "Install each user-level skill only from the one source the jurisdiction designates for user-level skills."
+zh = "每个用户级 skill 都只从法域为用户级 skill 指定的那一个源安装。"
+
+[text.reason]
+en = '''
+A user-level skill binds agents in every project on every machine where it is installed. Changed in one source, through review, and installed from there, it is the same on every machine ({@constitution:separate-instruction-changes}); one installed by another route differs from the rest and escapes that review.
+'''
+zh = '''
+用户级 skill 在装了它的每台机器、每个项目里约束 agent。在同一个源里改、经过审查、再从那里安装，每台机器上的才一致 ({@constitution:separate-instruction-changes})；经别的途径装上的，与其余机器不同，也绕开了这道审查。
+'''
+
+[text.verification]
+en = '''
+The source, and the way of installing from it, are designated by the jurisdiction, for example in a rule of a lower layer. A user-level skill is one installed for an agent tool's user, outside any repository, so that it loads in every project.
+
+Violated when a user-level skill is installed on a machine other than from that source.
+'''
+zh = '''
+这个源以及从它安装的方式由法域指定，例如写在下层的规定里。用户级 skill，指装在任何仓库之外、给 agent 工具的用户装的、在每个项目里都会加载的 skill。
+
+某个用户级 skill 不是从这个源装到机器上的，即为违反本规定。
+'''
+
+[translations]
+zh = "33b8544fe8e1a17d3b901b0bfb45c166e430e0d64e93e283b2a002d44e06a384"

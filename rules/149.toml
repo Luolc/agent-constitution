@@ -1,0 +1,21 @@
+id = 149
+slug = "agent-setup"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Agent instructions, skills and tools"
+zh = "agent 的指令、skill 与工具"
+
+[applicability]
+en = '''
+Covers where the instruction files and skills of agents are kept and how they are installed, and, in its subdomains, what holds for one agent tool only. Enable it in a repository whose agents read or write instruction files or skills, or where agents install skills; a repository whose agents only use their tools, without touching their instructions, skills or settings, need not.
+'''
+zh = '''
+管 agent 的指令文件与 skill 放在哪里、怎样安装，以及 (在子 domain 里) 只对某一个 agent 工具成立的做法。agent 读写指令文件或 skill、或者要安装 skill 的仓库启用；agent 只使用工具、不碰它们的指令、skill 和配置的仓库不必启用。
+'''
+
+[translations]
+zh = "4f50036264f3bfa3ddfc5ab3293f3f0ba3c59cfe3a5f9196106be3cd1575262e"

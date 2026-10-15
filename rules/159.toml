@@ -1,0 +1,42 @@
+id = 159
+slug = "user-skills-project-independent"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 149
+authority = ["division-of-instructions"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep only project-independent tool skills at the user level"
+zh = "用户级 skill 只收与项目无关的工具 skill"
+
+[text.statement]
+en = "Keep among the user-level skills only tool skills that are of use in any project and need not be turned off in any."
+zh = "用户级 skill 只收哪个项目都用得上、不需要按项目关掉的工具 skill。"
+
+[text.reason]
+en = '''
+A user-level skill takes effect in every project and cannot be turned off per project, so it holds only skills for tools any project may use, such as reading mail or replying in a chat. What serves one project belongs to that project ({@constitution:division-of-instructions}).
+'''
+zh = '''
+用户级 skill 在每个项目里都生效，没法按项目关掉，所以只放读邮件、在聊天里回复这类哪个项目都用得上的工具 skill。只为一个项目服务的，归那个项目 ({@constitution:division-of-instructions})。
+'''
+
+[text.verification]
+en = '''
+A user-level skill is one installed for an agent tool's user, outside any repository, so that it loads in every project.
+
+Violated when a user-level skill is of use only to some projects, or needs to be turned off in some project.
+'''
+zh = '''
+用户级 skill，指装在任何仓库之外、给 agent 工具的用户装的、在每个项目里都会加载的 skill。
+
+某个用户级 skill 只对部分项目有用，或者需要在某个项目里关掉的，即为违反本规定。
+'''
+
+[translations]
+zh = "89419a861006d703389ba13dbb7b606061d2d64a9118e87077aec4521e4d8e7b"

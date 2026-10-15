@@ -1,0 +1,22 @@
+id = 152
+slug = "grok"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 149
+
+[title]
+en = "Grok"
+zh = "Grok"
+
+[applicability]
+en = '''
+Covers what holds only where agents use Grok. Enable it in a repository or on a machine where agents use Grok; where none does, leave it off.
+'''
+zh = '''
+管只在 agent 使用 Grok 时才成立的做法。agent 使用 Grok 的仓库或机器启用；没有 agent 使用它的，不启用。
+'''
+
+[translations]
+zh = "32b0a33159d4ab3122517ca83fcc5634dbc15e0ad1572cb664b7ad16ae78cdcc"
