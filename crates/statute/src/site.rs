@@ -159,6 +159,9 @@ a{color:#05c}code{background:#f3f3f3;padding:0 .2em;border-radius:3px}\
 .tag{font-size:.8em;color:#666;margin-left:.4em}.on{color:#080}\
 ul.tree{list-style:none;padding-left:1.2rem}nav label{margin-right:1rem}\
 section{border-top:1px solid #ddd;margin-top:1.5rem}\
+.q{font-size:.8em;margin-left:.4em;padding:0 .4em;border-radius:3px;white-space:nowrap}\
+.q.global-public{background:#dbeafe;color:#1e3a8a}.q.global-private{background:#fde7c8;color:#7c2d12}\
+.q.local-public{background:#dcfce7;color:#14532d}.q.local-private{background:#f3e3f9;color:#581c87}\
 body:has(#show-old:not(:checked)) .old,body:has(#show-off:not(:checked)) .off{display:none}";
 
 /// One page of the site: its path below the site's directory, and its
@@ -297,6 +300,7 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
         c => format!(" class=\"{}\"", c.join(" ")),
     };
     let _ = write!(out, "<li{class}>{}", link(project, &key, ""));
+    out.push_str(&mark(project, w, &key, false));
     out.push_str(&tags(project, w, &key, node, ""));
     let children: Vec<&Node> = source.children(node.id).collect();
     if !children.is_empty() {
@@ -322,6 +326,21 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
         escape(&key.to_string()),
         escape(title)
     )
+}
+
+/// The quadrant of a node's source, and with `named` the source's name:
+/// the class gives the mark its color, and the words say it without one.
+fn mark(project: &Project, w: &Words, key: &Key, named: bool) -> String {
+    let Some(source) = project.sources.source(&key.source) else {
+        return String::new();
+    };
+    let q = Quadrant::of(source);
+    let name = if named {
+        format!(" · {}", escape(&source.name))
+    } else {
+        String::new()
+    };
+    format!("<span class=\"q {}\">{}{name}</span>", q.class(), q.name(w))
 }
 
 /// A node's kind, status and, for a rule, what this rule set does with
@@ -390,9 +409,10 @@ fn node_page(
     }
     let _ = writeln!(
         out,
-        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}",
+        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}{}",
         escape(&key.to_string()),
         escape(title),
+        mark(project, w, key, true),
         tags(project, w, key, node, "../")
     );
     if let Some(slug) = &node.slug {
