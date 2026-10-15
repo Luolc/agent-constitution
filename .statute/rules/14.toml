@@ -1,6 +1,6 @@
 id = 14
 slug = "lock-with-pin"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"

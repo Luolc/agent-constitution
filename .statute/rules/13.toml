@@ -1,6 +1,6 @@
 id = 13
 slug = "uv-sync-before-tools"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -25,7 +25,7 @@ The commit hooks and `uv run` use the `.venv` as it is and never install into it
 
 [text.verification]
 en = '''
-The root `pyproject.toml` declares the three members of the uv workspace under `tools/` and the development tools, `.python-version` the interpreter, and `uv.lock` locks them all. The commit hooks run the tools with `uv run --frozen --no-sync`.
+The root `pyproject.toml` declares the two members of the uv workspace under `tools/` and the development tools, `.python-version` the interpreter, and `uv.lock` locks them all. The commit hooks run the tools with `uv run --frozen --no-sync`.
 
 Violated when a check is reported from a `.venv` that does not match `uv.lock`.
 '''

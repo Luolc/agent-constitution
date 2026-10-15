@@ -1,6 +1,6 @@
 id = 9
 slug = "reserved-directories"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"

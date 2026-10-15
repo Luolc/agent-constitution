@@ -1,6 +1,6 @@
 id = 16
 slug = "touched-checks"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -17,7 +17,14 @@ uses = ["instructions", "review"]
 en = "Run the checks of what you change before a push"
 
 [text.statement]
-en = "Before a push, run on the version you push the checks this rule lists for what the change touches."
+en = '''
+Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
+
+- a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
+- `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
+- the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
+- the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
+'''
 
 [text.reason]
 en = '''
@@ -26,19 +33,7 @@ en = '''
 
 [text.verification]
 en = '''
-Every push: `uv run pre-commit run --all-files` (gitleaks on the staged changes, `uv-lock`, ruff, pydoclint, basedpyright, `cargo-fmt`, `statute-validate`, the constitution build check, the tests of each member, `check-design-translation`, `lint-zh-sources` and limae on the Markdown files), and `uv run check-instruction-changes --base origin/main`.
+The commit hooks run gitleaks on the staged changes, `uv-lock`, ruff, pydoclint, basedpyright, `cargo-fmt`, `statute validate rules`, the constitution build check, the tests of each member of the uv workspace, `check-design-translation`, `lint-zh-sources` and limae on the Markdown files. `site/` and `web/data/*.json` are built, never committed. When unsure whether a check is touched, it runs.
 
-By what the change touches:
-
-- a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`, with the toolchain of `rust-toolchain.toml`;
-- `rules/` or the crates: `cargo run --locked --quiet -p statute -- validate rules`;
-- a member under `tools/`, or a member it depends on: `uv run python -m unittest discover -s tools/<member>/tests`;
-- the constitution sources or what a rule says of the constitution: `uv run constitution-build --check --base origin/main`;
-- `docs/design/`: `uv run check-design-translation`;
-- a `zh` text of a source: `uv run lint-zh-sources`;
-- the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
-
-`site/` and `web/data/*.json` are built, never committed. When unsure whether a check is touched, run it.
-
-Violated when a change is pushed and a check listed here for what it touches did not run on the pushed version, or did not pass.
+Violated when a change is pushed and the hooks, the instruction-only check or a check listed for what it touches did not run on the pushed version, or did not pass.
 '''

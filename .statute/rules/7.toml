@@ -1,6 +1,6 @@
 id = 7
 slug = "citation-forms"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -25,7 +25,7 @@ The ID of a rule never changes and its slug is only a readable name, so a citati
 
 [text.verification]
 en = '''
-The constitution's IDs are dateless words; a rule's ID is a number and its readable name is its `slug`. `cargo run --locked --quiet -p statute -- validate rules` and `uv run constitution-build --check` fail on a citation whose target does not exist.
+The constitution's IDs are dateless words; a rule's ID is a number and its readable name is its `slug`. `cargo run --locked --quiet -p statute -- validate rules` and `cargo run --locked --quiet -p statute -- constitution build --check` fail on a citation whose target does not exist.
 
 Violated when a rule or the constitution cites in another form.
 '''

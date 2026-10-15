@@ -1,6 +1,6 @@
 id = 17
 slug = "ci-pins"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
