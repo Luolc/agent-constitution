@@ -1,6 +1,6 @@
 id = 47
 slug = "generated-file-side"
-revision = 5
+revision = 6
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A generated file that CI shows to equal the output of its build is not classed on its own ({@rule:46}): it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
+A generated file that CI shows to equal the output of its build is not classed on its own ({@rule:280}): it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
 
 Violated when a change to tools changes a generated file and its description does not say that only the rendering changed, or when a change to tools changes the meaning of a generated file.
 '''
 zh = '''
-CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:46})，归入使它发生变化的那一方。工具的修改使这类文件发生变化的，变更说明里写明变化只在渲染、不改变含义，由审查核对这一点。含义变了的，按修改指令处理。
+CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:280})，归入使它发生变化的那一方。工具的修改使这类文件发生变化的，变更说明里写明变化只在渲染、不改变含义，由审查核对这一点。含义变了的，按修改指令处理。
 
 工具的修改使生成文件发生变化，而变更说明没有写明变化只在渲染的，或者工具的修改改变了生成文件的含义的，即为违反本规定。
 '''
 
 [translations]
-zh = "526de3101e7f620face7e50187fd185e3a962345796316793a827961e4bb7aff"
+zh = "9d0c9237b27f7b0a6fb31a36891d085a45c2d09b77dfa462154cf84e6dbc9d8a"
