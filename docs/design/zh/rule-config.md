@@ -1,4 +1,4 @@
-<!-- en-sha256: ac4c3214aa3535a1000f3e063c9d767503b76810e3a599f28f4267e378122bff -->
+<!-- en-sha256: 566d9050450778234a83ac0109d342812b1f1462b3a8f0fca812ce5a24510f93 -->
 # 规定配置
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -205,7 +205,7 @@ statute 读 `default`，做上面和下面的检查。它仍接受没有 `defaul
 ```toml
 id = 79
 kind = "one-of"
-parent = 16
+parent = 232
 default = 81
 ```
 
@@ -218,7 +218,7 @@ default = 81
 
 ### <a id="in-the-rule-set"></a>规定清单里
 
-还没有实现：这一部分和下一部分说的，规定清单怎样使用默认值。
+已经实现，只有两处除外：通过 `domains` 选 one-of 的领域选项，以及网站上的标记 (见下)。
 
 规定清单只列出与默认值不同的地方：
 
@@ -256,7 +256,7 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 
 **编译出的 `AGENTS.md`** 不变：它收录启用的规定，不论它们怎么进来的。
 
-**公开网站**在列表和详情页上把每个领域和每条规定标成默认开启或默认关闭，标出每个 one-of 的默认选项，列表加一个只显示默认开启规定的筛选，让读者一眼看出一份新的规定清单里有什么。**本地网站**在它那份规定清单是否启用这条规定的旁边，显示同样的这些标记。
+**公开网站**在列表和详情页上把每个领域和每条规定标成默认开启或默认关闭，标出每个 one-of 的默认选项，列表加一个只显示默认开启规定的筛选，让读者一眼看出一份新的规定清单里有什么。**本地网站**在它那份规定清单是否启用这条规定的旁边，显示同样的这些标记。两个网站都还没有显示这些标记。
 
 ### <a id="moving-a-repository-over"></a>把仓库迁过来
 
@@ -313,7 +313,9 @@ uses = ["instructions", "review"]
 
 已经实现：statute 读领域、规定和 one-of 上的 `default`、`uses` 与 `check = "none"`，做上面关于默认值和规定树的检查，编译出的 `AGENTS.md` 和 `statute check` 按 `uses` 来；`statute validate` ([命令与第一版](statute-command.md#the-command-and-the-first-version)) 对一个规定目录做这些检查。第一方规定都写了 `default` 和 `uses`，`rules/params.toml` 声明了它们的参数。
 
-还没有实现：`default` 改为必填、去掉 `check = "review"`；规定清单的 `domains`、`exclude` 和规定源条目的 `defaults`，默认值生效，锁文件里的 `by = "default"`，以及 `statute add`、`remove`、`explain` 对默认值的处理；参数 (跳过 `params.toml` 之外)，它们在规定清单、锁文件和输出里的表；one-of 的渲染；以及网站对这些内容的显示。
+规定清单的默认开关也已经实现：`domains`、`exclude`、`local-rules` 和规定源条目的 `defaults`，默认值生效，锁文件里的 `by = "default"`，以及 `statute add`、`remove`、`explain` (包括 `--defaults`) 对它们的处理。
+
+还没有实现：`default` 改为必填、去掉 `check = "review"`；通过 `domains` 选 one-of 的领域选项；参数 (跳过 `params.toml` 之外)，它们在规定清单、锁文件和输出里的表；one-of 的渲染；以及网站对这些内容的显示。
 
 这部分设计改动了设计的以下部分：
 

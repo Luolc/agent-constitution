@@ -420,7 +420,7 @@ children, as its default, in a required field:
 ```toml
 id = 79
 kind = "one-of"
-parent = 16
+parent = 232
 default = 81
 ```
 
@@ -446,8 +446,8 @@ requirement brings in.
 
 ### In the rule set
 
-Not built yet: what this part and the next say a rule set does with the
-defaults.
+Built, but for picking an option of a one-of that is a domain through
+`domains`, and for the marks of the sites (below).
 
 The rule set lists only what differs from the defaults:
 
@@ -539,7 +539,7 @@ however they came in.
 in the list and on its page, and each one-of's default option, and the list gets a filter that shows only
 the rules on by default, so that a reader sees at a glance what a new
 rule set holds. **The local site** shows the same marks beside whether
-its rule set enables the rule.
+its rule set enables the rule. Neither site shows them yet.
 
 ### Moving a repository over
 
@@ -681,13 +681,16 @@ runs these checks on a directory of rules. The first-party rules carry
 `default` and `uses`, and `rules/params.toml` declares their
 parameters.
 
+The default switches of a rule set are built too: `domains`,
+`exclude`, `local-rules` and a source entry's `defaults`, the defaults
+taking effect, `by = "default"` in the lock file, and what `statute
+add`, `remove` and `explain` (`--defaults` included) do with them.
+
 Not built yet: `default` as a required field and the end of
-`check = "review"`; the rule set's `domains`, `exclude` and a source
-entry's `defaults`, the defaults taking effect, `by = "default"` in the
-lock file, and what `statute add`, `remove` and `explain` do with the
-defaults; parameters (beyond skipping `params.toml`), their tables in
-the rule set, the lock file and the outputs; the one-of's rendering;
-and everything the sites show of these.
+`check = "review"`; picking an option of a one-of that is a domain
+through `domains`; parameters (beyond skipping `params.toml`), their
+tables in the rule set, the lock file and the outputs; the one-of's
+rendering; and everything the sites show of these.
 
 The parts of the design this one changes:
 

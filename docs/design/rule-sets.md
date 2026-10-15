@@ -426,9 +426,8 @@ one-of has an ID, and adding one goes through review like adding a
 rule. A rule that requires a one-of is satisfied when any one of its
 options is enabled. Every one-of names a default option
 ([A one-of's default](rule-config.md#in-the-rule-files)), which statute
-reads; once the defaults take effect (not built yet), a pack and a
-requirement take it where the rule set names none, in place of
-contributing nothing or failing as below.
+reads; a pack and a requirement take it where the rule set names
+none, in place of contributing nothing or failing as below.
 
 **Conflicts found later.** Two rules that nobody saw as alternatives may
 turn out not to work together. An agent that suspects this reports it, and
@@ -481,9 +480,9 @@ manager adds a dependency: the rule set lists only the rules chosen
 directly, the lock file records the ones brought in, and an upgrade's
 diff shows them. Among missing requirements, the one case that fails
 is a requirement of a one-of when the rule set has enabled none of its
-options: statute does not choose for the user, so it fails and lists
-the options to choose from, until the one-of's default option is taken
-instead (not built yet).
+options and the one-of names no default: statute does not choose for
+the user, so it fails and lists the options to choose from. A one-of
+that names a default brings in its default option.
 
 Packs: a pack is a subtree, named by its root, and a rule set can enable
 it as a whole, by listing the root in `packs`. A one-of in the pack of
@@ -492,8 +491,8 @@ with no option enabled; the build fails only when an enabled rule requires
 that one-of, as above. When the rule set names an option, the pack
 enables it. In the first version that is the only way into a one-of: an
 option enabled only because a rule requires it does not take the pack
-into it. Once the defaults take effect (not built yet), the pack takes
-the one-of's default option where the rule set names none. A superseded or repealed rule of the pack is
+into it. Where the rule set names none, the pack takes the one-of's
+default option. A superseded or repealed rule of the pack is
 left out, with the rules below it; a pack whose root is superseded or
 repealed enables nothing, and the build warns as it does for such a rule
 in `rules`.

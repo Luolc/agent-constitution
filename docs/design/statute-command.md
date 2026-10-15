@@ -207,13 +207,12 @@ which try the whole process on real work.
 which 43 and 46 supersede), `site`, `constitution build` and
 `validate`, for sources on disk and git
 sources, as many as
-`[sources]` names. The repository's own rules, `L12`, are read from the
-`rules/` next to `statute.toml` when no source is at `.`; with
-`R = { path = "." }` they are first-party, and a local reference fails
-with a note to write `R12`. Reading them from `.statute/rules/`, or the
-directory `local-rules` names
-([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
-is not built yet. A rule names a rule of another source in
+`[sources]` names. The repository's own rules, `L12`, are read from
+`.statute/rules/`, or the directory `local-rules` names
+([The directory of local rules](rule-config.md#the-directory-of-local-rules));
+when that is a source's rules directory, as with `local-rules = "rules"`
+and `R = { path = "." }`, they are that source's, and a local reference
+fails with a note to write `R12`. A rule names a rule of another source in
 `requires`, `conflicts` and `{@rule:...}` as `R12` or `team:7`, with
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
@@ -231,10 +230,13 @@ except that `upgrade` does not show the text of a changed rule yet.
 Of [Rule configuration](rule-config.md), the rule files' `default`,
 `uses` and `check = "none"` are read and checked, with the tree of
 [No rule under a rule](rule-config.md#no-rule-under-a-rule), and
-`uses` decides what `compile` writes and `check` lists; the default
-switches of a rule set, with `domains`, `exclude` and `local-rules`,
-what `add`, `remove`, `explain` and the lock file do with them, and
-parameters are not built yet.
+`uses` decides what `compile` writes and `check` lists, and the
+default switches of a rule set are built, with `domains`, `exclude`,
+`local-rules` and a source entry's `defaults`, and what `add`,
+`remove`, `explain` (`--defaults` included) and the lock file do with
+them. Not built yet: picking an option of a one-of that is a domain
+through `domains`, `default` as a required field, parameters, and the
+marks of the sites.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -350,13 +352,12 @@ file. It prints the path of `index.html`.
   global for any other, the global configuration's included; public as
   the source declares it, and for `L` as the rule set does. A source
   at `.`, as `R = { path = "." }` in this repo, is first-party and so
-  global public. Today its `rules/` are the repository's own rules as
-  well: it is listed once, as global public, and the local public
-  section says so and links there. Once the repository's own rules are
-  read from `.statute/rules/` (not built yet), that holds only when
-  `local-rules` names the source's rules directory; otherwise the
-  repository's own rules are listed in the local section of their
-  kind.
+  global public. When `local-rules` names its rules directory, its
+  rules are the repository's own as well: it is listed once, as global
+  public, and the local public section says so and links there;
+  otherwise the repository's own rules are listed in the local section
+  of their kind. Not built yet: the site still treats a source at `.`
+  as the repository's own rules whatever `local-rules` names.
   Every node, in the index and on its page, is marked with the kind of
   its source: its name, in the language of the pages, on one of four
   background colors. On the node's page the mark also names the source,
