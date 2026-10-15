@@ -18,12 +18,12 @@ source: the constitution sources are TOML files whose text tables have
 one key per language, `en` and `zh` (format in
 `docs/design/source-formats.md`), and the rules are written in `en` with a
 `zh` translation whose `[translations]` key holds the SHA-256 of the
-English it follows; when the English changes, `uv run constitution-build
---check` fails and prints the new hash (`docs/design/rule-format.md`,
-Rule file format). Write the `zh` text in plain, natural
+English it follows; when the English changes, `statute validate rules`
+fails and prints the new hash (`docs/design/rule-format.md`, Rule file
+format). Write the `zh` text in plain, natural
 simplified Chinese that says what the `en` text says, clause by clause,
 not word by word.
-Cite the same provisions and rules as the `en` text; the build checks it.
+Cite the same provisions and rules as the `en` text; the checks catch a difference.
 Punctuation: full-width commas, full stops, enumeration commas, semicolons
 and colons; half-width parentheses, with one space outside and none inside,
 as in `第二款 (见第三条)`.
@@ -61,8 +61,9 @@ Checkers).
   never moves to another article (`docs/design/constitution.md`, Numbering).
 - `rules/<id>.toml`: one node of the rule tree per file, a general rule
   or a domain, named by its number without zero padding (`rules/7.toml`)
-  and checked by the same build (`docs/design/rule-format.md`, Rule file
-  format). No rule is ever deleted and no number is reused: a rule that
+  and checked by `statute validate rules` (`docs/design/rule-format.md`,
+  Rule file format); `rules/params.toml` declares the parameters the
+  rules use (`docs/design/rule-config.md`, Parameters). No rule is ever deleted and no number is reused: a rule that
   goes is superseded or repealed.
 - The constitution's IDs are dateless words; a rule's ID is a number, and
   its readable name is its `slug`. Citations are written `{@...}`: without
@@ -152,7 +153,8 @@ tools with `uv run --frozen --no-sync`: they never install into `.venv`
 nor change `uv.lock`. A tool missing from `.venv` fails its hook; a stale
 `.venv` runs the versions it has, so run `uv sync` whenever `uv.lock`
 changes. The Python tools need only uv on the machine; the commit
-hooks also need the Rust toolchain, for `cargo-fmt`: install rustup, and
+hooks also need the Rust toolchain, for `cargo-fmt` and
+`statute-validate`: install rustup, and
 `rustup toolchain install` installs the toolchain `rust-toolchain.toml`
 names. The site build needs Hugo and the full-history scan gitleaks, both
 below. After changing a pin, run `uv sync`, which updates `uv.lock` and
@@ -162,7 +164,8 @@ when the two disagree.
 - `uv run pre-commit run --all-files`: the commit hooks, which are gitleaks
   on the staged diff, `uv-lock` (`uv.lock` matches `pyproject.toml`), the
   Python checkers below, `cargo-fmt` (`cargo fmt --check`, when a Rust
-  file or manifest changes), the constitution build check, the tests of each
+  file or manifest changes), `statute-validate` (below, when `rules/` or
+  the crates change), the constitution build check, the tests of each
   member, `check-design-translation`, `lint-zh-sources` and limae on
   every Markdown file of the repo except `web/themes/`. A limae false
   positive on a line is passed over with a `<!-- limae-disable-next-line
@@ -178,14 +181,22 @@ when the two disagree.
   (packages and builds the crate as crates.io would receive it, without
   uploading). `cargo package --list -p statute` lists the files the
   package holds.
+- `cargo run --locked --quiet -p statute -- validate rules`: the
+  `statute-validate` hook. It reads `rules/` as the first-party source,
+  skipping `params.toml`, and checks each rule file's format, the tree,
+  the targets of every reference, the translations and their hashes,
+  the citations and the defaults; each finding is a line on stderr, an
+  error exits 1, and a clean run prints one line with the number of
+  nodes. A stale translation hash is printed there.
 - `uv run python -m unittest discover -s tools/<member>/tests`, with
   `<member>` `compiler`, `site` or `checks`: the tests of one member; the
   hooks run each member's tests when it or a member it depends on
   changes.
 - `uv run constitution-build`: rebuilds the generated files
   after a change to the constitution sources. With `--check` it writes
-  nothing and fails on an error in the constitution or rule sources or a
-  stale generated file; `--check --base <git-ref>` also fails when a
+  nothing and fails on an error in the constitution sources, in what a
+  rule says of the constitution (its status, its citations of the
+  constitution, its `authority`) or a stale generated file; `--check --base <git-ref>` also fails when a
   numbered provision of an active base commit is gone, renumbered or moved,
   or a rule of that base is gone (a rule of the older format may live on
   as a node whose `slug` is its ID; a draft base is skipped with a note for
@@ -245,7 +256,8 @@ version of the `uv-lock` hook's rev and syncs (`uv sync --locked
 --all-packages`, which fails on a stale lock), installs the Rust toolchain
 of `rust-toolchain.toml` (`rustup toolchain install --no-self-update`), runs
 `uv run pre-commit run --all-files` with the gitleaks hook skipped, so
-`uv-lock`, the Python checkers, `cargo-fmt`, the constitution build check,
+`uv-lock`, the Python checkers, `cargo-fmt`, `statute validate rules`, the
+constitution build check,
 the tests and both limae checks run there too, then runs clippy, the tests
 and the publish dry run of the Rust workspace, writes the rules' data with
 `site-rules`, counts the tokens (without a

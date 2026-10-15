@@ -47,14 +47,6 @@ files changes, this table is the one place to change.
 | the constitution for agents | `constitution/<edition>/generated/constitution.<lang>.agent.md` in the first-party source | in the source |
 | the rules of a source | `rules/<id>.toml` at the top of that source, or in the directory its `rules-dir` names | in the source |
 
-Not built yet: reading the local rules directory at the path above,
-and `local-rules`. Until they are, statute reads the repository's own
-rules from the place in this table:
-
-| Name | Path until it is built |
-| --- | --- |
-| the local rules directory | `rules/` next to the rule set |
-
 ## 0. Before you start
 
 1. statute runs: `statute --version` prints a version. Run every
@@ -113,11 +105,6 @@ for departures only.
 Product: a draft of the three lists of step f, each departure with
 one line that says why.
 
-Not built yet: `default` in the rule files. Until it is, nothing is
-on by default, and the draft lists every domain the repository keeps
-(as a pack) and every rule it needs from a domain it does not keep
-whole.
-
 ## c. Take stock of how the repository works
 
 Read everything that tells an agent or a person how to work here: the
@@ -175,11 +162,7 @@ which is which when you show the person the rules.
   as the template.
 - Local rules go in the local rules directory, and are referred to as
   `L12`. Leave `local-rules` unset: its default is the local rules
-  directory. Until reading it is built (the note under
-  [Files](#files)), write the local rules where statute reads them
-  today; when something else is there already (files that are not
-  this repository's rules for agents, or a source's rules), stop and
-  ask the person (Q6).
+  directory.
 - Keep in a private source only the private assets a requirement rests
   on (rule R126). For each rule, take the private assets out and see
   what is left: a whole requirement is a local rule; a principle whose
@@ -241,7 +224,7 @@ domains = [
   "R96",
 ]
 exclude = [
-  # This repository has no commit hooks.
+  # This repository has no commit hooks, and its checks run only in CI.
   "R53",
 ]
 ```
@@ -256,12 +239,8 @@ and ask them to look them over (Q4). `statute explain --defaults`
 prints the three lists from the rule set as written; `statute explain
 <rule>` says why one rule is in or out.
 
-Not built yet: `domains`, `exclude`, `default` in the rule files,
-`statute explain --defaults`, parameters and `local-rules`. Until
-they are, write the draft of step b as `packs` and `rules`
-(`statute add --pack R96` for a domain, `statute add R42` for a rule),
-with the same comments, show the person that list with the reasons, and leave
-the parameters' values in the local rules that need them.
+Not built yet: parameters. Until they are, leave the parameters'
+values in the local rules that need them.
 
 ## g. Lock, compile, check
 
@@ -318,7 +297,7 @@ taken.
 ## Questions
 
 Ask together, each with its default, by whatever route the person
-gave you. Q1 comes in step 0, before `statute init`; Q2 to Q6 once the
+gave you. Q1 comes in step 0, before `statute init`; Q2 to Q5 once the
 mapping and the draft lists exist.
 
 | | Ask | Default |
@@ -328,4 +307,3 @@ mapping and the draft lists exist.
 | Q3 | `CLAUDE.md` is a link to `AGENTS.md`. Delete it? (the explanation in step e) | Delete it. |
 | Q4 | Here are the three lists, each line with its reason. Anything to change? | As drafted. |
 | Q5 | These parts of requirements may or may not be private (list each with the private asset it rests on). Public or private? | Private, until answered. |
-| Q6 | statute reads the local rules from a directory that already holds something else (say what). How to go on? | Stop the migration until reading the local rules directory is built. |
