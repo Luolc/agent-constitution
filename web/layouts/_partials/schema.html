@@ -1,6 +1,7 @@
 {{- /* Hugo's own schema.html (Hugo 0.167.0), but for the name: the
-  page's title without backticks, escaped once, as in opengraph.html. */ -}}
-{{- with or .Title site.Title }}
+  page's title, a rule page's pageTitle, without backticks, escaped once,
+  as in opengraph.html. */ -}}
+{{- with or .Params.pageTitle .Title site.Title }}
 	<meta itemprop="name" content="{{ replace . "`" "" }}">
 {{- end }}
 

@@ -25,6 +25,12 @@ With `--enabled`, each rule says whether the rule set of a statute.lock
 enables it. Without either, the pages are this repo's alone
 and say neither.
 
+Each node gives the path of nodes above it, which its page's
+breadcrumb shows, and the title of its page, its label and that path
+(docs/design/frontend.md, Components). A node whose title a node under
+another parent also has is named with its parent's title wherever it is
+named alone.
+
 Each node says whether its source's defaults enable it, as statute
 reckons it; a domain or a rule gives its own `default`, a one-of its
 default option, an option whether it is that one, and a rule its `uses`
@@ -100,6 +106,9 @@ FIRST_PARTY_REF = re.compile(r"R[1-9][0-9]*")
 # one is no Markdown but stays literal.
 PLACEHOLDER = re.compile(r"\{\$(" + ID + r"\." + ID + r")\}")
 CODE_SPAN = re.compile(r"(`+)(.+?)\1", re.S)
+# The characters a page's title takes before it leaves out the domains
+# farthest from its node (docs/design/frontend.md, Components).
+PAGE_TITLE_LENGTH = 70
 
 
 @dataclass(frozen=True)
@@ -366,6 +375,32 @@ def other_ref(ref: str) -> tuple[str, int]:
   return name, int(node_id)
 
 
+def page_title(label: str, path: list[str], title: str) -> str:
+  """Return the title of a node's page: its label, then the path to it.
+
+  The titles above the node are left out from the farthest, for an
+  ellipsis, until the whole fits in PAGE_TITLE_LENGTH characters; its
+  parent's title and its own stay whole.
+
+  Args:
+    label: the node's label.
+    path: the titles of the nodes above it, outermost first.
+    title: its own title.
+
+  Returns:
+    The title, as `R7 Security › Credentials › Tiers`.
+  """
+
+  def text(cut: int) -> str:
+    shown = [*(["…"] if cut else []), *path[cut:], title]
+    return f"{label} {' › '.join(shown)}"
+
+  cut = 0
+  while cut < len(path) - 1 and len(text(cut)) > PAGE_TITLE_LENGTH:
+    cut += 1
+  return text(cut)
+
+
 def specific(authority: list[str], src: Constitution) -> list[str]:
   """Return an `authority` without the provisions it names something under.
 
@@ -395,11 +430,28 @@ def listed(node: Node) -> bool:
   return node.kind == "rule" and node.status not in ("superseded", "repealed")
 
 
+def sibling_key(node: Node, parent_kind: str | None) -> tuple[bool, int]:
+  """Return the key that orders a node among the children of its parent.
+
+  By ID, except that a domain's subdomains come after its rules and
+  one-ofs, as statute orders them (`docs/design/statute-command.md`,
+  Compilation and the site).
+
+  Args:
+    node: the node.
+    parent_kind: the kind of its parent, or None when it has none here.
+
+  Returns:
+    Whether it is a subdomain, then its ID.
+  """
+  return (node.kind == "domain" and parent_kind == "domain", node.id)
+
+
 def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
   """Return the nodes along the parent tree, each with its depth.
 
-  Each node comes before its children, which follow in order of ID, as
-  the domains do; a node with no parent in this source starts at depth 0.
+  Each node comes before its children, which follow in the order of
+  `sibling_key`; a node with no parent in this source starts at depth 0.
 
   Args:
     nodes: the nodes, a valid tree.
@@ -407,11 +459,18 @@ def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
   Returns:
     Each node and its depth, 0 for a domain that is not a subdomain.
   """
+  kinds = {n.id: n.kind for n in nodes}
   children: dict[int | None, list[Node]] = defaultdict(list)
-  for n in sorted(nodes, key=lambda n: n.id):
+  for n in nodes:
     # A node under a domain of another source, or in place of a rule of
     # another source, heads a tree of its own here.
     children[n.parent if isinstance(n.parent, int) else None].append(n)
+  for siblings in children.values():
+    siblings.sort(
+      key=lambda n: sibling_key(
+        n, kinds.get(n.parent) if isinstance(n.parent, int) else None
+      )
+    )
   order: list[tuple[Node, int]] = []
 
   def visit(parent: int | None, depth: int) -> None:
@@ -441,6 +500,12 @@ class _Language:
     self.params = {(s.name, p.name): p for s in sources for p in s.params}
     self.many = len(sources) > 1
     self.labels = src.labels
+    # A title that nodes under different parents share: their parents'
+    # titles tell them apart, as their labels alone do under one parent.
+    parents: dict[str, set[tuple[str, int] | None]] = defaultdict(set)
+    for key in self.nodes:
+      parents[self.title(key)].add(self.parent(key))
+    self.shared = {title for title, above in parents.items() if len(above) > 1}
 
   def shown(self, node: Node) -> str:
     """Return the language the node is shown in on this language's pages.
@@ -492,6 +557,41 @@ class _Language:
       html.escape(node.title[shown], quote=False),
     )
     return self.values(text, shown, key[0], "span")
+
+  def parent(self, key: tuple[str, int]) -> tuple[str, int] | None:
+    """Return a node's parent, when the site has it.
+
+    Args:
+      key: its source's name and its ID.
+
+    Returns:
+      Its parent's source and ID, or None.
+    """
+    parent = self.nodes[key].parent
+    if isinstance(parent, int):
+      return key[0], parent
+    if isinstance(parent, str) and other_ref(parent) in self.nodes:
+      return other_ref(parent)
+    return None
+
+  def parent_title(self, key: tuple[str, int]) -> dict[str, object]:
+    """Return what tells a node apart from another of the same title.
+
+    Args:
+      key: its source's name and its ID.
+
+    Returns:
+      Its parent's title and title as HTML (`parentTitle`,
+      `parentTitleHtml`) when a node under another parent has its title
+      in this language and it has a parent; else nothing.
+    """
+    parent = self.parent(key)
+    if parent is None or self.title(key) not in self.shared:
+      return {}
+    return {
+      "parentTitle": self.title(parent),
+      "parentTitleHtml": self.title_html(parent),
+    }
 
   def param(self, name: str, source: str) -> tuple[str, Param] | None:
     """Return the parameter a placeholder of a source's rule names.
@@ -570,7 +670,8 @@ class _Language:
       source: the source of the node that names it.
 
     Returns:
-      Its ID, label, title, title as HTML and page, or the reference
+      Its ID, label, title, title as HTML and page, with its parent's
+      title when that tells it apart (`parent_title`), or the reference
       alone when it names a node of a source the site does not have.
     """
     key = (source, target) if isinstance(target, int) else other_ref(target)
@@ -582,7 +683,7 @@ class _Language:
       "title": self.title(key),
       "titleHtml": self.title_html(key),
       "key": page_key(key[1], key[0]),
-    }
+    } | self.parent_title(key)
 
   def links(
     self,
@@ -758,7 +859,13 @@ class _Language:
         {"key": f"source-{name}", "kind": "source", "source": name}
         | {"quadrant": source.quadrant},
       )
+    # Every node above it, one-ofs too, for its page's breadcrumb.
+    path, above = [], self.parent((name, node.id))
+    while above is not None:
+      path.insert(0, self.ref(above[1], above[0]))
+      above = self.parent(above)
     label = rule_label(node.id, name)
+    title = self.title((name, node.id))
     extra: dict[str, object] = {}
     if enabled is not None and node.kind == "rule":
       extra["enabled"] = label in enabled
@@ -775,7 +882,9 @@ class _Language:
         "translations": node.translations,
         "depth": depth - boxes,
         "groups": groups,
-        "title": self.title((name, node.id)),
+        "path": path,
+        "pageTitle": page_title(label, [str(p["title"]) for p in path], title),
+        "title": title,
         "titleMarked": self.values(node.title[shown], shown, name),
         "titleInLink": self.values(node.title[shown], shown, name, "span"),
         "applicability": self.links(node.applicability[shown], shown, name)
@@ -801,7 +910,11 @@ class _Language:
         "overrides": self.ref(node.overrides, name) if node.overrides else None,
         "supersededBy": [self.ref(t, name) for t in node.superseded_by],
         "children": [
-          self.ref(n.id, name) for n in source.nodes if n.parent == node.id
+          self.ref(n.id, name)
+          for n in sorted(
+            (n for n in source.nodes if n.parent == node.id),
+            key=lambda n: sibling_key(n, node.kind),
+          )
         ],
         "requires": [self.ref(t, name) for t in data.get("requires", [])],
         "conflicts": [self.ref(t, name) for t in conflicts],
@@ -818,6 +931,7 @@ class _Language:
         # box, not on its own.
         "boxed": node.kind == "rule" and "optionDefault" in extra,
       }
+      | self.parent_title((name, node.id))
       | {field: data[field] for field in FIELDS if field in data}
       | extra
     )

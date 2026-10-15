@@ -121,7 +121,6 @@ class SiteTest(unittest.TestCase):
     index: str = INDEX,
     design: dict[str, str] = DESIGN,
     rules: bool = True,
-    per_page: int | None = None,
     edit_rules: Callable[[Path], None] | None = None,
     other: bool = False,
   ) -> dict[str, str]:
@@ -134,7 +133,6 @@ class SiteTest(unittest.TestCase):
       design: The files of docs/design/ by path.
       rules: Whether to write web/data/rules.json, from the rules of
         site_fixture.
-      per_page: The rules a page of their list shows, if not the site's.
       edit_rules: Changes the rules' checkout before site-rules reads it.
       other: Whether site-rules also reads site_fixture's second source,
         `demo`, global private, with a rule set enabling R3 and demo:2.
@@ -188,8 +186,6 @@ class SiteTest(unittest.TestCase):
           args += ["--enabled", str(lock)]
         self.assertEqual(site_rules.main(args), 0)
       env = dict(os.environ)
-      if per_page:
-        env["HUGO_PARAMS_RULESPERPAGE"] = str(per_page)
       subprocess.run(
         [
           HUGO,
@@ -208,7 +204,7 @@ class SiteTest(unittest.TestCase):
         page.relative_to(root / "site").as_posix(): page.read_text(
           encoding="utf-8"
         )
-        for page in (root / "site").rglob("*")
+        for page in (root / "site").rglob("*.*")
         if page.suffix in (".html", ".css")
       }
       return pages if raw else {p: visible(t) for p, t in pages.items()}
@@ -382,19 +378,18 @@ class SiteTest(unittest.TestCase):
     page = raw["rules/index.html"]
     self.assertIn(
       "The legend says what each mark means; the filter chooses the statuses,"
-      " defaults, uses and domains shown. Status Active Trial Draft Superseded"
-      " Repealed Default On by default Off by default Uses Instructions : goes"
-      " into the agent's instructions Review : a reviewer checks it One of the"
-      " rule set takes exactly one option Default option Another option Row"
-      " end status, default, instructions, review, in this order; empty where"
-      " a rule has none Filter Status All None Active Trial Draft Superseded"
-      " Repealed"
-      " Defaults All None On by default Off by default Uses All None"
-      " Instructions Review Domains All None R1 Group 1 Reset filter Rules"
-      " per page 25 50 100 All Show Title and statement Title Statement ID"
-      " Rule R1 Group 1 One of R2 Group 2 R3 Rule 3 Default option See Art. I"
-      " §1 and rule 6. R1 Group 1 R4 Rule 4 Old. R1 Group 1 R5 Rule 5 New. R1"
-      " Group 1 R6 Rule 6 Rule six, see Art. I §1(1).",
+      " defaults, uses and domains shown. Legend Default On by default Off by"
+      " default Status Active Trial Draft Superseded Repealed Uses"
+      " Instructions : goes into the agent's instructions Review : a reviewer"
+      " checks it One of the rule set takes exactly one option Default option"
+      " Another option Row end default, status, instructions, review, in this"
+      " order; empty where a rule has none Search Show Title and statement"
+      " Title Statement Status Status All None Active Trial Draft Superseded"
+      " Repealed Default Default All None On by default Off by default Uses"
+      " Uses All None Instructions Review Domain Domain All None R1 Group 1"
+      " Clear filters ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3 Default"
+      " option See Art. I §1 and rule 6. R1 Group 1 R4 Rule 4 Old. R1 Group 1"
+      " R5 Rule 5 New. R1 Group 1 R6 Rule 6 Rule six, see Art. I §1(1).",
       pages["rules/index.html"],
     )
     # The one-of is a box in its domain's list, its option inside it and
@@ -424,7 +419,7 @@ class SiteTest(unittest.TestCase):
     self.assertRegex(
       page,
       r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
-      r' href="\.\./rules/3/">.*Default option</span><span'
+      r' href="\.\./rules/3/" title="Rule 3">.*Default option</span><span'
       r' class="rule-statement">See Art\. I §1 and rule 6\.</span></span>'
       r'<span class="rule-marks">.*</a></li>\n</ul>',
     )
@@ -477,17 +472,18 @@ class SiteTest(unittest.TestCase):
       '</span><span class="rule-statement">New.</span></span>',
       raw["zh/rules/index.html"],
     )
-    # A rule's marks: its status, the ring of off by default, its one use.
+    # A rule's marks: the ring of off by default, its status, its one use.
     self.assertRegex(
       page,
-      r'<a class="rule-entry" href="\.\./rules/6/"><span class="rule-id">R6'
+      r'<a class="rule-entry" href="\.\./rules/6/" title="Rule 6">'
+      r'<span class="rule-id">R6'
       r'</span><span class="rule-title" lang="en"><span class="rule-text">'
       r'Rule 6</span><span class="rule-statement">Rule six, see Art\. I'
       r' §1\(1\)\.</span></span><span class="rule-marks"><span class="rule-mark'
-      r' rule-status status-active" role="img" aria-label="Active"'
-      r' title="Active"><svg [^\n]*</svg></span><span class="rule-mark'
       r' rule-dot" role="img" aria-label="Off by default" title="Off by'
-      r' default"></span><span class="rule-mark rule-use" role="img"'
+      r' default"></span><span class="rule-mark rule-status status-active"'
+      r' role="img" aria-label="Active" title="Active"><svg [^\n]*</svg>'
+      r'</span><span class="rule-mark rule-use" role="img"'
       r' aria-label="Instructions" title="Instructions"><svg [^\n]*</svg>'
       r'</span><span class="rule-mark"></span></span></a>',
     )
@@ -503,22 +499,46 @@ class SiteTest(unittest.TestCase):
       ],
     )
     self.assertEqual(GROUP_ID.findall(page), ["1"])
-    self.assertIn('<div class="rules-controls" hidden>', page)
+    # Without scripts, of the controls only the view is there.
+    for hidden in (
+      '<label class="rules-control rules-find" hidden>',
+      '<div class="rules-filter" role="group" aria-label="Filter"',
+      '<button type="button" class="rules-filter-reset" hidden>',
+      '<p class="rules-count" data-singular="{} rule" data-plural="{} rules"'
+      " hidden>",
+    ):
+      self.assertIn(hidden, page)
     self.assertIn(
-      '<button type="button" class="rules-filter-button"'
-      ' aria-expanded="false" aria-controls="rules-filter-panel">',
+      '<span class="rules-control-label" id="rules-label-status">Status'
+      '</span>\n<button type="button" class="rules-menu-button"'
+      ' aria-expanded="false" aria-controls="rules-filter-status"'
+      ' aria-labelledby="rules-label-status rules-value-status">',
       page,
     )
-    self.assertIn('id="rules-filter-panel" role="dialog"', page)
-    self.assertIn('<option value="all" selected>', page)
-    self.assertIn('data-size="all" data-first="0"', page)
+    # The legend folds, open to begin with.
+    self.assertIn(
+      '<details class="rules-legend" open><summary'
+      ' aria-controls="rules-legend-list">',
+      page,
+    )
+    # A group row says whether the defaults enable its domain.
+    self.assertRegex(
+      page,
+      r'<h2 class="rules-group" data-group="1"><a [^\n]*?</a><span'
+      r' class="rule-marks"><span class="rule-mark rule-dot( on)?" role="img"'
+      r' aria-label="(On|Off) by default" title="\2 by default"></span></span>'
+      r"</h2>",
+    )
+    self.assertIn(
+      '<fieldset class="rules-filter-group" id="rules-filter-status"', page
+    )
     self.assertNotIn("rules/page/2/index.html", raw)
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
-      "状态 生效 试行 草案 已取代 已废止 默认 默认开启 默认关闭"
+      "图例 默认 默认开启 默认关闭 状态 生效 试行 草案 已取代 已废止"
       " 用途 指令 ：写进 agent 的指令 审查 ：审查方按它审查"
       " 择一 规定清单恰好取其中一个选项 默认选项 其他选项"
-      " 行末 依次是状态、默认、指令、审查，没有的留空",
+      " 行末 依次是默认、状态、指令、审查，没有的留空",
       pages["zh/rules/index.html"],
     )
     # The list has no table of contents, nor a button for one on a narrow
@@ -532,59 +552,23 @@ class SiteTest(unittest.TestCase):
     )
     self.assertIn("宪法 2026-10 版 (草案) 规定 设计", pages["zh/index.html"])
 
-  def test_rules_list_pages(self):
-    """Every page holds every rule, those of other pages hidden.
-
-    The pages split the rules of the default filter; each heads its first
-    rule with the rule's groups.
-    """
-    raw = self.build(raw=True, per_page=2)
-    one, two = raw["rules/index.html"], raw["rules/page/2/index.html"]
-    for page in (one, two):
-      self.assertEqual(
-        re.findall(r'class="rule-entry" href="[^"]*/(\d)/"', page),
-        ["2", "3", "4", "5", "6"],
-      )
-    self.assertIn('data-size="2" data-first="0"', one)
-    self.assertIn('data-size="2" data-first="2"', two)
-    self.assertEqual(
-      re.findall(r'data-domain="1"[^>]*"( hidden)?>', one),
-      ["", " hidden", "", " hidden"],
-    )
-    self.assertEqual(
-      re.findall(r'data-domain="1"[^>]*"( hidden)?>', two),
-      [" hidden", " hidden", " hidden", ""],
-    )
-    self.assertEqual(
-      HEADING.findall(two),
-      [
-        ("2", "1", " hidden"),
-        ("2", "1", " hidden"),
-        ("2", "1", " hidden"),
-        ("2", "1", ""),
-      ],
-    )
-    self.assertEqual(GROUP_ID.findall(two), ["1"])
-    self.assertIn('<a href="../rules/page/2/">2</a>', one)
-    self.assertIn('<a aria-current="page">2</a>', two)
-
   def test_rules_list_subdomain(self):
     """A domain under a domain: a row with its path, and a nested checkbox.
 
-    The list coming back to the domain above shows that domain's row
-    again.
+    The domain's own rules come before the subdomain's, so each group's
+    row shows once, though R4 to R6 have higher numbers than R3.
     """
     raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
     page = raw["rules/index.html"]
-    # The domain's page lists the subdomain, the subdomain's its rule, in
-    # both languages.
+    # The domain's page lists its rules, then the subdomain, the
+    # subdomain's its rule, in both languages.
     for lang, below, two, three in (
       ("", "Below it", "R2 Group 2", "R3 Rule 3"),
       ("zh/", "下级", "R2 组 2", "R3 规定 3"),
     ):
       with self.subTest(lang):
         one = visible(raw[f"{lang}rules/1/index.html"])
-        self.assertIn(f"{below} {two} R4", one)
+        self.assertIn(f"{below} R4 Rule 4 R5 Rule 5 R6 Rule 6 {two} ", one)
         sub = visible(raw[f"{lang}rules/2/index.html"])
         self.assertIn(f"{below} {three}", sub)
     self.assertIn(
@@ -597,66 +581,67 @@ class SiteTest(unittest.TestCase):
     self.assertEqual(
       HEADING.findall(page),
       [
-        ("3", "2", ""),
         ("2", "1", " hidden"),
         ("2", "1", ""),
         ("2", "1", " hidden"),
+        ("3", "2", ""),
       ],
     )
     self.assertEqual(GROUP_ID.findall(page), ["1", "2"])
     self.assertIn(
       '<a href="../rules/2/" aria-label="R2 Group 1, Group 2"><span'
       ' class="group-label">R2</span><span class="group-path"><span'
-      ' class="group-part" data-group="1" id="group-1">Group 1</span><svg ',
+      ' class="group-part" data-group="1">Group 1</span><svg ',
       page,
     )
 
   def test_rules_list_filter(self):
-    """The script shows the rules of the filter in the address.
+    """The script shows the rules of the search and filter in the address.
 
     Loaded in headless Chrome, which runs the page's scripts: one value
     or several of a field, two fields, none of a field, a domain alone
-    or with the one under it, the old address of the form, the group
-    rows shown, and the number of fields changed from the default on the
-    filter's button.
-    Skipped without Chrome, except in CI.
+    or with the one under it, the old addresses of the form and with a
+    page size and page, which show the whole list, a search by ID, title
+    or statement, alone or with a field, which a group row's text does
+    not meet; the group rows shown, and the number of rules shown under
+    the controls. Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
     if chrome is None and not os.environ.get("CI"):
       self.skipTest("needs Google Chrome or Chromium")
     assert chrome, "no Chrome in CI"
     raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
-    # R3 is in domain 2, under domain 1, which holds the others; R4 is
-    # superseded.
+    # R3 is in domain 2, under domain 1, which holds the others and lists
+    # them first; R4 is superseded.
     with tempfile.TemporaryDirectory() as tmp:
       page = Path(tmp) / "rules.html"
       page.write_text(raw["rules/index.html"], encoding="utf-8")
-      for query, rules, groups, fields in (
-        ("", ["3", "5", "6"], ["2", "1"], "0"),
+      for query, rules, groups in (
+        ("", ["5", "6", "3"], ["1", "2"]),
         (
           "?status=active,trial,draft,superseded,repealed",
-          ["3", "4", "5", "6"],
-          ["2", "1"],
-          "1",
+          ["4", "5", "6", "3"],
+          ["1", "2"],
         ),
-        ("?status=superseded", ["4"], ["1"], "1"),
-        ("?status=", [], [], "1"),
-        ("?domain=2", ["3"], ["2"], "1"),
-        ("?status=active,superseded&domain=1", ["4", "5", "6"], ["1"], "2"),
-        ("?status=active,superseded&default=on", [], [], "2"),
+        ("?status=superseded", ["4"], ["1"]),
+        ("?per=2&page=2", ["5", "6", "3"], ["1", "2"]),
+        ("?status=", [], []),
+        ("?domain=2", ["3"], ["2"]),
+        ("?status=active,superseded&domain=1", ["4", "5", "6"], ["1"]),
+        ("?status=active,superseded&default=on", [], []),
         (
           "?filter=1&status=superseded&uses=instructions&domain=1&domain=2",
           ["4"],
           ["1"],
-          "2",
         ),
-        (
-          "?filter=1&status=active&uses=review&domain=1&domain=2",
-          [],
-          [],
-          "2",
-        ),
-        ("?filter=1&status=superseded", [], [], "3"),
+        ("?filter=1&status=active&uses=review&domain=1&domain=2", [], []),
+        ("?filter=1&status=superseded", [], []),
+        ("?q=r6", ["6"], ["1"]),
+        ("?q=RULE%205", ["5"], ["1"]),
+        ("?q=see%20art.%20i%20%C2%A71%20and", ["3"], ["2"]),
+        ("?q=old", [], []),
+        ("?status=superseded&q=old", ["4"], ["1"]),
+        ("?q=group", [], []),
       ):
         with self.subTest(query):
           dom = subprocess.run(
@@ -680,17 +665,17 @@ class SiteTest(unittest.TestCase):
             dom,
           )
           self.assertEqual(shown, rules)
-          # A group row shows where the group changes, so the domain
-          # comes back after its subdomain.
+          # A group row shows where the group changes, each group once,
+          # the subdomain after its domain's rules.
           self.assertEqual(
             re.findall(r'<h\d class="rules-group" data-group="(\d+)">', dom),
             groups,
           )
-          self.assertRegex(
+          n = len(rules)
+          self.assertIn(
+            f'<p class="rules-count" data-singular="{{}} rule"'
+            f' data-plural="{{}} rules">{n} rule{"" if n == 1 else "s"}</p>',
             dom,
-            r'<span class="rules-filter-count"( hidden="")?>'
-            + re.escape(fields)
-            + "</span>",
           )
           self.assertEqual('<p class="rules-none">' in dom, not rules)
 
@@ -820,6 +805,283 @@ class SiteTest(unittest.TestCase):
           assert found, "no report"
           self.assertEqual(json.loads(html.unescape(found.group(1))), expected)
 
+  def test_rules_filter_menus(self):
+    """The filter's menus open one at a time, over the list's head.
+
+    Loaded in headless Chrome with the site's style sheets and a script
+    that clicks through them: a menu opens under its button and lies
+    over the table's head where they meet; opening another closes it;
+    the domains' search box narrows the boxes; Escape closes a menu,
+    clears its search and gives the focus back to its button, and so
+    does a click outside; each button says what its field chooses; Clear
+    filters brings back the default filter and empties the search. The
+    legend folds, and stays folded when the page is loaded again.
+    Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True)
+    script = """<script>
+window.addEventListener("load", () => {
+  const $ = (s) => document.querySelector(s);
+  const legend = $("details.rules-legend");
+  const folded = () =>
+    [legend.open, $(".rules-legend summary").getAttribute("aria-expanded")];
+  if (localStorage.getItem("rules-legend")) {
+    document.body.dataset.result = JSON.stringify({ again: folded() });
+    return;
+  }
+  const button = (f) => $(`[aria-controls='rules-filter-${f}']`);
+  const state = () => ["status", "domain", "uses"]
+    .filter((f) => button(f).getAttribute("aria-expanded") === "true"
+      && $(`#rules-filter-${f}`).classList.contains("open"));
+  const out = {};
+  button("status").click();
+  out.status = state();
+  const panel = $("#rules-filter-status").getBoundingClientRect();
+  const head = $(".rules-head").getBoundingClientRect();
+  out.overlap = panel.top < head.top && panel.bottom > head.bottom;
+  const hit = document.elementFromPoint(panel.left + 8, head.top + 4);
+  out.over = Boolean(hit && hit.closest("#rules-filter-status"));
+  button("domain").click();
+  out.domain = state();
+  const search = $(".rules-filter-search");
+  out.searchFocused = document.activeElement === search;
+  const shown = () =>
+    Array.from($("#rules-filter-domain").querySelectorAll("label"))
+      .filter((l) => !l.hidden).length;
+  search.value = "group";
+  search.dispatchEvent(new Event("input", { bubbles: true }));
+  out.found = [shown()];
+  search.value = "nothing";
+  search.dispatchEvent(new Event("input", { bubbles: true }));
+  out.found.push(shown());
+  search.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  out.escaped = [state(), document.activeElement === button("domain")];
+  out.cleared = [search.value, shown()];
+  button("uses").click();
+  document.body.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true }));
+  out.outside = state();
+  const value = (f) =>
+    button(f).querySelector(".rules-menu-value").textContent;
+  const count = () => $(".rules-count").textContent;
+  out.values = [value("status"), value("domain"), count()];
+  $("#rules-filter-status input[value='trial']").click();
+  out.one = [value("status"), button("status").classList.contains("changed")];
+  $("#rules-filter-status [data-all='false']").click();
+  out.none = [value("status"), count()];
+  const find = $(".rules-find input");
+  find.value = "rule 5";
+  find.dispatchEvent(new Event("input", { bubbles: true }));
+  out.typed = [location.search, count()];
+  $(".rules-filter-reset").click();
+  out.reset = [value("status"), find.value, location.search, count()];
+  out.legend = folded();
+  legend.querySelector("summary").click();
+  setTimeout(() => {
+    out.legend.push(...folded(), localStorage.getItem("rules-legend"));
+    document.body.dataset.result = JSON.stringify(out);
+  }, 100);
+});
+</script>"""
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css"):
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "rules/index.html"
+      page.parent.mkdir(exist_ok=True)
+      page.write_text(
+        raw["rules/index.html"].replace("</body>", script + "</body>"),
+        encoding="utf-8",
+      )
+      results = []
+      # The second load, with the same profile, finds the legend folded.
+      for _ in range(2):
+        dom = subprocess.run(
+          [
+            chrome,
+            "--headless",
+            "--no-proxy-server",
+            f"--user-data-dir={Path(tmp) / 'profile'}",
+            "--window-size=1280,900",
+            "--virtual-time-budget=5000",
+            "--dump-dom",
+            page.as_uri(),
+          ],
+          capture_output=True,
+          check=True,
+          text=True,
+          timeout=CHROME_TIMEOUT,
+        ).stdout
+        found = re.search(r'data-result="([^"]*)"', dom)
+        assert found, "the script wrote no result"
+        results.append(json.loads(html.unescape(found.group(1))))
+    self.assertEqual(
+      results,
+      [
+        {
+          "status": ["status"],
+          "overlap": True,
+          "over": True,
+          "domain": ["domain"],
+          "searchFocused": True,
+          "found": [1, 0],
+          "escaped": [[], True],
+          "cleared": ["", 1],
+          "outside": [],
+          "values": ["2/5", "All", "3 rules"],
+          "one": ["Active", True],
+          "none": ["None", "0 rules"],
+          "typed": ["?status=&q=rule%205", "0 rules"],
+          "reset": ["2/5", "", "", "3 rules"],
+          "legend": [True, "true", False, "false", "closed"],
+        },
+        {"again": [False, "false"]},
+      ],
+    )
+
+  def test_rules_filter_in_the_page(self):
+    """No popover of the filter runs past the page's edge.
+
+    The domain's long title makes the domains' popover as wide as a
+    popover gets. At each width, from a phone's to a wide screen's, the
+    page does not scroll sideways, with the menus shut and with the
+    domains' open, and the open popover stays within the filter's bar,
+    right under its button, also where the bar takes two lines.
+    Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True, edit_rules=site_fixture.long_domain)
+    script = """<script>
+window.addEventListener("load", () => {
+  const root = document.documentElement;
+  const out = { width: window.innerWidth };
+  out.shut = root.scrollWidth <= root.clientWidth;
+  const button = document.querySelector(
+    "[aria-controls='rules-filter-domain']");
+  button.click();
+  const row = document.querySelector(".rules-bar").getBoundingClientRect();
+  const popover = document.getElementById("rules-filter-domain")
+    .getBoundingClientRect();
+  out.open = root.scrollWidth <= root.clientWidth;
+  out.within = popover.left >= row.left - 1 && popover.right <= row.right + 1;
+  const gap = popover.top - button.getBoundingClientRect().bottom;
+  out.under = gap >= 0 && gap <= 12;
+  document.body.dataset.result = JSON.stringify(out);
+});
+</script>"""
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css"):
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "rules/index.html"
+      page.parent.mkdir(exist_ok=True)
+      page.write_text(
+        raw["rules/index.html"].replace("</body>", script + "</body>"),
+        encoding="utf-8",
+      )
+      # Chrome's headless window is at least 500px wide.
+      for width in (500, 768, 920, 1280, 1920):
+        with self.subTest(width):
+          dom = subprocess.run(
+            [
+              chrome,
+              "--headless",
+              "--no-proxy-server",
+              "--hide-scrollbars",
+              f"--user-data-dir={Path(tmp) / 'profile'}",
+              f"--window-size={width},900",
+              "--dump-dom",
+              page.as_uri(),
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+            timeout=CHROME_TIMEOUT,
+          ).stdout
+          found = re.search(r'data-result="([^"]*)"', dom)
+          assert found, "the script wrote no result"
+          result = json.loads(html.unescape(found.group(1)))
+          self.assertEqual(result["width"], width)
+          self.assertEqual(
+            (result["shut"], result["open"], result["within"], result["under"]),
+            (True, True, True, True),
+            result,
+          )
+
+  def test_rules_list_on_a_phone(self):
+    """The list does not scroll sideways on a phone, in either language.
+
+    Each list holds a statement with a path in code longer than a row
+    of a phone; the list is loaded 390px wide in a frame, as Chrome's
+    headless window is at least 500px wide, with its style sheets and
+    scripts. Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True, edit_rules=site_fixture.long_code)
+    lists = ("rules/index.html", "zh/rules/index.html")
+    self.assertIn("alongfilename.md", visible(raw[lists[0]]))
+    self.assertIn("alongfilename.md", visible(raw[lists[1]]))
+    script = """<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {
+    const root = f.contentDocument.documentElement;
+    done([root.clientWidth, root.scrollWidth <= root.clientWidth]);
+  })))).then((out) => {
+  document.body.dataset.result = JSON.stringify(out);
+});
+</script>"""
+    frames = "".join(
+      f'<iframe src="{path}" style="width: 390px; height: 844px"></iframe>'
+      for path in lists
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css") or path in lists:
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "phone.html"
+      page.write_text(
+        f"<!DOCTYPE html><body>{frames}{script}</body>", encoding="utf-8"
+      )
+      dom = subprocess.run(
+        [
+          chrome,
+          "--headless",
+          "--no-proxy-server",
+          "--hide-scrollbars",
+          # The frames' documents, files too, are the page's to read.
+          "--allow-file-access-from-files",
+          f"--user-data-dir={Path(tmp) / 'profile'}",
+          "--window-size=1280,900",
+          "--virtual-time-budget=5000",
+          "--dump-dom",
+          page.as_uri(),
+        ],
+        capture_output=True,
+        check=True,
+        text=True,
+        timeout=CHROME_TIMEOUT,
+      ).stdout
+    found = re.search(r'data-result="([^"]*)"', dom)
+    assert found, "the script wrote no result"
+    self.assertEqual(
+      json.loads(html.unescape(found.group(1))), [[390, True], [390, True]]
+    )
+
   def test_params(self):
     """A page of parameters; a placeholder marked, linked to its entry."""
     raw = self.build(raw=True, edit_rules=site_fixture.params)
@@ -862,7 +1124,8 @@ class SiteTest(unittest.TestCase):
     self.assertRegex(
       page,
       r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
-      r' href="\.\./rules/7/"><span class="rule-id">R7</span>.*Default'
+      r' href="\.\./rules/7/" title="[^"]*"><span class="rule-id">R7</span>'
+      r".*Default"
       r" option</span></span>.*</a></li>\n</ul>",
     )
     self.assertNotIn('data-group="2"', page)
@@ -916,7 +1179,7 @@ class SiteTest(unittest.TestCase):
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "Quadrants All None Global public Global private Reset filter",
+      "Quadrant Quadrant All None Global public Global private Clear filters",
       pages["rules/index.html"],
     )
     # The legend: the rule set's marks and the quadrant.
@@ -1067,12 +1330,54 @@ class SiteTest(unittest.TestCase):
       )
     self.assertNotIn("还没有中文译文", pages["zh/rules/3/index.html"])
 
+  def test_rule_paths(self):
+    """A node's page has its path; a title two nodes share names the parent."""
+    raw = self.build(raw=True, edit_rules=site_fixture.shared_titles)
+    four = raw["rules/4/index.html"]
+    # The breadcrumb, the nodes above it linked and itself last.
+    self.assertIn(
+      '<nav class="rule-breadcrumb" aria-label="Breadcrumb"><ol>\n'
+      '<li><a href="../8/">Group 8</a><svg ',
+      four,
+    )
+    self.assertIn('<li><a href="../9/">Tiers</a><svg ', four)
+    self.assertIn(
+      '<li><span aria-current="page" lang="en">Rule 4</span></li>\n'
+      "</ol></nav>\n<h1>",
+      four,
+    )
+    self.assertIn('aria-label="所在位置"', raw["zh/rules/4/index.html"])
+    self.assertNotIn("rule-breadcrumb", raw["rules/1/index.html"])
+    # The title of the tab and of a shared link.
+    self.assertIn("<title>R4 Group 8 › Tiers › Rule 4 • ", four)
+    self.assertIn(
+      '<meta property="og:title" content="R4 Group 8 › Tiers › Rule 4">', four
+    )
+    self.assertIn("<title>R1 Group 1 • ", raw["rules/1/index.html"])
+    # A shared title in the relations and in the filter, with its parent's.
+    for lang, one, tiers in (("", "Group 1", "Tiers"), ("zh/", "组 1", "层级")):
+      with self.subTest(lang):
+        page = raw[f"{lang}rules/1/index.html"]
+        self.assertIn(
+          f'<a href="../7/">R7 {tiers} <span class="rule-parent-title">'
+          f"({one})</span></a>",
+          page,
+        )
+        self.assertIn('<a href="../5/">R5 ', page)
+        self.assertNotIn('../5/">R5 Rule 5 <span', page)
+        page = raw[f"{lang}rules/index.html"]
+        self.assertIn(
+          f'> R7 {tiers} <span class="rules-filter-note">'
+          f"({one})</span></label>",
+          page,
+        )
+        self.assertRegex(page, r"> R8 (Group|组) 8</label>")
+
   def test_rules_group_current(self):
     """The rules group is marked current on all of its pages, only there."""
-    raw = self.build(raw=True, per_page=2)
+    raw = self.build(raw=True)
     for page, href, mark in (
       ("rules/index.html", "../rules/", " active"),
-      ("rules/page/2/index.html", "../../../rules/", " active"),
       ("rules/3/index.html", "../../rules/", " active"),
       ("zh/rules/3/index.html", "../../../zh/rules/", " active"),
       ("design/one/index.html", "../../rules/", ""),
@@ -1172,9 +1477,11 @@ class SiteTest(unittest.TestCase):
     self.assertEqual(raw["index.html"].count(f'aria-label="R3 {escaped}"'), 2)
     self.assertIn(f'<a href="../3/">R3 {shown}</a>', raw["rules/5/index.html"])
     page = raw["rules/3/index.html"]
-    self.assertIn(f"<title>{escaped}", page)
-    self.assertIn(f'<meta property="og:title" content="{escaped}">', page)
-    self.assertIn(f'<meta itemprop="name" content="{escaped}">', page)
+    # The page's title is its label and path.
+    titled = f"R3 Group 1 › Group 2 › {escaped}"
+    self.assertIn(f"<title>{titled}", page)
+    self.assertIn(f'<meta property="og:title" content="{titled}">', page)
+    self.assertIn(f'<meta itemprop="name" content="{titled}">', page)
     for path in ("index.html", "rules/5/index.html", "rules/3/index.html"):
       with self.subTest(path=path):
         self.assertNotIn("&amp;lt;", raw[path])

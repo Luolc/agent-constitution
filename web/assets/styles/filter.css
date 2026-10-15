@@ -1,46 +1,94 @@
 /* The controls above the list of the rules
    (layouts/_partials/rules/filter.html), as docs/design/frontend.md
-   (Components) draws them. The filter, shut: a quiet button with a
-   border, `funnel`, the word and, when fields filter, their number in a
-   badge. Open: a popover under it, a group of check boxes per field,
-   its name and its All and None at the top, each box a row that the
-   pointer fills; Clear filter under them. The popover enters from
-   scale(0.95) at the button, and only fades under reduced motion. The
-   controls' common look is controls.css's. */
-.rules .rules-controls {
+   (Components) draws them, after Ruff's: one row, wrapping on a narrow
+   screen, each control under its name in small muted type. The search
+   box first, then what the rows show (view.css), then a menu per field:
+   a button with a border saying what the field chooses, in a badge when
+   that differs from the default filter, and `chevron-down`; Clear
+   filters, a quiet button in the accent color, at the row's end. Under
+   the row, the number of rules shown, small and muted. A button opens a
+   popover under it, within the row (assets/ts/rules-list.ts sets
+   `--menu-start` and `--menu-top`, the popover's place in the row), the
+   field's check boxes under its name and its All and None, each box a
+   row that the pointer fills, a long list scrolling in the popover
+   under its search box. A popover enters from scale(0.95) at its
+   button, and only fades under reduced motion; it lies over the list's
+   sticky head and group rows (`z-popover`). The controls' common look
+   is controls.css's. */
+.rules .rules-bar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--t-space-2) var(--t-space-6);
-  margin-block: var(--t-space-4);
-  color: var(--t-text-muted);
+  align-items: end;
+  gap: var(--t-space-2) var(--t-space-3);
+  margin-block: var(--t-space-4) var(--t-space-1);
   font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
 }
-.rules .rules-filter { position: relative; }
-.rules .rules-filter-button {
+.rules .rules-bar [hidden] { display: none; }
+.rules :is(.rules-control, .rules-menu) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--t-space-1);
+}
+.rules .rules-control-label {
+  color: var(--t-text-muted);
+  font-size: var(--t-text-xs);
+  font-weight: var(--t-weight-medium);
+}
+.rules .rules-find input { min-inline-size: 0; inline-size: 12.5rem; max-inline-size: 100%; box-sizing: border-box; line-height: inherit; }
+.rules .rules-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--t-space-2) var(--t-space-3);
+}
+.rules .rules-menu-button {
   display: inline-flex;
   align-items: center;
   gap: var(--t-space-1);
+  justify-content: space-between;
+  min-inline-size: 4.5rem;
+  line-height: inherit;
   border: 1px solid var(--t-border-strong);
 }
-.rules .rules-filter-button .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
-.rules .rules-filter-count {
-  min-inline-size: var(--t-icon-sm);
+.rules .rules-menu-button .icon {
+  width: var(--t-icon-sm);
+  height: var(--t-icon-sm);
+  color: var(--t-text-muted);
+  transition: rotate var(--t-duration-base) var(--t-ease-out);
+}
+.rules .rules-menu-button[aria-expanded="true"] .icon { rotate: 180deg; }
+.rules .rules-menu-value {
   padding: 0 var(--t-space-1);
-  font-size: var(--t-text-xs);
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  color: var(--t-accent);
-  background: var(--t-bg-selected);
+  white-space: nowrap;
   border-radius: var(--t-radius-full);
 }
-.rules .rules-filter-panel {
+.rules .rules-menu-button.changed .rules-menu-value {
+  color: var(--t-accent);
+  background: var(--t-bg-selected);
+}
+.rules .rules-filter-reset { margin-inline-start: auto; color: var(--t-accent); }
+.rules .rules-count {
+  margin: 0 0 var(--t-space-4);
+  color: var(--t-text-muted);
+  font-size: var(--t-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.rules .rules-filter-group {
   position: absolute;
-  z-index: 2;
-  top: 100%;
-  inset-inline-start: 0;
-  inline-size: var(--t-width-popover);
-  margin-top: var(--t-space-1);
+  z-index: var(--t-z-popover);
+  top: var(--menu-top, 100%);
+  inset-inline-start: var(--menu-start, 0);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--t-space-2) var(--t-space-4);
+  inline-size: max-content;
+  max-inline-size: var(--t-width-popover);
+  box-sizing: border-box;
+  margin: var(--t-space-1) 0 0;
   padding: var(--t-space-3) var(--t-space-4);
   color: var(--t-text);
   background: var(--t-bg-panel);
@@ -56,20 +104,12 @@
   transition-delay: 0s, 0s, var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
-.rules .rules-filter-panel.open {
+.rules .rules-filter-group.open {
   visibility: visible;
   opacity: 1;
   transform: none;
   transition-duration: var(--t-duration-base), var(--t-duration-base), 0s;
   transition-delay: 0s;
-}
-.rules .rules-filter-group {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  margin: 0 0 var(--t-space-3);
-  padding: 0;
-  border: 0;
 }
 .rules .rules-filter-group legend {
   display: contents;
@@ -78,8 +118,17 @@
 }
 .rules .rules-filter-all { display: flex; gap: var(--t-space-1); }
 .rules .rules-filter-all button { color: var(--t-text-muted); font-size: var(--t-text-xs); }
-.rules .rules-filter-group label {
+.rules .rules-filter-search {
   grid-column: 1 / -1;
+  min-block-size: var(--t-target);
+}
+.rules .rules-filter-options {
+  grid-column: 1 / -1;
+  max-block-size: var(--t-height-popover);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rules .rules-filter-group label {
   display: flex;
   align-items: center;
   gap: var(--t-space-2);
@@ -90,22 +139,24 @@
   cursor: pointer;
   transition: background-color var(--t-duration-fast) var(--t-ease-out);
 }
+/* A domain's parent, after a title another node also has. */
+.rules .rules-filter-note { color: var(--t-text-muted); }
 @media (hover: hover) and (pointer: fine) {
-  .rules .rules-filter-panel button:hover,
+  .rules .rules-filter-group button:hover,
   .rules .rules-filter-group label:hover {
     color: var(--t-text);
     background-color: var(--t-bg-panel-hover);
   }
 }
-.rules .rules-filter-panel button:active { color: var(--t-text); background-color: var(--t-bg-active); }
-.rules .rules-size .select { margin-inline-start: var(--t-space-1); }
+.rules .rules-filter-group button:active { color: var(--t-text); background-color: var(--t-bg-active); }
 .rules .rules-none-reset { color: var(--t-accent); }
 @media (max-width: 48rem) {
-  .rules .rules-filter { position: static; }
-  .rules .rules-controls { position: relative; }
-  .rules .rules-filter-panel { inline-size: 100%; }
+  .rules .rules-find { flex-basis: 100%; }
+  .rules .rules-find input { inline-size: 100%; }
+  .rules .rules-filter-group { inset-inline-start: 0; inline-size: 100%; max-inline-size: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rules .rules-filter-panel,
-  .rules .rules-filter-panel.open { transform: none; }
+  .rules .rules-filter-group,
+  .rules .rules-filter-group.open { transform: none; }
+  .rules .rules-menu-button .icon { transition: none; }
 }

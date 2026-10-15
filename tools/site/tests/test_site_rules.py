@@ -67,14 +67,60 @@ class SiteRulesTest(unittest.TestCase):
   def test_subdomain(self):
     """A domain under a domain heads the rules below it, under its own."""
     site_fixture.subdomain(self.root)
-    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    data = self.load()["en"]["nodes"]
+    nodes = {n["id"]: n for n in data}
     self.assertEqual((nodes[2]["kind"], nodes[2]["depth"]), ("domain", 1))
     self.assertEqual(
       [(g["id"], g["kind"]) for g in nodes[3]["groups"]],
       [(1, "domain"), (2, "domain")],
     )
-    self.assertEqual([c["id"] for c in nodes[1]["children"]], [2, 4, 5, 6])
+    # The domain's rules come before its subdomain, in the list and on
+    # its page.
+    self.assertEqual([n["id"] for n in data], [1, 4, 5, 6, 2, 3])
+    self.assertEqual([c["id"] for c in nodes[1]["children"]], [4, 5, 6, 2])
     self.assertEqual([c["id"] for c in nodes[2]["children"]], [3])
+
+  def test_shared_title(self):
+    """A title two nodes share is named with each one's parent."""
+    site_fixture.shared_titles(self.root)
+    data = self.load()
+    for lang, tiers, one, eight in (
+      ("en", "Tiers", "Group 1", "Group 8"),
+      ("zh", "层级", "组 1", "组 8"),
+    ):
+      with self.subTest(lang):
+        nodes = {n["id"]: n for n in data[lang]["nodes"]}
+        self.assertEqual(
+          [(c["id"], c.get("parentTitle")) for c in nodes[1]["children"]],
+          [(2, None), (5, None), (6, None), (7, one)],
+        )
+        self.assertEqual(nodes[1]["children"][-1]["title"], tiers)
+        self.assertEqual(nodes[9]["parentTitle"], eight)
+        self.assertEqual([p["title"] for p in nodes[4]["path"]], [eight, tiers])
+    nodes = {n["id"]: n for n in data["en"]["nodes"]}
+    self.assertEqual(nodes[4]["pageTitle"], "R4 Group 8 › Tiers › Rule 4")
+    self.assertEqual(nodes[1]["pageTitle"], "R1 Group 1")
+    self.assertNotIn("parentTitle", nodes[8])
+
+  def test_shared_title_under_one_parent(self):
+    """Two nodes of one title under one parent are named alone."""
+    rule = self.root / "rules/6.toml"
+    text = rule.read_text(encoding="utf-8")
+    rule.write_text(text.replace('en = "Rule 6"', 'en = "Rule 5"'), "utf-8")
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual(nodes[6]["title"], nodes[5]["title"])
+    self.assertNotIn("parentTitle", nodes[6])
+    self.assertEqual(
+      [c.get("parentTitle") for c in nodes[1]["children"]], [None] * 4
+    )
+
+  def test_page_title_leaves_out_the_farthest(self):
+    title = site_rules.page_title("R7", ["A" * 30, "B" * 30], "C" * 5)
+    self.assertEqual(title, f"R7 … › {'B' * 30} › CCCCC")
+    self.assertEqual(
+      site_rules.page_title("R7", ["A" * 9, "B" * 9], "C" * 60),
+      f"R7 … › {'B' * 9} › {'C' * 60}",
+    )
 
   def test_other_sources(self):
     """A rule under another source's domain, or overriding its rule."""

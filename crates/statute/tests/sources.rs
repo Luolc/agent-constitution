@@ -267,6 +267,37 @@ fn a_reference_to_another_source_names_a_node_it_has() {
 }
 
 #[test]
+fn only_a_rule_in_force_is_warned_of_requiring_a_superseded_rule() {
+    // R2 is superseded by R3, and team:7 requires R2.
+    let superseded = (
+        "r/rules",
+        edit(
+            rule(2, 1, "superseded-by = 3"),
+            "status = \"draft\"",
+            "status = \"superseded\"",
+        ),
+    );
+    let warning = "team/rules/7.toml: warning: `requires` names rule \"R2\", which is superseded by \"R3\"; require \"R3\" instead";
+    let warnings = |name: &str, team: (u64, String)| {
+        let dir = repo(
+            name,
+            &manifest(false, "\"R3\""),
+            &[superseded.clone(), ("team/rules", team)],
+        );
+        let run = statute(&dir, &["lock"]);
+        ok(&run);
+        run.stderr.lines().filter(|l| *l == warning).count()
+    };
+    assert_eq!(warnings("in-force", rule(7, 1, "requires = [\"R2\"]")), 1);
+    let repealed = edit(
+        rule(7, 1, "requires = [\"R2\"]"),
+        "status = \"draft\"",
+        "status = \"repealed\"",
+    );
+    assert_eq!(warnings("repealed", repealed), 0);
+}
+
+#[test]
 fn a_public_rule_names_no_private_rule() {
     // team is public, me private: each place where team:7 can name me:4
     // fails, with the message the design gives.

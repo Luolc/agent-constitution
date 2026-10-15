@@ -1,0 +1,3 @@
+{{- /* The theme's own html-head-title.html, but a rule's page takes the
+  title of its params, its label and path (content/rules/_content.gotmpl). */ -}}
+{{ with or .Params.pageTitle (partial "docs/title" .) }}{{ . }} • {{ end }}{{ .Site.Title -}}

@@ -81,7 +81,14 @@ def original(*texts: str) -> str:
   return hashlib.sha256("\0".join(texts).encode()).hexdigest()
 
 
-def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
+def group(
+  node_id: int,
+  kind: str,
+  parent: int | None,
+  cites: str = "3",
+  title: str | None = None,
+  zh: str | None = None,
+) -> str:
   """Return the file of a domain or a one-of, translated.
 
   A domain has an applicability that cites a rule and is off by
@@ -93,18 +100,21 @@ def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
     parent: its parent, None for a domain.
     cites: the rule a domain's applicability cites, as `{@rule:...}`
       names it.
+    title: its English title, `Group <id>` when None.
+    zh: its Chinese title, `组 <id>` when None.
 
   Returns:
     The TOML text.
   """
-  title = f"Group {node_id}"
+  title = title or f"Group {node_id}"
+  zh = zh or f"组 {node_id}"
   texts = [title]
   text = (
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
     f'kind = "{kind}"\nstatus = "active"\nlang = "en"\n'
     + (f"parent = {parent}\n" if parent else "")
     + ('default = "off"\n' if kind == "domain" else "default = 3\n")
-    + f'\n[title]\nen = "{title}"\nzh = "组 {node_id}"\n'
+    + f'\n[title]\nen = "{title}"\nzh = "{zh}"\n'
   )
   if kind == "domain":
     applicability = APPLICABILITY.format(rule=cites)
@@ -167,6 +177,39 @@ FILES = {
 }
 
 
+def long_domain(root: Path) -> None:
+  """Give the domain 1 a title as long as the longest of this repo's.
+
+  Args:
+    root: the checkout.
+  """
+  title = "Agent instructions, skills and the settings of their tools"
+  (root / "rules/1.toml").write_text(
+    group(1, "domain", None, title=title), encoding="utf-8"
+  )
+
+
+def long_code(root: Path) -> None:
+  """Put a path in code, longer than a phone's row, in two statements.
+
+  Rule 5's English one, which the English list shows, and rule 3's
+  Chinese one, which the Chinese list shows; the English text the
+  translation follows is unchanged.
+
+  Args:
+    root: the checkout.
+  """
+  code = "`.claude/skills/<name>/references/alongfilename.md`"
+  for name, old, new in (
+    ("5", 'en = "New."', f'en = "New, in {code}."'),
+    ("3", "和{@rule:6}。", f"和{{@rule:6}}，见 {code}。"),
+  ):
+    rule = root / f"rules/{name}.toml"
+    text = rule.read_text(encoding="utf-8")
+    assert old in text
+    rule.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+
 def subdomain(root: Path) -> None:
   """Make the one-of 2 a domain under the domain 1.
 
@@ -181,6 +224,29 @@ def subdomain(root: Path) -> None:
   rule.write_text(
     text.replace("parent = 2\n", 'parent = 2\ndefault = "off"\n', 1),
     encoding="utf-8",
+  )
+
+
+def shared_titles(root: Path) -> None:
+  """Give two domains under two parents one title, Tiers / 层级.
+
+  Domain 7, under the domain 1, and domain 9, under a new domain 8,
+  which holds rule 4.
+
+  Args:
+    root: the checkout.
+  """
+  files = {
+    7: group(7, "domain", 1, title="Tiers", zh="层级"),
+    8: group(8, "domain", None),
+    9: group(9, "domain", 8, title="Tiers", zh="层级"),
+  }
+  for node_id, text in files.items():
+    (root / f"rules/{node_id}.toml").write_text(text, encoding="utf-8")
+  rule = root / "rules/4.toml"
+  text = rule.read_text(encoding="utf-8")
+  rule.write_text(
+    text.replace("parent = 1\n", "parent = 9\n", 1), encoding="utf-8"
   )
 
 

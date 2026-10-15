@@ -53,3 +53,25 @@
   border-radius: var(--t-radius-sm);
   padding: 0 var(--t-space-1);
 }
+
+/* Above a node's title, the nodes above it: small and muted, joined by
+   chevrons, each link a target tall; the node itself, last, is the
+   current page, in the text's color and not a link. A node's parent,
+   named beside a title another node shares, is muted. */
+.rules .rule-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--t-space-1);
+  margin: var(--t-space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+  color: var(--t-text-muted);
+}
+.rules .rule-breadcrumb li { display: inline-flex; align-items: center; gap: var(--t-space-1); margin: 0; }
+.rules .rule-breadcrumb a { display: inline-flex; align-items: center; min-height: var(--t-target); }
+.rules .rule-breadcrumb [aria-current] { color: var(--t-text); }
+.rules .rule-breadcrumb + h1 { margin-top: var(--t-space-2); }
+.rules .rule-parent-title { color: var(--t-text-muted); }

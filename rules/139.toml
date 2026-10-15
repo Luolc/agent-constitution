@@ -1,6 +1,6 @@
 id = 139
 slug = "development-machine-reads-through-its-service-account"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "On a development machine, read the secret manager only through the machine
 zh = "开发机上的 agent 只经本机的 service account 读密钥管理器"
 
 [text.statement]
-en = "On a development machine, read the secret manager only through that machine's own service account, and read general credentials from the general tier, read-only."
-zh = "在开发机上，agent 读密钥管理器只经本机自己的 service account，通用凭证从通用层只读。"
+en = "On a development machine, read the secret manager only through that machine's own service account, and read general credentials, those that people put in the secret manager for agents to use, from the general tier, the part of the secret manager kept for them, read-only."
+zh = "在开发机上，agent 读密钥管理器只经本机自己的 service account；通用凭证 (人放进密钥管理器给 agent 用的凭证) 从通用层 (密钥管理器里专放这类凭证的部分) 只读。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "642563467c3244858f2169002ffead1bfe8b04ebd027466a280de7b4828f9cb1"
+zh = "921c0c233cc13768e7674b3babbe337525f94da2640d5a702fe2d3c31c021f74"

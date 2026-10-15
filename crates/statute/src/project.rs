@@ -105,7 +105,22 @@ impl Project {
                 return (None, diags);
             }
         };
-        Project::from_manifest(root, manifest, diags, env, &locked)
+        let (project, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
+        // Where there is a private rule set, the private layer may enable
+        // the rule, and its own pass tells.
+        if let Some(project) = &project
+            && !(project.manifest.public && has_private_rule_set(root))
+        {
+            for key in
+                resolve::unenabled_own(&project.sources, &project.manifest, &project.resolution)
+            {
+                diags.warning(
+                    manifest::FILE,
+                    resolve::unenabled_own_warning(&project.sources, &key),
+                );
+            }
+        }
+        (project, diags)
     }
 
     /// The private layer of the public `project`, read from the private
@@ -170,6 +185,19 @@ impl Project {
         locked.extend(own);
         let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
         diags.0.retain(|d| !given.0.contains(d));
+        // A finding about an entry of `rules`, `packs` or `domains` that
+        // the public rule set alone does not have is about an entry of
+        // the private rule set; the rest still ask for a change to
+        // `statute.toml`.
+        for d in &mut diags.0 {
+            if d.file == manifest::FILE
+                && ["`rules` ", "`packs` ", "`domains` "]
+                    .iter()
+                    .any(|field| d.message.starts_with(field))
+            {
+                d.file.clone_from(&shown);
+            }
+        }
         let Some(combined) = combined else {
             return (None, diags);
         };
@@ -188,6 +216,21 @@ impl Project {
         }
         if diags.has_errors() {
             return (None, diags);
+        }
+        // A rule of a source the private layer adds is listed in the
+        // private rule set.
+        for key in
+            resolve::unenabled_own(&combined.sources, &combined.manifest, &combined.resolution)
+        {
+            let file = if project.sources.source(&key.source).is_some() {
+                manifest::FILE
+            } else {
+                &shown
+            };
+            let message = resolve::unenabled_own_warning(&combined.sources, &key);
+            if !given.0.iter().any(|d| d.message == message) {
+                diags.warning(file, message);
+            }
         }
         (Some(combined), diags)
     }
@@ -293,6 +336,11 @@ impl Project {
         };
         (Some(project), diags)
     }
+}
+
+/// Whether the work tree at `root` has a private rule set.
+fn has_private_rule_set(root: &Path) -> bool {
+    private::dir(root).is_ok_and(|dir| dir.is_some_and(|d| d.join(private::MANIFEST).is_file()))
 }
 
 /// The git sources the lock file at `path`, named `shown` in messages,
