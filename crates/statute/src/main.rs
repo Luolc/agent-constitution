@@ -218,20 +218,16 @@ fn load_layers(root: &Path, env: &Env) -> Result<(Project, Option<Project>), ()>
     Ok((project, both))
 }
 
-/// When `statute.private.toml` is there, checks that git ignores the
-/// private layer's files, before a command writes anything at all, the
-/// public files included.
+/// Checks that git ignores the private layer's files; a command with a
+/// private layer asks it before writing anything, the public files
+/// included.
 fn check_private_ignored(root: &Path) -> Result<(), ()> {
-    if root.join(private::MANIFEST).exists() {
-        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
-    }
-    Ok(())
+    private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))
 }
 
 /// Writes the private lock file of `both`, the project with both layers,
-/// after checking that git ignores it.
+/// once `check_private_ignored` has passed.
 fn write_private_lock(root: &Path, public: &Project, both: &Project) -> Result<(), ()> {
-    statute::private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     std::fs::write(root.join(private::LOCK), lock::render(both)).map_err(|e| {
         eprintln!("{}: error: cannot write: {e}", private::LOCK);
     })?;
@@ -248,16 +244,26 @@ fn print_private_locked(public: &Project, both: &Project) {
     );
 }
 
-/// Locks the private layer again after `statute.toml` changed, when it
-/// is there.
-fn relock_private(root: &Path, public: &Project, env: &Env) -> Result<(), ()> {
+/// Resolves the private layer, when it is there, on top of `public`, the
+/// public project a command is about to write, and checks that git
+/// ignores its files: both before anything is written, so that a private
+/// layer that cannot follow leaves the public files as they were.
+fn private_ready(root: &Path, public: &Project, env: &Env) -> Result<Option<Project>, ()> {
     let (both, diags) = Project::load_private(public, &Diagnostics::default(), env);
     print(&diags);
     match both {
-        Some(both) => write_private_lock(root, public, &both),
+        Some(both) => {
+            check_private_ignored(root)?;
+            Ok(Some(both))
+        }
         None if diags.has_errors() => Err(()),
-        None => Ok(()),
+        None => Ok(None),
     }
+}
+
+/// Writes the private lock file of `both`, when there is a private layer.
+fn relock_private(root: &Path, public: &Project, both: Option<&Project>) -> Result<(), ()> {
+    both.map_or(Ok(()), |both| write_private_lock(root, public, both))
 }
 
 fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
@@ -630,12 +636,11 @@ fn lock_command(root: &Path) -> Result<(), ()> {
             );
         }
     }
-    check_private_ignored(root)?;
-    write_lock(root, &project)?;
-    match both {
-        Some(both) => write_private_lock(root, &project, &both),
-        None => Ok(()),
+    if both.is_some() {
+        check_private_ignored(root)?;
     }
+    write_lock(root, &project)?;
+    relock_private(root, &project, both.as_ref())
 }
 
 /// What to do about a rule edited without a new revision
@@ -679,7 +684,6 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
         print(&diags);
         return Err(());
     };
-    check_private_ignored(root)?;
     let replaced = if replace_superseded {
         replace(root, &project)?
     } else {
@@ -701,6 +705,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
                 println!("{line}");
             }
             report_changes(&old, &next);
+            let both = private_ready(root, &next, &env)?;
             write_both(
                 root,
                 false,
@@ -710,7 +715,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
                 &lock::render(&next),
             )?;
             print_locked(&next);
-            return relock_private(root, &next, &env);
+            return relock_private(root, &next, both.as_ref());
         }
         None => {
             print(&diags);
@@ -718,8 +723,9 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
         }
     };
     report_changes(&old, &project);
+    let both = private_ready(root, &project, &env)?;
     write_lock(root, &project)?;
-    relock_private(root, &project, &env)
+    relock_private(root, &project, both.as_ref())
 }
 
 /// Prints how `project` differs from the lock file `old`.
@@ -1076,7 +1082,14 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         eprintln!("statute: {file} and {lock_file} are left unchanged");
         return Err(());
     };
-    check_private_ignored(root)?;
+    // The private layer, when statute.toml changes and it is there.
+    let both = match &public {
+        Some(_) => {
+            check_private_ignored(root)?;
+            None
+        }
+        None => private_ready(root, &project, &env)?,
+    };
     write_both(
         root,
         private,
@@ -1097,7 +1110,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         Some(public) => print_private_locked(public, &project),
         None => {
             print_locked(&project);
-            relock_private(root, &project, &env)?;
+            relock_private(root, &project, both.as_ref())?;
         }
     }
     Ok(())

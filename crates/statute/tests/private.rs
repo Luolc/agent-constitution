@@ -244,6 +244,14 @@ fn the_private_layer_overrides_no_public_rule() {
         &PRIVATE.replace("rules = []", "rules = [\"me:4\", \"R6\"]"),
     );
     ok(&statute(&dir, &["add", "--private", "me:5"]));
+    // A public change the private layer cannot follow is not written.
+    let files = ["statute.toml", "statute.lock", "statute.private.lock"];
+    let before = files.map(|f| read(&dir, f));
+    fails_with(
+        &statute(&dir, &["add", "R6"]),
+        "statute.private.toml: error: `rules` lists `R6`, which statute.toml lists already",
+    );
+    assert_eq!(files.map(|f| read(&dir, f)), before);
 }
 
 #[test]
