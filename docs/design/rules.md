@@ -87,6 +87,6 @@ A rule that needs a local value names a parameter instead of the value:
 values. Parameters are plain values, never rule text, so the private side can
 change a model name or a machine list without touching a rule. An
 unresolved or unused parameter fails the build.
-[Parameters](rule-config.md#parameters) replaces this section, once
-built: a source declares its parameters in its `params.toml`, and the
+[Parameters](rule-config.md#parameters) replaces this section: a
+source declares its parameters in its `params.toml`, and the
 rule set, or for a `personal` parameter the person, sets the value.

@@ -235,8 +235,9 @@ default switches of a rule set are built, with `domains`, `exclude`,
 `local-rules` and a source entry's `defaults`, and what `add`,
 `remove`, `explain` (`--defaults` included) and the lock file do with
 them; `default` is required where the rule files need it, and
-`check = "review"` fails. Not built yet: parameters, the one-of's
-rendering, and the marks of the sites.
+`check = "review"` fails; parameters are built, with their values in
+the lock file, `upgrade`, `explain <name>` and both outputs. Not built
+yet: the one-of's rendering, and the marks of the sites.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -273,10 +274,11 @@ as it is and the successors are listed, for the user to choose with
 set does not resolve, neither file is changed.
 
 **`validate <dir>`** reads the rule files of one directory as the
-first-party source, skipping `params.toml`, and runs every check that
-needs no rule set ([Checkers](checkers.md#checkers)): the format of each
-node, the tree, the targets of its references, the translations and
-citations, and the defaults. Each finding goes to standard error on a
+first-party source, with its parameters in `params.toml`, and runs
+every check that needs no rule set ([Checkers](checkers.md#checkers)):
+the format of each node and parameter, the tree, the targets of its
+references, the translations, citations and placeholders, and the
+defaults. Each finding goes to standard error on a
 line of its own; an error makes it exit with status 1, and a clean run
 prints one line to standard output with the number of nodes. This repo
 runs `statute validate rules` as a commit hook.
