@@ -392,7 +392,9 @@ pub fn differences(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, St
             differ.push(link);
         }
     }
-    if let Ok(entries) = std::fs::read_dir(&skills) {
+    if skills.symlink_metadata().is_ok_and(|m| m.is_dir())
+        && let Ok(entries) = std::fs::read_dir(&skills)
+    {
         let mut unneeded: Vec<PathBuf> = entries
             .filter_map(Result::ok)
             .filter(|e| {

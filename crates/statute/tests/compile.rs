@@ -828,6 +828,23 @@ fn compile_check_writes_nothing_and_names_each_file_that_differs() {
 
 #[cfg(unix)]
 #[test]
+fn compile_check_passes_over_what_compile_leaves_behind_a_linked_skills_directory() {
+    let dir = repo("skills-check-linked", &manifest(""));
+    let elsewhere = dir.join("elsewhere/old");
+    std::fs::create_dir_all(&elsewhere).unwrap();
+    std::fs::write(elsewhere.join(".statute-generated"), "").unwrap();
+    std::fs::create_dir_all(dir.join(".agents")).unwrap();
+    std::os::unix::fs::symlink("../elsewhere", dir.join(".agents/skills")).unwrap();
+    compiled(&dir);
+    assert!(elsewhere.join(".statute-generated").is_file());
+    ok(&statute(
+        &dir,
+        &["compile", "--check", "--output", "out.md"],
+    ));
+}
+
+#[cfg(unix)]
+#[test]
 fn a_skill_no_longer_enabled_goes_with_its_link_and_nothing_else() {
     let dir = skills_repo("skills-stale");
     compiled(&dir);
