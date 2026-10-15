@@ -1,9 +1,9 @@
 {{- /* hugo-book's language switch, its check box made a button that
-  says whether the list of languages is shown (assets/sidebars.js), its
+  says whether the list of languages is shown (assets/ts/sidebars.ts), its
   icons Lucide's (layouts/_partials/icon.html): `languages` before the
   language's name and `chevron-right` at the end, turned a quarter while
-  the list is open. Without scripts the list is open
-  (docs/inject/head.html). */ -}}
+  the list is open. Without scripts the list is open, the chevron
+  turned and the button inert to clicks (docs/inject/head.html). */ -}}
 {{ $bookTranslatedOnly := default false .Site.Params.BookTranslatedOnly }}
 {{ $translations := dict }}
 {{ if (eq $bookTranslatedOnly false ) }}

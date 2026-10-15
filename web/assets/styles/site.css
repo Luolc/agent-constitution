@@ -321,7 +321,7 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
    the start edge, and the table of contents at 70rem and under, from the
    end edge, on the panel's color with a hairline and a popover's shadow,
    as they lie over the text. Each slides in over `duration-base` and out
-   over `duration-fast` (assets/sidebars.js opens them); the text behind
+   over `duration-fast` (assets/ts/sidebars.ts opens them); the text behind
    fades. Under reduced motion a drawer fades in and out in place. */
 @media screen and (width <= 70rem) {
   .book-toc { display: block; flex: none; }
@@ -371,6 +371,9 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
   }
   .book-header > div { block-size: 100%; }
   .book-menu { visibility: visible; }
+  /* The top bar shows the site's title; the sidebar under it does not
+     repeat it, as a drawer or, without scripts, above the text. */
+  .book-menu .book-brand { display: none; }
   .book-menu .book-menu-content {
     top: var(--header-height);
     inset-inline-start: 0;

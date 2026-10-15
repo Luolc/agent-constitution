@@ -330,8 +330,11 @@ target still fades from `bg-target`.
   `button`, a link, a `details`, a `select`), and ARIA is added only for
   what that element does not say itself. A control that opens or folds
   something says whether it is open (`aria-expanded`) and what it opens
-  (`aria-controls`). A popover with controls takes the focus when it
-  opens and gives it back to its control when it closes; Escape closes
+  (`aria-controls`). A control's name says what it acts on, not the
+  words of a link beside it: the button that folds a group of the
+  sidebar is named for the group's pages ("Pages of Design"), as the
+  group's link already says its name. A popover with controls takes the
+  focus when it opens and gives it back to its control when it closes; Escape closes
   it.
 - **Tooltips.** A tip shown on hover appears after `delay-tip`; once one
   is shown, the next one under the pointer appears at once. A tip never
@@ -489,11 +492,14 @@ turned off (disabled), where it has these.
     the page behind it fades to a quarter of its opacity; under reduced
     motion it fades in and out in place. While a drawer is open the
     rest of the page is inert: the focus goes to the drawer's first
-    link, and Escape, its button, a click outside it or a link followed
+    link shown, and Escape, its button, a click outside it or a link followed
     in it closes it, the focus going back to the button when the
-    keyboard or the button closed it. Without scripts there are no
+    keyboard or the button closed it. The sidebar does not repeat the
+    site's title, which the top bar shows. Without scripts there are no
     drawers: the sidebar stands above the text and the table of
-    contents below it, every list open.
+    contents below it, every list open: the buttons that fold the
+    sidebar's groups are hidden, and the language switch's chevron is
+    turned to open and its button does nothing on a click.
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding
   `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
@@ -595,7 +601,8 @@ turned off (disabled), where it has these.
   the files it needs in the same way, built into `statute` with
   `include_str!`.
 - **Scripts.** A script that holds more than a few lines of logic, the
-  list of the rules and its filter today, is written in TypeScript in
+  list of the rules and its filter and the sidebar and its drawers
+  today, is written in TypeScript in
   `web/assets/ts/`, the logic that needs no page (the filter's choice
   and the address) in a file of its own. Hugo's `js.Build`, the esbuild
   that Hugo carries, bundles each one, with no Node and no npm package,
@@ -659,9 +666,6 @@ popover. Not built yet, and what each replaces:
   once, stand in for. Its popover closes at once, by a click on the
   button. Its pages load no font and set the text in the local serif
   fonts.
-- The script of the sidebar and the drawers, `web/assets/sidebars.js`,
-  holds more than a few lines of logic but is JavaScript; it moves to
-  TypeScript in `web/assets/ts/` ([In the code](#in-the-code)).
 
 ## Open questions
 

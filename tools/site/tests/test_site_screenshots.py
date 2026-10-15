@@ -2,8 +2,8 @@
 
 The pages, schemes and widths give one shot each, named by the path,
 the scheme and the width; a path maps to the file a static server
-sends; the Chrome command carries the scheme's switch, the width and
---no-proxy-server.
+sends; a page given without its leading `/` gets one; the Chrome
+command carries the scheme's switch, the width and --no-proxy-server.
 """
 
 from pathlib import Path
@@ -57,6 +57,14 @@ class PageFileTest(unittest.TestCase):
     self.assertEqual(
       site_screenshots.page_file(site, "/404.html"), site / "404.html"
     )
+
+
+class PageArgumentTest(unittest.TestCase):
+  def test_leading_slash_added(self):
+    args = site_screenshots.parser().parse_args(
+      ["--page", "rules/79/", "--page", "/zh/"]
+    )
+    self.assertEqual(args.pages, ["/rules/79/", "/zh/"])
 
 
 class ChromeCommandTest(unittest.TestCase):

@@ -8,8 +8,9 @@ paths, and a language is just another path (`/zh/rules/`).
 
 Usage: uv run site-screenshots [<dir>] [--out <dir>] [--page <path> ...],
 default site/ and site-screenshots/ of the repo this script is in, and
-the pages of DEFAULT_PAGES. The file of a page is named by its path,
-the scheme and the width: `zh-rules-79.dark.mobile.png`. The exit
+the pages of DEFAULT_PAGES; a path without its leading `/` gets one.
+The file of a page is named by its path, the scheme and the width:
+`zh-rules-79.dark.mobile.png`. The exit
 status is 1 when the site has no page at a path, Chrome is missing or a
 screenshot is not written.
 """
@@ -174,14 +175,26 @@ def serve(site: Path) -> Iterator[str]:
       thread.join()
 
 
-def main(argv: list[str] | None = None) -> int:
-  """Take the screenshots and print the file of each.
+def page_path(arg: str) -> str:
+  """Return a page path of the command line, starting with `/`.
+
+  The URL of a page is the server's base and the path, so a path
+  without its `/` would run into the port.
 
   Args:
-    argv: The command-line arguments, or None for sys.argv.
+    arg: The path as given, `rules/79/` or `/rules/79/`.
 
   Returns:
-    The exit status: 1 on any error, else 0.
+    The path with one leading `/`.
+  """
+  return "/" + arg.lstrip("/")
+
+
+def parser() -> argparse.ArgumentParser:
+  """Return the parser of the command line.
+
+  Returns:
+    The parser.
   """
   parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
   parser.add_argument(
@@ -201,9 +214,22 @@ def main(argv: list[str] | None = None) -> int:
     "--page",
     action="append",
     dest="pages",
+    type=page_path,
     help="a page path, as /rules/79/; repeat for more (default: a set list)",
   )
-  args = parser.parse_args(argv)
+  return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+  """Take the screenshots and print the file of each.
+
+  Args:
+    argv: The command-line arguments, or None for sys.argv.
+
+  Returns:
+    The exit status: 1 on any error, else 0.
+  """
+  args = parser().parse_args(argv)
   paths = args.pages or DEFAULT_PAGES
   missing = [p for p in paths if not page_file(args.dir, p).is_file()]
   for path in missing:
