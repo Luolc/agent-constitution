@@ -1199,7 +1199,7 @@ fn controls(project: &Project, l: &Lang) -> String {
         };
         let _ = write!(
             out,
-            "<div class=\"control\"><span class=\"control-label\" id=\"label-{field}\">{label}</span><details class=\"menu\" data-field=\"{field}\" data-all=\"{}\" data-none=\"{}\"><summary aria-labelledby=\"label-{field} value-{field}\" aria-controls=\"menu-{field}\"><span class=\"value\" id=\"value-{field}\">{shown}</span>{}</summary>\n<div class=\"menu-panel\" id=\"menu-{field}\" role=\"group\" aria-label=\"{label}\">",
+            "<div class=\"control\"><span class=\"control-label\" id=\"label-{field}\">{label}</span><details class=\"menu\" data-field=\"{field}\" data-all-text=\"{}\" data-none-text=\"{}\"><summary aria-labelledby=\"label-{field} value-{field}\" aria-controls=\"menu-{field}\"><span class=\"value\" id=\"value-{field}\">{shown}</span>{}</summary>\n<div class=\"menu-panel\" id=\"menu-{field}\" role=\"group\" aria-label=\"{label}\">",
             w.every,
             w.nothing,
             icon(CHEVRON_DOWN, "")

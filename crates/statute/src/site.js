@@ -99,8 +99,8 @@
       const all = boxes(field);
       const on = all.filter((box) => box.checked);
       const value = menu.querySelector(".value");
-      if (on.length === all.length) value.textContent = menu.dataset.all;
-      else if (on.length === 0) value.textContent = menu.dataset.none;
+      if (on.length === all.length) value.textContent = menu.dataset.allText;
+      else if (on.length === 0) value.textContent = menu.dataset.noneText;
       else if (on.length === 1) value.textContent = on[0].parentElement.textContent.trim();
       else value.textContent = `${on.length}/${all.length}`;
       menu.classList.toggle("changed", chosen(field).join(",") !== defaults.get(field).join(","));
