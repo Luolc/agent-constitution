@@ -1,4 +1,4 @@
-<!-- en-sha256: 1d01ec71b699475146bb40f1227786f410c06b01fb32e9e3ee397b45b7a507db -->
+<!-- en-sha256: 6f0d18c7e2c847a3f498c159be6d8ac707957e51826df7bedffa54b2ba442512 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -7,13 +7,17 @@
 
 **在本地**，编译器读取宪法 (agent 版) 和一份规定清单及其锁文件，写出：
 
-- 一份 `AGENTS.md`，开头写明它依据的宪法的仓库、版和修订号，然后是启用的规定，沿着 parent 树放在嵌套的块里，树每深一层，标题就降一级，one-of 启用的选项放在 one-of 那一级，下面有启用规定的每个领域是最上一级标题，领域有 applicability 时紧跟在标题后面；根没有启用的子树 (对 one-of 来说：它的子节点一个都没有启用) 不产生任何内容，因为没有它，其中的规定一条也启用不了；依赖的节点在发出依赖的规定所在的最近一级领域 (规定在子领域下时就是子领域) 之外时，渲染成一个链接。默认每条规定只收它的要求，让文件尽量小；规定清单可以加上理由或核验方法 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))，审查方则无论如何都会拿到它们。文件暂时不拆。等用它的某个仓库编译出的文件用 `count-tokens` 量过之后，再按量出的长度定一个阈值，超过阈值的文件沿领域拆开；
+- 一份 `AGENTS.md`，开头写明它依据的宪法的仓库、版和修订号，然后是启用的规定，排成一个平铺的列表，每条规定一项，只有它的引用和要求 (见下)。文件暂时不拆。等用它的某个仓库编译出的文件用 `count-tokens` 量过之后，再按量出的长度定一个阈值，超过阈值的文件沿领域拆开；
 - 启用的规定需要的 skill 目录；
 - 要安装的检查二进制文件的版本，以及启用规定的外部命令。
 
 `AGENTS.md` 只收录 `uses` 含 `instructions` 的启用规定 ([规定用在哪里](rule-config.md#where-a-rule-is-used))；参数实现之后，每个占位符都换成它的取值 ([参数](rule-config.md#parameters))。
 
-`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外两样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释；一行写明宪法的版、修订号和规定源；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。在公开仓库里，它最后还多一行，给找不到指向全文的软链的 agent 看，全文由私有层编译而成 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))：「If `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.」(中文是「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」)。每个 domain 是二级标题，子领域是三级标题 (见[子领域](rule-sources.md#subdomains))，树每深一层标题降一级。one-of 没有自己的标题：它启用的选项放在它的位置，排在 one-of 的锚点之后，选项标题下面加一行写明 one-of：`One of: <它的标题>.` (中文是 `择一：<它的标题>。`)；是领域的选项保留自己的标题，它的规定放在下面。一个子节点都没启用的 one-of 不出现。第一方规定源的领域排在最前，接着是其他规定源的领域，按规定源的名字排，最后是仓库自己的。节点的标题是它的标题和 statute 显示的引用 (`R42`)，前面放锚点，由 `rule-` 加上这个引用组成，引用里的冒号换成连字符：`rule-R42`、`rule-L12`、`rule-team-7`，所以不同规定源的锚点不会重复。覆盖别的规定的规定 ([覆盖](rule-sources.md#overrides)) 站在被覆盖的那条规定的位置上，覆盖链上每条规定的锚点都放在它的标题前面，所以指向 `#rule-R2` 的链接会落到它上面；链上每条规定的子节点都放在它下面。标题下面有一行写明它覆盖了什么：`Overrides R2.`，在一条链上则是 `Overrides team:7, which overrides R2.` (中文是 `覆盖 team:7，后者覆盖 R2。`)。对被覆盖的规定的依赖和引用，都渲染成站在它位置上的那条规定。依赖的节点在发出依赖的规定所在的最近一级 domain 或子领域之外时，写一行「依赖：」并链接到那个锚点；在它之内的依赖不写出来。规定有该语言的译文就用译文，没有就用原文。领域有 applicability ([规定文件格式](rule-format.md#rule-file-format)) 时，它作为一段文字放在领域标题下面，与标题用同一种语言，其中的引用按规定正文的方式渲染。规定正文里的引用会渲染出来 ([ID](source-formats.md#ids))：`{@rule:<id>}` 写成被引节点的标题，与它的标题行一样选语言，节点在文件里就链接到它的锚点，不在就在后面加「(规定 R42)」；`{@constitution:<id>}` 写成该条款在这种语言里的标签，与 agent 版一样是纯文本，例如 `第四条第一款第二项`。标签按这一版宪法的源算出：条和款的编号取自文件名，项的编号取自 `number`，算法与宪法构建相同 ([编译](compilation.md))；与宪法构建不同的是，连着的几处引用不缩写 (`第四条第一款、第四条第二款`)。引用了不存在的节点或条款时命令失败，并指出是哪条规定的哪一部分。规定文件和锁文件里的哈希都不变。
+`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外两样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释；一行写明宪法的版、修订号和规定源；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。在公开仓库里，它最后还多一行，给找不到指向全文的软链的 agent 看，全文由私有层编译而成 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))：「If `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.」(中文是「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」)。
+
+`AGENTS.md` 是给 agent 读的，私有全文 `.statute/AGENTS.full.md` 也是，两者构建方式相同，永远是一个平铺的列表。每条启用的规定是一项，写成 `- <引用> <要求>`，例如 `- R22 Keep a credential out of every message.`：先是 statute 显示的这条规定的引用 (`R42`、`L12`、`team:7`)，一个空格，然后是它的要求；要求有多行时，第一行之后的每行缩进两个空格，接着这一项写。别的一概不写：没有规定的标题、理由和核验方法，没有领域、子领域和 one-of，既不写它们的标题，也不写 applicability，也没有锚点和链接。节点之间的关系和设置，即 `requires`、`conflicts`、one-of、`overrides`、默认开关、`uses` 和 `parent`，都是元信息：statute 在锁定和编译时检查它们，规定清单编译通过之后，它们的作用就尽到了，不写进文件。标题、理由、核验方法和领域的 applicability 是给人看的，放在网站上 (见下)；审查方从 `statute check` 拿到规定的理由和核验方法。引用保留在每一项的开头，审查发现和引用都靠它指明是哪条规定。
+
+各项按树的先序排，节点在它的子节点之前，相关的规定因此挨在一起：第一方规定源的领域排在最前，接着是其他规定源的领域，按规定源的名字排，最后是仓库自己的；同一个节点下面，先是第一方规定源的子节点，接着是其他规定源的，按名字排，最后是仓库自己的，同一个规定源的按 ID 排。one-of 给出它启用的选项里的规定，选项是领域时就是这个领域自己的规定；没有启用规定的子树不产生任何内容。覆盖别的规定的规定 ([覆盖](rule-sources.md#overrides)) 站在被覆盖的那条规定的位置上，被覆盖的规定不进文件。规定有该语言的译文就用译文，没有就用原文。要求里的引用会渲染出来 ([ID](source-formats.md#ids))：`{@rule:<id>}` 写成被引规定的引用 `R42`，不论它在不在文件里；被引的规定被覆盖时，写成站在它位置上的那条规定；`{@constitution:<id>}` 写成该条款在这种语言里的标签，与 agent 版一样是纯文本，例如 `第四条第一款第二项`。标签按这一版宪法的源算出：条和款的编号取自文件名，项的编号取自 `number`，算法与宪法构建相同 ([编译](compilation.md))；与宪法构建不同的是，连着的几处引用不缩写 (`第四条第一款、第四条第二款`)。引用了不存在的节点或条款时命令失败，并指出是哪条规定的哪一部分。规定文件和锁文件里的哈希都不变。
 
 在 `AGENTS.md` 所在的目录里，`statute compile` 还会写：
 

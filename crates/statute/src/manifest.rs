@@ -11,15 +11,6 @@ use crate::node::{self, Id, id_from_file_name};
 
 pub const FILE: &str = "statute.toml";
 
-/// A part of a rule's text that the compiled `AGENTS.md` may carry.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum Part {
-    Statement,
-    Reason,
-    Verification,
-}
-
 /// The key of `[sources]` that names the first-party source, the
 /// repository that publishes the constitution, and the prefix of its
 /// rules: `R42`.
@@ -349,7 +340,6 @@ pub struct Manifest {
     /// The directory of the repository's own rules, relative to that of
     /// `statute.toml`.
     pub local_rules: String,
-    pub agents_md: Vec<Part>,
     /// The language `compile` writes in.
     pub lang: String,
     /// The parameter values `statute.toml` sets, by name
@@ -535,7 +525,8 @@ struct RawPrivate {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct RawCompile {
-    agents_md: Option<Vec<Part>>,
+    /// Read only to say that `AGENTS.md` carries the statements alone.
+    agents_md: Option<toml::Value>,
     lang: Option<String>,
 }
 
@@ -874,21 +865,17 @@ impl Manifest {
         }
 
         let (agents_md, lang) = raw.compile.map_or((None, None), |c| (c.agents_md, c.lang));
-        let agents_md = agents_md.unwrap_or_else(|| vec![Part::Statement]);
+        if agents_md.is_some() {
+            errors.push(
+                "[compile] `agents-md` is not a setting: AGENTS.md is for agents and carries each rule's statement alone, the title, reason and verification only the site; delete the key".to_owned(),
+            );
+        }
         let lang = lang.unwrap_or_else(|| "en".to_owned());
         if !crate::node::is_lang(&lang) {
             errors.push(format!(
                 "[compile] `lang = \"{lang}\"` is not a language code such as \"en\" or \"zh\""
             ));
         }
-        let mut seen = Vec::new();
-        for part in &agents_md {
-            if seen.contains(part) {
-                errors.push(format!("[compile] `agents-md` lists {part:?} twice").to_lowercase());
-            }
-            seen.push(*part);
-        }
-
         if !errors.is_empty() {
             return Err(errors);
         }
@@ -903,7 +890,6 @@ impl Manifest {
             domains,
             exclude,
             local_rules,
-            agents_md,
             lang,
             values,
             global_values: layers.values.clone(),
@@ -1066,7 +1052,7 @@ packs = ["R3"]
 R = { path = "." }
 
 [compile]
-agents-md = ["statement", "reason"]
+lang = "en"
 "#;
 
     /// GOOD with its one source at `../constitution` in place of `.`, so
@@ -1095,15 +1081,15 @@ agents-md = ["statement", "reason"]
         );
         assert_eq!(m.rules, [Key::new("R", 42), Key::new("R", 7)]);
         assert_eq!(m.packs, [Key::new("R", 3)]);
-        assert_eq!(m.agents_md, [Part::Statement, Part::Reason]);
+        assert_eq!(m.lang, "en");
     }
 
     #[test]
-    fn agents_md_defaults_to_the_statement() {
-        let m =
-            Manifest::parse(&GOOD.replace("agents-md = [\"statement\", \"reason\"]", "")).unwrap();
-        assert_eq!(m.agents_md, [Part::Statement]);
-        assert_eq!(m.lang, "en");
+    fn agents_md_is_no_setting() {
+        fails_with(
+            &format!("{GOOD}agents-md = [\"statement\"]\n"),
+            "[compile] `agents-md` is not a setting: AGENTS.md is for agents and carries each rule's statement alone",
+        );
     }
 
     #[track_caller]
@@ -1382,14 +1368,10 @@ agents-md = ["statement", "reason"]
     }
 
     #[test]
-    fn unknown_fields_and_parts_are_errors() {
+    fn unknown_fields_are_errors() {
         fails_with(
             &format!("{GOOD}\nextends = \"base\""),
             "unknown field `extends`",
-        );
-        fails_with(
-            &GOOD.replace("\"reason\"]", "\"examples\"]"),
-            "unknown variant `examples`",
         );
     }
 }

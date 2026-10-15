@@ -1,4 +1,4 @@
-<!-- en-sha256: fa8447a95f87f0f210ef77f8407d93789cab86d3459016e40ec8520db27bcf01 -->
+<!-- en-sha256: 31a430193fa46a326d36ad30cc3b58609bf409c8596af9d8147e1a0c4a2c5c69 -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -130,7 +130,7 @@ it.
 - `default`：必填，规定是否默认开启，`on` 或 `off`；one-of 的子节点没有，带 `overrides` 的规定也没有 (见[默认开关](rule-config.md#default-switches))。
 - `uses` (可选，只有规定有)：规定去哪里，由 `instructions` 和 `review` 组成的非空列表；不写就是 `["instructions"]` (见[规定用在哪里](rule-config.md#where-a-rule-is-used))。
 - `[title]`：简短的标题，只占一行 (多行字符串可以以换行结尾)。
-- `[applicability]` (可选，只有领域有)：一两句话，说明这个领域管什么、哪些仓库该启用它、什么情况下不必启用。它可以像规定正文一样引用规定 (`{@rule:<id>}`) 和条款 ([ID](source-formats.md#ids))。编译出的 `AGENTS.md` 把它放在领域的标题下面 ([编译与网站](statute-command.md#compilation-and-the-site))，网站把它放在领域详情页的标题下面 ([静态网站](static-site.md))。
+- `[applicability]` (可选，只有领域有)：一两句话，说明这个领域管什么、哪些仓库该启用它、什么情况下不必启用。它可以像规定正文一样引用规定 (`{@rule:<id>}`) 和条款 ([ID](source-formats.md#ids))。网站把它放在领域详情页的标题下面 ([静态网站](static-site.md))；编译出的 `AGENTS.md` 不收它 ([编译与网站](statute-command.md#compilation-and-the-site))。
 - `[text.statement]`、`[text.reason]` 和 `[text.verification]`：正文的三部分 ([一条规定包含什么](#what-one-rule-holds))。
 - `[translations]` (可选)：每种译文语言一个键，原文语言不在其中；值是这份译文所依据的原文的 SHA-256。
 

@@ -1,4 +1,4 @@
-<!-- en-sha256: c3773b6abe9c6bf257ee84362d3ea10aa41a5a03e9abf111434055187ad20242 -->
+<!-- en-sha256: f61c7b429b3f9a69e53334930471fad335a0f70d8b729b7a5451127f5c9f7691 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -227,7 +227,7 @@ error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; 
 
 - 被覆盖的规定，对所有指向它的要求、对它所在的 one-of 来说，都算已启用：要求 `R200` 的规定得到满足，`R200` 在 one-of 下的兄弟节点仍被排除。它自己的要求不带进来，带进来的是覆盖方的要求。它的 `parent` 是例外：`parent` 是规定时 (直接是规定，或者隔着一个 one-of)，它仍算覆盖方的一项要求，因为覆盖方站在被覆盖的那条的位置上。
 - 被覆盖的规定上声明的冲突，以及别的规定针对它声明的冲突，都不适用；适用的是覆盖方的冲突。
-- 它的子节点不变，显示在覆盖方的标题下面。
+- 它的子节点不变。
 - 它的检查不跑，跑的是覆盖方的检查。
 - 覆盖只在覆盖方启用的地方生效：规定清单按路径分了段的，只在启用它的那几段里生效。
 - 启用的两条规定覆盖同一条规定，构建失败，报错里写出这两条。
@@ -270,7 +270,7 @@ parent = 104
 - 出于同样的理由，一个规定源的领域也可以挂在另一个规定源的领域下面：私有规定源里关于用户自己那套 agent 的领域，作为第一方「agent」领域的子领域出现，它的规定在它下面。第一方规定源自己的领域是根：在它里面，只有规定可以有指向另一个规定源的 `parent` ([检查程序](checkers.md#checkers))。
 - 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定或子领域，不在规定包里；规定要由规定清单在 `rules` 里列出来启用，别的规定源的子领域可以作为它自己的规定包启用。
 
-**怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](statute-command.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一个领域下面，先排它自己规定源的子领域，再按规定源的名字排别的规定源的子领域，和领域本身的排法一样；一个领域只在别的规定源的子领域里有启用的规定时，也因此出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
+**怎样显示。** 编译出的 `AGENTS.md` 不显示领域和子领域：它们的规定按树的顺序排成一个平铺的列表，与[编译与网站](statute-command.md#compilation-and-the-site) 一致，所以子领域的规定出现在它在所属领域里的位置上。一个领域下面，先排它自己规定源的节点，再按规定源的名字排别的规定源的，和领域本身的排法一样。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
 
 ## <a id="conflicting-practices-as-one-ofs"></a>用 one-of 表达相互冲突的做法
 
@@ -313,7 +313,7 @@ parent = 104
 - [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，在自己的规定源或另一个规定源里，规定可以用 `overrides` 代替 `parent`。
 - [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、私有规定清单，以及锁文件里的 `overridden-by`。
 - [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：两级领域。
-- [编译与网站](statute-command.md#compilation-and-the-site)：子领域的标题，以及哪些依赖显示为链接。
+- [编译与网站](statute-command.md#compilation-and-the-site)：子领域的规定在平铺列表里排在哪里。
 - [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
 - [检查程序](checkers.md#checkers)：`statute validate` 在一个规定源之内对新字段查什么，跨规定源的哪些由 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
