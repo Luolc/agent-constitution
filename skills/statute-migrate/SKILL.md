@@ -286,14 +286,9 @@ the parameters' values in the local rules that need them.
    manager owns the checkout hook, add the line that manager's way;
    pre-commit runs a hook of stage `post-checkout` once installed with
    `pre-commit install --hook-type post-checkout`, and gives the
-   checkout type in `PRE_COMMIT_CHECKOUT_TYPE` instead of `$3`.
-
-   Not built yet: `statute compile --private-only`. Until it is, do not
-   install the checkout hook: the hook line would print an error on
-   every switch of branch and write nothing. Instead run `statute
-   compile` once in each other worktree of the repository, and record
-   in the pull request that the checkout hook is still to be installed
-   once the option exists.
+   checkout type in `PRE_COMMIT_CHECKOUT_TYPE` instead of `$3`. The
+   hook does not reach the worktrees that exist already: run `statute
+   compile --private-only` once in each of them.
 
 Acceptance, before you ask for a review:
 
@@ -310,8 +305,8 @@ Acceptance, before you ask for a review:
   none of them; the private rule set and the private lock file are in
   git's own directory, where git tracks nothing.
 - In a public repository with private rules, the checkout hook holds
-  the hook line, or, until `--private-only` is built, `statute compile`
-  has run in each other worktree (step 4).
+  the hook line, and a worktree added with `git worktree add` has the
+  private output and the private links without any other command.
 
 The pull request carries the rule set, the lock file, the compiled
 file, the installed skills, the checks file, the local rules, the
