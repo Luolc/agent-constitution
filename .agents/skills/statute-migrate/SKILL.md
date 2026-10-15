@@ -39,6 +39,8 @@ files changes, this table is the one place to change.
 | the exclude file | `.git/info/exclude`, shared by the worktrees of a clone | no, in git's own directory |
 | the checkout hook | the file `git rev-parse --git-path hooks/post-checkout` prints, shared by the worktrees of a clone | no, in git's own directory |
 | the hook line | `[ "$3" = 1 ] && statute compile --private-only; exit 0` | in the checkout hook |
+| the merge hook | the file `git rev-parse --git-path hooks/post-merge` prints, shared by the worktrees of a clone | no, in git's own directory |
+| the merge hook line | `statute compile --private-only; exit 0` | in the merge hook |
 | a legacy copy | `<name>.legacy.md` beside the hand-written `<name>.md` it replaces, as `AGENTS.legacy.md` | yes, until the person says to delete it |
 | the constitution for agents | `constitution/<edition>/generated/constitution.<lang>.agent.md` in the first-party source | in the source |
 | the rules of a source | `rules/<id>.toml` at the top of that source, or in the directory its `rules-dir` names | in the source |
@@ -285,7 +287,14 @@ default, and turned off", since the rule was never on by default;
    `pre-commit install --hook-type post-checkout`, and gives the
    checkout type in `PRE_COMMIT_CHECKOUT_TYPE` instead of `$3`. The
    hook does not reach the worktrees that exist already: run `statute
-   compile --private-only` once in each of them. The private lock
+   compile --private-only` once in each of them.
+   Install the merge hook the same way, with the merge hook line, so
+   that a merge, a fast-forward of the main branch included, writes the
+   private output anew: git runs no checkout hook then, and a checkout
+   that only ever moves forward by merging, as a main checkout does,
+   would keep the private output of its first checkout, or none. With
+   pre-commit, the stage is `post-merge`, installed with `pre-commit
+   install --hook-type post-merge`. The private lock
    file lists only sources; to see which rules the private layer
    enables, read the rule ID lines of the private output.
 5. Add `statute compile --check` to the repository's commit hooks, so
@@ -336,6 +345,14 @@ Acceptance, before you ask for a review:
 - In a public repository with a private output, the checkout hook holds
   the hook line, and a worktree added with `git worktree add` has the
   private output and the private links without any other command.
+- In a public repository with a private output, the merge hook holds
+  the merge hook line, and a fast-forward writes the private output:
+  in the working tree of the migration, `git switch -c merge-hook-test
+  HEAD~1`, delete the private output, `git merge --ff-only -` (back to
+  the head of the migration branch), and the private output is there
+  again; then `git switch -` and `git branch -D merge-hook-test`. git
+  runs the merge hook only when a merge moves the branch, so a merge
+  that finds nothing to do shows nothing.
 
 Commit the rule set in the same commit as the compiled file, and no
 earlier: until then it stays in the working tree, uncommitted. Some
