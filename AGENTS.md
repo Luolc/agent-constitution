@@ -23,7 +23,8 @@ fails and prints the new hash (`docs/design/rule-format.md`, Rule file
 format). Write the `zh` text in plain, natural
 simplified Chinese that says what the `en` text says, clause by clause,
 not word by word.
-Cite the same provisions and rules as the `en` text; the checks catch a difference.
+Cite the same provisions and rules as the `en` text; the checks catch a
+difference.
 Punctuation: full-width commas, full stops, enumeration commas, semicolons
 and colons; half-width parentheses, with one space outside and none inside,
 as in `第二款 (见第三条)`.
@@ -63,8 +64,9 @@ Checkers).
   or a domain, named by its number without zero padding (`rules/7.toml`)
   and checked by `statute validate rules` (`docs/design/rule-format.md`,
   Rule file format); `rules/params.toml` declares the parameters the
-  rules use (`docs/design/rule-config.md`, Parameters). No rule is ever deleted and no number is reused: a rule that
-  goes is superseded or repealed.
+  rules use (`docs/design/rule-config.md`, Parameters). No rule is ever
+  deleted and no number is reused: a rule that goes is superseded or
+  repealed.
 - The constitution's IDs are dateless words; a rule's ID is a number, and
   its readable name is its `slug`. Citations are written `{@...}`: without
   a prefix in the constitution, with `constitution:` or `rule:` in a rule
@@ -186,15 +188,19 @@ when the two disagree.
   package holds.
 - `cargo run --locked --quiet -p statute -- validate rules`: the
   `statute-validate` hook. It reads `rules/` as the first-party source,
-  skipping `params.toml`, and checks each rule file's format, the tree,
-  the targets of every reference, the translations and their hashes,
-  the citations and the defaults; each finding is a line on stderr, an
-  error exits 1, and a clean run prints one line with the number of
-  nodes. A stale translation hash is printed there. It also reads the
-  constitution beside `rules/` and checks what it decides of the rules:
-  each rule's status, its citations of the constitution and its
-  `authority`, with a warning on an `authority` that names a provision
-  and one above it. With `--base <git-ref>` it also fails when a rule of
+  its parameters from `params.toml`, and checks each rule file's format,
+  the tree, the targets of every reference, the translations and their
+  hashes, the citations and the defaults; each parameter's declaration
+  (name, type, scope, a default of its type) and the hash of its title's
+  translation; and each placeholder, which must name a declared
+  parameter, every translation holding the same ones. Each finding is
+  a line on stderr, an error exits 1, and a clean run prints one line
+  with the number of nodes. A stale translation hash is printed there.
+  It also reads the constitution beside `rules/` and checks what it
+  decides of the rules: each rule's status, its citations of the
+  constitution and its `authority`, with a warning on an `authority`
+  that names a provision and one above it.
+  With `--base <git-ref>` it also fails when a rule of
   that base is gone or no longer repealed or superseded (a rule of the
   older format may live on as a node whose `slug` is its ID), unless the
   base's numbering is not compared (a draft base, say), which it notes.
