@@ -407,6 +407,21 @@ pub fn resolve(
                         label(sources, key)
                     ),
                 ),
+                // An option is chosen, not turned off: another option, or
+                // none, is what the rule set means.
+                Some(_) if field == "exclude" => {
+                    if let Some(one_of) = sources
+                        .parent(key)
+                        .filter(|p| sources.get(p).is_some_and(|n| n.kind == Kind::OneOf))
+                    {
+                        diags.error(
+                            file,
+                            format!(
+                                "`exclude` names {key}, an option of the one-of {one_of}; list another option in `rules`, or exclude {one_of}"
+                            ),
+                        );
+                    }
+                }
                 Some(_) => {}
             }
         }
@@ -476,6 +491,16 @@ pub fn resolve(
             );
             continue;
         };
+        if manifest.exclude.contains(root) {
+            diags.error(
+                file,
+                format!(
+                    "`packs` lists {} and `exclude` turns it off; keep one",
+                    label(sources, root)
+                ),
+            );
+            continue;
+        }
         if matches!(node.status, Status::Superseded | Status::Repealed) {
             let what = match current_successors(sources, root).as_slice() {
                 [] if node.status == Status::Superseded => format!(

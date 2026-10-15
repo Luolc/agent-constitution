@@ -153,6 +153,28 @@ fn exclude_turns_off_a_node_and_its_subtree() {
         Severity::Error,
         "and `exclude` turns it off; keep one",
     );
+    finds(
+        "packs = [\"R10\"]\nexclude = [\"R10\"]",
+        Severity::Error,
+        "`packs` lists R10 (Domain 10) and `exclude` turns it off; keep one",
+    );
+}
+
+/// An option of a one-of, its default or another, is chosen in `rules`
+/// and never turned off alone; the one-of is.
+#[test]
+fn exclude_names_no_option_of_a_one_of() {
+    for option in ["R5", "R6"] {
+        finds(
+            &format!("exclude = [\"{option}\"]"),
+            Severity::Error,
+            &format!(
+                "`exclude` names {option}, an option of the one-of R4; list another option in `rules`, or exclude R4"
+            ),
+        );
+    }
+    assert_eq!(enabled("rules = [\"R6\"]"), [2, 6]);
+    assert_eq!(enabled("exclude = [\"R4\"]"), [2]);
 }
 
 #[test]
@@ -410,4 +432,23 @@ fn upgrade_lists_a_rule_a_changed_default_brings_in() {
         "{}",
         run.stdout
     );
+}
+
+/// A rule set that excludes an option neither locks nor explains it as
+/// enabled.
+#[test]
+fn lock_and_explain_fail_on_an_excluded_option() {
+    let dir = repo("exclude-option", "exclude = [\"R5\"]");
+    let needle = "statute.toml: error: `exclude` names R5, an option of the one-of R4";
+    for args in [&["lock"][..], &["explain", "R5"]] {
+        let run = statute(&dir, args);
+        assert_eq!(run.code, 1, "{args:?}: {}", run.stdout);
+        assert!(run.stderr.contains(needle), "{args:?}: {}", run.stderr);
+        assert!(
+            !run.stdout.contains("on by default"),
+            "{args:?}: {}",
+            run.stdout
+        );
+    }
+    assert!(!dir.join("statute.lock").exists());
 }
