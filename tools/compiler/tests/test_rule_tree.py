@@ -51,13 +51,14 @@ class FormatTest(Tree):
     self.assertError(1, "rules/10.toml", "`text` lacks `reason`")
 
   def test_domain_has_a_domain_or_no_parent_and_no_text(self):
-    self.edit("rules/2.toml", 'lang = "en"', 'lang = "en"\nparent = 3')
+    self.edit("rules/2.toml", 'lang = "en"', 'lang = "en"\nparent = 10')
     self.assertError(
       3,
       "rules/2.toml",
-      "a domain's parent is a domain with no parent; 3 is a one-of",
+      "a domain's parent is a domain with no parent, or a one-of in one;"
+      " 10 is a rule",
     )
-    self.edit("rules/2.toml", "parent = 3\n", "")
+    self.edit("rules/2.toml", "parent = 10\n", "")
     self.write(
       "rules/2.toml", DOMAIN + "\n[text.statement]\nen = '''\nDo.\n'''\n"
     )
@@ -380,6 +381,65 @@ class ApplicabilityTest(Tree):
       "rules/3.toml", 'zh = "二选一"\n', 'zh = "二选一"\n' + applicability
     )
     self.assertError(1, "rules/3.toml", "unknown key `applicability`")
+
+
+def node(id_: int, kind: str, parent: int) -> str:
+  """Return a domain or a one-of with only the fields it needs.
+
+  Args:
+    id_: its number.
+    kind: domain or one-of.
+    parent: its parent's number.
+
+  Returns:
+    The file's text.
+  """
+  return (
+    f'id = {id_}\nrevision = 1\nkind = "{kind}"\nstatus = "draft"\n'
+    f'lang = "en"\nparent = {parent}\n\n[title]\nen = "Node {id_}"\n'
+  )
+
+
+class ParentTest(Tree):
+  """No rule under a rule (docs/design/rule-config.md)."""
+
+  def test_a_rules_parent_is_a_domain_or_a_one_of(self):
+    self.edit("rules/10.toml", "parent = 2", "parent = 3")
+    self.assertEqual(self.errors(), [])
+    under_a_rule = (
+      RULE.replace("id = 10", "id = 11")
+      .replace('slug = "new-rule"\n', "")
+      .replace("parent = 2", "parent = 10")
+    )
+    self.write("rules/11.toml", under_a_rule)
+    self.assertError(
+      3,
+      "rules/11.toml",
+      "a rule's parent is a domain or a one-of; 10 is a rule",
+    )
+
+  def test_the_options_of_a_one_of_are_all_rules_or_all_domains(self):
+    self.write("rules/20.toml", node(20, "domain", 3))
+    self.assertEqual(self.errors(), [])
+    self.edit("rules/10.toml", "parent = 2", "parent = 3")
+    self.assertError(
+      3,
+      "rules/20.toml",
+      "parent 3 is a one-of whose options are rules (10);"
+      " the options of a one-of are all rules or all domains",
+    )
+
+  def test_a_domain_option_counts_as_a_level(self):
+    self.write("rules/4.toml", node(4, "domain", 2))
+    self.write("rules/5.toml", node(5, "one-of", 4))
+    self.assertEqual(self.errors(), [])
+    self.write("rules/20.toml", node(20, "domain", 5))
+    self.assertError(
+      3,
+      "rules/20.toml",
+      "a domain's parent is a domain with no parent, or a one-of in one;"
+      " 5 is a one-of in 4, a subdomain, under 2",
+    )
 
 
 class SourceTest(Tree):

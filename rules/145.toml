@@ -1,0 +1,21 @@
+id = 145
+slug = "accounts"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Accounts and logins"
+zh = "账号与登录态"
+
+[applicability]
+en = '''
+Covers what agents do when they meet accounts: test accounts, the login state of a browser and the usage quotas of an account. Enable it where agents sign in to tools, use test accounts or may meet a screen that offers more usage; where agents touch no account, it is not needed.
+'''
+zh = '''
+管 agent 碰到账号时怎么做：测试账号、浏览器的登录态和账号的用量额度。agent 要登录工具、使用测试账号，或者可能碰到提供更多用量的界面，就要启用；agent 不接触任何账号的，不必启用。
+'''
+
+[translations]
+zh = "c59c15075fcfee9be2fbf72b5f870eed4d68e720321ea1eb13f9c8da194d0424"
