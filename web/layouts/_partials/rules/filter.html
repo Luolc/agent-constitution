@@ -1,47 +1,51 @@
-{{- /* The form above the list of the rules (rules/section.html): the
-  filter, which folds open, with a checkbox for each status, each value of
-  `uses` and each domain, one for the rules the defaults enable alone, and
-  one for each quadrant when the site has more than one source, and the
-  page size, a menu in its wrapper (assets/styles/controls.css); hidden
-  until assets/rules-list.js shows it. Takes (dict "page" the list's page
-  "statuses" the statuses checked by default "size" the page size
-  "sources" the sources, as data/rules.json gives them). */ -}}
-<form class="rules-controls" action="{{ .page.RelPermalink }}" method="get" hidden>
-<input type="hidden" name="filter" value="1">
-<details class="rules-filter"><summary>{{ partial "icon.html" "lucide:chevron-right" }}{{ i18n "rules-filter" }}</summary>
-<div class="rules-filter-panel">
-<fieldset><legend>{{ i18n "rule-status" }}</legend>
-  {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
-<label><input type="checkbox" name="status" value="{{ . }}"{{ if in $.statuses . }} checked{{ end }}> {{ i18n (printf "status-%s" .) }}</label>
-  {{- end }}
-</fieldset>
-<fieldset><legend>{{ i18n "rules-defaults" }}</legend>
-<label><input type="checkbox" name="default" value="on"> {{ i18n "rules-default-only" }}</label>
-</fieldset>
-<fieldset><legend>{{ i18n "rule-uses" }}</legend>
-  {{- range slice "instructions" "review" }}
-<label><input type="checkbox" name="uses" value="{{ . }}" checked> {{ i18n (printf "uses-%s" .) }}</label>
-  {{- end }}
-</fieldset>
-<fieldset><legend>{{ i18n "rules-domains" }}</legend>
-  {{- range where .page.Pages "Params.rule.kind" "domain" }}
-    {{- $domain := .Params.rule }}
-<label style="{{ printf "--indent: %d" (int $domain.depth) | safeCSS }}"><input type="checkbox" name="domain" value="{{ $domain.key }}"{{ with $domain.domain }} data-parent="{{ . }}"{{ end }} checked> {{ $domain.label }} {{ $domain.title }}</label>
-  {{- end }}
-</fieldset>
-{{- if gt (len .sources) 1 }}
-<fieldset><legend>{{ i18n "rules-quadrants" }}</legend>
-  {{- range uniq (apply .sources "index" "." "quadrant") }}
-<label><input type="checkbox" name="quadrant" value="{{ . }}" checked> {{ partial "rules/quadrant.html" (dict "quadrant" . "source" "") }}</label>
-  {{- end }}
-</fieldset>
+{{- /* The controls above the list of the rules: the filter's button, which
+  opens its panel, and the page size. The panel has a group of check
+  boxes per field: each status, whether the defaults enable the rule,
+  each value of `uses`, each domain, indented by its depth, and each
+  quadrant when the site has more than one source; each group with All
+  and None, and Clear filter under them. The boxes are checked as the
+  default filter is, the statuses of rulesStatuses and every other
+  value; assets/ts/rules-list.ts checks them as the address says.
+  Without scripts the controls stay hidden, as nothing could run them.
+  The page size is a menu in its wrapper (assets/styles/controls.css).
+  Takes (dict "page" the list's page "statuses" the statuses checked by
+  default "size" the page size "sources" the sources, as
+  data/rules.json gives them). */ -}}
+<div class="rules-controls" hidden>
+<div class="rules-filter">
+<button type="button" class="rules-filter-button" aria-expanded="false" aria-controls="rules-filter-panel">{{ partial "icon.html" "lucide:funnel" }}{{ i18n "rules-filter" }}<span class="rules-filter-count" hidden></span></button>
+<div class="rules-filter-panel" id="rules-filter-panel" role="dialog" aria-label="{{ i18n "rules-filter" }}">
+{{- $values := slice }}
+{{- range slice "active" "trial" "draft" "superseded" "repealed" }}
+  {{- $values = $values | append (dict "key" . "label" (i18n (printf "status-%s" .)) "checked" (in $.statuses .)) }}
 {{- end }}
-<button type="submit">{{ i18n "rules-apply" }}</button>
+{{- partial "rules/filter-group.html" (dict "field" "status" "legend" (i18n "rule-status") "values" $values) }}
+{{- $values = slice (dict "key" "on" "label" (i18n "default-on") "checked" true) (dict "key" "off" "label" (i18n "default-off") "checked" true) }}
+{{- partial "rules/filter-group.html" (dict "field" "default" "legend" (i18n "rules-defaults") "values" $values) }}
+{{- $values = slice }}
+{{- range slice "instructions" "review" }}
+  {{- $values = $values | append (dict "key" . "label" (i18n (printf "uses-%s" .)) "checked" true) }}
+{{- end }}
+{{- partial "rules/filter-group.html" (dict "field" "uses" "legend" (i18n "rule-uses") "values" $values) }}
+{{- $values = slice }}
+{{- range where .page.Pages "Params.rule.kind" "domain" }}
+  {{- $domain := .Params.rule }}
+  {{- $values = $values | append (dict "key" $domain.key "label" (printf "%s %s" $domain.label $domain.title) "parent" $domain.domain "depth" (int $domain.depth) "checked" true) }}
+{{- end }}
+{{- partial "rules/filter-group.html" (dict "field" "domain" "legend" (i18n "rules-domains") "values" $values) }}
+{{- if gt (len .sources) 1 }}
+  {{- $values = slice }}
+  {{- range uniq (apply .sources "index" "." "quadrant") }}
+    {{- $values = $values | append (dict "key" . "label" (i18n (printf "quadrant-%s" .)) "checked" true) }}
+  {{- end }}
+  {{- partial "rules/filter-group.html" (dict "field" "quadrant" "legend" (i18n "rules-quadrants") "values" $values) }}
+{{- end }}
+<button type="button" class="rules-filter-clear">{{ i18n "rules-clear-filter" }}</button>
 </div>
-</details>
+</div>
 <label class="rules-size">{{ i18n "rules-per-page" }} <span class="select"><select name="per">
   {{- range slice "25" "50" "100" "all" }}
 <option value="{{ . }}"{{ if eq . (string $.size) }} selected{{ end }}>{{ if eq . "all" }}{{ i18n "rules-all" }}{{ else }}{{ . }}{{ end }}</option>
   {{- end }}
 </select>{{ partial "icon.html" "lucide:chevron-down" }}</span></label>
-</form>
+</div>

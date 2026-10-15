@@ -29,11 +29,12 @@ from unittest import mock
 
 import site_fixture
 
-from constitution_site import count_tokens, site_rules
+from constitution_site import count_tokens, site_rules, site_screenshots
 
 ROOT = Path(__file__).resolve().parents[3]
 HUGO = "hugo-0.167.0"  # the version CI installs
 HUGO_TIMEOUT = 120  # seconds; a build takes well under one
+CHROME_TIMEOUT = 60  # seconds; a page takes a few
 # The mark the full version puts on a part the version for agents leaves
 # out, as the constitution's build writes it.
 MARK = '<sup class="omitted">*</sup>'
@@ -358,10 +359,17 @@ class SiteTest(unittest.TestCase):
     page = raw["rules/index.html"]
     self.assertIn(
       "The filter above the list chooses the statuses, uses and domains"
-      " shown, or only the rules on by default. Filter Status Active Trial"
-      " Draft Superseded Repealed Defaults Only the rules on by default Uses"
-      " Instructions Review Domains R1 Group 1 Apply Rules per page"
-      " 25 50 100 All R1 Group 1 Off by default R2 One of: Group 2 Active"
+      " shown, or only the rules on by default. Active In force. Trial Being"
+      " tried on real work before it settles. Draft Not meant for real work"
+      " yet. Superseded Replaced by the rules its page names. Repealed"
+      " Withdrawn, with nothing in its place. On by default A new rule set"
+      " gets it without listing it. Off by default A rule set gets it only by"
+      " listing it. Default option The option of a one-of that a rule set"
+      " gets unless it chooses another. Filter Status All None Active Trial"
+      " Draft Superseded Repealed Defaults All None On by default Off by"
+      " default Uses All None Instructions Review Domains All None R1 Group 1"
+      " Clear filter Rules per page 25 50 100 All R1 Group 1 Off by default"
+      " R2 One of: Group 2 Active"
       " Off by default R3 Rule 3 Active Off by default Default option R1",
       pages["rules/index.html"],
     )
@@ -400,7 +408,8 @@ class SiteTest(unittest.TestCase):
       page.count('data-status="active" data-domain="1" data-uses'), 3
     )
     for box in (
-      '<input type="checkbox" name="default" value="on">',
+      '<input type="checkbox" name="default" value="on" checked>',
+      '<input type="checkbox" name="default" value="off" checked>',
       '<input type="checkbox" name="uses" value="instructions" checked>',
       '<input type="checkbox" name="uses" value="review" checked>',
     ):
@@ -435,10 +444,13 @@ class SiteTest(unittest.TestCase):
         ("2", "1", " hidden"),
       ],
     )
+    self.assertIn('<div class="rules-controls" hidden>', page)
     self.assertIn(
-      '<form class="rules-controls" action="../rules/" method="get" hidden>',
+      '<button type="button" class="rules-filter-button"'
+      ' aria-expanded="false" aria-controls="rules-filter-panel">',
       page,
     )
+    self.assertIn('id="rules-filter-panel" role="dialog"', page)
     self.assertIn('<option value="100" selected>', page)
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
@@ -516,6 +528,75 @@ class SiteTest(unittest.TestCase):
     self.assertEqual(page.count('data-domain="1" data-uses'), 3)
     self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
     self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
+
+  def test_rules_list_filter(self):
+    """The script shows the rules of the filter in the address.
+
+    Loaded in headless Chrome, which runs the page's scripts: one value
+    or several of a field, two fields, none of a field, a domain alone
+    or with the one under it, the old address of the form, and the
+    number of fields that filter on the filter's button. Skipped
+    without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
+    # R3 is in domain 2, under domain 1, which holds the others; R4 is
+    # superseded.
+    with tempfile.TemporaryDirectory() as tmp:
+      page = Path(tmp) / "rules.html"
+      page.write_text(raw["rules/index.html"], encoding="utf-8")
+      for query, rules, fields in (
+        ("", ["3", "5", "6"], "1"),
+        (
+          "?status=active,trial,draft,superseded,repealed",
+          ["3", "4", "5", "6"],
+          "0",
+        ),
+        ("?status=superseded", ["4"], "1"),
+        ("?status=", [], "1"),
+        ("?domain=2", ["3"], "2"),
+        ("?status=active,superseded&domain=1", ["4", "5", "6"], "2"),
+        ("?status=active,superseded&default=on", [], "2"),
+        (
+          "?filter=1&status=superseded&uses=instructions&domain=1&domain=2",
+          ["4"],
+          "2",
+        ),
+        ("?filter=1&status=active&uses=review&domain=1&domain=2", [], "2"),
+        ("?filter=1&status=superseded", [], "3"),
+      ):
+        with self.subTest(query):
+          dom = subprocess.run(
+            [
+              chrome,
+              "--headless",
+              "--no-proxy-server",
+              f"--user-data-dir={Path(tmp) / 'profile'}",
+              "--dump-dom",
+              page.as_uri() + query,
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+            timeout=CHROME_TIMEOUT,
+          ).stdout
+          shown = re.findall(
+            r'<div class="rule-item[^"]*"[^>]*?(?<! hidden="")>\n?'
+            r'(?:<h[^\n]*\n)*(?:<div class="one-of"[^>]*>\n)?'
+            r'<a class="rule-entry" href="[^"]*/(\d+)/"',
+            dom,
+          )
+          self.assertEqual(shown, rules)
+          self.assertRegex(
+            dom,
+            r'<span class="rules-filter-count"( hidden="")?>'
+            + re.escape(fields)
+            + "</span>",
+          )
+          self.assertEqual('<p class="rules-none">' in dom, not rules)
 
   def test_params(self):
     """A page of parameters; a placeholder marked, linked to its entry."""
@@ -602,7 +683,15 @@ class SiteTest(unittest.TestCase):
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "Quadrants Global public Global private Apply", pages["rules/index.html"]
+      "Quadrants All None Global public Global private Clear filter",
+      pages["rules/index.html"],
+    )
+    # The legend: the rule set's marks and the quadrant.
+    self.assertIn(
+      "Enabled The rule set of this site has it. Not enabled The rule set"
+      " of this site does not have it. Global public The quadrant of the"
+      " rule's source. Filter",
+      pages["rules/index.html"],
     )
     self.assertIn(
       '<input type="checkbox" name="quadrant" value="global-private" checked>',

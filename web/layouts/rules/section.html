@@ -15,20 +15,15 @@
   rule. With more than one source, each source heads its rules, as its
   quadrant and name, a level above its domains.
 
-  Above the list, a form (rules/filter.html): a filter, which folds open,
-  with a checkbox for each status, each value of `uses` and each domain,
-  one for the rules the defaults enable alone, and one for each quadrant
-  when the site has more than one source, and the page size. The rules
-  shown are those
-  whose status, nearest domain and quadrant are checked, whose `uses`
-  has a value checked, and, with that box, that the defaults enable,
-  rulesPerPage of them a page; by default the statuses of rulesStatuses,
-  both uses, every domain and every quadrant, whatever the defaults.
-  Every page holds every rule, each with all its group headings, the
-  rules and headings not shown hidden, so that assets/rules-list.js can
+  Above the list, its legend (_partials/rules/legend.html), then the
+  filter and the page size (_partials/rules/filter.html). The rules
+  shown are those of the filter, rulesPerPage of them a page; by default
+  those of a status in rulesStatuses. Every page holds every rule, each
+  with all its group headings, the rules and headings not shown hidden,
+  so that assets/ts/rules-list.ts can
   show another filter and page size, from the address, without a page of
   their own. Without scripts the pages are Hugo's, of the rules of the
-  default filter, and the form stays hidden. A heading shown has the id
+  default filter, and the controls stay hidden. A heading shown has the id
   `group-<key>`, which the table of contents at the right links. */ -}}
 {{ define "main" }}
 {{- $all := where (where .Pages "Params.rule.kind" "in" (slice "rule" "one-of")) "Params.rule.boxed" "ne" true }}
@@ -45,6 +40,9 @@
 {{- with (index hugo.Data.rules site.Language.Lang).params }}
 <p class="rules-params">{{ range $i, $page := . }}{{ if $i }} · {{ end }}<a href="{{ (site.GetPage (printf "/rules/%s" $page.key)).RelPermalink }}">{{ (site.GetPage (printf "/rules/%s" $page.key)).Title }}</a>{{ end }}</p>
 {{- end }}
+{{- $enabled := false }}
+{{- range $all }}{{ if isset .Params.rule "enabled" }}{{ $enabled = true }}{{ end }}{{ end }}
+{{ partial "rules/legend.html" (dict "enabled" $enabled "many" $many) }}
 {{ partial "rules/filter.html" (dict "page" . "statuses" $statuses "size" $size "sources" $sources) }}
 <div class="rules-list" data-size="{{ $size }}" data-first="{{ $first }}">
 {{- $k := 0 }}
@@ -96,7 +94,7 @@
 {{- end }}
 {{- $.Store.Set "toc" $toc }}
 </div>
-<p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }}</p>
+<p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-clear" hidden>{{ i18n "rules-clear-filter" }}</button></p>
 <nav class="rules-pager" aria-label="{{ i18n "rules-pages" }}" data-previous="{{ i18n "rules-previous" }}" data-next="{{ i18n "rules-next" }}">
 {{- if gt $pager.TotalPages 1 }}
   {{- with $pager.Prev }}
