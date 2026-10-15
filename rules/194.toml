@@ -1,0 +1,42 @@
+id = 194
+slug = "check-names-against-real-ones"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 192
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Check the names in a message against the real ones before using them"
+zh = "消息里的名字先与真实存在的名字核对再用"
+
+[text.statement]
+en = "Before using a file path, a code identifier, a command-line argument or a domain term from a principal's message, infer its most likely intended form and check its separators and case against the names that really exist in the repository and outside it."
+zh = "委托人消息里的文件路径、代码标识符、命令行参数和领域术语，先推断最可能的本意，再与仓库里和现实中真实存在的名字核对分隔符与大小写，核对上了才用。"
+
+[text.reason]
+en = '''
+Speech-to-text gets the hyphens, underscores, dots and case of a name wrong most easily ({@rule:193}), and one character apart is another file or another argument. Checked against the names that exist, what the agent uses is a fact it looked up, not memory or a guess ({@constitution:evidence.facts}).
+'''
+zh = '''
+经过语音转文字 ({@rule:193})，名字里的连字符、下划线、点和大小写最容易错，而差一个字符就是另一个文件、另一个参数。用之前对照真实存在的名字，用的才是查证过的事实，不是记忆或猜测 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+The check is against the files and code in the repository, a tool's `--help` or documentation, and the names that exist in the outside system. Where the real name differs from what the principal wrote, the agent uses the real one.
+
+Violated when an agent uses a path, an identifier, an argument or a term from a principal's message as written in a command, code or a document, and it differs from the real name in separators or case, without the agent having checked it.
+'''
+zh = '''
+核对的对象是仓库里的文件和代码、工具的 `--help` 或文档、外部系统里实际存在的名字。核对之后真实名字与委托人写的不同的，用真实的名字。
+
+agent 把委托人写的路径、标识符、参数或术语原样用进命令、代码或文档，而它与真实存在的名字在分隔符或大小写上不一致、agent 也没有核对的，即为违反本规定。
+'''
+
+[translations]
+zh = "9bc3c52b0d3a5610683f893fec3dcd92aa8f876b42f5d95d174c9068c9158789"
