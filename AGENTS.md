@@ -81,7 +81,8 @@ Checkers).
   `pyproject.toml`, source under `src/` and tests under `tests/`:
   `tools/site` (the rules' data, the token count, the link check and
   the screenshots of the static site, `site-rules`, `count-tokens`,
-  `check-site-anchors` and `site-screenshots`; it reads the rules through `statute export`) and
+  `check-site-anchors` and `site-screenshots`; it reads the rules
+  through `statute export`) and
   `tools/checks` (this repo's own checks, `check-instruction-changes`
   and `lint-zh-sources`); neither depends on the other. The root `pyproject.toml`
   declares the members and holds the development tools and their
@@ -262,8 +263,8 @@ when the two disagree.
   a built site, `site/` by default, with headless Google Chrome, light
   and dark, desktop and mobile, into `site-screenshots/` (not
   committed); without `--page`, a set list of pages in both languages
-  (`docs/design/static-site.md`, Screenshots). It needs
-  `google-chrome` on the PATH and is not a check: look at the images.
+  (`docs/design/static-site.md`, Screenshots). It needs Google Chrome
+  or Chromium on the PATH and is not a check: look at the images.
 - `uv run count-tokens`: counts the tokens of the four texts and
   writes `web/data/lengths.json` (not committed), which the next Hugo
   build reads. It needs `CONSTITUTION_TOKEN_COUNT_API_KEY` or
@@ -291,8 +292,8 @@ and the publish dry run of the Rust workspace, writes the rules' data with
 `site-rules`, counts the tokens (without a
 credential, so they stay uncounted), builds the static site with the pinned
 Hugo, checks its links, takes its screenshots and uploads them as the
-artifact `site-screenshots` of the run, and then runs the constitution build check and
-`statute validate rules`, both with `--base`, and the instruction-only
+artifact `site-screenshots` of the run, and then runs the constitution
+build check and `statute validate rules`, both with `--base`, and the instruction-only
 check, all against the first parent of the checked-out
 merge commit on a pull request (`docs/design/checkers.md`), or against the
 commit before the push on a push to `main`. `check` is the required status check on `main`: a merge
