@@ -1,7 +1,8 @@
 # PR gate: secret scan of the PR's or push's commits, then pre-commit on
-# all files, which includes the constitution build check, the tests and
-# cargo fmt (local hooks; the site's tests need Hugo and the Rust
-# toolchain, cargo fmt the toolchain, both installed before them), then the Rust
+# all files, which includes the constitution build check and cargo fmt
+# (local hooks; cargo fmt needs the Rust toolchain, installed before it),
+# then the Python type check and the tests of the Python tools (the site's
+# tests need Hugo and the Rust toolchain), then the Rust
 # lint, tests and package check, then the static site build with its link
 # check and its screenshots, then the constitution numbering check and the instruction-only
 # check, both against the base commit.
@@ -97,6 +98,17 @@ jobs:
       - run: uv run --frozen pre-commit run --all-files
         env:
           SKIP: gitleaks
+
+      # The checks that take too long for a commit hook: the type check of
+      # tools/ and the tests of each workspace member. The tests of
+      # lint_zh_sources run limae; those of the site build pages with Hugo
+      # and run statute.
+      - name: Python type check
+        run: uv run --frozen basedpyright
+      - name: Tests of tools/site
+        run: uv run --frozen python -m unittest discover -s tools/site/tests
+      - name: Tests of tools/checks
+        run: uv run --frozen python -m unittest discover -s tools/checks/tests
 
       # The Rust workspace under crates/; its formatting is checked by the
       # cargo-fmt hook above. The dry run packages and builds the crate as

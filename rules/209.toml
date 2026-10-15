@@ -1,8 +1,9 @@
 id = 209
 slug = "hook-seconds-budget"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 250
 lang = "en"
 parent = 77
 default = "off"

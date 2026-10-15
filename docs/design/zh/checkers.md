@@ -1,4 +1,4 @@
-<!-- en-sha256: 6a0188119a777702956ef56a925590895861b094393e437773f4e658287b4566 -->
+<!-- en-sha256: 4fef9dd29fb5ec82ff0711b01e406e4aad3d7ae344c52d6f4501f973171481f3 -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -14,7 +14,7 @@
 | 静态网站 (`hugo-0.167.0 --panicOnWarning`，再跑 `check-site-anchors`) | Hugo 构建所有页面时没有警告，设计文档里指向设计文件的相对链接都指到它的页面，也没有链接指出仓库之外；每个页面上，每个页内链接 `#id` 都有带这个 id 的元素，每个指向本站其他页面的链接 (相对路径，或者以 `/` 开头、从站点根算起) 都指向站内的一个文件，带片段的还要在那个页面上有带这个 id 的元素，没有重复的 id，列表符号也没有作为字面文字显示出来 (`- §`、`- 第`) | 页面看起来正确，或者字体能加载 |
 | 中文排版 (`lint-zh-sources`；对仓里每个 Markdown 文件跑 limae) | 宪法源文件和规定源文件里的每段 `zh` 文本、构建出的中文宪法的两个版本，以及设计的中文译文，都通过 limae 的默认规则；对宪法的引用按它渲染出的中文来判断 | 中文读起来自然，或者与英文意思相同；英文文本也过 limae 的规则，那里多半查不出什么 |
 | 设计译文 (`check-design-translation`) | `docs/design/zh/` 里的文件与 `docs/design/` 一一对应，不多不少；每份译文开头是英文文件当前的 SHA-256，接着是标题，标题以下的各级标题与英文文件相同，顺序和级别都一样，每个都带着英文标题的锚点；设计里的每个相对链接，无论哪种语言，都指向仓里的一个文件或目录 | 译文说的就是英文说的，或者更新哈希那一行时译文确实同步改过了 |
-| Python 代码 (`ruff check`、`ruff format --check`、`pydoclint`、`basedpyright`，在 `pyproject.toml` 里配置) | `tools/` 下的脚本符合所配置的 lint 规则和格式，docstring 写明了每个参数和返回值，类型检查程序在 standard 模式下没有发现错误 | 脚本做的就是 docstring 说的；那要靠测试 |
+| Python 代码 (提交钩子 `ruff check`、`ruff format --check` 和 `pydoclint`；CI 里的 `basedpyright`；都在 `pyproject.toml` 里配置) | `tools/` 下的脚本符合所配置的 lint 规则和格式，docstring 写明了每个参数和返回值，类型检查程序在 standard 模式下没有发现错误 | 脚本做的就是 docstring 说的；那要靠测试 |
 | Rust 代码 (提交钩子 `cargo fmt --check`；CI 里的 `cargo clippy --all-targets -- -D warnings`、`cargo test` 和 `cargo publish --dry-run -p statute`) | `crates/` 下的 workspace 格式正确，clippy 没有警告，测试通过，`statute` 能像 crates.io 收到它时那样打包和构建 | 测试没覆盖到的地方，命令的行为也与设计一致，或者 crates.io 会接受这次上传 |
 | Schema | fixture 和 overlay manifest 有必需的键，取值都在允许的范围内；ID 与文件名一致 | 正文的意思与字段所说的一致 |
 | 引用 | 每个被引用的 ID (宪法条文、规定、案例) 都存在且未废止；没有源文件指向核心或 overlay 以外的文件 | 被引用的那一条确实支持这条规定 |
@@ -41,7 +41,7 @@
 
 [规定源](rule-sources.md) 的检查也这样分。`statute validate` 检查单看一个规定源就能查的：规定有 `parent` 或 `overrides`，必须有一个，不能两个都有；`overrides` 是另一个规定源的一条规定，写作 `"team:7"`，不能是列表，也不能是数字，因为数字指的是同一规定源里的节点；指向另一个规定源的 `parent` 只有规定能有，写作 `"team:3"`，只检查写法，因为第一方规定源的领域是根 ([子领域](rule-sources.md#subdomains))；别的规定源的领域，statute 接受它指向另一个规定源的 `parent`。本仓就是第一方规定源，所以在这里 `overrides` 或 `parent` 里的 `"R200"` 指的是同一规定源的规定，会失败；`parent` 写成这样时提示改写成编号。要看别的规定源才能查的，在解析规定清单时查：引用方向、覆盖的级别、公开仓库的私有层所做的覆盖，以及另一个规定源里的 `parent` 是否存在。这些都已实现。
 
-每项检查都有一个让它失败的测试和一个通过的对照；编号检查在一个临时的 git 仓库上测试 (`crates/statute/tests/constitution.rs`；`statute validate` 对照宪法检查规定的部分在 `validate_constitution.rs`，其余在 `validate.rs` 和这个 crate 的其他测试里)。检查 1 至 6 和这些测试作为提交钩子运行，也在 CI 里运行；检查 7 只在 CI 里运行：在 pull request 上，对照检出的合并提交所基于的那个基准分支的末端 (即它的第一个父提交)；在推送到 `main` 时，对照推送前的那个提交。
+每项检查都有一个让它失败的测试和一个通过的对照；编号检查在一个临时的 git 仓库上测试 (`crates/statute/tests/constitution.rs`；`statute validate` 对照宪法检查规定的部分在 `validate_constitution.rs`，其余在 `validate.rs` 和这个 crate 的其他测试里)。检查 1 至 6 作为提交钩子运行，也在 CI 里运行；这些测试只在 CI 里运行，检查 7 也是：在 pull request 上，对照检出的合并提交所基于的那个基准分支的末端 (即它的第一个父提交)；在推送到 `main` 时，对照推送前的那个提交。
 
 修订号部分的可靠程度取决于这个基准。必需检查 `check` 不是严格模式：pull request 落后于 `main` 也能合并，所以它的 CI 运行可能没见过在它上次运行之后合并的修正案，两个修正案可能都用同一个修订号通过检查。pull request 上的运行排除不了这种情况；发现它的是 `main` 上的推送运行，它对每个合并提交做同样的检查，对照的是它之前的那个提交。如果它因为修订号重复而变红，合并方提一个更正的修正案，给正文一个自己的修订号。历史里已经重复的修订号就留着；每次推送只按它自己的提交判断。
 

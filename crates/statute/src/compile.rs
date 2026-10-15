@@ -392,7 +392,7 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
 /// (`docs/design/rule-sources.md`, Private rules in a public repository).
 /// Without a private rule set, `both` is `public` and `dir` is `None`:
 /// the text then differs only in the person's own values.
-/// Fails as `compile` does, and when it is larger than Codex reads.
+/// Fails as `compile` does.
 pub fn full_text(public: &Project, both: &Project, dir: Option<&Path>) -> Result<String, String> {
     check_lock(
         &public.root.join(lock::FILE),
@@ -409,16 +409,7 @@ pub fn full_text(public: &Project, both: &Project, dir: Option<&Path>) -> Result
             private::MANIFEST,
         )?;
     }
-    let text = agents_md(both, false)?;
-    if text.len() > private::MAX_BYTES {
-        return Err(format!(
-            "{}: {} bytes, more than the {} that Codex reads of a project's instruction files; enable fewer rules",
-            private::full().display(),
-            text.len(),
-            private::MAX_BYTES
-        ));
-    }
-    Ok(text)
+    agents_md(both, false)
 }
 
 /// Whether a person's own value of a `personal` parameter differs from
