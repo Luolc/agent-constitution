@@ -5,8 +5,9 @@
 // showing from the checked radio button; this checks it, and writes a
 // change into the address as an entry of the history, leaving out both,
 // the default, so that back and forward return to the view as it was.
-// A view taken from localStorage is written into the address in place,
-// so the address always says what the page shows. The other parameters
+// The address is rewritten in place to say what the page shows: a view
+// taken from localStorage is written into it, the default and an
+// unknown view are left out. The other parameters
 // of the address are kept. Inlined in <head>.
 
 const VIEWS = ["both", "title", "statement"];
@@ -29,13 +30,15 @@ function keep(view: string): void {
   }
 }
 
-// The address with the view, or without it for the default.
+// The address with the view, or without it for the default; the other
+// parameters as they are written, the filter's commas unescaped.
 function address(view: string): string {
-  const query = new URLSearchParams(location.search);
-  if (view === "both") query.delete("view");
-  else query.set("view", view);
-  const search = query.toString();
-  return `${location.pathname}${search ? `?${search}` : ""}${location.hash}`;
+  const params = location.search
+    .slice(1)
+    .split("&")
+    .filter((param) => param && !param.startsWith("view="));
+  if (view !== "both") params.push(`view=${view}`);
+  return `${location.pathname}${params.length ? `?${params.join("&")}` : ""}${location.hash}`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -53,7 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (last && VIEWS.includes(last)) view = last;
     }
     check(view);
-    if (view !== (given ?? "both")) history.replaceState(history.state, "", address(view));
+    const written = address(view);
+    if (written !== location.pathname + location.search + location.hash) {
+      history.replaceState(history.state, "", written);
+    }
   };
 
   control.addEventListener("change", (event) => {

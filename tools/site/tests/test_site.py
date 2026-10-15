@@ -700,10 +700,12 @@ class SiteTest(unittest.TestCase):
     Loaded in headless Chrome, with a script added to the page that
     reports, once the page has settled, the view checked, the address's
     query and whether a statement and a title with one are displayed:
-    each view and an unknown one, a view saved by the reader on a first
-    visit, which is then written into the address, and back from a
-    chosen view to the address without one, which is the default whatever
-    was saved. Skipped without Chrome, except in CI.
+    each view, the default and an unknown one, which the address then
+    leaves out, a view saved by the reader on a first visit, which is
+    then written into the address after the filter, its commas as they
+    are, a change to the filter, which keeps the view in the address,
+    and back from a chosen view to the address without one, which is the
+    default whatever was saved. Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
     if chrome is None and not os.environ.get("CI"):
@@ -735,7 +737,17 @@ class SiteTest(unittest.TestCase):
       " setTimeout(() => history.back(), 100); });"
     )
     settle = "addEventListener('load', () => setTimeout(r, 100));"
+    # A change to the filter: Draft checked as well.
+    draft = (
+      "addEventListener('load', () => {"
+      " const d = document.querySelector('input[name=status][value=draft]');"
+      " d.checked = true;"
+      " d.dispatchEvent(new Event('change', {bubbles: true}));"
+      " setTimeout(r, 100); });"
+    )
     saved = "<script>localStorage.setItem('rules-view', 'statement');</script>"
+    title = "<script>localStorage.setItem('rules-view', 'title');</script>"
+    filtered = "?status=active,trial,draft"
     with tempfile.TemporaryDirectory() as tmp:
       for n, (query, head, script, expected) in enumerate(
         (
@@ -766,9 +778,22 @@ class SiteTest(unittest.TestCase):
             ["title", "?view=title", "none", "block"],
           ),
           ("", "", back, ["both", "", "block", "block"]),
+          ("?view=both", "", settle, ["both", "", "block", "block"]),
+          (
+            "?view=title",
+            "",
+            draft,
+            ["title", f"{filtered}&view=title", "none", "block"],
+          ),
+          (
+            filtered,
+            title,
+            settle,
+            ["title", f"{filtered}&view=title", "none", "block"],
+          ),
         )
       ):
-        with self.subTest(query=query, saved=bool(head), back=script == back):
+        with self.subTest(query=query, saved=head, script=script[:40]):
           page = Path(tmp) / f"rules-{n}.html"
           page.write_text(
             list_page.replace("<head>", f"<head>{head}", 1).replace(

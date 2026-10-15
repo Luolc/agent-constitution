@@ -228,7 +228,7 @@ screenshots (Screenshots, below). The workflow
   other value; superseded, repealed and draft rules are in the list but
   not checked. Beside the filter, a menu sets the page size: all by
   default, `params.rulesPerPage`, or 25, 50 or 100; the rules are
-  filtered first and then split into pages. After them, a segmented
+  filtered first and then split into pages. After the filter, a segmented
   control sets what each row shows ([Frontend](frontend.md#components)):
   its title and statement, by default, its title alone, or its
   statement alone; the style sheet shows the rows as its checked radio

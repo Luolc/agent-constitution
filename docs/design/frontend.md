@@ -475,7 +475,8 @@ turned off (disabled), where it has these.
   ellipsis, and the marks; the head names the first two, `text-sm`,
   `weight-medium`, `text-muted`, over a line of `border-strong`. Every
   row is at least as tall as a target, with a hairline of
-  `border-subtle` under it, and the same height on a wide screen. A
+  `border-subtle` under it, and a row that shows only its title is the
+  same height as the others on a wide screen. A
   rule under another rule is not indented: `corner-down-right`
   (`icon-sm`, `text-faint`) in front of its title shows it. The whole
   row is the link: hover fills it with `bg-hover` and turns the title
@@ -757,7 +758,7 @@ of its style sheet named by one; the one-of of
 button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
 popover; the language switch and the tag of a text not in the page's
-language; the switch between a rule's title and statement, its choice
+language; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
 it opens at an address without one. Not built yet, and what each replaces:
 
@@ -778,6 +779,8 @@ it opens at an address without one. Not built yet, and what each replaces:
   once, stand in for. Its popover closes at once, by a click on the
   button. Its pages load no font and set the text in the local serif
   fonts.
+- On the local site, the view of the list says 「标题与规定」 and 「规定」
+  in Chinese; 「标题和要求」 and 「要求」 replace them.
 
 ## Open questions
 
