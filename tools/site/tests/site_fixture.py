@@ -9,10 +9,9 @@ tree:
 - 1, a domain, translated;
   - 2, a one-of, translated;
     - 3, a rule, translated, citing `one` and `one-a`;
-  - 4, a rule superseded by 5 and 6, its translation made from another
-    original;
-  - 5, a rule, untranslated, requiring 3 and in conflict with it;
-    - 6, a rule, untranslated, citing `one-a.x`.
+  - 4, a rule superseded by 5 and 6, untranslated;
+  - 5, a rule, untranslated, requiring 6 and in conflict with 3;
+  - 6, a rule, untranslated, citing `one-a.x`.
 """
 
 import hashlib
@@ -61,7 +60,7 @@ STATEMENTS = {
     "See {@constitution:one-a} and {@rule:6}.",
     "见{@constitution:one-a}和{@rule:6}。",
   ),
-  4: ("Old.", "旧。"),
+  4: ("Old.", None),
   5: ("New.", None),
   6: ("Under five, see {@constitution:one-a.x}.", None),
 }
@@ -137,8 +136,6 @@ def rule(node_id: int, parent: int, extra: str = "") -> str:
       text += f'zh = "{zh_text}"\n'
   if zh:
     sha = original(title, *(t[1] for t in texts))
-    if node_id == 4:
-      sha = original("An older title", *(t[1] for t in texts))
     text += f'\n[translations]\nzh = "{sha}"\n'
   return text
 
@@ -156,9 +153,9 @@ FILES = {
     'status = "superseded"\nsuperseded-by = [5, 6]\nauthority = ["one"]\n',
   ).replace('status = "active"\n', "", 1),
   "rules/5.toml": rule(
-    5, 1, 'requires = [3]\nconflicts = [3, "team:7"]\nauthority = ["one"]\n'
+    5, 1, 'requires = [6]\nconflicts = [3, "team:7"]\nauthority = ["one"]\n'
   ),
-  "rules/6.toml": rule(6, 5, 'authority = ["one-a.x"]\n'),
+  "rules/6.toml": rule(6, 1, 'authority = ["one-a.x"]\n'),
 }
 
 

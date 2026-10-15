@@ -98,6 +98,13 @@ enum Command {
     /// included, to .statute/site, which git ignores; open its
     /// index.html in a browser.
     Site,
+    /// Print the constitution and the rules of a directory as JSON, for
+    /// programs that read them.
+    Export {
+        /// The directory that holds `constitution/` and `rules/`.
+        #[arg(default_value = ".")]
+        dir: PathBuf,
+    },
     /// Name a source of rules.
     Source {
         #[command(subcommand)]
@@ -182,6 +189,7 @@ fn main() -> ExitCode {
         ),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
+        Command::Export { dir } => export(&dir),
         Command::Source {
             action:
                 SourceAction::Add {
@@ -370,6 +378,13 @@ fn site(root: &Path) -> Result<(), ()> {
         statute::site::dir().display(),
         index.display()
     );
+    Ok(())
+}
+
+fn export(dir: &Path) -> Result<(), ()> {
+    let (data, diags) = statute::export::export(dir);
+    print(&diags);
+    println!("{}", data.ok_or(())?);
     Ok(())
 }
 

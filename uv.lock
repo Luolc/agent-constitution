@@ -84,12 +84,6 @@ source = { editable = "tools/compiler" }
 name = "constitution-site"
 version = "0.1.0"
 source = { editable = "tools/site" }
-dependencies = [
-    { name = "constitution-compiler" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "constitution-compiler", editable = "tools/compiler" }]
 
 [[package]]
 name = "distlib"

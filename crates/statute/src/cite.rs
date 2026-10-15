@@ -66,7 +66,7 @@ impl Labels {
 /// The entries of a directory named `<number>-<id>`: articles'
 /// directories, or with `sections` sections' `.toml` files, as (number,
 /// ID, path) in order, the number as the name writes it (`02a`).
-fn named(dir: &Path, sections: bool) -> Result<Vec<(String, String, PathBuf)>, String> {
+pub(crate) fn named(dir: &Path, sections: bool) -> Result<Vec<(String, String, PathBuf)>, String> {
     let entries =
         std::fs::read_dir(dir).map_err(|e| format!("cannot read {}: {e}", dir.display()))?;
     let mut out = Vec::new();
