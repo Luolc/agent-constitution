@@ -23,20 +23,20 @@ use crate::source::{PARAMS, Source};
 
 /// Checks the rules of `source`, read from `dir`, against the
 /// constitution beside `dir`, and with `base` against that commit too.
-/// Without a `constitution/` beside `dir` it checks nothing, unless
-/// `base` asks for the comparison. The notes of a comparison skipped,
-/// for standard output.
+/// Without a `constitution/` beside `dir` it checks nothing, and fails
+/// when `base` asks for the comparison. The notes of a comparison
+/// skipped, for standard output.
 pub fn validate(
     dir: &Path,
     source: &Source,
     base: Option<&str>,
     diags: &mut Diagnostics,
 ) -> Vec<String> {
-    let root = match dir.parent() {
-        Some(p) if !p.as_os_str().is_empty() => p.to_path_buf(),
-        _ => PathBuf::from("."),
-    };
-    if !root.join(CONSTITUTION).is_dir() {
+    let root = dir
+        .canonicalize()
+        .ok()
+        .and_then(|d| d.parent().map(Path::to_path_buf));
+    let Some(root) = root.filter(|r| r.join(CONSTITUTION).is_dir()) else {
         if base.is_some() {
             diags.error(
                 &source.dir,
@@ -44,7 +44,7 @@ pub fn validate(
             );
         }
         return Vec::new();
-    }
+    };
     // The constitution's own errors are `statute constitution build`'s to
     // list; the rules cannot be checked against it until it loads.
     let Ok(src) = load(&root) else {
