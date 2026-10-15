@@ -218,9 +218,9 @@ impl Source {
     }
 }
 
-/// Whether `child` is a subdomain of `parent`: below a domain, the
-/// compiled file and the sites show its rules and one-ofs first and its
-/// subdomains after them, so that each domain's rules stay together
+/// Whether `child` is a subdomain of `parent`: below a domain, the sites
+/// show its rules and one-ofs first and its subdomains after them, so
+/// that each domain's rules stay together under one heading
 /// (`docs/design/statute-command.md`, Compilation and the site).
 pub fn subdomain(parent: Option<&Node>, child: &Node) -> bool {
     child.kind == Kind::Domain && parent.is_some_and(|p| p.kind == Kind::Domain)
