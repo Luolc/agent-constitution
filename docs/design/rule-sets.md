@@ -59,7 +59,7 @@ rules, parameters and default switches, not built yet.
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
 each source (its short name, address, the branch or tag it follows,
-commit and, but for `R`, `public`, which is not written yet;
+commit and, but for `R`, `public`;
 [Git sources](global-configuration.md#git-sources)), and each enabled rule,
 whether chosen directly or brought in by a requirement (its reference,
 written as the rule set writes it, `R42` or `team:7`, and `L12` for a
@@ -263,9 +263,8 @@ rules, as this one does, names itself this way. Its rules are in
 `rules/` below that directory and its constitution in
 `constitution/<edition>/`. A source may be a git repository as well,
 cloned into the user's statute directory and read at the commit the
-lock file pins ([Git sources](global-configuration.md#git-sources));
-statute reads sources on disk only so far, and reports a `git` source
-as not supported yet. Sources every rule set of a user may use, and the
+lock file pins ([Git sources](global-configuration.md#git-sources)).
+Sources every rule set of a user may use, and the
 first-party source's default address, come from the global
 configuration, which a rule set's own `[sources]` overrides by name
 ([Which source a name means](global-configuration.md#which-source-a-name-means));

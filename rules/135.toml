@@ -1,0 +1,42 @@
+id = 135
+slug = "pinned-linux-release"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Run one pinned Linux release on machines and in test containers"
+zh = "Linux 机器与测试容器用同一个钉死的发行版本"
+
+[text.statement]
+en = "Run the Linux release the jurisdiction designates on the Linux machines (development machines, servers) and as the base image of test containers, naming that release in the image tag."
+zh = "Linux 机器 (开发机、服务器) 与测试容器的基础镜像用法域指定的 Linux 发行版本，镜像的 tag 写明这个版本。"
+
+[text.reason]
+en = '''
+With every Linux machine and test container on the same release, what passes in one place very likely passes in another ({@constitution:simplicity}). Test containers are written in each repository, so the default level is project.
+'''
+zh = '''
+所有 Linux 机器和测试容器用同一个版本，在一处跑通的，在另一处也大概率跑得通 ({@constitution:simplicity})。测试容器写在各个仓库里，所以默认级别是 project。
+'''
+
+[text.verification]
+en = '''
+The jurisdiction designates the release, for example in a rule of a lower layer, which also says who decides an upgrade. The tag may be followed by a digest (`<image>:<release>@sha256:…`). Machines that do not run Linux are outside this rule, and so are the runners a CI service hosts, which {@rule:212} pins.
+
+Violated when a Linux machine runs another release, or a test container's base image is another release or has a tag that names no fixed release (for example `latest`).
+'''
+zh = '''
+发行版本由法域指定，例如写在下层的规定里，并写明升级由谁决定。tag 后面可以再钉 digest (`<image>:<release>@sha256:…`)。不装 Linux 的机器不在此列，CI 服务托管的 runner 也不在本规定之内，它们由 {@rule:212} 钉住。
+
+Linux 机器装的是别的版本，或者测试容器的基础镜像是别的版本、tag 没写明固定的版本 (例如 `latest`) 的，即为违反本规定。
+'''
+
+[translations]
+zh = "8b8153574862d5f64197aec5b16c19e896e225c0bcd966c84fa94b870d957817"

@@ -41,7 +41,7 @@ fn rules() -> Vec<(u64, String)> {
 
 #[track_caller]
 fn fails(dir: &Path, needle: &str) {
-    let (project, diags) = Project::load(dir);
+    let (project, diags) = Project::load(dir, &Default::default());
     assert!(project.is_none());
     let errors: Vec<String> = diags.errors().map(ToString::to_string).collect();
     assert!(
@@ -53,7 +53,7 @@ fn fails(dir: &Path, needle: &str) {
 #[test]
 fn loads_and_resolves() {
     let dir = repo("loads", MANIFEST, &rules(), INDEX);
-    let (project, diags) = Project::load(&dir);
+    let (project, diags) = Project::load(&dir, &Default::default());
     assert!(diags.0.is_empty(), "{:#?}", diags.0);
     let project = project.unwrap();
     assert_eq!(project.revision, "2");

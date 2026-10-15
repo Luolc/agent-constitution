@@ -144,6 +144,7 @@ struct Run {
 /// Runs statute in `dir`; `path` replaces `PATH` when given.
 fn statute(dir: &Path, args: &[&str], path: Option<&str>) -> Run {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_statute"));
+    cmd.env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"));
     cmd.args(args).current_dir(dir);
     if let Some(path) = path {
         cmd.env("PATH", path);

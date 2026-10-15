@@ -53,6 +53,7 @@ struct Run {
 
 fn statute(dir: &Path, args: &[&str]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+        .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .args(args)
         .current_dir(dir)
         .output()
@@ -785,7 +786,7 @@ fn bare_repo(name: &str) -> PathBuf {
 #[test]
 fn init_writes_a_rule_set_that_locks() {
     let dir = bare_repo("init");
-    let run = statute(&dir, &["init", "--public"]);
+    let run = statute(&dir, &["init", "--source", ".", "--public"]);
     ok(&run);
     assert_eq!(
         run.stdout,
@@ -826,6 +827,7 @@ fn init_asking(dir: &Path, args: &[&str], visibility: Option<&str>) -> Run {
     }
     let _ = std::fs::remove_file(dir.join("statute.toml"));
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+        .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .args(args)
         .current_dir(dir)
         .env(
@@ -845,7 +847,7 @@ fn init_asking(dir: &Path, args: &[&str], visibility: Option<&str>) -> Run {
 fn init_asks_github_whether_the_repository_is_public() {
     let dir = bare_repo("init-public");
     let public = |dir: &Path| read(dir, "statute.toml").contains("\npublic = true\n");
-    let run = init_asking(&dir, &["init"], Some("PUBLIC"));
+    let run = init_asking(&dir, &["init", "--source", "."], Some("PUBLIC"));
     ok(&run);
     assert!(public(&dir));
     assert!(
@@ -854,7 +856,7 @@ fn init_asks_github_whether_the_repository_is_public() {
         "{}",
         run.stdout
     );
-    let run = init_asking(&dir, &["init"], Some("PRIVATE"));
+    let run = init_asking(&dir, &["init", "--source", "."], Some("PRIVATE"));
     ok(&run);
     assert!(!public(&dir));
     assert!(
@@ -864,14 +866,14 @@ fn init_asks_github_whether_the_repository_is_public() {
         run.stdout
     );
     // INTERNAL, and no answer: public, the safe side, with a warning.
-    let run = init_asking(&dir, &["init"], Some("INTERNAL"));
+    let run = init_asking(&dir, &["init", "--source", "."], Some("INTERNAL"));
     ok(&run);
     assert!(public(&dir));
     assert_eq!(
         run.stderr,
         "statute.toml: warning: `public = true`: GitHub shows the repository as INTERNAL, which everyone in its enterprise can read, so nothing private is compiled into the committed AGENTS.md; if it is to be private, write `public = false`, as `statute init --private` does\n"
     );
-    let run = init_asking(&dir, &["init"], None);
+    let run = init_asking(&dir, &["init", "--source", "."], None);
     ok(&run);
     assert!(public(&dir));
     assert!(
@@ -881,16 +883,28 @@ fn init_asks_github_whether_the_repository_is_public() {
     );
     // --public and --private are not asked about: the fake exits 9 for
     // any other call, and here would answer the other way.
-    let run = init_asking(&dir, &["init", "--public"], Some("PRIVATE"));
+    let run = init_asking(
+        &dir,
+        &["init", "--source", ".", "--public"],
+        Some("PRIVATE"),
+    );
     ok(&run);
     assert!(public(&dir));
     assert!(!run.stdout.contains("GitHub"), "{}", run.stdout);
-    let run = init_asking(&dir, &["init", "--private"], Some("PUBLIC"));
+    let run = init_asking(
+        &dir,
+        &["init", "--source", ".", "--private"],
+        Some("PUBLIC"),
+    );
     ok(&run);
     assert!(!public(&dir));
     assert!(run.stderr.is_empty(), "{}", run.stderr);
     // Not both.
-    let run = init_asking(&dir, &["init", "--public", "--private"], Some("PUBLIC"));
+    let run = init_asking(
+        &dir,
+        &["init", "--source", ".", "--public", "--private"],
+        Some("PUBLIC"),
+    );
     assert_eq!(run.code, 2, "{}", run.stderr);
     assert!(!dir.join("statute.toml").exists());
 }
@@ -903,7 +917,7 @@ fn init_leaves_an_existing_rule_set_as_it_is() {
     ] {
         let dir = repo(name, &text, &nodes());
         let before = std::fs::read(dir.join("statute.toml")).unwrap();
-        let run = statute(&dir, &["init", "--private"]);
+        let run = statute(&dir, &["init", "--source", ".", "--private"]);
         assert_eq!(run.code, 1, "{}", run.stdout);
         assert!(
             run.stderr
@@ -949,7 +963,7 @@ fn init_picks_the_edition() {
     .unwrap();
     // A directory without an index.toml is not an edition.
     std::fs::create_dir_all(dir.join("constitution/notes")).unwrap();
-    let run = statute(&dir, &["init", "--private"]);
+    let run = statute(&dir, &["init", "--source", ".", "--private"]);
     assert_eq!(run.code, 1);
     assert!(
         run.stderr.contains(
@@ -961,7 +975,7 @@ fn init_picks_the_edition() {
     assert!(!dir.join("statute.toml").exists());
     ok(&statute(
         &dir,
-        &["init", "--private", "--edition", "2027-04"],
+        &["init", "--source", ".", "--private", "--edition", "2027-04"],
     ));
     assert!(read(&dir, "statute.toml").contains("edition = \"2027-04\""));
 }
@@ -976,7 +990,7 @@ fn init_reports_an_edition_it_cannot_read() {
     std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000)).unwrap();
     let blocked = std::fs::metadata(locked.join("index.toml"))
         .is_err_and(|e| e.kind() == std::io::ErrorKind::PermissionDenied);
-    let run = statute(&dir, &["init", "--private"]);
+    let run = statute(&dir, &["init", "--source", ".", "--private"]);
     std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755)).unwrap();
     // Run as root, the permission does not block, and there is nothing to
     // report.
@@ -996,7 +1010,10 @@ fn init_reports_an_edition_it_cannot_read() {
 #[test]
 fn init_writes_nothing_when_the_rule_set_would_not_resolve() {
     let dir = bare_repo("init-unknown-edition");
-    let run = statute(&dir, &["init", "--private", "--edition", "2030-01"]);
+    let run = statute(
+        &dir,
+        &["init", "--source", ".", "--private", "--edition", "2030-01"],
+    );
     assert_eq!(run.code, 1);
     assert!(
         run.stderr
@@ -1007,7 +1024,7 @@ fn init_writes_nothing_when_the_rule_set_would_not_resolve() {
     assert!(run.stderr.contains("statute: statute.toml is not written"));
     assert!(!dir.join("statute.toml").exists());
     std::fs::remove_dir_all(dir.join("constitution/2026-10")).unwrap();
-    let run = statute(&dir, &["init", "--private"]);
+    let run = statute(&dir, &["init", "--source", ".", "--private"]);
     assert_eq!(run.code, 1);
     assert!(
         run.stderr.contains("holds no edition of the constitution"),

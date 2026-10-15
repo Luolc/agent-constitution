@@ -1,0 +1,42 @@
+id = 130
+slug = "scratch-directory"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Put files handed between agents in the scratch directory"
+zh = "agent 之间交接的临时文件放在 scratch 目录"
+
+[text.statement]
+en = "Put the temporary files handed between agents (handover notes, findings, drafts, research output) in the scratch directory of their repository."
+zh = "agent 之间交接的临时文件 (交接文档、findings、草稿、调研产物) 放在所属仓库的 scratch 目录。"
+
+[text.reason]
+en = '''
+Other agents read these files only if they are where everyone knows to look ({@constitution:simplicity}).
+'''
+zh = '''
+这些文件要让别的 agent 读到，就得放在大家都知道的地方 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The scratch directory of a repository is `<root>/<repo>/`, `<repo>` being the repository the file belongs to, under the root the jurisdiction designates for files handed between agents, for example in a rule of a lower layer.
+
+Violated when a file handed between agents is kept elsewhere.
+'''
+zh = '''
+仓库的 scratch 目录是法域为 agent 之间交接的文件指定的根目录下的 `<root>/<repo>/`，`<repo>` 是这份文件所属的仓库；根目录例如写在下层的规定里。
+
+agent 之间交接的文件放在别处的，即为违反本规定。
+'''
+
+[translations]
+zh = "88ea23460084f2f05fd789bb6934e2717c45d95112cc3552124c9731a441389d"

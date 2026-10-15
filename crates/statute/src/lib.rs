@@ -5,6 +5,7 @@ pub mod check;
 pub mod cite;
 pub mod compile;
 pub mod diag;
+pub mod global;
 pub mod lock;
 pub mod manifest;
 pub mod node;
