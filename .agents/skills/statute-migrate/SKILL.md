@@ -263,12 +263,29 @@ prints the three lists from the rule set as written; `statute explain
    checkout type in `PRE_COMMIT_CHECKOUT_TYPE` instead of `$3`. The
    hook does not reach the worktrees that exist already: run `statute
    compile --private-only` once in each of them.
+5. Add `statute compile --check` to the repository's commit hooks, so
+   that a commit cannot leave the compiled file, the checks file or an
+   installed skill out of step with the rule set
+   ([Compilation and the site](https://github.com/Luolc/agent-constitution/blob/main/docs/design/statute-command.md#compilation-and-the-site)).
+   With pre-commit, add a local hook with `language: system`,
+   `pass_filenames: false` and `files` matching the statute inputs
+   and outputs (`statute.toml`, `statute.lock`, `statute-checks.toml`,
+   `AGENTS.md`, `.statute/`, `.agents/`, `.claude/`, and the
+   directories of the local rules); the `statute-compile` hook in this
+   repository's `.pre-commit-config.yaml` is a model. With no hook
+   manager, add it the way the repository already runs its hooks.
+   Then confirm CI runs it: when CI already runs every pre-commit hook,
+   nothing more is needed; otherwise add a CI step that runs
+   `statute compile --check`. The statute installed for the hook must
+   be a version that has the flag.
 
 Acceptance, before you ask for a review:
 
 - `statute compile` runs again with no change to any file, and warns
   of no `CLAUDE.md` unless the person chose to keep it.
 - The compiled file's first line says statute wrote it.
+- `statute compile --check` exits 0, and the hook and the CI run that
+  runs it are in the pull request.
 - `statute check` exits 0.
 - The compiled file is compared with the legacy copies, section by
   section, against the mapping of step c: every item is where the
