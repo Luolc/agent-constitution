@@ -1,0 +1,42 @@
+id = 236
+slug = "proper-nouns-with-original"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Give a proper noun from another language with its original"
+zh = "其他语言的专有名词附上原文"
+
+[text.statement]
+en = "When a text uses a proper noun that comes from another language, give its original beside it at its first occurrence and at the key places, or write the original alone where there is no established translation or you are unsure of one."
+zh = "文字里用到来自其他语言的专有名词时，在首次出现和关键位置附上原文；没有通行译名或拿不准的，直接用原文。"
+
+[text.reason]
+en = '''
+With the original beside it, a reader can search for the noun and match it against the documentation written in its language ({@constitution:purpose}).
+'''
+zh = '''
+附上原文，读者就能拿原词去搜索，去对照用那种语言写的文档 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+This holds for text in the repository and for replies. Code, paths and commands are not proper nouns here.
+
+Violated when a proper noun from another language appears in a text for the first time neither with its original beside it nor as its original alone.
+'''
+zh = '''
+本规定适用于仓库里的文字和回复。代码、路径和命令不算这里说的专有名词。
+
+来自其他语言的专有名词在文字里首次出现时，既没有附上原文，也不是直接用原文写的，即为违反本规定。
+'''
+
+[translations]
+zh = "5dcea6e4caedcf80c217f5992ce4a6a671179427e516be699432b0e126184ca4"
