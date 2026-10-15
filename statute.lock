@@ -1060,13 +1060,6 @@ original-sha256 = "511d602bac62f52643c0ba7179a3fc682c3b1abd3e2b9438d9ab5ee3a6122
 by = "default"
 
 [[rules]]
-rule = "R201"
-revision = 2
-sha256 = "531874df93f6b8064f868a00d522a388b490d197ef716918126401f4324ee24e"
-original-sha256 = "d791984999a876f357695c3430eb1ba08cf25990c1053c3fbf9db46645e4e5db"
-by = "default"
-
-[[rules]]
 rule = "R202"
 revision = 2
 sha256 = "fbd606f50f1709b323f871973f76cad89a36b93142bcea007e4bdb9f25c371a2"
@@ -1355,6 +1348,13 @@ original-sha256 = "fe588daac774674bbc8f3edcafc127067a971c5cc9dbf9977d303c70b6c64
 by = "default"
 
 [[rules]]
+rule = "R249"
+revision = 1
+sha256 = "ec8bb4bc0035572cb69caedb306ef60d59d38738cb260c18d8bce1923931d8d3"
+original-sha256 = "3e424605e912099588b37623c4f2a6f2f73762a0a696cad1ebc555e4997d7b5d"
+by = "default"
+
+[[rules]]
 rule = "L1"
 revision = 1
 sha256 = "746d642f7628e9197a6e0c896225f7ce18121ece944bb858c37496b4593d7708"
@@ -1507,6 +1507,10 @@ value = "en"
 
 [[parameters]]
 name = "language.commits"
+value = "en"
+
+[[parameters]]
+name = "language.communication"
 value = "en"
 
 [[parameters]]

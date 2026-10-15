@@ -412,7 +412,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R198 In steps for a person to carry out, name the machine and the interface of each step, give one action per step, write commands that run as copied, give each step its sign of completion, and give a default wherever one can be given instead of leaving the choice to the person on the spot.
 - R199 Before starting a task, read the writing guide that the rules in force name, together with the parts it names for the language you will write in, and write all text that people read by it.
 - R200 Write the repository's text for people, such as documents, logs and the README, in English, whatever language the principal speaks to you in.
-- R201 Reply to a principal in the language of their latest message, judged anew at each turn, and use it for the whole reply, summaries and follow-up questions included.
 - R202 Write code in English: its identifiers, its file names and the strings that are part of its interface.
 - R203 Write comments in code in English.
 - R204 Write commit messages and pull request titles in English.
@@ -422,6 +421,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R236 When a text gives a proper noun in translation, put its original beside it at its first occurrence and at the key places; where there is no established translation or you are unsure of one, write the original alone.
 - R237 Put the design questions a principal must decide to them in one memo of at most five points, each with a recommended default, so that one sentence can settle it.
 - R238 Put a design question a principal must decide to them directly; do not first write it up as a draft decision document, have the draft reviewed and merged, and only then ask.
+- R249 Write what you address to a person, such as replies, questions and reports, in English, whatever language their messages are in, and use it for the whole text, summaries and follow-up questions included.
 - L1 When you change the English text of a constitution or rule source, change its `zh` text in the same change so that it says what the English says, clause by clause rather than word by word, and cites the same provisions and rules.
 - L2 In the `zh` text of a source and in a Chinese translation of the design, write commas, full stops, enumeration commas, semicolons and colons full-width, and parentheses half-width, with one space outside and none inside; keep code, paths, commands and IDs with half-width punctuation.
 
