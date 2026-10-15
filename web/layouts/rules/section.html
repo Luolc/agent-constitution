@@ -19,8 +19,12 @@
   rows stick to the top as the page scrolls, each group row under the
   head until the next one covers it.
 
-  Above the list, its legend (_partials/rules/legend.html), then the
-  filter and the page size (_partials/rules/filter.html). The rules
+  Each rule's statement follows its title in its row
+  (_partials/rules/statement.html).
+
+  Above the list, its legend (_partials/rules/legend.html), then, in
+  one bar, the filter and the page size (_partials/rules/filter.html)
+  and what the rows show (_partials/rules/view.html). The rules
   shown are those of the filter, rulesPerPage of them a page, or all on
   one page when it is "all"; by default those of a status in
   rulesStatuses. Every page holds every rule, each
@@ -53,7 +57,10 @@
 {{- $enabled := false }}
 {{- range $all }}{{ if isset .Params.rule "enabled" }}{{ $enabled = true }}{{ end }}{{ end }}
 {{ partial "rules/legend.html" (dict "enabled" $enabled "many" $many) }}
+<div class="rules-bar">
 {{ partial "rules/filter.html" (dict "page" . "statuses" $statuses "size" $size "sources" $sources) }}
+{{ partial "rules/view.html" }}
+</div>
 <div class="rules-table">
 <div class="rules-head" aria-hidden="true"><span class="rule-id">{{ i18n "rule-id" }}</span><span class="rule-title">{{ i18n "rules-column-rule" }}</span></div>
 <div class="rules-list" data-size="{{ $size }}" data-first="{{ $first }}">
@@ -99,7 +106,7 @@
     {{- range $rule.options }}
       {{- $page := site.GetPage (printf "/rules/%s" .key) }}
       {{- $option := $page.Params.rule }}
-<li{{ if $option.optionDefault }} class="default"{{ end }}><a class="rule-entry" href="{{ $page.RelPermalink }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ partial "icon.html" (cond $option.optionDefault "lucide:circle-dot" "lucide:circle") }}<span class="rule-text">{{ $option.titleInLink | $.RenderString }}</span>{{ if $option.optionDefault }}<span class="rule-default-option">{{ partial "icon.html" "lucide:check" }}{{ i18n "default-option" }}</span>{{ end }}</span>{{ partial "rules/marks.html" $option | safeHTML }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
+<li{{ if $option.optionDefault }} class="default"{{ end }}><a class="rule-entry" href="{{ $page.RelPermalink }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ partial "icon.html" (cond $option.optionDefault "lucide:circle-dot" "lucide:circle") }}<span class="rule-text">{{ $option.titleInLink | $.RenderString }}</span>{{ if $option.optionDefault }}<span class="rule-default-option">{{ partial "icon.html" "lucide:check" }}{{ i18n "default-option" }}</span>{{ end }}{{ partial "rules/statement.html" $option }}</span>{{ partial "rules/marks.html" $option | safeHTML }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
     {{- end }}
 </ul>
 </div>
@@ -107,7 +114,7 @@
     {{- continue }}
   {{- end }}
   {{- $under := and $rule.parent (ne $rule.parent.key $rule.domain) }}
-<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ if $under }}{{ partial "icon.html" "lucide:corner-down-right" }}{{ end }}<span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>
+<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ if $under }}{{ partial "icon.html" "lucide:corner-down-right" }}{{ end }}<span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span>{{ partial "rules/statement.html" $rule }}</span>
   {{- partial "rules/marks.html" $rule | safeHTML }}
   {{- partial "rules/enabled.html" $rule }}
   {{- if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" "") }}{{ end -}}
