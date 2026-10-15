@@ -87,6 +87,8 @@ struct Words {
     /// The lines of the legend: the status, the defaults, `uses`, the
     /// one-of, this rule set and the places of the marks.
     legend: [&'static str; 6],
+    /// The legend's own name, on the button that folds it.
+    legend_name: &'static str,
     /// What the places of the marks hold, in order.
     slots: &'static str,
     /// After each use's name in the legend, what it means.
@@ -104,8 +106,18 @@ struct Words {
     fields: [&'static str; 6],
     /// In a menu: choose every value, and none; search the domains.
     all: &'static str,
+    /// What a menu shows when it chooses every value, and none.
+    every: &'static str,
+    nothing: &'static str,
     none: &'static str,
     search: &'static str,
+    /// The search of the rows: its name and what it searches.
+    find: &'static str,
+    find_placeholder: &'static str,
+    /// The button that brings back the default filter, at the end of the
+    /// row, and the number of rules shown, `{}` the number.
+    clear: &'static str,
+    shown: &'static str,
     /// When the filter leaves no row, and the button that resets it.
     no_match: &'static str,
     reset: &'static str,
@@ -157,18 +169,25 @@ fn words(lang: &str) -> Words {
             untranslated: "无中文",
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
-            legend: ["状态", "默认", "用途", "择一", "规定清单", "行末"],
+            legend: ["默认", "状态", "用途", "择一", "规定清单", "行末"],
+            legend_name: "图例",
             use_meanings: ["：写进 agent 的指令", "：审查方按它审查"],
-            slots: "依次是状态、默认、指令、审查，没有的留空",
+            slots: "依次是默认、状态、指令、审查，没有的留空",
             one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
             view: "显示",
-            views: ["标题与规定", "标题", "规定"],
+            views: ["标题和要求", "标题", "要求"],
             columns: ["编号", "规定"],
             fields: ["状态", "默认", "用途", "领域", "象限", "规定清单"],
             all: "全选",
+            every: "全部",
+            nothing: "无",
             none: "全不选",
             search: "搜索领域",
+            find: "搜索",
+            find_placeholder: "编号、标题或要求",
+            clear: "清除筛选",
+            shown: "{} 条规定",
             no_match: "没有符合筛选的规定。",
             reset: "重置筛选",
             empty: "没有规定源。",
@@ -210,12 +229,13 @@ fn words(lang: &str) -> Words {
                 "Local public",
                 "Local private",
             ],
-            legend: ["Status", "Default", "Uses", "One of", "Rule set", "Row end"],
+            legend: ["Default", "Status", "Uses", "One of", "Rule set", "Row end"],
+            legend_name: "Legend",
             use_meanings: [
                 ": goes into the agent's instructions",
                 ": a reviewer checks it",
             ],
-            slots: "status, default, instructions, review, in this order; empty where a rule has none",
+            slots: "default, status, instructions, review, in this order; empty where a rule has none",
             one_of_meaning: "the rule set takes exactly one option",
             another_option: "Another option",
             view: "Show",
@@ -225,8 +245,14 @@ fn words(lang: &str) -> Words {
                 "Status", "Default", "Uses", "Domain", "Quadrant", "Rule set",
             ],
             all: "All",
+            every: "All",
+            nothing: "None",
             none: "None",
             search: "Search domains",
+            find: "Search",
+            find_placeholder: "ID, title or statement",
+            clear: "Clear filters",
+            shown: "{} rules",
             no_match: "No rule matches the filter.",
             reset: "Reset filter",
             empty: "No source.",
@@ -367,7 +393,7 @@ pub fn pages(project: &Project) -> Result<Vec<Page>, String> {
         let at = |path: &Path| Path::new(&l.dir).join(path);
         let path = PathBuf::from("index.html");
         pages.push(Page {
-            html: index(project, l, &langs, &languages(l, other, &path)),
+            html: index(project, l, &langs, &languages(l, other, &path))?,
             path: at(&path),
         });
         for (key, node) in project.sources.nodes() {
@@ -643,11 +669,30 @@ fn domains<'a>(
 
 /// The script of the index: the filter and the view in the address, All
 /// and None, the counts, the domains below one checked or cleared with
-/// it, the search among the domains, the menus closing, and the groups
-/// the filter empties hidden.
+/// it, the search, the menus closing, the legend kept folded or open,
+/// and the groups the filter empties hidden.
 const SCRIPT: &str = include_str!("site.js");
 
-fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
+/// The script as the index inlines it, without its comments, which are
+/// for its readers in the repository.
+fn script() -> String {
+    SCRIPT
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("//"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// What the rows of the index are drawn from: the project, the page's
+/// language and every language of the site.
+struct Site<'a> {
+    project: &'a Project,
+    l: &'a Lang<'a>,
+    langs: &'a [Lang<'a>],
+}
+
+fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> Result<String, String> {
+    let site = Site { project, l, langs };
     let w = &l.w;
     let mut out = head(w.title, l.code, "list", switch);
     let _ = writeln!(out, "<h1>{}</h1>", w.title);
@@ -693,7 +738,7 @@ fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
         }
         for source in project.sources.iter().filter(|s| Quadrant::of(s) == q) {
             any = true;
-            table(project, l, langs, source, &mut out);
+            table(&site, source, &mut out)?;
         }
         if !any {
             let _ = writeln!(out, "<p>{}</p>", w.empty);
@@ -702,17 +747,18 @@ fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
     }
     let _ = write!(
         out,
-        "</main>\n<script>{SCRIPT}</script>\n</body>\n</html>\n"
+        "</main>\n<script>{}</script>\n</body>\n</html>\n",
+        script()
     );
-    out
+    Ok(out)
 }
 
 /// A source in the index: its name, where it is read from and the link
 /// to its parameters, then the table of its rules under a head, in
 /// blocks of the rows of one group, each led by the group's row
 /// (`docs/design/frontend.md`, Components, The table of rules).
-fn table(project: &Project, l: &Lang, langs: &[Lang], source: &Source, out: &mut String) {
-    let w = &l.w;
+fn table(site: &Site, source: &Source, out: &mut String) -> Result<(), String> {
+    let (project, w) = (site.project, &site.l.w);
     // As in the compiled `AGENTS.md`: a git source by its address and
     // commit, not the snapshot directory it is read from.
     let place = match project.manifest.spec(&source.name) {
@@ -750,33 +796,34 @@ fn table(project: &Project, l: &Lang, langs: &[Lang], source: &Source, out: &mut
     }
     let mut previous: Option<&[&Node]> = None;
     for item in &rows {
-        if previous.is_some_and(|p| same(p, &item.groups)) {
-            out.push_str(&row(project, l, langs, source, item));
-            continue;
+        if !previous.is_some_and(|p| same(p, &item.groups)) {
+            if previous.is_some() {
+                out.push_str("</div>\n");
+            }
+            out.push_str("<div class=\"block\">\n");
+            out.push_str(&group(site, source, &item.groups));
+            previous = Some(&item.groups);
         }
-        if previous.is_some() {
-            out.push_str("</div>\n");
-        }
-        out.push_str("<div class=\"block\">\n");
-        out.push_str(&group(project, l, source, &item.groups));
-        out.push_str(&row(project, l, langs, source, item));
-        previous = Some(&item.groups);
+        out.push_str(&row(site, source, item)?);
     }
     if previous.is_some() {
         out.push_str("</div>\n");
     }
     out.push_str("</div>\n</div>\n");
+    Ok(())
 }
 
 fn same(a: &[&Node], b: &[&Node]) -> bool {
     a.len() == b.len() && a.iter().zip(b).all(|(x, y)| x.id == y.id)
 }
 
-/// The row of a group: the innermost domain's label, and the path from
-/// the source, its quadrant and name, through the domains, the whole a
-/// link to the innermost domain's page; a band, the darker for a group
-/// of the first level.
-fn group(project: &Project, l: &Lang, source: &Source, groups: &[&Node]) -> String {
+/// The row of a group: the innermost domain's label, the path from the
+/// source, its quadrant and name, through the domains, the whole a link
+/// to the innermost domain's page, and in the first place of the marks
+/// whether the defaults enable that domain; a band, the darker for a
+/// group of the first level.
+fn group(site: &Site, source: &Source, groups: &[&Node]) -> String {
+    let (project, l) = (site.project, site.l);
     let chevron = icon(CHEVRON_RIGHT, "");
     let mut path = quadrant_tag(&l.w, source);
     let mut names = Vec::new();
@@ -792,13 +839,22 @@ fn group(project: &Project, l: &Lang, source: &Source, groups: &[&Node]) -> Stri
         );
         names.push(title);
     }
-    let level = 4 + groups.len().min(2);
+    // Under the source's `h3`: a group of the first level `h4`, a deeper
+    // one `h5`.
+    let level = 4 + usize::from(groups.len() > 1);
     let band = if groups.len() > 1 { "deep" } else { "top" };
+    let dot = groups.last().map_or_else(
+        || "<span class=\"mark\"></span>".to_owned(),
+        |d| dot(&l.w, d),
+    );
+    let marks = format!(
+        "<span class=\"marks\">{dot}<span class=\"mark\"></span><span class=\"mark\"></span><span class=\"mark\"></span></span>"
+    );
     match groups.last() {
         Some(domain) => {
             let key = Key::new(&source.name, domain.id);
             format!(
-                "<h{level} class=\"group {band}\"><a href=\"{}\" aria-label=\"{} {}\"><span class=\"ref\">{}</span><span class=\"group-path\">{path}</span></a></h{level}>\n",
+                "<h{level} class=\"group {band}\"><a href=\"{}\" aria-label=\"{} {}\"><span class=\"ref\">{}</span><span class=\"group-path\">{path}</span></a>{marks}</h{level}>\n",
                 page(&key).display(),
                 escape(&key.to_string()),
                 escape(&names.join(", ")),
@@ -806,14 +862,16 @@ fn group(project: &Project, l: &Lang, source: &Source, groups: &[&Node]) -> Stri
             )
         }
         None => format!(
-            "<h{level} class=\"group {band}\"><span class=\"ref\"></span><span class=\"group-path\">{path}</span></h{level}>\n"
+            "<h{level} class=\"group {band}\"><span class=\"ref\"></span><span class=\"group-path\">{path}</span>{marks}</h{level}>\n"
         ),
     }
 }
 
 /// A rule's or a one-of's row, its values for the filter in `data-`
-/// attributes; a one-of a box of its own row and its options'.
-fn row(project: &Project, l: &Lang, langs: &[Lang], source: &Source, item: &Item) -> String {
+/// attributes and its text, for the search, in `data-text`; a one-of a
+/// box of its own row and its options'.
+fn row(site: &Site, source: &Source, item: &Item) -> Result<String, String> {
+    let project = site.project;
     let node = item.node;
     let key = Key::new(&source.name, node.id);
     let options: Vec<&Node> = if node.kind == Kind::OneOf {
@@ -859,11 +917,11 @@ fn row(project: &Project, l: &Lang, langs: &[Lang], source: &Source, item: &Item
     } else {
         String::new()
     };
-    let own = entry(project, l, langs, &key, node, &lead, (instructions, review));
+    let own = entry(site, &key, node, &lead, (instructions, review))?;
     if node.kind != Kind::OneOf {
         out.push_str(&own);
         out.push_str("</div>\n");
-        return out;
+        return Ok(out);
     }
     let id = format!("one-of-{}-{}", escape(&source.name), node.id);
     let unset = if in_use(project, source, node) {
@@ -874,7 +932,7 @@ fn row(project: &Project, l: &Lang, langs: &[Lang], source: &Source, item: &Item
     let _ = write!(
         out,
         "<div class=\"one-of{unset}\" role=\"group\" aria-labelledby=\"{id}\"><span class=\"one-of-label\" id=\"{id}\">{}</span>{own}<ul class=\"options\">",
-        l.w.one_of
+        site.l.w.one_of
     );
     for option in options {
         let default = node.default_child == Some(option.id);
@@ -884,95 +942,79 @@ fn row(project: &Project, l: &Lang, langs: &[Lang], source: &Source, item: &Item
             ("", icon(CIRCLE, ""))
         };
         let uses = uses(option).unwrap_or((false, false));
+        let option_key = Key::new(&source.name, option.id);
         let _ = write!(
             out,
             "<li{class}>{}</li>",
-            entry(
-                project,
-                l,
-                langs,
-                &Key::new(&source.name, option.id),
-                option,
-                &lead,
-                uses
-            )
+            entry(site, &option_key, option, &lead, uses)?
         );
     }
     out.push_str("</ul></div></div>\n");
-    out
+    Ok(out)
 }
 
 fn on_off(on: bool) -> &'static str {
     if on { "on" } else { "off" }
 }
 
-/// The cells of a row: the label; `lead`, the title and, for a rule, its
-/// statement; the four places of the marks; and for a rule whether the
-/// rule set enables it. The title's link covers the row.
+/// The cells of a row: the label; `lead`, the title, with its whole text
+/// on hover, and for a rule its statement; the four places of the marks;
+/// and for a rule whether the rule set enables it. The title's link
+/// covers the row.
 fn entry(
-    project: &Project,
-    l: &Lang,
-    langs: &[Lang],
+    site: &Site,
     key: &Key,
     node: &Node,
     lead: &str,
     uses: (bool, bool),
-) -> String {
+) -> Result<String, String> {
+    let (project, l) = (site.project, site.l);
     let w = &l.w;
     let (title, title_lang) = pick_lang(&node.title, node, l.code);
-    let title = filled(project, key, title, true, title_lang);
+    let title = escape(&filled(project, key, title, true, title_lang));
     let default_option = match switch(project, w, key, node) {
         Some(mark @ Mark::DefaultOption(_)) => mark.tag(),
         _ => String::new(),
     };
-    let statement = node
-        .rule
-        .as_ref()
-        .and_then(|r| statement(l, langs, project, key, node, &r.statement));
-    let class = if statement.is_some() {
-        "entry has-statement"
-    } else {
-        "entry"
+    let (class, statement) = match &node.rule {
+        Some(rule) => (
+            "entry has-statement",
+            statement(site, key, node, &rule.statement)?,
+        ),
+        None => ("entry", String::new()),
     };
     let enabled = if node.kind == Kind::Rule {
         enabled(project, l, key, "")
     } else {
         String::new()
     };
-    format!(
-        "<div class=\"{class}\"><span class=\"ref\">{}</span><span class=\"rule-title\">{lead}<span class=\"rule-main\"><span class=\"rule-head\"><a class=\"rule-text\" href=\"{}\"><span class=\"title\"{}>{}</span></a>{default_option}</span>{}</span></span>{}<span class=\"rule-enabled\">{enabled}</span></div>",
+    Ok(format!(
+        "<div class=\"{class}\"><span class=\"ref\">{}</span><span class=\"rule-title\">{lead}<span class=\"rule-main\"><span class=\"rule-head\"><a class=\"rule-text\" href=\"{}\"><span class=\"title\"{} title=\"{title}\">{title}</span></a>{default_option}</span>{statement}</span></span>{}<span class=\"rule-enabled\">{enabled}</span></div>",
         escape(&key.to_string()),
         page(key).display(),
         lang_attr(title_lang, l.code),
-        escape(&title),
-        statement.unwrap_or_default(),
         marks(w, node, uses)
-    )
+    ))
 }
 
 /// A rule's statement in the index, in the page's language or, marked
 /// with `languages`, in the rule's own; its placeholders filled with the
-/// values the compiled `AGENTS.md` has. `None` when it cannot be shown,
-/// which the rule's page then reports.
-fn statement(
-    l: &Lang,
-    langs: &[Lang],
-    project: &Project,
-    key: &Key,
-    node: &Node,
-    text: &Text,
-) -> Option<String> {
+/// values the compiled `AGENTS.md` has. Fails when it cites a rule or
+/// provision that is not there.
+fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Result<String, String> {
+    let l = site.l;
     let (text, text_lang) = pick_lang(text, node, l.code);
-    let labels = langs
+    let labels = site
+        .langs
         .iter()
         .find(|l| l.code == text_lang)
         .map_or(&l.labels, |l| &l.labels);
-    let html = text_html(project, labels, key, "statement", text, text_lang, "").ok()?;
+    let html = text_html(site.project, labels, key, "statement", text, text_lang, "")?;
     if text_lang == l.code {
-        return Some(format!("<div class=\"rule-statement\">{html}</div>"));
+        return Ok(format!("<div class=\"statement\">\n{html}</div>"));
     }
-    Some(format!(
-        "<div class=\"rule-statement\"{}><span class=\"no-lang\" role=\"img\" aria-label=\"{2}\" title=\"{2}\" lang=\"{3}\">{}</span>{html}</div>",
+    Ok(format!(
+        "<div class=\"statement\"{}>\n<span class=\"untranslated\" role=\"img\" aria-label=\"{2}\" title=\"{2}\" lang=\"{3}\">{}</span>{html}</div>",
         lang_attr(text_lang, l.code),
         icon(LANGUAGES, ""),
         l.w.untranslated,
@@ -980,27 +1022,34 @@ fn statement(
     ))
 }
 
-/// A row's marks in four places: its status, whether the defaults enable
-/// it, and its uses, each place empty without its mark.
-fn marks(w: &Words, node: &Node, (instructions, review): (bool, bool)) -> String {
-    let named = |class: &str, name: &str, inner: &str| {
-        format!(
-            "<span class=\"mark {class}\" role=\"img\" aria-label=\"{name}\" title=\"{name}\">{inner}</span>"
-        )
+/// Whether the defaults enable a node, as a mark: a dot, filled or a
+/// ring, named by its words, or an empty place.
+fn dot(w: &Words, node: &Node) -> String {
+    let (class, name) = match node.default {
+        Some(Switch::On) => ("dot on", w.on_by_default),
+        Some(Switch::Off) => ("dot", w.off_by_default),
+        None => return "<span class=\"mark\"></span>".to_owned(),
     };
+    format!(
+        "<span class=\"mark {class}\" role=\"img\" aria-label=\"{name}\" title=\"{name}\"></span>"
+    )
+}
+
+/// A row's marks in four places: whether the defaults enable it, its
+/// status, and its uses, each place empty without its mark.
+fn marks(w: &Words, node: &Node, (instructions, review): (bool, bool)) -> String {
     let mut out = String::from("<span class=\"marks\">");
+    out.push_str(&dot(w, node));
     out.push_str(&status_mark(node.status));
-    out.push_str(&match node.default {
-        Some(Switch::On) => named("dot on", w.on_by_default, ""),
-        Some(Switch::Off) => named("dot", w.off_by_default, ""),
-        None => "<span class=\"mark\"></span>".to_owned(),
-    });
     for (on, name, svg) in [
         (instructions, w.use_names[0], SCROLL_TEXT),
         (review, w.use_names[1], SCAN_EYE),
     ] {
         out.push_str(&if on {
-            named("use", name, &icon(svg, ""))
+            format!(
+                "<span class=\"mark use\" role=\"img\" aria-label=\"{name}\" title=\"{name}\">{}</span>",
+                icon(svg, "")
+            )
         } else {
             "<span class=\"mark\"></span>".to_owned()
         });
@@ -1052,9 +1101,12 @@ struct Value {
 /// works without the script.
 fn controls(project: &Project, l: &Lang) -> String {
     let w = &l.w;
+    // The search, which needs the script, comes first; the view and the
+    // menus, each under its name; then Clear filters, which needs the
+    // script too; under the row, how many rules are shown.
     let mut out = format!(
-        "<div class=\"controls\">\n<fieldset class=\"views\"><legend>{}</legend>",
-        w.view
+        "<div class=\"controls\">\n<label class=\"control find\" hidden><span class=\"control-label\">{}</span><input type=\"search\" name=\"q\" placeholder=\"{}\" autocomplete=\"off\"></label>\n<div class=\"control views\" role=\"radiogroup\" aria-labelledby=\"label-view\"><span class=\"control-label\" id=\"label-view\">{}</span><span class=\"segments\">",
+        w.find, w.find_placeholder, w.view
     );
     for (i, (view, name)) in VIEWS.iter().zip(w.views).enumerate() {
         let checked = if i == 0 { " checked" } else { "" };
@@ -1063,7 +1115,7 @@ fn controls(project: &Project, l: &Lang) -> String {
             "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
         );
     }
-    out.push_str("</fieldset>\n<div class=\"menus\">\n");
+    out.push_str("</span></div>\n");
     let plain = |key: &str, html: String| Value {
         key: key.to_owned(),
         html,
@@ -1137,9 +1189,18 @@ fn controls(project: &Project, l: &Lang) -> String {
     ]);
     let mut style = String::from("<style>");
     for ((field, label), values) in FIELDS.iter().zip(w.fields).zip(&fields) {
+        // What the menu chooses: All, or how many of its values.
+        let chosen = values.iter().filter(|v| v.checked).count();
+        let shown = if chosen == values.len() {
+            w.every.to_owned()
+        } else {
+            format!("{chosen}/{}", values.len())
+        };
         let _ = write!(
             out,
-            "<details class=\"menu\" data-field=\"{field}\"><summary>{label}<span class=\"count\" hidden></span>{}</summary>\n<div class=\"menu-panel\" role=\"group\" aria-label=\"{label}\">",
+            "<div class=\"control\"><span class=\"control-label\" id=\"label-{field}\">{label}</span><details class=\"menu\" data-field=\"{field}\" data-all=\"{}\" data-none=\"{}\"><summary aria-labelledby=\"label-{field} value-{field}\"><span class=\"value\" id=\"value-{field}\">{shown}</span>{}</summary>\n<div class=\"menu-panel\" role=\"group\" aria-label=\"{label}\">",
+            w.every,
+            w.nothing,
             icon(CHEVRON_DOWN, "")
         );
         if *field == "domain" {
@@ -1194,12 +1255,16 @@ fn controls(project: &Project, l: &Lang) -> String {
                 }
             }
         }
-        out.push_str("</span></div></details>\n");
+        out.push_str("</span></div></details></div>\n");
     }
     style.push_str(
         "body:has(#f-uses-0:not(:checked)):has(#f-uses-1:not(:checked)) .item[data-uses=\"instructions review\"]{display:none}",
     );
-    let _ = write!(out, "</div>\n</div>\n{style}</style>\n");
+    let _ = write!(
+        out,
+        "<button type=\"button\" class=\"clear\" hidden>{}</button>\n</div>\n<p class=\"shown\" data-words=\"{}\" hidden></p>\n{style}</style>\n",
+        w.clear, w.shown
+    );
     out
 }
 
@@ -1292,20 +1357,14 @@ fn enabled_tag(what: &str, on: bool) -> String {
     }
 }
 
-/// The legend above the tables, after Ruff's: a box of a line per kind
-/// of mark, its name in a column, then each mark as the rows draw it
-/// with its word.
+/// The legend above the tables, after Ruff's, open until the reader
+/// folds it: a box of a line per kind of mark, its name in a column,
+/// then each mark as the rows draw it with its word, the defaults first
+/// as in a row.
 fn legend(w: &Words) -> String {
-    let [statuses, defaults, uses, one_of, enabled, places] = w.legend;
+    let [defaults, statuses, uses, one_of, enabled, places] = w.legend;
     let item = |html: String| format!("<span class=\"legend-item\">{html}</span>");
     let lines = [
-        (
-            statuses,
-            STATUSES
-                .iter()
-                .map(|&s| item(format!("{}{}", status_icon(s), status(s))))
-                .collect::<String>(),
-        ),
         (
             defaults,
             item(format!(
@@ -1317,12 +1376,19 @@ fn legend(w: &Words) -> String {
             )),
         ),
         (
+            statuses,
+            STATUSES
+                .iter()
+                .map(|&s| item(format!("{}{}", status_icon(s), status(s))))
+                .collect::<String>(),
+        ),
+        (
             uses,
             [(SCROLL_TEXT, 0), (SCAN_EYE, 1)]
                 .into_iter()
                 .map(|(svg, i)| {
                     item(format!(
-                        "<span class=\"mark use\">{}</span><strong>{}</strong>{}",
+                        "<span class=\"mark use\">{}</span><span><strong>{}</strong>{}</span>",
                         icon(svg, ""),
                         w.use_names[i],
                         w.use_meanings[i]
@@ -1350,7 +1416,11 @@ fn legend(w: &Words) -> String {
         ),
         (places, w.slots.to_owned()),
     ];
-    let mut out = String::from("<dl class=\"legend\">\n");
+    let mut out = format!(
+        "<details class=\"legend\" open><summary>{}{}</summary>\n<dl>\n",
+        icon(CHEVRON_RIGHT, ""),
+        w.legend_name
+    );
     for (name, marks) in lines {
         let class = if name == places {
             " class=\"places\""
@@ -1359,7 +1429,7 @@ fn legend(w: &Words) -> String {
         };
         let _ = writeln!(out, "<div{class}><dt>{name}</dt><dd>{marks}</dd></div>");
     }
-    out.push_str("</dl>\n");
+    out.push_str("</dl>\n</details>\n");
     out
 }
 
