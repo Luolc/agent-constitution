@@ -176,8 +176,12 @@ from: `statute.toml`, `statute.lock`, `statute-checks.toml` and
 (the Files table of [statute-migrate](../../skills/statute-migrate/SKILL.md)).
 A generated file goes with whichever side changed it: with the
 constitution sources it is an amendment, alone with the tools it is a
-tools change. The script compares `HEAD` with `--base` (`git diff
-<base>...HEAD`, renames off) and lists both groups when they mix. CI runs
+tools change. This repo's generated files are the built constitution and
+`statute-checks.toml`, which the generic part also lists: generated
+counts first, since `statute compile --check` proves the file is a
+compile of the rule set and it changes with statute's version. The
+script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
+off) and lists both groups when they mix. CI runs
 it against the same base as check 7; a push to `main` that carries
 several changes at once is checked as one.
 
@@ -191,6 +195,9 @@ The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
 either option replaces this repo's own part and generated files.
+`statute-checks.toml` stays an instruction file there until the repo
+declares it with `--generated`, once its CI runs `statute compile
+--check`.
 
 The design translation check (`check-design-translation`) keeps the
 Chinese translation of the design, `docs/design/zh/<name>.md`, in step

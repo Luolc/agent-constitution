@@ -170,7 +170,6 @@ class Change(unittest.TestCase):
     for name in [
       "statute.toml",
       "statute.lock",
-      "statute-checks.toml",
       ".statute/rules/1.toml",
       ".statute/.gitignore",
       "AGENTS.legacy.md",
@@ -183,6 +182,25 @@ class Change(unittest.TestCase):
         self.git("reset", "-q", "--hard", "base")
         self.change(name, "docs/design/README.md")
         self.assertEqual(self.run_check()[0], 1)
+
+  def test_checks_file_goes_with_either_side(self):
+    for names, code in [
+      (["statute-checks.toml", "crates/statute/Cargo.toml"], 0),
+      (["statute-checks.toml", "statute.toml"], 0),
+      (["statute.toml", "crates/statute/Cargo.toml"], 1),
+    ]:
+      with self.subTest(names):
+        self.git("reset", "-q", "--hard", "base")
+        self.change(*names)
+        self.assertEqual(self.run_check()[0], code)
+
+  def test_checks_file_counts_as_instructions_unless_declared(self):
+    self.change("statute-checks.toml", "crates/statute/Cargo.toml")
+    own = ("--instructions", r"policy/.+")
+    self.assertEqual(self.run_check(*own)[0], 1)
+    self.assertEqual(
+      self.run_check(*own, "--generated", r"statute-checks\.toml")[0], 0
+    )
 
   def test_statute_paths_count_with_repo_declared_patterns(self):
     self.change("statute.toml", "docs/design/README.md")
