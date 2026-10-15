@@ -19,6 +19,7 @@ from constitution_compiler.model import (
   Layout,
   name_number,
   NODE_NAME,
+  PARAMS_FILE,
   RULES,
   SECTION_NAME,
   Sources,
@@ -232,8 +233,8 @@ class BaseComparison:
     self.root, self.ref, self.errors = root, ref, errors
     self.articles = {a.id: a for a in src.articles}
     self.sections = {s.id: s for s in src.sections}
-    self.nodes = {n.id: n for n in src.nodes}
-    self.slugs = {n.slug: n for n in src.nodes if n.slug is not None}
+    self.nodes = {n.id: n for n in src.rules}
+    self.slugs = {n.slug: n for n in src.rules if n.slug is not None}
 
   def compare(self, layout: Layout, listing: set[Path]) -> None:
     """Compare every rule, article and section file of the base.
@@ -244,7 +245,8 @@ class BaseComparison:
     """
     for path in sorted(listing):
       if path.parent == RULES and path.suffix == ".toml":
-        self.rule(path)
+        if path.name != PARAMS_FILE:
+          self.rule(path)
         continue
       if path.parent.parent != layout.articles or path.suffix != ".toml":
         continue

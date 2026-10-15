@@ -6,7 +6,7 @@ constitution.md and rule-format.md).
 """
 
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 import re
@@ -16,6 +16,9 @@ CONSTITUTION = Path("constitution")
 INDEX_FILE = "index.toml"
 ARTICLE_FILE = "article.toml"
 RULES = Path("rules")
+# The parameters of a source, beside its nodes in the rules directory: no
+# node of the rule tree.
+PARAMS_FILE = "params.toml"
 
 ID = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 # A citation: `{@id}`, `{@section.item}`, each optionally after a namespace.
@@ -57,7 +60,7 @@ REVISION_MAX = 2**64 - 1
 KINDS = ("rule", "one-of", "domain")
 NODE_STATUS = ("draft", "trial", "active", "superseded", "repealed")
 LEVELS = ("project", "user")
-CHECKS = ("builtin", "command", "review")
+CHECKS = ("builtin", "command", "none", "review")
 PARTS = ("statement", "reason", "verification")
 # The one value of `audience`: a provision on how this text itself is made
 # and amended, whose text the version for agents leaves out.
@@ -349,25 +352,50 @@ class Node:
   original: str
 
 
+@dataclass(frozen=True, slots=True)
+class RuleFile:
+  """What the constitution build reads of a node of the rule tree.
+
+  statute validates the rule tree (`statute validate rules`); the build
+  reads only what the constitution decides: the status against
+  index.toml's, and the provisions the node cites and names in its
+  `authority`, and for check 7 its number, slug and status. Each is
+  taken as written when it has the expected type, and left out
+  otherwise.
+
+  Attributes:
+    doc: its file.
+    id: its number, from the file name.
+    slug: its readable name, if it has one.
+    kind: rule, one-of or domain, or "node" when it names none.
+    status: its status, None when it has none.
+    authority: the provisions it refines.
+    texts: (field, text by language) for each of its texts.
+  """
+
+  doc: Doc
+  id: int
+  slug: str | None
+  kind: str
+  status: str | None
+  authority: list[str]
+  texts: list[tuple[str, Texts]]
+
+
 class Text(NamedTuple):
-  """One multilingual text of the sources.
+  """One text of the constitution, in every language of index.toml.
 
   Attributes:
     doc: the file holding it.
     field: its field, as in error messages.
     texts: the text, by language.
-    in_rule: whether a rule holds it.
     repealed: whether what holds it is repealed.
-    lang: the language of its original, None for one in every language of
-      index.toml.
   """
 
   doc: Doc
   field: str
   texts: Texts
-  in_rule: bool
   repealed: bool
-  lang: str | None = None
 
 
 @dataclass(frozen=True)
@@ -380,7 +408,10 @@ class Sources:
     languages: the languages of index.toml, in order.
     articles: the articles, in order.
     sections: the sections, in order.
-    nodes: the rules, one-ofs and domains, by number.
+    nodes: the rules, one-ofs and domains, by number, as the site reads
+      them; empty for the constitution build.
+    rules: the same files as the constitution build reads them; empty
+      for the site.
   """
 
   layout: Layout
@@ -389,6 +420,7 @@ class Sources:
   articles: list[Article]
   sections: list[Section]
   nodes: list[Node]
+  rules: list[RuleFile] = field(default_factory=list)
 
   @property
   def items(self) -> list[Item]:
@@ -444,33 +476,22 @@ class Sources:
     )
 
   def texts(self) -> Iterator[Text]:
-    """Yield every multilingual text.
+    """Yield every text of the constitution.
 
     Yields:
       Each text, with where it is.
     """
     index = self.index.data
-    yield Text(self.index, "title", index["title"], False, False)
-    yield Text(self.index, "front", index["front"], False, False)
+    yield Text(self.index, "title", index["title"], False)
+    yield Text(self.index, "front", index["front"], False)
     for a in self.articles:
-      yield Text(a.doc, "title", a.title, False, bool(a.repealed))
+      yield Text(a.doc, "title", a.title, bool(a.repealed))
       if a.intro is not None:
-        yield Text(a.doc, "intro", a.intro, False, bool(a.repealed))
+        yield Text(a.doc, "intro", a.intro, bool(a.repealed))
     for s in self.sections:
-      yield Text(s.doc, "content", s.content, False, s.status == "repealed")
+      yield Text(s.doc, "content", s.content, s.status == "repealed")
       for i in s.items:
-        yield Text(
-          s.doc, f"{i.id}.content", i.content, False, i.status == "repealed"
-        )
-    for n in self.nodes:
-      repealed = n.status == "repealed"
-      yield Text(n.doc, "title", n.title, True, repealed, n.lang)
-      if n.applicability:
-        yield Text(
-          n.doc, "applicability", n.applicability, True, repealed, n.lang
-        )
-      for part, texts in n.text.items():
-        yield Text(n.doc, f"text.{part}", texts, True, repealed, n.lang)
+        yield Text(s.doc, f"{i.id}.content", i.content, i.status == "repealed")
 
 
 def number_key(number: str) -> tuple[int, str]:

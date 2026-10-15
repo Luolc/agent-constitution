@@ -41,9 +41,11 @@ from constitution_compiler.model import (
   NODE_STATUS,
   NUMBER,
   NUMBER_SHAPE,
+  PARAMS_FILE,
   PARTS,
   REVISION_CLAUSE,
   REVISION_MAX,
+  RuleFile,
   RULES,
   Section,
   SECTION_NAME,
@@ -427,6 +429,51 @@ class _Reader:
       self.omitted(doc, item, f"`{where}`", start),
     )
 
+  def rule_file(self, path: Path) -> RuleFile | None:
+    """Read what the constitution build needs of one node of the rule tree.
+
+    Its status must agree with index.toml's, as a section's does.
+
+    Args:
+      path: the file, relative to root.
+
+    Returns:
+      The file, or None when it is not named by a number or not TOML.
+    """
+    if not NODE_ID.fullmatch(path.stem):
+      return None
+    doc = read_toml(self.root, path, self.errors)
+    if not doc:
+      return None
+    d = doc.data
+    kind = string_of(d, "kind") or "node"
+    status = string_of(d, "status")
+    if status is not None:
+      self.status_of(doc, d, f"a {kind}", allowed=NODE_STATUS)
+    authority = d.get("authority")
+    tables = [
+      ("title", d.get("title")),
+      ("applicability", d.get("applicability")),
+    ]
+    text = d.get("text")
+    if isinstance(text, dict):
+      tables += [(f"text.{p}", text.get(p)) for p in PARTS]
+    return RuleFile(
+      doc,
+      int(path.stem),
+      string_of(d, "slug"),
+      kind,
+      status,
+      [a for a in authority if isinstance(a, str)]
+      if isinstance(authority, list)
+      else [],
+      [
+        (name, {k: v.strip("\n") for k, v in t.items() if isinstance(v, str)})
+        for name, t in tables
+        if isinstance(t, dict)
+      ],
+    )
+
   def node(self, path: Path) -> None:
     """Read one node of the rule tree, `rules/<id>.toml`.
 
@@ -449,7 +496,9 @@ class _Reader:
       )
       return
     schema = NODE_SCHEMAS[kind]
-    if not check_keys(doc, d, schema, None, self.errors):
+    # statute validates the rule tree; keys it knows and the site does not
+    # show are passed over.
+    if not check_keys(doc, d, schema, None, self.errors, unknown=False):
       return
     if kind == "rule" and not check_keys(
       doc,
@@ -645,7 +694,7 @@ class _Reader:
     A domain's or a one-of's is the number of a node of this source; a
     rule's may also name a domain of another source, of which only the
     form is checked (docs/design/rule-sources.md, Subdomains). What the
-    number names is check 3, `check_tree`.
+    number names is statute's to check.
 
     Args:
       doc: the node's file.
@@ -728,7 +777,7 @@ class _Reader:
   def superseded_by(self, doc: Doc) -> None:
     """Check a rule's `superseded-by`: one rule ID or a list of them.
 
-    That each names another rule is check 3, `check_tree`.
+    That each names another rule is statute's to check.
 
     Args:
       doc: the rule's file.
@@ -782,6 +831,20 @@ class _Reader:
           seen.append(v)
           continue
         self.errors.add(path, doc.line(f"{key} ="), 1, f"`{key}` {problem}")
+
+
+def string_of(d: dict[str, Any], key: str) -> str | None:
+  """Return a value of a parsed file when it is a string.
+
+  Args:
+    d: the file, as parsed.
+    key: the key.
+
+  Returns:
+    The value, or None when it is missing or not a string.
+  """
+  value = d.get(key)
+  return value if isinstance(value, str) else None
 
 
 def is_number(value: object) -> bool:
@@ -854,12 +917,39 @@ def by_number(path: Path) -> tuple[int, str]:
   return (0, path.stem)
 
 
-def load(root: Path, errors: Errors) -> Sources | None:
+def node_files(path: Path) -> list[Path]:
+  """Return the files of a source's rule tree, by number.
+
+  They are the TOML files of its rules directory but params.toml.
+
+  Args:
+    path: the source's directory, holding rules/.
+
+  Returns:
+    The files, relative to path.
+  """
+  return sorted(
+    (
+      p.relative_to(path)
+      for p in (path / RULES).glob("*.toml")
+      if p.name != PARAMS_FILE
+    ),
+    key=by_number,
+  )
+
+
+def load(root: Path, errors: Errors, *, nodes: bool = False) -> Sources | None:
   """Check 1: read every source and check its format.
+
+  The constitution is read whole. Of the rule tree, which statute
+  validates, the constitution build reads only what `RuleFile` holds; the
+  site reads its nodes.
 
   Args:
     root: the checkout.
     errors: where errors go.
+    nodes: whether to read the nodes of the rule tree, as the site does,
+      in place of what the constitution build reads of them.
 
   Returns:
     The sources, or None when any error was found.
@@ -884,11 +974,12 @@ def load(root: Path, errors: Errors) -> Sources | None:
     )
   for directory in reader.entries(layout.articles):
     reader.article_directory(directory)
-  for path in sorted(
-    (p.relative_to(root) for p in (root / RULES).glob("*.toml")),
-    key=by_number,
-  ):
-    reader.node(path)
+  rules = []
+  for path in node_files(root):
+    if nodes:
+      reader.node(path)
+    elif found := reader.rule_file(path):
+      rules.append(found)
   if errors:
     return None
   return Sources(
@@ -898,4 +989,5 @@ def load(root: Path, errors: Errors) -> Sources | None:
     reader.articles,
     reader.sections,
     reader.nodes,
+    rules,
   )

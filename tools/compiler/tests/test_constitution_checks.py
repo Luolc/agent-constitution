@@ -442,13 +442,6 @@ class CheckTest(Tree):
       "cites rule:10; the constitution cites only itself, without a namespace",
     )
 
-  def test_5_rule_cites_without_namespace(self):
-    self.edit("rules/10.toml", "{@rule:3}", "{@3}", 2)
-    self.rehash("rules/10.toml")
-    self.assertFails(
-      5, "rules/10.toml:19", "cites 3 without `constitution:` or `rule:`"
-    )
-
   def test_1_no_edition_directory(self):
     (self.root / "constitution/2026-10/index.toml").unlink()
     self.assertFails(
