@@ -263,6 +263,25 @@ class SiteTest(unittest.TestCase):
       "修订号 0.6 (草案) 回到完整版 第一条 不言。", pages["zh/agent/index.html"]
     )
 
+  def test_edition_page(self):
+    """The edition's page has the home page's text, out of the index."""
+    raw = self.build(raw=True)
+    pages = {p: visible(t) for p, t in raw.items()}
+    robots = '<meta name="robots" content="noindex">'
+    for home, edition in (
+      ("index.html", "editions/2026-10/index.html"),
+      ("zh/index.html", "zh/editions/2026-10/index.html"),
+    ):
+      with self.subTest(edition):
+        self.assertEqual(pages[edition], pages[home])
+        self.assertIn(robots, raw[edition])
+        self.assertNotIn(robots, raw[home])
+    self.assertIn(
+      '<a href="../../rules/3/"><span class="cites-label">R3</span>',
+      raw["editions/2026-10/index.html"],
+    )
+    self.assertNotIn("editions/index.html", raw)
+
   def test_editions_in_sidebar(self):
     """The constitution lists its edition, marked while a draft."""
     for status, en, zh in (
@@ -737,7 +756,7 @@ class SiteTest(unittest.TestCase):
       pages["rules/3/index.html"],
     )
     self.assertIn("全局私有 · demo 已启用", pages["zh/rules/demo-2/index.html"])
-    self.assertIn('href="rules/demo-2/"', raw["index.html"])
+    self.assertIn('href="./rules/demo-2/"', raw["index.html"])
 
   def test_rule_page_of_an_override(self):
     """An overriding rule names the rule it overrides in place of a parent."""
@@ -880,7 +899,7 @@ class SiteTest(unittest.TestCase):
       r'<span class="cites-list" id="cites-one-a" role="list">',
     )
     self.assertIn(
-      '<a href="rules/3/"><span class="cites-label">R3</span>Rule 3</a>', page
+      '<a href="./rules/3/"><span class="cites-label">R3</span>Rule 3</a>', page
     )
     self.assertEqual(page.count('aria-controls="cites-within-'), 1)
     self.assertIn('id="cites-within-one"', page)

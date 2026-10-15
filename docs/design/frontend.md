@@ -410,7 +410,12 @@ turned off (disabled), where it has these.
   can be linked; there is no Apply button. Escape, a click outside or
   the focus leaving it closes it. A site without scripts, as the local
   site is, shows the same groups in the popover, applied with a primary
-  button.
+  button. The local site differs today: its check boxes apply at once,
+  through the style sheet, with no primary button; its groups are the
+  kind of source, the use, and the rules not enabled and those
+  superseded or repealed, shown besides; and it has no groups for the
+  status, the defaults and the domain, no All and None, and no badge
+  ([Status](#status)).
 - **The tree of rules.** The level of a node shows by its size, weight
   and a bar ([Type](#type)), not by indentation: a domain of the first
   level is a heading with `space-8` above it; one of the second level
@@ -579,7 +584,11 @@ turned off (disabled), where it has these.
   (the legend, the filter and the page size above the list, whose
   markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
-  `web/assets/styles/index.yaml`.
+  `web/assets/styles/index.yaml`. The local site's own is
+  `crates/statute/src/site.css`, which `statute` writes into each page
+  after `tokens.css`; it draws the check boxes as `controls.css` does,
+  and holds nothing of the public site's other sheets, which style the
+  theme's markup.
 - **Icons.** The SVG files are in `crates/statute/assets/icons/`, one
   directory per source, `lucide/` and `octicons/`, unchanged from the
   release, with the license in each and the versions in its
@@ -588,7 +597,9 @@ turned off (disabled), where it has these.
   one line with the class `icon`, hidden from screen readers; the class
   sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
   component makes it `icon-md`. A chevron that turns is `chevron-right`
-  turned a quarter, which draws `chevron-down`.
+  turned a quarter, which draws `chevron-down`. The local site inlines
+  the files it needs in the same way, built into `statute` with
+  `include_str!`.
 - **Scripts.** A script that holds more than a few lines of logic, the
   list of the rules and its filter and the sidebar and its drawers
   today, is written in TypeScript in
@@ -629,8 +640,12 @@ and the legend, the filter and the page in the address, pages readable
 without scripts, tabular figures, and `aria-expanded` with
 `aria-controls` on the info button, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's
-buttons. Not
-built yet, and what each replaces:
+buttons. Built today on the local site: every token, and every value
+of its style sheet named by one; the tags, the legend, the tree of
+domains and the one-of of [Components](#components); the filter's
+button and popover; the check boxes; hover only on fine pointers, the
+sizes of targets, the focus ring, and the motion of the filter's
+popover. Not built yet, and what each replaces:
 
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
@@ -644,10 +659,13 @@ built yet, and what each replaces:
 - Until the three above are built, `rules-list.css` writes some sizes
   and spaces as values, and the list's pages are
   linked by the characters ‹ and ›.
-- The local site's filter: the popover with its groups, applied with a
-  primary button, replaces its panel of check boxes.
-- The local site's style sheet writes its own values; it includes
-  neither the tokens nor the icons yet.
+- On the local site, the filter's groups for the status, the defaults
+  and the domain, with All and None in each, the badge on its button,
+  and its closing on Escape or a click outside; and the primary button
+  that applies it, which the style sheet's check boxes, applying at
+  once, stand in for. Its popover closes at once, by a click on the
+  button. Its pages load no font and set the text in the local serif
+  fonts.
 
 ## Open questions
 

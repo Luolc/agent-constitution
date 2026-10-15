@@ -336,8 +336,10 @@ each git source at the commit the lock file records
 ([Git sources](global-configuration.md#git-sources)); it writes no lock
 file. It prints the path of `index.html`.
 
-- **Files.** Plain HTML with one inline style sheet: no script, no Hugo,
-  no dependency beyond those statute has. Each run builds the site
+- **Files.** Plain HTML with one inline style sheet, which follows
+  [Frontend](frontend.md) with the public site's tokens, and its icons
+  inlined: no script, no Hugo, no dependency beyond those statute
+  has. Each run builds the site
   anew: it removes the old `.statute/site/` first, but only when that
   directory holds statute's `.gitignore` (below), and otherwise writes
   nothing and fails. Nothing is written outside `.statute/site/` but

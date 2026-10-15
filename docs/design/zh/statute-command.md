@@ -1,4 +1,4 @@
-<!-- en-sha256: 6f0d18c7e2c847a3f498c159be6d8ac707957e51826df7bedffa54b2ba442512 -->
+<!-- en-sha256: 59f38c74dce57e57cce5dcdd0f59d56d25b5e71e9113fa058d3964583d66fab7 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -67,7 +67,7 @@
 
 `statute site` 把规定清单能用到的规定生成一个网站，写到 `statute.toml` 旁边的 `.statute/site/`，在浏览器里直接从磁盘打开；它从不发布，也不是[公开网站](static-site.md)。它读 `statute.toml`，有私有规定清单时也读，两层都在内存里解析，每个 git 规定源读锁文件记录的那个提交 ([git 规定源](global-configuration.md#git-sources))；它不写锁文件。最后打印 `index.html` 的路径。
 
-- **文件。** 纯 HTML，加一份内嵌的样式表：没有脚本，不用 Hugo，不引入 statute 现有依赖之外的依赖。每次运行都重新生成：先删掉旧的 `.statute/site/`，但只在这个目录里有 statute 写的 `.gitignore` (见下) 时才删，否则什么都不写并报错。除了 `.statute/.gitignore`，`.statute/site/` 之外什么都不写。
+- **文件。** 纯 HTML，加一份内嵌的样式表，照[前端](frontend.md) 写，用的是公开网站那套 token，图标也内联在页面里：没有脚本，不用 Hugo，不引入 statute 现有依赖之外的依赖。每次运行都重新生成：先删掉旧的 `.statute/site/`，但只在这个目录里有 statute 写的 `.gitignore` (见下) 时才删，否则什么都不写并报错。除了 `.statute/.gitignore`，`.statute/site/` 之外什么都不写。
 - **让 git 忽略。** statute 写 `.statute/site/.gitignore`，内容是 `*`，这样 git 忽略那里的每个文件，包括它自己，它也标明这个目录归 statute。statute 还写 `.statute/.gitignore`，其中列出 `/site/`，每个往 `.statute/` 写生成文件的命令都这样做 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。在 git 仓库里，它先用 `git ls-files` 问 `.statute/site/`，git 跟踪着那里的某个文件时，什么都不写并报错，写明是哪个文件和解决办法 `git rm -r --cached .statute/site`。git 回答不了时 (起不来或出错)，也什么都不写，报错并带上 git 的错误信息。不在 git 仓库里时没有东西会被提交，也就不用问。
 - **首页**按四类规定源 ([四类规定源](rule-sources.md#four-kinds-of-source)) 分节：全局公开、全局私有、本仓公开、本仓私有。每节列出它的规定源，每个规定源列出它的领域树，包括每个节点，不论启用与否：节点的引用、标题和状态，以及这份规定清单是启用它、覆盖它还是没选它；one-of 是一个框，装着它的选项，默认的那个加了标记。按规定源类别筛选、隐藏这份规定清单没有启用的规定，以及显示默认隐藏的已被取代和已废止的节点，都只靠复选框和样式表实现。
 - **规定源属于哪一类**看它的两个属性：仓库自己的规定 (`L`) 和 `scope = "local"` 的规定源是本仓的，其余都是全局的，包括全局配置里的；公开与否按规定源自己的声明，`L` 按规定清单的声明。在 `.` 的规定源，比如本仓的 `R = { path = "." }`，是第一方规定源，所以是全局公开的。`local-rules` 指向它的规定目录时，它的规定同时也是仓库自己的规定：它只在全局公开下列一次，本仓公开那一节写明这一点并链接过去；否则仓库自己的规定列在它所属类别的本仓那一节。尚未实现：不论 `local-rules` 指向哪里，网站仍把在 `.` 的规定源当作仓库自己的规定。每个节点在首页和它自己的页面上都标出所属规定源的类别：用页面的语言写出类别名，底色是四种颜色之一。节点自己的页面上，标记还写出规定源的名字，例如 `全局私有 · me`。
