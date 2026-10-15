@@ -178,39 +178,50 @@ screenshots (Screenshots, below). The workflow
   domain above them, a subdomain under its domain's heading,
   where the group changes and again at the top of each page; with more
   than one source, each source heads its rules, as its quadrant and
-  name, a level above its domains. Above the list, a filter folds open a
-  checkbox for each status, one that keeps only the rules the defaults
-  enable, one for each value of `uses` and one for each domain, and for
-  each quadrant when there is more than one source, applied with its
-  button; a rule is shown when its status, its nearest domain and its
-  quadrant are checked, its `uses` (`["instructions"]` when its file
-  leaves it out) has a value checked, and, with that box, the defaults
-  enable it (a node whose answer depends on another source has no tag
-  and is left out by that box); and checking or unchecking a domain does the same to the domains under
-  it. A node whose `parent` is in another source, and a
+  name, a level above its domains. Above the list, a legend gives each
+  mark a rule carries there and what it means: the statuses, on and off
+  by default and the default option, and, when the site has them,
+  enabled or not and the quadrant. Below it, the filter, a button that
+  opens a panel of check boxes ([Frontend](frontend.md#components)), a
+  group for each field: each status, on and off by default, each value
+  of `uses` and each domain, and each quadrant when there is more than
+  one source, each group with All and None. A rule is shown when, in
+  every field, one of its values is checked: its status, whether the
+  defaults enable it (a node whose answer depends on another source,
+  which has no tag, counts as off), its `uses`
+  (`["instructions"]` when its file leaves it out), its nearest domain
+  and its quadrant; checking or unchecking a domain does the same to the
+  domains under it. A change applies at once. A node whose `parent` is
+  in another source, and a
   rule with `overrides`, has no domain on the site: it is at the top
   of the tree, with no group above it. When its parent is a domain of a
   source the site reads, the filter goes by that domain. Otherwise the
-  filter does not show it yet,
-  since it shows only the rules of a checked domain; without scripts it
-  appears under the heading before it. This repo has no such node yet;
-  the pull request that first adds one fixes the list, and the
+  filter shows it only while every domain is checked; without scripts
+  it appears under the heading before it. This repo has no such node
+  yet; the pull request that first adds one fixes the list, and the
   first-party source overrides nothing. By default the filter checks
-  the statuses of
-  `params.rulesStatuses` in `web/hugo.toml`, both values of `uses` and
-  every domain, and leaves the box of the defaults unchecked; superseded
-  and repealed rules are in the list but not checked, and so are draft
-  ones. Beside the filter, a menu sets the page size: 100 by default,
-  `params.rulesPerPage`, or 25, 50 or all; the rules are filtered first
-  and then split into pages. Hugo builds the pages of the default
-  filter; each holds every rule, each rule with all its group headings,
-  those not shown hidden.
-  `web/assets/rules-list.js`, inlined in `<head>`, takes the filter, the
-  size and the page from the address, where the form puts them
-  (`?filter=1&status=draft&uses=review&default=on&domain=14&per=50&page=2`),
-  shows that page's
-  rules and headings, and makes the links to the pages and the table of contents again; without
-  scripts the form is hidden and Hugo's pages stay. The table of
+  the statuses of `params.rulesStatuses` in `web/hugo.toml` and every
+  other value; superseded, repealed and draft rules are in the list but
+  not checked. Beside the filter, a menu sets the page size: 100 by
+  default, `params.rulesPerPage`, or 25, 50 or all; the rules are
+  filtered first and then split into pages. Hugo builds the pages of
+  the default filter; each holds every rule, each rule with all its
+  group headings, those not shown hidden.
+  `web/assets/ts/rules-list.ts`, bundled by Hugo
+  ([Frontend](frontend.md#in-the-code)) and inlined in `<head>`, takes the
+  filter, the size and the page from the address, shows that page's
+  rules and headings, makes the links to the pages and the table of
+  contents again, and writes each change back into the address. The
+  address holds only the fields whose check boxes differ from the
+  default, each as the values checked, keys of `[a-z0-9-]` joined by
+  commas: `?status=draft,trial&uses=review&domain=14,15&per=50&page=2`,
+  with `status=` for no status. An address of the earlier form, with
+  `filter=1` and one parameter per box checked, a field without one
+  having none checked
+  (`?filter=1&status=draft&uses=review&default=on&domain=14`), is read
+  as the same filter and rewritten in the new form. Without scripts the
+  controls are hidden and Hugo's pages stay.
+  The table of
   contents at the right lists the headings on the page, each indented by
   its level. A
   rule's page (`web/layouts/rules/page.html`) gives its label and title,

@@ -1,0 +1,21 @@
+{{- /* The legend above the list of the rules: each mark a rule carries
+  there, drawn as the list draws it, and what it means. The statuses;
+  whether the defaults enable a node and a one-of's default option; when
+  the site has a rule set, whether it enables a rule; with more than one
+  source, the quadrant. Takes (dict "enabled" whether the site has a rule
+  set "many" whether it has more than one source). */ -}}
+<dl class="rules-legend" aria-label="{{ i18n "rules-legend" }}">
+{{- range slice "active" "trial" "draft" "superseded" "repealed" }}
+<div><dt><span class="rule-status">{{ i18n (printf "status-%s" .) }}</span></dt><dd>{{ i18n (printf "rules-legend-status-%s" .) }}</dd></div>
+{{- end }}
+<div><dt>{{ partial "rules/default.html" (dict "onByDefault" true) }}</dt><dd>{{ i18n "rules-legend-default-on" }}</dd></div>
+<div><dt>{{ partial "rules/default.html" (dict "onByDefault" false) }}</dt><dd>{{ i18n "rules-legend-default-off" }}</dd></div>
+<div><dt>{{ partial "rules/default.html" (dict "optionDefault" true) }}</dt><dd>{{ i18n "rules-legend-default-option" }}</dd></div>
+{{- if .enabled }}
+<div><dt>{{ partial "rules/enabled.html" (dict "enabled" true) }}</dt><dd>{{ i18n "rules-legend-enabled" }}</dd></div>
+<div><dt>{{ partial "rules/enabled.html" (dict "enabled" false) }}</dt><dd>{{ i18n "rules-legend-not-enabled" }}</dd></div>
+{{- end }}
+{{- if .many }}
+<div><dt>{{ partial "rules/quadrant.html" (dict "quadrant" "global-public" "source" "") }}</dt><dd>{{ i18n "rules-legend-quadrant" }}</dd></div>
+{{- end }}
+</dl>

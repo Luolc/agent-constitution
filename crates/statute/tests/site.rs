@@ -575,6 +575,17 @@ fn site_draws_the_tree_by_level() {
     assert!(index.contains(tokens));
     assert!(read(&dir, ".statute/site/R/4.html").contains(tokens));
     assert!(index.contains("--icon-check: url(\"data:image/svg+xml,%3Csvg "));
+    // The legend draws each mark as the tree does and says what it means.
+    let legend = &index[index
+        .find("<dl class=\"legend\" aria-label=\"Legend\">")
+        .expect(&index)..];
+    let legend = &legend[..legend.find("</dl>").unwrap()];
+    assert_eq!(legend.matches("<div><dt>").count(), 11, "{legend}");
+    assert!(legend.contains("<dt><span class=\"switch on\" role=\"img\" aria-label=\"on by default\" title=\"on by default\"></span></dt><dd>A new rule set gets it without listing it.</dd>"), "{legend}");
+    assert!(
+        legend.contains("<dt><span class=\"status trial\">trial</span></dt>"),
+        "{legend}"
+    );
     // The filter is a button with Lucide's funnel.
     let funnel = include_str!("../assets/icons/lucide/funnel.svg");
     let path = funnel.lines().find(|l| l.contains("<path")).unwrap().trim();

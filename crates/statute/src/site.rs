@@ -79,9 +79,13 @@ impl Quadrant {
 struct Words {
     title: &'static str,
     quadrants: [&'static str; 4],
-    /// The filter's button, and the words that join its rows.
+    /// The filter's button.
     filter: &'static str,
-    joins: [&'static str; 2],
+    /// The legend's name, and what each mark means: the five statuses,
+    /// on and off by default, the default option, enabled and not
+    /// enabled, and the quadrant.
+    legend: &'static str,
+    meanings: [&'static str; 11],
     /// The fields of the filter: the kind of source, `uses`, and the
     /// nodes it shows besides.
     fields: [&'static str; 3],
@@ -130,7 +134,20 @@ fn words(lang: &str) -> Words {
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
             filter: "筛选",
-            joins: ["当", "且"],
+            legend: "图例",
+            meanings: [
+                "已经生效。",
+                "在实际工作中试用，还没有定型。",
+                "还不用于实际工作。",
+                "由它页面上列出的规定取代。",
+                "已撤销，没有替代。",
+                "新的规定清单不必列出就有它。",
+                "规定清单要列出它才有。",
+                "规定清单不另选时得到的 one-of 选项。",
+                "本仓的规定清单有它。",
+                "本仓的规定清单没有它。",
+                "规定所在规定源的象限。",
+            ],
             fields: ["规定源的类别", "用在", "也显示"],
             show_off: "未启用的规定",
             show_old: "已被取代与已废止的",
@@ -170,7 +187,20 @@ fn words(lang: &str) -> Words {
                 "Local private",
             ],
             filter: "Filter",
-            joins: ["Where", "and"],
+            legend: "Legend",
+            meanings: [
+                "In force.",
+                "Being tried on real work before it settles.",
+                "Not meant for real work yet.",
+                "Replaced by the rules its page names.",
+                "Withdrawn, with nothing in its place.",
+                "A new rule set gets it without listing it.",
+                "A rule set gets it only by listing it.",
+                "The option of a one-of that a rule set gets unless it chooses another.",
+                "This repository's rule set has it.",
+                "This repository's rule set does not have it.",
+                "The quadrant of the rule's source.",
+            ],
             fields: ["Kind of source", "Used in", "Also show"],
             show_off: "rules not enabled",
             show_old: "superseded and repealed",
@@ -428,19 +458,14 @@ fn index(project: &Project, w: &Words) -> String {
         icon(FUNNEL, ""),
         w.filter
     );
-    for (i, (field, values)) in w.fields.iter().zip(&fields).enumerate() {
+    for (field, values) in w.fields.iter().zip(&fields) {
         let _ = writeln!(
             out,
-            "<div class=\"cond\" role=\"group\" aria-label=\"{field}\"><span class=\"conn\">{}</span><span class=\"field\">{field}</span><span class=\"values\">{values}</span></div>",
-            w.joins[usize::from(i > 0)]
+            "<fieldset><legend>{field}</legend><span class=\"values\">{values}</span></fieldset>"
         );
     }
     out.push_str("</div></details>\n");
-    let _ = writeln!(
-        out,
-        "<p class=\"legend\"><span class=\"switch on\">{}</span><span class=\"switch off\">{}</span></p>",
-        w.on_by_default, w.off_by_default
-    );
+    out.push_str(&legend(w));
     // The filters by quadrant, which the style sheet cannot list.
     out.push_str("<style>");
     for q in QUADRANTS {
@@ -652,26 +677,9 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str, dense: b
     if node.kind != Kind::Rule && !dense {
         let _ = write!(out, "<span class=\"kind\">{}</span>", kind(w, node.kind));
     }
-    let status = status(node.status);
-    let _ = write!(out, "<span class=\"status {status}\">{status}</span>");
-    match switch(project, w, key, node) {
-        Some(Mark::Switch(class, word)) if dense => {
-            let _ = write!(
-                out,
-                "<span class=\"switch {class}\" role=\"img\" aria-label=\"{word}\" title=\"{word}\"></span>"
-            );
-        }
-        Some(Mark::Switch(class, word)) => {
-            let _ = write!(out, "<span class=\"switch {class}\">{word}</span>");
-        }
-        Some(Mark::DefaultOption(word)) => {
-            let _ = write!(
-                out,
-                "<span class=\"default-option\">{}{word}</span>",
-                icon(CHECK, "")
-            );
-        }
-        None => {}
+    out.push_str(&status_tag(node.status));
+    if let Some(mark) = switch(project, w, key, node) {
+        out.push_str(&mark.tag(dense));
     }
     if node.kind == Kind::Rule {
         let res = &project.resolution;
@@ -680,16 +688,57 @@ fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str, dense: b
             None if res.enabled.contains_key(key) => w.enabled.to_owned(),
             None => w.not_enabled.to_owned(),
         };
-        if res.in_force(key) {
-            let _ = write!(
-                out,
-                "<span class=\"enabled on\">{}{what}</span>",
-                icon(CHECK, "")
-            );
-        } else {
-            let _ = write!(out, "<span class=\"enabled\">{what}</span>");
-        }
+        out.push_str(&enabled_tag(&what, res.in_force(key)));
     }
+    out
+}
+
+fn status_tag(s: Status) -> String {
+    let s = status(s);
+    format!("<span class=\"status {s}\">{s}</span>")
+}
+
+/// Whether a rule is enabled: `check` and the words when it is in force.
+fn enabled_tag(what: &str, on: bool) -> String {
+    if on {
+        format!(
+            "<span class=\"enabled on\">{}{what}</span>",
+            icon(CHECK, "")
+        )
+    } else {
+        format!("<span class=\"enabled\">{what}</span>")
+    }
+}
+
+/// The legend above the tree: each mark as the tree draws it, and what
+/// it means.
+fn legend(w: &Words) -> String {
+    let marks = [
+        Status::Active,
+        Status::Trial,
+        Status::Draft,
+        Status::Superseded,
+        Status::Repealed,
+    ]
+    .into_iter()
+    .map(status_tag)
+    .chain([
+        Mark::Switch("on", w.on_by_default).tag(true),
+        Mark::Switch("off", w.off_by_default).tag(true),
+        Mark::DefaultOption(w.default_option).tag(true),
+        enabled_tag(w.enabled, true),
+        enabled_tag(w.not_enabled, false),
+        format!(
+            "<span class=\"q {}\">{}</span>",
+            Quadrant::GlobalPublic.class(),
+            Quadrant::GlobalPublic.name(w)
+        ),
+    ]);
+    let mut out = format!("<dl class=\"legend\" aria-label=\"{}\">\n", w.legend);
+    for (mark, meaning) in marks.zip(w.meanings) {
+        let _ = writeln!(out, "<div><dt>{mark}</dt><dd>{meaning}</dd></div>");
+    }
+    out.push_str("</dl>\n");
     out
 }
 
@@ -699,6 +748,23 @@ enum Mark {
     Switch(&'static str, &'static str),
     /// The default option of its one-of.
     DefaultOption(&'static str),
+}
+
+impl Mark {
+    /// The mark as a tag; when `dense`, as in the tree, a default switch
+    /// is its dot alone, the words its name.
+    fn tag(&self, dense: bool) -> String {
+        match *self {
+            Mark::Switch(class, word) if dense => format!(
+                "<span class=\"switch {class}\" role=\"img\" aria-label=\"{word}\" title=\"{word}\"></span>"
+            ),
+            Mark::Switch(class, word) => format!("<span class=\"switch {class}\">{word}</span>"),
+            Mark::DefaultOption(word) => format!(
+                "<span class=\"default-option\">{}{word}</span>",
+                icon(CHECK, "")
+            ),
+        }
+    }
 }
 
 /// Whether a domain or a rule is on by default, by its own `default`

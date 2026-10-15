@@ -26,8 +26,8 @@ tokens, the icons and the scripts are written in the code is in
 - [Interaction and accessibility](#interaction-and-accessibility):
   target sizes, hover on devices that have it, names and states for
   assistive technology, pages that work without scripts.
-- [Components](#components): tags, the filter, the tree of rules, the
-  one-of, popovers, the sidebar and buttons.
+- [Components](#components): tags, the legend, the filter, the tree of
+  rules, the one-of, popovers, the sidebar and buttons.
 - [Not done](#not-done): what the pages never do.
 - [Screenshots and review](#screenshots-and-review): what a pull request
   that changes the pages attaches, what CI runs, what the reviewer
@@ -86,7 +86,7 @@ below.
 | `accent-hover` | `#6b381e` | `#d9ae8f` | A primary button under the pointer. |
 | `text-on-accent` | `#dde6d5` | `#1e2520` | Text on an `accent` background. |
 | `border-subtle` | `#b5c4aa` | `#38453a` | Hairlines: the rules between parts, a link's underline, a tag's outline. |
-| `border-strong` | `#9ca695` | `#5d655d` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
+| `border-strong` | `#6d7968` | `#717970` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
 | `status-active` | `#245a20` | `#9fd39a` | The text of an Active tag. |
 | `status-active-bg` | `#c3d2bc` | `#303d31` | Its background. |
 | `status-trial` | `#66460a` | `#e2c07a` | The text of a Trial tag. |
@@ -103,7 +103,8 @@ chosen and how they stay in tune if the palette changes: `bg-hover` is
 12% `text` into `bg-page`, `bg-panel-hover` 12% `text` into `bg-panel`,
 `bg-active` 18% `text` into `bg-panel`, `bg-selected` 14% `accent` into
 `bg-panel`, `accent-hover` 20% `text` into `accent`, `border-strong`
-35% `text` into `bg-page`, each status background 14% of its text color
+60% `text` into `bg-page` in the light theme and 46% in the dark one
+(the least that keeps the contrast below), each status background 14% of its text color
 into `bg-page`, and each quadrant 30%
 of its hue (blue `#3b82f6`, amber `#f59e0b`, green `#22c55e`, purple
 `#a855f7`) into `bg-page`.
@@ -124,6 +125,10 @@ The contrast the values must keep, in both themes:
   the change shows in light mode too (`bg-hover` on the page 1.24 light
   and 1.36 dark; `bg-panel-hover` on a panel 1.24 and 1.36).
 - `accent` on `bg-selected`: at least 4.5 (4.80 light, 4.92 dark).
+- `border-strong`, the edge of a control (an unchecked box, an input, a
+  menu), on `bg-page` and on `bg-panel`: at least 3, the floor of WCAG
+  for the boundary of a control (3.57 and 3.22 light, 3.48 and 3.15
+  dark).
 - A state never lowers the contrast of the text it holds below 4.5.
   `text-muted` keeps it only on `bg-hover` (4.69 light, 4.77 dark); on
   `bg-panel-hover`, `bg-active` and `bg-selected` it falls to between
@@ -206,6 +211,10 @@ heading) stays in em, a multiple of the text size.
 
 | Token | Value | Use |
 | --- | --- | --- |
+| `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
+
+| Token | Value | Use |
+| --- | --- | --- |
 | `radius-sm` | `0.25rem` | Tags, inputs, buttons, a row's hover background. |
 | `radius-md` | `0.5rem` | Popovers, panels, the one-of's box. |
 | `radius-full` | `9999px` | Round things: a count badge, a status pill. |
@@ -269,8 +278,7 @@ What replaces today's icons:
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
 | A text button | The filter | `funnel` |
 | The characters ‹ and › | The list's previous and next page | `chevron-left`, `chevron-right` |
-| None | Closing a popover, removing a condition | `x` |
-| None | Adding a condition | `plus` |
+| None | Closing a popover | `x` |
 | None | A rule under another rule | `corner-down-right` |
 | None | An option of a one-of, the default one | `circle`, `circle-dot` |
 | None | Enabled by the rule set | `check` |
@@ -336,7 +344,7 @@ target still fades from `bg-target`.
   scripts fail or never run still shows all its text, with the parts
   that scripts fold open left open.
 - **Empty and loading.** A list that the filter leaves empty says so and
-  offers the next step, Clear filter. Should a page ever load something
+  offers the next step, Reset filter. Should a page ever load something
   while the reader waits, its indicator appears only after about 150 to
   300 ms and then stays at least 300 to 500 ms, so it does not flicker;
   the sites load nothing that way today.
@@ -372,25 +380,39 @@ turned off (disabled), where it has these.
   - In the list the tags stand in a column at the right edge of the
     row, aligned from one row to the next, not right after the title.
   - Tags do not react to the pointer; the row does.
-- **The filter**, in the manner of Linear and Notion. Shut, it is one
-  button: `funnel` (`icon-md`), the word Filter, and, when any condition
-  is set, their number in a badge (`radius-full`, `accent` on
-  `bg-selected`). Open, it is a popover under the button, about `28rem`
-  wide (the column's width on a narrow screen), holding one row per
-  condition: the field (status, defaults, use, domain, and the quadrant
-  when there is more than one source, enabled when the site has a rule
-  set), the operator (is, is not), the value (one or more values of the
-  field, chosen from a list), and `x` to remove the row. The first row
-  starts with Where; each later row starts with the connective, and or
-  or, a menu on the second row that sets it for the whole filter (one
-  connective for all rows, as Notion's simple filter). Under the rows,
-  Add condition (`plus`), and Clear, which removes them all. A change
+- **The legend**, above the list of the rules, as Ruff's list of rules
+  has one: each mark a rule carries in the list, drawn as the list
+  draws it, and a line on what it means: each status, on and off by
+  default, the default option of a one-of, and, when the site has them,
+  enabled and not enabled and a quadrant. A term and its meaning on one
+  line (a description list), `text-sm`, the meanings in `text-muted`;
+  it goes by the marks only, not by how the list is laid out.
+- **The filter**, as far as Ruff's list of rules goes, no further: no
+  conditions to combine. Shut, it is one button: `funnel` (`icon-md`),
+  the word Filter, and, when the reader has changed a field from the
+  default filter, the number of such fields in a badge (`radius-full`,
+  `accent` on `bg-selected`); the default filter shows no badge. Open,
+  it is a popover under the button, `width-popover` wide (the column's
+  width on a narrow screen), holding a group of check boxes per field: the status,
+  the defaults (on, off), the use, the domain, its boxes indented by its
+  depth, and the quadrant when there is more than one source. Each
+  group has its name, then All and None, quiet buttons. Within a field
+  a rule needs one of the values checked; across fields it needs that
+  in each, and a field with every value checked filters nothing.
+  Checking or unchecking a domain does the same to the domains under it.
+  Under the groups, Reset filter, which brings back the default filter,
+  the list as its address without a filter shows it; to see every
+  status, the reader checks All in its group. A change
   applies at once and is written into the address, so a filtered list
-  can be linked; there is no Apply button. A domain's condition takes
-  in the domains under it. Escape or a click outside closes it. A site
-  without scripts, as the local site is, shows the same button and
-  popover with one row per field holding its values as check boxes,
-  joined by and.
+  can be linked; there is no Apply button. Escape, a click outside or
+  the focus leaving it closes it. A site without scripts, as the local
+  site is, shows the same groups in the popover, applied with a primary
+  button. The local site differs today: its check boxes apply at once,
+  through the style sheet, with no primary button; its groups are the
+  kind of source, the use, and the rules not enabled and those
+  superseded or repealed, shown besides; and it has no groups for the
+  status, the defaults and the domain, no All and None, and no badge
+  ([Status](#status)).
 - **The tree of rules.** The level of a node shows by its size, weight
   and a bar ([Type](#type)), not by indentation: a domain of the first
   level is a heading with `space-8` above it; one of the second level
@@ -515,8 +537,8 @@ turned off (disabled), where it has these.
   `controls.css` (the native controls wherever they stand),
   `constitution.css`, `design.css` (the design and a rule's page),
   `rules-list.css` (the list of the rules and the tags) and `filter.css`
-  (the form above the list, whose markup is
-  `web/layouts/_partials/rules/filter.html`). Hugo joins them, after
+  (the legend, the filter and the page size above the list, whose
+  markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
   `web/assets/styles/index.yaml`. The local site's own is
   `crates/statute/src/site.css`, which `statute` writes into each page
@@ -534,10 +556,28 @@ turned off (disabled), where it has these.
   turned a quarter, which draws `chevron-down`. The local site inlines
   the files it needs in the same way, built into `statute` with
   `include_str!`.
-- **Scripts.** A script is written in TypeScript and built by Hugo's
-  `js.Build`, the esbuild that Hugo carries, with no Node and no npm
-  package. Not built yet: today's scripts are JavaScript in
-  `web/assets/`, minified and inlined in each page's head.
+- **Scripts.** A script that holds more than a few lines of logic, the
+  list of the rules and its filter today, is written in TypeScript in
+  `web/assets/ts/`, the logic that needs no page (the filter's choice
+  and the address) in a file of its own. Hugo's `js.Build`, the esbuild
+  that Hugo carries, bundles each one, with no Node and no npm package,
+  for the target `es2018`, minified, and the page inlines it in its
+  head as it does the other scripts; there is no source map, as the
+  script is small and its source is in the repository. The short
+  scripts stay JavaScript in `web/assets/`, minified by Hugo. Read on
+  2026-10-15 with Hugo 0.167.0: `js.Build` strips the types and
+  type-only imports, bundles the imports between the files, lowers `?.`
+  and `??` to the target, and fails the build on a syntax error.
+- **Types and tests.** esbuild does not check types: a type error
+  builds, and the build passes. Neither the machines nor CI have `tsc`,
+  which would need Node and an npm package the site does not otherwise
+  use, so no tool checks the types today; the reviewer reads them. The
+  behavior is tested on the built page instead: a test of `tools/site`
+  builds the site from made-up rules, loads the list in headless Chrome
+  with each of a set of addresses and reads the page Chrome leaves
+  (`--dump-dom`), skipped without Chrome except in CI. Clicks and keys,
+  which `--dump-dom` cannot send, are checked by hand the same way, with
+  a script added to a copy of the page that sends them.
 
 ## Status
 
@@ -550,19 +590,18 @@ on what moves today (the popover on the length, the chevrons, the
 flash on a target, the sidebar and the table of contents of a narrow
 screen); hover only on fine pointers; the sizes of targets; the
 sidebar's states; the native controls; the fonts, the text size and the column, and the breakpoints;
-the filter and the page in the address, pages readable without
-scripts, tabular figures, and `aria-expanded` with `aria-controls` on
+the filter and the legend, the filter and the page in the address,
+pages readable without scripts, tabular figures, and `aria-expanded` with `aria-controls` on
 the info button and the buttons of the rules under a provision. Built
 today on the local site: every token, and every value of its style
-sheet named by one; the tags, the tree of domains, the one-of and the
-filter of [Components](#components), the filter as a site without
-scripts has it; the check boxes; hover only on fine pointers, the
-sizes of targets, the focus ring, and the motion of the filter's
-popover. Not built yet, and what each replaces:
+sheet named by one; the tags, the legend, the tree of domains and the
+one-of of [Components](#components); the filter's button and popover;
+the check boxes; hover only on fine pointers, the sizes of targets,
+the focus ring, and the motion of the filter's popover. Not built yet,
+and what each replaces:
 
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
-- The filter replaces the panel of check boxes with its Apply button.
 - The tree replaces the indentation by depth, a rule under a rule
   included.
 - The list shows a one-of as a box today
@@ -570,16 +609,16 @@ popover. Not built yet, and what each replaces:
   prefix "One of:" (「择一：」) before its title, and the circles before
   its options and the tag of [Components](#components) replace the
   plain tag that marks its default option.
-- Until the four above are built, `rules-list.css` and `filter.css`
-  write some sizes and spaces as values, and the list's pages are
+- Until the three above are built, `rules-list.css` writes some sizes
+  and spaces as values, and the list's pages are
   linked by the characters ‹ and ›.
-- The empty list says that no rule matches, without the step to clear
-  the filter.
-- On the local site, the filter's button has no badge with the number
-  of conditions set, and its popover closes at once, by a click on the
-  button only: without a script, nothing counts the conditions or
-  closes it on Escape or a click outside. Its pages load no font and
-  set the text in the local serif fonts.
+- On the local site, the filter's groups for the status, the defaults
+  and the domain, with All and None in each, the badge on its button,
+  and its closing on Escape or a click outside; and the primary button
+  that applies it, which the style sheet's check boxes, applying at
+  once, stand in for. Its popover closes at once, by a click on the
+  button. Its pages load no font and set the text in the local serif
+  fonts.
 
 ## Open questions
 

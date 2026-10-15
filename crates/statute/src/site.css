@@ -67,8 +67,18 @@ a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
 /* A node's label, before its title. */
 .ref { color: var(--t-text-muted); font-variant-numeric: tabular-nums; margin-inline-end: var(--t-space-2); }
 nav { font-size: var(--t-text-sm); color: var(--t-text-muted); margin-block-end: var(--t-space-4); }
-.legend { font-size: var(--t-text-sm); color: var(--t-text-faint); display: flex; flex-wrap: wrap; gap: var(--t-space-4); }
-.legend .switch { font-size: inherit; color: inherit; }
+/* The legend: each mark and its meaning on a line, in columns. */
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--t-measure) / 2), 1fr));
+  gap: var(--t-space-1) var(--t-space-6);
+  margin-block: var(--t-space-4);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+}
+.legend > div { display: flex; align-items: center; gap: var(--t-space-2); }
+.legend dt { flex: none; margin: 0; }
+.legend dd { margin: 0; color: var(--t-text-muted); }
 .place { font-size: var(--t-text-sm); font-weight: var(--t-weight-regular); color: var(--t-text-muted); margin-inline-start: var(--t-space-2); }
 .params { font-size: var(--t-text-sm); font-weight: var(--t-weight-regular); margin-inline-start: var(--t-space-2); }
 section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-space-2); border-block-start: 1px solid var(--t-border-subtle); }
@@ -179,8 +189,8 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
 .one-of > .tree > li > .row > .icon { color: var(--t-text-muted); }
 .one-of > .tree > li > .row > .icon.default { color: var(--t-accent); }
 
-/* The filter: a quiet button with `funnel`; open, a popover of one row
-   per field, its values as check boxes, the rows joined by and. */
+/* The filter: a quiet button with `funnel`; open, a popover of a group
+   per field, its name and its values as check boxes. */
 .filter { position: relative; margin-block-end: var(--t-space-4); }
 .filter > summary {
   display: inline-flex;
@@ -207,11 +217,9 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
   inset-block-start: 100%;
   inset-inline-start: 0;
   display: grid;
-  grid-template-columns: auto auto 1fr;
-  align-items: start;
-  gap: var(--t-space-2) var(--t-space-3);
-  inline-size: max-content;
-  max-inline-size: var(--t-measure);
+  gap: var(--t-space-3);
+  inline-size: var(--t-width-popover);
+  max-inline-size: 100%;
   margin-block-start: var(--t-space-1);
   padding: var(--t-space-3) var(--t-space-4);
   font-size: var(--t-text-sm);
@@ -228,14 +236,10 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
 @starting-style {
   .filter[open] .panel { opacity: 0; scale: .95; }
 }
-.filter .cond { display: contents; }
-.filter .conn, .filter .field { display: flex; align-items: center; min-block-size: var(--t-target); color: var(--t-text-muted); }
+.filter fieldset { margin: 0; padding: 0; border: 0; }
+.filter legend { padding: 0; color: var(--t-text-muted); font-weight: var(--t-weight-medium); }
 .filter .values { display: flex; flex-wrap: wrap; column-gap: var(--t-space-3); }
 .filter label { display: inline-flex; align-items: center; gap: var(--t-space-2); min-block-size: var(--t-target); cursor: pointer; }
-@media (max-width: 48rem) {
-  .filter .panel { inline-size: 100%; grid-template-columns: auto 1fr; }
-  .filter .values { grid-column: 1 / -1; }
-}
 
 /* Check boxes, drawn as controls.css of the public site draws them: a
    box on the page, filled with the accent color when checked, its check
