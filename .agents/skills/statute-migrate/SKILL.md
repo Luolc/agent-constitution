@@ -263,12 +263,35 @@ prints the three lists from the rule set as written; `statute explain
    checkout type in `PRE_COMMIT_CHECKOUT_TYPE` instead of `$3`. The
    hook does not reach the worktrees that exist already: run `statute
    compile --private-only` once in each of them.
+5. Add `statute compile --check` to the repository's commit hooks, so
+   that a commit cannot leave the compiled file, the checks file or an
+   installed skill out of step with the rule set
+   ([Compilation and the site](https://github.com/Luolc/agent-constitution/blob/main/docs/design/statute-command.md#compilation-and-the-site)).
+   With pre-commit, add a local hook with `entry: statute compile
+   --check`, `language: system`, `pass_filenames: false` and `files`
+   matching the statute inputs and outputs (`statute.toml`,
+   `statute.lock`, `statute-checks.toml`, `AGENTS.md`, `.statute/`,
+   `.agents/`, `.claude/`, and the directories of the local rules); the
+   `statute-compile` hook in the
+   [`.pre-commit-config.yaml` of agent-constitution](https://github.com/Luolc/agent-constitution/blob/main/.pre-commit-config.yaml)
+   is a model, except that its entry runs statute from source. With
+   another hook manager, add it that manager's way. With no commit
+   hooks, add only the CI step, and say so in the pull request
+   description.
+   Then confirm CI runs it: when CI already runs every pre-commit hook,
+   nothing more is needed; otherwise add a CI step that runs
+   `statute compile --check`. The hook and CI run the statute version
+   that `statute-checks.toml` names, which is the one that compiled it,
+   and that version must have the flag; after upgrading statute, run
+   `statute compile` again in the same change.
 
 Acceptance, before you ask for a review:
 
 - `statute compile` runs again with no change to any file, and warns
   of no `CLAUDE.md` unless the person chose to keep it.
 - The compiled file's first line says statute wrote it.
+- `statute compile --check` exits 0; the pull request adds the hook,
+  and the CI step too unless CI already runs every pre-commit hook.
 - `statute check` exits 0.
 - The compiled file is compared with the legacy copies, section by
   section, against the mapping of step c: every item is where the
