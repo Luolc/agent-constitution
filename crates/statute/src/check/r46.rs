@@ -1,5 +1,7 @@
 //! Rule 46, instruction-files-apart: a change does not mix instruction
-//! files with other files. The path tables of `check-instruction-changes`
+//! files with other files; and rule 280, which supersedes it, with its
+//! one exception, the change that migrates a repository onto statute.
+//! The path tables of `check-instruction-changes`
 //! of this repository's tools, with statute's own files beside the rule
 //! set (`docs/design/checkers.md` says where the two differ).
 //!
@@ -18,6 +20,7 @@ use regex::RegexSet;
 
 use super::{Context, Finding, Outcome, Report, git};
 use crate::compile::{CHECKS, FILE as AGENTS_MD, Output};
+use crate::manifest::FILE as RULE_SET;
 
 /// Instruction files in any repository: what an agent harness reads as
 /// instructions, skills, subagents, commands, hooks or permissions, and
@@ -130,7 +133,11 @@ impl Classes {
     }
 }
 
-pub fn check(ctx: &Context) -> Report {
+/// The check of rule 46, or of rule 280 when `migration` is set: then a
+/// change that adds `statute.toml`, which its base does not have, is the
+/// migration change, which may mix the two, and what else it holds is
+/// for the reviewer.
+pub fn check(ctx: &Context, migration: bool) -> Report {
     let Some(base) = ctx.base else {
         return Report::new(
             Outcome::Inconclusive,
@@ -160,8 +167,10 @@ pub fn check(ctx: &Context) -> Report {
     let mut instruction = Vec::new();
     let mut generated = Vec::new();
     let mut other = Vec::new();
+    let mut adds_rule_set = false;
     for pair in fields.chunks(2) {
         let [status, path] = pair else { continue };
+        adds_rule_set |= *status == "A" && classes.beside(path) == Some(RULE_SET);
         let line = format!("{status} {path}");
         match classes.kind(path) {
             Kind::Instruction if classes.compiles(path) => instruction.push((
@@ -181,6 +190,22 @@ pub fn check(ctx: &Context) -> Report {
         other.len(),
         generated.len()
     );
+    if migration && adds_rule_set && !other.is_empty() {
+        let findings = other
+            .iter()
+            .map(|(location, _)| Finding {
+                location: location.clone(),
+                reason: "another file, in the migration change".to_owned(),
+            })
+            .collect();
+        return Report {
+            outcome: Outcome::Inconclusive,
+            findings,
+            note: format!(
+                "the change since {base} adds {RULE_SET}, which its base does not have: it is the migration change, which may hold instruction files and other files ({counts}); the reviewer checks that the other files only add `statute compile --check` to each of the commit hooks and the CI the repository has at its base, and that the change holds nothing besides the move and that check"
+            ),
+        };
+    }
     if !instruction.is_empty() && !other.is_empty() {
         let findings = instruction
             .iter()

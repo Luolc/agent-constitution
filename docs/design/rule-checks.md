@@ -143,6 +143,14 @@ not run rule 50's check. The built-in checks:
   tables do not name, sources of instructions outside them, and paths a
   repository declares in its `AGENTS.md` are left to the reviewer, and
   without `--base` there is no change to check;
+- rule 280 (instruction-files-apart-but-migration), which supersedes
+  rule 46, runs the same check with its one exception: a change that
+  adds `statute.toml` beside the rule set, where its base has none, is
+  the migration change, which may mix instruction files with other
+  files. It is inconclusive, with each other file listed for the
+  reviewer, who checks that they only add `statute compile --check` to
+  the commit hooks and the CI the repository has at its base. Every
+  other change is judged as under rule 46;
 - rule 43 (credential-designated-place) runs the gitleaks on the
   machine, with `--redact`, on the commits of the change or on the whole
   history, and is violated by a hit, shown by its place and gitleaks rule
@@ -182,8 +190,8 @@ not run rule 50's check. The built-in checks:
   it was disabled again or has merged it; other ways of merging
   automatically, and who enabled it, are left to the reviewer.
 
-The rules 43 and 46 supersede, 3 and 7, keep their modules, which run
-only for a rule set that still enables them.
+The rules 43, 46 and 280 supersede, 3, 7 and 46, keep their checks,
+which run only for a rule set that still enables them.
 
 The reviewer runs `statute check`, and CI may run it too. It is not a
 commit hook: some checks scan the whole history or ask the forge over

@@ -9,7 +9,7 @@ use common::{domain, edit, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
-/// Domain 1 with rules 43, 46, 50, 58, 61 and 71 (built-in checks), rules 3 and 7 (the
+/// Domain 1 with rules 43, 46, 50, 58, 61, 71 and 280 (built-in checks), rules 3 and 7 (the
 /// rules they supersede, whose checks stay), rule 20 (a command) and
 /// rule 21 (no program, for the reviewer, whose reason cites a provision
 /// and rule 20).
@@ -25,6 +25,7 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
         builtin(58),
         builtin(61),
         builtin(71),
+        builtin(280),
         edit(
             rule(20, 1, ""),
             "check = \"none\"",
@@ -402,6 +403,66 @@ fn r46_agrees_with_check_instruction_changes() {
     git(&dir, &["commit", "-qm", "rename"]);
     let ours = statute(&dir, &["check", "--base", "base"], None);
     assert!(line(&ours, 46).starts_with("violation "), "{}", ours.stdout);
+}
+
+// Rule 280: rule 46, with the migration change as its one exception.
+
+/// A repository whose base, tagged `pre`, has no rule set, and a change
+/// that adds it with `files` changed beside it: a migration change.
+fn migration(name: &str, rules: &str, files: &[&str]) -> PathBuf {
+    let dir = repo(name, rules, "true");
+    git(&dir, &["rm", "-q", "statute.toml", "statute.lock"]);
+    git(&dir, &["commit", "-qm", "before statute"]);
+    git(&dir, &["tag", "pre"]);
+    git(
+        &dir,
+        &[
+            "checkout",
+            "-q",
+            "base",
+            "--",
+            "statute.toml",
+            "statute.lock",
+        ],
+    );
+    change(&dir, files);
+    dir
+}
+
+#[test]
+fn r280_migration_change_goes_to_the_reviewer() {
+    let dir = migration("r280-migration", "\"R280\"", &[".pre-commit-config.yaml"]);
+    let run = statute(&dir, &["check", "--base", "pre"], None);
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let l = line(&run, 280);
+    assert!(l.starts_with("inconclusive "), "{l}");
+    assert!(
+        l.contains("adds statute.toml, which its base does not have: it is the migration change"),
+        "{l}"
+    );
+    assert!(
+        run.stdout
+            .contains("A .pre-commit-config.yaml: another file, in the migration change"),
+        "{}",
+        run.stdout
+    );
+    // Rule 46 has no exception: the same change is a violation.
+    let dir = migration(
+        "r280-migration-r46",
+        "\"R46\"",
+        &[".pre-commit-config.yaml"],
+    );
+    let run = statute(&dir, &["check", "--base", "pre"], None);
+    assert!(line(&run, 46).starts_with("violation "), "{}", run.stdout);
+}
+
+#[test]
+fn r280_other_changes_mix_as_under_rule_46() {
+    let dir = repo("r280-mixed", "\"R280\"", "true");
+    change(&dir, &["statute.toml", "tools/build.py"]);
+    let run = statute(&dir, &["check", "--base", "base"], None);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(line(&run, 280).starts_with("violation "), "{}", run.stdout);
 }
 
 // Rule 43: credentials are stored only where designated; gitleaks sees the
