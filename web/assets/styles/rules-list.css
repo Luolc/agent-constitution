@@ -7,6 +7,13 @@
    under the top bar of a narrow screen. Below the list, the links to its
    pages, the current page bold. */
 .rules .rules-intro { color: var(--t-text-muted); }
+/* The list's page is a table, not text to read on: with no table of
+   contents beside it, its column fills the page beside the sidebar, a
+   small margin on each side; its intro keeps the text's measure. */
+.rules.rules-index { max-width: none; }
+main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
+.book-page:has(.rules-index) { padding-inline: var(--t-space-4); }
+.rules .rules-intro { max-width: var(--t-measure); }
 .rules .rules-params { margin-top: calc(-1 * var(--t-space-2)); }
 .rules .rules-pager {
   display: flex;

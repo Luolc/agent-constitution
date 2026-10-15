@@ -21,25 +21,30 @@
 
   Above the list, its legend (_partials/rules/legend.html), then the
   filter and the page size (_partials/rules/filter.html). The rules
-  shown are those of the filter, rulesPerPage of them a page; by default
-  those of a status in rulesStatuses. Every page holds every rule, each
+  shown are those of the filter, rulesPerPage of them a page, or all on
+  one page when it is "all"; by default those of a status in
+  rulesStatuses. Every page holds every rule, each
   with its group row, the rules and rows not shown hidden, so that
   assets/ts/rules-list.ts can show another filter and page size, from
   the address, without a page of their own. Without scripts the pages
   are Hugo's, of the rules of the default filter, and the controls stay
   hidden. In a group row shown, each group of the path has the id
-  `group-<key>` the first time it shows on the page, which the table of
-  contents at the right links. */ -}}
+  `group-<key>` the first time it shows on the page, so that an address
+  can point at it. The page has no table of contents
+  (content/rules/_content.gotmpl). */ -}}
 {{ define "main" }}
 {{- $all := where (where .Pages "Params.rule.kind" "in" (slice "rule" "one-of")) "Params.rule.boxed" "ne" true }}
 {{- $statuses := site.Params.rulesStatuses }}
+{{- $default := where $all "Params.rule.status" "in" $statuses }}
 {{- $size := site.Params.rulesPerPage }}
-{{- $pager := .Paginate (where $all "Params.rule.status" "in" $statuses) $size }}
-{{- $first := mul (sub $pager.PageNumber 1) $size }}
-{{- $end := add $first $size }}
+{{- $count := len $default }}
+{{- if ne (string $size) "all" }}{{ $count = int $size }}{{ end }}
+{{- $pager := .Paginate $default (cond (gt $count 0) $count 1) }}
+{{- $first := mul (sub $pager.PageNumber 1) $count }}
+{{- $end := add $first $count }}
 {{- $sources := (index hugo.Data.rules site.Language.Lang).sources }}
 {{- $many := gt (len $sources) 1 }}
-<article class="markdown book-article"><div class="design rules">
+<article class="markdown book-article"><div class="design rules rules-index">
 {{ printf "# %s {anchor=false}" .Title | .RenderString }}
 <p class="rules-intro">{{ i18n "rules-intro" }}</p>
 {{- with (index hugo.Data.rules site.Language.Lang).params }}
@@ -55,7 +60,6 @@
 {{- $k := 0 }}
 {{- $previous := "" }}
 {{- $ids := dict }}
-{{- $toc := slice }}
 {{- range $all }}
   {{- $rule := .Params.rule }}
   {{- $on := false }}
@@ -69,18 +73,16 @@
     {{- $shown := and $on (ne $group.key $previous) }}
     {{- $path := slice }}
     {{- $names := slice }}
-    {{- range $j, $g := . }}
+    {{- range $g := . }}
       {{- $source := eq $g.kind "source" }}
       {{- $name := cond $source (printf "%s · %s" (i18n (printf "quadrant-%s" $g.quadrant)) $g.source) $g.title }}
-      {{- $tocTitle := cond $source $name (printf "%s %s" $g.label $g.title) }}
       {{- $id := "" }}
       {{- if and $shown (not (index $ids $g.key)) }}
         {{- $ids = merge $ids (dict $g.key true) }}
         {{- $id = printf ` id="group-%s"` $g.key }}
-        {{- $toc = $toc | append (dict "key" $g.key "title" $tocTitle "level" $j) }}
       {{- end }}
       {{- $part := cond $source (partial "rules/quadrant.html" (dict "quadrant" $g.quadrant "source" $g.source)) $g.titleHtml }}
-      {{- $path = $path | append (printf `<span class="group-part" data-group="%s" data-level="%d" data-toc="%s"%s>%s</span>` $g.key $j (htmlEscape $tocTitle) $id $part) }}
+      {{- $path = $path | append (printf `<span class="group-part" data-group="%s"%s>%s</span>` $g.key $id $part) }}
       {{- $names = $names | append $name }}
     {{- end }}
     {{- $path = delimit $path (partial "icon.html" "lucide:chevron-right") }}
@@ -92,12 +94,12 @@
   {{- end }}
   {{- if eq $rule.kind "one-of" }}
 <div class="one-of" role="group" aria-labelledby="one-of-{{ $rule.key }}"><span class="one-of-label" id="one-of-{{ $rule.key }}">{{ i18n "one-of" }}</span>
-<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}"><span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>{{ partial "rules/marks.html" $rule | safeHTML }}</a>
+<a class="rule-entry" href="{{ .RelPermalink }}" title="{{ .Title }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}"><span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>{{ partial "rules/marks.html" $rule | safeHTML }}</a>
 <ul class="one-of-options">
     {{- range $rule.options }}
       {{- $page := site.GetPage (printf "/rules/%s" .key) }}
       {{- $option := $page.Params.rule }}
-<li{{ if $option.optionDefault }} class="default"{{ end }}><a class="rule-entry" href="{{ $page.RelPermalink }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ partial "icon.html" (cond $option.optionDefault "lucide:circle-dot" "lucide:circle") }}<span class="rule-text">{{ $option.titleInLink | $.RenderString }}</span>{{ if $option.optionDefault }}<span class="rule-default-option">{{ partial "icon.html" "lucide:check" }}{{ i18n "default-option" }}</span>{{ end }}</span>{{ partial "rules/marks.html" $option | safeHTML }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
+<li{{ if $option.optionDefault }} class="default"{{ end }}><a class="rule-entry" href="{{ $page.RelPermalink }}" title="{{ $page.Title }}"><span class="rule-id">{{ $option.label }}</span><span class="rule-title" lang="{{ $option.shown }}">{{ partial "icon.html" (cond $option.optionDefault "lucide:circle-dot" "lucide:circle") }}<span class="rule-text">{{ $option.titleInLink | $.RenderString }}</span>{{ if $option.optionDefault }}<span class="rule-default-option">{{ partial "icon.html" "lucide:check" }}{{ i18n "default-option" }}</span>{{ end }}</span>{{ partial "rules/marks.html" $option | safeHTML }}{{ partial "rules/enabled.html" $option }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $option.quadrant "source" "") }}{{ end }}</a></li>
     {{- end }}
 </ul>
 </div>
@@ -105,14 +107,13 @@
     {{- continue }}
   {{- end }}
   {{- $under := and $rule.parent (ne $rule.parent.key $rule.domain) }}
-<a class="rule-entry" href="{{ .RelPermalink }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ if $under }}{{ partial "icon.html" "lucide:corner-down-right" }}{{ end }}<span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>
+<a class="rule-entry" href="{{ .RelPermalink }}" title="{{ .Title }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ if $under }}{{ partial "icon.html" "lucide:corner-down-right" }}{{ end }}<span class="rule-text">{{ $rule.titleInLink | $.RenderString }}</span></span>
   {{- partial "rules/marks.html" $rule | safeHTML }}
   {{- partial "rules/enabled.html" $rule }}
   {{- if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" "") }}{{ end -}}
 </a>
 </div>
 {{- end }}
-{{- $.Store.Set "toc" $toc }}
 </div>
 </div>
 <p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-reset" hidden>{{ i18n "rules-reset-filter" }}</button></p>
@@ -136,16 +137,4 @@
 <template class="rules-pager-icons"><span data-rel="prev">{{ partial "icon.html" "lucide:chevron-left" }}</span><span data-rel="next">{{ partial "icon.html" "lucide:chevron-right" }}</span></template>
 </div>
 </article>
-{{ end }}
-
-{{- /* The table of contents: the groups that have an id, as the
-  list above gathered them, each indented by its level; assets/ts/rules-list.ts
-  makes it again for another filter or page. */ -}}
-{{ define "toc" }}
-{{ partial "docs/inject/toc-before" . }}
-<nav id="TableOfContents"><ul>
-{{- range .Store.Get "toc" }}
-<li style="{{ printf "--level: %d" (int .level) | safeCSS }}"><a href="#group-{{ .key }}">{{ .title }}</a></li>
-{{- end }}
-</ul></nav>
 {{ end }}

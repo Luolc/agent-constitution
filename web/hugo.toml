@@ -123,8 +123,8 @@ enableRobotsTXT = false
   BookTranslatedOnly = false
   # The rules a page of their list shows without scripts, and the size
   # it starts at (layouts/rules/section.html), fixed in
-  # docs/design/static-site.md.
-  rulesPerPage = 100
+  # docs/design/static-site.md: "all", one page, or a number.
+  rulesPerPage = "all"
   # The statuses the filter of the list checks by default.
   rulesStatuses = ["active", "trial"]
   # Linked in the sidebar, under the site's title.

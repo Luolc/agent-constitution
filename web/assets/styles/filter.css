@@ -1,6 +1,5 @@
 /* The controls above the list of the rules
-   (layouts/_partials/rules/filter.html) and the legend above them
-   (layouts/_partials/rules/legend.html), as docs/design/frontend.md
+   (layouts/_partials/rules/filter.html), as docs/design/frontend.md
    (Components) draws them. The filter: a row of quiet buttons with a
    border, one per field, each its name, what it chooses and
    `chevron-down`, what it chooses in a badge when it differs from the
@@ -11,9 +10,7 @@
    row, the number of fields changed in a badge. A popover enters from
    scale(0.95) at its button, and only fades under reduced motion; it
    lies over the list's sticky head and group rows (`z-popover`). The
-   controls' common look is controls.css's. The legend: each mark with
-   its name, and its meaning, on a line, in columns; a note on the four
-   places of the marks under it. */
+   controls' common look is controls.css's. */
 .rules .rules-controls {
   display: flex;
   flex-wrap: wrap;
@@ -149,27 +146,3 @@
   .rules .rules-filter-group.open { transform: none; }
   .rules .rules-menu-button .icon { transition: none; }
 }
-
-.rules .rules-legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--t-measure) / 2), 1fr));
-  gap: var(--t-space-1) var(--t-space-6);
-  margin-block: var(--t-space-4);
-  font-size: var(--t-text-sm);
-  line-height: var(--t-line-height-ui);
-}
-.rules .rules-legend > div { display: flex; align-items: baseline; gap: var(--t-space-2); }
-.rules .rules-legend dt {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--t-space-1);
-  margin: 0;
-  font-weight: var(--t-weight-medium);
-}
-.rules .rules-legend dt .rule-mark:not(.rule-dot) { inline-size: var(--t-width-mark); }
-.rules .rules-legend dt .rule-dot { margin-inline: calc((var(--t-width-mark) - var(--t-size-dot)) / 2); }
-.rules .rules-legend .legend-default-option { color: var(--t-accent); }
-.rules .rules-legend .legend-default-option .icon { inline-size: var(--t-width-mark); }
-.rules .rules-legend dd { margin: 0; color: var(--t-text-muted); }
-.rules .rules-legend-note { margin-block: calc(-1 * var(--t-space-2)) var(--t-space-4); color: var(--t-text-muted); font-size: var(--t-text-sm); }

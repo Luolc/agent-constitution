@@ -67,6 +67,27 @@ a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
 /* A node's label, before its title. */
 .ref { color: var(--t-text-muted); font-variant-numeric: tabular-nums; margin-inline-end: var(--t-space-2); }
 nav { font-size: var(--t-text-sm); color: var(--t-text-muted); margin-block-end: var(--t-space-4); }
+/* The switch to the other language: a quiet button at the end of the
+   page's first line, `languages` before the language's name. */
+.languages {
+  float: inline-end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-space-1);
+  min-block-size: var(--t-target);
+  margin-inline-start: var(--t-space-4);
+  padding: 0 var(--t-space-2);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+  color: var(--t-text-muted);
+  text-decoration: none;
+  border-radius: var(--t-radius-sm);
+  transition-property: color, background-color;
+}
+@media (hover: hover) and (pointer: fine) {
+  .languages:hover { color: var(--t-text); background-color: var(--t-bg-hover); }
+}
+.languages:active { background-color: var(--t-bg-active); }
 /* The legend: each mark and its meaning on a line, in columns. */
 .legend {
   display: grid;
@@ -88,7 +109,7 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
    up from one row to the next. */
 .tags > :is(.enabled, .default-option) { order: -1; }
 .tag-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t-space-2); margin-block: 0 var(--t-space-4); }
-:is(.status, .switch, .enabled, .default-option, .q, .kind, .slug) {
+:is(.status, .switch, .enabled, .default-option, .q, .kind, .slug, .untranslated) {
   display: inline-flex;
   align-items: center;
   gap: var(--t-space-1);
@@ -119,7 +140,7 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
    anything else, the word muted. */
 .enabled { color: var(--t-text-muted); }
 .enabled.on, .default-option { color: var(--t-accent); }
-.kind { color: var(--t-text-muted); }
+.kind, .untranslated { color: var(--t-text-muted); }
 /* The quadrant of a source: a box of its color. */
 .q { padding: 0 var(--t-space-1); color: var(--t-text); background: var(--q); border-radius: var(--t-radius-sm); }
 .q.global-public { --q: var(--t-quadrant-global-public); }
