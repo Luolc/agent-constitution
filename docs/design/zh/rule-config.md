@@ -1,4 +1,4 @@
-<!-- en-sha256: 268f177e6c80079bc2c5c556556da127ccb084f43cd96db6e5dbd91febd98747 -->
+<!-- en-sha256: 237b7f70d40c34b255499d04574860c39c61d323d3feb932939dbba78c241ab5 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -34,7 +34,7 @@ local-rules = "policy/agents"
 
 已经实现。
 
-讲原则的规定把具体取值留给下面的层 (`rules/101.toml`)。有些取值在每个仓库里都是同一类选择：commit message 用什么语言、代码注释用什么语言、回复人用什么语言。这类取值由规定在正文里写一个参数，由规定清单给出取值，就像 linter 的配置给出 `line-length`。最先做的参数是语言和 issue 跟踪系统里的几个名字。参数不是 `adjustable` 可调值 ([规定](rules.md#rules))：参数的值由规定清单为读它输出的每个 agent 选定，可调值则是仓库或任务的文字可以在宪法许可下放宽的值。
+讲原则的规定把具体取值留给下面的层 (`rules/101.toml`)。有些取值在每个仓库里都是同一类选择：commit message 用什么语言、代码注释用什么语言、回复人用什么语言。这类取值由规定在正文里写一个参数，由规定清单给出取值，就像 linter 的配置给出 `line-length`。最先做的参数是语言、issue 跟踪系统里的几个名字和放主检出的目录。参数不是 `adjustable` 可调值 ([规定](rules.md#rules))：参数的值由规定清单为读它输出的每个 agent 选定，可调值则是仓库或任务的文字可以在宪法许可下放宽的值。
 
 ### <a id="declaring-a-parameter"></a>声明参数
 
@@ -119,7 +119,7 @@ docs = "zh"
 参数的 `scope` 决定由谁设定：
 
 - **`repo`**：进入仓库的东西，对在仓库里工作的每个人都一样，比如仓库文档或 commit message 用的语言。只有 `statute.toml` 设定它。全局配置和私有规定清单 `private.toml` ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)) 不能设定：在那里设了这类值，给一个警告，指出参数和文件，并忽略这个值。
-- **`personal`**：只关乎 agent 为之工作的那个人，不论 agent 在哪个仓库工作：目前是 agent 写给这个人时用的语言，以及它为这个人写的工单用的语言，这个人的工单跟踪系统服务于这个人所有的仓库。`statute.toml` 给出仓库的取值；[全局配置](global-configuration.md#the-global-configuration) 和私有规定清单都可以设定这个人自己的取值，私有输出用它 (见下)。
+- **`personal`**：只关乎 agent 为之工作的那个人，不论 agent 在哪个仓库工作：目前是 agent 写给这个人时用的语言，它为这个人写的工单用的语言 (这个人的工单跟踪系统服务于这个人所有的仓库)，以及这个人放各仓库主检出 (main checkout) 的目录。`statute.toml` 给出仓库的取值；[全局配置](global-configuration.md#the-global-configuration) 和私有规定清单都可以设定这个人自己的取值，私有输出用它 (见下)。
 
 `repo` 参数的取值按顺序取第一个有的：`statute.toml`，参数的 `default`。`personal` 参数在私有输出里的取值按顺序取第一个有的：私有规定清单、全局配置、`statute.toml`、`default`；在提交的 `AGENTS.md` 里只取后两者中的第一个。
 
@@ -150,7 +150,9 @@ commit message 与 pull request 描述分成两个参数，是因为常见的做
 | `work-items.status-done` | `Done` | 以完成告终的一次尝试的状态 |
 | `work-items.status-abandoned` | `Abandoned` | 被放弃的一次尝试的状态 |
 
-这十个参数都声明在 `rules/params.toml` 里。表 `work-items` 与键 `language.work-items` 不冲突：一个是规定清单的表，一个是表 `language` 里的键。
+**放主检出的目录。** 一个人把各仓库的主检出放在哪里，是这个人自己的事，在这个人工作的每台机器上都一样，所以由一个范围为 `personal` 的 `string` 参数给出：`dirs.main-checkouts`，默认 `~/src`。领域 R127 (`machine`) 里的 R287 和 R288 用它。两条都默认关，没打开它们的规定清单对这个目录什么也不说。要用它们的人在自己那一层打开它们并给出取值：公开仓库里由全局配置或私有规定清单给私有输出；私有仓库没有私有输出，由 `statute.toml` 设定。
+
+这十一个参数都声明在 `rules/params.toml` 里。表 `work-items` 与键 `language.work-items` 不冲突：一个是规定清单的表，一个是表 `language` 里的键。
 
 `[compile] lang` 与语言参数分开：它指定编译出的 `AGENTS.md` 用哪种语言写，关乎 agent 读什么；参数说的是 agent 写什么。
 

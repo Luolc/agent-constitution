@@ -98,7 +98,8 @@ choice in every repository: the language of commit messages, of
 comments in code, of replies to a person. For those, a rule names a
 parameter in its text, and the rule set gives the value, as a linter's
 configuration gives `line-length`. The first parameters are the
-languages and a few names on an issue tracker. A parameter is not an
+languages, a few names on an issue tracker and the directory of main
+checkouts. A parameter is not an
 `adjustable` value ([Rules](rules.md#rules)): the rule set chooses a
 parameter's value for every agent that reads its output, while an
 adjustable value is one that a repository's or a task's text may relax
@@ -263,8 +264,9 @@ A parameter's `scope` says who sets it:
   the parameter and the file, and is ignored.
 - **`personal`**: what concerns only the person an agent works for,
   wherever the agent works: today the language in which an agent
-  writes to that person, and the language of the work items it writes
-  for them, whose tracker serves every repository of the person.
+  writes to that person, the language of the work items it writes
+  for them, whose tracker serves every repository of the person, and
+  the directory where the person keeps their main checkouts.
   `statute.toml` gives the repository's value, and
   [the global configuration](global-configuration.md#the-global-configuration)
   and the private rule set may each set the person's own, which the
@@ -323,7 +325,19 @@ scope `repo` name them, each with a common name as its default:
 | `work-items.status-done` | `Done` | the status of an attempt that ended as done |
 | `work-items.status-abandoned` | `Abandoned` | the status of an attempt that was given up |
 
-The ten parameters are declared in `rules/params.toml`. The table
+**The directory of main checkouts.** Where a person keeps the main
+checkouts of their repositories is theirs, the same on every machine
+they work on, so one `string` parameter of scope `personal` names it:
+`dirs.main-checkouts`, `~/src` by default. R287 and R288, in the
+domain R127 (`machine`), use it; both are off by default, so a rule
+set that does not turn them on says nothing about the directory. A
+person who wants them turns them on in their own layer and sets the
+value: in a public
+repository, the global configuration or the private rule set gives it
+to the private output; in a private repository, which has no private
+output, `statute.toml` sets it.
+
+The eleven parameters are declared in `rules/params.toml`. The table
 `work-items` and the key `language.work-items` do not collide: one is
 a table of the rule set, the other a key in the table `language`.
 
