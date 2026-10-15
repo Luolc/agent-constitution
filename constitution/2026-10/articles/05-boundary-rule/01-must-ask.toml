@@ -81,8 +81,8 @@ status = "active"
 
 [items.content]
 en = '''
-Loosening guards ({@guards}). Tightening one is not; nor is changing a rule or a provision of a project's instructions that is not a guard, even to make it less strict: that is an ordinary change ({@decide-yourself.routine-changes}, {@decide-yourself.ordinary-rules}).
+Loosening guards ({@guards}). Tightening one is not, and changing a rule or a provision of a project's instructions that is not a guard, even to make it less strict, is not loosening a guard; unless another item of this section applies, it is an ordinary change ({@decide-yourself.routine-changes}, {@decide-yourself.ordinary-rules}).
 '''
 zh = '''
-放宽防护 ({@guards})。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不在此列，那是普通变更 ({@decide-yourself.routine-changes}、{@decide-yourself.ordinary-rules})。
+放宽防护 ({@guards})。收紧不在此列；修改不属于防护的规定或者项目指令中的条文，即使是改宽，也不是放宽防护；除非本款其他某项适用，这是普通变更 ({@decide-yourself.routine-changes}、{@decide-yourself.ordinary-rules})。
 '''
