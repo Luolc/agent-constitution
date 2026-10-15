@@ -1,22 +1,23 @@
 id = 181
 slug = "needs-decision-label"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
+default = "on"
 authority = ["asking"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Keep the label for a principal's decision only on items that wait for one"
 zh = "等委托人定的标签只挂在等委托人的工作项上"
 
 [text.statement]
-en = "Keep the label `needs-user` (parameter `work-items.label-needs-decision`, default `needs-user`) only on a work item that is still open and waits for a principal to look at or decide something, and take it off once the principal has decided or the item has moved to the status for a done attempt or to a status for canceled work, the one for an abandoned attempt included."
-zh = "标签 `needs-user` (参数 `work-items.label-needs-decision`，默认 `needs-user`) 只挂在还开着、等委托人看或定的工作项上；委托人定了，或者工作项转为完成的状态或取消类的状态 (包括放弃的状态)，就摘掉。"
+en = "Keep the label `{$work-items.label-needs-decision}` only on a work item that is still open and waits for a principal to look at or decide something, and take it off once the principal has decided or the item has moved to the status for a done attempt or to a status for canceled work, the one for an abandoned attempt included."
+zh = "标签 `{$work-items.label-needs-decision}` 只挂在还开着、等委托人看或定的工作项上；委托人定了，或者工作项转为完成的状态或取消类的状态 (包括放弃的状态)，就摘掉。"
 
 [text.reason]
 en = '''
@@ -39,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "8ff04e1b77b06abfa3f27309c96b15f61baa889fa48df84ac73b66019b8ce13f"
+zh = "41a1decbe8ea1f3d9e56103135370ded2717a5d8fcf3d18e6b023b7c4b12ae28"

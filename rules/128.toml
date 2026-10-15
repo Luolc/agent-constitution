@@ -1,14 +1,15 @@
 id = 128
 slug = "main-checkouts-root"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
+default = "on"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Keep each main checkout directly under the root for main checkouts"

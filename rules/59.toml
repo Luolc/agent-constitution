@@ -1,14 +1,15 @@
 id = 59
 slug = "ci-after-merge"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["evidence.facts", "accountable-agent.whole-task", "decide-yourself.own-mistakes"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "After a merge, read CI on the merge commit"

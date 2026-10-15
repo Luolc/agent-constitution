@@ -1,14 +1,15 @@
 id = 237
 slug = "decision-memo-five-points"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 196
+default = "off"
 authority = ["asking"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Put design questions to a principal at most five at a time"

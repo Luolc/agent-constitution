@@ -113,6 +113,7 @@ def check_keys(
   errors: Errors,
   where: str = "",
   start: int = 1,
+  unknown: bool = True,
 ) -> bool:
   """Check that the table has the schema's keys, no others, of their types.
 
@@ -127,6 +128,7 @@ def check_keys(
     errors: where errors go.
     where: the table's name in messages, "" for the file's top level.
     start: the table's first line, where the search for its keys begins.
+    unknown: whether a key the schema does not name is an error.
 
   Returns:
     True when clean.
@@ -177,7 +179,8 @@ def check_keys(
         f"{label}`{name}` must be "
         + ("an integer" if kind is int else f"a {kind.__name__}"),
       )
-  for name in sorted(table.keys() - {k.rstrip("?") for k in schema}):
+  extra = table.keys() - {k.rstrip("?") for k in schema}
+  for name in sorted(extra if unknown else ()):
     errors.add(
       doc.path,
       doc.line(f"[{name}]", f"{name} =", start=start),

@@ -1,15 +1,16 @@
 id = 29
 slug = "job-agent-asks-through-relay"
-revision = 4
+revision = 5
 kind = "rule"
 status = "superseded"
 superseded-by = 115
 lang = "en"
 parent = 78
+default = "off"
 authority = ["asking-principals", "asking", "accountable-agent", "decide-yourself"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "The agent responsible for a job asks principals only through the agent talking with them"

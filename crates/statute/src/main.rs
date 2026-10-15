@@ -98,6 +98,12 @@ enum Command {
     /// included, to .statute/site, which git ignores; open its
     /// index.html in a browser.
     Site,
+    /// Build or check the constitution of this repository from its
+    /// sources.
+    Constitution {
+        #[command(subcommand)]
+        action: statute::constitution::cli::Action,
+    },
     /// Name a source of rules.
     Source {
         #[command(subcommand)]
@@ -190,6 +196,7 @@ fn main() -> ExitCode {
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
         Command::Validate { dir } => validate(&dir),
+        Command::Constitution { action } => statute::constitution::cli::run(action).map_err(|_| ()),
         Command::Source {
             action:
                 SourceAction::Add {
@@ -373,14 +380,15 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         .map(|p| statute::compile::full_text(&project, &p.both, &p.dir))
         .transpose()
         .map_err(|e| eprintln!("statute: error: {e}"))?;
+    let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
+    // `.statute/.gitignore` is the first file written, once nothing is
+    // left that can fail before the public files.
     if full.is_some() {
         private::ready(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     }
-    let mut written = statute::compile::compile(&project)
-        .and_then(|out| statute::compile::write(&out, &path))
-        .map_err(|e| {
-            eprintln!("statute: error: {e}");
-        })?;
+    let mut written = statute::compile::write(&out, &path).map_err(|e| {
+        eprintln!("statute: error: {e}");
+    })?;
     if let Some(full) = full {
         written.extend(private::write(root, &full).map_err(|e| eprintln!("statute: error: {e}"))?);
     }

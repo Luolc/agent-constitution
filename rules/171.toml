@@ -1,14 +1,15 @@
 id = 171
 slug = "worker-report-contents"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
+default = "on"
 authority = ["evidence", "accountable-agent.whole-task"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Write a complete worker report"

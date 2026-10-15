@@ -1,9 +1,10 @@
 id = 13
 slug = "security"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "on"
 
 [title]
 en = "Security"

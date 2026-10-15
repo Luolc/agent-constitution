@@ -1,14 +1,15 @@
 id = 189
 slug = "slack-only-with-thread-key"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 188
+default = "on"
 authority = ["explicit-yes.verification", "explicit-yes.rules"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Relay only a yes given in Slack, with its thread key and `ts`"

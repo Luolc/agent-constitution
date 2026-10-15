@@ -1,15 +1,16 @@
 id = 82
 slug = "design-files-by-topic"
-revision = 3
+revision = 4
 kind = "rule"
 status = "superseded"
 superseded-by = [112, 113, 114]
 lang = "en"
 parent = 16
+default = "off"
 authority = ["no-restating", "simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Keep the design in one directory, one file per topic, with an index"

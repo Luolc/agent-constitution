@@ -1,14 +1,15 @@
 id = 66
 slug = "waiters-exit-when-gone"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["decency.legitimate-means"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Let a waiting loop exit when what it waits for is gone"

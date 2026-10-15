@@ -1,42 +1,49 @@
 """Tests for the nodes of the rule tree, `rules/<id>.toml`.
 
-The format of docs/design/rule-format.md (Rule file format). Each check
-fails on a broken node and passes on its control, the tree as set up.
+statute validates the rule tree. Here: check 1 as the site reads the
+nodes (`load` with `nodes=True`), in the format of
+docs/design/rule-format.md (Rule file format), and what the constitution
+build reads of them: the status against index.toml's, what they cite of
+the constitution, and check 7. Each check fails on a broken node and
+passes on its control, the tree as set up.
 """
 
 import contextlib
 import io
-from pathlib import Path
-import tomllib
 
 import test_constitution_base as tcb
 from test_constitution_fixture import (
   DOMAIN,
-  original,
   RULE,
-  STATEMENT,
   Tree,
 )
 
 from constitution_compiler import build as bc
 from constitution_compiler import checks as cc
-
-# Shared with statute's tests (crates/statute/tests/superseded_by.rs).
-CASES = Path(__file__).parent / "superseded_by_cases.toml"
-# Shared with statute's tests (crates/statute/tests/compile.rs).
-APPLICABILITY_CASES = Path(__file__).parent / "applicability_cases.toml"
-SOURCE_CASES = Path(__file__).parent / "source_cases.toml"
+from constitution_compiler.model import Errors
+from constitution_compiler.read import load
 
 
-class FormatTest(Tree):
+class Nodes(Tree):
+  """The tree as the site reads it, the nodes of the rule tree whole."""
+
+  def load(self):
+    errors = Errors()
+    return errors, load(self.root, errors, nodes=True)
+
+  def errors(self):
+    return self.load()[0]
+
+
+class FormatTest(Nodes):
   def test_controls_pass_sorted_by_number(self):
-    errors, src, _ = bc.build(self.root)
+    errors, src = self.load()
     self.assertEqual(errors, [])
     assert src is not None
     self.assertEqual([n.id for n in src.nodes], [2, 3, 10])
 
   def test_texts_lose_the_newlines_by_the_quotes(self):
-    _, src, _ = bc.build(self.root)
+    _, src = self.load()
     assert src is not None
     self.assertEqual(
       src.nodes[2].text["reason"], {"en": "Because.", "zh": "因为。"}
@@ -50,19 +57,15 @@ class FormatTest(Tree):
     self.edit("rules/10.toml", "[text.reason]", "[text.reasons]")
     self.assertError(1, "rules/10.toml", "`text` lacks `reason`")
 
-  def test_domain_has_a_domain_or_no_parent_and_no_text(self):
-    self.edit("rules/2.toml", 'lang = "en"', 'lang = "en"\nparent = 10')
-    self.assertError(
-      3,
-      "rules/2.toml",
-      "a domain's parent is a domain with no parent, or a one-of in one;"
-      " 10 is a rule",
+  def test_keys_statute_knows_are_passed_over(self):
+    """The site reads what it shows; statute validates the rest."""
+    self.edit(
+      "rules/10.toml",
+      'check = "review"',
+      'check = "none"\ndefault = "on"\nuses = ["review"]',
     )
-    self.edit("rules/2.toml", "parent = 10\n", "")
-    self.write(
-      "rules/2.toml", DOMAIN + "\n[text.statement]\nen = '''\nDo.\n'''\n"
-    )
-    self.assertError(1, "rules/2.toml", "unknown key `text`")
+    self.edit("rules/3.toml", "parent = 2", "parent = 2\ndefault = 10")
+    self.assertEqual(self.errors(), [])
 
   def test_one_of_lacks_parent(self):
     self.edit("rules/3.toml", "parent = 2\n", "")
@@ -273,7 +276,7 @@ class FormatTest(Tree):
     self.assertError(1, "rules/2.toml", "`title` must be one line")
 
 
-class SupersededTest(Tree):
+class SupersededTest(Nodes):
   SUPERSEDED = RULE.replace("id = 10", "id = 11").replace(
     'slug = "new-rule"', 'slug = "old-rule"'
   )
@@ -306,18 +309,6 @@ class SupersededTest(Tree):
       "`superseded-by` is there exactly when `status` is superseded",
     )
 
-  def test_superseded_by_another_rule(self):
-    for target in ("2", "11", "99"):
-      with (
-        self.subTest(target),
-        self.edited(
-          "rules/11.toml", "superseded-by = 10", f"superseded-by = {target}"
-        ),
-      ):
-        self.assertError(
-          3, "rules/11.toml", f"superseded-by {target} is no other rule"
-        )
-
   def test_superseded_by_shows_a_boolean_as_toml_writes_it(self):
     with self.edited(
       "rules/11.toml", "superseded-by = 10", "superseded-by = [true]"
@@ -328,138 +319,18 @@ class SupersededTest(Tree):
         "`superseded-by` entry `true` is not a rule ID, a number from 1",
       )
 
-  def test_superseded_by_cases(self):
-    """The cases statute reads too, with the same outcome."""
-    self.write(
-      "rules/12.toml",
-      self.SUPERSEDED.replace("id = 11", "id = 12")
-      .replace('slug = "old-rule"', 'slug = "other-rule"')
-      .replace('status = "draft"', 'status = "active"'),
-    )
-    cases = tomllib.loads(CASES.read_text(encoding="utf-8"))["cases"]
-    self.assertGreater(len(cases), 0)
-    for case in cases:
-      with (
-        self.subTest(case["value"]),
-        self.edited(
-          "rules/11.toml",
-          "superseded-by = 10\n",
-          f"superseded-by = {case['value']}\n",
-        ),
-      ):
-        errors = self.errors()
-        self.assertEqual(not errors, case["passes"], errors)
-        self.assertTrue(
-          all(e.startswith("rules/11.toml:") for e in errors), errors
-        )
 
-
-class ApplicabilityTest(Tree):
-  def test_applicability_cases(self):
-    """The cases statute reads too, with the same outcome."""
-    cases = tomllib.loads(APPLICABILITY_CASES.read_text(encoding="utf-8"))
-    self.assertGreater(len(cases["cases"]), 0)
-    for case in cases["cases"]:
-      with self.subTest(case["name"]):
-        self.write("rules/20.toml", case["node"])
-        errors = self.errors()
-        self.assertEqual(not errors, case["passes"], errors)
-        self.assertTrue(
-          all(e.startswith("rules/20.toml:") for e in errors), errors
-        )
-        if not case["passes"]:
-          self.assertTrue(any(case["compiler"] in e for e in errors), errors)
-
-  def test_only_a_domain_has_applicability(self):
+class ApplicabilityTest(Nodes):
+  def test_a_domain_has_applicability(self):
     applicability = (
       '\n[applicability]\nen = "For every repository."\nzh = "所有仓库。"\n'
     )
     self.write("rules/2.toml", DOMAIN + applicability)
     self.rehash("rules/2.toml")
     self.assertEqual(self.errors(), [])
-    self.edit(
-      "rules/3.toml", 'zh = "二选一"\n', 'zh = "二选一"\n' + applicability
-    )
-    self.assertError(1, "rules/3.toml", "unknown key `applicability`")
 
 
-def node(id_: int, kind: str, parent: int) -> str:
-  """Return a domain or a one-of with only the fields it needs.
-
-  Args:
-    id_: its number.
-    kind: domain or one-of.
-    parent: its parent's number.
-
-  Returns:
-    The file's text.
-  """
-  return (
-    f'id = {id_}\nrevision = 1\nkind = "{kind}"\nstatus = "draft"\n'
-    f'lang = "en"\nparent = {parent}\n\n[title]\nen = "Node {id_}"\n'
-  )
-
-
-class ParentTest(Tree):
-  """No rule under a rule (docs/design/rule-config.md)."""
-
-  def test_a_rules_parent_is_a_domain_or_a_one_of(self):
-    self.edit("rules/10.toml", "parent = 2", "parent = 3")
-    self.assertEqual(self.errors(), [])
-    under_a_rule = (
-      RULE.replace("id = 10", "id = 11")
-      .replace('slug = "new-rule"\n', "")
-      .replace("parent = 2", "parent = 10")
-    )
-    self.write("rules/11.toml", under_a_rule)
-    self.assertError(
-      3,
-      "rules/11.toml",
-      "a rule's parent is a domain or a one-of; 10 is a rule",
-    )
-
-  def test_the_options_of_a_one_of_are_all_rules_or_all_domains(self):
-    self.write("rules/20.toml", node(20, "domain", 3))
-    self.assertEqual(self.errors(), [])
-    self.edit("rules/10.toml", "parent = 2", "parent = 3")
-    self.assertError(
-      3,
-      "rules/20.toml",
-      "parent 3 is a one-of whose options are rules (10);"
-      " the options of a one-of are all rules or all domains",
-    )
-
-  def test_a_domain_option_counts_as_a_level(self):
-    self.write("rules/4.toml", node(4, "domain", 2))
-    self.write("rules/5.toml", node(5, "one-of", 4))
-    self.assertEqual(self.errors(), [])
-    self.write("rules/20.toml", node(20, "domain", 5))
-    self.assertError(
-      3,
-      "rules/20.toml",
-      "a domain's parent is a domain with no parent, or a one-of in one;"
-      " 5 is a one-of in 4, a subdomain, under 2",
-    )
-
-
-class SourceTest(Tree):
-  def test_source_cases(self):
-    """Overrides and subdomains, as far as one source can tell."""
-    cases = tomllib.loads(SOURCE_CASES.read_text(encoding="utf-8"))
-    self.write("rules/4.toml", cases["subdomain"])
-    self.assertEqual(self.errors(), [])
-    self.assertGreater(len(cases["cases"]), 0)
-    for case in cases["cases"]:
-      with self.subTest(case["name"]):
-        self.write("rules/20.toml", case["node"])
-        errors = self.errors()
-        self.assertEqual(not errors, case["passes"], errors)
-        self.assertTrue(
-          all(e.startswith("rules/20.toml:") for e in errors), errors
-        )
-        if not case["passes"]:
-          self.assertTrue(any(case["compiler"] in e for e in errors), errors)
-
+class SourceTest(Nodes):
   def test_first_party_reference_is_this_source(self):
     """This repo's rules are the first-party ones: `R2` is a node here."""
     self.edit("rules/10.toml", "parent = 2", 'parent = "R2"')
@@ -477,52 +348,7 @@ class SourceTest(Tree):
     self.assertEqual(self.errors(), [])
 
 
-class TreeTest(Tree):
-  def test_parent_exists(self):
-    self.edit("rules/10.toml", "parent = 2", "parent = 9")
-    self.assertError(3, "rules/10.toml", "parent 9 is no node")
-
-  def test_parent_chain_has_no_cycle(self):
-    self.edit("rules/10.toml", "parent = 2", "parent = 3")
-    self.assertEqual(self.errors(), [])
-    self.edit("rules/3.toml", "parent = 2", "parent = 10")
-    self.assertError(
-      3, "rules/3.toml", "following the parents from 3 comes back to it"
-    )
-    self.assertError(
-      3, "rules/10.toml", "following the parents from 10 comes back to it"
-    )
-
-  def test_slug(self):
-    self.edit("rules/10.toml", 'slug = "new-rule"', 'slug = "New rule"')
-    self.assertError(
-      2,
-      "rules/10.toml",
-      "`New rule` is not an ID: lowercase words joined by hyphens",
-    )
-    self.edit("rules/10.toml", 'slug = "New rule"', 'slug = "process"')
-    self.assertError(
-      2, "rules/10.toml", "process is already defined at rules/2.toml:2"
-    )
-
-
-class TranslationTest(Tree):
-  def test_translation_needs_every_part(self):
-    self.edit("rules/10.toml", "zh = '''\n因为。\n'''\n", "")
-    self.assertError(
-      4, "rules/10.toml", "`text.reason` lacks its translation into `zh`"
-    )
-
-  def test_translation_needs_a_hash(self):
-    self.edit("rules/2.toml", "\n[translations]\n", "\n[other]\n")
-    self.assertError(1, "rules/2.toml", "unknown key `other`")
-    self.write("rules/2.toml", DOMAIN.split("\n[translations]")[0] + "\n")
-    self.assertError(
-      4,
-      "rules/2.toml",
-      "`title` has a text in `zh`, `translations` has no hash for it",
-    )
-
+class TranslationTest(Nodes):
   def test_no_translation_into_the_original(self):
     self.edit(
       "rules/2.toml", "\n[translations]\n", '\n[translations]\nen = "x"\n'
@@ -531,26 +357,6 @@ class TranslationTest(Tree):
       1,
       "rules/2.toml",
       "`translations` maps each language but the original's to a hash",
-    )
-
-  def test_stale_translation_prints_the_new_hash(self):
-    self.edit("rules/10.toml", "Because.", "Because so.")
-    new = original(
-      "A new rule", STATEMENT, "Because so.\n", "Violated when not.\n"
-    )
-    self.assertError(
-      4,
-      "rules/10.toml",
-      "the `zh` translation was made from another original; once it follows"
-      f" the original, its hash is {new}",
-    )
-    self.edit("rules/2.toml", 'en = "Process"', 'en = "Processes"')
-    self.assertError(4, "rules/2.toml", f"its hash is {original('Processes')}")
-
-  def test_translation_cites_what_the_original_cites(self):
-    self.edit("rules/10.toml", "与{@rule:3}", "")
-    self.assertError(
-      4, "rules/10.toml", "en `text.statement` cites rule:3; zh does not"
     )
 
 
@@ -569,16 +375,6 @@ class ReferenceTest(Tree):
     self.assertError(
       5, "rules/10.toml", "authority cites undefined alpha-one.cash"
     )
-
-  def test_rule_citation_resolves(self):
-    self.edit("rules/10.toml", "{@rule:3}", "{@rule:9}", 2)
-    self.rehash("rules/10.toml")
-    self.assertError(5, "rules/10.toml", "cites undefined rule:9")
-
-  def test_rule_citation_not_repealed(self):
-    self.activate()
-    self.edit("rules/3.toml", 'status = "active"', 'status = "repealed"')
-    self.assertError(5, "rules/10.toml", "cites repealed rule:3")
 
 
 class AuthorityOverlapTest(Tree):
@@ -631,6 +427,30 @@ class AuthorityOverlapTest(Tree):
     self.assertEqual(self.run_main(), (0, []))
 
 
+class BuildTest(Tree):
+  """What the constitution build reads of the rule tree, and no more."""
+
+  def test_what_statute_validates_is_passed_over(self):
+    """Keys and values the build does not read are statute's to check."""
+    self.edit(
+      "rules/10.toml",
+      'check = "review"',
+      'check = "none"\ndefault = "on"\nuses = ["review"]\nrequires = [9999]',
+    )
+    self.edit("rules/3.toml", "parent = 2", "parent = 2\ndefault = 10")
+    errors, _, _ = bc.build(self.root)
+    self.assertEqual(errors, [])
+
+  def test_status_agrees_with_the_index(self):
+    """The build reads a node's status and checks it as a section's."""
+    self.edit("rules/2.toml", 'status = "draft"', 'status = "trial"')
+    errors, _, _ = bc.build(self.root)
+    self.assertEqual(
+      [e for e in errors if e.startswith("rules/2.toml")],
+      ["rules/2.toml:5: check 1: a domain is trial while index.toml is draft"],
+    )
+
+
 class NodeBaseTest(Tree):
   """Check 7 on the nodes of the rule tree.
 
@@ -660,6 +480,12 @@ class NodeBaseTest(Tree):
       ],
     )
     self.edit("rules/10.toml", 'slug = "new-rule"', 'slug = "rule"')
+    self.assertEqual(self.base_errors(), ([], ""))
+
+  def test_params_toml_is_no_node(self):
+    """The parameters beside the nodes, in the base and now."""
+    self.write("rules/params.toml", '[[parameter]]\nname = "language.docs"\n')
+    self.commit_base()
     self.assertEqual(self.base_errors(), ([], ""))
 
   def test_node_is_never_deleted(self):

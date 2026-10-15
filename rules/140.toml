@@ -1,15 +1,16 @@
 id = 140
 slug = "runtime-credentials-in-runtime-tier"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 137
 requires = [43]
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Store a credential a program generates at runtime in the runtime tier"

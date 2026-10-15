@@ -1,14 +1,15 @@
 id = 193
 slug = "read-for-intent"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 192
+default = "on"
 authority = ["automation-first.decide-and-do"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Read a dictated message for its intent"

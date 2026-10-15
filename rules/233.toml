@@ -1,0 +1,44 @@
+id = 233
+slug = "uses-by-reader"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+default = "on"
+authority = ["decidable-provisions", "simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "List a rule for review only when a reviewer can decide it, and for the instructions only when an agent needs it at work"
+zh = "审查方判得出才列给审查，agent 干活要知道才编进指令"
+
+[text.statement]
+en = "Put `review` in a rule's `uses` only when a reviewer can decide from the diff and the pull request description alone whether the rule was broken, and `instructions` only when an agent needs to know the rule while it works."
+zh = "只有审查方单凭 diff 和 pull request 描述就判得出规定有没有被违反时，才在规定的 `uses` 里写 `review`；只有 agent 干活时需要知道这条规定时，才写 `instructions`。"
+
+[text.reason]
+en = '''
+A reviewer who cannot tell from what it has whether a rule was broken can only guess, so listing that rule for review gives a verdict that is not one ({@constitution:decidable-provisions}) and makes every review longer. A rule compiled into the instructions that no agent needs while it works is read by every agent for nothing. Each rule goes only where it is of use ({@constitution:simplicity}).
+'''
+zh = '''
+审查方凭手上的材料判断不了一条规定有没有被违反，就只能猜，把这样的规定列给审查，得出的结论算不上结论 ({@constitution:decidable-provisions})，还让每次审查都更长。编进指令的规定，如果没有哪个 agent 干活时用得上，每个 agent 都白读一遍。每条规定只放到用得上它的地方 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The diff is the change as the code host shows it; the description includes the pull request's title and the comments in which its author answers the review. An agent needs a rule while it works when following it changes what the agent does, before its change is reviewed or outside any change. A rule without `uses` goes into the instructions only.
+
+Violated when a change adds or changes a rule's `uses` so that it holds `review` for a rule whose breach a reviewer cannot tell from the diff and the description, or `instructions` for a rule that no agent needs while it works.
+'''
+zh = '''
+diff 指代码托管平台显示的那份变更；描述包括 pull request 的标题，以及作者回应审查的评论。遵守一条规定会改变 agent 的做法 (不论是在变更送审之前，还是在任何变更之外)，就算 agent 干活时需要知道它。没有 `uses` 的规定只编进指令。
+
+变更新增或修改规定的 `uses` 后，审查方凭 diff 和描述看不出是否违反的规定带了 `review`，或者没有哪个 agent 干活时需要的规定带了 `instructions` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "d360809a17cb31f6747116bf380ce5de7a3432b2d7ada702bac763adff5cb150"

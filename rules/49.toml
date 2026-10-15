@@ -1,14 +1,15 @@
 id = 49
 slug = "instruction-check-in-ci"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "off"
 authority = ["separate-instruction-changes", "discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Run the instruction-only check in CI"

@@ -1,14 +1,15 @@
 id = 229
 slug = "cross-repo-issues-in-initiative-project"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
+default = "on"
 authority = ["no-restating"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Put a joint project's cross-repository issues in its initiative's project"

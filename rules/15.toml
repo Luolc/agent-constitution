@@ -1,9 +1,10 @@
 id = 15
 slug = "verification"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "on"
 
 [title]
 en = "Verification"

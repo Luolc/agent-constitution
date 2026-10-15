@@ -1,14 +1,15 @@
 id = 45
 slug = "credential-not-between-agents"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Never pass a credential from one agent to another"

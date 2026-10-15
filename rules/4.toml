@@ -1,15 +1,16 @@
 id = 4
 slug = "find-next-work"
-revision = 5
+revision = 6
 kind = "rule"
 status = "superseded"
 superseded-by = [116, 117, 118, 119, 120, 121]
 lang = "en"
 parent = 14
+default = "off"
 authority = ["automation-first.keep-moving", "delivered-tasks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Find the next authorized work yourself"

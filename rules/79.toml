@@ -1,10 +1,11 @@
 id = 79
 slug = "design-code-sync"
-revision = 2
+revision = 3
 kind = "one-of"
 status = "trial"
 lang = "en"
-parent = 16
+parent = 232
+default = 81
 
 [title]
 en = "Keep the design in step with the code"

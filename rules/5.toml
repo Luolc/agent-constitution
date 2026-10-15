@@ -1,15 +1,16 @@
 id = 5
 slug = "fixture-outcomes"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = [25, 26, 27]
 lang = "en"
 parent = 15
+default = "off"
 authority = ["verification", "discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Fixtures cover both outcomes and use made-up data"

@@ -1,14 +1,15 @@
 id = 201
 slug = "reply-in-the-principals-language"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 196
+default = "on"
 authority = ["purpose"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Reply in the language of the principal's latest message"

@@ -1,14 +1,15 @@
 id = 52
 slug = "public-push-pre-review"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "off"
 authority = ["sensitive-info", "must-ask.irreversible-effects", "independent-review"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Have a reviewer read what goes to a public repository before the push"

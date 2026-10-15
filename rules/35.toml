@@ -1,14 +1,15 @@
 id = 35
 slug = "usage-quotas-must-ask"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "on"
 authority = ["must-ask.capital"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Buying, resetting or unlocking usage quotas goes through a principal"
