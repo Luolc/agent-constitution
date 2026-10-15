@@ -101,8 +101,9 @@ under a heading with the domain's reference and title (`## R13
 automatic check whose `uses` has `review`), its reference and title, and a note, with the findings
 below; a rule that is inconclusive or for review is followed by its
 reason and verification, with their citations rendered as in the
-compiled `AGENTS.md`, a cited rule always as its title and reference
-(`Title (rule R42)`), since the output has no anchors to link to. Before
+compiled `AGENTS.md`, except that a cited rule is its title and
+reference (`Title (rule R42)`), since the reviewer reads it apart from
+that file. Before
 the domains, a section `## statute.toml` compares the rule set's
 `public` with the repository's visibility on GitHub
 ([Public or not](rule-sources.md#public-or-not)), through `gh repo view

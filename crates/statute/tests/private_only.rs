@@ -230,8 +230,8 @@ fn a_new_worktree_gets_the_private_output_without_the_network() {
     ok(&run);
     assert_eq!(run.stderr, "", "{}", run.stderr);
     let full = read(&tree, ".statute/AGENTS.full.md");
-    assert!(full.contains("### Rule 4 (me:4)"), "{full}");
-    assert!(full.contains("(R2)"), "{full}");
+    assert!(full.contains("\n- me:4 "), "{full}");
+    assert!(full.contains("\n- R2 "), "{full}");
     assert_eq!(
         read(&tree, ".statute/.gitignore"),
         "# written by statute\n/AGENTS.full.md\n/site/\n"
@@ -409,7 +409,7 @@ fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
         tree.to_str().unwrap(),
     ]);
     let full = read(&tree, ".statute/AGENTS.full.md");
-    assert!(full.contains("### Rule 4 (me:4)"), "{full}");
+    assert!(full.contains("\n- me:4 "), "{full}");
     assert!(tree.join("CLAUDE.local.md").symlink_metadata().is_ok());
     assert!(!tree.join("AGENTS.md").exists());
     // A checkout the hook cannot serve still succeeds.

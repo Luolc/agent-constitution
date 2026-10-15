@@ -1,0 +1,44 @@
+id = 244
+slug = "frontend-screenshots"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Attach screenshots of each changed page in each theme and language"
+zh = "附上每个改动页面在每种主题、每种语言下的截图"
+
+[text.statement]
+en = "Attach to a pull request that changes how a page looks screenshots of each page it changes, in each theme and each language the site has, made with the repository's screenshot script where it has one."
+zh = "改动页面外观的 pull request 要附上它改动的每个页面在网站每种主题、每种语言下的截图；仓库有截图脚本的，用脚本生成。"
+
+[text.reason]
+en = '''
+A reviewer cannot see from a diff of styles and templates how a page looks; the screenshots are the grounds on which it can check the result without building the site itself ({@constitution:evidence.grounds}). A script makes the same shots each time, so that two of them can be compared.
+'''
+zh = '''
+审查方从样式和模板的 diff 里看不出页面长什么样；有了截图，不用自己构建网站也能核对结果 ({@constitution:evidence.grounds})。脚本每次截的都是同样的画面，两次的截图才能对比。
+'''
+
+[text.verification]
+en = '''
+A change changes how a page looks when it changes the page's styles, templates, icons, or components or their states. The themes are those the site offers, such as light and dark.
+
+Violated when a pull request that changes how a page looks lacks a screenshot of a page it changes in one of the site's themes or languages, or has them made otherwise although the repository has a screenshot script.
+'''
+zh = '''
+变更改动了页面的样式、模板、图标，或者组件及其状态，就算改动了页面外观。主题指网站提供的那几种，比如浅色和深色。
+
+改动页面外观的 pull request 缺少它改动的某个页面在网站某种主题或某种语言下的截图的，或者仓库有截图脚本、截图却是用别的办法生成的，即为违反本规定。
+'''
+
+[translations]
+zh = "4975bff424180a2d231cad4bce39f77cfb25c2ba45cf294da09c57417fe2bb94"

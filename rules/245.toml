@@ -1,0 +1,44 @@
+id = 245
+slug = "frontend-review-against-design"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["independent-review.another-party"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Review a change to the pages against the repository's frontend design, point by point"
+zh = "审查页面改动时，对照仓库的前端设计逐条核对"
+
+[text.statement]
+en = "When you review a change to how a page looks, go through the repository's frontend design against it point by point, and name in the verdict each point the change breaks."
+zh = "审查改动页面外观的变更时，对照仓库的前端设计逐条核对，在结论里写明变更违反的每一条。"
+
+[text.reason]
+en = '''
+The frontend design is where the repository decided how its pages look and behave. A review that only looks at the screenshots passes what the eye does not catch, such as a value written in place of a token or an icon from another library, and a change is reviewed against what applies to it before it takes effect ({@constitution:independent-review.another-party}).
+'''
+zh = '''
+前端设计是仓库定下页面外观和行为的地方。审查只看截图，眼睛看不出的问题就会漏过去，比如本该引用 token 的地方直接写了值，或者用了另一套图标库的图标；而变更生效之前，要对照适用于它的规定审查 ({@constitution:independent-review.another-party})。
+'''
+
+[text.verification]
+en = '''
+The repository's frontend design is the document in which it records how its pages look and behave: their tokens, icons, motion, components and states. A point the change breaks is named in the verdict whether or not the reviewer approves the change. In a repository that keeps no frontend design the rule has nothing to apply to.
+
+Violated when a reviewer approves a change to how a page looks that breaks a point of the repository's frontend design, without naming that point in the verdict.
+'''
+zh = '''
+仓库的前端设计，指仓库记录页面外观和行为的那份文档：token、图标、动效、组件及其状态。不论审查方批不批准变更，变更违反的每一条都要在结论里写明。仓库没有前端设计的，本规定无从适用。
+
+审查方批准了一项改动页面外观、违反仓库前端设计某一条的变更，却没有在结论里写明这一条的，即为违反本规定。
+'''
+
+[translations]
+zh = "70de2bb0204f1ee63ca921bbdde284c4f55f9e18349746b2c2319426113f51f4"

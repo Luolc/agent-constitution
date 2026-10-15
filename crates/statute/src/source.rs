@@ -388,6 +388,10 @@ impl Sources {
                 describe(FIRST_PARTY)
             )),
             (Some(p), None) | (None, Some(p)) => Ok(p),
+            (None, None) if source == FIRST_PARTY => Err(format!(
+                "names `{{${name}}}`, a parameter that {} does not declare",
+                describe(source)
+            )),
             (None, None) => Err(format!(
                 "names `{{${name}}}`, a parameter that neither {} nor {} declares",
                 describe(source),

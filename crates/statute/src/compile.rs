@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::cite::{self, Citation, Labels};
 use crate::lock;
-use crate::manifest::{Key, Part};
+use crate::manifest::Key;
 use crate::node::{self, Check, Kind, Node, Text};
 use crate::param;
 use crate::private;
@@ -66,49 +66,22 @@ struct Command<'a> {
     tools: &'a [String],
 }
 
-/// The deepest heading Markdown has; deeper levels of the tree stay at it.
-const DEEPEST: usize = 6;
-
 /// The words the output adds around the rules, in one language.
 struct Words {
     rules: &'static str,
-    reason: &'static str,
-    verification: &'static str,
-    requires: &'static str,
-    /// Follows the title of a cited rule that is not in the file.
+    /// Follows the title of a cited rule outside the compiled file.
     rule: &'static str,
-    /// Before the rule an overriding rule overrides, and between the
-    /// rules of a chain of overrides.
-    overrides: &'static str,
-    which_overrides: &'static str,
-    /// Before the title of the one-of whose option stands in its place.
-    one_of: &'static str,
-    end: &'static str,
 }
 
 fn words(lang: &str) -> Words {
     match lang {
         "zh" => Words {
             rules: "规定",
-            reason: "理由：",
-            verification: "判定：",
-            requires: "依赖：",
             rule: "规定",
-            overrides: "覆盖 ",
-            which_overrides: "，后者覆盖 ",
-            one_of: "择一：",
-            end: "。",
         },
         _ => Words {
             rules: "Rules",
-            reason: "Reason: ",
-            verification: "Verification: ",
-            requires: "Requires: ",
             rule: "rule",
-            overrides: "Overrides ",
-            which_overrides: ", which overrides ",
-            one_of: "One of: ",
-            end: ".",
         },
     }
 }
@@ -510,7 +483,7 @@ fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
     };
     out.push_str(constitution.trim_end());
     out.push_str("\n\n");
-    let _ = writeln!(out, "# {}", w.rules);
+    let _ = writeln!(out, "# {}\n", w.rules);
 
     // The domains of the first-party source, then those of the other
     // sources by name, then those of the repository's own rules; each
@@ -522,18 +495,12 @@ fn agents_md(project: &Project, fallback: bool) -> Result<String, String> {
         .map(|(key, _)| key)
         .collect();
     for domain in &domains {
-        render(project, &w, &labels, domain, 2, !fallback, &mut out)?;
+        render(project, &labels, domain, !fallback, &mut out)?;
     }
     if fallback && m.public {
         let _ = writeln!(out, "\n---\n\n{}", private::fallback(lang));
     }
     Ok(out)
-}
-
-/// The anchor of a node's heading, its reference with any colon made a
-/// hyphen: `rule-R42`, `rule-L12`, `rule-team-7`.
-fn anchor(key: &Key) -> String {
-    format!("rule-{}", key.to_string().replace(':', "-"))
 }
 
 /// Whether a node appears: a rule when enabled and the rule in its place
@@ -569,17 +536,17 @@ pub fn labels(project: &Project) -> Result<Labels, String> {
     Labels::load(&articles, &m.lang)
 }
 
-/// The text of node `key` with its citations rendered: a rule as its
-/// title, with `links` a link when it is in the file, else followed by
-/// its reference; a provision as its label, in plain text, as in the
-/// constitution's version for agents.
+/// The text of node `key` with its citations rendered: a rule, with
+/// `compiled`, as its reference alone, as each item of the compiled file
+/// starts, else as its title followed by its reference; a provision as
+/// its label, in plain text, as in the constitution's version for agents.
 pub fn cited(
     project: &Project,
     labels: &Labels,
     key: &Key,
     part: &str,
     text: &str,
-    links: bool,
+    compiled: bool,
     private: bool,
 ) -> Result<String, String> {
     let lang = project.manifest.lang.as_str();
@@ -602,11 +569,7 @@ pub fn cited(
             // An overridden rule is shown as the rule in its place.
             let cited = project.resolution.standing(&cited);
             match project.sources.get(&cited) {
-                Some(n) if links && shown(project, &cited) => Ok(format!(
-                    "[{}](#{})",
-                    title(project, &cited, n, private),
-                    anchor(&cited)
-                )),
+                Some(_) if compiled => Ok(cited.to_string()),
                 Some(n) => Ok(format!(
                     "{} ({} {cited})",
                     title(project, &cited, n, private),
@@ -631,32 +594,16 @@ pub fn cited(
     })
 }
 
-/// Writes node `key` and what is below it at heading `level`. A one-of
-/// has no heading of its own: its enabled option stands in its place,
-/// with a line that names the one-of (`docs/design/rule-config.md`, No
-/// rule under a rule).
+/// Writes node `key` and what is below it, in the order of the tree, a
+/// node before its children: each rule shown as one item of a flat list,
+/// its number and its statement, and nothing of a domain or a one-of but
+/// the rules below it (`docs/design/statute-command.md`, Compilation and
+/// the site). An overridden rule's place holds the rule that stands in it.
 fn render(
     project: &Project,
-    w: &Words,
     labels: &Labels,
     key: &Key,
-    level: usize,
     private: bool,
-    out: &mut String,
-) -> Result<(), String> {
-    render_in(project, w, labels, key, level, private, None, out)
-}
-
-/// As `render`, for an option of the one-of `of`.
-#[allow(clippy::too_many_arguments)]
-fn render_in(
-    project: &Project,
-    w: &Words,
-    labels: &Labels,
-    key: &Key,
-    level: usize,
-    private: bool,
-    of: Option<&Key>,
     out: &mut String,
 ) -> Result<(), String> {
     let Some(at) = project.sources.get(key) else {
@@ -665,123 +612,30 @@ fn render_in(
     if !shown(project, key) {
         return Ok(());
     }
-    if at.kind == Kind::OneOf {
-        let mut options = project.sources.children(key);
-        options.sort();
-        for option in options {
-            render_in(project, w, labels, &option, level, private, Some(key), out)?;
-        }
-        return Ok(());
-    }
-    // An overridden rule's place holds the rule that stands in it, with
-    // the anchors of every rule of the chain, so links to them land here.
-    let res = &project.resolution;
-    let standing = res.standing(key);
-    let mut chain = res.chain(&standing);
-    let Some(node) = project.sources.get(&standing) else {
-        return Ok(());
-    };
-    let lang = project.manifest.lang.as_str();
-    out.push('\n');
-    // A link to the one-of lands on the option in its place.
-    for k in of.into_iter().chain(chain.iter().rev()).chain([&standing]) {
-        let _ = writeln!(out, "<a id=\"{}\"></a>", anchor(k));
-    }
-    let _ = writeln!(
-        out,
-        "{} {} ({standing})",
-        "#".repeat(level.min(DEEPEST)),
-        title(project, &standing, node, private),
-    );
-    if !chain.is_empty() {
-        let names: Vec<String> = chain.iter().map(Key::to_string).collect();
-        let _ = writeln!(
-            out,
-            "\n{}{}{}",
-            w.overrides,
-            names.join(w.which_overrides),
-            w.end
-        );
-    }
-    if let Some(one_of) = of.and_then(|k| Some((k, project.sources.get(k)?))) {
-        let _ = writeln!(
-            out,
-            "\n{}{}{}",
-            w.one_of,
-            title(project, one_of.0, one_of.1, private),
-            w.end
-        );
-    }
-    if let Some(applicability) = &node.applicability {
-        let text = pick(applicability, node, lang);
-        let text = cited(
-            project,
-            labels,
-            &standing,
-            "applicability",
-            text,
-            true,
-            private,
-        )?;
-        let _ = writeln!(out, "\n{text}");
-    }
-    if let Some(rule) = &node.rule {
-        for part in &project.manifest.agents_md {
-            let (name, label, text) = match part {
-                Part::Statement => ("statement", "", &rule.statement),
-                Part::Reason => ("reason", w.reason, &rule.reason),
-                Part::Verification => ("verification", w.verification, &rule.verification),
-            };
-            let text = cited(
-                project,
-                labels,
-                &standing,
-                name,
-                pick(text, node, lang),
-                true,
-                private,
-            )?;
-            if label.is_empty() {
-                let _ = writeln!(out, "\n{text}");
-            } else {
-                let _ = writeln!(out, "\n{label}{text}");
+    if at.kind == Kind::Rule {
+        let standing = project.resolution.standing(key);
+        let Some((node, Some(rule))) = project.sources.get(&standing).map(|n| (n, &n.rule)) else {
+            return Ok(());
+        };
+        let lang = project.manifest.lang.as_str();
+        let text = pick(&rule.statement, node, lang);
+        let text = cited(project, labels, &standing, "statement", text, true, private)?;
+        // A line after the first, indented, continues the item.
+        let mut lines = text.lines();
+        let _ = write!(out, "- {standing} {}", lines.next().unwrap_or_default());
+        for line in lines {
+            out.push('\n');
+            if !line.is_empty() {
+                let _ = write!(out, "  {line}");
             }
         }
-        // A requirement that leads out of the nearest domain, a subdomain
-        // included, is a link.
-        let domain = project.sources.domain(&standing);
-        let crossing: Vec<String> = project
-            .sources
-            .requires(&standing)
-            .into_iter()
-            .filter(|target| project.sources.domain(target) != domain)
-            .filter_map(|target| {
-                // A rule not in the file, one that only the reviewer
-                // reads, is named as a citation of it is.
-                let in_file = shown(project, &target);
-                let target = res.standing(&target);
-                let n = project.sources.get(&target)?;
-                let title = title(project, &target, n, private);
-                Some(if in_file {
-                    format!("[{title}](#{})", anchor(&target))
-                } else {
-                    format!("{title} ({} {target})", w.rule)
-                })
-            })
-            .collect();
-        if !crossing.is_empty() {
-            let _ = writeln!(out, "\n{}{}", w.requires, crossing.join(", "));
-        }
+        out.push('\n');
+        return Ok(());
     }
-    // The children of every rule of the chain stay, under this heading.
-    chain.push(standing);
-    let mut children: Vec<Key> = chain
-        .iter()
-        .flat_map(|k| project.sources.children(k))
-        .collect();
+    let mut children = project.sources.children(key);
     children.sort();
     for child in children {
-        render(project, w, labels, &child, level + 1, private, out)?;
+        render(project, labels, &child, private, out)?;
     }
     Ok(())
 }
