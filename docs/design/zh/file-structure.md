@@ -1,4 +1,4 @@
-<!-- en-sha256: 2ca11f80b5018f9e9cb13d6947d25c93a2e9250cb72500d8508fcd1ddec7326a -->
+<!-- en-sha256: db80d99867e28e3a1f6c4255a1b131a2f75bebc703a5d9d3ef14807c5d31585d -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -9,7 +9,17 @@ README.zh-CN.md           同一页的中文版                               A
 LICENSE                   Apache-2.0，适用于下面那部分文字以外的一切   A
 LICENSE-CC-BY-4.0         CC BY 4.0，适用于 constitution/、rules/
                           和 skills/ 的文字                            A
-AGENTS.md                 在本仓工作的 agent 遵守的仓库规则            A
+AGENTS.md                 在本仓工作的 agent 读的指令文件，由 statute
+                          按 statute.toml 编出，不手改                 A
+AGENTS.legacy.md          原来手写的 AGENTS.md，留到用户说删为止       A
+statute.toml              规定清单：宪法、本仓采用的领域和规定、参数   A
+statute.lock              钉住的规定及其哈希，由 statute 写出          A
+statute-checks.toml       检查文件，由 statute 写在 statute.toml 旁    A
+.statute/
+  .gitignore              statute 在写出第一个生成文件前写它，
+                          新 clone 因此忽略 statute 在 .statute/ 里
+                          生成的文件                                   A
+  rules/                  本仓自己的规定，一条一个文件                 A
 constitution/
   <YYYY-MM>/              版目录，目前是 2026-10 (constitution.md)     A
     index.toml            状态、版、修订号、语言、标题、卷首           A
@@ -38,6 +48,8 @@ rules/
 skills/
   <name>/SKILL.md         一个通用 skill 一个目录，模板文件放在
                           旁边，原样安装                               A
+.agents/skills/<name>/    statute 装进来的 skill，每个配一条链接
+                          .claude/skills/<name>                        A
 schema/                   规定、fixture 和 overlay manifest 的 schema  B
 tools/                    一个 uv workspace，每个子目录一个 Python 项目：
   site/                   包 constitution_site，运行 statute export    A
