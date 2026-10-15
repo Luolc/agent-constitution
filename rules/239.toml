@@ -1,0 +1,44 @@
+id = 239
+slug = "self-contained-statement"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+default = "on"
+authority = ["decidable-provisions"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Write a rule's statement so that it reads on its own, without the structure around it"
+zh = "规定的要求单独读就能懂，不靠它周围的结构"
+
+[text.statement]
+en = "Write a rule's statement so that it can be read and followed on its own, as one line of the compiled instructions: make it rest on nothing that line does not show, such as the rule's title, reason or verification, its domain, its place in the tree or its `requires`, and name another rule only by a citation, never by its position, as in \"the rule above\" or \"the other options\"."
+zh = "规定的要求 (statement) 要写成编译出的指令里单独的一行就能读懂、能照做：不依赖这一行里看不到的东西，例如这条规定的标题、理由、核验方法，它所在的领域、它在规定树里的位置或它的 `requires`；提到别的规定只用引用，不按位置指代，不写「上一条」「其他选项」这类话。"
+
+[text.reason]
+en = '''
+The compiled instructions are what an agent reads while it works ({@constitution:terms.compiled-instructions}), and they hold each rule as its statement alone: the title, the reason, the verification, the domain and the fields that place a rule in the tree are what compiling reads, not what the agent sees. A statement whose meaning rests on any of them, or on the rule beside it in the source, leaves the agent unable to tell from what it reads whether its work complies ({@constitution:decidable-provisions}). This is the statement's side of {@rule:99}: the fields decide which rules compiling takes in, and a citation is the only way the statement itself names a rule. For the same reason each option of a one-of is a complete rule ({@rule:230}), and the instructions can hold only the rules an agent needs at work ({@rule:233}) without the rest of the tree.
+'''
+zh = '''
+编译出的指令是 agent 干活时读的东西 ({@constitution:terms.compiled-instructions})，其中每条规定只剩它的要求：标题、理由、核验方法、领域，以及决定规定挂在树上哪里的字段，都是编译时读的，agent 看不到。要求的意思一旦依赖其中任何一项，或者依赖规定源里挨着它的那条规定，agent 就没法凭读到的内容判断自己的工作是否合规 ({@constitution:decidable-provisions})。这是 {@rule:99} 落到要求上的那一面：字段决定编译时收进哪些规定，要求本身提到别的规定只能用引用。也正因为如此，one-of 的每个选项都是一条完整的规定 ({@rule:230})，指令里也才能只放 agent 干活需要的规定 ({@rule:233})，不带规定树的其余部分。
+'''
+
+[text.verification]
+en = '''
+The line a statement becomes is the statement as compiling writes it, with each citation and parameter rendered. A statement rests on what that line does not show when an agent that reads only the line cannot tell what it requires, or whom or what it applies to, without the rule's title, reason, verification, domain, parent or the other options of its one-of, the rules next to it in the source, or its `requires` or `conflicts`. A rule a citation in the line names is shown by the line.
+
+Violated when a change adds or rewrites a rule's statement so that it rests on what its line does not show, or so that it names another rule by position instead of by a citation.
+'''
+zh = '''
+要求编译成的那一行，指编译时写出的要求，其中的引用和参数都已渲染。一个 agent 只读这一行，如果不看规定的标题、理由、核验方法、领域、parent 或同一 one-of 的其他选项，不看规定源里挨着它的规定，也不看它的 `requires` 或 `conflicts`，就弄不清它要求什么、对谁或对什么适用，这条要求就依赖了这一行看不到的东西。这一行里引用的规定，算这一行看得到的。
+
+变更新增或改写规定的要求后，要求依赖了它那一行看不到的东西，或者按位置而不是用引用提到别的规定的，即为违反本规定。
+'''
+
+[translations]
+zh = "067953a01f7b61636483b63c4d38dd9351eeaf753dfa2bc66c1e184f0e4b4ab2"
