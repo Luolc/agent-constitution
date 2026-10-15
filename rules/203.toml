@@ -17,8 +17,8 @@ en = "Write comments in code in the language set for them"
 zh = "代码注释用为它设定的语言写"
 
 [text.statement]
-en = "Write comments in code in the language set for code comments (parameter `language.code-comments`, default `en`)."
-zh = "代码注释用为代码注释设定的语言写 (参数 `language.code-comments`，默认 `en`)。"
+en = "Write comments in code in {$language.code-comments}."
+zh = "代码注释用{$language.code-comments}写。"
 
 [text.reason]
 en = '''
@@ -41,4 +41,4 @@ docstring 也算注释。照原文保留的引文 ({@rule:214})，以及作为�
 '''
 
 [translations]
-zh = "b9422f1c84e047f8aabb3e7df2a94228d23510b23fcef19d9c6240ca5f20a581"
+zh = "f14cb8798a885389840dbb3b0472b23659a863b0eaded9adf6c36a7ce5d22c2f"
