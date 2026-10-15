@@ -1,4 +1,4 @@
-<!-- en-sha256: 00e69aaea835f7ccb13f1eb2e938e8778a83675b822494dbacbb5b6b745cc69b -->
+<!-- en-sha256: f3d90d80e54444b0a70fff10b2ced85b2efbabb51040ea33061013657296303c -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -12,13 +12,14 @@ LICENSE-CC-BY-4.0         CC BY 4.0，适用于 constitution/、rules/
 AGENTS.md                 在本仓工作的 agent 读的指令文件，由 statute
                           按 statute.toml 编出，不手改                 A
 AGENTS.legacy.md          原来手写的 AGENTS.md，留到用户说删为止       A
-statute.toml              规则集：宪法、本仓采用的领域和规则、参数     A
-statute.lock              钉住的规则及其哈希，由 statute 写出          A
+statute.toml              规定清单：宪法、本仓采用的领域和规定、参数   A
+statute.lock              钉住的规定及其哈希，由 statute 写出          A
 statute-checks.toml       检查文件，由 statute 写在 statute.toml 旁    A
 .statute/
   .gitignore              statute 在写出第一个生成文件前写它，
-                          新 clone 因此忽略生成文件                    A
-  rules/                  本仓自己的规则，一条一个文件                 A
+                          新 clone 因此忽略 statute 在 .statute/ 里
+                          生成的文件                                   A
+  rules/                  本仓自己的规定，一条一个文件                 A
 constitution/
   <YYYY-MM>/              版目录，目前是 2026-10 (constitution.md)     A
     index.toml            状态、版、修订号、语言、标题、卷首           A

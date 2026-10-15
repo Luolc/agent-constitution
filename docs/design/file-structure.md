@@ -25,7 +25,8 @@ statute-checks.toml       the checks file, written by statute beside
                           statute.toml                                 A
 .statute/
   .gitignore              written by statute before its first generated
-                          file, so a new clone ignores them            A
+                          file, so that a new clone ignores the files
+                          statute generates in .statute/               A
   rules/                  the local rules, one file per rule           A
 constitution/
   <YYYY-MM>/              the edition directory, today 2026-10
