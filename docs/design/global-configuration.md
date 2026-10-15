@@ -80,6 +80,9 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   committed rule set and lock file alone say what a repository's
   compiled output holds. A source of the global configuration is
   available to every rule set by its name, as if the rule set named it.
+  The configuration may also hold the values of parameters, which
+  `statute init` copies into a new rule set and no compile reads
+  ([Setting a value](rule-config.md#setting-a-value), not built yet).
 
 **The built-in default** is the one source statute knows by itself:
 `R = { git = "https://github.com/Luolc/agent-constitution", branch = "main" }`.

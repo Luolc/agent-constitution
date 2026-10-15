@@ -9,8 +9,9 @@ and which domains and rules come in without being listed, through a
 switch each of them declares. It builds on
 [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
 [Rule file format](rule-format.md#rule-file-format) and
-[Rule sources](rule-sources.md), and on the global configuration in
-the user's statute directory, `~/.statute/config.toml`, which names
+[Rule sources](rule-sources.md), and on
+[the global configuration](global-configuration.md#the-global-configuration)
+in the user's statute directory, `~/.statute/config.toml`, which names
 sources for every rule set of the user and enables no rule.
 
 The aim behind all three: a repository that adopts statute gets a
@@ -25,6 +26,7 @@ has to take out.
 - [Parameters](#parameters)
 - [Default switches](#default-switches)
 - [Recommended defaults for the first-party rules](#recommended-defaults-for-the-first-party-rules)
+- [Proposed: no rule under a rule](#proposed-no-rule-under-a-rule)
 - [What this changes](#what-this-changes)
 
 ## The directory of local rules
@@ -56,8 +58,8 @@ general rule for others. Its rule set, once it has one, names
 `local-rules = ".repo-rules"` for its own, `L12`. It then has local
 rules beside the first-party ones, and all four kinds of source
 ([Four kinds of source](rule-sources.md#four-kinds-of-source)) can
-occur in it. The local site that `statute site` writes lists a source
-at `.` once, as global public, and says in its local public section
+occur in it. [The local site](statute-command.md#the-local-site)
+lists a source at `.` once, as global public, and says in its local public section
 that the repository's own rules are there; with `.repo-rules/`, the
 local public section lists the repository's own rules itself.
 
@@ -79,10 +81,10 @@ constitution's permission.
 ### Declaring a parameter
 
 A parameter is a node of the rule tree, one file in `rules/` as a rule
-is, with `kind = "parameter"`:
+is, with `kind = "parameter"` (the ID here is made up):
 
 ```toml
-id = 130
+id = 9001
 slug = "language-commits"
 revision = 1
 kind = "parameter"
@@ -103,9 +105,24 @@ en = "Language of commit messages and pull request titles"
   key the rule set already has (`rules`, `packs`, `sources`,
   `compile` and the others). The name, not the ID, is what a rule's
   text and a rule set write, so that both read as what they mean.
-- `type`: `language`, a language code that statute has a name for
-  (today `en` and `zh`); `integer` comes with the first number.
-- `default`: the value a rule set that sets none gets.
+- `type`: one of
+  - `language`: a language code that statute has a name for (today
+    `en` and `zh`);
+  - `string`: any text that is not empty, on one line, with no space
+    at either end and no backtick. A string is a name, so a rule writes
+    its placeholder inside a code span itself
+    (`` `{$work-items.label-approved}` ``), and statute fills in the
+    value with no mark of its own;
+  - `integer`, which comes with the first number.
+
+  The build checks the `default` and every value a rule set sets
+  against the type, and fails naming the parameter and the value.
+  statute does not check that a string names anything that exists,
+  such as a label on an issue tracker.
+- `default`: the value a rule set that sets none gets. The key means
+  the same on every kind of node, what a rule set gets when it says
+  nothing: here a value, on a domain or a rule its switch, on a one-of
+  its child ([Default switches](#default-switches)).
 - `parent`: a domain, where the parameter is listed on the sites. A
   parameter belongs to no domain otherwise: rules of any domain may use
   it.
@@ -174,7 +191,8 @@ docs = "zh"
   name for. A value set for a parameter no enabled rule uses draws a
   warning, so that a value stays in place while its rules are turned
   off.
-- The global configuration may hold the same tables. Its values are
+- [The global configuration](global-configuration.md#the-global-configuration)
+  may hold the same tables. Its values are
   not read when a rule set is compiled: `statute init` writes them into
   the new `statute.toml`, and they will be the values of the user-level
   output once that is built
@@ -195,7 +213,7 @@ parameter's `default`.
 | `language.docs` | the repository's documents: Markdown, the design, other prose files |
 | `language.commits` | commit messages and pull request titles |
 | `language.pull-requests` | pull request descriptions, their comments and reviews |
-| `language.tickets` | issues and other work items |
+| `language.work-items` | issues and other work items |
 
 Commit messages and pull request descriptions are two parameters
 because a common setup writes the first in English, for the history
@@ -203,7 +221,26 @@ and its tools, and the second in the language of the people who read
 the repository. Code itself, its identifiers and the strings that are
 part of its interface, has no parameter: it is in English.
 
-`[compile] lang` stays apart from these: it names the language the
+**Names on the issue tracker.** The rules about work items name the
+tracker's labels and statuses, which differ from one tracker or team
+to another. Four `string` parameters are planned, under the domain
+R14, each with a common name as its default:
+
+| Name | Default | Governs |
+| --- | --- | --- |
+| `work-items.label-needs-decision` | `needs-user` | the label of an item that waits for a person to look or decide |
+| `work-items.label-approved` | `approved` | the label of an item a person has approved |
+| `work-items.status-done` | `Done` | the status of an attempt that ended as done |
+| `work-items.status-abandoned` | `Abandoned` | the status of an attempt that was given up |
+
+Until parameters are built, a rule that uses one writes the name and
+the default in plain text, "(parameter `work-items.label-needs-decision`,
+default `needs-user`)", and the change that builds them replaces that
+with the placeholder. The table `work-items` and the key
+`language.work-items` do not collide: one is a table of the rule set, the
+other a key in the table `language`.
+
+`[compile] lang` stays apart from the language parameters: it names the language the
 compiled `AGENTS.md` is written in, which is a choice about the
 agents' reading, while the parameters say what the agents write.
 
@@ -214,9 +251,9 @@ as for a rule, with the value the rule set gets:
 
 ```toml
 [[rules]]
-rule = "R130"
+rule = "R9001"
 revision = 1
-sha256 = "<SHA-256 of rules/130.toml>"
+sha256 = "<SHA-256 of rules/9001.toml>"
 value = "zh"
 ```
 
@@ -226,7 +263,7 @@ parameter with its old and new value.
 
 **The compiled `AGENTS.md`** writes the value in place of the
 placeholder, with no mark: a language as its name in the language of
-the file (`Chinese`, `中文`), a number as written. A rule's heading
+the file (`Chinese`, `中文`), a string or a number as written. A rule's heading
 and statement read as if the value had been written in the rule.
 
 **`statute explain <name>`** says the value, where it came from (the
@@ -261,9 +298,10 @@ kind = "rule"
 default = "on"
 ```
 
-- `on` or `off`. A one-of and a parameter have no `default`: a one-of
-  is on when one of its children is, and a parameter when a rule uses
-  it.
+- `on` or `off`. A parameter's `default` is its value
+  ([Declaring a parameter](#declaring-a-parameter)), and a parameter is
+  in a rule set when a rule uses it. The children of a one-of have no
+  `default`; the one-of names one of them as its default (below).
 - A domain is `off` when it is for some repositories or some ways of
   working only, as Fleet is for work divided among agents: none of its
   rules comes in until a rule set turns it on. A subdomain's `default`
@@ -272,15 +310,36 @@ default = "on"
   likely to be wrong anywhere. A rule that depends on one person's
   preference or on the environment (a shared machine, a reviewer, a
   CI service, a tool) is `off`.
-- At most one child of a one-of is `on`.
 - The rules that a source's defaults enable must resolve on their own:
   within the source, the parent of an `on` rule, when that is a rule,
   and every rule it requires are `on`, and an `on` rule requires
   nothing of a domain that is `off` while its own is `on`. The build
   checks it.
 
-Changing a rule's or a domain's `default` does not change what counts
-as compliant, so it is a change in place, and the revision goes up by
+**A one-of's default.** Every one-of names one of its children as its
+default, in a required field:
+
+```toml
+id = 79
+kind = "one-of"
+parent = 16
+default = 81
+```
+
+- `default` is the ID of a child of the one-of; the build fails when it
+  names any other node.
+- A one-of is on whenever its parent is, a domain that is on or a rule
+  that is enabled: it then enables its default child, unless the rule set picks another child or turns
+  the one-of off (below). So a repository that turns a domain on gets
+  one working choice at every one-of without having to make it, and
+  changes only the choices it cares about.
+- A one-of that only some repositories need belongs in a domain or
+  subdomain that is `off`, which those repositories turn on.
+- The rules the default children bring in must resolve on their own, as
+  `on` rules must (above).
+
+Changing the `default` of a rule, a domain or a one-of does not change
+what counts as compliant, so it is a change in place, and the revision goes up by
 one ([IDs and revisions](rule-format.md#ids-and-revisions)). `upgrade`
 lists a rule that comes in or drops out through it, as it lists one a
 requirement brings in.
@@ -299,11 +358,12 @@ packs = ["R96"]
 - `rules`, as today, turns on a rule. For a rule that is `off`, or in
   a domain that is `off`, that is what turns it on; listing a rule that
   the defaults already enable draws a warning. Listing a child of a
-  one-of turns off the child that is `on` by default.
+  one-of picks it in place of the one-of's default.
 - `domains` turns on a domain that is `off`: its rules follow their
   own `default`. Listing a domain that is `on` draws a warning.
-- `exclude` turns off a domain or a rule the defaults enable. Turning
-  off a rule turns off its subtree. A rule that an enabled rule
+- `exclude` turns off a domain, a one-of or a rule the defaults
+  enable. Turning off a node turns off its subtree; a one-of turned off
+  enables none of its children. A rule that an enabled rule
   requires cannot be turned off: the build fails, naming the rule that
   requires it.
 - `packs`, as today, turns on a whole subtree, every rule in it,
@@ -349,7 +409,9 @@ lists those that a changed `default` brings in or drops.
 on by default and why the rule set has it or not: "R44 is on by
 default, and its domain R13 is on"; "R66 is on by default and taken
 out by `exclude`"; "R78 is off by default; `statute add R78` turns it
-on". `statute explain --defaults` prints three lists for the rule set:
+on". For a one-of it names the default child, and the child the rule
+set picked when that is another. `statute explain --defaults` prints
+three lists for the rule set:
 the rules on by default that it keeps, those on by default that it
 turns off, and those off by default that it turns on.
 
@@ -357,9 +419,9 @@ turns off, and those off by default that it turns on.
 however they came in.
 
 **The public site** marks each domain and rule as on or off by default
-in the list and on its page, and the list gets a filter that shows only
+in the list and on its page, and each one-of's default child, and the list gets a filter that shows only
 the rules on by default, so that a reader sees at a glance what a new
-rule set holds. **The local site** shows the same mark beside whether
+rule set holds. **The local site** shows the same marks beside whether
 its rule set enables the rule.
 
 ### Moving a repository over
@@ -373,7 +435,8 @@ prints once the rule set is written:
 2. those on by default that it must turn off: `exclude`, each with a
    comment that says why;
 3. the domains and rules off by default that it needs: `domains` and
-   `rules`.
+   `rules`, and each one-of where it picks another child than the
+   default: `rules`.
 
 A rule set written before default switches lists every rule it uses in
 `rules` and `packs`; under the defaults it may also get rules it never
@@ -386,18 +449,17 @@ migration (not written yet) goes through the three lists in this order.
 The first-party rules do not carry `default` yet. The table below is
 the recommendation that the change adding the field follows; from then
 on the rule files are the record, and this section goes. It covers the
-rules in force on the main branch on 2026-10-14 and those added by the
-pull request that splits rules 4, 20 and 82 (112 to 124); R4, R20 and
-R82, which it supersedes, are listed with their successors. Rules
-superseded before are left out, since they are never enabled. A rule
-not listed below under its domain is recommended `on`.
+rules on the main branch on 2026-10-14, up to R126; superseded rules
+are left out, since they are never enabled. A rule not listed below
+under its domain is recommended `on`.
 
 | Domain | Default | Why |
 | --- | --- | --- |
 | R13 Security | on | Wherever agents work |
 | R14 Collaboration | on | Wherever an agent acts for a person; its review and work-item rules are off |
 | R15 Verification | on | Wherever agents change a repository with checks |
-| R16 Documentation | on | Wherever agents write documents; its design rules are off |
+| R16 Documentation | on | Wherever agents write documents |
+| Design, a new subdomain of R16 | off | Only for a repository that keeps a design (below) |
 | R77 Git | on | Nearly every repository agents commit to is a Git repository |
 | R78 Fleet | off | Only for work divided among agents |
 | R83 Code | on | Wherever agents write code; its narrower testing rules are off |
@@ -413,7 +475,7 @@ Rules recommended `off` in a domain that is `on`, by the test above
 | R52 A reviewer reads what goes to a public repository | Environment: a reviewer agent |
 | R93 Text through a shell only from a quoted heredoc | Preference about how to call commands |
 | R94 Check sent text against its file | Its parent, R93, is off |
-| R4, R116 to R121: finding and taking work items | Environment: a place where work items are kept |
+| R116 to R121: finding and taking work items | Environment: a place where work items are kept |
 | R57 Changes only through reviewed pull requests | Preference: a solo repository may commit directly |
 | R58 Release only a commit whose CI passed first time | Environment: CI on the main branch |
 | R59 Read CI on the merge commit | Environment: CI on the main branch |
@@ -427,7 +489,6 @@ Rules recommended `off` in a domain that is `on`, by the test above
 | R46 to R49 Instruction files in changes of their own | Preference about how instruction changes are reviewed |
 | R56 Read the description back against the head | Preference about how a pull request is kept |
 | R72 Cite the CI run, not a full local run | Preference about running the full suite locally |
-| R19 to R21, R82, R112 to R114, R122 to R124, and R80 and R81 under the one-of R79: the design | Environment: a repository that keeps a design |
 | R69 Nothing in an agent tool's own memory | Preference |
 | R50 Scan staged changes for credentials in the hooks | Environment: a scanner installed and hooks set up |
 | R84 to R86 Narrow testing rules | Preference about which tests to write |
@@ -435,6 +496,73 @@ Rules recommended `off` in a domain that is `on`, by the test above
 
 The domains that are off (R78, R96) have every rule `on`: a rule set
 that turns one on takes it whole.
+
+**A subdomain for the design.** The rules about a repository's design
+(R19, R21, R112 to R114, R122 to R125, and the one-of R79 with its
+children R80 and R81) concern only a repository that keeps a design.
+Recommended: a new subdomain "Design" under R16, `off`, holding them
+all, each `on` inside it; a repository that keeps a design turns on
+the subdomain alone. Moving them is a change of their `parent`, made
+with the change that adds `default`.
+
+**One-ofs.** R79, "Keep the design in step with the code", is the only
+one-of so far. Recommended default: R81, the code and the design change
+apart and every difference is marked, since it holds for a design
+written before or after the code, while R80 asks every change to carry
+its design along.
+
+## Proposed: no rule under a rule
+
+Open, for the person to decide. Until it is decided, the tree of
+[Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs)
+and [Rule file format](rule-format.md#rule-file-format) stands, and the
+default switches above are written for it; once the proposal is
+accepted, a change to those two parts of the design carries it.
+
+**The proposal.**
+
+- A rule's parent is a domain or a one-of, never a rule. What a rule
+  under a rule says today, that it refines the other, is written as
+  `requires`.
+- A one-of's parent is a domain.
+- A one-of's options are its children, all rules or all domains, never
+  some of each; the build checks it. An option that is one rule is that
+  rule, with no domain around it; an option that needs several rules
+  is a domain whose parent is the one-of, holding them. Domains still
+  nest at most two levels, counting such a domain as one: a one-of in a
+  subdomain has rules as its options.
+- Every one-of names one of its options as its default
+  ([A one-of's default](#in-the-rule-files)), as decided above.
+- An option names its one-of in its `parent`, as a child of a one-of
+  does today; the one-of lists no `options`. The tree stays recorded in
+  `parent` alone ([Rule file format](rule-format.md#rule-file-format)),
+  an option is added or moved by changing one file, and the rules of
+  today need no change for it. The one-of's own file does not show its
+  options; `statute explain` and the sites list them.
+- In the compiled `AGENTS.md`, a domain's rules stand one level below
+  its heading, and a one-of's enabled option stands at the one-of's
+  place, with a line that names the one-of ("One of: Keep the design in
+  step with the code."); an option that is a domain keeps its heading.
+  On the sites, a one-of is a box in its domain's list that names each
+  option and marks the default; an option appears in that box only, not
+  again in the list.
+
+**Why it is recommended.** A reader of the compiled file or the site
+finds every rule directly under a domain or a one-of, with no rule
+nested under a rule, and an option of one rule needs no domain of its
+own. The special case of a rule's parent that counts as a requirement
+goes, and so does a requirement passing through a one-of to the
+one-of's own parent, since that parent is now always a domain. What is
+lost is the indentation that showed a rule refining another; `requires`
+keeps the relation, and the site shows it on both rules.
+
+**What it changes.** One rule moves: R94, whose parent is R93; its
+parent becomes R13 and it requires R93. R80 and R81, the children of
+the one-of R79, stay as they are. `constitution-build` checks that no
+rule's parent is a rule, that a one-of's parent is a domain and that
+its children are all rules or all domains. statute drops the parent as
+a requirement. The lock file does not change. Nothing of this is
+built.
 
 ## What this changes
 
@@ -458,4 +586,6 @@ The parts of the design this one changes:
   parameters' tables, a source entry `defaults`, and the lock file
   `by` and `value`.
 - [Rule file format](rule-format.md#rule-file-format): the kind
-  `parameter`, and `default` on domains and rules.
+  `parameter`, and `default` on domains, rules and one-ofs.
+- [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
+  a one-of enables its default child when the rule set picks none.
