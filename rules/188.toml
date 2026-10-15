@@ -1,0 +1,21 @@
+id = 188
+slug = "fednet"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "fednet"
+zh = "fednet"
+
+[applicability]
+en = '''
+Covers what holds only where agents read and write a principal's Slack through fednet: how a yes the principal gave in Slack is relayed, read and checked. Enable it where agents reach the principal's Slack through fednet; where none does, leave it off.
+'''
+zh = '''
+管只在 agent 经 fednet 读写委托人的 Slack 时才成立的做法：委托人在 Slack 里给的同意怎样转告、怎样读取、怎样核对。agent 经 fednet 接入委托人的 Slack 的环境启用；没有 agent 这样做的，不启用。
+'''
+
+[translations]
+zh = "6a90cf7110f8c92719f6da8588267478ab20b88de2d869db3fca85a765b5dd9a"
