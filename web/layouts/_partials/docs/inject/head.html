@@ -25,9 +25,10 @@
 {{- with resources.Get "icons/lucide/check.svg" }}
 <style>:root { --icon-lucide-check: url("data:image/svg+xml;base64,{{ replace .Content `stroke-width="2"` `stroke-width="1.75"` | base64Encode }}"); }</style>
 {{- end }}
-{{- /* Without scripts, the lists of the rules under the provisions
-  are open, since nothing could open them (assets/cites.js). */}}
-<noscript><style>.cites-list { display: block; } .cites-toggle { display: none; }</style></noscript>
+{{- /* Without scripts, the rules under a provision that cite only one
+  under it are shown and their button hidden, since nothing could show
+  them (assets/cites.js). */}}
+<noscript><style>.cites-more { display: contents; } .cites-button { display: none; }</style></noscript>
 {{- /* Without scripts, the lists of the sidebar are open and its
   groups' buttons hidden; the language switch's button stays, as it names
   the language, its chevron turned to open and clicks passing it by. On

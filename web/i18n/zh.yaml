@@ -61,9 +61,10 @@ uses-instructions: "指令"
 uses-review: "审查"
 language-en: "英文"
 language-zh: "中文"
-# 条款下引用它的规定、本条及其下各款和项的规定，二者的按钮 (content/_content.gotmpl)。
-cited-by: "引用本条款的规定：{{ .Count }} 条"
-cited-within: "本条及其下各款、项共被 {{ .Count }} 条规定引用"
+# 条款下引用它的规定那一行的名字；行里按钮的文字，按钮显示只引用其下级条款的规定，分有、没有直接引用本条的规定两种 (layouts/_partials/rules/cites.html)。
+cited-by: "引用本条款的规定"
+cited-within-more: "另有 {{ .Count }} 条引用下级条款"
+cited-within: "{{ .Count }} 条规定引用下级条款"
 # 规定列表和它的控件 (layouts/rules/section.html)。
 rules-filter: "筛选"
 rules-domains: "领域"
