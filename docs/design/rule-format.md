@@ -220,7 +220,8 @@ The fields:
   reads `review`, the older name of `none`; taking it out is not built
   yet.
 - `default`: whether the rule is on by default, `on` or `off`; a child
-  of a one-of has none
+  of a one-of has none, nor does a rule with `overrides`, though statute
+  does not fail on one yet
   ([Default switches](rule-config.md#default-switches)). Required, but
   statute still accepts a node without it, which counts as `off`;
   making it required is not built yet.
