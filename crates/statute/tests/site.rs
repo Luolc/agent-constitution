@@ -743,9 +743,10 @@ fn site_writes_both_languages() {
 /// `AGENTS.md`, in the page's language or marked as not translated, and
 /// the three views of the rows, chosen by radio buttons the style sheet
 /// follows.
-#[test]
-fn site_shows_statements_in_three_views() {
-    let dir = repo("statements", "r/");
+/// A site whose rules have statements: R2 in English and Chinese, R7 in
+/// English only, with a placeholder the rule set gives `zh`.
+fn statements(name: &str) -> PathBuf {
+    let dir = repo(name, "r/");
     write(
         &dir,
         "statute.toml",
@@ -794,26 +795,32 @@ fn site_shows_statements_in_three_views() {
         let r = statute(&dir, &[command]);
         assert_eq!(r.code, 0, "{command}: {}", r.stderr);
     }
-    let site = dir.join(".statute/site");
-    // The statement of a rule, after its row and before the next one.
+    dir
+}
+
+#[test]
+fn site_shows_statements_in_three_views() {
+    let site = statements("statements").join(".statute/site");
+    // The statement of a rule, at the end of its row.
     let statement = |index: &str, id: u64| {
         let at = index.find(&format!("<a href=\"R/{id}.html\">")).unwrap();
-        let row = at + index[at..].find("</div>").unwrap() + "</div>".len();
-        index[row..row + index[row..].find("</li>").unwrap()].to_owned()
+        let start = at + index[at..].find("<div class=\"statement\"").unwrap();
+        let end = start + index[start..].find("</div></div></li>").unwrap() + "</div>".len();
+        index[start..end].to_owned()
     };
     let index = read(&site, "index.html");
     assert_eq!(
         statement(&index, 7),
-        "<div class=\"statement\">\n<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>\n</div>\n"
+        "<div class=\"statement\">\n<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>\n</div>"
     );
     assert_eq!(
         statement(&index, 2),
-        "<div class=\"statement\">\n<p>Do the thing 2.</p>\n</div>\n"
+        "<div class=\"statement\">\n<p>Do the thing 2.</p>\n</div>"
     );
     let zh = read(&site, "zh/index.html");
     assert_eq!(
         statement(&zh, 2),
-        "<div class=\"statement\">\n<p>做事 2。</p>\n</div>\n"
+        "<div class=\"statement\">\n<p>做事 2。</p>\n</div>"
     );
     let r7 = statement(&zh, 7);
     assert!(
@@ -838,12 +845,97 @@ fn site_shows_statements_in_three_views() {
             );
             assert!(page.contains(&radio), "{radio}");
         }
-        assert!(page.contains("body:has(#view-title:checked) .tree .statement { display: none; }"));
-        assert!(page.contains("body:has(#view-statement:checked) .has-statement > .row .title {"));
+        assert!(
+            page.contains("body:has(#view-title:checked) .row > .statement { display: none; }")
+        );
+        assert!(
+            page.contains("body:has(#view-statement:checked) .has-statement > .row > a .title {")
+        );
         assert!(page.contains("query.set(\"view\", view.value)"));
     }
     // A rule's own page is as it was.
     assert!(read(&site, "R/7.html").contains(
         "<p>Write in <a class=\"value\" href=\"../R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"
     ));
+}
+
+/// Google Chrome or Chromium on `PATH`; `None` lets a test skip, but not
+/// in CI, which has Chrome.
+fn chrome() -> Option<PathBuf> {
+    let path = std::env::var_os("PATH").unwrap_or_default();
+    let found = std::env::split_paths(&path)
+        .flat_map(|dir| {
+            [
+                "google-chrome",
+                "google-chrome-stable",
+                "chromium",
+                "chromium-browser",
+            ]
+            .map(|name| dir.join(name))
+        })
+        .find(|path| path.is_file());
+    assert!(
+        found.is_some() || std::env::var_os("CI").is_none(),
+        "no Chrome in CI"
+    );
+    found
+}
+
+/// The view in the address, in headless Chrome, which runs the index's
+/// script: an address without a view shows the default, also on the way
+/// back to it; an index opened at such an address shows the view kept
+/// and writes it in; an address's own view wins. A script added to the
+/// page records what it shows on `<body data-probe>`. Skipped without
+/// Chrome, except in CI.
+#[test]
+fn site_keeps_the_view_in_the_address() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("view");
+    let index = read(&dir, ".statute/site/index.html");
+    let probe = r##"<script>
+const shown = () => document.querySelector("input[name='view']:checked").value;
+const done = (r) => document.body.setAttribute("data-probe", r.join(" "));
+addEventListener("load", () => {
+  const r = [shown(), location.search || "-"];
+  if (location.hash !== "#click") return done(r);
+  document.querySelector("label[for='view-title']").click();
+  r.push(shown(), location.search || "-");
+  addEventListener("popstate", () => done([...r, shown(), location.search || "-"]), { once: true });
+  history.back();
+});
+</script></body>"##;
+    let page = dir.join("probe.html");
+    std::fs::write(&page, index.replace("</body>", probe)).unwrap();
+    let profile = dir.join("profile");
+    let run = |query: &str| {
+        let out = Command::new(&chrome)
+            .args([
+                "--headless",
+                "--no-proxy-server",
+                "--virtual-time-budget=5000",
+            ])
+            .arg(format!("--user-data-dir={}", profile.display()))
+            .arg("--dump-dom")
+            .arg(format!("file://{}{query}", page.display()))
+            .output()
+            .unwrap();
+        let dom = String::from_utf8(out.stdout).unwrap();
+        let start = dom.find("data-probe=\"").expect(&dom) + 12;
+        dom[start..start + dom[start..].find('"').unwrap()].replace("&amp;", "&")
+    };
+    // A fresh profile: the default; a click writes Title into the
+    // address, and back returns to the address without a view, and so to
+    // the default, though Title is kept.
+    assert_eq!(
+        run("?x=1#click"),
+        "both ?x=1 title ?x=1&view=title both ?x=1"
+    );
+    // Opened again at an address without a view: the view kept, written
+    // into the address.
+    assert_eq!(run("?x=1"), "title ?x=1&view=title");
+    // An address with a view: that view.
+    assert_eq!(run("?view=statement"), "statement ?view=statement");
 }

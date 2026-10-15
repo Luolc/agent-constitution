@@ -170,12 +170,12 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
 .row .tags a { position: relative; text-decoration: underline; text-decoration-color: var(--t-border-subtle); }
 .row > a:focus-visible, .row > :is(h4, h5) > a:focus-visible { outline: none; }
 .row:has(> a:focus-visible, > :is(h4, h5) > a:focus-visible) { outline: 2px solid var(--t-accent); outline-offset: 2px; }
-.row .ref { flex: none; min-inline-size: var(--t-space-12); }
-.row .title { min-inline-size: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.row > :is(a, h4 > a, h5 > a) .ref { flex: none; min-inline-size: var(--t-space-12); }
+.row > :is(a, h4 > a, h5 > a) .title { min-inline-size: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .row > .icon { color: var(--t-text-faint); }
 @media (hover: hover) and (pointer: fine) {
   .row:hover { background-color: var(--t-bg-hover); }
-  .row:hover .title { color: var(--t-accent); }
+  .row:hover > :is(a, h4 > a, h5 > a) .title { color: var(--t-accent); }
 }
 /* A domain of the first level is a heading; one of the second level,
    the deepest, is indented one step with a bar along its edge. */
@@ -211,7 +211,7 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
 
 /* Hidden from sight, still read by screen readers. */
 .views legend,
-body:has(#view-statement:checked) .has-statement > .row .title {
+body:has(#view-statement:checked) .has-statement > .row > a .title {
   position: absolute;
   inline-size: 1px;
   block-size: 1px;
@@ -257,19 +257,28 @@ body:has(#view-statement:checked) .has-statement > .row .title {
 }
 .views label:active { color: var(--t-text); background-color: var(--t-bg-active); }
 
-/* A rule's statement under its row, in line with its title, a size
-   smaller and muted; alone, without the title, the size and color of
-   the text. A text in another language starts with `languages`. */
-.tree .statement { margin-block-end: var(--t-space-2); padding-inline-start: calc(var(--t-space-1) + var(--t-space-12) + var(--t-space-2)); }
-.one-of .tree .statement { padding-inline-start: calc(var(--t-space-1) + var(--t-icon-sm) + 2 * var(--t-space-2) + var(--t-space-12)); }
+/* A rule's row with its statement is a grid: the icon of an option, the
+   link, the tags, and on a line of its own the statement, in line with
+   the title, a size smaller and muted. Alone, it takes the title's
+   place, the size and color of the text. A text in another language
+   starts with `languages`; a link in it stands above the row's. */
+.has-statement > .row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0; }
+.has-statement > .row > .icon { grid-column: 1; margin-inline-end: var(--t-space-2); }
+.has-statement > .row > a { grid-row: 1; grid-column: 2; }
+.has-statement > .row > .tags { grid-row: 1; grid-column: 3; margin-inline-start: var(--t-space-2); }
+.row > .statement { grid-row: 2; grid-column: 2 / -1; padding-inline-start: calc(var(--t-space-12) + var(--t-space-2)); padding-block-end: var(--t-space-2); }
 .statement > * { font-size: var(--t-text-sm); line-height: var(--t-line-height-ui); color: var(--t-text-muted); }
 .statement :is(p, ul) { margin: 0; }
 .statement > * + * { margin-block-start: var(--t-space-1); }
 .statement ul { padding-inline-start: var(--t-space-6); }
 .statement code { font-size: var(--t-text-md); }
 .statement > .untranslated { float: inline-start; block-size: calc(1em * var(--t-line-height-ui)); margin-inline-end: var(--t-space-1); }
-body:has(#view-title:checked) .tree .statement { display: none; }
-body:has(#view-statement:checked) .tree .statement > * { font-size: var(--t-text-md); color: var(--t-text); }
+.row .statement a { position: relative; text-decoration: underline; text-decoration-color: var(--t-border-subtle); }
+.row .statement a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
+body:has(#view-title:checked) .row > .statement { display: none; }
+body:has(#view-statement:checked) .has-statement > .row { align-items: start; padding-block: var(--t-space-1); }
+body:has(#view-statement:checked) .row > .statement { grid-row: 1; grid-column: 2; padding-block-end: 0; }
+body:has(#view-statement:checked) .row > .statement > * { font-size: var(--t-text-md); color: var(--t-text); }
 
 /* The filter: a quiet button with `funnel`; open, a popover of a group
    per field, its name and its values as check boxes. */
@@ -369,6 +378,8 @@ input[type="checkbox"]:checked::before { opacity: 1; }
 @media (max-width: 48rem) {
   .row { flex-wrap: wrap; padding-block: var(--t-space-1); }
   .row .tags { margin-inline-start: 0; flex-wrap: wrap; }
+  .has-statement > .row > .tags { grid-row: 2; grid-column: 2 / -1; }
+  .row > .statement { grid-row: 3; }
 }
 
 /* The filters: a node is hidden when its check box is clear. */

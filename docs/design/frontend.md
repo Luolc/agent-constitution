@@ -727,7 +727,8 @@ button and popover; the check boxes; hover only on fine pointers, the
 sizes of targets, the focus ring, and the motion of the filter's
 popover; the language switch and the tag of a text not in the page's
 language; the switch between a rule's title and statement, its choice
-in the address as `view`. Not built yet, and what each replaces:
+in the address as `view`, and kept for the next index opened only when
+it opens at an address without one. Not built yet, and what each replaces:
 
 - On the public site, the tags of a rule's page, and enabled and the
   quadrant in the list, are boxes of one look; the tags of

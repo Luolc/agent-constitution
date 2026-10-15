@@ -353,7 +353,7 @@ pub fn pages(project: &Project) -> Result<Vec<Page>, String> {
         let at = |path: &Path| Path::new(&l.dir).join(path);
         let path = PathBuf::from("index.html");
         pages.push(Page {
-            html: index(project, l, &langs, &languages(l, other, &path)),
+            html: index(project, l, &langs, &languages(l, other, &path))?,
             path: at(&path),
         });
         for (key, node) in project.sources.nodes() {
@@ -544,6 +544,16 @@ const VIEWS: [&str; 3] = ["both", "title", "statement"];
 /// index opened.
 const SCRIPT: &str = include_str!("site.js");
 
+/// The script as the index inlines it, without its comments, which are
+/// for its readers in the repository.
+fn script() -> String {
+    SCRIPT
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("//"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 /// What the rows of the index are drawn from: the project, the page's
 /// language and every language of the site.
 struct Site<'a> {
@@ -552,7 +562,7 @@ struct Site<'a> {
     langs: &'a [Lang<'a>],
 }
 
-fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
+fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> Result<String, String> {
     let w = &l.w;
     let mut out = head(w.title, l.code, "list", switch);
     let _ = writeln!(out, "<h1>{}</h1>", w.title);
@@ -675,7 +685,7 @@ fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
             );
             let site = Site { project, l, langs };
             for node in source.nodes.values().filter(|n| n.parent.is_none()) {
-                tree(&site, source, node, 1, "", &mut out);
+                tree(&site, source, node, 1, "", &mut out)?;
             }
             out.push_str("</ul>\n");
         }
@@ -686,17 +696,25 @@ fn index(project: &Project, l: &Lang, langs: &[Lang], switch: &str) -> String {
     }
     let _ = write!(
         out,
-        "</main>\n<script>{SCRIPT}</script>\n</body>\n</html>\n"
+        "</main>\n<script>{}</script>\n</body>\n</html>\n",
+        script()
     );
-    out
+    Ok(out)
 }
 
 /// A node and the nodes below it in its own source, as list items, each
 /// a row: `lead`, the icon in front of its label, its link and its
-/// tags; under a rule's row, its statement. A domain's `level` (1 at the
+/// tags, and for a rule its statement. A domain's `level` (1 at the
 /// top) sets its heading and its bar (`docs/design/frontend.md`,
 /// Components, The tree of rules).
-fn tree(site: &Site, source: &Source, node: &Node, level: usize, lead: &str, out: &mut String) {
+fn tree(
+    site: &Site,
+    source: &Source,
+    node: &Node,
+    level: usize,
+    lead: &str,
+    out: &mut String,
+) -> Result<(), String> {
     let (project, l) = (site.project, site.l);
     let w = &l.w;
     let key = Key::new(&source.name, node.id);
@@ -743,19 +761,16 @@ fn tree(site: &Site, source: &Source, node: &Node, level: usize, lead: &str, out
     if node.kind == Kind::OneOf {
         let _ = write!(out, "<span class=\"one-of-label\">{}</span>", w.one_of);
     }
+    let statement = match &node.rule {
+        Some(rule) => statement(site, &key, node, &rule.statement)?,
+        None => String::new(),
+    };
     let _ = write!(
         out,
-        "<div class=\"row\">{lead}{title}<span class=\"tags\">{}{}</span></div>",
+        "<div class=\"row\">{lead}{title}<span class=\"tags\">{}{}</span>{statement}</div>",
         tags(project, l, &key, node, "", true),
         mark(project, w, &key, false)
     );
-    if let Some(html) = node
-        .rule
-        .as_ref()
-        .and_then(|r| statement(site, &key, node, &r.statement))
-    {
-        out.push_str(&html);
-    }
     if !children.is_empty() {
         out.push_str("\n<ul class=\"tree\">\n");
         for child in children {
@@ -771,19 +786,19 @@ fn tree(site: &Site, source: &Source, node: &Node, level: usize, lead: &str, out
             } else {
                 level
             };
-            tree(site, source, child, level, &lead, out);
+            tree(site, source, child, level, &lead, out)?;
         }
         out.push_str("</ul>");
     }
     out.push_str("</li>\n");
+    Ok(())
 }
 
-/// A rule's statement in the index, under its row: in the page's
+/// A rule's statement in the index, at the end of its row: in the page's
 /// language or, marked with `languages`, in the rule's own, its
 /// placeholders filled with the values the compiled `AGENTS.md` has.
-/// `None` when it cites what is not there, which the rule's page fails
-/// on.
-fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Option<String> {
+/// Fails when it cites a rule or provision that is not there.
+fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Result<String, String> {
     let l = site.l;
     let (text, text_lang) = pick_lang(text, node, l.code);
     let labels = site
@@ -791,12 +806,12 @@ fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Option<String>
         .iter()
         .find(|l| l.code == text_lang)
         .map_or(&l.labels, |l| &l.labels);
-    let html = text_html(site.project, labels, key, "statement", text, text_lang, "").ok()?;
+    let html = text_html(site.project, labels, key, "statement", text, text_lang, "")?;
     if text_lang == l.code {
-        return Some(format!("<div class=\"statement\">\n{html}</div>\n"));
+        return Ok(format!("<div class=\"statement\">\n{html}</div>"));
     }
-    Some(format!(
-        "<div class=\"statement\"{}>\n<span class=\"untranslated\" role=\"img\" aria-label=\"{2}\" title=\"{2}\" lang=\"{3}\">{}</span>{html}</div>\n",
+    Ok(format!(
+        "<div class=\"statement\"{}>\n<span class=\"untranslated\" role=\"img\" aria-label=\"{2}\" title=\"{2}\" lang=\"{3}\">{}</span>{html}</div>",
         lang_attr(text_lang, l.code),
         icon(LANGUAGES, ""),
         l.w.untranslated,
