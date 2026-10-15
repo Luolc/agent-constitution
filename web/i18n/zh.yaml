@@ -106,3 +106,5 @@ param-rules: "用到它的规定"
 default-on: "默认开启"
 default-off: "默认关闭"
 default-option: "默认选项"
+# 规定列表里 one-of 画成框时，标题前的字样。
+one-of: "择一："

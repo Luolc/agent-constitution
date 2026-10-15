@@ -357,13 +357,32 @@ class SiteTest(unittest.TestCase):
       " shown, or only the rules on by default. Filter Status Active Trial"
       " Draft Superseded Repealed Defaults Only the rules on by default Uses"
       " Instructions Review Domains R1 Group 1 Apply Rules per page"
-      " 25 50 100 All R1 Group 1 Off by default R2 Group 2 Off by"
-      " default R3 Rule 3 Active Off by default Default option",
+      " 25 50 100 All R1 Group 1 Off by default R2 One of: Group 2 Active"
+      " Off by default R3 Rule 3 Active Off by default Default option R1",
       pages["rules/index.html"],
     )
+    # The one-of is a box in its domain's list, its option inside it and
+    # nowhere else.
     entries = re.findall(r'class="rule-entry" href="([^"]+)"', page)
     self.assertEqual(
-      entries, ["../rules/3/", "../rules/4/", "../rules/5/", "../rules/6/"]
+      entries,
+      [
+        "../rules/2/",
+        "../rules/3/",
+        "../rules/4/",
+        "../rules/5/",
+        "../rules/6/",
+      ],
+    )
+    self.assertIn(
+      '<div class="rule-item one-of-box" data-status="active"'
+      ' data-domain="1" data-uses="instructions" data-default="off">',
+      page,
+    )
+    self.assertRegex(
+      page,
+      r'<ul class="one-of-options">\n<li><a class="rule-entry"'
+      r' href="\.\./rules/3/">.*Default option</span></a></li>\n</ul>',
     )
     # The superseded rule 4 is there, with its status, but filtered out.
     self.assertIn(
@@ -372,7 +391,7 @@ class SiteTest(unittest.TestCase):
       page,
     )
     self.assertIn('<span class="rule-status">Superseded</span>', page)
-    self.assertEqual(page.count('class="rule-item" data-status="active"'), 3)
+    self.assertEqual(page.count('class="rule-item" data-status="active"'), 2)
     self.assertEqual(
       page.count('data-status="active" data-domain="1" data-uses'), 3
     )
@@ -397,7 +416,8 @@ class SiteTest(unittest.TestCase):
       '<input type="checkbox" name="domain" value="1" checked>', page
     )
     self.assertIn(
-      "R1 组 1 默认关闭 R2 组 2 默认关闭 R3 规定 3 生效 默认关闭 默认选项",
+      "R1 组 1 默认关闭 R2 择一：组 2 生效 默认关闭 R3 规定 3 生效 默认关闭"
+      " 默认选项",
       pages["zh/rules/index.html"],
     )
     self.assertIn('style="--indent: 0"><span class="rule-id">R6', page)
@@ -406,7 +426,6 @@ class SiteTest(unittest.TestCase):
       HEADING.findall(page),
       [
         ("2", "1", ' id="group-1"'),
-        ("3", "2", ' id="group-2"'),
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
@@ -420,8 +439,7 @@ class SiteTest(unittest.TestCase):
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
       '<nav id="TableOfContents"><ul>\n<li style="--level: 0"><a'
-      ' href="#group-1">R1 Group 1</a></li>\n<li style="--level: 1"><a'
-      ' href="#group-2">R2 Group 2</a></li>\n</ul></nav>',
+      ' href="#group-1">R1 Group 1</a></li>\n</ul></nav>',
       page,
     )
     self.assertIn(
@@ -441,7 +459,7 @@ class SiteTest(unittest.TestCase):
     for page in (one, two):
       self.assertEqual(
         re.findall(r'class="rule-entry" href="[^"]*/(\d)/"', page),
-        ["3", "4", "5", "6"],
+        ["2", "3", "4", "5", "6"],
       )
     self.assertIn('data-size="2" data-first="0"', one)
     self.assertIn('data-size="2" data-first="2"', two)
@@ -457,7 +475,6 @@ class SiteTest(unittest.TestCase):
       HEADING.findall(two),
       [
         ("2", "1", " hidden"),
-        ("3", "2", " hidden"),
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
         ("2", "1", ' id="group-1"'),
@@ -527,6 +544,54 @@ class SiteTest(unittest.TestCase):
       raw["rules/6/index.html"],
     )
 
+  def test_domain_option(self):
+    """A domain as an option: a line of the box, and the head of its rules.
+
+    No heading for the one-of, so the option's heading is a level below
+    the one-of's domain.
+    """
+    raw = self.build(raw=True, edit_rules=site_fixture.domain_option)
+    page = raw["rules/index.html"]
+    self.assertRegex(
+      page,
+      r'<ul class="one-of-options">\n<li><a class="rule-entry"'
+      r' href="\.\./rules/7/"><span class="rule-id">R7</span>.*Default'
+      r" option</span></a></li>\n</ul>",
+    )
+    self.assertNotIn('data-group="2"', page)
+    self.assertIn(("3", "7", ' id="group-7"'), HEADING.findall(page))
+    self.assertIn('href="../rules/3/" style="--indent: 0"', page)
+    self.assertIn(
+      '<input type="checkbox" name="domain" value="7" data-parent="1" checked>',
+      page,
+    )
+
+  def test_a_value_in_a_title_is_escaped(self):
+    """In the list, a value with `<` in a title shows as text."""
+
+    def edit(root):
+      site_fixture.params(root)
+      params = root / "rules/params.toml"
+      params.write_text(
+        params.read_text(encoding="utf-8").replace("done & dusted", "a <b> c"),
+        encoding="utf-8",
+      )
+      rule = root / "rules/5.toml"
+      rule.write_text(
+        rule.read_text(encoding="utf-8").replace(
+          'en = "Rule 5"', 'en = "Label {$work-items.label-done}"'
+        ),
+        encoding="utf-8",
+      )
+
+    raw = self.build(raw=True, edit_rules=edit)
+    self.assertIn(
+      '<span class="rule-title" lang="en">Label <span class="param-value"'
+      ' title="work-items.label-done">a &lt;b&gt; c</span></span>',
+      raw["rules/index.html"],
+    )
+    self.assertNotIn("<b>", raw["rules/index.html"])
+
   def test_rules_of_two_sources(self):
     """Each source heads its rules; the tags say quadrant and rule set."""
     raw = self.build(raw=True, other=True)
@@ -540,8 +605,9 @@ class SiteTest(unittest.TestCase):
       page,
     )
     for text in (
-      "Global public · R R1 Group 1 Off by default R2 Group 2 Off by default"
-      " R3 Rule 3 Active Off by default Default option Enabled Global public",
+      "Global public · R R1 Group 1 Off by default R2 One of: Group 2 Active"
+      " Off by default R3 Rule 3 Active Off by default Default option Enabled"
+      " Global public",
       "R5 Rule 5 Active Off by default Not enabled Global public",
       "Global private · demo demo:1 Group 1 Off by default demo:2 Demo rule"
       " Active Off by default Enabled Global private",
