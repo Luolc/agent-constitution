@@ -163,7 +163,7 @@ fn unknown_fields_and_wrong_types_are_errors() {
 }
 
 #[test]
-fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
+fn domains_nest_at_any_depth_and_rules_and_one_ofs_need_a_parent() {
     let under = |id, parent: &str| {
         edit(
             domain(id),
@@ -179,34 +179,33 @@ fn domains_nest_two_levels_and_rules_and_one_ofs_need_a_parent() {
         one_of(4, 2, 5),
         option(5, 4, ""),
     ]));
-    assert_error(
-        &load(&[domain(1), under(2, "1"), under(3, "2")]),
-        "3.toml",
-        "parent 2 is a subdomain already, under 1; domains nest two levels at most, so name a domain with no parent",
-    );
+    // A subdomain under a subdomain, and one below that.
+    assert_clean(&load(&[
+        domain(1),
+        under(2, "1"),
+        under(3, "2"),
+        under(4, "3"),
+        rule(5, 4, ""),
+    ]));
     assert_error(
         &load(&[domain(1), rule(2, 1, ""), under(3, "2")]),
         "3.toml",
         "parent 2 is a rule; a domain's parent is a domain, or a one-of of which it is an option",
     );
-    // A domain as the option of a one-of counts as a level: in a domain,
-    // not in a subdomain.
+    // A domain as the option of a one-of, in a domain or in a subdomain.
     assert_clean(&load(&[
         domain(1),
         one_of(2, 1, 3),
         edit(under(3, "2"), "default = \"off\"\n", ""),
         rule(4, 3, ""),
     ]));
-    assert_error(
-        &load(&[
-            domain(1),
-            under(2, "1"),
-            one_of(3, 2, 4),
-            edit(under(4, "3"), "default = \"off\"\n", ""),
-        ]),
-        "4.toml",
-        "parent 3 is a one-of in domain 2, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of, so a one-of in a subdomain has rules as its options (under 1)",
-    );
+    assert_clean(&load(&[
+        domain(1),
+        under(2, "1"),
+        one_of(3, 2, 4),
+        edit(under(4, "3"), "default = \"off\"\n", ""),
+        rule(5, 4, ""),
+    ]));
     // A rule's or a domain's parent may be in another source, a one-of's
     // not; which domains may have one is the rule set's to check, with the
     // other source.
@@ -1285,7 +1284,7 @@ fn a_repealed_rule_may_cite_what_is_gone() {
 }
 
 #[test]
-fn a_domain_under_an_option_is_too_deep() {
+fn a_domain_under_an_option_is_a_subdomain() {
     let under = |id, parent: u64| {
         edit(
             domain(id),
@@ -1293,14 +1292,11 @@ fn a_domain_under_an_option_is_too_deep() {
             &format!("lang = \"en\"\nparent = {parent}"),
         )
     };
-    assert_error(
-        &load(&[
-            domain(1),
-            one_of(2, 1, 3),
-            edit(under(3, 2), "default = \"off\"\n", ""),
-            under(4, 3),
-        ]),
-        "4.toml",
-        "parent 3 is the option of one-of 2, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of",
-    );
+    assert_clean(&load(&[
+        domain(1),
+        one_of(2, 1, 3),
+        edit(under(3, 2), "default = \"off\"\n", ""),
+        under(4, 3),
+        rule(5, 4, ""),
+    ]));
 }
