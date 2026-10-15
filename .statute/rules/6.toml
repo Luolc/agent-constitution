@@ -1,6 +1,6 @@
 id = 6
 slug = "rule-files"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -25,7 +25,7 @@ A rule set pins rules by ID; a deleted rule or a reused ID would make a rule set
 
 [text.verification]
 en = '''
-`rules/params.toml` declares the parameters the rules use and is no node. `cargo run --locked --quiet -p statute -- validate rules` checks each file's format, the tree, the references, the translations and the citations.
+`rules/params.toml` declares the parameters the rules use and is no node. `cargo run --locked --quiet -p statute -- validate rules` checks each file's format, the tree, the references, the translations and the citations, each parameter's declaration in `params.toml`, and that each placeholder names a declared parameter.
 
 Violated when a change deletes a file of `rules/`, gives a new node an ID used before, or names a node's file other than by its ID.
 '''

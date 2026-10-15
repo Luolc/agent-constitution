@@ -1328,9 +1328,9 @@ by = "default"
 
 [[rules]]
 rule = "L6"
-revision = 1
-sha256 = "42bdec05c38fe620220048455e4ca5763f3c0fd448ce2914ecd4f287f129b5e3"
-original-sha256 = "9f0f71376f1a05d00e41b92cf796a4a58381c9a45c87672e66c2d10661a72cad"
+revision = 2
+sha256 = "8f7fc639bbb5c47841d7b00666616c156847775a8fc04c4394f98895788c0f7c"
+original-sha256 = "482b0735574d46550cce3e17242e2a935bbc4edef54ce0d1b2e309cf8c0f66ff"
 by = "default"
 
 [[rules]]
