@@ -313,6 +313,36 @@ pub fn materialize(
     Ok(())
 }
 
+/// As `materialize` at `locked`, without the network: the commit's files
+/// are read from the cache, or written there from a clone that holds the
+/// commit already; nothing is cloned or fetched.
+pub fn cached(spec: &mut SourceSpec, locked: &str) -> Result<(), String> {
+    let Some(git) = spec.git.as_mut() else {
+        return Ok(());
+    };
+    let (name, address) = (spec.name.clone(), git.address.clone());
+    let err = |e: String| format!("source `{name}` ({address}): {e}");
+    let dir = cache_dir().ok_or_else(|| err("the system reports no home directory".to_owned()))?;
+    let target = dir.join("snapshots").join(locked);
+    let files = if target.is_dir() {
+        target
+    } else {
+        let repo = match &git.clone {
+            Some(clone) => expand(clone),
+            None => clone_dir(&dir, &git.address),
+        };
+        if !repo.is_dir() || !has(&repo, locked) {
+            return Err(err(format!(
+                "commit {locked}, which the lock file records, is not in statute's cache, and nothing is fetched"
+            )));
+        }
+        snapshot(&dir, &repo, locked).map_err(&err)?
+    };
+    spec.path = files.to_string_lossy().into_owned();
+    git.commit = Some(locked.to_owned());
+    Ok(())
+}
+
 /// The branch the remote's `HEAD` names in the bare clone of `address`,
 /// cloned when missing.
 pub fn default_branch(address: &str) -> Result<String, String> {

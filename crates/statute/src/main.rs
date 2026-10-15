@@ -86,6 +86,10 @@ enum Command {
         /// files go next to it.
         #[arg(long)]
         output: Option<std::path::PathBuf>,
+        /// Write only the private output, for a post-checkout hook: no
+        /// network, and warnings in place of errors, exiting 0.
+        #[arg(long, conflicts_with = "output")]
+        private_only: bool,
     },
     /// List the enabled rules for review by domain, with the outcome of
     /// those a script checks; exits 1 on a violation.
@@ -168,7 +172,13 @@ fn main() -> ExitCode {
             pack,
             private,
         } => edit(root, &rule, pack, false, private),
-        Command::Compile { output } => compile(root, output.as_deref()),
+        Command::Compile {
+            private_only: true, ..
+        } => {
+            compile_private_only(root);
+            Ok(())
+        }
+        Command::Compile { output, .. } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
         Command::Init {
             global: true,
@@ -232,6 +242,15 @@ enum Mode {
 /// configuration's sources; an error when the configuration cannot be
 /// read.
 fn env(mode: Mode) -> Result<Env, ()> {
+    read_env(mode).map_err(|errors| {
+        for e in errors {
+            eprintln!("{e}");
+        }
+    })
+}
+
+/// As `env`, with what is wrong as lines rather than printed.
+fn read_env(mode: Mode) -> Result<Env, Vec<String>> {
     let mut env = Env::default();
     env.layers.built_in = true;
     env.from_lock = matches!(mode, Mode::Read);
@@ -244,17 +263,14 @@ fn env(mode: Mode) -> Result<Env, ()> {
         Ok(text) => match manifest::read_config(&text) {
             Ok(sources) => env.layers.global = sources,
             Err(errors) => {
-                for e in errors {
-                    eprintln!("{shown}: error: {e}");
-                }
-                return Err(());
+                return Err(errors
+                    .into_iter()
+                    .map(|e| format!("{shown}: error: {e}"))
+                    .collect());
             }
         },
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-        Err(e) => {
-            eprintln!("{shown}: error: cannot read: {e}");
-            return Err(());
-        }
+        Err(e) => return Err(vec![format!("{shown}: error: cannot read: {e}")]),
     }
     Ok(env)
 }
@@ -397,6 +413,66 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         }
     }
     Ok(())
+}
+
+/// `compile --private-only`, which a git `post-checkout` hook runs in a
+/// new worktree (`docs/design/rule-sources.md`, A new worktree): writes
+/// the private output alone, reading git sources from the cache only.
+/// Without a public rule set or a private rule set it does nothing; any
+/// other problem is a warning, and nothing is written. It never fails, so
+/// that the hook never fails the checkout.
+fn compile_private_only(root: &Path) {
+    match private_only(root) {
+        Ok(written) => {
+            for path in written {
+                println!("wrote {}", path.display());
+            }
+        }
+        Err(causes) => {
+            for cause in causes {
+                eprintln!("statute: warning: {cause}");
+            }
+            eprintln!(
+                "statute: warning: the private output is not written; `statute compile` writes it, or says what to fix"
+            );
+        }
+    }
+}
+
+/// The work of `compile_private_only`: what it wrote, or each cause.
+fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
+    let one = |e: String| vec![e];
+    let text = match std::fs::read_to_string(root.join(manifest::FILE)) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => return Err(one(format!("{}: cannot read: {e}", manifest::FILE))),
+    };
+    let Some(dir) = private::dir(root).map_err(one)? else {
+        return Ok(Vec::new());
+    };
+    if !dir.join(private::MANIFEST).exists() {
+        return Ok(Vec::new());
+    }
+    let public = toml::from_str::<toml::Table>(&text)
+        .ok()
+        .and_then(|t| t.get("public").and_then(toml::Value::as_bool));
+    if public == Some(false) {
+        return Ok(Vec::new());
+    }
+    let mut env = read_env(Mode::Read)?;
+    env.offline = true;
+    let errors =
+        |diags: &Diagnostics| -> Vec<String> { diags.errors().map(ToString::to_string).collect() };
+    let (project, diags) = Project::load(root, &env);
+    let project = project.ok_or_else(|| errors(&diags))?;
+    let (both, more) = Project::load_private(&project, &diags, &env, &dir);
+    let both = match both {
+        Some(both) => both,
+        None if more.has_errors() => return Err(errors(&more)),
+        None => return Ok(Vec::new()),
+    };
+    let full = statute::compile::full_text(&project, &both, &dir).map_err(one)?;
+    private::write(root, &full).map_err(one)
 }
 
 fn site(root: &Path) -> Result<(), ()> {
