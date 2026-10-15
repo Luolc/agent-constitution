@@ -193,9 +193,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Under its button, but within the box it is placed in, the bar of
     // the filter, so that it never runs past the page's edge.
     const box = (menu.group.offsetParent ?? filter).getBoundingClientRect();
-    const start = menu.button.getBoundingClientRect().left - box.left;
+    const button = menu.button.getBoundingClientRect();
     const room = box.width - menu.group.offsetWidth;
-    menu.group.style.setProperty("--menu-start", `${Math.max(0, Math.min(start, room))}px`);
+    menu.group.style.setProperty("--menu-start", `${Math.max(0, Math.min(button.left - box.left, room))}px`);
+    menu.group.style.setProperty("--menu-top", `${button.bottom - box.top}px`);
     (menu.group.querySelector<HTMLElement>("input[type='search']") ?? menu.group.querySelector<HTMLElement>("input, button"))?.focus();
   };
   for (const menu of menus) {

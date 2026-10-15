@@ -5,8 +5,8 @@
    `chevron-down`, what it chooses in a badge when it differs from the
    default filter; the row wraps on a narrow screen. A button opens a
    popover under it, within the bar the row stands in
-   (assets/ts/rules-list.ts sets `--menu-start`, the popover's start in
-   the bar), the field's check boxes under its name and its All
+   (assets/ts/rules-list.ts sets `--menu-start` and `--menu-top`, the
+   popover's place in the bar), the field's check boxes under its name and its All
    and None, each box a row that the pointer fills, a long list
    scrolling in the popover under its search box. Reset filter ends the
    row, the number of fields changed in a badge. A popover enters from
@@ -67,7 +67,7 @@
 .rules .rules-filter-group {
   position: absolute;
   z-index: var(--t-z-popover);
-  top: 100%;
+  top: var(--menu-top, 100%);
   inset-inline-start: var(--menu-start, 0);
   display: grid;
   grid-template-columns: 1fr auto;

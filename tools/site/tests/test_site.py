@@ -899,7 +899,8 @@ window.addEventListener("load", () => {
     The domain's long title makes the domains' popover as wide as a
     popover gets. At each width, from a phone's to a wide screen's, the
     page does not scroll sideways, with the menus shut and with the
-    domains' open, and the open popover stays within the filter's bar.
+    domains' open, and the open popover stays within the filter's bar,
+    right under its button, also where the bar takes two lines.
     Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
@@ -912,13 +913,16 @@ window.addEventListener("load", () => {
   const root = document.documentElement;
   const out = { width: window.innerWidth };
   out.shut = root.scrollWidth <= root.clientWidth;
-  document.querySelector("[aria-controls='rules-filter-domain']").click();
+  const button = document.querySelector(
+    "[aria-controls='rules-filter-domain']");
+  button.click();
   const row = document.querySelector(".rules-bar").getBoundingClientRect();
   const popover = document.getElementById("rules-filter-domain")
     .getBoundingClientRect();
   out.open = root.scrollWidth <= root.clientWidth;
   out.within = popover.left >= row.left - 1 && popover.right <= row.right + 1;
-  out.wide = popover.width;
+  const gap = popover.top - button.getBoundingClientRect().bottom;
+  out.under = gap >= 0 && gap <= 12;
   document.body.dataset.result = JSON.stringify(out);
 });
 </script>"""
@@ -957,8 +961,8 @@ window.addEventListener("load", () => {
           result = json.loads(html.unescape(found.group(1)))
           self.assertEqual(result["width"], width)
           self.assertEqual(
-            (result["shut"], result["open"], result["within"]),
-            (True, True, True),
+            (result["shut"], result["open"], result["within"], result["under"]),
+            (True, True, True, True),
             result,
           )
 
