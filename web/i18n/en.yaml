@@ -66,17 +66,12 @@ uses-instructions: "Instructions"
 uses-review: "Review"
 language-en: "English"
 language-zh: "Chinese"
-# The name of the row of the rules citing a provision, and the text of
-# its button that shows the rules citing only a provision under it,
-# after rules that cite the provision or in a row without them
-# (layouts/_partials/rules/cites.html).
-cited-by: "Rules citing this provision"
-cited-within-more:
-  one: "+{{ .Count }} citing a provision under it"
-  other: "+{{ .Count }} citing provisions under it"
+# The button over the rules citing a provision, and over those citing an
+# article or a provision under it (content/_content.gotmpl).
+cited-by: "Rules citing this provision: {{ .Count }}"
 cited-within:
-  one: "{{ .Count }} rule cites a provision under it"
-  other: "{{ .Count }} rules cite provisions under it"
+  one: "{{ .Count }} rule cites this article or a provision under it"
+  other: "{{ .Count }} rules cite this article or a provision under it"
 # The list of the rules and its control (layouts/rules/section.html).
 rules-filter: "Filter"
 rules-domains: "Domain"

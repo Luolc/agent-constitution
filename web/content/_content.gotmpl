@@ -46,30 +46,27 @@
 {{- $full := $pages.full }}
 {{- /* Under each provision that rules cite in their `authority`, those
   rules (data/rules.json, which content/rules/_content.gotmpl requires),
-  on one row of their labels linked to their pages, then, when rules
-  cite only a provision under it, a button of their count that shows
-  them in the same row (layouts/_partials/rules/cites.html). A
-  paragraph after an article's heading, or a line ending the first line
-  of a section or an item, which the style sheet sets on a line of its
-  own. The lengths above are of the text without them. */ -}}
+  folded into a row of their labels that opens a list of them linked to
+  their pages (layouts/_partials/rules/cites.html); an article that
+  rules cite through a provision under it gets instead the count of the
+  rules that cite it or a provision under it, which opens the list of
+  them all, so that its line holds one button. A paragraph after an
+  article's heading, or a line ending the first line of a section or an
+  item, which the style sheet sets on a line of its own. The lengths
+  above are of the text without them. */ -}}
 {{- $body := $full.body }}
 {{- with index (hugo.Data.rules | default dict) $lang }}
   {{- $citedBy := .citedBy }}
   {{- $citedWithin := .citedWithin }}
   {{- range $ref, $_ := merge $citedWithin $citedBy }}
     {{- $direct := index $citedBy $ref | default slice }}
-    {{- $keys := slice }}
-    {{- range $direct }}
-      {{- $keys = $keys | append .key }}
+    {{- $within := index $citedWithin $ref | default slice }}
+    {{- $line := "" }}
+    {{- if gt (len $within) (len $direct) }}
+      {{- $line = partial "rules/cites.html" (dict "id" (printf "cites-within-%s" $ref) "rules" $within "name" "" "text" (i18n "cited-within" (len $within))) }}
+    {{- else if $direct }}
+      {{- $line = partial "rules/cites.html" (dict "id" (printf "cites-%s" $ref) "rules" $direct "name" (i18n "cited-by" (len $direct)) "text" "") }}
     {{- end }}
-    {{- $more := slice }}
-    {{- range index $citedWithin $ref }}
-      {{- if not (in $keys .key) }}
-        {{- $more = $more | append . }}
-      {{- end }}
-    {{- end }}
-    {{- $text := i18n (cond (gt (len $direct) 0) "cited-within-more" "cited-within") (len $more) }}
-    {{- $line := partial "rules/cites.html" (dict "id" (printf "cites-%s" $ref) "direct" $direct "more" $more "name" (i18n "cited-by") "text" $text) }}
     {{- $line = replace $line "$" "$$" }}
     {{- $anchor := printf `<a id="%s"></a>` (replace $ref "." `\.`) }}
     {{- $body = replaceRE (printf `(?m)^(#{2,6} %s.*)$` $anchor) (printf `$1%s<p class="cited-by">%s</p>` "\n\n" $line) $body }}
