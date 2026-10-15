@@ -80,7 +80,8 @@ nav ul a:is([href], [role=button]) { transition: none; }
 nav ul a:is([href], [role=button]):hover { opacity: 1; }
 
 /* Room on both sides of the text on small screens, where the column fills
-   the page. */
+   the page, growing with the window (the `vw` term) between two
+   tokens. */
 .book-page { padding-inline: clamp(var(--t-space-4), 5vw, var(--t-space-12)); }
 /* The theme pads the page on wide screens; keep the sidebar flush with the
    window's top and left edges. */

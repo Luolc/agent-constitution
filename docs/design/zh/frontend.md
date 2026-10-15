@@ -1,4 +1,4 @@
-<!-- en-sha256: ccfb242e7fab262b54068b7559654f78b110da14fd68bd316694ba6a5773187a -->
+<!-- en-sha256: aac9316064df918d7e18bbbc34432381a51a05918e9f8d9920d6abc3067bf73c -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -26,7 +26,7 @@
 
 token 是一个有名字的值：一种颜色、一个尺寸、一段时长。下面每个 token 都写成名字、light 主题下的值和 dark 主题下的值，两者相同时只写一个。名字不带前缀 (`text`、`space-4`)；在样式表里，每个 token 是一个带 `--t-` 前缀的自定义属性 (`--t-text`，见[代码实现](#in-the-code))。
 
-关于取值只有一条规矩：在定义 token 的地方之外，页面样式里的颜色、字号、字重、间距 (margin、padding、gap)、圆角、阴影、时长和缓动一律写 token 名，不直接写值。可以直接写的值只有这几种：`0`、`auto`、`100%`、`1px` 和 `2px` 的边框、媒体查询里的断点 (那里不能用自定义属性)，以及为把某一个字形摆进行内而设的偏移 (条目编号后的星号)，后者要加注释说明。页面需要一个 token 里没有的值，先在本文里把它加成 token。
+关于取值只有一条规矩：在定义 token 的地方之外，页面样式里的颜色、字号、字重、间距 (margin、padding、gap)、圆角、阴影、时长和缓动一律写 token 名，不直接写值。可以直接写的值只有这几种：`0`、`auto`、`100%`、`1px` 和 `2px` 的边框、媒体查询里的断点 (那里不能用自定义属性)，为把某一个字形摆进行内而设的偏移 (条目编号后的星号，要加注释说明)，`clamp()` 里让间距在两个 token 之间随窗口变化的 `vw` 项，以及打印样式的值 (打印没有主题：白纸、以磅为单位的字号)。页面需要一个 token 里没有的值，先在本文里把它加成 token。
 
 另有两条在两套主题下的每个页面都成立：任何状态都不只靠颜色表示 (当前页还要加粗或带色条，错误还要有图标或文字)；下面的每种状态在两套主题下都要画出来。
 
@@ -227,7 +227,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
 - **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`；当前页列在某个分组下面时，只标出这一页，不标分组。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
-- **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`，指针悬停时边框变成 `text-muted`；获得焦点时显示焦点框。原生控件在两套主题下都不保留浏览器自己的样子：菜单 (`select`) 末尾显示 `chevron-down`；浏览器允许页面自己画它的选项列表时，列表是一个弹出层，每个选项一行，选中的那项用 `bg-selected` 底，文字用 `accent` 和 `weight-medium`；浏览器自己画列表时，只有颜色跟随主题。复选框和单选按钮用浏览器的，大小 `icon-sm`，填充 `accent`。`summary` 显示 `chevron-right`，展开时转四分之一圈，取代浏览器自带的标记。
+- **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`，指针悬停时边框变成 `text-muted`；获得焦点时显示焦点框。原生控件在两套主题下都不保留浏览器自己的样子：菜单 (`select`) 末尾显示 `chevron-down`；浏览器允许页面自己画它的选项列表时，列表是一个弹出层，每个选项一行，选中的那项用 `bg-selected` 底，文字用 `accent` 和 `weight-medium`；浏览器自己画列表时，只有颜色跟随主题。复选框和单选按钮：`icon-sm` 大小的框，`bg-page` 底，`1px` 的 `border-strong`，复选框用 `radius-sm`，单选按钮是圆的；hover 时边框变成 `text-muted`；选中时框里填满 `accent` (指针悬停时 `accent-hover`)，复选框的勾是 `text-on-accent` 的 `check`，单选按钮的圆点靠框内一圈 `space-1` 宽的 `bg-page` 显出来；禁用时半透明。`summary` 显示 `chevron-right`，展开时转四分之一圈，取代浏览器自带的标记。
 
 ## <a id="not-done"></a>不做的事
 

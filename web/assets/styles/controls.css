@@ -1,8 +1,9 @@
 /* The native controls, wherever they stand, so that none is left with
    the browser's own surface, in either theme: a button is a quiet button
    unless its component makes it another; inputs and menus sit on the
-   page with a border; check boxes and radio buttons are the browser's,
-   in the accent color; a `details` loses the browser's marker, and its
+   page with a border; check boxes and radio buttons are drawn here, a
+   box on the page filled with the accent color when checked, the check
+   Lucide's `check` (layouts/_partials/docs/inject/head.html); a `details` loses the browser's marker, and its
    `summary` brings its own icon. The rules on elements are wrapped in
    :where(), so that a component's own style wins without having to
    outweigh it.
@@ -118,13 +119,45 @@
 }
 
 :where(input[type="checkbox"], input[type="radio"]) {
+  appearance: none;
+  position: relative;
+  flex: none;
   inline-size: var(--t-icon-sm);
   block-size: var(--t-icon-sm);
   margin: 0;
   vertical-align: middle;
-  accent-color: var(--t-accent);
+  background-color: var(--t-bg-page);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-sm);
   cursor: pointer;
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
 }
+:where(input[type="radio"]) { border-radius: var(--t-radius-full); }
+:where(input[type="checkbox"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--t-text-on-accent);
+  mask: var(--icon-lucide-check) center / 100% no-repeat;
+  opacity: 0;
+  transition: opacity var(--t-duration-fast) var(--t-ease-out);
+}
+:where(input[type="checkbox"], input[type="radio"]):checked {
+  background-color: var(--t-accent);
+  border-color: var(--t-accent);
+}
+:where(input[type="checkbox"]):checked::before { opacity: 1; }
+:where(input[type="radio"]):checked { box-shadow: inset 0 0 0 var(--t-space-1) var(--t-bg-page); }
+@media (hover: hover) and (pointer: fine) {
+  :where(input[type="checkbox"], input[type="radio"]):hover { border-color: var(--t-text-muted); }
+  :where(input[type="checkbox"], input[type="radio"]):checked:hover {
+    background-color: var(--t-accent-hover);
+    border-color: var(--t-accent-hover);
+  }
+}
+:where(input[type="checkbox"], input[type="radio"]):disabled { opacity: .5; cursor: default; }
 
 :where(summary) { list-style: none; cursor: pointer; }
 :where(summary)::-webkit-details-marker { display: none; }

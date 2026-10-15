@@ -53,9 +53,12 @@ weight, spacing (margin, padding, gap), corner radius, shadow, duration
 and easing, and never write the value itself. The few values allowed as
 written are `0`, `auto`, `100%`, `1px` and `2px` borders, the
 breakpoints in a media query (a custom property cannot stand there),
-and the offset that sets one glyph in its line (the asterisk after an
-item's number), with a comment saying so. A value a page needs and no
-token has is added here first, as a token.
+the offset that sets one glyph in its line (the asterisk after an
+item's number, with a comment saying so), the term in `vw` that makes a
+space grow with the window between two tokens in a `clamp()`, and the
+values of the print style, which has no theme (white paper, a size in
+points). A value a page needs and no token has is added here first, as
+a token.
 
 Two more rules hold for every page in both themes: no state is shown by
 color alone (the current page is also bold or has a bar, an error also
@@ -443,8 +446,13 @@ turned off (disabled), where it has these.
   list, where the browser lets a page draw it, is a popover whose
   options are rows, the chosen one in `bg-selected` with its text in
   `accent` and `weight-medium`; where the browser draws the list itself,
-  only its colors follow the theme. Check boxes and radio buttons are
-  the browser's, `icon-sm` in size, filled with `accent`. A `summary`
+  only its colors follow the theme. Check boxes and radio buttons:
+  `icon-sm` boxes of `bg-page` with `1px` of `border-strong`, the check
+  box `radius-sm`, the radio button round; hover turns the border to
+  `text-muted`; checked, the box fills with `accent` (`accent-hover`
+  under the pointer), a check box's check `check` in `text-on-accent`,
+  a radio button's dot a ring of `bg-page` `space-1` wide inside it;
+  disabled at half opacity. A `summary`
   shows `chevron-right`, turned a quarter while it is open, in place of
   the browser's marker.
 

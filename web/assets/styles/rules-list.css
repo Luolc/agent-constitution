@@ -10,6 +10,7 @@
 .rules .rules-params { margin-top: -.5em; }
 .rules .rules-group { margin: 1.2em 0 .2em; font-size: 1.05em; }
 .rules :is(h3, h4).rules-group { margin-top: .8em; font-size: var(--t-text-md); }
+.rules .rules-group > a { display: inline-block; min-block-size: var(--t-target); }
 .rules .rules-group .group-label { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
 .rules .rules-pager {
   display: flex;
@@ -19,7 +20,16 @@
   margin-top: 1.5em;
   font-variant-numeric: tabular-nums;
 }
-.rules .rules-pager a { flex: none; width: auto; text-decoration: none; }
+.rules .rules-pager a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: auto;
+  min-inline-size: var(--t-target);
+  min-block-size: var(--t-target);
+  text-decoration: none;
+}
 .rules .rules-pager a[aria-current] { font-weight: var(--t-weight-bold); color: var(--t-text); }
 .rules .rules-none { color: var(--t-text-muted); }
 

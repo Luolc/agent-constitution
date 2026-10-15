@@ -298,8 +298,8 @@
 
 /* The asterisk after the number of a section or an item, or the heading
    of the preamble, that the version for agents leaves out, in the text
-   and in the table of contents: small, in the accent color, close to the number,
-   and without opening up the line. Not raised as a superscript: the glyph
+   and in the table of contents: small, in the accent color, close to the
+   number, and without opening up the line. Not raised as a superscript: the glyph
    itself sits at the height of the capitals, so it is lowered until its
    middle sits a little above the middle of the parentheses around an
    item's number and its top well under the top of the number, as a mark

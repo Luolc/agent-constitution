@@ -2,9 +2,10 @@
   filter, which folds open, with a checkbox for each status, each value of
   `uses` and each domain, one for the rules the defaults enable alone, and
   one for each quadrant when the site has more than one source, and the
-  page size, a menu in its wrapper (assets/styles/controls.css); hidden until assets/rules-list.js shows it. Takes (dict
-  "page" the list's page "statuses" the statuses checked by default "size"
-  the page size "sources" the sources, as data/rules.json gives them). */ -}}
+  page size, a menu in its wrapper (assets/styles/controls.css); hidden
+  until assets/rules-list.js shows it. Takes (dict "page" the list's page
+  "statuses" the statuses checked by default "size" the page size
+  "sources" the sources, as data/rules.json gives them). */ -}}
 <form class="rules-controls" action="{{ .page.RelPermalink }}" method="get" hidden>
 <input type="hidden" name="filter" value="1">
 <details class="rules-filter"><summary>{{ partial "icon.html" "lucide:chevron-right" }}{{ i18n "rules-filter" }}</summary>

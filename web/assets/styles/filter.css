@@ -44,7 +44,6 @@
   margin-inline-start: calc(var(--indent, 0) * 1.2em);
   white-space: nowrap;
 }
-.rules .rules-filter input { accent-color: var(--t-accent); }
 .rules .rules-filter button {
   font: inherit;
   color: var(--t-text-on-accent);
