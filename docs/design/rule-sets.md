@@ -396,7 +396,10 @@ Python at all; "one of" here never means "exactly one". The one-of
 "Python package manager" under Python has the children uv, Poetry and
 Bazel. A one-of has an ID, and adding one goes through review like adding
 a rule. A rule that requires a one-of is satisfied when any one of its
-children is enabled.
+children is enabled. Once built, every one-of names a default child,
+which a pack and a requirement take where the rule set names none, in
+place of contributing nothing or failing as below
+([A one-of's default](rule-config.md#in-the-rule-files)).
 
 **Conflicts found later.** Two rules that nobody saw as alternatives may
 turn out not to work together. An agent that suspects this reports it, and

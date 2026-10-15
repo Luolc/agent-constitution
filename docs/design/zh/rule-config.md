@@ -1,4 +1,4 @@
-<!-- en-sha256: 58e24cd0abf7f20e42a1b8c973554c7ca6570aa389e781b8165f4a38e504cfad -->
+<!-- en-sha256: 657907683311288bf1b650df79e07749c2ccf6820a8066d063b6f0a4ba17abd1 -->
 # 规定配置
 
 状态：已定；还没有实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户 statute 目录里的[全局配置](global-configuration.md#the-global-configuration) `~/.statute/config.toml` 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -203,7 +203,8 @@ packs = ["R96"]
 - `rules` 与现在一样，开启一条规定。对 `off` 的规定或 `off` 领域里的规定，开启它们靠的就是这一项；列出默认值已经开启的规定，给一个警告。列出 one-of 的一个子节点，就用它代替 one-of 的默认。
 - `domains` 开启一个 `off` 的领域：其中的规定按各自的 `default`。列出一个 `on` 的领域，给一个警告。
 - `exclude` 关掉一个默认开启的领域、one-of 或规定。关掉一个节点，就关掉它的整棵子树；关掉的 one-of 一个子节点也不启用。被某条启用的规定依赖的规定不能关：构建失败，并指出依赖它的那条规定。
-- `packs` 与现在一样，开启整棵子树里的每条规定，不论它的 `default`；`exclude` 可以关掉其中一部分。
+- `packs` 与现在一样，开启整棵子树里的每条规定，不论它的 `default`；但在 one-of 处只开一个子节点：规定清单在 `rules` 里点名的那个，没有点名就是默认的那个，规定包只进入这个子节点的子树。`exclude` 可以关掉其中一部分。
+- 一条规定依赖某个 one-of，而规定清单没有启用这个 one-of 的任何子节点时，带进来的是默认子节点，与 statute 补上任何缺失的依赖一样，不再报错。
 - `statute add` 把领域写进 `domains`，把规定写进 `rules`；`statute remove` 从 `rules`、`domains` 或 `packs` 里去掉一项，这条规定或这个领域仍然默认开启时，把它写进 `exclude`。
 - `statute.private.toml` 可以有 `rules` 和 `domains`，它们只增加；不能有 `exclude`：私有层不去掉公开层的任何规定 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
 
@@ -314,7 +315,7 @@ uses = ["instructions", "review"]
 
 **one-of。** R79「让设计与代码保持一致」是目前唯一的 one-of。推荐默认 R81，即代码和设计可以分开改、每处差异都标出来：设计写在代码之前还是之后它都适用，而 R80 要求每次改动都带上设计。
 
-**uses。** 按上面提议的规定，推荐为 `["instructions", "review"]` 的规定：R1、R19、R21、R43、R46、R47、R50、R51、R56、R72、R75、R80、R81、R84 到 R89、R92、R97 到 R106、R108 到 R114、R122 到 R126。没有推荐只进审查的：这些规定也都是 agent 干活时需要知道的。其余的保持默认 `["instructions"]`。
+**uses。** 按上面提议的规定，推荐为 `["instructions", "review"]` 的规定：R1、R19、R21、R43、R46、R47、R51、R56、R72、R75、R80、R81、R84 到 R89、R92、R97 到 R106、R108 到 R114、R122 到 R126。没有推荐只进审查的：这些规定也都是 agent 干活时需要知道的。其余的保持默认 `["instructions"]`。
 
 ## <a id="proposed-no-rule-under-a-rule"></a>提议：规定不挂在规定下面
 
@@ -324,7 +325,7 @@ uses = ["instructions", "review"]
 
 - 规定的 parent 是领域或 one-of，不再是规定。现在「规定挂在规定下面」表达的意思，即细化另一条规定，改用 `requires` 写。
 - one-of 的 parent 是领域。
-- one-of 的选项就是它的子节点，要么全是规定，要么全是领域，不混用；构建会检查。只有一条规定的选项就是那条规定，不必外包一个领域；要带几条规定的选项是一个以 one-of 为 parent 的领域，把这些规定放在里面。领域仍然最多嵌套两级，这样的领域也算一级：子领域里的 one-of 只能以规定为选项。
+- one-of 的选项就是它的子节点，要么全是规定，要么全是领域，不混用；构建会检查。只有一条规定的选项就是那条规定，不必外包一个领域；要带几条规定的选项是一个以 one-of 为 parent 的领域，把这些规定放在里面；它是启用的那个选项时，其中的规定按各自的 `default` 进来，与 `domains` 开启的领域一样。领域仍然最多嵌套两级，这样的领域也算一级：子领域里的 one-of 只能以规定为选项。
 - 每个 one-of 都指定一个选项作为默认 ([one-of 的默认](#in-the-rule-files))，这一点上面已经定了。
 - 选项在自己的 `parent` 里指向它的 one-of，与现在 one-of 的子节点一样；one-of 不列 `options`。这样树仍然只记在 `parent` 里 ([规定文件格式](rule-format.md#rule-file-format))，加一个选项或挪一个选项只改一个文件，现有规定也不用为此改动。one-of 自己的文件里看不到它的选项，由 `statute explain` 和网站列出。
 - 编译出的 `AGENTS.md` 里，一个领域的规定排在它的标题下一级；one-of 启用的那个选项放在 one-of 的位置上，加一行写明它属于哪个 one-of (「One of: Keep the design in step with the code.」)；是领域的选项保留自己的标题。网站上，one-of 是它领域列表里的一个框，列出每个选项并标出默认；选项只出现在框里，不在列表里重复。
@@ -345,4 +346,4 @@ uses = ["instructions", "review"]
 - [规定文件格式](rule-format.md#rule-file-format)：多了 `parameter` 这一种节点，领域、规定和 one-of 多了 `default`，规定多了 `uses`。
 - [结果与审查回路](rule-checks.md#outcomes-and-the-review-loop)：`statute check` 只把 `uses` 含 `review` 的规定列给审查方，每条规定的程序照旧运行。
 - [编译与网站](statute-command.md#compilation-and-the-site)：编译出的 `AGENTS.md` 只收录 `uses` 含 `instructions` 的规定。
-- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：规定清单没有选时，one-of 启用它的默认子节点。
+- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：规定清单没有选时，one-of 启用它的默认子节点。那里的「缺的依赖自动补上」一段说，依赖一个没有启用任何子节点的 one-of 会报错；「规定包」一段说，规定清单没有点名子节点的 one-of 不产生任何内容；两处都改为取默认子节点。

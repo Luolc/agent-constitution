@@ -85,7 +85,9 @@ the compiled `AGENTS.md` leaves out by default
 goes through the list domain by domain and rule by rule: the rules for
 review, the inconclusive results and the violations. Whether
 one reviewer takes all of them or several take a group each, and how the
-groups are formed, is set in the rule set.
+groups are formed, is set in the rule set. Once built, `uses` narrows
+the rules for review to those marked `review`
+([Where a rule is used](rule-config.md#where-a-rule-is-used)).
 
 In the first version, `statute check` lists the enabled rules of the
 repository for review and runs the checks of those that have one; with

@@ -370,7 +370,12 @@ packs = ["R96"]
   requires cannot be turned off: the build fails, naming the rule that
   requires it.
 - `packs`, as today, turns on a whole subtree, every rule in it,
-  whatever its `default`; `exclude` turns off a part of it.
+  whatever its `default`, but at a one-of only one child: the one the
+  rule set names in `rules`, or else the default, and the pack goes on
+  into that child's subtree alone. `exclude` turns off a part of it.
+- A rule that requires a one-of of which the rule set enables no child
+  brings in the default child, as statute brings in any missing
+  requirement, instead of failing.
 - `statute add` writes a domain to `domains` and a rule to `rules`;
   `statute remove` takes an entry out of `rules`, `domains` or `packs`,
   and when the rule or domain is still enabled by default, writes it to
@@ -575,7 +580,7 @@ written before or after the code, while R80 asks every change to carry
 its design along.
 
 **Uses.** The rules recommended `["instructions", "review"]`, by the
-proposed rule above: R1, R19, R21, R43, R46, R47, R50, R51, R56, R72,
+proposed rule above: R1, R19, R21, R43, R46, R47, R51, R56, R72,
 R75, R80, R81, R84 to R89, R92, R97 to R106, R108 to R114, R122 to
 R126. None is recommended review-only: each of these is also something
 an agent needs while it works. The rest keep the default,
@@ -598,7 +603,9 @@ accepted, a change to those two parts of the design carries it.
 - A one-of's options are its children, all rules or all domains, never
   some of each; the build checks it. An option that is one rule is that
   rule, with no domain around it; an option that needs several rules
-  is a domain whose parent is the one-of, holding them. Domains still
+  is a domain whose parent is the one-of, holding them; when it is the
+  option enabled, its rules come in each by its own `default`, as in a
+  domain that `domains` turns on. Domains still
   nest at most two levels, counting such a domain as one: a one-of in a
   subdomain has rules as its options.
 - Every one-of names one of its options as its default
@@ -666,4 +673,8 @@ The parts of the design this one changes:
   the compiled `AGENTS.md` holds only the rules whose `uses` has
   `instructions`.
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
-  a one-of enables its default child when the rule set picks none.
+  a one-of enables its default child when the rule set picks none. Its
+  "Missing requirements are added", where a requirement of a one-of
+  with no child enabled fails, and its "Packs", where a one-of of
+  which the rule set names no child contributes nothing, both take the
+  default child instead.

@@ -75,7 +75,7 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 - `public` is required on every source but `R`, as in a rule set; there
   is no `scope`, since a source of the global configuration is global
   by definition ([Four kinds of source](rule-sources.md#four-kinds-of-source)).
-- The configuration names sources only. It enables no rule: each rule
+- The configuration names sources and enables no rule: each rule
   set lists the rules and packs it uses, as before, so that the
   committed rule set and lock file alone say what a repository's
   compiled output holds. A source of the global configuration is
