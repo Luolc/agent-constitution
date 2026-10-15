@@ -1,6 +1,9 @@
-//! statute's own directory in the home directory, `~/.statute/`: the
-//! global configuration, a bare clone of each git source and the files
-//! of each commit read (`docs/design/global-configuration.md`).
+//! statute's own directories, after the XDG Base Directory
+//! Specification on Linux and macOS alike: the global configuration in
+//! `$XDG_CONFIG_HOME/statute/` (`~/.config/statute/` by default), and a
+//! bare clone of each git source and the files of each commit read in
+//! `$XDG_CACHE_HOME/statute/` (`~/.cache/statute/` by default)
+//! (`docs/design/global-configuration.md`).
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -9,7 +12,7 @@ use sha2::{Digest, Sha256};
 
 use crate::manifest::{Follow, Git, SourceSpec};
 
-/// The global configuration, in the statute directory.
+/// The global configuration, in the configuration directory.
 pub const CONFIG: &str = "config.toml";
 
 /// The address of the first-party source, which `R` is by default.
@@ -18,15 +21,39 @@ pub const FIRST_PARTY_ADDRESS: &str = "https://github.com/Luolc/agent-constituti
 /// The branch of the first-party source that `R` follows by default.
 pub const FIRST_PARTY_BRANCH: &str = "main";
 
-/// The statute directory, `~/.statute/`; `None` when the system reports
-/// no home directory.
-pub fn dir() -> Option<PathBuf> {
-    std::env::home_dir().map(|home| home.join(".statute"))
+/// `statute` under the directory `var` names, or under `default` in the
+/// home directory when `var` is unset, empty or relative, which the
+/// specification says to ignore; `None` when the system reports no home
+/// directory.
+fn xdg(var: &str, default: &str) -> Option<PathBuf> {
+    let base = match std::env::var_os(var).map(PathBuf::from) {
+        Some(path) if path.is_absolute() => path,
+        _ => std::env::home_dir()?.join(default),
+    };
+    Some(base.join("statute"))
 }
 
-/// `~/.statute/config.toml`, as messages name it.
+/// The configuration directory, `$XDG_CONFIG_HOME/statute/`.
+pub fn config_dir() -> Option<PathBuf> {
+    xdg("XDG_CONFIG_HOME", ".config")
+}
+
+/// The cache directory, `$XDG_CACHE_HOME/statute/`, of the clones and
+/// the snapshots.
+pub fn cache_dir() -> Option<PathBuf> {
+    xdg("XDG_CACHE_HOME", ".cache")
+}
+
+/// The global configuration's path, as messages name it: `~` for the
+/// home directory.
 pub fn shown_config() -> String {
-    format!("~/.statute/{CONFIG}")
+    let Some(path) = config_dir().map(|dir| dir.join(CONFIG)) else {
+        return format!("~/.config/statute/{CONFIG}");
+    };
+    match std::env::home_dir().and_then(|home| path.strip_prefix(home).ok().map(Path::to_owned)) {
+        Some(rest) => format!("~/{}", rest.display()),
+        None => path.display().to_string(),
+    }
 }
 
 /// The text `statute init --global` writes, with the first-party source
@@ -249,7 +276,7 @@ pub fn materialize(
     };
     let (name, address) = (spec.name.clone(), git.address.clone());
     let err = |e: String| format!("source `{name}` ({address}): {e}");
-    let dir = dir().ok_or_else(|| err("the system reports no home directory".to_owned()))?;
+    let dir = cache_dir().ok_or_else(|| err("the system reports no home directory".to_owned()))?;
     let (repo, own) = repository(&dir, git).map_err(&err)?;
     let commit = match locked {
         Some(commit) if !newest => {
@@ -289,7 +316,7 @@ pub fn materialize(
 /// The branch the remote's `HEAD` names in the bare clone of `address`,
 /// cloned when missing.
 pub fn default_branch(address: &str) -> Result<String, String> {
-    let dir = dir().ok_or("the system reports no home directory")?;
+    let dir = cache_dir().ok_or("the system reports no home directory")?;
     let git = Git {
         address: address.to_owned(),
         follow: Follow::Branch(String::new()),

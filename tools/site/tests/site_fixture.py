@@ -81,9 +81,7 @@ def original(*texts: str) -> str:
   return hashlib.sha256("\0".join(texts).encode()).hexdigest()
 
 
-def group(
-  node_id: int, kind: str, parent: int | None, cites: str = "3"
-) -> str:
+def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
   """Return the file of a domain or a one-of, translated.
 
   A domain has an applicability that cites a rule.
@@ -177,10 +175,10 @@ def write(root: Path) -> None:
 
 
 # A made-up second source, `demo`: 1, a domain, translated, whose
-# applicability cites a first-party rule 9 that no source here has; 2, a rule under
-# it, untranslated, that requires and cites rule 3 of this repo and cites
-# itself; 4, the same rule under this repo's domain 1, in conflict with
-# this repo's rule 5.
+# applicability cites a first-party rule 9 that no source here has; 2, a
+# rule under it, untranslated, that requires and cites rule 3 of this repo
+# and cites itself; 4, the same rule under this repo's domain 1, in
+# conflict with this repo's rule 5.
 OTHER_RULE = """\
 id = 2
 revision = 1
