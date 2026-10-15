@@ -21,10 +21,10 @@ from repo_checks import git_env
 
 # Instruction files in any repo: what an agent harness reads as
 # instructions, skills, subagents, commands, hooks or permissions, in any
-# directory; and what statute compiles AGENTS.md from, at the top of the
-# repo: the rule set, its lock file, the checks file and .statute/ (the
-# local rules and the ignore file), with the legacy copies of the
-# hand-written files it replaces.
+# directory; and statute's files at the top of the repo: what it compiles
+# AGENTS.md from, the rule set, its lock file and .statute/ (the local
+# rules and the ignore file), and the checks file it writes beside them,
+# with the legacy copies of the hand-written files it replaces.
 GENERIC = [
   r"(.*/)?AGENTS\.md",
   r"(.*/)?CLAUDE\.md",
