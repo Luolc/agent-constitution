@@ -1,4 +1,4 @@
-<!-- en-sha256: 55ba941f5407335c043b0f6fc2226a971dd0652aad1f4594bc5e054a055e78de -->
+<!-- en-sha256: 52f87517bf20f24fec971b4b79588f412cdce90bfa90c4d77f213fe21ab92bbf -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -105,7 +105,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | --- | --- | --- | --- |
 | 第一层的领域 | `text-xl` | `weight-bold` | `text` |
 | 第二层的领域 | `text-lg` | `weight-bold` | `text` |
-| 第三层及更深的领域、one-of | `text-md` | `weight-medium` | `text` |
+| 第三层及更深的领域；one-of 框里的标题 | `text-md` | `weight-medium` | `text` |
 | 规定 | `text-md` | `weight-regular` | `text` |
 | 节点的标号 (`R13`) | 与所在行相同 | 与所在行相同 | `text-muted`，等宽数字 |
 
@@ -194,7 +194,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
   - tag 本身不响应指针，响应的是整行。
 - **筛选器**，照 Linear 和 Notion 的样子。收起时是一个按钮：`funnel` (`icon-md`)、「筛选」二字，有条件生效时再加一个徽标显示条件数 (`radius-full`，`bg-selected` 上的 `accent`)。打开时是按钮下方的弹出层，宽约 `28rem` (窄屏上与栏同宽)，一行一个条件：字段 (状态、默认开关、用途、领域；有多个规定源时加象限，网站带规定清单时加是否启用)、运算 (是、不是)、取值 (字段的一个或多个值，从列表里选)，以及删除这一行的 `x`。第一行以「当」开头；之后每行以连接词「且」或「或」开头，连接词在第二行是一个菜单，选定后对整个筛选器生效 (所有行共用一个连接词，同 Notion 的简单筛选)。各行下面是「添加条件」(`plus`) 和「清除」，后者删掉所有条件。改动立即生效并写进地址，筛选后的列表可以直接链接；没有「应用」按钮。领域的条件包含其下的领域。按 Escape 或点击外面关闭。不带脚本的网站 (本地网站就是) 显示同样的按钮和弹出层，每个字段一行，它的取值做成复选框，各行之间是「且」。
 - **规定树。** 节点的层级靠字号、字重和色条区分 ([字体](#type))，不靠缩进：第一层的领域是一个标题，上方留 `space-8`；第二层的领域缩进一级 (`space-4`)，起始一侧有一条 `2px` 的 `border-strong` 色条，贯穿它下面的规定；更深的领域不再缩进，色条用 `border-subtle`。一个领域的规定与它的标题左边对齐。挂在另一条规定下的规定不再缩进，而是在标号前加 `corner-down-right` (`icon-sm`，`text-faint`) 表示。每条规定占一行：标号在固定宽度的一列里，用 `text-muted`；标题超出一行时以省略号截断；tag 在右边。整行是一个链接：hover 时整行填上 `bg-hover`、`radius-sm`，标题变成 `accent`；获得焦点时焦点框围住整行。
-- **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「选其一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，并带一个 `accent` 的 Default / 「默认」tag，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
+- **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 表明当前状态；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开。按 Escape 或点击外面都会关闭。打开用 `duration-base` 和 `ease-out`，关闭用 `duration-fast` 和 `ease-in`。
 - **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
 - **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`；获得焦点时显示焦点框。
@@ -214,7 +214,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
 - 新的筛选器取代现在那块带「应用」按钮的复选框面板。
 - 新的规定树取代按深度缩进的做法，挂在规定下的规定也包括在内。
-- one-of 框上的标签和默认选项的标记，取代列表现在表示 one-of 及其默认选项的方式。
+- 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
 - [图标](#icons) 一节表里的 Lucide 图标取代表中现有的图标。
 - 截图脚本及其在 CI 里的运行，尚未实现。
 - 这一切在代码里怎么写，要等网站的技术栈选定。

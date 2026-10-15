@@ -162,7 +162,7 @@ together, so that two neighbouring levels never look alike:
 | --- | --- | --- | --- |
 | A domain of the first level | `text-xl` | `weight-bold` | `text` |
 | A domain of the second level | `text-lg` | `weight-bold` | `text` |
-| A domain of the third level or deeper, a one-of | `text-md` | `weight-medium` | `text` |
+| A domain of the third level or deeper; a one-of's title in its box | `text-md` | `weight-medium` | `text` |
 | A rule | `text-md` | `weight-regular` | `text` |
 | A node's label (`R13`) | the size of its line | the weight of its line | `text-muted`, tabular figures |
 
@@ -322,11 +322,11 @@ turned off (disabled), where it has these.
   title to `accent`; focus puts the ring around the row.
 - **The one-of.** A box (`1px` of `border-strong`, `radius-md`, padding
   `space-3`) holding its options, with a label on its top border, One
-  of / 「选其一」 (`text-xs`, `weight-medium`, `text-muted`, on the
+  of / 「择一」 (`text-xs`, `weight-medium`, `text-muted`, on the
   surface's color so the border breaks around it), after its label and
   title. Each option is a row as in the tree, led by `circle`, and the
-  default option by `circle-dot` in `accent` and a tag Default /
-  「默认」 in `accent` with `check`, so the default shows by shape as
+  default option by `circle-dot` in `accent` and its tag, Default option /
+  「默认选项」, in `accent` with `check`, so the default shows by shape as
   well as color. A one-of whose options are off has its box in
   `border-subtle`.
 - **Popovers** (the filter's panel, the info on the length, the rules
@@ -394,8 +394,11 @@ yet, and what each replaces:
 - The filter replaces the panel of check boxes with its Apply button.
 - The tree replaces the indentation by depth, a rule under a rule
   included.
-- The one-of's label on its box and the marks of its default option
-  replace how the list shows a one-of and its default today.
+- The list shows a one-of as a box today
+  ([Static site](static-site.md)); the label on its border replaces the
+  prefix "One of:" (「择一：」) before its title, and the circles before
+  its options and the tag of [Components](#components) replace the
+  plain tag that marks its default option.
 - The icons replace those of the table in [Icons](#icons).
 - The screenshot script, and its run in CI, are not built yet.
 - How all of this is written in the code waits for the choice of the
