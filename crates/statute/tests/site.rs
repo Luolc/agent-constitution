@@ -322,19 +322,21 @@ fn site_marks_the_quadrant_of_each_rule() {
         let r = statute(&dir, &["site"]);
         assert_eq!(r.code, 0, "{}", r.stderr);
         let index = read(&dir, ".statute/site/index.html");
-        for ((class, page), name) in [
-            ("global-public", "R/2.html"),
-            ("global-private", "me/4.html"),
-            ("local-public", "L/3.html"),
-            ("local-private", "here/5.html"),
+        for ((class, source, page), name) in [
+            ("global-public", "R", "R/2.html"),
+            ("global-private", "me", "me/4.html"),
+            ("local-public", "L", "L/3.html"),
+            ("local-private", "here", "here/5.html"),
         ]
         .into_iter()
         .zip(names)
         {
             let mark = format!("<span class=\"q {class}\">{name}</span>");
+            // The page names the source as well; the index lists it above.
+            let named = format!("<span class=\"q {class}\">{name} · {source}</span>");
             let html = read(&dir, &format!(".statute/site/{page}"));
             let h1 = &html[html.find("<h1>").unwrap()..html.find("</p>").unwrap()];
-            assert!(h1.contains(&mark), "{lang} {page}: {h1}");
+            assert!(h1.contains(&named), "{lang} {page}: {h1}");
             let item = index
                 .lines()
                 .find(|l| l.starts_with("<li") && l.contains(&format!("href=\"{page}\"")))

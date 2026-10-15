@@ -300,6 +300,7 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
         c => format!(" class=\"{}\"", c.join(" ")),
     };
     let _ = write!(out, "<li{class}>{}", link(project, &key, ""));
+    out.push_str(&mark(project, w, &key, false));
     out.push_str(&tags(project, w, &key, node, ""));
     let children: Vec<&Node> = source.children(node.id).collect();
     if !children.is_empty() {
@@ -327,15 +328,25 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
     )
 }
 
-/// A node's quadrant, kind, status and, for a rule, what this rule set
-/// does with it. The quadrant's class gives it its color, and its name
-/// says it without one.
+/// The quadrant of a node's source, and with `named` the source's name:
+/// the class gives the mark its color, and the words say it without one.
+fn mark(project: &Project, w: &Words, key: &Key, named: bool) -> String {
+    let Some(source) = project.sources.source(&key.source) else {
+        return String::new();
+    };
+    let q = Quadrant::of(source);
+    let name = if named {
+        format!(" · {}", escape(&source.name))
+    } else {
+        String::new()
+    };
+    format!("<span class=\"q {}\">{}{name}</span>", q.class(), q.name(w))
+}
+
+/// A node's kind, status and, for a rule, what this rule set does with
+/// it.
 fn tags(project: &Project, w: &Words, key: &Key, node: &Node, up: &str) -> String {
     let mut out = String::new();
-    if let Some(source) = project.sources.source(&key.source) {
-        let q = Quadrant::of(source);
-        let _ = write!(out, "<span class=\"q {}\">{}</span>", q.class(), q.name(w));
-    }
     if node.kind != Kind::Rule {
         let _ = write!(out, "<span class=\"tag\">{}</span>", kind(w, node.kind));
     }
@@ -398,9 +409,10 @@ fn node_page(
     }
     let _ = writeln!(
         out,
-        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}",
+        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}{}",
         escape(&key.to_string()),
         escape(title),
+        mark(project, w, key, true),
         tags(project, w, key, node, "../")
     );
     if let Some(slug) = &node.slug {
