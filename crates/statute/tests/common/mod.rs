@@ -3,26 +3,33 @@
 
 #![allow(dead_code)]
 
+/// A domain, off by default.
 pub fn domain(id: u64) -> (u64, String) {
     (
         id,
         format!(
-            "id = {id}\nslug = \"domain-{id}\"\nrevision = 1\nkind = \"domain\"\nstatus = \"active\"\nlang = \"en\"\n\n[title]\nen = \"Domain {id}\"\n"
+            "id = {id}\nslug = \"domain-{id}\"\nrevision = 1\nkind = \"domain\"\nstatus = \"active\"\nlang = \"en\"\ndefault = \"off\"\n\n[title]\nen = \"Domain {id}\"\n"
         ),
     )
 }
 
-pub fn one_of(id: u64, parent: u64) -> (u64, String) {
+/// A one-of under `parent` whose default is its child `default`.
+pub fn one_of(id: u64, parent: u64, default: u64) -> (u64, String) {
     (
         id,
         format!(
-            "id = {id}\nrevision = 1\nkind = \"one-of\"\nstatus = \"active\"\nlang = \"en\"\nparent = {parent}\n\n[title]\nen = \"One-of {id}\"\n"
+            "id = {id}\nrevision = 1\nkind = \"one-of\"\nstatus = \"active\"\nlang = \"en\"\nparent = {parent}\ndefault = {default}\n\n[title]\nen = \"One-of {id}\"\n"
         ),
     )
 }
 
-/// A rule under `parent`; `extra` is more top-level lines, such as
-/// `requires = [3]`.
+/// A one-of under `parent` with no children yet, and so no `default`.
+pub fn empty_one_of(id: u64, parent: u64) -> (u64, String) {
+    edit(one_of(id, parent, 0), "default = 0\n", "")
+}
+
+/// A rule under `parent`, off by default; `extra` is more top-level
+/// lines, such as `requires = [3]`.
 pub fn rule(id: u64, parent: u64, extra: &str) -> (u64, String) {
     (
         id,
@@ -33,10 +40,11 @@ kind = "rule"
 status = "draft"
 lang = "en"
 parent = {parent}
+default = "off"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 {extra}
 
 [title]
@@ -55,6 +63,21 @@ en = "Violated when the thing is not done."
 "#
         ),
     )
+}
+
+/// An option of the one-of `one_of`: a rule with no `default` of its own.
+pub fn option(id: u64, one_of: u64, extra: &str) -> (u64, String) {
+    edit(rule(id, one_of, extra), "default = \"off\"\n", "")
+}
+
+/// The node with `default = <value>` in place of the fixture's.
+pub fn set_default((id, text): (u64, String), value: &str) -> (u64, String) {
+    let line = text
+        .lines()
+        .find(|l| l.starts_with("default = "))
+        .expect("the fixture has a `default`")
+        .to_owned();
+    (id, text.replacen(&line, &format!("default = {value}"), 1))
 }
 
 pub fn edit(node: (u64, String), from: &str, to: &str) -> (u64, String) {

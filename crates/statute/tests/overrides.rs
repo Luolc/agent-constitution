@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, one_of, rule};
+use common::{domain, edit, one_of, option, rule};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -27,9 +27,9 @@ fn base() -> Vec<(&'static str, (u64, String))> {
         domain(1),
         rule(2, 1, "requires = [8]"),
         rule(3, 1, "requires = [2]"),
-        one_of(4, 1),
-        rule(5, 4, ""),
-        rule(6, 4, ""),
+        one_of(4, 1, 5),
+        option(5, 4, ""),
+        option(6, 4, ""),
         rule(8, 1, ""),
         rule(9, 1, "requires = [2]"),
         rule(10, 1, "conflicts = [2]"),
@@ -49,7 +49,7 @@ fn base() -> Vec<(&'static str, (u64, String))> {
 fn overriding(id: u64, target: &str, extra: &str) -> (u64, String) {
     edit(
         rule(id, 1, extra),
-        "parent = 1",
+        "parent = 1\ndefault = \"off\"",
         &format!("overrides = \"{target}\""),
     )
 }
@@ -80,6 +80,12 @@ fn repo(name: &str, manifest: &str, more: &[(&str, (u64, String))]) -> PathBuf {
         "id = \"authority\"\n",
     );
     for (sub, (id, text)) in base().iter().chain(more) {
+        // The repository's own rules are in the default `local-rules`.
+        let sub = if *sub == "rules" {
+            ".statute/rules"
+        } else {
+            sub
+        };
         write(&dir, &format!("{sub}/{id}.toml"), text);
     }
     dir
@@ -181,7 +187,7 @@ fn the_overriding_rule_stands_in_the_place_of_the_one_it_overrides() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule L20 (Rule 20) is enabled:\n- it overrides R2 (Rule 2)\n- listed in `rules`\n"
+        "rule L20 (Rule 20) is enabled:\n- it overrides R2 (Rule 2)\n- listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
 }
 
@@ -301,17 +307,17 @@ fn only_a_rule_is_overridden_and_an_overriding_rule_has_no_parent() {
         (
             "a-domain",
             "R1",
-            "rules/20.toml: error: `overrides` names \"R1\", a domain; only a rule can be overridden: in place of a one-of's child, choose another child, and propose to its source one it lacks",
+            ".statute/rules/20.toml: error: `overrides` names \"R1\", a domain; only a rule can be overridden: in place of a one-of's child, choose another child, and propose to its source one it lacks",
         ),
         (
             "a-one-of",
             "R4",
-            "rules/20.toml: error: `overrides` names \"R4\", a one-of; only a rule can be overridden: in place of a one-of's child, choose another child, and propose to its source one it lacks",
+            ".statute/rules/20.toml: error: `overrides` names \"R4\", a one-of; only a rule can be overridden: in place of a one-of's child, choose another child, and propose to its source one it lacks",
         ),
         (
             "missing",
             "R99",
-            "rules/20.toml: error: `overrides` names \"R99\", which does not exist in source `R`",
+            ".statute/rules/20.toml: error: `overrides` names \"R99\", which does not exist in source `R`",
         ),
     ] {
         let dir = repo(
@@ -329,13 +335,17 @@ fn only_a_rule_is_overridden_and_an_overriding_rule_has_no_parent() {
     let dir = repo("both", &manifest(""), &[("rules", both)]);
     fails(
         &dir,
-        "rules/20.toml: error: a rule with `overrides` has no `parent`: it stands where the rule it overrides stands",
+        ".statute/rules/20.toml: error: a rule with `overrides` has no `parent`: it stands where the rule it overrides stands",
     );
-    let same = edit(rule(20, 1, ""), "parent = 1", "overrides = 3");
+    let same = edit(
+        rule(20, 1, ""),
+        "parent = 1\ndefault = \"off\"",
+        "overrides = 3",
+    );
     let dir = repo("same-source", &manifest(""), &[("rules", same)]);
     fails(
         &dir,
-        "rules/20.toml: error: `overrides` names 3, a node of this source; a rule overrides a rule of another source, written \"R200\" or \"team:7\", and within one source a rule is changed in place or superseded",
+        ".statute/rules/20.toml: error: `overrides` names 3, a node of this source; a rule overrides a rule of another source, written \"R200\" or \"team:7\", and within one source a rule is changed in place or superseded",
     );
 }
 
@@ -409,7 +419,7 @@ fn the_overridden_rule_has_no_conflicts_and_no_check() {
         "r/rules",
         edit(
             rule(2, 1, "requires = [8]"),
-            "check = \"review\"",
+            "check = \"none\"",
             "check = \"command\"\nrun = \"exit 1\"\ntools = [\"sh\"]",
         ),
     );

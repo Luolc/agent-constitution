@@ -14,7 +14,7 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 /// rule 21 (no program, for the reviewer, whose reason cites a provision
 /// and rule 20).
 fn nodes(command: &str) -> Vec<(u64, String)> {
-    let builtin = |id| edit(rule(id, 1, ""), "check = \"review\"", "check = \"builtin\"");
+    let builtin = |id| edit(rule(id, 1, ""), "check = \"none\"", "check = \"builtin\"");
     vec![
         domain(1),
         builtin(3),
@@ -27,7 +27,7 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
         builtin(71),
         edit(
             rule(20, 1, ""),
-            "check = \"review\"",
+            "check = \"none\"",
             &format!("check = \"command\"\nrun = {command:?}\ntools = [\"sh\"]"),
         ),
         edit(
@@ -382,10 +382,7 @@ fn r43_without_gitleaks_or_with_its_error_is_inconclusive() {
         run.stdout
     );
     assert!(line(&run, 43).contains("gitleaks failed"), "{}", run.stdout);
-    let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
-        .join("check")
-        .join("git-only");
-    std::fs::create_dir_all(&git_only).unwrap();
+    let git_only = git_only("git-without-gitleaks");
     let run = statute(&dir, &["check"], Some(git_only.to_str().unwrap()));
     assert_eq!(run.code, 0);
     assert!(
@@ -512,14 +509,14 @@ fn a_built_in_check_is_the_first_party_rules_only() {
     }
     for (id, text) in [
         domain(1),
-        edit(rule(50, 1, ""), "check = \"review\"", "check = \"builtin\""),
+        edit(rule(50, 1, ""), "check = \"none\"", "check = \"builtin\""),
     ] {
         write(&dir, &format!("rules/{id}.toml"), &text);
     }
     write(
         &dir,
         "statute.toml",
-        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R50\", \"50\"]\n\n[sources]\nR = { path = \"r\" }\n",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nlocal-rules = \"rules\"\nrules = [\"R50\", \"50\"]\n\n[sources]\nR = { path = \"r\" }\n",
     );
     write(
         &dir,
@@ -905,21 +902,28 @@ fn a_rule_set_that_says_private_in_a_public_repository_is_a_violation() {
     );
 }
 
-#[test]
-fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
-    let dir = repo("gh-missing", "\"R58\", \"R61\", \"R71\"", "true");
-    // git on PATH, gh not.
-    let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
+/// A directory `name` for `PATH` that holds git and nothing else, which
+/// statute needs to find the private rule set.
+fn git_only(name: &str) -> PathBuf {
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("check")
-        .join("git-without-gh");
-    let _ = std::fs::remove_dir_all(&git_only);
-    std::fs::create_dir_all(&git_only).unwrap();
+        .join(name);
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
     let git_bin = std::env::split_paths(&std::env::var_os("PATH").unwrap())
         .map(|d| d.join("git"))
         .find(|p| p.is_file())
         .unwrap();
     #[cfg(unix)]
-    std::os::unix::fs::symlink(git_bin, git_only.join("git")).unwrap();
+    std::os::unix::fs::symlink(git_bin, dir.join("git")).unwrap();
+    dir
+}
+
+#[test]
+fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
+    let dir = repo("gh-missing", "\"R58\", \"R61\", \"R71\"", "true");
+    // git on PATH, gh not.
+    let git_only = git_only("git-without-gh");
     let run = statute(&dir, &["check"], Some(git_only.to_str().unwrap()));
     assert_eq!(run.code, 0, "{}", run.stdout);
     for id in [58, 61, 71] {
@@ -943,10 +947,7 @@ fn without_gh_or_with_its_error_the_github_checks_are_inconclusive() {
 #[test]
 fn rules_3_and_7_run_their_own_checks() {
     let dir = repo("superseded", "\"R3\", \"R7\"", "true");
-    let git_only = Path::new(env!("CARGO_TARGET_TMPDIR"))
-        .join("check")
-        .join("git-only");
-    std::fs::create_dir_all(&git_only).unwrap();
+    let git_only = git_only("git-for-superseded");
     let run = statute(&dir, &["check"], Some(git_only.to_str().unwrap()));
     assert_eq!(run.code, 0, "{}", run.stdout);
     assert!(

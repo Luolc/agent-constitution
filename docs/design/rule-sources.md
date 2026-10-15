@@ -354,9 +354,7 @@ rewrites it when it starts with statute's line and differs; a
 repository's own, and the command writes nothing and fails. The file is
 committed, so that a fresh clone ignores the generated files before
 statute first runs there. The check with `git check-ignore` above
-still runs on each file before it is written. Not built yet: today the
-repository's `.gitignore` names `.statute/`, and statute writes only
-`.statute/site/.gitignore`.
+still runs on each file before it is written.
 
 By default Codex reads at most 32 KiB of a project's instruction files,
 from the repository's root down to the working directory together, and
@@ -419,9 +417,7 @@ once per clone. `--private-only`:
   fails would make `git worktree add` and `git switch` exit with its
   status (githooks(5)), so it never does.
 
-The links are relative and lead to the worktree's own `.statute/`. Not
-built yet: `--private-only`; until it is, running `statute compile` in
-a new worktree is the caller's part.
+The links are relative and lead to the worktree's own `.statute/`.
 
 The private rules only add to the public ones and never contradict
 them, as the private layer only adds rules (above): Grok reads the
@@ -473,13 +469,7 @@ Each negative result holds only for the runs counted; the others are
 one run each.
 
 The private layer is built as described here, except what this
-section marks as not built yet and its place: today the private rule
-set is `statute.private.toml` and its lock file
-`statute.private.lock`, next to `statute.toml`, with `base =
-"statute.toml"`; git must ignore both, which statute checks with
-`git check-ignore`, and the lock file pins both layers together. Moving
-them into git's directory and the lock file down to the private
-sources is not built yet.
+section marks as not built yet.
 
 In a private repository (`public = false`) none of this is needed: the
 one `statute.toml` names every source, and its outputs are committed as
@@ -641,15 +631,19 @@ parent = 104
 
 - A domain's `parent`, when present, is a domain that has no parent:
   of the same source, written as its number, or of another source,
-  written as `requires` writes one (`"R78"`). So
+  written as `requires` writes one (`"R78"`). It may also be a one-of
+  of the same source, of which the domain is an option, and that
+  counts as a level too
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)). So
   there are at most two levels; a subdomain under a subdomain fails the
-  build, as does a domain whose parent is a rule or a one-of. The
-  reference direction applies: a domain of a public source hangs only
-  under a public domain.
+  build, as does a domain whose parent is a rule or a one-of in a
+  subdomain. The reference direction applies: a domain of a public
+  source hangs only under a public domain.
 - A rule or a one-of may have a subdomain as its parent, as it may a
-  domain. A one-of cannot have a domain below it, so subdomains and
-  one-ofs never interleave: the tree goes domain, subdomain, then rules
-  and one-ofs.
+  domain; a rule's parent is never a rule. A one-of in a subdomain has
+  rules as its options, so the tree goes domain, then a subdomain or a
+  one-of whose options are domains, then rules and one-ofs whose
+  options are rules.
 - A rule's `parent` may also name a domain or a subdomain of another
   source, never a rule or a one-of of another source, so that the local
   rules of a repository about Git appear under the general Git heading
@@ -659,7 +653,7 @@ parent = 104
   same reason: a private source's domain about the user's fleet of
   agents appears as a subdomain of the first-party domain about agents,
   with its rules below it. The first-party source's own domains are the
-  roots: its build accepts a `parent` in another source on a rule only
+  roots: in it, a `parent` in another source is accepted on a rule only
   ([Checkers](checkers.md#checkers)).
 - Enabling a domain as a pack enables its subdomains' rules; a subdomain
   may be the root of a pack of its own. A pack is a subtree of one
@@ -776,12 +770,8 @@ marking what is not built:
   subdomain headings, and which requirements are links.
 - [The command and the first version](statute-command.md#the-command-and-the-first-version):
   what is built so far, and moving over by the cutover above.
-- [Checkers](checkers.md#checkers): what `constitution-build` checks of
-  the new fields and what statute does.
+- [Checkers](checkers.md#checkers): what `statute validate` checks of
+  the new fields within one source and what statute checks across
+  sources.
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
-
-Building the rest replaces what the tools do today: statute reads the
-private rule set from `statute.private.toml` next to `statute.toml`,
-where it needs `base = "statute.toml"`, and its lock file pins both
-layers ([Private rules in a public repository](#private-rules-in-a-public-repository)).

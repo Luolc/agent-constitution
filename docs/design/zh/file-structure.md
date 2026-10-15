@@ -1,4 +1,4 @@
-<!-- en-sha256: 629fd6b34165244b2d5fbfee4789a7e72d2d6c08b5f4194683497cec516e665c -->
+<!-- en-sha256: 0f9dd6dcbd8816bc6ef99ba3a90670fc4eb2a1cff77d3865d7f7d7908f6f1f29 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -31,6 +31,7 @@ docs/
     zh/                   本设计的中文译文，每个文件一份同名译文       A
 rules/
   <id>.toml               parent 树上的一个节点一个文件，以编号命名    A
+  params.toml             规定用到的参数                               A
 skills/
   <name>/SKILL.md         一个通用 skill 一个目录，模板文件放在
                           旁边，原样安装                               A

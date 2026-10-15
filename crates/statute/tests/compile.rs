@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, one_of, rule};
+use common::{domain, edit, one_of, option, rule};
 use statute::node::original_hash;
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
@@ -36,9 +36,9 @@ fn nodes() -> Vec<(u64, String)> {
         domain(1),
         rule(2, 1, ""),
         rule(3, 1, "requires = [2]"),
-        one_of(4, 1),
-        rule(5, 4, ""),
-        rule(6, 4, ""),
+        one_of(4, 1, 5),
+        option(5, 4, ""),
+        option(6, 4, ""),
         domain(9),
         rule(10, 9, "requires = [4]"),
         domain(11),
@@ -351,8 +351,13 @@ fn the_deepest_tree_reaches_level_six() {
     );
     // Under domain 1 (level 2): one-of 102, its option domain 103, one-of
     // 104 in it, and rule 105, its option, at level 6.
-    let option = edit(domain(103), "lang = \"en\"", "lang = \"en\"\nparent = 102");
-    for (id, text) in [one_of(102, 1), option, one_of(104, 103), rule(105, 104, "")] {
+    let domain_option = edit(domain(103), "default = \"off\"", "parent = 102");
+    for (id, text) in [
+        one_of(102, 1, 103),
+        domain_option,
+        one_of(104, 103, 105),
+        option(105, 104, ""),
+    ] {
         std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
     }
     let out = compiled(&dir);
@@ -586,7 +591,12 @@ fn the_compilers_applicability_cases() {
         std::fs::write(dir.join("rules/2.toml"), domain(2).1).unwrap();
         std::fs::write(dir.join("rules/3.toml"), rule(3, 1, "").1).unwrap();
         std::fs::write(dir.join("rules/20.toml"), &case.node).unwrap();
-        std::fs::write(dir.join("rules/21.toml"), rule(21, parent, "").1).unwrap();
+        let twenty_one = if case.node.contains("kind = \"one-of\"") {
+            option(21, parent, "")
+        } else {
+            rule(21, parent, "")
+        };
+        std::fs::write(dir.join("rules/21.toml"), twenty_one.1).unwrap();
         let lock = statute(&dir, &["lock"]);
         let run = if lock.code == 0 {
             statute(&dir, &["compile", "--output", "out.md"])
@@ -727,8 +737,8 @@ fn the_checks_are_written_next_to_agents_md() {
     // Rule 5 (enabled) and rule 6 (not) run a command; rule 3 is reviewed.
     for (id, parent) in [(5, 4), (6, 4)] {
         let text = edit(
-            rule(id, parent, ""),
-            "check = \"review\"",
+            option(id, parent, ""),
+            "check = \"none\"",
             &format!(
                 "check = \"command\"\nrun = \"./check-{id}.sh --strict\"\ntools = [\"uv\", \"go\"]"
             ),

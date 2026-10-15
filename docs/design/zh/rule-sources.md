@@ -1,4 +1,4 @@
-<!-- en-sha256: 00ab05ef2d5c8906a1515293e161b5f6ec34572353ebb69ad8316fed0948bdd0 -->
+<!-- en-sha256: c3773b6abe9c6bf257ee84362d3ea10aa41a5a03e9abf111434055187ad20242 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -153,7 +153,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 /site/
 ```
 
-这样，statute 以后新加的文件在名单写上它之前会被跟踪，在 `git status` 里看得见；写成 `*` 再加例外，它就被藏起来了。每个要往 `.statute/` 写生成文件的命令，在 `.statute/.gitignore` 不存在时先写它，它以 statute 的那一行开头但内容不同时重写它；不以那一行开头的 `.statute/.gitignore` 是仓库自己的，命令什么都不写并失败。这个文件要提交，这样新 clone 的仓库在 statute 第一次运行之前就会忽略这些生成文件。上面那项 `git check-ignore` 检查仍在写每个文件之前进行。尚未实现：现在由仓库的 `.gitignore` 写 `.statute/`，statute 只写 `.statute/site/.gitignore`。
+这样，statute 以后新加的文件在名单写上它之前会被跟踪，在 `git status` 里看得见；写成 `*` 再加例外，它就被藏起来了。每个要往 `.statute/` 写生成文件的命令，在 `.statute/.gitignore` 不存在时先写它，它以 statute 的那一行开头但内容不同时重写它；不以那一行开头的 `.statute/.gitignore` 是仓库自己的，命令什么都不写并失败。这个文件要提交，这样新 clone 的仓库在 statute 第一次运行之前就会忽略这些生成文件。上面那项 `git check-ignore` 检查仍在写每个文件之前进行。
 
 Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到工作目录的各级文件合在一起算，超出的部分截掉。`AGENTS.full.md` 单独就会超过这个大小时，`statute compile` 失败；子目录里的 `AGENTS.md` 也算在同一个上限里，statute 不把它们加进来算。
 
@@ -173,7 +173,7 @@ Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到�
 - 没有 `statute.toml`、仓库是私有的 (`public = false`)，或者没有私有规定清单时，什么都不做，不出声，退出码为 0；
 - 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 warning，说明原因和要运行的命令，退出码为 0：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以它从不失败。
 
-软链用相对路径，指向这个 worktree 自己的 `.statute/`。尚未实现：`--private-only`；实现之前，在新 worktree 里跑 `statute compile` 仍是调用方的事。
+软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
 私有规定只补充公开规定，从不与之矛盾，正如私有层只增加规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。
 
@@ -187,7 +187,7 @@ Codex 默认最多读一个项目的指令文件 32 KiB，从仓库根目录到�
 
 没有测的：交互模式；没有用户级指令和 skill 时的兜底那一行；子目录里的 `CLAUDE.md -> AGENTS.md`，以及它能不能让 Claude Code 重新读到那个子目录的规定；Claude Code 在 `CLAUDE.md` 之外也读 `AGENTS.md` 的那个设置，对子目录的效果；以及这个布局下 Grok 读不读子目录的 `AGENTS.md`。每个否定结论只对所数的那几次运行成立；其余的各只跑了一次。
 
-私有层已按这里所写实现，但本节标明尚未实现的部分和它的位置除外：现在私有规定清单是 `statute.private.toml`，锁文件是 `statute.private.lock`，都和 `statute.toml` 放在同一目录，并写着 `base = "statute.toml"`；git 必须忽略这两个文件，statute 用 `git check-ignore` 检查，而且锁文件同时锁定两层。把它们挪进 git 的目录、让锁文件只锁私有规定源，尚未实现。
+私有层已按这里所写实现，但本节标明尚未实现的部分除外。
 
 私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库，它们的规定源在全局配置里登记一次 ([全局配置与 git 规定源](global-configuration.md))。
 
@@ -264,10 +264,10 @@ kind = "domain"
 parent = 104
 ```
 
-- 领域的 `parent` 如果有，只能是一个自己没有 `parent` 的领域：同一规定源里的写编号，另一个规定源里的写法与 `requires` 相同 (`"R78"`)。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或 one-of，构建也失败。引用方向同样适用：公开规定源的领域只能挂在公开的领域下面。
-- 规定和 one-of 可以把子领域当作 `parent`，就像把领域当作 `parent` 一样。one-of 下面不能有领域，所以子领域和 one-of 不会交错：树的顺序是领域、子领域，然后是规定和 one-of。
+- 领域的 `parent` 如果有，只能是一个自己没有 `parent` 的领域：同一规定源里的写编号，另一个规定源里的写法与 `requires` 相同 (`"R78"`)。它也可以是同一规定源里的一个 one-of，这个领域是它的一个选项，同样算一级 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或子领域里的 one-of，构建也失败。引用方向同样适用：公开规定源的领域只能挂在公开的领域下面。
+- 规定和 one-of 可以把子领域当作 `parent`，就像把领域当作 `parent` 一样；规定的 `parent` 从不是规定。子领域里的 one-of 只能以规定为选项，所以树的顺序是领域，然后是子领域或以领域为选项的 one-of，再然后是规定和以规定为选项的 one-of。
 - 规定的 `parent` 也可以指向另一个规定源的领域或子领域，但不能指向另一个规定源的规定或 one-of。这样，一个仓库关于 Git 的本地规定会出现在通用的 Git 标题下面，而不是另起一个标题。引用方向同样适用：公开规定的 `parent` 必须是公开的领域。
-- 出于同样的理由，一个规定源的领域也可以挂在另一个规定源的领域下面：私有规定源里关于用户自己那套 agent 的领域，作为第一方「agent」领域的子领域出现，它的规定在它下面。第一方规定源自己的领域是根：它的构建只接受规定指向另一个规定源的 `parent` ([检查程序](checkers.md#checkers))。
+- 出于同样的理由，一个规定源的领域也可以挂在另一个规定源的领域下面：私有规定源里关于用户自己那套 agent 的领域，作为第一方「agent」领域的子领域出现，它的规定在它下面。第一方规定源自己的领域是根：在它里面，只有规定可以有指向另一个规定源的 `parent` ([检查程序](checkers.md#checkers))。
 - 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定或子领域，不在规定包里；规定要由规定清单在 `rules` 里列出来启用，别的规定源的子领域可以作为它自己的规定包启用。
 
 **怎样显示。** 在编译出的 `AGENTS.md` 里，领域是二级标题，子领域是三级标题；再往下每一层树深一级，直到六级，与[编译与网站](statute-command.md#compilation-and-the-site) 一致。子领域下面没有启用的规定，就不出现；一个领域的子领域和规定都不出现时，这个领域也不出现。一个领域下面，先排它自己规定源的子领域，再按规定源的名字排别的规定源的子领域，和领域本身的排法一样；一个领域只在别的规定源的子领域里有启用的规定时，也因此出现。一项要求指向的节点在发出要求的规定所在的最近一级领域 (包括子领域) 之外时，显示为一个链接。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
@@ -315,7 +315,5 @@ parent = 104
 - [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：两级领域。
 - [编译与网站](statute-command.md#compilation-and-the-site)：子领域的标题，以及哪些依赖显示为链接。
 - [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
-- [检查程序](checkers.md#checkers)：`constitution-build` 对新字段查什么，哪些归 statute 查。
+- [检查程序](checkers.md#checkers)：`statute validate` 在一个规定源之内对新字段查什么，跨规定源的哪些由 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
-
-实现其余部分会替换掉工具现在的行为：statute 从 `statute.toml` 旁边的 `statute.private.toml` 读私有规定清单，那里要写 `base = "statute.toml"`，而它的锁文件同时锁定两层 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))。

@@ -787,6 +787,7 @@ impl Checker<'_> {
             {
                 self.check_parent(node, parent);
             }
+            self.check_default(node);
             if node.kind == Kind::OneOf {
                 self.check_one_of(node);
             }
@@ -827,7 +828,7 @@ impl Checker<'_> {
     }
 
     /// What a node's parent of this source may be
-    /// (`docs/design/rule-config.md`, Proposed: no rule under a rule): a
+    /// (`docs/design/rule-config.md`, No rule under a rule): a
     /// rule's is a domain or a one-of, a one-of's a domain, a domain's a
     /// domain with no parent or a one-of in one, so that domains nest two
     /// levels at most, counting a domain that is an option of a one-of.
@@ -888,8 +889,39 @@ impl Checker<'_> {
         self.diags.error(&file, message);
     }
 
+    /// Every domain and rule says whether it is on by default, but an
+    /// option of a one-of, whose one-of names its default, and a rule that
+    /// overrides another, which stands in its place and has no `default`
+    /// (`docs/design/rule-config.md`, In the rule files).
+    fn check_default(&mut self, node: &Node) {
+        let option = node
+            .parent
+            .and_then(|p| self.source.get(p))
+            .is_some_and(|p| p.kind == Kind::OneOf);
+        let file = self.file(node.id);
+        if node.overrides_written {
+            if node.default_written {
+                self.diags.error(
+                    file,
+                    "a rule with `overrides` has no `default`: it stands in the place of the rule it overrides; remove `default`"
+                        .to_owned(),
+                );
+            }
+        } else if matches!(node.kind, Kind::Domain | Kind::Rule) && !node.default_written && !option
+        {
+            self.diags.error(
+                file,
+                format!(
+                    "a {} says whether it is on by default: `default = \"on\"` or `default = \"off\"`",
+                    node.kind.name()
+                ),
+            );
+        }
+    }
+
     /// A one-of's options are all rules or all domains, and its `default`
-    /// names one of them; an option has no `default` of its own.
+    /// names one of them, once it has any; an option has no `default` of
+    /// its own.
     fn check_one_of(&mut self, one_of: &Node) {
         let source = self.source;
         let file = self.file(one_of.id);
@@ -916,6 +948,13 @@ impl Checker<'_> {
                     ),
                 );
             }
+        }
+        if !one_of.default_written && !children.is_empty() {
+            self.diags.error(
+                &file,
+                "a one-of names its default child, `default = <the ID of one of its children>`"
+                    .to_owned(),
+            );
         }
         if let Some(default) = one_of.default_child
             && !children.iter().any(|c| c.id == default)

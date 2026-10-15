@@ -28,9 +28,10 @@ and a rule set with its lock file, and writes:
 - the version of the check binary to install, and the external commands
   of the enabled rules.
 
-Once built, the `AGENTS.md` holds only the enabled rules whose `uses`
-has `instructions`, with each placeholder replaced by its value
-([Rule configuration](rule-config.md)).
+The `AGENTS.md` holds only the enabled rules whose `uses` has
+`instructions` ([Where a rule is used](rule-config.md#where-a-rule-is-used));
+once parameters are built, each placeholder is replaced by its value
+([Parameters](rule-config.md#parameters)).
 
 `statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
 another file with `--output`, and the other two next to it (below),
@@ -137,9 +138,12 @@ private output, where `CLAUDE.local.md` gives Claude Code the full text
 in place of `AGENTS.md`, Claude Code reads a `CLAUDE.md` as well, so its
 content comes on top of the rules, the public rules twice for a link to
 `AGENTS.md` ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)),
-a sentence the warning leaves out without a private layer; and a
-migration will rename it to a legacy copy, asking the user first.
-statute neither deletes nor renames it.
+a sentence the warning leaves out without a private layer; and the
+migration ([statute-migrate](../../skills/statute-migrate/SKILL.md),
+step e) renames a `CLAUDE.md` that is a file to a legacy copy, and
+asks the user whether to delete one that is a link to `AGENTS.md`.
+statute neither deletes nor renames it. Not built yet: the warning
+still says that a migration renames either kind.
 
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).
@@ -177,7 +181,7 @@ be published anew. The rule set is `statute.toml`, the lock file
   `--private-only`, only the private output, for a git hook in a new
   worktree, without the network and never failing
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
-  A new worktree; not built yet);
+  A new worktree);
 - `check`: list the enabled rules for review by domain, with the outcome
   of those a script checks ([Checks](rule-checks.md#checks));
 - `upgrade`: move the sources and the constitution to newer versions
@@ -188,7 +192,9 @@ be published anew. The rule set is `statute.toml`, the lock file
 - `export`: print the constitution and the rules of a directory as JSON,
   for a program that reads them ([Export](#export));
 - `constitution build`: build the constitution of the repository it runs
-  in from its sources, or check it (below).
+  in from its sources, or check it (below);
+- `validate <dir>`: check a directory of rule files on its own, as one
+  source, without a rule set (below).
 
 **The first version** builds the repository level only. The user level,
 whose instruction files in the user's home directory the private overlay
@@ -200,15 +206,15 @@ which try the whole process on real work.
 **Built so far**: the commands `init`, `lock`, `explain`, `add`,
 `remove`, `upgrade`, `compile` and `check`
 (built-in checks for rules 43, 46, 50, 58, 61 and 71, and for 3 and 7,
-which 43 and 46 supersede), `site` and `constitution build`, for sources on disk and git
+which 43 and 46 supersede), `site`, `constitution build` and
+`validate`, for sources on disk and git
 sources, as many as
-`[sources]` names, and `export`. The repository's own rules, `L12`, are read from the
-`rules/` next to `statute.toml` when no source is at `.`; with
-`R = { path = "." }` they are first-party, and a local reference fails
-with a note to write `R12`. Reading them from `.statute/rules/`, or the
-directory `local-rules` names
-([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
-is not built yet. A rule names a rule of another source in
+`[sources]` names, and `export`. The repository's own rules, `L12`, are read from
+`.statute/rules/`, or the directory `local-rules` names
+([The directory of local rules](rule-config.md#the-directory-of-local-rules));
+when that is a source's rules directory, as with `local-rules = "rules"`
+and `R = { path = "." }`, they are that source's, and a local reference
+fails with a note to write `R12`. A rule names a rule of another source in
 `requires`, `conflicts` and `{@rule:...}` as `R12` or `team:7`, with
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
@@ -217,13 +223,22 @@ with which rules may cite which in `requires`, `conflicts`,
 `overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's or a domain's `parent`
-in another source, and the private layer with its lock file and
-output, as `statute.private.toml` next to `statute.toml`: its place in
-git's directory, a lock file of its own sources alone,
-`.statute/.gitignore` and `compile --private-only` are not built yet.
+in another source, and the private layer with its lock file in git's
+directory, its output, `.statute/.gitignore` and
+`compile --private-only`.
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
 except that `upgrade` does not show the text of a changed rule yet.
+Of [Rule configuration](rule-config.md), the rule files' `default`,
+`uses` and `check = "none"` are read and checked, with the tree of
+[No rule under a rule](rule-config.md#no-rule-under-a-rule), and
+`uses` decides what `compile` writes and `check` lists, and the
+default switches of a rule set are built, with `domains`, `exclude`,
+`local-rules` and a source entry's `defaults`, and what `add`,
+`remove`, `explain` (`--defaults` included) and the lock file do with
+them; `default` is required where the rule files need it, and
+`check = "review"` fails. Not built yet: parameters, the one-of's
+rendering, and the marks of the sites.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
@@ -258,6 +273,15 @@ the chain reaches a rule with more than one successor, the entry is left
 as it is and the successors are listed, for the user to choose with
 `add` and `remove`. A repealed rule is left for the user to take out. When the changed rule
 set does not resolve, neither file is changed.
+
+**`validate <dir>`** reads the rule files of one directory as the
+first-party source, skipping `params.toml`, and runs every check that
+needs no rule set ([Checkers](checkers.md#checkers)): the format of each
+node, the tree, the targets of its references, the translations and
+citations, and the defaults. Each finding goes to standard error on a
+line of its own; an error makes it exit with status 1, and a clean run
+prints one line to standard output with the number of nodes. This repo
+runs `statute validate rules` as a commit hook.
 
 **`constitution build`** does what `uv run constitution-build` does for
 the constitution: it checks the sources of the one edition under
@@ -308,8 +332,7 @@ file. It prints the path of `index.html`.
   and it marks the directory as statute's. It also writes
   `.statute/.gitignore`, which lists `/site/`, as every command that
   writes a generated file into `.statute/` does
-  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
-  not built yet).
+  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
   Before anything, in a git repository, it asks `git ls-files` about
   `.statute/site/`, and when git tracks a file there it writes nothing
   and fails, naming the file and the way out,
@@ -331,13 +354,12 @@ file. It prints the path of `index.html`.
   global for any other, the global configuration's included; public as
   the source declares it, and for `L` as the rule set does. A source
   at `.`, as `R = { path = "." }` in this repo, is first-party and so
-  global public. Today its `rules/` are the repository's own rules as
-  well: it is listed once, as global public, and the local public
-  section says so and links there. Once the repository's own rules are
-  read from `.statute/rules/` (not built yet), that holds only when
-  `local-rules` names the source's rules directory; otherwise the
-  repository's own rules are listed in the local section of their
-  kind.
+  global public. When `local-rules` names its rules directory, its
+  rules are the repository's own as well: it is listed once, as global
+  public, and the local public section says so and links there;
+  otherwise the repository's own rules are listed in the local section
+  of their kind. Not built yet: the site still treats a source at `.`
+  as the repository's own rules whatever `local-rules` names.
   Every node, in the index and on its page, is marked with the kind of
   its source: its name, in the language of the pages, on one of four
   background colors. On the node's page the mark also names the source,
@@ -368,9 +390,8 @@ directory is a source, holding `constitution/`, `rules/` or both.
   writes them.
 - `nodes`: each node of `rules/` in order of ID, with its `file` and
   its `fields` as the file writes them, texts included. A program gets
-  a value as written (`check = "review"`, not its newer name) and a
-  field statute learns later without a change to the export; it applies
-  its own defaults.
+  each value as written and a field statute learns later without a
+  change to the export; it applies its own defaults.
 
 Before it prints anything, statute checks the rules as it checks any
 source ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));

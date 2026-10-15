@@ -68,8 +68,9 @@ has not exited and closed its output (what it started is stopped with
 it), an output longer than 1 MiB, and an exit status of 1 whose output
 is not that list are inconclusive.
 
-A rule without an automatic check (`check = "review"`) is allowed; it
-goes straight to the reviewer (below).
+A rule without an automatic check (`check = "none"`) is allowed; it
+goes to the reviewer when its `uses` has `review`
+([Where a rule is used](rule-config.md#where-a-rule-is-used)).
 
 ## Outcomes and the review loop
 
@@ -85,19 +86,19 @@ the compiled `AGENTS.md` leaves out by default
 goes through the list domain by domain and rule by rule: the rules for
 review, the inconclusive results and the violations. Whether
 one reviewer takes all of them or several take a group each, and how the
-groups are formed, is set in the rule set. Once built, `uses` narrows
-the rules for review to those marked `review`
+groups are formed, is set in the rule set. `uses` narrows the rules
+for review to those marked `review`
 ([Where a rule is used](rule-config.md#where-a-rule-is-used)).
 
 In the first version, `statute check` lists the enabled rules of the
-repository for review and runs the checks of those that have one; with
+repository whose `uses` has `review` for review and runs the checks of those that have one; with
 `--base <ref>` it checks the change `git diff <ref>...HEAD`. It groups
 the rules by their top domain, a subdomain's rules under its domain,
 the domains and the rules in each in order of ID,
 under a heading with the domain's reference and title (`## R13
 (Security)`). Each rule has a line with its outcome (`pass`,
 `violation`, `inconclusive`, or `review` for a rule without an
-automatic check), its reference and title, and a note, with the findings
+automatic check whose `uses` has `review`), its reference and title, and a note, with the findings
 below; a rule that is inconclusive or for review is followed by its
 reason and verification, with their citations rendered as in the
 compiled `AGENTS.md`, a cited rule always as its title and reference

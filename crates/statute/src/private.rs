@@ -1,21 +1,30 @@
 //! The private layer of a public repository (`docs/design/rule-sources.md`,
-//! Private rules in a public repository): `statute.private.toml` adds
-//! private sources and rules to `statute.toml`, and compiles, with the
-//! public rules, into one file that git does not track, which the agents
-//! find through links. Where each of these files goes is decided here
-//! alone.
+//! Private rules in a public repository): the private rule set,
+//! `private.toml` in git's own directory, adds private sources and rules
+//! to `statute.toml`, and compiles, with the public rules, into one file
+//! that git does not track, which the agents find through links. Where
+//! each of these files goes is decided here alone.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// The private layer's rule set and lock file, next to `statute.toml`.
-pub const MANIFEST: &str = "statute.private.toml";
-pub const LOCK: &str = "statute.private.lock";
+/// The private layer's rule set and lock file, in `dir`.
+pub const MANIFEST: &str = "private.toml";
+pub const LOCK: &str = "private.lock";
 
-/// The directory of the private output, which the public `.gitignore`
-/// names, and the full text in it: the public rules and the private ones.
+/// Where the private rule set lives, as `git rev-parse --git-path` takes
+/// it: below `common/`, which git shares between the worktrees of a clone.
+const GIT_PATH: &str = "common/statute";
+
+/// The directory of the private output and the full text in it: the
+/// public rules and the private ones.
 pub const DIR: &str = ".statute";
 pub const FULL: &str = "AGENTS.full.md";
+
+/// The `.gitignore` statute writes in `DIR`: its first line marks it as
+/// statute's, and the others name the generated files, so that git
+/// tracks the rest of the directory.
+pub const GITIGNORE: &str = "# written by statute\n/AGENTS.full.md\n/site/\n";
 
 /// The links to the full text that the agents read: Claude Code reads
 /// `CLAUDE.local.md` and then no `AGENTS.md`, Codex and Pi read
@@ -25,16 +34,90 @@ pub const LINKS: [&str; 2] = ["CLAUDE.local.md", "AGENTS.override.md"];
 /// The most of a project's instruction files Codex reads by default.
 pub const MAX_BYTES: usize = 32 * 1024;
 
-/// Where `add --private` and `remove --private` stage a changed `file`
-/// before renaming it into place: in the private output's directory, so
-/// that git ignores it as well.
-pub fn staged(file: &str) -> PathBuf {
-    Path::new(DIR).join(format!("{file}.tmp"))
+/// The directory of the private rule set and its lock file for the work
+/// tree at `root`, the same from every worktree of a clone: `None`
+/// outside a git repository, where there is no private layer; an error
+/// when git cannot tell.
+pub fn dir(root: &Path) -> Result<Option<PathBuf>, String> {
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args([
+            "rev-parse",
+            "--path-format=absolute",
+            "--git-path",
+            GIT_PATH,
+        ])
+        .env("LC_ALL", "C")
+        .output()
+        .map_err(|e| format!("cannot run git, which says where the private rule set is: {e}"))?;
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    if out.status.success() {
+        let path = String::from_utf8_lossy(&out.stdout);
+        Ok(Some(PathBuf::from(path.trim_end_matches(['\n', '\r']))))
+    } else if stderr.starts_with("fatal: not a git repository") {
+        Ok(None)
+    } else {
+        Err(format!(
+            "git cannot tell where the private rule set is: {}",
+            stderr.trim()
+        ))
+    }
+}
+
+/// What a command that needs the private rule set says outside a git
+/// repository.
+pub const NO_REPOSITORY: &str = "not in a git repository, so there is no private layer: its rule set, private.toml, lives in git's directory";
+
+/// Writes `text` to `path` through a temporary file in the same
+/// directory, made first, so that the file is never seen half written.
+pub fn replace(path: &Path, text: &str) -> std::io::Result<()> {
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let tmp = staged(path);
+    std::fs::write(&tmp, text)
+        .and_then(|()| std::fs::rename(&tmp, path))
+        .inspect_err(|_| {
+            let _ = std::fs::remove_file(&tmp);
+        })
+}
+
+/// Where a changed `path` is written before it is renamed into place.
+pub fn staged(path: &Path) -> PathBuf {
+    let mut name = path.file_name().unwrap_or_default().to_owned();
+    name.push(".tmp");
+    path.with_file_name(name)
 }
 
 /// The full text, relative to the directory of `statute.toml`.
 pub fn full() -> PathBuf {
     Path::new(DIR).join(FULL)
+}
+
+/// Writes `.statute/.gitignore` in `root` when it is missing or is
+/// statute's and differs from `GITIGNORE`; fails, writing nothing, when
+/// the file there is not statute's. Called before any generated file is
+/// written into `.statute/`.
+pub fn write_gitignore(root: &Path) -> Result<(), String> {
+    let path = root.join(DIR).join(".gitignore");
+    let shown = Path::new(DIR).join(".gitignore");
+    let head = GITIGNORE.lines().next().unwrap_or_default();
+    match std::fs::read_to_string(&path) {
+        Ok(text) if text == GITIGNORE => return Ok(()),
+        Ok(text) if text.lines().next() == Some(head) => {}
+        Ok(_) => {
+            return Err(format!(
+                "{}: its first line is not `{head}`, so it is the repository's own and is left as it is, and nothing is written into {DIR}; move it away, and statute writes its own",
+                shown.display()
+            ));
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(format!("{}: cannot read: {e}", shown.display())),
+    }
+    std::fs::create_dir_all(root.join(DIR))
+        .and_then(|()| std::fs::write(&path, GITIGNORE))
+        .map_err(|e| format!("{}: cannot write: {e}", shown.display()))
 }
 
 /// The line the committed `AGENTS.md` of a public repository ends with,
@@ -102,44 +185,25 @@ pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
     }
 }
 
-/// Fails unless git ignores the private layer's rule set and lock file,
-/// and where they are staged. Asked before any of them is written.
-pub fn check_ignored_files(root: &Path) -> Result<(), String> {
-    check_paths(
-        root,
-        &[
-            PathBuf::from(MANIFEST),
-            PathBuf::from(LOCK),
-            staged(MANIFEST),
-            staged(LOCK),
-        ],
-    )
+/// Writes `.statute/.gitignore` and checks that git ignores the private
+/// output: asked before any file of a compile is written.
+pub fn ready(root: &Path) -> Result<(), String> {
+    write_gitignore(root)?;
+    check_ignored(root)
 }
 
-/// Fails unless git ignores each of the private layer's files, the links
-/// through a pattern outside every `.gitignore`. Asked before the
-/// output is written.
-pub fn check_ignored(root: &Path) -> Result<(), String> {
-    check_paths(
-        root,
-        &[PathBuf::from(MANIFEST), PathBuf::from(LOCK), full()],
-    )?;
-    check_links(root)
-}
-
-fn check_paths(root: &Path, files: &[PathBuf]) -> Result<(), String> {
-    for file in files {
-        if ignored(root, file)? == Ignored::No {
-            return Err(format!(
-                "{}: git does not ignore it, so nothing private is written; add `/{}` to the repository's .gitignore",
-                file.display(),
-                file.iter()
-                    .next()
-                    .map_or(String::new(), |c| c.to_string_lossy().into_owned())
-            ));
-        }
+/// Fails unless git ignores the full text, and the links through a
+/// pattern outside every `.gitignore`.
+fn check_ignored(root: &Path) -> Result<(), String> {
+    let file = full();
+    if ignored(root, &file)? == Ignored::No {
+        return Err(format!(
+            "{}: git does not ignore it, so nothing private is written; {DIR}/.gitignore names it, so a pattern elsewhere takes it out, which `git check-ignore --verbose --no-index {}` shows",
+            file.display(),
+            file.display()
+        ));
     }
-    Ok(())
+    check_links(root)
 }
 
 fn check_links(root: &Path) -> Result<(), String> {
@@ -174,11 +238,11 @@ fn check_links(root: &Path) -> Result<(), String> {
 }
 
 /// Writes the full text and the links to it, next to `statute.toml` in
-/// `root`, after checking that git ignores them all; writes nothing when
-/// it does not, or when a file at a link's path is not that link. Links
+/// `root`, after `ready`; writes nothing when git does not ignore them,
+/// or when a file at a link's path is not that link. Links
 /// need a Unix system. Returns what was written.
 pub fn write(root: &Path, text: &str) -> Result<Vec<PathBuf>, String> {
-    check_ignored(root)?;
+    ready(root)?;
     for link in LINKS {
         let path = root.join(link);
         if path.symlink_metadata().is_ok() && std::fs::read_link(&path).ok() != Some(full()) {

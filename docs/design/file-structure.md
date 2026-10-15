@@ -39,6 +39,7 @@ docs/
 rules/
   <id>.toml               one node of the rule tree per file, named
                           by its number                                A
+  params.toml             the parameters the rules use                 A
 skills/
   <name>/SKILL.md         one general skill per directory, with any
                           template files beside it, installed as is    A

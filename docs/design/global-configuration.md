@@ -93,8 +93,10 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   committed rule set and lock file alone say what a repository's
   compiled output holds. A source of the global configuration is
   available to every rule set by its name, as if the rule set named it.
-  The configuration may also hold the values of parameters, which
-  `statute init` copies into a new rule set and no compile reads
+  The configuration may also hold the person's own values of the
+  `personal` parameters, such as the language replies are written in,
+  which only the private output takes, never the committed files; a
+  value of a `repo` parameter there draws a warning and is ignored
   ([Setting a value](rule-config.md#setting-a-value), not built yet).
 
 **The built-in default** is the one source statute knows by itself:
@@ -271,7 +273,7 @@ their text into public files
 | --- | --- |
 | `--global` | `$XDG_CONFIG_HOME/statute/config.toml` |
 | a public source, or any source of a private repository | `statute.toml` |
-| a private source of a public repository | the private rule set, `$(git rev-parse --git-path common/statute)/private.toml`, created when it is not there, with the source's `path` made absolute; the command prints the file's path (not built yet: today `statute.private.toml`, next to `statute.toml`) |
+| a private source of a public repository | the private rule set, `$(git rev-parse --git-path common/statute)/private.toml`, created when it is not there, with the source's `path` made absolute; the command prints the file's path |
 
 A private source in a public repository goes to the private layer
 rather than stopping the command: nothing in that layer reaches a

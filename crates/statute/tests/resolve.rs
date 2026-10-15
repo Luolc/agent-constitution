@@ -10,7 +10,7 @@ use statute::resolve::{Reason, Resolution, resolve};
 use statute::source::Sources;
 
 mod common;
-use common::{domain, edit, one_of, rule, source};
+use common::{domain, edit, one_of, option, rule, source};
 
 /// The rule set enabling `rules` and `packs` of source `R`.
 fn manifest(rules: &[u64], packs: &[u64]) -> Manifest {
@@ -117,18 +117,34 @@ fn requirements_are_added_transitively() {
 fn a_required_one_of_needs_a_chosen_child() {
     let s = source(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
-        rule(4, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(4, 2, ""),
         rule(5, 1, "requires = [2]"),
     ]);
     assert_eq!(ids(&enabled(&s, &[5, 4], &[])), [4, 5]);
+    // With no child chosen, the requirement brings in the default.
+    let res = enabled(&s, &[5], &[]);
+    assert_eq!(ids(&res), [3, 5]);
+    assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::DefaultOf(r(2))]));
+    // A default no longer in force brings in nothing.
+    let s = source(&[
+        domain(1),
+        one_of(2, 1, 3),
+        edit(
+            option(3, 2, ""),
+            "status = \"draft\"",
+            "status = \"repealed\"",
+        ),
+        option(4, 2, ""),
+        rule(5, 1, "requires = [2]"),
+    ]);
     fails(
         &s,
         &[5],
         &[],
         1,
-        "rule R5 (Rule 5) requires one-of R2 (One-of 2), and the rule set enables none of its children; add one of them to `rules`: \"R3\" (Rule 3), \"R4\" (Rule 4)",
+        "rule R5 (Rule 5) requires one-of R2 (One-of 2), whose default brings in no rule in force, and the rule set enables none of its children; add one of them to `rules`",
     );
 }
 
@@ -137,9 +153,9 @@ fn a_required_one_of_is_met_by_a_child_brought_in_otherwise() {
     // 6 requires the one-of; 7 requires its child 3.
     let s = source(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
-        rule(4, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(4, 2, ""),
         rule(6, 1, "requires = [2]"),
         rule(7, 1, "requires = [3]"),
     ]);
@@ -152,9 +168,9 @@ fn a_required_one_of_is_met_by_a_child_brought_in_otherwise() {
 fn at_most_one_child_of_a_one_of() {
     let s = source(&[
         domain(1),
-        one_of(2, 1),
-        rule(3, 2, ""),
-        rule(4, 2, ""),
+        one_of(2, 1, 3),
+        option(3, 2, ""),
+        option(4, 2, ""),
         rule(5, 1, "requires = [4]"),
     ]);
     assert_eq!(ids(&enabled(&s, &[3], &[])), [3]);
@@ -227,15 +243,15 @@ fn a_rule_brought_in_must_accept_the_revision_too() {
 // Packs.
 
 fn pack_source() -> Sources {
-    // Domain 1: rule 2, rule 3 requiring it; one-of 4 with children 5 and
-    // 6; rule 8 superseded by 2.
+    // Domain 1: rule 2, rule 3 requiring it; one-of 4 with children 5,
+    // its default, and 6; rule 8 superseded by 2.
     source(&[
         domain(1),
         rule(2, 1, ""),
         rule(3, 1, "requires = [2]"),
-        one_of(4, 1),
-        rule(5, 4, ""),
-        rule(6, 4, ""),
+        one_of(4, 1, 5),
+        option(5, 4, ""),
+        option(6, 4, ""),
         edit(
             rule(8, 1, "superseded-by = 2"),
             "status = \"draft\"",
@@ -247,10 +263,10 @@ fn pack_source() -> Sources {
 }
 
 #[test]
-fn a_pack_enables_its_subtree_but_no_child_of_a_one_of_unchosen() {
+fn a_pack_enables_its_subtree_and_the_default_of_a_one_of_unchosen() {
     let s = pack_source();
     let res = enabled(&s, &[], &[1]);
-    assert_eq!(ids(&res), [2, 3]);
+    assert_eq!(ids(&res), [2, 3, 5]);
     assert_eq!(reasons(&res, 3), BTreeSet::from([Reason::Pack(r(1))]));
 }
 
@@ -290,7 +306,7 @@ fn rules_name_rules_that_exist() {
         &[1],
         &[],
         1,
-        "`rules` names domain R1 (Domain 1), which cannot be enabled on its own; to enable every rule under it, move it to `packs`",
+        "`rules` names domain R1 (Domain 1); to turn it on, move it to `domains`, or to enable every rule under it, to `packs`",
     );
     fails(
         &s,

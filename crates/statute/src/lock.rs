@@ -98,12 +98,17 @@ struct Rule<'a> {
     original_sha256: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
     overridden_by: Option<String>,
+    /// `"default"` for a rule the defaults alone enable
+    /// (`docs/design/rule-config.md`, Defaults in the lock file).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    by: Option<&'static str>,
 }
 
 /// The lock file of a resolved project: the sources in order of name,
 /// the rules in order of key.
 pub fn render(project: &Project) -> String {
     let m = &project.manifest;
+    let chosen = project.resolution.chosen();
     let lock = Lock {
         constitution: Constitution {
             at: pin(m.constitution_spec(), false),
@@ -131,11 +136,55 @@ pub fn render(project: &Project) -> String {
                 sha256: &node.sha256,
                 original_sha256: &node.original_sha256,
                 overridden_by: project.resolution.overridden.get(key).map(Key::to_string),
+                by: (!chosen.contains(key)).then_some("default"),
             })
             .collect(),
     };
     let body = toml::to_string(&lock).expect("the lock file holds only strings and integers");
     format!("{HEADER}{body}")
+}
+
+const PRIVATE_HEADER: &str = "# Written by statute from private.toml; do not edit by hand.\n\n";
+
+#[derive(Serialize)]
+struct PrivateLock<'a> {
+    sources: Vec<PrivateSource<'a>>,
+}
+
+#[derive(Serialize)]
+struct PrivateSource<'a> {
+    name: &'a str,
+    #[serde(flatten)]
+    at: Pin<'a>,
+    public: bool,
+    scope: &'a str,
+    #[serde(rename = "rules-dir", skip_serializing_if = "Option::is_none")]
+    rules_dir: Option<&'a str>,
+}
+
+/// The private lock file of `both`, the project with both layers over
+/// `public`: the private layer's own sources, those `public` does not
+/// have, and nothing else, so that worktrees on different branches share
+/// it (`docs/design/rule-sources.md`, Private rules in a public
+/// repository).
+pub fn render_private(public: &Project, both: &Project) -> String {
+    let lock = PrivateLock {
+        sources: both
+            .manifest
+            .sources
+            .iter()
+            .filter(|s| public.manifest.spec(&s.name).is_none())
+            .map(|spec| PrivateSource {
+                name: &spec.name,
+                at: pin(spec, true),
+                public: spec.public,
+                scope: if spec.local { "local" } else { "global" },
+                rules_dir: (spec.rules_dir != RULES_DIR).then_some(spec.rules_dir.as_str()),
+            })
+            .collect(),
+    };
+    let body = toml::to_string(&lock).expect("the lock file holds only strings and booleans");
+    format!("{PRIVATE_HEADER}{body}")
 }
 
 /// What a lock file pins, as `upgrade` compares it with a new resolution.
@@ -254,6 +303,7 @@ struct RawPin {
     tag: Option<String>,
     commit: Option<String>,
     public: Option<bool>,
+    scope: Option<String>,
     #[serde(rename = "rules-dir")]
     rules_dir: Option<String>,
 }
@@ -291,7 +341,8 @@ pub fn sources(text: &str) -> Vec<SourceSpec> {
                 public: first_party || p.public == Some(true),
                 name: p.name,
                 declared: Declared::Lock,
-                local: false,
+                local: p.scope.as_deref() == Some("local"),
+                defaults: true,
                 rules_dir,
             })
         })

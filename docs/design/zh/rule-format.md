@@ -1,4 +1,4 @@
-<!-- en-sha256: 21cc48d4c34ef6e93ed944b351b10d8ac3d051f8a14f155d345966760d238c6c -->
+<!-- en-sha256: d1c38c6bfbf57b919342774aec3666f5d8850b5535066a592a6a75ff1f5e0bdf -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -24,7 +24,7 @@
 
 ## <a id="rule-file-format"></a>规定文件格式
 
-parent 树上的每个节点 (一条规定、一个 one-of 或一个领域) 是一个 TOML 文件 `rules/<id>.toml`，全部平铺在一个目录里：`rules/42.toml`，不补零，因为 ID 会一直增长，补到几位迟早都不够。树的结构只记在 `parent` 字段里，从不靠目录表达，所以把一条规定挪到另一个 parent 下只改一行，不搬文件。工具一律按数字给文件排序，不按文件名。[规定配置](rule-config.md) 又加了 `parameter` 这一种节点、领域、规定和 one-of 上的 `default`，以及规定上的 `uses`，都还没有实现。
+parent 树上的每个节点 (一条规定、一个 one-of 或一个领域) 是一个 TOML 文件 `rules/<id>.toml`，全部平铺在一个目录里：`rules/42.toml`，不补零，因为 ID 会一直增长，补到几位迟早都不够。树的结构只记在 `parent` 字段里，从不靠目录表达，所以把一条规定挪到另一个 parent 下只改一行，不搬文件。工具一律按数字给文件排序，不按文件名。目录里还可以有 `params.toml`，即规定源的参数 (见[声明参数](rule-config.md#declaring-a-parameter))；它不是节点，statute 读节点时跳过它。
 
 一条规定，这里的例子带了中文译文：
 
@@ -41,6 +41,8 @@ authority = ["simplicity"]
 constitution = ">=1"
 level = "project"
 check = "builtin"
+default = "on"
+uses = ["instructions", "review"]
 
 [title]
 en = "Sync from the lock file first in CI"
@@ -82,6 +84,7 @@ kind = "one-of"
 status = "active"
 lang = "en"
 parent = 3
+default = 6
 
 [title]
 en = "Python package manager"
@@ -94,6 +97,7 @@ revision = 1
 kind = "domain"
 status = "active"
 lang = "en"
+default = "off"
 
 [title]
 en = "Python"
@@ -115,20 +119,22 @@ it.
 - `status`：`draft`、`trial`、`active`、`superseded` 或 `repealed`。
 - `superseded-by`：取代这条规定的、同一规定源里的规定的 ID；几条规定一起取代它时写成 ID 的列表，`superseded-by = [22, 23]`。只在 `status` 为 `superseded` 时出现。每一项都是另一条规定，不重复；列表不能为空。
 - `lang`：这条规定写成时用的语言，即原文的语言，写成语言代码，如 `"en"` 或 `"zh"`。
-- `parent`：父节点的 ID，是同一规定源里的一条规定、一个 one-of 或一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是一个没有 parent 的领域，在同一规定源里，或者在另一个规定源里，写法与 `requires` 相同 (见[子领域](rule-sources.md#subdomains))。构建接受这两种 `parent` ([检查程序](checkers.md#checkers))，statute 也接受。
+- `parent`：同一规定源里父节点的 ID：规定的是一个领域或一个 one-of，从不是规定；one-of 的是一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是一个没有 parent 的领域，在同一规定源里，或者在另一个规定源里，写法与 `requires` 相同 (见[子领域](rule-sources.md#subdomains))，作为选项时则是一个 one-of。one-of 的选项要么全是规定，要么全是领域，领域最多嵌套两层，选项算一层 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。这些 statute 都会检查。
 - `overrides` (可选，只有规定有)：这条规定在启用它的规定清单里所顶替的另一个规定源的规定，写法与 `requires` 相同 (`"R200"`)；带它的规定没有 `parent` (见[覆盖](rule-sources.md#overrides))。
 - `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
 - `conflicts` (可选)：不能与这条规定一起用的规定，写法同 `requires`，只写在一边 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))。
 - `authority`：这条规定所细化的宪法条文的 ID，写法与宪法引用自身时相同，不带命名空间 (`"simplicity"`、`"must-ask.capital"`)。这是字段的值，不是正文里的 `{@...}` 引用，所以 [ID](source-formats.md#ids) 要求规定的引用带命名空间，这一条不适用于它；规定正文里的引用照旧带命名空间 (`{@constitution:simplicity}`)。
 - `constitution`：这条规定兼容的宪法修订号，写成 Python 的版本说明符 (`">=1"`、`">=1,<4"`；见[从规定追溯到宪法](#tracing-rules-to-the-constitution))。
 - `level`：默认层级，`project` 或 `user` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
-- `check`：怎样检查是否合规 ([检查](rule-checks.md#checks))。`builtin`：这条规定在本仓的 crate 里有一个模块。`command`：外部命令，另由两个字段给出，`run` 是命令行，`tools` 是它需要的工具列表 (`["uv"]`)。`review`：没有自动检查，这条规定直接交给审查方。
+- `check`：怎样检查是否合规 ([检查](rule-checks.md#checks))。`builtin`：这条规定在本仓的 crate 里有一个模块。`command`：外部命令，另由两个字段给出，`run` 是命令行，`tools` 是它需要的工具列表 (`["uv"]`)。`none`：没有自动检查；审查方是否拿到这条规定，由 `uses` 决定。`review` 是 `none` 的旧名，写了就报错。
+- `default`：必填，规定是否默认开启，`on` 或 `off`；one-of 的子节点没有，带 `overrides` 的规定也没有 (见[默认开关](rule-config.md#default-switches))。
+- `uses` (可选，只有规定有)：规定去哪里，由 `instructions` 和 `review` 组成的非空列表；不写就是 `["instructions"]` (见[规定用在哪里](rule-config.md#where-a-rule-is-used))。
 - `[title]`：简短的标题，只占一行 (多行字符串可以以换行结尾)。
 - `[applicability]` (可选，只有领域有)：一两句话，说明这个领域管什么、哪些仓库该启用它、什么情况下不必启用。它可以像规定正文一样引用规定 (`{@rule:<id>}`) 和条款 ([ID](source-formats.md#ids))。编译出的 `AGENTS.md` 把它放在领域的标题下面 ([编译与网站](statute-command.md#compilation-and-the-site))，网站把它放在领域详情页的标题下面 ([静态网站](static-site.md))。
 - `[text.statement]`、`[text.reason]` 和 `[text.verification]`：正文的三部分 ([一条规定包含什么](#what-one-rule-holds))。
 - `[translations]` (可选)：每种译文语言一个键，原文语言不在其中；值是这份译文所依据的原文的 SHA-256。
 
-领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (one-of 都有，领域只在作为子领域时有)、`[title]`、`[applicability]` (只有领域有，可选)，以及有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
+领域和 one-of 只有 `id`、`slug`、`revision`、`kind`、`status`、`lang`、`parent` (one-of 都有，领域只在作为子领域或选项时有)、`default` (领域上是 `on` 或 `off`，作为 one-of 的选项时没有；one-of 上是它默认启用的那个选项的 ID)、`[title]`、`[applicability]` (只有领域有，可选)，以及有译文时的 `[translations]`。它们没有正文、检查或别的元数据。
 
 **语言。** 每段文字，即 `[title]`、`[applicability]` 和正文三部分，都是一张以语言代码为键的表，与[源文件格式](source-formats.md) 相同。`lang` 指明的那种语言必填，其他语言都是可选的译文。所以一条规定可以只用一种语言写，用什么语言写作的人都能直接写。一份译文要给出这个节点在这种语言里的每段文字 (规定是标题和全部三部分，领域是标题和 applicability，如果有的话)，它在 `[translations]` 里的键记下它依据的是哪一版原文。这个哈希值是原文语言的 `title`、`text.statement`、`text.reason`、`text.verification` 四个值按这个顺序、以 TOML 解析器返回的形式 (即构建去掉多行字符串引号旁的换行之前，见[源文件格式](source-formats.md))、把文件里的每个 CRLF 行尾当作 LF (这样无论检出时用哪种行尾，哈希都相同；转义写出的 `\r\n` 不是行尾，原样保留)、用 UTF-8 编码，每两个之间以一个 NUL 字节 (0x00) 连接后的 SHA-256；有 applicability 的领域对 `title` 和 `applicability` 计算，连接方式相同，其他领域和 one-of 只对标题计算。原文改了、译文的哈希对不上时，检查失败并打印新的哈希值，就像 `check-design-translation` 对设计文档所做的那样。编译成某种语言时，规定有这种语言的译文就用译文，没有就用原文。
 

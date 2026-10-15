@@ -55,8 +55,7 @@ pub enum Check {
         run: String,
         tools: Vec<String>,
     },
-    /// No program checks the rule: `check = "none"`, or `"review"`, its
-    /// older name.
+    /// No program checks the rule: `check = "none"`.
     None,
 }
 
@@ -135,6 +134,11 @@ pub struct Node {
     /// A one-of's `default`, the child it enables when a rule set picks
     /// none, when the file gives one.
     pub default_child: Option<Id>,
+    /// Whether the file writes `default`, well formed or not, so that a
+    /// malformed one is not also reported missing.
+    pub default_written: bool,
+    /// Whether the file writes `overrides`, well formed or not.
+    pub overrides_written: bool,
     /// Which repositories a domain is for; only a domain has it.
     pub applicability: Option<Text>,
     pub translations: BTreeMap<String, String>,
@@ -513,6 +517,8 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
         title: raw.title,
         default,
         default_child,
+        default_written: raw.default.is_some(),
+        overrides_written: raw.overrides.is_some(),
         applicability: raw.applicability,
         translations,
         rule,
@@ -609,6 +615,13 @@ fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<Rule
             run: run.clone(),
             tools: tools.clone(),
         }),
+        (Some(RawCheck::Review), _, _) => {
+            err(
+                "`check = \"review\"` is the older name of `check = \"none\"`; write that, and `uses` says whether the rule is listed for review"
+                    .to_owned(),
+            );
+            None
+        }
         (Some(RawCheck::Command), run, tools) => {
             err(format!(
                 "`check = \"command\"` needs {}",

@@ -90,17 +90,6 @@ HEADING = re.compile(
 )
 
 
-def subdomain(checkout: Path) -> None:
-  """Make the one-of 2 of site_fixture a domain under the domain 1.
-
-  Args:
-    checkout: The rules' checkout.
-  """
-  (checkout / "rules/2.toml").write_text(
-    site_fixture.group(2, "domain", 1), encoding="utf-8"
-  )
-
-
 def visible(page: str) -> str:
   """Return the text of a page outside its scripts and styles, on one line.
 
@@ -470,7 +459,7 @@ class SiteTest(unittest.TestCase):
 
   def test_rules_list_subdomain(self):
     """A domain under a domain: a deeper heading and a nested checkbox."""
-    raw = self.build(raw=True, edit_rules=subdomain)
+    raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
     page = raw["rules/index.html"]
     # The domain's page lists the subdomain, the subdomain's its rule, in
     # both languages.
@@ -545,7 +534,8 @@ class SiteTest(unittest.TestCase):
       path = checkout / "rules/6.toml"
       text = path.read_text(encoding="utf-8")
       path.write_text(
-        text.replace("parent = 1", 'overrides = "team:8"'), encoding="utf-8"
+        text.replace('parent = 1\ndefault = "off"', 'overrides = "team:8"'),
+        encoding="utf-8",
       )
 
     raw = self.build(raw=True, edit_rules=override)
@@ -577,7 +567,7 @@ class SiteTest(unittest.TestCase):
       " when not. Provisions of the constitution it cites Art. I §1 one-a"
       " Relations Parent R2 Group 2 Requires none Conflicts with R5 Rule 5"
       " Metadata ID 3 Revision 2 Kind rule Status active Default level project"
-      " Constitution revisions >=1 Check review Original language English en"
+      " Constitution revisions >=1 Check none Original language English en"
       " Translations Chinese zh On this page Reason Verification Provisions of"
       " the constitution it cites Relations Metadata",
       pages["rules/3/index.html"],

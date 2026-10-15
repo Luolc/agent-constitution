@@ -28,6 +28,10 @@ pub const FIRST_PARTY: &str = "R";
 /// The prefix of a local rule, one of the repository's own `rules/`:
 /// `L12`.
 pub const LOCAL: &str = "L";
+/// The directory of the repository's own rules when the rule set names no
+/// other in `local-rules` (`docs/design/rule-config.md`, The directory of
+/// local rules).
+pub const LOCAL_RULES: &str = ".statute/rules";
 
 /// A source's rules directory, below its top, when `rules-dir` names no
 /// other.
@@ -239,6 +243,9 @@ pub struct SourceSpec {
     /// `scope = "local"`: the rules are this repository's, as those of
     /// its own `rules/` are, and rank with them for overrides.
     pub local: bool,
+    /// `defaults = false` in the rule set's entry takes none of the
+    /// source's defaults (`docs/design/rule-config.md`, Whose defaults).
+    pub defaults: bool,
     /// The directory of the source's rules, below its top: `rules-dir`,
     /// `rules` by default.
     pub rules_dir: String,
@@ -249,6 +256,15 @@ impl SourceSpec {
     /// are then the source's rules rather than local ones.
     pub fn is_here(&self) -> bool {
         self.git.is_none() && matches!(self.path.trim_end_matches('/'), "." | "")
+    }
+
+    /// Whether the source's rules directory is that of the repository's
+    /// own rules, `local_rules`, so that those rules are the source's
+    /// (`docs/design/rule-config.md`, The directory of local rules).
+    pub fn holds(&self, local_rules: &str) -> bool {
+        self.git.is_none()
+            && normal(&Path::new(&self.path).join(&self.rules_dir))
+                == normal(Path::new(local_rules))
     }
 
     /// How a path below the source is named in messages: `rules` for the
@@ -300,6 +316,7 @@ pub fn built_in_first_party() -> SourceSpec {
         declared: Declared::BuiltIn,
         public: true,
         local: false,
+        defaults: true,
         rules_dir: RULES_DIR.to_owned(),
     }
 }
@@ -322,6 +339,14 @@ pub struct Manifest {
     pub rules: Vec<Key>,
     /// The roots of the packs enabled, in the order written.
     pub packs: Vec<Key>,
+    /// The domains turned on, in the order written.
+    pub domains: Vec<Key>,
+    /// The domains, one-ofs and rules the defaults enable that the rule
+    /// set turns off, in the order written.
+    pub exclude: Vec<Key>,
+    /// The directory of the repository's own rules, relative to that of
+    /// `statute.toml`.
+    pub local_rules: String,
     pub agents_md: Vec<Part>,
     /// The language `compile` writes in.
     pub lang: String,
@@ -332,12 +357,17 @@ pub struct Manifest {
 struct RawManifest {
     constitution: RawConstitution,
     public: Option<bool>,
+    local_rules: Option<String>,
     #[serde(default)]
     rules: Vec<String>,
     #[serde(default)]
     packs: Vec<String>,
     #[serde(default)]
-    sources: BTreeMap<String, RawEntry>,
+    domains: Vec<String>,
+    #[serde(default)]
+    exclude: Vec<String>,
+    #[serde(default)]
+    sources: BTreeMap<String, toml::Value>,
     compile: Option<RawCompile>,
 }
 
@@ -358,17 +388,35 @@ struct RawSource {
     clone: Option<String>,
     public: Option<bool>,
     scope: Option<String>,
+    defaults: Option<bool>,
     #[serde(rename = "rules-dir")]
     rules_dir: Option<String>,
 }
 
 /// An entry of a rule set's `[sources]`: a source, or `false`, which takes
 /// a source of the global configuration out.
-#[derive(Deserialize)]
-#[serde(untagged)]
 enum RawEntry {
     Off(bool),
     On(RawSource),
+}
+
+impl RawEntry {
+    /// Reads the entry `name` by its shape, so that a problem in a source's
+    /// table names the key and the entry.
+    fn read(name: &str, value: toml::Value) -> Result<RawEntry, String> {
+        match value {
+            toml::Value::Boolean(b) => Ok(RawEntry::Off(b)),
+            toml::Value::Table(_) => value.try_into().map(RawEntry::On).map_err(|e| {
+                format!(
+                    "[sources] `{name}`: {}",
+                    e.to_string().trim_end().trim_end_matches('.')
+                )
+            }),
+            other => Err(format!(
+                "[sources] `{name} = {other}`: name the source, as in `{name} = {{ path = \"<dir>\" }}`, or write `{name} = false` to take a source of the global configuration out"
+            )),
+        }
+    }
 }
 
 /// The global configuration.
@@ -391,6 +439,11 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
                 "[sources] `{name}`: a source of the global configuration is global; remove `scope`"
             ));
         }
+        if s.defaults.is_some() {
+            errors.push(format!(
+                "[sources] `{name}`: the global configuration enables no rule, so its sources bring no defaults; remove `defaults`, and write `defaults = false` in a rule set's entry for the source instead"
+            ));
+        }
         if s.git.is_none() {
             errors.push(format!(
                 "[sources] `{name}`: a source of the global configuration is a git source, `{name} = {{ git = \"<address>\", branch = \"main\" }}`; a directory read as it is belongs in a rule set, with `path`"
@@ -408,15 +461,17 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
     Ok(sources)
 }
 
-/// `statute.private.toml`.
+/// `private.toml`.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RawPrivate {
-    base: String,
     #[serde(default)]
     rules: Vec<String>,
     #[serde(default)]
     packs: Vec<String>,
+    #[serde(default)]
+    domains: Vec<String>,
+    exclude: Option<toml::Value>,
     #[serde(default)]
     sources: BTreeMap<String, RawSource>,
 }
@@ -431,7 +486,7 @@ struct RawCompile {
 /// The sources of a `[sources]` table, each problem in `errors`.
 /// `public_rule_set` is the `public` of `statute.toml`, which names no
 /// private source when it is true; `None` for the table of
-/// `statute.private.toml`, which may.
+/// `private.toml`, which may.
 fn read_sources(
     raw: &BTreeMap<String, RawSource>,
     public_rule_set: Option<bool>,
@@ -492,7 +547,7 @@ fn read_sources(
         };
         if public_rule_set == Some(true) && !source_public {
             errors.push(format!(
-                "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in {}, next to statute.toml",
+                "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in the private rule set, {}, as `statute source add` does",
                 crate::private::MANIFEST
             ));
             continue;
@@ -504,6 +559,7 @@ fn read_sources(
             declared,
             public: source_public,
             local,
+            defaults: s.defaults.unwrap_or(true),
             rules_dir: rules_dir.clone(),
         };
         match (&s.path, &s.git) {
@@ -548,6 +604,22 @@ fn read_sources(
     sources
 }
 
+/// A relative path without its `.` parts and with its `..` parts applied
+/// where they can be, to compare two ways of writing one directory.
+fn normal(path: &Path) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for part in path.components() {
+        match part {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir if out.last().is_some_and(|p| p != "..") => {
+                out.pop();
+            }
+            other => out.push(other.as_os_str().to_string_lossy().into_owned()),
+        }
+    }
+    out
+}
+
 /// A `rules-dir` as written, when it names a directory within the
 /// source, outside `.statute/`; else what is wrong.
 pub fn rules_dir(dir: &str) -> Result<String, String> {
@@ -568,12 +640,13 @@ pub fn rules_dir(dir: &str) -> Result<String, String> {
 
 /// The key a reference of a rule set names among `sources`; else what is
 /// wrong, to follow the reference as written.
-fn key_in(sources: &[SourceSpec], r: &RuleRef) -> Result<Key, String> {
+fn key_in(sources: &[SourceSpec], local_rules: &str, r: &RuleRef) -> Result<Key, String> {
     let named = |name: &str| sources.iter().any(|s| s.name == name);
     match &r.origin {
-        Origin::Local => match sources.iter().find(|s| s.is_here()) {
+        Origin::Local => match sources.iter().find(|s| s.holds(local_rules)) {
             Some(here) => Err(format!(
-                "is a rule of this repository's `rules/`, which is source `{}` here; write \"{}\"",
+                "is a rule of this repository's `{}/`, which is source `{}` here; write \"{}\"",
+                local_rules.trim_end_matches('/'),
                 here.name,
                 show(&here.name, r.id)
             )),
@@ -628,7 +701,18 @@ impl Manifest {
 
         let mut on = BTreeMap::new();
         let mut off = Vec::new();
-        for (name, entry) in raw.sources {
+        // The entries that could not be read, so that no error follows from
+        // their absence.
+        let mut unread = Vec::new();
+        for (name, value) in raw.sources {
+            let entry = match RawEntry::read(&name, value) {
+                Ok(entry) => entry,
+                Err(e) => {
+                    errors.push(e);
+                    unread.push(name);
+                    continue;
+                }
+            };
             match entry {
                 RawEntry::On(s) => {
                     on.insert(name, s);
@@ -643,7 +727,7 @@ impl Manifest {
             }
         }
         let mut sources = read_sources(&on, Some(public), Declared::RuleSet, &mut errors);
-        let sources_ok = sources.len() == on.len();
+        let sources_ok = sources.len() == on.len() && unread.is_empty();
         let mut held = Vec::new();
         let given = |sources: &[SourceSpec], held: &[SourceSpec], name: &str| {
             off.iter().any(|o| o == name)
@@ -671,7 +755,7 @@ impl Manifest {
         }
         sources.sort_by(|a, b| a.name.cmp(&b.name));
         held.sort_by(|a, b| a.name.cmp(&b.name));
-        if sources.is_empty() {
+        if sources.is_empty() && unread.is_empty() {
             errors.push(
                 "[sources] is empty; name the source of the rules, as in `R = { path = \".\" }`"
                     .to_owned(),
@@ -698,6 +782,7 @@ impl Manifest {
             ));
         }
 
+        let local_rules = raw.local_rules.unwrap_or_else(|| LOCAL_RULES.to_owned());
         let mut refs = |field: &str, list: &[String]| -> Vec<Key> {
             let mut out = Vec::new();
             for entry in list {
@@ -705,7 +790,7 @@ impl Manifest {
                     if let Some(e) = held_private(&held, &r, entry) {
                         Err(e)
                     } else if sources_ok {
-                        key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}"))
+                        key_in(&sources, &local_rules, &r).map_err(|e| format!("`{entry}` {e}"))
                     } else {
                         // The sources are wrong already; that error is enough.
                         Ok(Key::of(&r))
@@ -723,6 +808,13 @@ impl Manifest {
         };
         let rules = refs("rules", &raw.rules);
         let packs = refs("packs", &raw.packs);
+        let domains = refs("domains", &raw.domains);
+        let exclude = refs("exclude", &raw.exclude);
+        if local_rules.trim().is_empty() || Path::new(&local_rules).is_absolute() {
+            errors.push(format!(
+                "`local-rules = \"{local_rules}\"` must name a directory relative to that of statute.toml, as in \"rules\""
+            ));
+        }
 
         let (agents_md, lang) = raw.compile.map_or((None, None), |c| (c.agents_md, c.lang));
         let agents_md = agents_md.unwrap_or_else(|| vec![Part::Statement]);
@@ -751,12 +843,15 @@ impl Manifest {
             held,
             rules,
             packs,
+            domains,
+            exclude,
+            local_rules,
             agents_md,
             lang,
         })
     }
 
-    /// The rule set with the private layer of `statute.private.toml`, from
+    /// The rule set with the private layer of `private.toml`, from
     /// its text, added: its sources and its rules after those of
     /// `statute.toml` (`docs/design/rule-sources.md`, Private rules in a
     /// public repository). Every problem found is returned.
@@ -780,14 +875,22 @@ impl Manifest {
                 crate::private::MANIFEST
             ));
         }
-        if raw.base != FILE {
-            errors.push(format!(
-                "`base = \"{}\"`: the private layer adds to the rule set next to it, `base = \"{FILE}\"`",
-                raw.base
-            ));
-        }
         let mut sources = self.sources.clone();
-        let own = read_sources(&raw.sources, None, Declared::RuleSet, &mut errors);
+        let mut own = read_sources(&raw.sources, None, Declared::RuleSet, &mut errors);
+        // The file serves every worktree of a clone, from which a relative
+        // path would lead to different places.
+        for spec in own.iter_mut().filter(|s| s.git.is_none()) {
+            if spec.path.starts_with("~/") {
+                spec.path = crate::global::expand(&spec.path)
+                    .to_string_lossy()
+                    .into_owned();
+            } else if !Path::new(&spec.path).is_absolute() {
+                errors.push(format!(
+                    "[sources] `{}`: `path = \"{}\"` is relative; the private rule set serves every worktree, so a path in it is absolute or starts with `~/`",
+                    spec.name, spec.path
+                ));
+            }
+        }
         for spec in &own {
             match self.spec(&spec.name) {
                 Some(have) if have.declared == Declared::RuleSet => errors.push(format!(
@@ -819,9 +922,9 @@ impl Manifest {
         let mut add = |field: &str, given: &[Key], list: &[String]| {
             let mut out = given.to_vec();
             for entry in list {
-                match RuleRef::parse(entry)
-                    .and_then(|r| key_in(&sources, &r).map_err(|e| format!("`{entry}` {e}")))
-                {
+                match RuleRef::parse(entry).and_then(|r| {
+                    key_in(&sources, &self.local_rules, &r).map_err(|e| format!("`{entry}` {e}"))
+                }) {
                     Err(e) => errors.push(format!("`{field}`: {e}")),
                     Ok(key) if given.contains(&key) => errors.push(format!(
                         "`{field}` lists `{entry}`, which {FILE} lists already"
@@ -836,6 +939,12 @@ impl Manifest {
         };
         let rules = add("rules", &self.rules, &raw.rules);
         let packs = add("packs", &self.packs, &raw.packs);
+        let domains = add("domains", &self.domains, &raw.domains);
+        if raw.exclude.is_some() {
+            errors.push(format!(
+                "`exclude` is for {FILE}: the private layer only adds, and leaves out no rule of the public one"
+            ));
+        }
         if !errors.is_empty() {
             return Err(errors);
         }
@@ -844,6 +953,7 @@ impl Manifest {
             held: Vec::new(),
             rules,
             packs,
+            domains,
             ..self.clone()
         })
     }
@@ -853,7 +963,9 @@ impl Manifest {
     pub fn key(&self, text: &str) -> Result<Key, String> {
         RuleRef::parse(text).and_then(|r| match held_private(&self.held, &r, text) {
             Some(e) => Err(e),
-            None => key_in(&self.sources, &r).map_err(|e| format!("`{text}` {e}")),
+            None => {
+                key_in(&self.sources, &self.local_rules, &r).map_err(|e| format!("`{text}` {e}"))
+            }
         })
     }
 
@@ -915,6 +1027,7 @@ agents-md = ["statement", "reason"]
                 declared: Declared::RuleSet,
                 public: true,
                 local: false,
+                defaults: true,
                 rules_dir: "rules".into(),
             }]
         );
@@ -993,17 +1106,22 @@ agents-md = ["statement", "reason"]
 
     #[test]
     fn local_rules_are_the_first_party_ones_here() {
-        // The source is this repository, so its rules are written `R12`.
+        // The local rules are the `rules/` of the source at `.`, so its
+        // rules are written `R12`.
+        let here = GOOD.replace("public = false", "public = false\nlocal-rules = \"rules\"");
         for local in ["12", "L12", "local:12"] {
             fails_with(
-                &GOOD.replace("\"R7\"", &format!("\"{local}\"")),
+                &here.replace("\"R7\"", &format!("\"{local}\"")),
                 &format!(
                     "`{local}` is a rule of this repository's `rules/`, which is source `R` here; write \"R12\""
                 ),
             );
         }
-        // Elsewhere, they are the repository's own rules, `L`.
+        // In the default `.statute/rules`, or with the source elsewhere,
+        // they are the repository's own rules, `L`.
         for local in ["12", "L12", "local:12"] {
+            let m = Manifest::parse(&GOOD.replace("\"R7\"", &format!("\"{local}\""))).unwrap();
+            assert_eq!(m.rules, [Key::new("R", 42), Key::new("L", 12)]);
             let m =
                 Manifest::parse(&elsewhere().replace("\"R7\"", &format!("\"{local}\""))).unwrap();
             assert_eq!(m.rules, [Key::new("R", 42), Key::new("L", 12)]);

@@ -11,7 +11,7 @@ use statute::manifest::{self, Follow, Key, Manifest};
 use statute::node::Kind;
 use statute::private;
 use statute::project::{Env, Project};
-use statute::resolve::{Reason, current_successors, label, refs};
+use statute::resolve::{Reason, Switches, current_successors, label, refs};
 use statute::source::describe;
 
 /// Compile a constitution and the rules a repository chooses into the
@@ -28,10 +28,16 @@ struct Cli {
 enum Command {
     /// Resolve statute.toml and write statute.lock.
     Lock,
-    /// Say why a rule is enabled, along the chain that brings it in.
+    /// Say why a rule is enabled, along the chain that brings it in, and
+    /// whether it is on by default.
     Explain {
         /// The rule, as `R42`, `team:42`, or `42` for one of this repository's own.
-        rule: String,
+        #[arg(required_unless_present = "defaults", conflicts_with = "defaults")]
+        rule: Option<String>,
+        /// List the rules on by default that the rule set keeps, those it
+        /// turns off, and those off by default that it turns on.
+        #[arg(long)]
+        defaults: bool,
     },
     /// Enable a rule (or a pack) in statute.toml and update statute.lock.
     Add {
@@ -40,7 +46,7 @@ enum Command {
         /// Enable the pack rooted at this node, in `packs`.
         #[arg(long)]
         pack: bool,
-        /// Enable it in statute.private.toml, and update statute.private.lock.
+        /// Enable it in the private rule set, private.toml in git's directory, and update private.lock.
         #[arg(long)]
         private: bool,
     },
@@ -51,7 +57,7 @@ enum Command {
         /// Take the pack out of `packs`.
         #[arg(long)]
         pack: bool,
-        /// Take it out of statute.private.toml, and update statute.private.lock.
+        /// Take it out of the private rule set, and update private.lock.
         #[arg(long)]
         private: bool,
     },
@@ -86,6 +92,10 @@ enum Command {
         /// files go next to it.
         #[arg(long)]
         output: Option<std::path::PathBuf>,
+        /// Write only the private output, for a post-checkout hook: no
+        /// network, and warnings in place of errors, exiting 0.
+        #[arg(long, conflicts_with = "output")]
+        private_only: bool,
     },
     /// List the enabled rules for review by domain, with the outcome of
     /// those a script checks; exits 1 on a violation.
@@ -135,7 +145,7 @@ enum Command {
 
 #[derive(Subcommand)]
 enum SourceAction {
-    /// Name a source in statute.toml, in statute.private.toml when it is
+    /// Name a source in statute.toml, in the private rule set when it is
     /// private and the repository public, or with --global in the global
     /// configuration; and update the lock file when there is one.
     Add {
@@ -174,7 +184,10 @@ fn main() -> ExitCode {
     let root = Path::new(".");
     let result = match cli.command {
         Command::Lock => lock_command(root),
-        Command::Explain { rule } => explain(root, &rule),
+        Command::Explain { rule, defaults } => match rule {
+            Some(rule) if !defaults => explain(root, &rule),
+            _ => explain_defaults(root),
+        },
         Command::Add {
             rule,
             pack,
@@ -185,7 +198,13 @@ fn main() -> ExitCode {
             pack,
             private,
         } => edit(root, &rule, pack, false, private),
-        Command::Compile { output } => compile(root, output.as_deref()),
+        Command::Compile {
+            private_only: true, ..
+        } => {
+            compile_private_only(root);
+            Ok(())
+        }
+        Command::Compile { output, .. } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
         Command::Init {
             global: true,
@@ -253,6 +272,15 @@ enum Mode {
 /// configuration's sources; an error when the configuration cannot be
 /// read.
 fn env(mode: Mode) -> Result<Env, ()> {
+    read_env(mode).map_err(|errors| {
+        for e in errors {
+            eprintln!("{e}");
+        }
+    })
+}
+
+/// As `env`, with what is wrong as lines rather than printed.
+fn read_env(mode: Mode) -> Result<Env, Vec<String>> {
     let mut env = Env::default();
     env.layers.built_in = true;
     env.from_lock = matches!(mode, Mode::Read);
@@ -265,17 +293,14 @@ fn env(mode: Mode) -> Result<Env, ()> {
         Ok(text) => match manifest::read_config(&text) {
             Ok(sources) => env.layers.global = sources,
             Err(errors) => {
-                for e in errors {
-                    eprintln!("{shown}: error: {e}");
-                }
-                return Err(());
+                return Err(errors
+                    .into_iter()
+                    .map(|e| format!("{shown}: error: {e}"))
+                    .collect());
             }
         },
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-        Err(e) => {
-            eprintln!("{shown}: error: cannot read: {e}");
-            return Err(());
-        }
+        Err(e) => return Err(vec![format!("{shown}: error: cannot read: {e}")]),
     }
     Ok(env)
 }
@@ -305,61 +330,76 @@ fn validate(dir: &Path) -> Result<(), ()> {
     Ok(())
 }
 
-/// Loads the project, and its private layer when `statute.private.toml`
-/// is there: the public project and the one with both layers.
-fn load_layers(root: &Path, env: &Env) -> Result<(Project, Option<Project>), ()> {
+/// The private layer of a public repository over the public project:
+/// the directory of its rule set and the project with both layers.
+struct Private {
+    dir: PathBuf,
+    both: Project,
+}
+
+/// The directory of the private rule set, [`private::dir`]: `None`
+/// outside a git repository.
+fn private_dir(root: &Path) -> Result<Option<PathBuf>, ()> {
+    private::dir(root).map_err(|e| eprintln!("statute: error: {e}"))
+}
+
+/// Loads the project, and its private layer when there is a private rule
+/// set: the public project and the private layer over it.
+fn load_layers(root: &Path, env: &Env) -> Result<(Project, Option<Private>), ()> {
     let (project, diags) = Project::load(root, env);
     print(&diags);
     let project = project.ok_or(())?;
-    let (both, more) = Project::load_private(&project, &diags, env);
+    let Some(dir) = private_dir(root)? else {
+        return Ok((project, None));
+    };
+    let (both, more) = Project::load_private(&project, &diags, env, &dir);
     print(&more);
     if more.has_errors() {
         return Err(());
     }
-    Ok((project, both))
+    Ok((project, both.map(|both| Private { dir, both })))
 }
 
-/// Writes the private lock file of `both`, the project with both layers,
-/// after checking that git ignores it.
-fn write_private_lock(root: &Path, public: &Project, both: &Project) -> Result<(), ()> {
-    statute::private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
-    std::fs::write(root.join(private::LOCK), lock::render(both)).map_err(|e| {
-        eprintln!("{}: error: cannot write: {e}", private::LOCK);
+/// Writes the private lock file of the private layer over `public`.
+fn write_private_lock(public: &Project, private: &Private) -> Result<(), ()> {
+    let path = private.dir.join(private::LOCK);
+    private::replace(&path, &lock::render_private(public, &private.both)).map_err(|e| {
+        eprintln!("{}: error: cannot write: {e}", path.display());
     })?;
-    print_private_locked(public, both);
+    print_private_locked(&path, public, &private.both);
     Ok(())
 }
 
-fn print_private_locked(public: &Project, both: &Project) {
+fn print_private_locked(path: &Path, public: &Project, both: &Project) {
     let all = both.resolution.enabled.len();
     let added = all - public.resolution.enabled.len();
     println!(
         "wrote {}: {all} rules enabled, {added} of them by the private layer",
-        private::LOCK
+        path.display()
     );
 }
 
 /// The private layer over `public`, the public project as it is to be
-/// written, resolved, and checked that git ignores its files, before
-/// anything is written: `None` when there is none. A command that changes
-/// the public layer calls it first and writes nothing when it fails, then
-/// writes the private lock file with `relock_private`.
-fn private_ready(root: &Path, public: &Project, env: &Env) -> Result<Option<Project>, ()> {
-    let (both, diags) = Project::load_private(public, &Diagnostics::default(), env);
+/// written, resolved before anything is written: `None` when there is
+/// none. A command that changes the public layer calls it first and
+/// writes nothing when it fails, then writes the private lock file with
+/// `relock_private`.
+fn private_ready(root: &Path, public: &Project, env: &Env) -> Result<Option<Private>, ()> {
+    let Some(dir) = private_dir(root)? else {
+        return Ok(None);
+    };
+    let (both, diags) = Project::load_private(public, &Diagnostics::default(), env, &dir);
     print(&diags);
     if diags.has_errors() {
         return Err(());
     }
-    if both.is_some() {
-        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
-    }
-    Ok(both)
+    Ok(both.map(|both| Private { dir, both }))
 }
 
-/// Writes the private lock file of `both`, from `private_ready`, when
+/// Writes the private lock file of `private`, from `private_ready`, when
 /// there is a private layer.
-fn relock_private(root: &Path, public: &Project, both: Option<&Project>) -> Result<(), ()> {
-    both.map_or(Ok(()), |both| write_private_lock(root, public, both))
+fn relock_private(public: &Project, private: Option<&Private>) -> Result<(), ()> {
+    private.map_or(Ok(()), |private| write_private_lock(public, private))
 }
 
 fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
@@ -371,22 +411,23 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
 }
 
 fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
-    let (project, both) = load_layers(root, &env(Mode::Read)?)?;
+    let (project, private) = load_layers(root, &env(Mode::Read)?)?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
     // The private output is made in full before anything is written.
-    let full = both
+    let full = private
         .as_ref()
-        .map(statute::compile::full_text)
+        .map(|p| statute::compile::full_text(&project, &p.both, &p.dir))
         .transpose()
         .map_err(|e| eprintln!("statute: error: {e}"))?;
+    let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
+    // `.statute/.gitignore` is the first file written, once nothing is
+    // left that can fail before the public files.
     if full.is_some() {
-        private::check_ignored(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+        private::ready(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     }
-    let mut written = statute::compile::compile(&project)
-        .and_then(|out| statute::compile::write(&out, &path))
-        .map_err(|e| {
-            eprintln!("statute: error: {e}");
-        })?;
+    let mut written = statute::compile::write(&out, &path).map_err(|e| {
+        eprintln!("statute: error: {e}");
+    })?;
     if let Some(full) = full {
         written.extend(private::write(root, &full).map_err(|e| eprintln!("statute: error: {e}"))?);
     }
@@ -394,10 +435,10 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         println!("wrote {}", path.display());
     }
     let dir = path.parent().unwrap_or(Path::new(""));
-    if let Some(why) = private::claude_md(dir, both.is_some()) {
+    if let Some(why) = private::claude_md(dir, private.is_some()) {
         eprintln!("{}: warning: {why}", dir.join("CLAUDE.md").display());
     }
-    if both.is_some() {
+    if private.is_some() {
         for nested in private::nested_agents_md(root) {
             eprintln!("{}: warning: {}", nested.display(), private::NESTED);
         }
@@ -405,9 +446,69 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     Ok(())
 }
 
+/// `compile --private-only`, which a git `post-checkout` hook runs in a
+/// new worktree (`docs/design/rule-sources.md`, A new worktree): writes
+/// the private output alone, reading git sources from the cache only.
+/// Without a public rule set or a private rule set it does nothing; any
+/// other problem is a warning, and nothing is written. It never fails, so
+/// that the hook never fails the checkout.
+fn compile_private_only(root: &Path) {
+    match private_only(root) {
+        Ok(written) => {
+            for path in written {
+                println!("wrote {}", path.display());
+            }
+        }
+        Err(causes) => {
+            for cause in causes {
+                eprintln!("statute: warning: {cause}");
+            }
+            eprintln!(
+                "statute: warning: the private output is not written; `statute compile` writes it, or says what to fix"
+            );
+        }
+    }
+}
+
+/// The work of `compile_private_only`: what it wrote, or each cause.
+fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
+    let one = |e: String| vec![e];
+    let text = match std::fs::read_to_string(root.join(manifest::FILE)) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => return Err(one(format!("{}: cannot read: {e}", manifest::FILE))),
+    };
+    let Some(dir) = private::dir(root).map_err(one)? else {
+        return Ok(Vec::new());
+    };
+    if !dir.join(private::MANIFEST).exists() {
+        return Ok(Vec::new());
+    }
+    let public = toml::from_str::<toml::Table>(&text)
+        .ok()
+        .and_then(|t| t.get("public").and_then(toml::Value::as_bool));
+    if public == Some(false) {
+        return Ok(Vec::new());
+    }
+    let mut env = read_env(Mode::Read)?;
+    env.offline = true;
+    let errors =
+        |diags: &Diagnostics| -> Vec<String> { diags.errors().map(ToString::to_string).collect() };
+    let (project, diags) = Project::load(root, &env);
+    let project = project.ok_or_else(|| errors(&diags))?;
+    let (both, more) = Project::load_private(&project, &diags, &env, &dir);
+    let both = match both {
+        Some(both) => both,
+        None if more.has_errors() => return Err(errors(&more)),
+        None => return Ok(Vec::new()),
+    };
+    let full = statute::compile::full_text(&project, &both, &dir).map_err(one)?;
+    private::write(root, &full).map_err(one)
+}
+
 fn site(root: &Path) -> Result<(), ()> {
-    let (public, both) = load_layers(root, &env(Mode::Read)?)?;
-    let project = both.unwrap_or(public);
+    let (public, private) = load_layers(root, &env(Mode::Read)?)?;
+    let project = private.map_or(public, |p| p.both);
     let fail = |e: String| eprintln!("statute: error: {e}");
     let pages = statute::site::pages(&project).map_err(fail)?;
     let index = statute::site::write(root, &pages).map_err(fail)?;
@@ -430,8 +531,8 @@ fn export(dir: &Path) -> Result<(), ()> {
 
 fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     use statute::check::{Context, Outcome};
-    let (public, both) = load_layers(root, &env(Mode::Read)?)?;
-    let project = both.unwrap_or(public);
+    let (public, private) = load_layers(root, &env(Mode::Read)?)?;
+    let project = private.map_or(public, |p| p.both);
     let ctx = Context { root, base };
     let visibility = statute::check::visibility(&project, &ctx);
     let reports = statute::check::run(&project, &ctx);
@@ -723,7 +824,7 @@ fn only_edition(dir: &Path, source: &str) -> Result<String, ()> {
 }
 
 fn lock_command(root: &Path) -> Result<(), ()> {
-    let (project, both) = load_layers(root, &env(Mode::Lock)?)?;
+    let (project, private) = load_layers(root, &env(Mode::Lock)?)?;
     // A lock file that cannot be read has nothing to compare with.
     if let Some(old) = std::fs::read_to_string(root.join(lock::FILE))
         .ok()
@@ -739,13 +840,8 @@ fn lock_command(root: &Path) -> Result<(), ()> {
             );
         }
     }
-    // Both layers are resolved; git is asked before either lock file is
-    // written.
-    if both.is_some() {
-        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
-    }
     write_lock(root, &project)?;
-    relock_private(root, &project, both.as_ref())
+    relock_private(&project, private.as_ref())
 }
 
 /// What to do about a rule edited without a new revision
@@ -806,31 +902,30 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
                 );
                 return Err(());
             };
-            let both = private_ready(root, &next, &env)?;
+            let private = private_ready(root, &next, &env)?;
             for line in lines {
                 println!("{line}");
             }
             report_changes(&old, &next);
             write_both(
-                root,
-                false,
-                (manifest::FILE, lock::FILE),
-                &original,
+                (&root.join(manifest::FILE), manifest::FILE),
+                (&root.join(lock::FILE), lock::FILE),
+                Some(&original),
                 &changed,
                 &lock::render(&next),
             )?;
             print_locked(&next);
-            return relock_private(root, &next, both.as_ref());
+            return relock_private(&next, private.as_ref());
         }
         None => {
             print(&diags);
             project
         }
     };
-    let both = private_ready(root, &project, &env)?;
+    let private = private_ready(root, &project, &env)?;
     report_changes(&old, &project);
     write_lock(root, &project)?;
-    relock_private(root, &project, both.as_ref())
+    relock_private(&project, private.as_ref())
 }
 
 /// Prints how `project` differs from the lock file `old`.
@@ -903,6 +998,8 @@ fn why(project: &Project, key: &Key) -> String {
         .map(|r| match r {
             Reason::Direct => "listed in `rules`".to_owned(),
             Reason::Pack(root) => format!("in pack {}", label(sources, root)),
+            Reason::Default => "on by default".to_owned(),
+            Reason::DefaultOf(o) => format!("the default of one-of {}", label(sources, o)),
             Reason::RequiredBy(b) => format!("required by {}", label(sources, b)),
             Reason::OverriddenBy(b) => format!("overridden by {}", label(sources, b)),
         })
@@ -994,8 +1091,8 @@ fn listed_key(value: &Value, manifest: &Manifest) -> Option<Key> {
 }
 
 fn explain(root: &Path, text: &str) -> Result<(), ()> {
-    let (public, both) = load_layers(root, &env(Mode::Read)?)?;
-    let project = both.unwrap_or(public);
+    let (public, private) = load_layers(root, &env(Mode::Read)?)?;
+    let project = private.map_or(public, |p| p.both);
     let key = parse_ref(text, &project.manifest)?;
     let sources = &project.sources;
     let Some(node) = sources.get(&key) else {
@@ -1005,6 +1102,7 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
         );
         return Err(());
     };
+    let sw = Switches::new(sources, &project.manifest);
     match node.kind {
         Kind::Rule => {}
         Kind::Domain => {
@@ -1012,9 +1110,24 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
                 "{} is a domain: it is never enabled itself, and gives a heading to the enabled rules under it",
                 label(sources, &key)
             );
+            println!("- {}", switch_state(&project, &sw, &key));
             return Ok(());
         }
         Kind::OneOf => {
+            match (sw.default_child(&key), sw.chosen(&key)) {
+                (Some(d), Some(c)) if c != d => println!(
+                    "one-of {}: its default is {}, and the rule set picks {}",
+                    label(sources, &key),
+                    label(sources, &d),
+                    label(sources, &c)
+                ),
+                (Some(d), _) => println!(
+                    "one-of {}: its default is {}",
+                    label(sources, &key),
+                    label(sources, &d)
+                ),
+                (None, _) => {}
+            }
             let chosen: Vec<String> = sources
                 .children(&key)
                 .iter()
@@ -1041,6 +1154,7 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
             "rule {} is not enabled by the rule set",
             label(sources, &key)
         );
+        println!("- {}", switch_state(&project, &sw, &key));
         return Err(());
     }
     let res = &project.resolution;
@@ -1060,6 +1174,120 @@ fn explain(root: &Path, text: &str) -> Result<(), ()> {
     let mut out = String::new();
     reasons(&project, &key, 0, &mut vec![key.clone()], &mut out);
     print!("{out}");
+    if let Some(uses) = sources
+        .get(&res.standing(&key))
+        .and_then(|n| n.rule.as_ref())
+        .map(|r| r.uses)
+    {
+        let goes = match (uses.instructions, uses.review) {
+            (true, true) => "it is compiled into AGENTS.md and listed for review",
+            (true, false) => "it is compiled into AGENTS.md",
+            (false, _) => "it is listed for review, and not compiled into AGENTS.md",
+        };
+        println!("- {goes}");
+    }
+    Ok(())
+}
+
+/// Whether a domain or a rule is on by default, and what the rule set
+/// does with that: "R44 is on by default, and its domain R13 is on".
+fn switch_state(project: &Project, sw: &Switches, key: &Key) -> String {
+    let sources = &project.sources;
+    let m = &project.manifest;
+    let entry = Manifest::entry(key);
+    let Some(node) = sources.get(key) else {
+        return String::new();
+    };
+    let shown = key.to_string();
+    let switch = match node.default {
+        Some(statute::node::Switch::On) => "on by default",
+        Some(statute::node::Switch::Off) => "off by default",
+        // An option of a one-of, or a rule that overrides another.
+        None => "without a `default` of its own",
+    };
+    if let Some(off) = sw
+        .excluded(key)
+        .then(|| m.exclude.iter().find(|e| sw.above(key).contains(e)))
+        .flatten()
+    {
+        return if off == key {
+            format!("{shown} is {switch} and taken out by `exclude`")
+        } else {
+            format!("{shown} is {switch}, and `exclude` turns off {off}, above it")
+        };
+    }
+    if !sw.takes_defaults(&key.source) {
+        return format!(
+            "{shown} is {switch}, and the rule set takes no defaults of {}",
+            describe(&key.source)
+        );
+    }
+    let parent = sources.parent(key);
+    let parent_on = parent.as_ref().is_none_or(|p| sw.active.contains(p));
+    match (node.kind, sw.switched_on(key), parent.as_ref(), parent_on) {
+        (Kind::Domain, _, _, _) if m.domains.contains(key) => {
+            format!("{shown} is {switch}, and `domains` turns it on")
+        }
+        (_, true, Some(p), true) => format!("{shown} is {switch}, and its domain {p} is on"),
+        (_, true, None, _) => format!("{shown} is {switch}"),
+        (_, true, Some(p), false) => format!(
+            "{shown} is {switch}, and its domain {p} is off; `statute add {}` turns that on",
+            Manifest::entry(p)
+        ),
+        (_, false, _, _) => format!("{shown} is {switch}; `statute add {entry}` turns it on"),
+    }
+}
+
+/// `explain --defaults`: the three lists of moving a rule set over to the
+/// defaults (`docs/design/rule-config.md`, Moving a repository over).
+fn explain_defaults(root: &Path) -> Result<(), ()> {
+    let (public, private) = load_layers(root, &env(Mode::Read)?)?;
+    let project = private.map_or(public, |p| p.both);
+    let sources = &project.sources;
+    // What the rule set would hold with nothing listed.
+    let bare = Manifest {
+        rules: Vec::new(),
+        packs: Vec::new(),
+        domains: Vec::new(),
+        exclude: Vec::new(),
+        ..project.manifest.clone()
+    };
+    let number = project.revision.parse().unwrap_or(0);
+    let mut ignored = Diagnostics::default();
+    let defaults = statute::resolve::resolve(sources, &bare, number, &mut ignored).enabled;
+    let enabled = &project.resolution.enabled;
+    let list = |title: &str, keys: Vec<&Key>| {
+        println!("{title}:");
+        if keys.is_empty() {
+            println!("- none");
+        }
+        for key in keys {
+            println!("- {}", label(sources, key));
+        }
+    };
+    list(
+        "On by default, and kept",
+        defaults
+            .keys()
+            .filter(|k| enabled.contains_key(*k))
+            .collect(),
+    );
+    println!();
+    list(
+        "On by default, and turned off",
+        defaults
+            .keys()
+            .filter(|k| !enabled.contains_key(*k))
+            .collect(),
+    );
+    println!();
+    list(
+        "Off by default, and turned on",
+        enabled
+            .keys()
+            .filter(|k| !defaults.contains_key(*k))
+            .collect(),
+    );
     Ok(())
 }
 
@@ -1080,6 +1308,21 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
             }
             Reason::Pack(root) => {
                 out.push_str(&format!("{indent}- in pack {}\n", label(sources, root)));
+                continue;
+            }
+            Reason::Default => {
+                let domain = sources.parent(key).map(|d| label(sources, &d));
+                out.push_str(&format!(
+                    "{indent}- on by default, and its domain {} is on\n",
+                    domain.unwrap_or_default()
+                ));
+                continue;
+            }
+            Reason::DefaultOf(one_of) => {
+                out.push_str(&format!(
+                    "{indent}- the default of one-of {}, which needs a child and has no other\n",
+                    label(sources, one_of)
+                ));
                 continue;
             }
             Reason::RequiredBy(by) => {
@@ -1105,17 +1348,66 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
     }
 }
 
+/// Adds `key` to the list `field` of `doc`, or takes it out; `false` when
+/// it is there already, to add. Fails when it is not there, to take out.
+fn edit_list(
+    doc: &mut DocumentMut,
+    field: &str,
+    key: &Key,
+    manifest: &Manifest,
+    adding: bool,
+    file: &str,
+) -> Result<bool, ()> {
+    let list = doc
+        .entry(field)
+        .or_insert_with(|| Item::Value(Value::Array(Array::new())))
+        .as_array_mut()
+        .ok_or_else(|| eprintln!("{file}: error: `{field}` is not a list"))?;
+    // Entries of the list that name this key; the rule set has been read,
+    // so each names a node of one of its sources.
+    let position = list
+        .iter()
+        .position(|v| listed_key(v, manifest).as_ref() == Some(key));
+    match (adding, position) {
+        (true, Some(_)) => Ok(false),
+        (true, None) => {
+            list.push(Manifest::entry(key).as_str());
+            Ok(true)
+        }
+        (false, Some(i)) => {
+            list.remove(i);
+            Ok(true)
+        }
+        (false, None) => {
+            eprintln!("{file}: error: `{field}` does not list {key}");
+            Err(())
+        }
+    }
+}
+
 /// `add` (`adding`) or `remove`: changes the list in statute.toml, or
-/// with `private` in statute.private.toml, keeping the rest of the file as
+/// with `private` in the private rule set, keeping the rest of the file as
 /// written, resolves the result, and writes the file and its lock file
 /// only when it resolves. A change to statute.toml locks the private
 /// layer again, when there is one.
 fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Result<(), ()> {
     let env = env(Mode::Lock)?;
-    let file = if private {
-        private::MANIFEST
+    let dir = if private {
+        let Some(dir) = private_dir(root)? else {
+            eprintln!("statute: error: {}", private::NO_REPOSITORY);
+            return Err(());
+        };
+        Some(dir)
     } else {
-        manifest::FILE
+        None
+    };
+    let (path, lock_path) = match &dir {
+        Some(dir) => (dir.join(private::MANIFEST), dir.join(private::LOCK)),
+        None => (root.join(manifest::FILE), root.join(lock::FILE)),
+    };
+    let (file, lock_file) = match &dir {
+        Some(_) => (path.display().to_string(), lock_path.display().to_string()),
+        None => (manifest::FILE.to_owned(), lock::FILE.to_owned()),
     };
     let (public, given) = if private {
         let (public, given) = Project::load(root, &env);
@@ -1124,12 +1416,19 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     } else {
         (None, Diagnostics::default())
     };
-    let original = std::fs::read_to_string(root.join(file)).map_err(|e| {
-        eprintln!("{file}: error: cannot read: {e}");
-    })?;
+    // A private rule set not made yet is an empty one.
+    let original = match std::fs::read_to_string(&path) {
+        Ok(text) => Some(text),
+        Err(e) if private && e.kind() == std::io::ErrorKind::NotFound => None,
+        Err(e) => {
+            eprintln!("{file}: error: cannot read: {e}");
+            return Err(());
+        }
+    };
+    let start = original.as_deref().unwrap_or_default();
     let parsed = match &public {
-        Some(public) => public.manifest.with_private(&original),
-        None => Manifest::parse_with(&original, &env.layers),
+        Some(public) => public.manifest.with_private(start),
+        None => Manifest::parse_with(start, &env.layers),
     };
     let manifest = parsed.map_err(|errors| {
         for e in errors {
@@ -1138,128 +1437,160 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     })?;
     let key = parse_ref(text, &manifest)?;
     let entry = Manifest::entry(&key);
-    let field = if pack { "packs" } else { "rules" };
+    // The rule set as it is, to tell a domain from a rule; when it does
+    // not resolve, the key is taken for a rule.
+    let try_load = |text: &str| match (&public, &dir) {
+        (Some(public), Some(dir)) => Project::with_private(public, &given, text, &env, dir),
+        _ => Project::with_manifest(root, text, &env),
+    };
+    let current = try_load(start).0;
+    let is_domain = current
+        .as_ref()
+        .and_then(|p| p.sources.get(&key))
+        .is_some_and(|n| n.kind == Kind::Domain);
+    let field = match (pack, is_domain) {
+        (true, _) => "packs",
+        (false, true) => "domains",
+        (false, false) => "rules",
+    };
 
-    let mut doc: DocumentMut = original
-        .parse()
-        .map_err(|e| eprintln!("{file}: error: {e}"))?;
-    let list = doc
-        .entry(field)
-        .or_insert_with(|| Item::Value(Value::Array(Array::new())))
-        .as_array_mut()
-        .ok_or_else(|| eprintln!("{file}: error: `{field}` is not a list"))?;
-    // Entries of the list that name this key; the rule set has been read,
-    // so each names a rule of one of its sources.
-    let position = list
-        .iter()
-        .position(|v| listed_key(v, &manifest).as_ref() == Some(&key));
-    match (adding, position) {
-        (true, Some(_)) => {
-            println!("{key} is already in `{field}`");
-            return Ok(());
+    let mut doc: DocumentMut = start.parse().map_err(|e| eprintln!("{file}: error: {e}"))?;
+    let mut done = Vec::new();
+    // `add` of an entry of `exclude` takes it out of there first.
+    if adding && !pack && manifest.exclude.contains(&key) {
+        edit_list(&mut doc, "exclude", &key, &manifest, false, &file)?;
+        done.push(format!("removed {key} from `exclude`"));
+    }
+    let now_on = |doc: &DocumentMut| {
+        try_load(&doc.to_string()).0.is_some_and(|p| {
+            p.resolution.enabled.contains_key(&key) || p.resolution.on.contains(&key)
+        })
+    };
+    // `remove` of a rule or domain the defaults enable and the rule set
+    // does not list only writes it to `exclude`, below.
+    let listed = match field {
+        "packs" => &manifest.packs,
+        "domains" => &manifest.domains,
+        _ => &manifest.rules,
+    }
+    .contains(&key);
+    let only_exclude = !adding && !pack && !private && !listed;
+    if !(adding && !done.is_empty() && now_on(&doc)) && !only_exclude {
+        match edit_list(&mut doc, field, &key, &manifest, adding, &file)? {
+            true => done.push(format!(
+                "{} {key} {} `{field}`",
+                if adding { "added" } else { "removed" },
+                if adding { "to" } else { "from" }
+            )),
+            false => {
+                println!("{key} is already in `{field}`");
+                return Ok(());
+            }
         }
-        (true, None) => list.push(entry.as_str()),
-        (false, Some(i)) => {
-            list.remove(i);
+    }
+    // What the defaults still enable after `remove` goes to `exclude`.
+    if !adding && !pack && !private && now_on(&doc) {
+        let defaults_only = try_load(&doc.to_string()).0.is_some_and(|p| {
+            if is_domain {
+                return Switches::new(&p.sources, &p.manifest).on_by_default(&key);
+            }
+            p.resolution.enabled.get(&key).is_some_and(|reasons| {
+                reasons
+                    .iter()
+                    .all(|r| matches!(r, Reason::Default | Reason::DefaultOf(_)))
+            })
+        });
+        if defaults_only {
+            edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
+            done.push(format!("added {key} to `exclude`, as it is on by default"));
         }
-        (false, None) => {
-            eprintln!("{file}: error: `{field}` does not list {key}");
-            return Err(());
-        }
+    }
+    if only_exclude && done.is_empty() {
+        eprintln!("{file}: error: `{field}` does not list {key}");
+        return Err(());
     }
 
     let changed = doc.to_string();
-    let (project, diags) = match &public {
-        Some(public) => Project::with_private(public, &given, &changed, &env),
-        None => Project::with_manifest(root, &changed, &env),
-    };
+    let (project, diags) = try_load(&changed);
     print(&diags);
-    let lock_file = if private { private::LOCK } else { lock::FILE };
     let Some(project) = project else {
         eprintln!("statute: {file} and {lock_file} are left unchanged");
         return Err(());
     };
-    if private {
-        private::check_ignored_files(root).map_err(|e| eprintln!("statute: error: {e}"))?;
-    }
     let both = if private {
         None
     } else {
         private_ready(root, &project, &env)?
     };
+    let lock_text = match &public {
+        Some(public) => lock::render_private(public, &project),
+        None => lock::render(&project),
+    };
     write_both(
-        root,
-        private,
-        (file, lock_file),
-        &original,
+        (&path, &file),
+        (&lock_path, &lock_file),
+        original.as_deref(),
         &changed,
-        &lock::render(&project),
+        &lock_text,
     )?;
-    if adding {
-        println!("added {key} to `{field}`");
-    } else {
-        println!("removed {key} from `{field}`");
-        if !pack && project.resolution.enabled.contains_key(&key) {
-            println!("{key} is still enabled; `statute explain {entry}` says why");
-        }
+    for line in &done {
+        println!("{line}");
+    }
+    if !adding && !pack && project.resolution.enabled.contains_key(&key) {
+        println!("{key} is still enabled; `statute explain {entry}` says why");
     }
     match &public {
-        Some(public) => print_private_locked(public, &project),
+        Some(public) => print_private_locked(&lock_path, public, &project),
         None => {
             print_locked(&project);
-            relock_private(root, &project, both.as_ref())?;
+            relock_private(&project, both.as_ref())?;
         }
     }
     Ok(())
 }
 
 /// Writes a changed rule set, `files.0`, and its lock file, `files.1`,
-/// so that the two stay in step: both go to temporary files first (for
-/// the `private` layer, where git ignores them), then each is renamed
-/// into place, and if the lock file cannot be, the rule set is put back.
+/// each a path and how it is shown, so that the two stay in step: both
+/// go to temporary files in their directories first, then each is
+/// renamed into place, and if the lock file cannot be, the rule set is
+/// put back as it was, `original` (`None` when there was none).
 fn write_both(
-    root: &Path,
-    private: bool,
-    files: (&str, &str),
-    original: &str,
+    manifest_file: (&Path, &str),
+    lock_file: (&Path, &str),
+    original: Option<&str>,
     changed: &str,
     lock_text: &str,
 ) -> Result<(), ()> {
-    let (manifest_file, lock_file) = files;
-    let manifest_path = root.join(manifest_file);
-    let lock_path = root.join(lock_file);
-    let tmp = |file: &str| {
-        root.join(if private {
-            private::staged(file)
-        } else {
-            PathBuf::from(format!("{file}.tmp"))
-        })
-    };
-    let manifest_tmp = tmp(manifest_file);
-    let lock_tmp = tmp(lock_file);
-    if private && let Err(e) = std::fs::create_dir_all(root.join(private::DIR)) {
-        eprintln!("{}: error: cannot write: {e}", private::DIR);
-        return Err(());
-    }
+    let (manifest_path, manifest_file) = manifest_file;
+    let (lock_path, lock_file) = lock_file;
+    let manifest_tmp = private::staged(manifest_path);
+    let lock_tmp = private::staged(lock_path);
     let unchanged = || {
         let _ = std::fs::remove_file(&manifest_tmp);
         let _ = std::fs::remove_file(&lock_tmp);
         eprintln!("statute: {manifest_file} and {lock_file} are left unchanged");
     };
-    let staged = std::fs::write(&lock_tmp, lock_text)
-        .map_err(|e| (lock_file, e))
+    let staged = manifest_path
+        .parent()
+        .map_or(Ok(()), std::fs::create_dir_all)
+        .map_err(|e| (manifest_file, e))
+        .and_then(|()| std::fs::write(&lock_tmp, lock_text).map_err(|e| (lock_file, e)))
         .and_then(|()| std::fs::write(&manifest_tmp, changed).map_err(|e| (manifest_file, e)))
         .and_then(|()| {
-            std::fs::rename(&manifest_tmp, &manifest_path).map_err(|e| (manifest_file, e))
+            std::fs::rename(&manifest_tmp, manifest_path).map_err(|e| (manifest_file, e))
         });
     if let Err((file, e)) = staged {
         eprintln!("{file}: error: cannot write: {e}");
         unchanged();
         return Err(());
     }
-    if let Err(e) = std::fs::rename(&lock_tmp, &lock_path) {
+    if let Err(e) = std::fs::rename(&lock_tmp, lock_path) {
         eprintln!("{lock_file}: error: cannot write: {e}");
-        if let Err(e) = std::fs::write(&manifest_path, original) {
+        let put_back = match original {
+            Some(original) => std::fs::write(manifest_path, original),
+            None => std::fs::remove_file(manifest_path),
+        };
+        if let Err(e) = put_back {
             eprintln!(
                 "{manifest_file}: error: cannot put back the rule set as it was: {e}; {lock_file} does not match it"
             );
@@ -1377,6 +1708,8 @@ fn source_add(
     }
 
     let global_path = statute::global::config_dir().map(|d| d.join(statute::global::CONFIG));
+    // The private rule set's directory, when the source goes there.
+    let mut private_at = None;
     let (file, path) = if global {
         let Some(path) = global_path else {
             fail("the system reports no home directory".to_owned());
@@ -1394,12 +1727,24 @@ fn source_add(
                     eprintln!("{}: error: {e}", manifest::FILE);
                 }
             })?;
-        let file = if repo_public && !public {
-            private::MANIFEST
+        if repo_public && !public {
+            let Some(at) = private_dir(root)? else {
+                fail(private::NO_REPOSITORY.to_owned());
+                return Err(());
+            };
+            // The private rule set serves every worktree of the clone.
+            if entry.contains_key("path") {
+                let absolute = dir
+                    .canonicalize()
+                    .map_err(|e| fail(format!("{address}: {e}")))?;
+                entry.insert("path", absolute.to_string_lossy().as_ref().into());
+            }
+            let path = at.join(private::MANIFEST);
+            private_at = Some(at);
+            (path.display().to_string(), path)
         } else {
-            manifest::FILE
-        };
-        (file.to_owned(), root.join(file))
+            (manifest::FILE.to_owned(), root.join(manifest::FILE))
+        }
     };
     let original = match std::fs::read_to_string(&path) {
         Ok(text) => Some(text),
@@ -1409,13 +1754,7 @@ fn source_add(
             return Err(());
         }
     };
-    let start = original.clone().unwrap_or_else(|| {
-        if global {
-            String::new()
-        } else {
-            format!("base = \"{}\"\n", manifest::FILE)
-        }
-    });
+    let start = original.clone().unwrap_or_default();
     let mut doc: DocumentMut = start.parse().map_err(|e| eprintln!("{file}: error: {e}"))?;
     let sources = doc
         .entry("sources")
@@ -1454,7 +1793,7 @@ fn source_add(
             .and_then(|()| std::fs::write(&path, &changed));
         written.map_err(|e| eprintln!("{file}: error: cannot write: {e}"))?;
         println!("wrote {file}: source `{name}`, {}", spec.place());
-    } else if file == private::MANIFEST {
+    } else if let Some(at) = &private_at {
         let (public_project, given) = Project::load(root, &env);
         print(&given);
         let public_project = public_project.ok_or(())?;
@@ -1464,17 +1803,16 @@ fn source_add(
             );
             return Err(());
         }
-        let (both, diags) = Project::with_private(&public_project, &given, &changed, &env);
+        let (both, diags) = Project::with_private(&public_project, &given, &changed, &env, at);
         print(&diags);
         let both = both.ok_or_else(|| eprintln!("statute: {file} is left unchanged"))?;
-        private::check_ignored_files(root).map_err(fail)?;
+        let lock_path = at.join(private::LOCK);
         write_both(
-            root,
-            true,
-            (private::MANIFEST, private::LOCK),
-            original.as_deref().unwrap_or(""),
+            (&path, &file),
+            (&lock_path, &lock_path.display().to_string()),
+            original.as_deref(),
             &changed,
-            &lock::render(&both),
+            &lock::render_private(&public_project, &both),
         )?;
         println!(
             "wrote {file}: source `{name}`, {}",
@@ -1483,25 +1821,23 @@ fn source_add(
                 .map(|s| s.place())
                 .unwrap_or_default()
         );
-        print_private_locked(&public_project, &both);
+        print_private_locked(&lock_path, &public_project, &both);
     } else {
         let (project, diags) = Project::with_manifest(root, &changed, &env);
         print(&diags);
         let project = project.ok_or_else(|| eprintln!("statute: {file} is left unchanged"))?;
-        let both = private_ready(root, &project, &env)
+        let private = private_ready(root, &project, &env)
             .map_err(|()| eprintln!("statute: {file} is left unchanged"))?;
-        let original = original.unwrap_or_default();
         if root.join(lock::FILE).exists() {
             write_both(
-                root,
-                false,
-                (manifest::FILE, lock::FILE),
-                &original,
+                (&path, &file),
+                (&root.join(lock::FILE), lock::FILE),
+                original.as_deref(),
                 &changed,
                 &lock::render(&project),
             )?;
             print_locked(&project);
-            relock_private(root, &project, both.as_ref())?;
+            relock_private(&project, private.as_ref())?;
         } else {
             std::fs::write(&path, &changed)
                 .map_err(|e| eprintln!("{file}: error: cannot write: {e}"))?;
@@ -1518,10 +1854,9 @@ fn source_add(
     if let Some(note) = note {
         println!("`{name}`: {note}");
     }
-    if file == private::MANIFEST {
+    if private_at.is_some() {
         println!(
-            "`{name}` is private, so it is named in {}, which git ignores; --public names it in {}",
-            private::MANIFEST,
+            "`{name}` is private, so it is named in the private rule set, {file}, in git's directory, which no commit holds; --public names it in {}",
             manifest::FILE
         );
     }

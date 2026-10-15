@@ -111,10 +111,10 @@ fn constitution_and_nodes() {
             format!("{}/rules/3.toml", dir.display()),
         ]
     );
-    // The fields as the file writes them: `check = "review"`, the
-    // reason's newlines, `requires`.
+    // The fields as the file writes them: `default`, the reason's
+    // newlines, `requires`.
     let fields = &nodes[1]["fields"];
-    assert_eq!(fields["check"], "review");
+    assert_eq!(fields["default"], "off");
     assert_eq!(fields["text"]["reason"]["en"], "Because.\n");
     assert_eq!(fields["requires"], json!([3]));
     assert_eq!(nodes[0]["fields"]["kind"], "domain");

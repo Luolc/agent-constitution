@@ -84,7 +84,8 @@ def original(*texts: str) -> str:
 def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
   """Return the file of a domain or a one-of, translated.
 
-  A domain has an applicability that cites a rule.
+  A domain has an applicability that cites a rule and is off by
+  default; the one-of's default is its option, rule 3.
 
   Args:
     node_id: its ID.
@@ -102,6 +103,7 @@ def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
     f'kind = "{kind}"\nstatus = "active"\nlang = "en"\n'
     + (f"parent = {parent}\n" if parent else "")
+    + ('default = "off"\n' if kind == "domain" else "default = 3\n")
     + f'\n[title]\nen = "{title}"\nzh = "组 {node_id}"\n'
   )
   if kind == "domain":
@@ -128,8 +130,8 @@ def rule(node_id: int, parent: int, extra: str = "") -> str:
   texts = [("statement", en, zh), ("reason", "Why.", "为何。")]
   texts.append(("verification", "Violated when not.", "否则违反。"))
   text = f'id = {node_id}\nrevision = 2\nkind = "rule"\nstatus = "active"\n'
-  text += f'lang = "en"\nparent = {parent}\n{extra}'
-  text += 'constitution = ">=1"\nlevel = "project"\ncheck = "review"\n'
+  text += f'lang = "en"\nparent = {parent}\ndefault = "off"\n{extra}'
+  text += 'constitution = ">=1"\nlevel = "project"\ncheck = "none"\n'
   text += f'\n[title]\nen = "{title}"\n'
   if zh:
     text += f'zh = "规定 {node_id}"\n'
@@ -149,7 +151,10 @@ FILES = {
   "constitution/2026-10/articles/01-one/01-one-a.toml": SECTION,
   "rules/1.toml": group(1, "domain", None),
   "rules/2.toml": group(2, "one-of", 1),
-  "rules/3.toml": rule(3, 2, 'authority = ["one", "one-a"]\n'),
+  # An option of the one-of, which names the default, has none.
+  "rules/3.toml": rule(3, 2, 'authority = ["one", "one-a"]\n').replace(
+    'default = "off"\n', "", 1
+  ),
   "rules/4.toml": rule(
     4,
     1,
@@ -160,6 +165,23 @@ FILES = {
   ),
   "rules/6.toml": rule(6, 1, 'authority = ["one-a.x"]\n'),
 }
+
+
+def subdomain(root: Path) -> None:
+  """Make the one-of 2 a domain under the domain 1.
+
+  Its rule 3, no longer an option, says whether it is on by default.
+
+  Args:
+    root: the checkout.
+  """
+  (root / "rules/2.toml").write_text(group(2, "domain", 1), encoding="utf-8")
+  rule = root / "rules/3.toml"
+  text = rule.read_text(encoding="utf-8")
+  rule.write_text(
+    text.replace("parent = 2\n", 'parent = 2\ndefault = "off"\n', 1),
+    encoding="utf-8",
+  )
 
 
 def write(root: Path) -> None:
@@ -186,11 +208,12 @@ kind = "rule"
 status = "active"
 lang = "en"
 parent = 1
+default = "off"
 requires = ["R3"]
 authority = ["one-a"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Demo rule"

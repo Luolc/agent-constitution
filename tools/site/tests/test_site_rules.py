@@ -45,9 +45,7 @@ class SiteRulesTest(unittest.TestCase):
 
   def test_subdomain(self):
     """A domain under a domain heads the rules below it, under its own."""
-    (self.root / "rules/2.toml").write_text(
-      site_fixture.group(2, "domain", 1), encoding="utf-8"
-    )
+    site_fixture.subdomain(self.root)
     nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
     self.assertEqual((nodes[2]["kind"], nodes[2]["depth"]), ("domain", 1))
     self.assertEqual(
@@ -61,7 +59,7 @@ class SiteRulesTest(unittest.TestCase):
     """A rule under another source's domain, or overriding its rule."""
     for name, old, new in (
       ("rules/6.toml", "parent = 1", 'parent = "team:7"'),
-      ("rules/4.toml", "parent = 1", 'overrides = "team:8"'),
+      ("rules/4.toml", 'parent = 1\ndefault = "off"', 'overrides = "team:8"'),
     ):
       path = self.root / name
       path.write_text(path.read_text().replace(old, new), encoding="utf-8")
@@ -212,7 +210,7 @@ class SiteRulesTest(unittest.TestCase):
       ("lang", "en"),
       ("level", "project"),
       ("constitution", ">=1"),
-      ("check", "review"),
+      ("check", "none"),
     ):
       self.assertEqual(rule[field], value)
     self.assertEqual(self.nodes("en")[1]["text"], {})
@@ -310,10 +308,9 @@ class SiteRulesTest(unittest.TestCase):
     )
 
   def test_rule_config_fields_are_read_past(self):
-    """params.toml is no node; `default`, `uses` and `check = "none"` pass.
+    """params.toml is no node; `default = "on"` and `uses` pass.
 
-    statute validates them; the site does not show them yet. Rule 5 is
-    under a domain: a child of a one-of may not have `default`.
+    statute validates them; the site does not show them yet.
     """
     params = '[[parameter]]\nname = "language.docs"\n'
     (self.root / "rules/params.toml").write_text(params, encoding="utf-8")
@@ -321,11 +318,11 @@ class SiteRulesTest(unittest.TestCase):
     (self.root / "demo/rules/params.toml").write_text(params, encoding="utf-8")
     rule = self.root / "rules/5.toml"
     text = rule.read_text(encoding="utf-8")
-    self.assertIn('check = "review"', text)
+    self.assertIn('default = "off"', text)
     rule.write_text(
       text.replace(
-        'check = "review"',
-        'check = "none"\ndefault = "on"\nuses = ["instructions", "review"]',
+        'default = "off"',
+        'default = "on"\nuses = ["instructions", "review"]',
       ),
       encoding="utf-8",
     )

@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, one_of, rule};
+use common::{domain, edit, one_of, option, rule, set_default};
 
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
@@ -22,9 +22,9 @@ fn nodes() -> Vec<(u64, String)> {
         domain(1),
         rule(2, 1, ""),
         rule(3, 1, "requires = [2]"),
-        one_of(4, 1),
-        rule(5, 4, ""),
-        rule(6, 4, ""),
+        one_of(4, 1, 5),
+        option(5, 4, ""),
+        option(6, 4, ""),
         rule(7, 1, "requires = [4]"),
         rule(8, 1, "conflicts = [2]"),
     ]
@@ -156,12 +156,12 @@ fn the_lock_file_is_the_same_for_the_same_input() {
 
 #[test]
 fn lock_fails_on_an_error_and_writes_nothing() {
-    let dir = repo("lock-fails", &manifest("\"R7\""), &nodes());
+    let dir = repo("lock-fails", &manifest("\"R2\", \"R8\""), &nodes());
     let run = statute(&dir, &["lock"]);
     assert_eq!(run.code, 1);
     assert!(
         run.stderr
-            .contains("statute.toml: error: rule R7 (Rule 7) requires one-of R4 (One-of 4)"),
+            .contains("statute.toml: error: rules R8 (Rule 8) (listed in `rules`) and R2 (Rule 2) (listed in `rules`) conflict"),
         "{}",
         run.stderr
     );
@@ -175,13 +175,13 @@ fn explain_follows_the_chain() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R2 (Rule 2) is enabled:\n- required by R3 (Rule 3), which is enabled:\n  - listed in `rules`\n"
+        "rule R2 (Rule 2) is enabled:\n- required by R3 (Rule 3), which is enabled:\n  - listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
     let run = statute(&dir, &["explain", "R3"]);
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R3 (Rule 3) is enabled:\n- listed in `rules`\n"
+        "rule R3 (Rule 3) is enabled:\n- listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
 }
 
@@ -194,7 +194,7 @@ fn explain_a_rule_brought_in_by_a_requirement() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R8 (Rule 8) is enabled:\n- required by R9 (Rule 9), which is enabled:\n  - listed in `rules`\n"
+        "rule R8 (Rule 8) is enabled:\n- required by R9 (Rule 9), which is enabled:\n  - listed in `rules`\n- it is compiled into AGENTS.md\n"
     );
 }
 
@@ -205,7 +205,7 @@ fn explain_a_rule_not_enabled() {
     assert_eq!(run.code, 1);
     assert_eq!(
         run.stdout,
-        "rule R8 (Rule 8) is not enabled by the rule set\n"
+        "rule R8 (Rule 8) is not enabled by the rule set\n- R8 is off by default; `statute add R8` turns it on\n"
     );
     let run = statute(&dir, &["explain", "team:8"]);
     assert_eq!(run.code, 1);
@@ -232,8 +232,11 @@ fn add_keeps_the_rest_of_the_rule_set() {
 
 #[test]
 fn commands_take_rules_as_the_rule_set_writes_them() {
-    let dir = repo("refs", &manifest("\"R3\""), &nodes());
-    // The rule set's source is this directory, so its rules are R<id>.
+    let here =
+        manifest("\"R3\"").replace("public = false", "public = false\nlocal-rules = \"rules\"");
+    let dir = repo("refs", &here, &nodes());
+    // The local rules are the `rules/` of the rule set's source, this
+    // directory, so its rules are R<id>.
     for (text, needle) in [
         (
             "5",
@@ -252,7 +255,7 @@ fn commands_take_rules_as_the_rule_set_writes_them() {
         assert_eq!(run.code, 1, "{text}");
         assert!(run.stderr.contains(needle), "{text}: {}", run.stderr);
     }
-    assert_eq!(read(&dir, "statute.toml"), manifest("\"R3\""));
+    assert_eq!(read(&dir, "statute.toml"), here);
 }
 
 #[test]
@@ -317,11 +320,20 @@ fn remove_says_when_the_rule_stays_enabled() {
 
 #[test]
 fn remove_that_would_break_the_rule_set_changes_nothing() {
-    let dir = repo("remove-breaks", &manifest("\"R7\", \"R5\""), &nodes());
+    // In domain 1, on, one-of 4 enables its default 5, which `remove`
+    // would write to `exclude`, where an option cannot go.
+    let mut on = nodes();
+    on[0] = set_default(domain(1), "\"on\"");
+    let dir = repo("remove-breaks", &manifest(""), &on);
     let run = statute(&dir, &["remove", "R5"]);
     assert_eq!(run.code, 1);
-    assert!(run.stderr.contains("requires one-of R4"), "{}", run.stderr);
-    assert_eq!(read(&dir, "statute.toml"), manifest("\"R7\", \"R5\""));
+    assert!(
+        run.stderr
+            .contains("`exclude` names R5, an option of the one-of R4"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest(""));
     let run = statute(&dir, &["remove", "R6"]);
     assert_eq!(run.code, 1);
     assert!(
@@ -408,7 +420,7 @@ fn upgrade_reports_what_changed() {
             "revision = 2",
         ),
     );
-    put(&dir, &edit(rule(5, 4, ""), "Do the thing 5.", "Do it 5."));
+    put(&dir, &edit(option(5, 4, ""), "Do the thing 5.", "Do it 5."));
     put(
         &dir,
         &(0, INDEX.replace("revision = \"1\"", "revision = \"2\"")),
@@ -446,7 +458,7 @@ fn lock_warns_of_a_rule_changed_without_a_new_revision() {
     let run = statute(&dir, &["lock"]);
     ok(&run);
     assert!(!run.stderr.contains("changed since"), "{}", run.stderr);
-    put(&dir, &edit(rule(5, 4, ""), "Do the thing 5.", "Do it 5."));
+    put(&dir, &edit(option(5, 4, ""), "Do the thing 5.", "Do it 5."));
     put(
         &dir,
         &edit(
@@ -472,7 +484,7 @@ fn lock_warns_of_a_rule_changed_without_a_new_revision() {
     // Without a lock file there is nothing to compare with.
     put(
         &dir,
-        &edit(rule(5, 4, ""), "Do the thing 5.", "Do it again 5."),
+        &edit(option(5, 4, ""), "Do the thing 5.", "Do it again 5."),
     );
     std::fs::remove_file(dir.join("statute.lock")).unwrap();
     let run = statute(&dir, &["lock"]);
@@ -489,7 +501,7 @@ fn translated_rule_5(en: &str, zh: &str) -> (u64, String) {
         "Because.\n",
         "Violated when the thing is not done.",
     ]);
-    let (id, text) = rule(5, 4, "");
+    let (id, text) = option(5, 4, "");
     let text = text
         .replace("en = \"Rule 5\"\n", "en = \"Rule 5\"\nzh = \"规定 5\"\n")
         .replace(
