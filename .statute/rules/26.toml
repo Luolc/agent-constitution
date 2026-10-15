@@ -1,0 +1,29 @@
+id = 26
+slug = "read-full-constitution"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R16"
+default = "on"
+authority = ["text-and-sources.compiled"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Read the full constitution before changing it or its build"
+
+[text.statement]
+en = "Before changing the constitution or the tools that build it, read its full version, `constitution/<edition>/generated/constitution.<lang>.md`, not only the version for agents."
+
+[text.reason]
+en = '''
+The version for agents leaves out the provisions on how the constitution is organized and amended, which a change to the constitution or to its build has to follow.
+'''
+
+[text.verification]
+en = '''
+Violated when a change to `constitution/` or to statute's constitution build goes ahead on the version for agents alone, against a provision that only the full version holds.
+'''

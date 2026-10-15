@@ -213,7 +213,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R43 Store a credential only where the jurisdiction designates for it.
 - R44 Keep a credential out of every message, log, command line and other output.
 - R45 Never pass a credential from one agent to another, by any channel.
-- R51 In a public repository's files, commit messages, pull requests, comments and reviews, write nothing that identifies or locates a private resource, a private repository or an agent instance or session, and nothing about an agent's usage, quota, model or effort.
 - R52 Before you push to a public repository, have a reviewer read the diff, the commit messages and the pull request text for private material, and push only the head that reviewer passed.
 - R66 Give every loop that waits for something an exit for when what it waits for is gone.
 - R73 Before you start a background process that keeps holding resources, record what stops it if you are closed before you stop it yourself.
@@ -226,6 +225,8 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R143 On an attended machine, read the secret manager through the interactive route that a person unlocks, writing each reference with the vault its item is in, and give a service account only to the unattended scheduled tasks there, one that reads the general tier only and whose token goes into those tasks alone, never into a login shell.
 - R144 Reference no vault that a person keeps for their own use, except a vault that a principal sets aside for agents.
 - R138 On a machine you share with others, reproduce a problem that only shows under heavy load in a container with capped CPU (`docker run --cpus 1 …`, for example), keeping the 1-minute load average no higher than the machine's CPU count, or, where you cannot, record it as open work, say what isolated environment it needs, and leave the decision to a principal.
+- R251 Before a task text you write tells another agent how to do something safely on a shared machine, decide whether it should be done there at all, and give no precautions for an act that a rule in force forbids on that machine.
+- R259 In a public repository's files, commit messages, pull requests, comments and reviews, write nothing that identifies or locates a private resource, a private repository, an agent instance or session, or the scope it runs in, and nothing about an agent's usage, quota, model or effort.
 - L8 Commit no instruction file compiled from a real person's rule set; the compiled outputs committed here are this repository's own `AGENTS.md` and outputs built from made-up rule sets.
 - L10 In test data and in examples, use only made-up values: domains under `example.test`, addresses from 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 and 2001:db8::/32, and fictional names.
 - L11 Before a push, search the diff, the commit messages and the pull request text for each class of private material that a public repository must not hold, and run each search once on a file where it must match.
@@ -243,12 +244,15 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R61 Name in every review verdict the exact version of the change you reviewed.
 - R62 Never merge a change you authored.
 - R63 Once a change has comments, write its review's findings, the answers to them and its verdicts there.
-- R64 After three review rounds without approval, start no further round unless the agent responsible for the work decides to give one.
 - R65 When checking or debugging needs a tool the machine lacks, install nothing and change no system or global configuration; use a tool already there, or report the gap to whoever delegated the work.
 - R71 Never set a change to merge automatically.
 - R95 Do not hold back a pull request that is ready to merge only because CI is failing on the main branch.
 - R205 When the implementer and the reviewer of a pull request use models of the same family, say so in its description without naming a model, and in any question about it put to a principal.
 - R211 Where a repository's instructions do not say whether a merge waits for CI, merge only after the required check has passed on the approved head; where they say a merge does not wait, do not merge when the summary job of CI has already failed on the approved head.
+- R254 When you pass over a commit for a release because its CI run for the push to the main branch succeeded only on a later attempt, read the logs of the earlier attempts and record why the first one failed.
+- R255 When a review is still unapproved after three rounds, or its author and reviewer disagree about a serious finding, have the agent responsible for the work put the review to a principal; that agent may give one more round instead only when each remaining finding is one of the round before, smaller than it was, and undisputed.
+- R256 Once you have rewritten the pushed history of a branch that others work on, tell each of them, before your task ends, to clone again or to reset to the new history before they go on.
+- R258 Before you merge a change, read what reached its pull request after the approving verdict, and do not merge while any of it contradicts the verdict or the description.
 - L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release.
 - R1 When you report work as done, whether to another agent or to a person, attach an acceptance record to the report.
 - R27 Build every fixture from made-up data only, with no effect outside the test environment.
@@ -266,6 +270,12 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R91 When you put off an item that belongs in a report, a description or another record, write it into that record, at least as a one-line placeholder, at the moment you put it off.
 - R92 Give each item you put off or hand on, in its record, who takes it and a trigger that is an action certain to happen, never remembering it.
 - R212 Pin each Linux runner that the CI service hosts to a label that names a fixed release of its system, never to a label the service moves, in a matrix too.
+- R253 Where CI runs a repository's full set of checks on each change, leave the checks a change does not touch to CI instead of also running them locally before a push.
+- R257 When a failure you saw does not come back when you try again, record it as a follow-up that says it is not closed, instead of closing it.
+- R261 Before you write a claim that carries a reading, such as a number, a SHA, a list or "all the others", check that the output you rest it on has the same object, scope, time or version and measure as the claim; where one differs, narrow the claim to what that output supports or run a command for this claim.
+- R262 When you assert something of every item of a list, or that there are no others, say how the list was produced and whether it covers the whole range you assert it of.
+- R263 When you run, from a directory not known to be a checkout of the repository you mean, a command that would take its repository from the working directory, name that repository in the command, or first confirm that the working directory is inside it.
+- R264 Once a check has given different results in two environments that were meant to be equivalent, rely only on its result from the environment in which what it checks runs, or one set up the same way.
 - L13 Run `uv sync` in a checkout before its first Python tool, and again whenever `uv.lock` changes.
 - L14 When you change a pin in a `pyproject.toml`, run `uv sync` and commit the `uv.lock` it writes in the same change.
 - L15 Pass over a false positive of limae with a `<!-- limae-disable-next-line <rule> -->` comment above the line, never by turning the rule off.
@@ -299,6 +309,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - L4 Keep the sources of an edition of the constitution in `constitution/<edition>/`: its `index.toml`, and for each article a directory `articles/<NN>-<id>/` that holds `article.toml` and one `<NN>-<id>.toml` per section with its items inside it; write an article's or section's number only in these name prefixes.
 - L5 Never edit a file in `constitution/<edition>/generated/` by hand: change the sources or statute's build of them, run `cargo run --locked --quiet -p statute -- constitution build`, and commit the sources and the generated files together.
 - L9 Create none of `behavior/`, `cases/` and `proposals/` before a change that builds what they hold: real-agent scenarios, decided cases and the adoption pipeline.
+- L26 Before changing the constitution or the tools that build it, read its full version, `constitution/<edition>/generated/constitution.<lang>.md`, not only the version for agents.
 - R50 Have a repository's commit hooks scan the staged changes for credentials at every commit.
 - R70 Change your local main branch only by fast-forwarding it to the remote main branch; never commit on it.
 - R210 When you create a file, run `git add` on it and confirm that `git ls-files` lists it before you run checks.
@@ -326,7 +337,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - L25 New versions of statute raise only the patch number (0.1.1, 0.1.2, …); the lead of a job may push such a patch release's tag without asking a person; a minor or major version needs a person's yes for that version, given at the time or written down in advance.
 - R84 Write a regression test only for a bug that actually occurred.
 - R85 Put a regression test only with the tests of the module where the bug occurred.
-- R86 Write no test of what code does with input that is plainly unreasonable.
 - R87 Write no history in a code comment: not what was tried, reverted or discussed, nor why another way was not taken.
 - R88 Write a comment inside code only to say what the code cannot say for itself, such as why it is done this way.
 - R89 When a change adds behavior to code or changes its behavior, add or change in the same change a test that checks the new behavior.
@@ -338,6 +348,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R246 Make every element on a page that can be clicked or tapped at least 24px by 24px, its padding counted, and at least 44px by 44px where the pointer is coarse (`pointer: coarse`, a touch screen).
 - R247 Give every control on a page that opens or folds another part of it `aria-expanded`, saying whether that part is open, and `aria-controls`, naming that part.
 - R248 Put every hover style of a page under the media query `(hover: hover) and (pointer: fine)`, so that it applies only where there is a fine pointer that can hover.
+- R252 Apart from a regression test for a bug that occurred, write tests only of what code does on its happy path and at the boundaries its requirements set.
 - R97 Write each rule so that it requires one thing, whose violation can be decided on its own.
 - R98 Word a rule so that a reviewer who reads it can tell whether a given piece of work complies.
 - R99 Make a rule stand on its own: name other rules only through `parent`, `requires`, `conflicts`, `overrides` and rule citations in its text, the constitution only through `authority` and citations of the constitution in its text, and no other text as part of what it requires.

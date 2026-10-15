@@ -39,8 +39,6 @@ rules = [
   "R48",
   # CI runs check-instruction-changes on every pull request.
   "R49",
-  # The commit hooks run gitleaks on the staged changes.
-  "R50",
   # The repository is public: a reviewer reads what is pushed before the push.
   "R52",
   # The implementer reads the description back against the head before review and merge.
@@ -50,16 +48,15 @@ rules = [
   # A crate published or a site deployed is a release, from a commit CI passed on its first attempt;
   # L21 names the check that tells it for statute.
   "R58",
-  # The merging agent reads CI on the merge commit.
+  # A release that passes over a commit green only on a rerun finds out why the first attempt failed.
+  "R254",
+  # The merging agent reads CI on the merge commit, and before the merge what arrived after the verdict.
+  "R258",
   "R59",
-  # The author never merges.
-  "R62",
   # Reviews are held in the pull request comments.
   "R63",
-  # Reviews stop after three rounds unless the lead gives another.
-  "R64",
-  # No pull request is set to merge automatically.
-  "R71",
+  # A review unsettled after three rounds goes to a principal, unless the lead gives one more round to findings that only shrink.
+  "R255",
   # The full set of checks is cited from CI, not from a local run.
   "R72",
   # A red main does not hold back pull requests that are ready.
@@ -73,10 +70,10 @@ rules = [
   # Pushed text goes through files written with a quoted heredoc.
   "R93",
   "R94",
-  # The tests follow the bugs that occurred.
+  # Tests cover the happy path, the set boundaries and the bugs that occurred.
   "R84",
   "R85",
-  "R86",
+  "R252",
   # Comments say only what the code cannot.
   "R88",
   # Test data is made up (L10 sets the values).
@@ -87,10 +84,8 @@ rules = [
   "R30",
   "R31",
   "R138",
-  # a check changes nothing on the machine,
-  "R65",
-  # agent tools keep no memory of their own,
-  "R69",
+  # a task gives no precautions for what a shared machine forbids,
+  "R251",
   # and design questions go to the owner directly, at most five at a time.
   "R237",
   "R238",
