@@ -138,9 +138,12 @@ private output, where `CLAUDE.local.md` gives Claude Code the full text
 in place of `AGENTS.md`, Claude Code reads a `CLAUDE.md` as well, so its
 content comes on top of the rules, the public rules twice for a link to
 `AGENTS.md` ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)),
-a sentence the warning leaves out without a private layer; and a
-migration will rename it to a legacy copy, asking the user first.
-statute neither deletes nor renames it.
+a sentence the warning leaves out without a private layer; and the
+migration ([statute-migrate](../../skills/statute-migrate/SKILL.md),
+step e) renames a `CLAUDE.md` that is a file to a legacy copy, and
+asks the user whether to delete one that is a link to `AGENTS.md`.
+statute neither deletes nor renames it. Not built yet: the warning
+still says that a migration renames either kind.
 
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).

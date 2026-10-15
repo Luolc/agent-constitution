@@ -1,4 +1,4 @@
-<!-- en-sha256: c3d17700fb796437630da1fdc42ef6e2170f1dd29a8feb76b857c7cabf568b18 -->
+<!-- en-sha256: ac4c3214aa3535a1000f3e063c9d767503b76810e3a599f28f4267e378122bff -->
 # 规定配置
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -266,7 +266,7 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 2. 它必须关掉的默认开启的规定：写进 `exclude`，每项用一行注释说明原因；
 3. 它需要的默认关闭的领域和规定：写进 `domains` 和 `rules`；某个 one-of 要选默认以外的选项时，写进 `rules` 或 `domains`。
 
-默认开关出现之前写的规定清单，把用到的每条规定都列在 `rules` 和 `packs` 里；按默认值，它还可能得到从没列过的规定。默认开关上线后的第一次 `lock` 会列出它们，迁移时把每一条放进第二张列表，或者保留。指导迁移的 skill `skills/statute-migrate/` 按这个顺序过这三张列表。
+默认开关出现之前写的规定清单，把用到的每条规定都列在 `rules` 和 `packs` 里；按默认值，它还可能得到从没列过的规定。默认开关上线后的第一次 `lock` 会列出它们，迁移时把每一条放进第二张列表，或者保留。指导迁移的 skill [statute-migrate](../../../skills/statute-migrate/SKILL.md) 按这个顺序过这三张列表。
 
 ## <a id="where-a-rule-is-used"></a>规定用在哪里
 
