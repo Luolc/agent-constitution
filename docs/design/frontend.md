@@ -449,8 +449,8 @@ turned off (disabled), where it has these.
   field is as the default filter has it and in a badge (`radius-full`,
   `accent` on `bg-selected`) while it differs. The button opens a
   popover under it, as wide as its content up to `width-popover`, moved
-  toward the row's start as far as it must to stay within the row (the
-  column's width on a narrow screen), so that it never leaves the
+  toward the start as far as it must to stay within the filter's bar
+  (the column's width on a narrow screen), so that it never leaves the
   screen, holding the field's name, All and None, quiet buttons, and
   the field's check boxes. The domains' boxes are indented by their
   depth; their list, which is long, scrolls inside the popover, at most

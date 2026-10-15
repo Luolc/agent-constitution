@@ -899,7 +899,7 @@ window.addEventListener("load", () => {
     The domain's long title makes the domains' popover as wide as a
     popover gets. At each width, from a phone's to a wide screen's, the
     page does not scroll sideways, with the menus shut and with the
-    domains' open, and the open popover stays within the filter's row.
+    domains' open, and the open popover stays within the filter's bar.
     Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
@@ -913,7 +913,7 @@ window.addEventListener("load", () => {
   const out = { width: window.innerWidth };
   out.shut = root.scrollWidth <= root.clientWidth;
   document.querySelector("[aria-controls='rules-filter-domain']").click();
-  const row = document.querySelector(".rules-filter").getBoundingClientRect();
+  const row = document.querySelector(".rules-bar").getBoundingClientRect();
   const popover = document.getElementById("rules-filter-domain")
     .getBoundingClientRect();
   out.open = root.scrollWidth <= root.clientWidth;

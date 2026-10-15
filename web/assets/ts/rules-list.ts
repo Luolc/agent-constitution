@@ -190,11 +190,11 @@ document.addEventListener("DOMContentLoaded", () => {
     pushed = false;
     menu.button.setAttribute("aria-expanded", "true");
     menu.group.classList.add("open");
-    // Under its button, but within the row, so that it never runs past
-    // the page's edge.
-    const row = filter.getBoundingClientRect();
-    const start = menu.button.getBoundingClientRect().left - row.left;
-    const room = row.width - menu.group.offsetWidth;
+    // Under its button, but within the box it is placed in, the bar of
+    // the filter, so that it never runs past the page's edge.
+    const box = (menu.group.offsetParent ?? filter).getBoundingClientRect();
+    const start = menu.button.getBoundingClientRect().left - box.left;
+    const room = box.width - menu.group.offsetWidth;
     menu.group.style.setProperty("--menu-start", `${Math.max(0, Math.min(start, room))}px`);
     (menu.group.querySelector<HTMLElement>("input[type='search']") ?? menu.group.querySelector<HTMLElement>("input, button"))?.focus();
   };
