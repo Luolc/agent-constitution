@@ -7,6 +7,8 @@
 # each node. A case that fails draws errors on rules/20.toml and on no
 # other file, among them one holding its `compiler` text, and in statute
 # (crates/statute/tests/subdomains.rs) one holding its `statute` text.
+# statute reads node 20 as one of a repository's own rules;
+# `statute-passes` gives its outcome where that differs.
 
 subdomain = """
 id = 4
@@ -240,7 +242,9 @@ en = "Node"
 name = "a domain under a domain of another source"
 passes = false
 compiler = "a domain's `parent` `team:7` is not the number of a domain of this source"
-statute = "a domain's `parent` is a node of the same source, written as its number"
+# A local domain may hang under another source's; this repo's are the
+# first-party roots.
+statute-passes = true
 node = """
 id = 20
 revision = 1
