@@ -1,6 +1,6 @@
 # Global configuration and git sources
 
-Status: decided; not built yet. What is built is under
+Status: decided; built in part. What is built is under
 [The command and the first version](statute-command.md#the-command-and-the-first-version).
 This part of the design says where statute keeps its own files in the
 user's home directory, how a global configuration names sources for
@@ -45,7 +45,8 @@ statute clones and writes it again when it needs it. The home
 directory is the one the system reports (`HOME` on Unix).
 
 `statute init --global` writes `config.toml` with the built-in default
-written out (below) and a commented example of a private source, then
+written out (below), or with `R` at the git address `--source` gives,
+and a commented example of a private source, then
 clones or fetches each git source it names, so that a missing network
 or account shows at once. An existing `config.toml` is left as it is,
 and the command exits with status 1.
@@ -118,7 +119,7 @@ A rule set that names a source replaces the global configuration's
 entry whole: fields are not merged across layers. `name = false` in a
 rule set's `[sources]` takes a source of the global configuration out
 of that rule set, as if it were not there; the built-in `R` is taken out
-only by naming another `R`. Once this is built, `[sources]` is optional
+only by naming another `R`. `[sources]` is optional
 in `statute.toml`: a rule set that uses only the first-party source at
 its default names none.
 
@@ -176,7 +177,7 @@ commit = "<commit>"
 public = true
 ```
 
-Every source but `R` has its `public` there, a source on disk as well; the lock file statute writes today records a source on disk by its `path` alone.
+Every source but `R` has its `public` there, a source on disk as well.
 
 - `lock` keeps the commit the lock file records when the source's
   address and branch or tag are those recorded, so that nothing changes
@@ -211,6 +212,8 @@ A file of a git source is named in messages by the source and the
 commit, `R@1a2b3c4d:rules/7.toml`.
 
 ## Adding a source
+
+Not built yet.
 
 `statute source add <name> <address>` names a source:
 

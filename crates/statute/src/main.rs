@@ -10,7 +10,7 @@ use statute::lock;
 use statute::manifest::{self, Key, Manifest};
 use statute::node::{Kind, Status};
 use statute::private;
-use statute::project::Project;
+use statute::project::{Env, Project};
 use statute::resolve::{Reason, label, refs};
 use statute::source::describe;
 
@@ -57,10 +57,16 @@ enum Command {
     },
     /// Write a new statute.toml in this directory, with no rules enabled.
     Init {
+        /// Write the global configuration, ~/.statute/config.toml, and
+        /// clone the sources it names, in place of a rule set.
+        #[arg(long, conflicts_with_all = ["edition", "public", "private"])]
+        global: bool,
         /// The source of the rules and the constitution, a directory
-        /// relative to this one.
-        #[arg(long, default_value = ".")]
-        source: String,
+        /// relative to this one; by default the first-party source of the
+        /// global configuration, or statute's own default. With
+        /// `--global`, the git address of the first-party source.
+        #[arg(long)]
+        source: Option<String>,
         /// The constitution's edition; by default the only one the source
         /// holds.
         #[arg(long)]
@@ -124,13 +130,19 @@ fn main() -> ExitCode {
         Command::Compile { output } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
         Command::Init {
+            global: true,
+            source,
+            ..
+        } => init_global(source.as_deref()),
+        Command::Init {
             source,
             edition,
             public,
             private,
+            ..
         } => init(
             root,
-            &source,
+            source.as_deref(),
             edition,
             (public || private).then_some(public),
         ),
@@ -143,6 +155,49 @@ fn main() -> ExitCode {
     }
 }
 
+/// What a command needs of the sources (`docs/design/global-configuration.md`).
+#[derive(Clone, Copy)]
+enum Mode {
+    /// Reads at the commits the lock file records, its sources counting
+    /// where nothing else names them.
+    Read,
+    /// Writes the lock file, keeping the commits it records.
+    Lock,
+    /// Writes the lock file at the newest commits.
+    Newest,
+}
+
+/// The environment of a command in `mode`, with the global
+/// configuration's sources; an error when the configuration cannot be
+/// read.
+fn env(mode: Mode) -> Result<Env, ()> {
+    let mut env = Env::default();
+    env.layers.built_in = true;
+    env.from_lock = matches!(mode, Mode::Read);
+    env.newest = matches!(mode, Mode::Newest);
+    let Some(path) = statute::global::dir().map(|d| d.join(statute::global::CONFIG)) else {
+        return Ok(env);
+    };
+    let shown = statute::global::shown_config();
+    match std::fs::read_to_string(&path) {
+        Ok(text) => match manifest::read_config(&text) {
+            Ok(sources) => env.layers.global = sources,
+            Err(errors) => {
+                for e in errors {
+                    eprintln!("{shown}: error: {e}");
+                }
+                return Err(());
+            }
+        },
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => {
+            eprintln!("{shown}: error: cannot read: {e}");
+            return Err(());
+        }
+    }
+    Ok(env)
+}
+
 fn print(diags: &Diagnostics) {
     for d in &diags.0 {
         eprintln!("{d}");
@@ -151,11 +206,11 @@ fn print(diags: &Diagnostics) {
 
 /// Loads the project, and its private layer when `statute.private.toml`
 /// is there: the public project and the one with both layers.
-fn load_layers(root: &Path) -> Result<(Project, Option<Project>), ()> {
-    let (project, diags) = Project::load(root);
+fn load_layers(root: &Path, env: &Env) -> Result<(Project, Option<Project>), ()> {
+    let (project, diags) = Project::load(root, env);
     print(&diags);
     let project = project.ok_or(())?;
-    let (both, more) = Project::load_private(&project, &diags);
+    let (both, more) = Project::load_private(&project, &diags, env);
     print(&more);
     if more.has_errors() {
         return Err(());
@@ -185,8 +240,8 @@ fn print_private_locked(public: &Project, both: &Project) {
 
 /// Locks the private layer again after `statute.toml` changed, when it
 /// is there.
-fn relock_private(root: &Path, public: &Project) -> Result<(), ()> {
-    let (both, diags) = Project::load_private(public, &Diagnostics::default());
+fn relock_private(root: &Path, public: &Project, env: &Env) -> Result<(), ()> {
+    let (both, diags) = Project::load_private(public, &Diagnostics::default(), env);
     print(&diags);
     match both {
         Some(both) => write_private_lock(root, public, &both),
@@ -204,7 +259,7 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
 }
 
 fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
-    let (project, both) = load_layers(root)?;
+    let (project, both) = load_layers(root, &env(Mode::Read)?)?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
     // The private output is made in full before anything is written.
     let full = both
@@ -236,7 +291,7 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
 }
 
 fn site(root: &Path) -> Result<(), ()> {
-    let (public, both) = load_layers(root)?;
+    let (public, both) = load_layers(root, &env(Mode::Read)?)?;
     let project = both.unwrap_or(public);
     let fail = |e: String| eprintln!("statute: error: {e}");
     let pages = statute::site::pages(&project).map_err(fail)?;
@@ -253,7 +308,7 @@ fn site(root: &Path) -> Result<(), ()> {
 
 fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     use statute::check::{Context, Outcome};
-    let (public, both) = load_layers(root)?;
+    let (public, both) = load_layers(root, &env(Mode::Read)?)?;
     let project = both.unwrap_or(public);
     let ctx = Context { root, base };
     let visibility = statute::check::visibility(&project, &ctx);
@@ -322,6 +377,50 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
     }
 }
 
+/// Writes the global configuration with the built-in default, or the
+/// first-party source at `address`, then
+/// clones each git source it names, so that a missing network or account
+/// shows at once. An existing configuration is left as it is.
+fn init_global(address: Option<&str>) -> Result<(), ()> {
+    let shown = statute::global::shown_config();
+    let Some(dir) = statute::global::dir() else {
+        eprintln!("{shown}: error: the system reports no home directory");
+        return Err(());
+    };
+    let path = dir.join(statute::global::CONFIG);
+    let text =
+        statute::global::initial_config(address.unwrap_or(statute::global::FIRST_PARTY_ADDRESS));
+    let written = std::fs::create_dir_all(&dir).and_then(|()| {
+        std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .and_then(|mut file| std::io::Write::write_all(&mut file, text.as_bytes()))
+    });
+    match written {
+        Ok(()) => println!("wrote {shown}"),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+            eprintln!("{shown}: error: already exists, so it is left as it is");
+            return Err(());
+        }
+        Err(e) => {
+            eprintln!("{shown}: error: cannot write: {e}");
+            return Err(());
+        }
+    }
+    let mut failed = false;
+    for mut spec in env(Mode::Lock)?.layers.global {
+        match statute::global::materialize(&mut spec, None, false) {
+            Ok(()) => println!("source `{}`: {}", spec.name, spec.place()),
+            Err(e) => {
+                eprintln!("{shown}: error: {e}");
+                failed = true;
+            }
+        }
+    }
+    if failed { Err(()) } else { Ok(()) }
+}
+
 /// The source's name in the rule set `init` writes.
 const INIT_SOURCE: &str = manifest::FIRST_PARTY;
 
@@ -331,7 +430,7 @@ const INIT_SOURCE: &str = manifest::FIRST_PARTY;
 /// file is left as it is.
 fn init(
     root: &Path,
-    source: &str,
+    source: Option<&str>,
     edition: Option<String>,
     public: Option<bool>,
 ) -> Result<(), ()> {
@@ -346,32 +445,49 @@ fn init(
         exists();
         return Err(());
     }
-    let edition = match edition {
-        Some(edition) => edition,
-        None => only_edition(&root.join(source), source)?,
+    let env = env(Mode::Lock)?;
+    let edition = match (edition, source) {
+        (Some(edition), _) => edition,
+        (None, Some(source)) => only_edition(&root.join(source), source)?,
+        (None, None) => {
+            // The first-party source as a rule set without [sources] has it.
+            let mut spec = env
+                .layers
+                .global
+                .iter()
+                .find(|s| s.name == INIT_SOURCE)
+                .cloned()
+                .unwrap_or_else(manifest::built_in_first_party);
+            statute::global::materialize(&mut spec, None, false)
+                .map_err(|e| eprintln!("statute: error: {e}"))?;
+            only_edition(Path::new(&spec.path), &spec.shown(""))?
+        }
     };
     let (public, said) = match public {
         Some(public) => (public, None),
         None => asked_public(root),
     };
     let quote = |s: &str| toml_edit::Value::from(s).to_string();
-    let text = format!(
+    let mut text = format!(
         "# Written by `statute init`; `statute add` and `statute remove` change the rules.\n\
          constitution = {{ source = \"{INIT_SOURCE}\", edition = {} }}\n\
          public = {public}\n\
-         rules = []\n\
-         \n\
-         [sources]\n\
-         {INIT_SOURCE} = {{ path = {} }}\n",
+         rules = []\n",
         quote(&edition),
-        quote(source)
     );
-    let (project, diags) = Project::with_manifest(root, &text);
+    if let Some(source) = source {
+        text.push_str(&format!(
+            "\n[sources]\n{INIT_SOURCE} = {{ path = {} }}\n",
+            quote(source)
+        ));
+    }
+    let (project, diags) = Project::with_manifest(root, &text, &env);
     print(&diags);
-    if project.is_none() {
+    let Some(project) = project else {
         eprintln!("statute: {} is not written", manifest::FILE);
         return Err(());
-    }
+    };
+    let at = project.manifest.constitution_spec().place();
     let written = std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -389,7 +505,7 @@ fn init(
         }
     }
     println!(
-        "wrote {}: edition {edition} of the constitution, source `{INIT_SOURCE}` at {source}",
+        "wrote {}: edition {edition} of the constitution, source `{INIT_SOURCE}` at {at}",
         manifest::FILE
     );
     match said {
@@ -485,7 +601,7 @@ fn only_edition(dir: &Path, source: &str) -> Result<String, ()> {
 }
 
 fn lock_command(root: &Path) -> Result<(), ()> {
-    let (project, both) = load_layers(root)?;
+    let (project, both) = load_layers(root, &env(Mode::Lock)?)?;
     // A lock file that cannot be read has nothing to compare with.
     if let Some(old) = std::fs::read_to_string(root.join(lock::FILE))
         .ok()
@@ -543,7 +659,8 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
             return Err(());
         }
     };
-    let (project, diags) = Project::load(root);
+    let env = env(Mode::Newest)?;
+    let (project, diags) = Project::load(root, &env);
     let Some(project) = project else {
         print(&diags);
         return Err(());
@@ -555,7 +672,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
     };
     let project = match replaced {
         Some((original, changed, lines)) => {
-            let (next, diags) = Project::with_manifest(root, &changed);
+            let (next, diags) = Project::with_manifest(root, &changed, &env);
             print(&diags);
             let Some(next) = next else {
                 eprintln!(
@@ -578,7 +695,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
                 &lock::render(&next),
             )?;
             print_locked(&next);
-            return relock_private(root, &next);
+            return relock_private(root, &next, &env);
         }
         None => {
             print(&diags);
@@ -587,7 +704,7 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
     };
     report_changes(&old, &project);
     write_lock(root, &project)?;
-    relock_private(root, &project)
+    relock_private(root, &project, &env)
 }
 
 /// Prints how `project` differs from the lock file `old`.
@@ -773,7 +890,7 @@ fn listed_key(value: &Value, manifest: &Manifest) -> Option<Key> {
 }
 
 fn explain(root: &Path, text: &str) -> Result<(), ()> {
-    let (public, both) = load_layers(root)?;
+    let (public, both) = load_layers(root, &env(Mode::Read)?)?;
     let project = both.unwrap_or(public);
     let key = parse_ref(text, &project.manifest)?;
     let sources = &project.sources;
@@ -897,13 +1014,14 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
 /// only when it resolves. A change to statute.toml locks the private
 /// layer again, when there is one.
 fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Result<(), ()> {
+    let env = env(Mode::Lock)?;
     let file = if private {
         private::MANIFEST
     } else {
         manifest::FILE
     };
     let (public, given) = if private {
-        let (public, given) = Project::load(root);
+        let (public, given) = Project::load(root, &env);
         print(&given);
         (Some(public.ok_or(())?), given)
     } else {
@@ -914,7 +1032,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
     })?;
     let parsed = match &public {
         Some(public) => public.manifest.with_private(&original),
-        None => Manifest::parse(&original),
+        None => Manifest::parse_with(&original, &env.layers),
     };
     let manifest = parsed.map_err(|errors| {
         for e in errors {
@@ -955,8 +1073,8 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
 
     let changed = doc.to_string();
     let (project, diags) = match &public {
-        Some(public) => Project::with_private(public, &given, &changed),
-        None => Project::with_manifest(root, &changed),
+        Some(public) => Project::with_private(public, &given, &changed, &env),
+        None => Project::with_manifest(root, &changed, &env),
     };
     print(&diags);
     let lock_file = if private { private::LOCK } else { lock::FILE };
@@ -987,7 +1105,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         Some(public) => print_private_locked(public, &project),
         None => {
             print_locked(&project);
-            relock_private(root, &project)?;
+            relock_private(root, &project, &env)?;
         }
     }
     Ok(())

@@ -190,7 +190,7 @@ fn git(root: &Path) -> Command {
 /// Takes git's repository-local variables (`git rev-parse
 /// --local-env-vars`) out of a command's environment: a git hook sets
 /// them, and they would win over the repository the command is given.
-fn without_git_locals(cmd: &mut Command) {
+pub(crate) fn without_git_locals(cmd: &mut Command) {
     let local = Command::new("git")
         .args(["rev-parse", "--local-env-vars"])
         .output()

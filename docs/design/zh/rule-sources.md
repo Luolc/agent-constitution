@@ -1,4 +1,4 @@
-<!-- en-sha256: 36527b30eb77087a8cd8c278468929ed74b9f8ae8b1f93cc67ad1ee5dbe3a293 -->
+<!-- en-sha256: 977c1f55384fd001a922c23f3144a0b1d7599cb9dd41e1516e8ca99be98490c8 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -273,4 +273,4 @@ parent = 104
 - [检查程序](checkers.md#checkers)：`constitution-build` 对新字段查什么，哪些归 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
 
-实现其余部分会替换掉工具现在的行为：statute 遇到 git 规定源会失败，遇到 `statute.private.toml` 以外的 `base` 也会失败。
+实现其余部分会替换掉工具现在的行为：statute 遇到 `statute.private.toml` 以外的 `base` 会失败。
