@@ -368,10 +368,12 @@ file. It prints the path of `index.html`.
 - **The index** has the four kinds of source
   ([Four kinds of source](rule-sources.md#four-kinds-of-source)) as
   sections: global public, global private, local public and local
-  private. Each lists its sources, and each source its tree of domains
-  with every node, enabled or not: its reference, title and status, and
-  whether this rule set enables it, overrides it or leaves it out; a
-  one-of is a box that holds its options, the default marked. A rule's
+  private. Each lists its sources, and each source its rules, enabled or
+  not, in a table of rules ([Frontend](frontend.md#components)): a row
+  per rule, its reference, title, marks and whether this rule set
+  enables it, overrides it or leaves it out, under a group row that
+  names its source and domains; a one-of is a box that holds its
+  options, the default marked. All of them are on the one page. A rule's
   row also holds its statement, under its title, a size smaller and
   muted, in the page's language or, marked as not translated, in the
   rule's own, its placeholders filled as for nodes' pages (below). A
@@ -383,10 +385,14 @@ file. It prints the path of `index.html`.
   keeps it for the next index opened. The address decides the view, and
   one without `view` shows the default; only when the index opens at
   such an address does it show the view kept, and write it into that
-  address. A
-  filter by kind of source, one that hides the rules the rule set does
-  not enable, and one that shows superseded and repealed nodes, hidden
-  by default, work through check boxes and the style sheet alone.
+  address. The filter has a menu of check boxes per field: the status,
+  superseded and repealed left out by default; the defaults; the use;
+  the domain; the kind of source; and whether this rule set enables the
+  rule. The style sheet applies the boxes at once, so the filter works
+  without the script, which writes the filter into the address and adds
+  All and None, a search of the rows' text, Clear filters and the
+  number of rules shown. The legend above it folds, and stays as the
+  reader left it.
 - **The kind of a source** follows its two properties: local for the
   repository's own rules (`L`) and a source with `scope = "local"`,
   global for any other, the global configuration's included; public as

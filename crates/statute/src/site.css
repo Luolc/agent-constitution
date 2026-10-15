@@ -234,8 +234,10 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 .none { color: var(--t-text-muted); }
 
 /* The views: a segmented control, its radio buttons out of sight and
-   their labels quiet buttons side by side in one box; the chosen one in
-   `bg-selected`, its text in `accent`. */
+   their labels quiet buttons side by side in one box, parted by
+   hairlines; the chosen one in `bg-selected`, its text in `accent`. Its
+   legend is laid out as the other controls' names. */
+.views > legend { float: inline-start; }
 .views .segments {
   position: relative;
   display: inline-flex;
@@ -250,13 +252,15 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
   align-items: center;
   min-block-size: calc(var(--t-target) - 2px);
   padding: 0 var(--t-space-3);
-  color: var(--t-text-muted);
-  border-radius: var(--t-radius-sm);
+  color: var(--t-text);
   cursor: pointer;
   transition-property: color, background-color;
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
+.views label + input + label { border-inline-start: 1px solid var(--t-border-subtle); }
+.views label:first-of-type { border-start-start-radius: var(--t-radius-sm); border-end-start-radius: var(--t-radius-sm); }
+.views label:last-of-type { border-start-end-radius: var(--t-radius-sm); border-end-end-radius: var(--t-radius-sm); }
 .views input:checked + label { color: var(--t-accent); font-weight: var(--t-weight-medium); background-color: var(--t-bg-selected); }
 .views input:focus-visible + label { outline: 2px solid var(--t-accent); outline-offset: 2px; }
 @media (hover: hover) and (pointer: fine) {
@@ -391,6 +395,8 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 .group-path .icon { color: var(--t-text-muted); }
 .group-path .q { font-weight: var(--t-weight-regular); }
 .group-part { overflow: hidden; text-overflow: ellipsis; }
+/* Short of room, the outer domains give way first. */
+.group-part:not(:last-child) { flex-shrink: 4; }
 @media (hover: hover) and (pointer: fine) {
   .group > a:hover .group-path { text-decoration: underline; text-underline-offset: .18em; }
 }
@@ -495,10 +501,13 @@ body:has(#view-statement:checked) .entry .statement > * { font-size: var(--t-tex
 }
 
 /* A narrow screen: a title takes as many lines as it needs, and whether
-   the rule set enables a rule goes under it; a menu's popover spans the
-   row. */
+   the rule set enables a rule goes under it; a group row leaves out the
+   quadrant and source, which the headings above it name, when it has
+   domains to show; a menu's popover spans the row. */
 @media (max-width: 48rem) {
   .rule-text .title { white-space: normal; }
+  .group-path > .q:has(+ .icon) { display: none; }
+  .group-path > .q + .icon { display: none; }
   .entry > .rule-enabled { grid-row: 2; grid-column: 2 / -1; padding-inline-end: 0; }
   .control { position: static; }
   .controls { position: relative; }

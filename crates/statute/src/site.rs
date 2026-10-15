@@ -1105,7 +1105,7 @@ fn controls(project: &Project, l: &Lang) -> String {
     // menus, each under its name; then Clear filters, which needs the
     // script too; under the row, how many rules are shown.
     let mut out = format!(
-        "<div class=\"controls\">\n<label class=\"control find\" hidden><span class=\"control-label\">{}</span><input type=\"search\" name=\"q\" placeholder=\"{}\" autocomplete=\"off\"></label>\n<div class=\"control views\" role=\"radiogroup\" aria-labelledby=\"label-view\"><span class=\"control-label\" id=\"label-view\">{}</span><span class=\"segments\">",
+        "<div class=\"controls\">\n<label class=\"control find\" hidden><span class=\"control-label\">{}</span><input type=\"search\" name=\"q\" placeholder=\"{}\" autocomplete=\"off\"></label>\n<fieldset class=\"control views\"><legend class=\"control-label\">{}</legend><span class=\"segments\">",
         w.find, w.find_placeholder, w.view
     );
     for (i, (view, name)) in VIEWS.iter().zip(w.views).enumerate() {
@@ -1115,7 +1115,7 @@ fn controls(project: &Project, l: &Lang) -> String {
             "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
         );
     }
-    out.push_str("</span></div>\n");
+    out.push_str("</span></fieldset>\n");
     let plain = |key: &str, html: String| Value {
         key: key.to_owned(),
         html,
