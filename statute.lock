@@ -166,6 +166,7 @@ rule = "R46"
 revision = 6
 sha256 = "1ee5d30c632259dfdb09c419eda87e524a48523c49badbe339dd14124f4ada86"
 original-sha256 = "62cc5dd14750a9bcf5a7b0db5010cdd11e0c7914a68a961f100ee1354a7605f1"
+overridden-by = "L28"
 
 [[rules]]
 rule = "R47"
@@ -1580,6 +1581,12 @@ revision = 2
 sha256 = "c8fcd04769d4c226386a8ab0564eee0b0aad2a52c3570d2dbba29af4cd84b428"
 original-sha256 = "804d810eee95dcc57865a9e8a9c7cb65b05a92bf7aec7eb74ada8e5e0789de45"
 by = "default"
+
+[[rules]]
+rule = "L28"
+revision = 1
+sha256 = "479339b4614775d9d0b74ed421d8af1aab6d02b29f4dc483cfef5af7b9d6aae2"
+original-sha256 = "7cb1547bb2a125987d3b9459ee0a3833f4abbfe2bfe502a1d26163444e422103"
 
 [[parameters]]
 name = "language.code-comments"
