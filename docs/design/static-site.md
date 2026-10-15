@@ -42,12 +42,13 @@ screenshots (Screenshots, below). The workflow
   failing the build unless exactly one file matches; Python writes no
   page, only the data of the rules' pages (Rules, below). The content
   adapter `web/content/_content.gotmpl` makes each into the home page of
-  its language: the header line is dropped,
-  the title becomes the page's, each heading's anchor (`## <a
+  its language: the full version's header line is dropped (the version
+  for agents has none), the title becomes the page's, each heading's anchor (`## <a
   id="general-provisions"></a>Article I. ...`) becomes the heading's id,
   so the table of contents links to it, and the page gets the lengths
-  (below) as params. It fails the build when a file does not start with
-  the header line, a blank line and the `# ` title. The layout
+  (below) as params. It fails the build when the full version does not
+  start with the header line, a blank line and the `# ` title, or the
+  version for agents with the `# ` title. The layout
   (`web/layouts/home.html`) sets the title, the list under it and the
   text in `<div class="constitution">`, the root the style sheet hangs
   on. The title (`web/layouts/_partials/constitution/title.html`) has no
@@ -310,6 +311,11 @@ screenshots (Screenshots, below). The workflow
   without scripts the lists are open. The lengths are of the text
   without these lines. The rules' pages have the design's layout and
   style (`<div class="design rules">`).
+- Length: the second item of the list gives the length of the version
+  for agents, bare, which is what takes room in an agent's context: the
+  generated file from its `# ` title on, in characters in both
+  languages, words split on white space (ASCII white space, the only kind
+  the files hold) in English, and tokens as counted for the model
   `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
   API (`POST /v1/messages/count_tokens`, standard library only). The
   content adapter counts the characters and words; `count-tokens`
@@ -328,7 +334,7 @@ screenshots (Screenshots, below). The workflow
   popup first says that the length it hangs under is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
-  full version is the generated file without its header line, anchors and
+  full version is the generated file from its `# ` title on, anchors and
   link definitions included; a token count not made is a dash), the table
   as wide as the popup; under it, fainter than the table, a bulleted list
   (spans with ARIA list roles): what the version for agents omits, which
