@@ -189,6 +189,20 @@ def long_domain(root: Path) -> None:
   )
 
 
+def repealed(root: Path) -> None:
+  """Repeal rule 4 instead of superseding it.
+
+  Args:
+    root: the checkout.
+  """
+  (root / "rules/4.toml").write_text(
+    rule(4, 1, 'status = "repealed"\nauthority = ["one"]\n').replace(
+      'status = "active"\n', "", 1
+    ),
+    encoding="utf-8",
+  )
+
+
 def long_code(root: Path) -> None:
   """Put a path in code, longer than a phone's row, in two statements.
 
