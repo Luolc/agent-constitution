@@ -129,11 +129,15 @@ enum Command {
         action: SourceAction,
     },
     /// Check a directory of rule files as the first-party source's
-    /// `rules/`, with every check that needs no rule set; exits 1 on an
-    /// error.
+    /// `rules/`, with every check that needs no rule set, and against the
+    /// constitution beside it when there is one; exits 1 on an error.
     Validate {
         /// The directory of the rule files, as `rules`.
         dir: std::path::PathBuf,
+        /// Also check that every node of this commit's rule files still
+        /// exists and stays repealed or superseded.
+        #[arg(long, value_name = "GIT_REF")]
+        base: Option<String>,
     },
     /// Resolve statute.toml again, say how the result differs from
     /// statute.lock, and write statute.lock.
@@ -228,7 +232,7 @@ fn main() -> ExitCode {
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
         Command::Export { dir } => export(&dir),
-        Command::Validate { dir } => validate(&dir),
+        Command::Validate { dir, base } => validate(&dir, base.as_deref()),
         Command::Constitution { action } => statute::constitution::cli::run(action).map_err(|_| ()),
         Command::Source {
             action:
@@ -319,8 +323,9 @@ fn print(diags: &Diagnostics) {
 }
 
 /// `validate`: reads the rule files of `dir` as the first-party source,
-/// `R`, and prints every finding; fails when one is an error.
-fn validate(dir: &Path) -> Result<(), ()> {
+/// `R`, checks them, and against the constitution beside `dir` when there
+/// is one, and prints every finding; fails when one is an error.
+fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
     let label = dir.to_string_lossy();
     let label = label.trim_end_matches('/');
     let (mut source, mut diags) = statute::source::Source::load(dir, label);
@@ -328,7 +333,12 @@ fn validate(dir: &Path) -> Result<(), ()> {
     source.public = true;
     let sources = statute::source::Sources::new(vec![source]);
     sources.check(&mut diags);
+    let first = sources.iter().next().expect("one source");
+    let notes = statute::constitution::rules::validate(dir, first, base, &mut diags);
     print(&diags);
+    for note in notes {
+        println!("{note}");
+    }
     if diags.has_errors() {
         return Err(());
     }
