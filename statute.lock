@@ -1431,6 +1431,34 @@ sha256 = "1f93cf472c3b79feb80007fa6a243945e6c9bf7c5d71f4787e7f19ef664955bc"
 original-sha256 = "0a2eae7bc254c4be2de5ccc43a1486e92d4a82c0c9f5fb4eede82b31b0ea52a0"
 by = "default"
 
+[[rules]]
+rule = "L21"
+revision = 1
+sha256 = "0efb1ccd7b13f102f2a894f85abe18d49c38e70d6afe7d0da8476ac4e8a76781"
+original-sha256 = "484e03395e049880b6cc9863ef4a88f30855423cc833d8049c5efe081fce92a8"
+by = "default"
+
+[[rules]]
+rule = "L22"
+revision = 1
+sha256 = "816835e7fac06093dfdcc1b4c54e309aeb92a29d329f91883d5499c09cfd3495"
+original-sha256 = "510e1688bbcc3e3edfad0b5ec671798a007af9ffe70633ec85ac64f9951a19a9"
+by = "default"
+
+[[rules]]
+rule = "L23"
+revision = 1
+sha256 = "3c46aab3e2f74976d8e9f89fe0c0ce23c37201ee82d7d0c32b26d5772d695468"
+original-sha256 = "13746140e0fe2c1a70550c7e0a90d2f08f07808d7aeb9cf33bc5b9013a88c8e3"
+by = "default"
+
+[[rules]]
+rule = "L24"
+revision = 1
+sha256 = "96516fed79a7a2dc2cd7a062760052b43f4e39bf48638eeaa63dec2e9c635a27"
+original-sha256 = "b2aea8229c513dfa2540f2582bc4393d3fbb98c3668913b805faddd08d57d8e5"
+by = "default"
+
 [[parameters]]
 name = "language.code-comments"
 value = "en"

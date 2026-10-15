@@ -460,6 +460,26 @@ When the implementer and the reviewer of a pull request use models of the same f
 
 Where a repository's instructions do not say whether a merge waits for CI, merge only after the required check has passed on the approved head; where they say a merge does not wait, do not merge when the summary job of CI has already failed on the approved head.
 
+<a id="rule-L21"></a>
+### Count the push of a `statute-v` tag as the release of statute (L21)
+
+Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` then publishes to crates.io; a pull request that raises the version is not a release.
+
+<a id="rule-L22"></a>
+### Push a `statute-v` tag only where the release tag check passes (L22)
+
+Push a tag `statute-v<version>` only on a commit for which `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution` exits 0.
+
+<a id="rule-L23"></a>
+### Raise only statute's patch number unless a person says otherwise (L23)
+
+For a new version of statute, raise only the patch number (after 0.1.0 come 0.1.1, 0.1.2 and so on), and raise the minor or major number only when a person says so for that version.
+
+<a id="rule-L24"></a>
+### Patch releases of statute are authorized in advance; others need a person's yes (L24)
+
+The lead of a job may push, without asking a person, the tag of a version of statute that raises only the patch number of the last release, on a commit that [Push a `statute-v` tag only where the release tag check passes](#rule-L22) allows; every other release of statute, a minor or major one included, needs a person's yes, given at the time or written down in advance for that version.
+
 <a id="rule-R15"></a>
 ## Verification (R15)
 

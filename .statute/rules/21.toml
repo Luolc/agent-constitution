@@ -1,0 +1,32 @@
+id = 21
+slug = "statute-release-act"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R14"
+default = "on"
+requires = ["R32"]
+authority = ["must-ask"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Count the push of a `statute-v` tag as the release of statute"
+
+[text.statement]
+en = "Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` then publishes to crates.io; a pull request that raises the version is not a release."
+
+[text.reason]
+en = '''
+{@rule:R32} asks for a principal's yes before a release; this says which act of this repository is the release of statute, so that the yes is asked before that act and not before a harmless one.
+'''
+
+[text.verification]
+en = '''
+On crates.io, statute 0.0.1 is a placeholder that held the name; the command starts with 0.1.0, and the version is the one in `crates/statute/Cargo.toml`.
+
+Violated when a tag `statute-v<version>` is pushed without what {@rule:R32} and {@rule:24} require.
+'''

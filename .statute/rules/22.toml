@@ -1,0 +1,32 @@
+id = 22
+slug = "statute-release-tag-check"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R14"
+default = "on"
+requires = ["R58"]
+authority = ["discriminating-checks", "evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Push a `statute-v` tag only where the release tag check passes"
+
+[text.statement]
+en = "Push a tag `statute-v<version>` only on a commit for which `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution` exits 0."
+
+[text.reason]
+en = '''
+The check is how this repository meets {@rule:R58}: the tag names the version in the manifest, the commit is on `main`, and that commit's CI run on `main` passed on its first attempt.
+'''
+
+[text.verification]
+en = '''
+The check takes its three steps in order and stops at the first that fails; it needs `gh` signed in. It exits 0 when the tag may publish, 1 when a step says no, 2 when git or gh failed and 4 when the manifest has no version. The job `check` of `release.yml` runs it again before the job `publish`; when the tag was pushed before the CI run on `main` had passed, that job fails, and the workflow is run again once the CI run has passed.
+
+Violated when a tag `statute-v<version>` is pushed on a commit for which the check does not exit 0.
+'''

@@ -1,0 +1,31 @@
+id = 23
+slug = "statute-patch-by-default"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R14"
+default = "on"
+authority = ["list-defaults.tightening"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Raise only statute's patch number unless a person says otherwise"
+
+[text.statement]
+en = "For a new version of statute, raise only the patch number (after 0.1.0 come 0.1.1, 0.1.2 and so on), and raise the minor or major number only when a person says so for that version."
+
+[text.reason]
+en = '''
+A minor or major version tells the users of statute that more changed than a fix; whether that is so is the owner's call, which this rule adds to what goes through a principal ({@constitution:list-defaults.tightening}).
+'''
+
+[text.verification]
+en = '''
+The version is the one in `crates/statute/Cargo.toml`.
+
+Violated when a change raises the minor or major number of statute without a person's word for that version.
+'''
