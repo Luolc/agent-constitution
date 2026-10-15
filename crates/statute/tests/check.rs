@@ -11,7 +11,8 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
 /// Domain 1 with rules 43, 46, 50, 58, 61 and 71 (built-in checks), rules 3 and 7 (the
 /// rules they supersede, whose checks stay), rule 20 (a command) and
-/// rule 21 (review only, whose reason cites a provision and rule 20).
+/// rule 21 (no program, for the reviewer, whose reason cites a provision
+/// and rule 20).
 fn nodes(command: &str) -> Vec<(u64, String)> {
     let builtin = |id| edit(rule(id, 1, ""), "check = \"review\"", "check = \"builtin\"");
     vec![
@@ -30,7 +31,7 @@ fn nodes(command: &str) -> Vec<(u64, String)> {
             &format!("check = \"command\"\nrun = {command:?}\ntools = [\"sh\"]"),
         ),
         edit(
-            rule(21, 1, ""),
+            rule(21, 1, "uses = [\"instructions\", \"review\"]"),
             "Because.",
             "Because of {@constitution:principals} and {@rule:20}.",
         ),
@@ -1031,9 +1032,26 @@ fn a_rule_without_a_check_goes_to_the_reviewer() {
 }
 
 #[test]
+fn a_rule_without_a_check_or_review_is_not_listed() {
+    let dir = repo("not-for-review", "\"R20\"", "true");
+    write(&dir, "rules/23.toml", &rule(23, 1, "").1);
+    let manifest = std::fs::read_to_string(dir.join("statute.toml")).unwrap();
+    write(
+        &dir,
+        "statute.toml",
+        &manifest.replace("\"R20\"]", "\"R20\", \"R23\"]"),
+    );
+    assert_eq!(statute(&dir, &["lock"], None).code, 0);
+    let run = statute(&dir, &["check"], None);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    assert!(line(&run, 20).starts_with("pass "), "{}", run.stdout);
+    assert!(!run.stdout.contains("R23"), "{}", run.stdout);
+}
+
+#[test]
 fn the_rules_are_listed_by_domain() {
     let dir = repo("by-domain", "\"R20\", \"R21\"", "true");
-    for (id, text) in [domain(2), rule(22, 2, "")] {
+    for (id, text) in [domain(2), rule(22, 2, "uses = [\"review\"]")] {
         write(&dir, &format!("rules/{id}.toml"), &text);
     }
     let manifest = std::fs::read_to_string(dir.join("statute.toml")).unwrap();

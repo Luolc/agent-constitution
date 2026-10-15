@@ -128,6 +128,11 @@ def load_index(root: Path, layout: Layout, errors: Errors) -> Doc | None:
 class _Reader:
   """What reading the article and rule sources needs, once index.toml is read.
 
+  The site's `site_rules._OtherReader` subclasses it to read the rules of
+  another source, overriding `parent`, `overrides` and `references`; a
+  change to those methods, or to how `node` calls them, changes how the
+  site reads another source.
+
   Attributes:
     root: the checkout.
     layout: where the sources are.

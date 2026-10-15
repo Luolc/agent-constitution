@@ -74,7 +74,11 @@ fn repo(name: &str) -> PathBuf {
             "me/rules",
             edit(
                 edit(
-                    rule(4, 1, "requires = [\"R2\"]"),
+                    rule(
+                        4,
+                        1,
+                        "requires = [\"R2\"]\nuses = [\"instructions\", \"review\"]",
+                    ),
                     "parent = 1",
                     "parent = \"R1\"",
                 ),

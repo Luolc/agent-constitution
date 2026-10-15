@@ -99,11 +99,14 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
   """Check the links between the nodes of the rule tree.
 
   Each `parent` of this source and each entry of `superseded-by` names a
-  node of the tree, another rule for `superseded-by`; a domain's parent
-  is a domain with no parent, so domains nest two levels deep at most
-  (docs/design/rule-sources.md, Subdomains); and following the parents
-  never comes back to a node. A parent in another source is not checked
-  here.
+  node of the tree, another rule for `superseded-by`. A rule's parent is
+  a domain or a one-of, a one-of's a domain, and a domain's a domain
+  with no parent or a one-of in one, so that domains nest two levels deep
+  at most, counting a domain that is the option of a one-of
+  (docs/design/rule-config.md, Proposed: no rule under a rule, and
+  docs/design/rule-sources.md, Subdomains); the options of a one-of are
+  all rules or all domains; and following the parents never comes back
+  to a node. A parent in another source is not checked here.
 
   Args:
     nodes: the nodes.
@@ -116,17 +119,8 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
       errors.add(
         n.doc.path, n.doc.line("parent ="), 3, f"parent {n.parent} is no node"
       )
-    if (
-      n.kind == "domain"
-      and parent is not None
-      and (problem := domain_parent(n, parent))
-    ):
-      errors.add(
-        n.doc.path,
-        n.doc.line("parent ="),
-        3,
-        f"a domain's parent is a domain with no parent; {problem}",
-      )
+    if parent is not None and (problem := parent_problem(n, parent, by_id)):
+      errors.add(n.doc.path, n.doc.line("parent ="), 3, problem)
     for t in n.superseded_by:
       target = by_id.get(t)
       if target is None or target.kind != "rule" or target is n:
@@ -136,7 +130,40 @@ def check_tree(nodes: list[Node], errors: Errors) -> None:
           3,
           f"superseded-by {t} is no other rule",
         )
+  check_options(nodes, by_id, errors)
   check_cycles(by_id, errors)
+
+
+def check_options(
+  nodes: list[Node], by_id: dict[int, Node], errors: Errors
+) -> None:
+  """Check that the options of each one-of are all rules or all domains.
+
+  An option of another kind than the first, by number, is the one out of
+  place, and the error is on it.
+
+  Args:
+    nodes: the nodes.
+    by_id: the nodes, by ID.
+    errors: where errors go.
+  """
+  for one_of in (n for n in nodes if n.kind == "one-of"):
+    options = sorted(
+      (n for n in nodes if n.parent == one_of.id and n.kind != "one-of"),
+      key=lambda n: n.id,
+    )
+    if not options:
+      continue
+    first = options[0].kind
+    like = ", ".join(str(n.id) for n in options if n.kind == first)
+    for n in (n for n in options if n.kind != first):
+      errors.add(
+        n.doc.path,
+        n.doc.line("parent ="),
+        3,
+        f"parent {one_of.id} is a one-of whose options are {first}s ({like});"
+        " the options of a one-of are all rules or all domains",
+      )
 
 
 def check_cycles(by_id: dict[int, Node], errors: Errors) -> None:
@@ -163,23 +190,61 @@ def check_cycles(by_id: dict[int, Node], errors: Errors) -> None:
       at = by_id[at].parent
 
 
-def domain_parent(node: Node, parent: Node) -> str:
+def parent_problem(node: Node, parent: Node, by_id: dict[int, Node]) -> str:
+  """Return what is wrong with a node's parent, or "" when nothing is.
+
+  Args:
+    node: the node.
+    parent: the node its `parent` names.
+    by_id: the nodes, by ID.
+
+  Returns:
+    The problem, or "".
+  """
+  if node.kind == "rule":
+    if parent.kind == "rule":
+      return f"a rule's parent is a domain or a one-of; {parent.id} is a rule"
+    return ""
+  if node.kind == "one-of":
+    if parent.kind != "domain":
+      return f"a one-of's parent is a domain; {parent.id} is a {parent.kind}"
+    return ""
+  if problem := domain_parent(node, parent, by_id):
+    return (
+      "a domain's parent is a domain with no parent, or a one-of in one;"
+      f" {problem}"
+    )
+  return ""
+
+
+def domain_parent(node: Node, parent: Node, by_id: dict[int, Node]) -> str:
   """Return what is wrong with a domain's parent, or "" when nothing is.
 
   Args:
     node: the domain.
     parent: the node its `parent` names.
+    by_id: the nodes, by ID.
 
   Returns:
     The problem, or "".
   """
   if parent is node:
     return f"{node.id} is the domain itself"
-  if parent.kind != "domain":
-    return f"{parent.id} is a {parent.kind}"
-  if parent.parent is not None:
+  if parent.kind == "rule":
+    return f"{parent.id} is a rule"
+  # The domain the subdomain or the option would be in.
+  above = parent
+  if parent.kind == "one-of":
+    if not isinstance(parent.parent, int) or parent.parent not in by_id:
+      return ""
+    above = by_id[parent.parent]
+  if above.parent is None:
+    return ""
+  if above is parent:
     return f"{parent.id} is a subdomain, under {parent.parent}"
-  return ""
+  return (
+    f"{parent.id} is a one-of in {above.id}, a subdomain, under {above.parent}"
+  )
 
 
 def unique(errors: Errors, numbered: list) -> None:

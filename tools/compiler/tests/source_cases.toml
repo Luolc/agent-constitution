@@ -156,7 +156,7 @@ en = "Violated when not."
 [[cases]]
 name = "a domain under a subdomain"
 passes = false
-compiler = "a domain's parent is a domain with no parent; 4 is a subdomain, under 2"
+compiler = "a domain's parent is a domain with no parent, or a one-of in one; 4 is a subdomain, under 2"
 statute = "parent 4 is a subdomain already, under 2; domains nest two levels at most"
 node = """
 id = 20
@@ -171,10 +171,8 @@ en = "Node"
 """
 
 [[cases]]
-name = "a domain under a one-of"
-passes = false
-compiler = "a domain's parent is a domain with no parent; 3 is a one-of"
-statute = "parent 3 is a one-of; a domain's parent is a domain"
+name = "a domain as the option of a one-of"
+passes = true
 node = """
 id = 20
 revision = 1
@@ -190,7 +188,7 @@ en = "Node"
 [[cases]]
 name = "a domain under a rule"
 passes = false
-compiler = "a domain's parent is a domain with no parent; 10 is a rule"
+compiler = "a domain's parent is a domain with no parent, or a one-of in one; 10 is a rule"
 statute = "parent 10 is a rule; a domain's parent is a domain"
 node = """
 id = 20
@@ -207,7 +205,7 @@ en = "Node"
 [[cases]]
 name = "a domain under itself"
 passes = false
-compiler = "a domain's parent is a domain with no parent; 20 is the domain itself"
+compiler = "a domain's parent is a domain with no parent, or a one-of in one; 20 is the domain itself"
 statute = "`parent` names the node itself"
 node = """
 id = 20
@@ -327,7 +325,7 @@ en = "Violated when not."
 name = "a rule with neither overrides nor parent"
 passes = false
 compiler = 'a rule needs `parent`, or `overrides` in its place'
-statute = "a rule needs a `parent`, the ID of a rule, one-of or domain, or `overrides`"
+statute = "a rule needs a `parent`, the ID of a domain or a one-of, or `overrides`"
 node = """
 id = 20
 revision = 1
@@ -530,4 +528,68 @@ en = "Because."
 
 [text.verification]
 en = "Violated when not."
+"""
+
+[[cases]]
+name = "a rule under a rule"
+passes = false
+compiler = "a rule's parent is a domain or a one-of; 10 is a rule"
+statute = "parent 10 is a rule; a rule's parent is a domain or a one-of"
+node = """
+id = 20
+revision = 1
+kind = "rule"
+status = "draft"
+lang = "en"
+parent = 10
+authority = ["alpha"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Node"
+
+[text.statement]
+en = "Do it."
+
+[text.reason]
+en = "Because."
+
+[text.verification]
+en = "Violated when not."
+"""
+
+[[cases]]
+name = "a one-of under a one-of"
+passes = false
+compiler = "a one-of's parent is a domain; 3 is a one-of"
+statute = "parent 3 is a one-of; a one-of's parent is a domain"
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 3
+
+[title]
+en = "Node"
+"""
+
+[[cases]]
+name = "a one-of under a rule"
+passes = false
+compiler = "a one-of's parent is a domain; 10 is a rule"
+statute = "parent 10 is a rule; a one-of's parent is a domain"
+node = """
+id = 20
+revision = 1
+kind = "one-of"
+status = "draft"
+lang = "en"
+parent = 10
+
+[title]
+en = "Node"
 """

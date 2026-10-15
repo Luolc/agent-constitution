@@ -177,7 +177,8 @@ def write(root: Path) -> None:
 # A made-up second source, `demo`: 1, a domain, translated, whose
 # applicability cites a rule 3 the source does not have; 2, a rule under
 # it, untranslated, that requires and cites rule 3 of this repo and cites
-# itself.
+# itself; 4, the same rule under this repo's domain 1, in conflict with
+# this repo's rule 5.
 OTHER_RULE = """\
 id = 2
 revision = 1
@@ -206,6 +207,9 @@ en = "Violated when not."
 OTHER_FILES = {
   "rules/1.toml": group(1, "domain", None),
   "rules/2.toml": OTHER_RULE,
+  "rules/4.toml": OTHER_RULE.replace("id = 2", "id = 4")
+  .replace("parent = 1", 'parent = "R1"')
+  .replace('requires = ["R3"]', 'conflicts = ["R5"]'),
 }
 
 

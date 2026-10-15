@@ -36,7 +36,7 @@ fn repo(name: &str, manifest: &str, rules: &[(u64, String)], index: &str) -> Pat
 }
 
 fn rules() -> Vec<(u64, String)> {
-    vec![domain(1), rule(2, 1, ""), rule(3, 2, "")]
+    vec![domain(1), rule(2, 1, ""), rule(3, 1, "requires = [2]")]
 }
 
 #[track_caller]
@@ -112,7 +112,7 @@ fn the_constitution_must_be_the_edition_named() {
 #[test]
 fn errors_in_the_source_stop_the_resolution() {
     let mut nodes = rules();
-    nodes[2] = edit(nodes[2].clone(), "parent = 2", "parent = 9");
+    nodes[2] = edit(nodes[2].clone(), "parent = 1", "parent = 9");
     fails(
         &repo("bad-source", MANIFEST, &nodes, INDEX),
         "rules/3.toml: error: parent 9 does not exist",
@@ -127,7 +127,7 @@ fn a_source_elsewhere_is_named_by_its_path() {
     std::fs::create_dir_all(src.join("constitution/2026-10")).unwrap();
     std::fs::write(src.join("constitution/2026-10/index.toml"), INDEX).unwrap();
     let mut nodes = rules();
-    nodes[2] = edit(nodes[2].clone(), "parent = 2", "parent = 9");
+    nodes[2] = edit(nodes[2].clone(), "parent = 1", "parent = 9");
     for (id, text) in &nodes {
         std::fs::write(src.join(format!("rules/{id}.toml")), text).unwrap();
     }

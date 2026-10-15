@@ -15,13 +15,13 @@ fn manifest(rules: &str) -> String {
     )
 }
 
-/// Domain 1; rule 2 and its child 3; one-of 4 with children 5 and 6;
+/// Domain 1; rule 2 and rule 3 requiring it; one-of 4 with children 5 and 6;
 /// rule 7 requiring the one-of; rule 8 in conflict with 2.
 fn nodes() -> Vec<(u64, String)> {
     vec![
         domain(1),
         rule(2, 1, ""),
-        rule(3, 2, ""),
+        rule(3, 1, "requires = [2]"),
         one_of(4, 1),
         rule(5, 4, ""),
         rule(6, 4, ""),
@@ -173,7 +173,7 @@ fn explain_follows_the_chain() {
     ok(&run);
     assert_eq!(
         run.stdout,
-        "rule R2 (Rule 2) is enabled:\n- the parent of R3 (Rule 3), which is enabled:\n  - listed in `rules`\n"
+        "rule R2 (Rule 2) is enabled:\n- required by R3 (Rule 3), which is enabled:\n  - listed in `rules`\n"
     );
     let run = statute(&dir, &["explain", "R3"]);
     ok(&run);
@@ -282,7 +282,7 @@ fn add_a_pack() {
     );
     let lock = read(&dir, "statute.lock");
     assert!(
-        lock.contains("rule = \"R2\"\n") && lock.contains("rule = \"R3\"\n"),
+        lock.contains("rule = \"R2\"\n") && !lock.contains("rule = \"R3\"\n"),
         "{lock}"
     );
 }
@@ -732,8 +732,8 @@ fn upgrade_names_the_rules_in_force_past_a_split() {
 #[test]
 fn upgrade_replaces_a_superseded_pack_root() {
     let text = manifest("").replace("\n\n[sources]", "\npacks = [\"R10\"]\n\n[sources]");
-    let mut nodes = superseded_nodes("");
-    nodes.push(rule(12, 11, ""));
+    let mut nodes = superseded_nodes("requires = [12]");
+    nodes.push(rule(12, 1, ""));
     let dir = repo("upgrade-replace-pack", &text, &nodes);
     ok(&statute(&dir, &["lock"]));
     let run = statute(&dir, &["upgrade", "--replace-superseded"]);
