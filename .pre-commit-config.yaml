@@ -1,7 +1,8 @@
 # Commit hooks: secret scan, lock check, Python lint, format, docstring
-# and type checks, Rust format check, constitution build check and its
-# tests, the design translation check, and limae on the Chinese text in
-# the sources and on every Markdown file of the repo.
+# and type checks, Rust format check, rule validation, constitution build
+# check, the tests of the Python tools, the design translation check, and
+# limae on the Chinese text in the sources and on every Markdown file of
+# the repo.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the commits of each PR or push, and gitleaks.yml the full history
@@ -30,7 +31,7 @@ repos:
   - repo: local
     hooks:
       # The Python checkers, configured in pyproject.toml, on the whole of
-      # tools/ (all three workspace members) rather than the staged files.
+      # tools/ (both workspace members) rather than the staged files.
       - id: ruff-check
         name: ruff check
         entry: uv run --frozen --no-sync ruff check .
@@ -72,26 +73,18 @@ repos:
         language: system
         files: ^(rules/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
         pass_filenames: false
-      # The constitution build: --check validates the constitution sources,
-      # reads of the rules what the constitution decides (their status and
-      # what they cite of it), and requires the committed outputs to match a
-      # fresh build; the tests cover the script. The numbering check against
-      # a base commit (--base) runs only in CI.
+      # The constitution build: --check validates the constitution sources
+      # and requires the committed outputs to match a fresh build. The
+      # numbering check against a base commit (--base) runs only in CI.
       - id: constitution
         name: constitution build check
-        entry: uv run --frozen --no-sync constitution-build --check
+        entry: cargo run --locked --quiet -p statute -- constitution build --check
         language: system
-        files: ^(constitution|rules|tools)/
+        files: ^(constitution/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
         pass_filenames: false
       # The tests of each workspace member, run when it or a member it
       # depends on changes: the site uses statute and web/. The tests of
       # lint_zh_sources run limae.
-      - id: compiler-tests
-        name: compiler tests
-        entry: uv run --frozen --no-sync python -m unittest discover -s tools/compiler/tests
-        language: system
-        files: ^(tools/compiler/|pyproject\.toml$|uv\.lock$)
-        pass_filenames: false
       - id: site-tests
         name: site tests
         entry: uv run --frozen --no-sync python -m unittest discover -s tools/site/tests

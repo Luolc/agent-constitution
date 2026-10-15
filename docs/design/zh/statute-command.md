@@ -1,4 +1,4 @@
-<!-- en-sha256: 1fd108717cb91a9555d29563ec242caf6599b0440181c564ffaca660c75b356b -->
+<!-- en-sha256: 1fab91e94ec0ca9e08e28572583e87f2e350cb88a2cd44779aa1e1d836ef4961 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -24,7 +24,7 @@
 
 写出的 `AGENTS.md` 旁边 (不给 `--output` 时就是仓库顶层) 有 `CLAUDE.md` 时，不论是普通文件还是指向 `AGENTS.md` 的软链，每次 `statute compile` 都给出 warning，有没有私有层都一样。warning 问要不要删掉它，并用几句短话说明原因：没有 `CLAUDE.md` 时 Claude Code 自己会读 `AGENTS.md` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，所以不需要 `CLAUDE.md` 指向它；有私有输出时，`CLAUDE.local.md` 用全文代替 `AGENTS.md` 给 Claude Code 读，Claude Code 还会再读 `CLAUDE.md`，它的内容就叠在规定之上，指向 `AGENTS.md` 的软链会让公开规定读两遍 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，没有私有层时 warning 不说这一句；迁移时 ([statute-migrate](../../../skills/statute-migrate/SKILL.md)，第 e 步)，普通文件的 `CLAUDE.md` 改名为旧版副本，指向 `AGENTS.md` 的软链不改名，只问用户要不要删。statute 既不删它，也不改名。尚未实现：warning 仍说迁移时两种都会改名。
 
-编译、检查和升级规定清单由同一个命令完成 ([命令与第一版](#the-command-and-the-first-version))。宪法的编译器暂时仍用 Python ([编译](compilation.md))，以后再并入这个命令。
+编译、检查和升级规定清单由同一个命令完成 ([命令与第一版](#the-command-and-the-first-version))。宪法也由这个命令构建，即 `statute constitution build`。
 
 **公开网站**列出每条规定，让人们能从完整列表里挑选，列表的筛选默认不显示已被取代和已废止的规定；被取代的规定保留自己的页面，指向它的链接仍然有效。本仓的规定在网站上也显示成 `R42`。列表和规定详情页显示什么，见[静态网站](static-site.md)。
 

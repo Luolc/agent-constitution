@@ -33,7 +33,7 @@ site-rules`, `uv run count-tokens` (the token count, below),
 - Input: the generated `constitution.<lang>.md` in the edition
   directory's `generated/` ([The constitution](constitution.md)), not the
   sources: the citations, numbers and anchors are rendered once, by
-  `constitution-build`. `web/hugo.toml` mounts them and the edition
+  `statute constitution build`. `web/hugo.toml` mounts them and the edition
   directory's `index.toml` from `constitution/` as assets, and the partial
   `web/layouts/_partials/constitution/source.html` finds each by name,
   failing the build unless exactly one file matches; Python writes no

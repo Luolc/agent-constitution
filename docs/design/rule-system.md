@@ -2,7 +2,7 @@
 
 Status: draft. The rules of this repo are written in the
 [Rule file format](rule-format.md#rule-file-format), which
-`constitution-build` checks. The command, `statute`, builds part of
+`statute validate rules` checks. The command, `statute`, builds part of
 the repository level of this design, for sources on disk and git
 sources: it writes,
 resolves and upgrades a rule set and its lock file, compiles them into

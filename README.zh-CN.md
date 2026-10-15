@@ -69,7 +69,7 @@ statute site          # 在 .statute/site 生成本地的规定网站，私有�
 ```sh
 uv sync                          # Python 工具，装进 .venv
 uv run pre-commit install        # 提交钩子
-uv run constitution-build        # 重新生成宪法
+cargo run -p statute -- constitution build   # 重新生成宪法
 cargo test --locked              # statute 的测试
 ```
 

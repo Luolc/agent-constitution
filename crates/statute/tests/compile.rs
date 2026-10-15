@@ -263,7 +263,9 @@ fn compile_says_which_constitution_file_is_missing() {
     assert!(
         run.stderr.contains(
             "cannot read constitution/2026-10/generated/constitution.fr.agent.md of source `R`"
-        ) && run.stderr.contains("`uv run constitution-build` writes it"),
+        ) && run
+            .stderr
+            .contains("`cargo run -p statute -- constitution build` writes it"),
         "{}",
         run.stderr
     );
@@ -568,13 +570,12 @@ struct ApplicabilityCase {
     statute: Option<String>,
 }
 
-/// The compiler's cases of `[applicability]`
-/// (`tools/compiler/tests/applicability_cases.toml`): node 20 with rule
+/// The cases of `[applicability]`
+/// (`tests/cases/applicability_cases.toml`): node 20 with rule
 /// 21 under it enabled, so that a domain's applicability is compiled.
 #[test]
-fn the_compilers_applicability_cases() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tools/compiler/tests/applicability_cases.toml");
+fn the_applicability_cases() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/cases/applicability_cases.toml");
     let cases: ApplicabilityCases =
         toml::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
     assert!(!cases.cases.is_empty());

@@ -58,7 +58,7 @@ jobs:
           GITLEAKS_ENABLE_COMMENTS: false
 
       # uv sets up the Python of pyproject.toml and, from uv.lock, the
-      # environment with the three workspace members under tools/, limae
+      # environment with the two workspace members under tools/, limae
       # and pre-commit; --locked fails when the lock no longer matches the
       # pyproject.toml files. The uv version is the rev of the
       # uv-lock hook in .pre-commit-config.yaml; change both together.
@@ -141,7 +141,7 @@ jobs:
           fi
           base="$(git rev-parse --verify "${BASE}^{commit}")"
           echo "base: ${base}"
-          uv run --frozen constitution-build --check --base "$base"
+          cargo run --locked --quiet -p statute -- constitution build --check --base "$base"
 
       # Instruction files and other files never change together (see
       # docs/design/checkers.md). Same base as the step above, skipped the

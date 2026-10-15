@@ -147,8 +147,8 @@ still says that a migration renames either kind.
 
 Compiling, checking and upgrading a rule set are one command
 ([The command and the first version](#the-command-and-the-first-version)).
-The constitution's compiler stays in Python for now
-([Compilation](compilation.md)) and moves into that command later.
+The same command builds the constitution, `statute constitution
+build`.
 
 **The public site** lists every rule, so that people can choose from
 the full list, with a filter that leaves superseded and repealed rules

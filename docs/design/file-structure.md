@@ -31,6 +31,7 @@ constitution/
 crates/                   the Rust workspace's crates, one directory
                           each                                         A
   statute/                the statute binary, under development        A
+    src/constitution/     the constitution build                       A
 docs/
   design/                 this design, one file per topic, indexed
                           by README.md                                 A
@@ -46,25 +47,6 @@ skills/
 schema/                   schemas for the rules, fixtures and the
                           overlay manifest                             B
 tools/                    a uv workspace, one Python project each:
-  compiler/               the constitution compiler, package
-                          constitution_compiler, command
-                          constitution-build                           A
-    src/constitution_compiler/
-      build.py            builds and checks the constitution, from the
-                          modules below                                A
-      model.py            where the sources are, the shapes of their
-                          names, the records they are read into        A
-      schema.py           the schemas and the per-table format checks
-                          of check 1                                   A
-      read.py             reads the sources, check 1                   A
-      checks.py           checks 2 to 5                                A
-      languages.py        what differs between languages               A
-      render.py           renders the constitution                     A
-      base.py             check 7, numbering against a base commit,
-                          and the git access                           A
-      revision.py         check 7, the revision against the base's     A
-    tests/                render, checks, base, and the shared test
-                          tree (test_constitution_fixture.py)          A
   site/                   package constitution_site, runs statute
                           export                                       A
     src/constitution_site/
@@ -122,16 +104,16 @@ topics touch different files, as rule 113 (`design-file-per-topic`) asks.
 the rule system, each listed in the index
 ([agent-constitution design](README.md)).
 
-Four stage B pieces start early. `tools/` starts in stage A with the
-constitution build: the constitution is itself compiled from one directory
-per article and one file per section (see [Source formats](source-formats.md)). `rules/` starts in stage A too,
+Four stage B pieces start early. `tools/` starts in stage A with this
+repo's own checks and the static site's tools. `rules/` starts in stage A too,
 holding the
 concrete practices taken out of the constitution. `skills/` starts in
 stage A as plain directories, each holding a `SKILL.md` with the usual
 skill front matter (`name`, `description`) and no metadata of this
 repo's own. `crates/` starts in stage A with one crate, `statute`, whose
 first release, a placeholder, was published early to hold the name on
-crates.io; the binary that compiles and checks the rules grows in it in
+crates.io; it builds the constitution, which is itself compiled from one
+directory per article and one file per section (see [Source formats](source-formats.md)), and the binary that compiles and checks the rules grows in it in
 stage B (what it does so far:
 [The command and the first version](statute-command.md#the-command-and-the-first-version)). Compiling and checking the
 rules, and building the instruction file, stay in stage B.
