@@ -202,14 +202,13 @@ is not read yet. Of [Rule sources](rule-sources.md), `public` is built,
 with which rules may cite which in `requires`, `conflicts`,
 `overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
-and the ranks, and so are subdomains, a rule's `parent` in another
-source, and `statute.private.toml` with its lock file and output.
-The global configuration, `init --global` and git sources are built
-([Global configuration and git sources](global-configuration.md)),
+and the ranks, and so are subdomains, a rule's or a domain's `parent`
+in another source, and `statute.private.toml` with its lock file and
+output.
+The global configuration, `init --global`, git sources and `source add`
+are built ([Global configuration and git sources](global-configuration.md)),
 except that `upgrade` does not show the text of a changed rule yet.
-Inherited rule sets, path segments, `source add` and a domain's
-`parent` in another source ([Subdomains](rule-sources.md#subdomains))
-are not built.
+Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
 constitution's source and edition, `public = true` or `public = false`,

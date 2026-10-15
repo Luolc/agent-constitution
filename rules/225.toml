@@ -1,0 +1,42 @@
+id = 225
+slug = "work-item-state-line"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["asking"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Head the body of a work item under discussion with its current state"
+zh = "还在讨论的工作项，正文顶上写当前状态"
+
+[text.statement]
+en = "While a work item is under discussion, keep a line at the top of its body that gives its current state."
+zh = "还在讨论的工作项，正文顶上保留一行，写它的当前状态。"
+
+[text.reason]
+en = '''
+A reader who opens the work item learns from its first line where the discussion stands, without reading the rest ({@constitution:asking}).
+'''
+zh = '''
+打开工作项的人读第一行就知道讨论到了哪一步，不用读完全文 ({@constitution:asking})。
+'''
+
+[text.verification]
+en = '''
+The line is kept up to date as the body changes under {@rule:184}.
+
+Violated when the body of a work item under discussion has no line at the top giving its current state.
+'''
+zh = '''
+正文按{@rule:184}改动时，这一行也随之更新。
+
+还在讨论的工作项，正文顶上没有写当前状态的一行的，即为违反本规定。
+'''
+
+[translations]
+zh = "d570f4653e7609657f878538ccd81ec4fd566fa72ba35769059a11f7b8ef1bea"

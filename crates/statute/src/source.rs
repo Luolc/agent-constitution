@@ -243,8 +243,8 @@ impl Sources {
         }
     }
 
-    /// A node's parent: in its own source, or for a rule, a domain of
-    /// another source.
+    /// A node's parent: in its own source, or for a rule or a domain, a
+    /// domain of another source.
     pub fn parent(&self, key: &Key) -> Option<Key> {
         let node = self.get(key)?;
         match (&node.parent, &node.foreign_parent) {
@@ -254,8 +254,9 @@ impl Sources {
         }
     }
 
-    /// The children of a node, in order of key: those of its own source,
-    /// and the rules of other sources hung under it.
+    /// The children of a node: those of its own source in order of ID,
+    /// then the rules and domains of other sources hung under it, in
+    /// order of key.
     pub fn children(&self, key: &Key) -> Vec<Key> {
         let mut out: Vec<Key> = self
             .source(&key.source)
@@ -272,7 +273,7 @@ impl Sources {
                     .map(|n| Key::new(&s.name, n.id)),
             );
         }
-        out.sort();
+        out.sort_by_key(|k| (k.source != key.source, k.clone()));
         out
     }
 
@@ -382,13 +383,33 @@ impl Sources {
                 }
                 if let Some(r) = &node.foreign_parent {
                     let what = format!("`parent` names {}", show_ref(r));
+                    let domain = node.kind == Kind::Domain;
+                    if domain && source.name == FIRST_PARTY {
+                        diags.error(
+                            &file,
+                            format!(
+                                "{what}; the first-party source's domains are the roots, with no parent in another source"
+                            ),
+                        );
+                    }
                     self.check_ref(source, r, &what, &file, diags, |(_, target), file, diags| {
                         if target.kind != Kind::Domain {
+                            let whose = if domain { "a domain's" } else { "a rule's" };
                             diags.error(
                                 file,
                                 format!(
-                                    "{what}, a {}; a rule's parent in another source is a domain or a subdomain",
-                                    target.kind.name()
+                                    "{what}, a {}; {whose} parent in another source is a domain{}",
+                                    target.kind.name(),
+                                    if domain { "" } else { " or a subdomain" }
+                                ),
+                            );
+                        } else if domain
+                            && (target.parent.is_some() || target.foreign_parent.is_some())
+                        {
+                            diags.error(
+                                file,
+                                format!(
+                                    "{what}, a subdomain already; domains nest two levels at most, so name a domain with no parent"
                                 ),
                             );
                         }
@@ -659,7 +680,14 @@ impl Checker<'_> {
                 && parent.id != node.id
             {
                 match (parent.kind, parent.parent) {
-                    (Kind::Domain, None) => {}
+                    (Kind::Domain, None) if parent.foreign_parent.is_none() => {}
+                    (Kind::Domain, None) => self.diags.error(
+                        &file,
+                        format!(
+                            "parent {} is a subdomain already, under a domain of another source; domains nest two levels at most, so name a domain with no parent",
+                            parent.id
+                        ),
+                    ),
                     (Kind::Domain, Some(above)) => self.diags.error(
                         &file,
                         format!(

@@ -318,11 +318,11 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
             (None, None)
         }
     };
-    if foreign_parent.is_some() && kind != Kind::Rule {
-        err(format!(
-            "a {}'s `parent` is a node of the same source, written as its number; only a rule's may name a domain of another source",
-            kind.name()
-        ));
+    if foreign_parent.is_some() && kind == Kind::OneOf {
+        err(
+            "a one-of's `parent` is a node of the same source, written as its number; only a rule's or a domain's may name a domain of another source"
+                .to_owned(),
+        );
     }
     let has_parent = raw.parent.is_some();
     match (kind, has_parent, raw.overrides.is_some()) {

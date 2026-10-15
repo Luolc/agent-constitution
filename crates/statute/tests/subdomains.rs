@@ -257,9 +257,12 @@ struct SourceCases {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
 struct SourceCase {
     name: String,
     passes: bool,
+    /// Where statute, reading node 20 as a local rule, differs.
+    statute_passes: Option<bool>,
     node: String,
     statute: Option<String>,
 }
@@ -290,8 +293,9 @@ fn the_compilers_source_cases() {
             ],
         );
         let run = statute(&dir, &["lock"]);
-        assert_eq!(run.code == 0, case.passes, "{}: {}", case.name, run.stderr);
-        if !case.passes {
+        let passes = case.statute_passes.unwrap_or(case.passes);
+        assert_eq!(run.code == 0, passes, "{}: {}", case.name, run.stderr);
+        if !passes {
             let errors: Vec<&str> = run
                 .stderr
                 .lines()
@@ -311,4 +315,84 @@ fn the_compilers_source_cases() {
             );
         }
     }
+}
+
+/// A domain whose parent is `parent`, a domain of another source.
+fn hung_domain(id: u64, parent: &str) -> (u64, String) {
+    edit(
+        domain(id),
+        "lang = \"en\"",
+        &format!("lang = \"en\"\nparent = \"{parent}\""),
+    )
+}
+
+#[test]
+fn a_domain_hangs_under_a_domain_of_another_source() {
+    let more = [
+        ("me/rules", hung_domain(30, "R1")),
+        ("me/rules", rule(31, 30, "")),
+    ];
+    let dir = repo("hung-domain", &manifest("\"R3\", \"me:31\"", ""), &more);
+    assert_eq!(
+        headings(&dir),
+        [
+            "## Domain 1 (R1)",
+            "### Domain 2 (R2)",
+            "#### Rule 3 (R3)",
+            "### Domain 30 (me:30)",
+            "#### Rule 31 (me:31)",
+        ]
+    );
+    // A pack stays in its source: R1 does not reach me:31, me:30 does.
+    let dir = repo("hung-domain-pack", &manifest("", "\"R1\""), &more);
+    ok(&statute(&dir, &["lock"]));
+    assert!(!locked(&dir).contains(&"me:31".to_owned()));
+    let dir = repo("hung-domain-own-pack", &manifest("", "\"me:30\""), &more);
+    ok(&statute(&dir, &["lock"]));
+    assert_eq!(locked(&dir), ["me:31"]);
+    // Two levels at most, on either side.
+    let dir = repo(
+        "hung-domain-sub",
+        &manifest("", ""),
+        &[("me/rules", hung_domain(30, "R2"))],
+    );
+    fails(
+        &dir,
+        "me/rules/30.toml: error: `parent` names \"R2\", a subdomain already; domains nest two levels at most, so name a domain with no parent",
+    );
+    let dir = repo(
+        "hung-domain-under",
+        &manifest("", ""),
+        &[
+            ("me/rules", hung_domain(30, "R1")),
+            (
+                "me/rules",
+                edit(domain(32), "lang = \"en\"", "lang = \"en\"\nparent = 30"),
+            ),
+        ],
+    );
+    fails(
+        &dir,
+        "me/rules/32.toml: error: parent 30 is a subdomain already, under a domain of another source; domains nest two levels at most, so name a domain with no parent",
+    );
+    // The reference direction: a public domain hangs under a public one.
+    let dir = repo(
+        "hung-domain-private",
+        &manifest("", ""),
+        &[("team/rules", hung_domain(30, "me:1"))],
+    );
+    fails(
+        &dir,
+        "team/rules/30.toml: error: `parent` names \"me:1\", a domain of the private source `me`; a public rule may name only rules of public sources",
+    );
+    // The first-party source's domains are the roots.
+    let dir = repo(
+        "hung-domain-first-party",
+        &manifest("", ""),
+        &[("r/rules", hung_domain(30, "team:1"))],
+    );
+    fails(
+        &dir,
+        "r/rules/30.toml: error: `parent` names \"team:1\"; the first-party source's domains are the roots, with no parent in another source",
+    );
 }

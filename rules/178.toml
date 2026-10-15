@@ -1,0 +1,38 @@
+id = 178
+slug = "one-agent-one-child"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give each agent making an attempt a child work item of its own"
+zh = "做尝试的每个 agent 各有一个子工作项"
+
+[text.statement]
+en = "Give each agent that makes an attempt a child work item of its own, and never reuse or reopen that child work item."
+zh = "做尝试的每个 agent 各对应一个子工作项，这个子工作项不复用，也不重新打开。"
+
+[text.reason]
+en = '''
+A child work item is the work order of one attempt; with one per agent, its claim and its report match one agent ({@constitution:accountable-agent}). Several agents may work under one parent work item at once, each on a child work item of its own.
+'''
+zh = '''
+子工作项是一次尝试的工单，一个 agent 一个，领取记录和报告才对得上人 ({@constitution:accountable-agent})。同一个父工作项下可以有几个 agent 同时开工，各用各的子工作项。
+'''
+
+[text.verification]
+en = '''
+Violated when two agents share a child work item, or when a child work item that has ended is reopened for a new attempt.
+'''
+zh = '''
+两个 agent 共用一个子工作项，或者把已经结束的子工作项重新打开、给新的尝试用的，即为违反本规定。
+'''
+
+[translations]
+zh = "e97fa716c83280e2147c050c070c8e84461e905a366d440a943eb5d67a277e03"

@@ -145,8 +145,7 @@ of the same source here and fails, with a note to write the number for a
 `parent`. What needs another source is statute's: the reference
 direction, the ranks of an override, an override by the private layer
 of a public repository, and whether a `parent` in another source exists.
-All of these are built, except for a domain's `parent` in another
-source.
+All of these are built.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository

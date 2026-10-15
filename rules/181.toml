@@ -1,0 +1,42 @@
+id = 181
+slug = "needs-decision-label"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+authority = ["asking"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep the label for a principal's decision only on items that wait for one"
+zh = "等委托人定的标签只挂在等委托人的工作项上"
+
+[text.statement]
+en = "Keep the label `needs-user` (parameter `work-items.label-needs-decision`, default `needs-user`) only on a work item that is still open and waits for a principal to look at or decide something, and take it off once the principal has decided or the item has moved to the status for a done attempt or to a status for canceled work, the one for an abandoned attempt included."
+zh = "标签 `needs-user` (参数 `work-items.label-needs-decision`，默认 `needs-user`) 只挂在还开着、等委托人看或定的工作项上；委托人定了，或者工作项转为完成的状态或取消类的状态 (包括放弃的状态)，就摘掉。"
+
+[text.reason]
+en = '''
+A principal finds what waits for them by this label ({@constitution:asking}). On items that need no principal, it leaves the principal to open them one by one to learn which really do.
+'''
+zh = '''
+委托人靠这个标签找要自己处理的事 ({@constitution:asking})。它挂在不需要委托人的工作项上，委托人就得一个个点进去，才知道哪些真要处理。
+'''
+
+[text.verification]
+en = '''
+The statuses are those of {@rule:224}. A work item that only collects others, as an index, does not take the label; what a principal is to review is labeled on the child work item.
+
+Violated when the label is on a closed work item, on one the principal has already decided or on an index work item, or when an open work item that waits for a principal's decision lacks it.
+'''
+zh = '''
+状态见{@rule:224}。只用来汇总其他工作项的索引工作项不挂这个标签；要委托人审的，挂在子工作项上。
+
+这个标签挂在已经关闭的工作项、委托人已经定了的工作项或者索引工作项上，或者等委托人定的开着的工作项上没有它的，即为违反本规定。
+'''
+
+[translations]
+zh = "8ff04e1b77b06abfa3f27309c96b15f61baa889fa48df84ac73b66019b8ce13f"
