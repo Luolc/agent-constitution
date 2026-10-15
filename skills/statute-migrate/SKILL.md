@@ -15,11 +15,6 @@ Questions for the person are collected in one place
 ([Questions](#questions)); ask them together, at most five at a time,
 each with its default, and go on with what they do not block.
 
-Some of what this skill uses is designed but not built yet. Each such
-place says so and names the command or key it waits for; when the
-command is missing, take the fallback given there and record in the
-pull request that you did.
-
 ## Files
 
 Every path the skill uses is in this table, and the text below names
@@ -29,7 +24,7 @@ files changes, this table is the one place to change.
 | Name | Path | Committed |
 | --- | --- | --- |
 | the global configuration | `$XDG_CONFIG_HOME/statute/config.toml` (`~/.config/statute/config.toml` by default) | no, the user's home |
-| the rule set | `statute.toml` at the top of the repository | yes |
+| the rule set | `statute.toml` at the top of the repository | yes, in the same commit as the compiled file (step g) |
 | the lock file | `statute.lock`, next to the rule set | yes |
 | the compiled file | `AGENTS.md`, next to the rule set | yes |
 | the local rules directory | `.statute/rules/` next to the rule set, or what `local-rules` in the rule set names | yes |
@@ -232,15 +227,15 @@ exclude = [
 `statute add` writes a domain to `domains` and a rule to `rules`, and
 `statute remove` writes a rule the defaults enable to `exclude`; add
 the comments afterwards. Set the parameters the mapping found in their
-tables (`[language]` and others).
+tables (`[language]` and others). A `personal` parameter, the language
+an agent writes to the person in, takes the repository's value there;
+the person's own value goes into the global configuration, which in a
+public repository reaches the private output only.
 
 Then show the person the three lists, with the reason on each line,
 and ask them to look them over (Q4). `statute explain --defaults`
 prints the three lists from the rule set as written; `statute explain
 <rule>` says why one rule is in or out.
-
-Not built yet: parameters. Until they are, leave the parameters'
-values in the local rules that need them.
 
 ## g. Lock, compile, check
 
@@ -287,12 +282,20 @@ Acceptance, before you ask for a review:
   the hook line, and a worktree added with `git worktree add` has the
   private output and the private links without any other command.
 
+Commit the rule set in the same commit as the compiled file, and no
+earlier: until then it stays in the working tree, uncommitted. Some
+environments read a rule set at the top of a repository as the sign
+that the repository has moved to statute and that its compiled file is
+all an agent there follows, and set aside the instructions from
+outside the repository. A rule set committed while the compiled file
+is still the old one would make an agent drop those instructions, the
+safety rules among them.
+
 The pull request carries the rule set, the lock file, the compiled
 file, the installed skills, the checks file, the local rules, the
 legacy copies and the statute ignore file. Its
-description holds the mapping, the three lists with their reasons, the
-answers to the questions, and each place where a fallback above was
-taken.
+description holds the mapping, the three lists with their reasons
+and the answers to the questions.
 
 ## Questions
 
