@@ -454,7 +454,7 @@ turned off (disabled), where it has these.
   needs. First a link to each rule that names the provision: its label
   in a pill (`text-xs`, `line-height-ui`, `radius-full`, padding
   `0 space-2`, `1px` of `border-subtle`, tabular figures, never
-  wrapped), the link as tall as a target. Under the pointer the pill
+  wrapped), the link at least a target wide and tall. Under the pointer the pill
   fills with `bg-hover`, its border turns to `border-strong` and its
   label to `accent`; pressed, `bg-active`. When rules name only a
   provision under it, a quiet button of their count ends the row,

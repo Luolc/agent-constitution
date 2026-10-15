@@ -236,10 +236,10 @@
 
 /* The rules under a provision that cite them, on a row of their own,
    smaller and muted, wrapping as it needs: a link for each, its label in
-   a pill, as tall as a target; then the rules that cite only a provision
-   under it, hidden, and the button of their count, with `circle-plus`
-   before it, which turns to `circle-minus` while they are shown
-   (layouts/_partials/rules/cites.html). */
+   a pill, at least a target wide and tall; then the rules that cite only
+   a provision under it, hidden, and the button of their count, with
+   `circle-plus` before it, which turns to `circle-minus` while they are
+   shown (layouts/_partials/rules/cites.html). */
 .constitution .cited-by {
   display: block;
   margin: .2em 0 .4em;
@@ -268,6 +268,10 @@
 /* Not underlined as the links in the text are, nor dimmed under the
    pointer as the theme dims every link. */
 .constitution .cites a.cites-rule[href] { text-decoration: none; opacity: 1; }
+.constitution .cites-rule {
+  justify-content: center;
+  min-inline-size: var(--t-target);
+}
 .constitution .cites-box {
   padding: 0 var(--t-space-2);
   border: 1px solid var(--t-border-subtle);
