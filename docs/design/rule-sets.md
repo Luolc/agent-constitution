@@ -128,9 +128,10 @@ brought in or dropped. When the rule set enables a superseded rule, the
 build warns and names its successors. For a rule listed in `rules` or a
 pack root in `packs`, one command, `statute upgrade
 --replace-superseded`, replaces the old ID with the new one in the rule
-set when there is one successor, and leaves the choice among several to
-the user; for a rule brought in by another, the warning names the rule that
-brings it in. An enabled repealed rule draws a warning too. These are
+set when there is one successor. When several rules together take its
+place, it leaves the entry to the user, who enables them all, leaving out
+any that does not apply; for a rule brought in by another, the warning
+names the rule that brings it in. An enabled repealed rule draws a warning too. These are
 warnings, not errors, since the rule set keeps working as it did.
 Downstream users do not have to follow the supersession chain by hand.
 
