@@ -73,7 +73,6 @@
   align-items: center;
   gap: var(--t-space-2) var(--t-space-4);
   inline-size: max-content;
-  min-inline-size: 100%;
   max-inline-size: var(--t-width-popover);
   box-sizing: border-box;
   margin: var(--t-space-1) 0 0;
