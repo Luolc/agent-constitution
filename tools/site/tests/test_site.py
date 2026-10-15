@@ -520,6 +520,12 @@ class SiteTest(unittest.TestCase):
     )
     self.assertIn('data-domain="demo-1" data-quadrant="global-private">', page)
     self.assertIn('href="#group-source-demo">Global private · demo</a>', page)
+    # demo:4, under this repo's domain 1, is filtered by that domain.
+    self.assertRegex(
+      page,
+      r'data-domain="1" data-quadrant="global-private">\n(<h\d[^\n]*\n)*'
+      r'<a class="rule-entry" href="\.\./rules/demo-4/"',
+    )
     demo = pages["rules/demo-2/index.html"]
     self.assertIn("demo:2 Demo rule Global private · demo Enabled", demo)
     self.assertIn("After rule R3 , see rule demo:2 .", demo)
