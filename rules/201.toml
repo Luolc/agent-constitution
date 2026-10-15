@@ -1,11 +1,12 @@
 id = 201
 slug = "reply-in-the-principals-language"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 249
 lang = "en"
 parent = 196
-default = "on"
+default = "off"
 authority = ["purpose"]
 constitution = ">=1"
 level = "user"
