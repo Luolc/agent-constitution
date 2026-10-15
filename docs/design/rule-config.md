@@ -462,7 +462,8 @@ A rule set written before default switches lists every rule it uses in
 `rules` and `packs`; under the defaults it may also get rules it never
 listed. The first `lock` after the switch lists them, and the move
 puts each in the second list or keeps it. The skill that guides the
-migration (not written yet) goes through the three lists in this order.
+migration, [statute-migrate](../../skills/statute-migrate/SKILL.md),
+goes through the three lists in this order.
 
 ## Where a rule is used
 
