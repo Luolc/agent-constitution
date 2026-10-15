@@ -406,6 +406,49 @@ fn a_lock_file_of_another_branch_is_stale() {
 }
 
 #[test]
+fn a_broken_lock_file_fails_rather_than_moving_a_source() {
+    let w = world("broken-lock");
+    ok(&w.run(&["init", "--private"]));
+    ok(&w.run(&["add", "R2"]));
+    let old = git(&w.r, &["rev-parse", "HEAD"]);
+    // The branch moves on with a rule the rule set does not enable, which
+    // leaves what it does enable as it was.
+    write(&w.r, "rules/3.toml", &rule(3, 1, "").1);
+    git(&w.r, &["add", "-A"]);
+    git(&w.r, &["commit", "-q", "-m", "rule 3"]);
+    git(&w.r, &["push", "-q", "origin", "main"]);
+    ok(&w.run(&["compile"]));
+    fails(&w.run(&["explain", "R3"]), "R3 does not exist");
+    let lock = read(&w.repo, "statute.lock");
+    let (constitution, sources) = lock.split_once("[[sources]]").unwrap();
+    let line = format!("commit = \"{old}\"\n");
+    assert!(sources.contains(&line), "{lock}");
+    // A source whose commit is not a string, then one without its commit:
+    // either way the lock file is named, and the head is not read.
+    for broken in ["commit = 42\n", ""] {
+        let sources = sources.replacen(&line, broken, 1);
+        write(
+            &w.repo,
+            "statute.lock",
+            &format!("{constitution}[[sources]]{sources}"),
+        );
+        for args in [&["explain", "R3"][..], &["compile"]] {
+            let run = w.run(args);
+            fails(&run, "statute.lock: error:");
+            assert!(run.stderr.contains("run `statute lock`"), "{}", run.stderr);
+        }
+    }
+    // `lock` writes the lock file anew, at the head.
+    ok(&w.run(&["lock"]));
+    let run = w.run(&["explain", "R3"]);
+    assert!(
+        run.stdout.contains("R3 is off by default"),
+        "{}",
+        run.stdout
+    );
+}
+
+#[test]
 fn the_lock_file_stands_in_for_a_missing_configuration() {
     let w = world("fallback");
     let (_, me) = source(&w.at, "me", &[domain(1), rule(4, 1, "")]);

@@ -84,7 +84,14 @@ impl Project {
     /// set can be tried before it is written.
     pub fn with_manifest(root: &Path, text: &str, env: &Env) -> (Option<Project>, Diagnostics) {
         let mut diags = Diagnostics::default();
-        let locked = locked_sources(&root.join(crate::lock::FILE));
+        let Some(locked) = locked_sources(
+            &root.join(crate::lock::FILE),
+            crate::lock::FILE,
+            env,
+            &mut diags,
+        ) else {
+            return (None, diags);
+        };
         let mut layers = env.layers.clone();
         if env.from_lock {
             layers.locked = locked.clone();
@@ -138,7 +145,10 @@ impl Project {
         let root = &project.root;
         let mut diags = Diagnostics::default();
         let shown = dir.join(private::MANIFEST).display().to_string();
-        let own = locked_sources(&dir.join(private::LOCK));
+        let path = dir.join(private::LOCK);
+        let Some(own) = locked_sources(&path, &path.display().to_string(), env, &mut diags) else {
+            return (None, diags);
+        };
         let fallback = if env.from_lock { &own[..] } else { &[] };
         let manifest = match project.manifest.with_private_from(text, fallback) {
             Ok(m) => m,
@@ -149,7 +159,14 @@ impl Project {
                 return (None, diags);
             }
         };
-        let mut locked = locked_sources(&root.join(crate::lock::FILE));
+        let Some(mut locked) = locked_sources(
+            &root.join(crate::lock::FILE),
+            crate::lock::FILE,
+            env,
+            &mut diags,
+        ) else {
+            return (None, diags);
+        };
         locked.extend(own);
         let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
         diags.0.retain(|d| !given.0.contains(d));
@@ -278,12 +295,29 @@ impl Project {
     }
 }
 
-/// The git sources the lock file at `path` records; none when it is
-/// missing or cannot be read.
-fn locked_sources(path: &Path) -> Vec<SourceSpec> {
-    std::fs::read_to_string(path)
-        .map(|text| crate::lock::sources(&text))
-        .unwrap_or_default()
+/// The git sources the lock file at `path`, named `shown` in messages,
+/// records; none when it is missing. With `env.from_lock`, a lock file
+/// that cannot be read is an error in `diags`, and the result `None`; the
+/// commands that write the lock file take it as missing.
+fn locked_sources(
+    path: &Path,
+    shown: &str,
+    env: &Env,
+    diags: &mut Diagnostics,
+) -> Option<Vec<SourceSpec>> {
+    let read = match std::fs::read_to_string(path) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Some(Vec::new()),
+        Err(e) => Err(format!("cannot read: {e}")),
+        Ok(text) => crate::lock::sources(&text),
+    };
+    match read {
+        Ok(sources) => Some(sources),
+        Err(_) if !env.from_lock => Some(Vec::new()),
+        Err(e) => {
+            diags.error(shown, format!("{e}; run `statute lock` to write it anew"));
+            None
+        }
+    }
 }
 
 /// Reads the git source `spec` at its commit: the one `locked` records

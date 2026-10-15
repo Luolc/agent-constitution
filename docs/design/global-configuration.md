@@ -212,7 +212,12 @@ directory.
   is not built yet.
 - `compile`, `check`, `explain` and `site` read each git source at the
   commit the lock file records; without a lock file or a line for the
-  source there, they take the head as `lock` would. A source whose
+  source there, they take the head as `lock` would. A lock file that is
+  there but cannot be read, or whose line for a git source lacks the
+  commit or has not exactly one of branch and tag, fails them instead,
+  naming the lock file, with a note to run `statute lock`; `lock` and
+  `upgrade` take such a file as missing and write it anew. This holds
+  for `private.lock` as for `statute.lock`. A source whose
   address or branch or tag is not the one the lock file records makes
   the lock file stale: they fail, with a note to run `statute lock`, and
   read no commit. They fetch only when the commit is missing from the

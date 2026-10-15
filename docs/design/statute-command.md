@@ -345,8 +345,9 @@ file. It prints the path of `index.html`.
 
 - **Files.** Plain HTML with one inline style sheet, which follows
   [Frontend](frontend.md) with the public site's tokens, and its icons
-  inlined: no script, no Hugo, no dependency beyond those statute
-  has. Each run builds the site
+  inlined; the index also inlines one short script, which the page
+  works without ([Frontend](frontend.md#in-the-code)). No Hugo, and no
+  dependency beyond those statute has. Each run builds the site
   anew: it removes the old `.statute/site/` first, but only when that
   directory holds statute's `.gitignore` (below), and otherwise writes
   nothing and fails. Nothing is written outside `.statute/site/` but
@@ -370,7 +371,19 @@ file. It prints the path of `index.html`.
   private. Each lists its sources, and each source its tree of domains
   with every node, enabled or not: its reference, title and status, and
   whether this rule set enables it, overrides it or leaves it out; a
-  one-of is a box that holds its options, the default marked. A
+  one-of is a box that holds its options, the default marked. A rule's
+  row also holds its statement, under its title, a size smaller and
+  muted, in the page's language or, marked as not translated, in the
+  rule's own, its placeholders filled as for nodes' pages (below). A
+  switch beside the filter shows the title and the statement, the title
+  alone, or the statement alone in the title's place, the first by
+  default; radio buttons and the style sheet do it. The script writes
+  the choice into the address as `view=title` or `view=statement`, and
+  nothing for the default, so that back and forward return to it, and
+  keeps it for the next index opened. The address decides the view, and
+  one without `view` shows the default; only when the index opens at
+  such an address does it show the view kept, and write it into that
+  address. A
   filter by kind of source, one that hides the rules the rule set does
   not enable, and one that shows superseded and repealed nodes, hidden
   by default, work through check boxes and the style sheet alone.
