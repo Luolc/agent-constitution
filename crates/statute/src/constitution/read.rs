@@ -39,6 +39,7 @@ const INDEX_SCHEMA: Schema = &[
     ("languages", Kind::List),
     ("title", Kind::Lang),
     ("front", Kind::Lang),
+    ("url?", Kind::Lang),
 ];
 const ARTICLE_SCHEMA: Schema = &[
     ("id", Kind::Str),
@@ -117,6 +118,7 @@ pub fn load(root: &Path) -> Result<Sources, Errors> {
         revision: field("revision"),
         title: texts(&index.data["title"]),
         front: texts(&index.data["front"]),
+        url: index.data.get("url").map(texts),
         layout,
         index,
         languages,
@@ -309,12 +311,12 @@ fn check_keys(
                             list(t.keys()),
                             list(langs)
                         )),
-                        _ if name == "title"
+                        _ if matches!(name, "title" | "url")
                             && t.values()
                                 .filter_map(Value::as_str)
                                 .any(|s| s.trim_matches('\n').contains('\n')) =>
                         {
-                            Some("`title` must be one line".to_string())
+                            Some(format!("`{name}` must be one line"))
                         }
                         _ => None,
                     }

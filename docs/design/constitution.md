@@ -61,6 +61,10 @@ constitution/2026-10/
   edition after it (see Numbering).
 - `[front]`: the Markdown between the title and the first article (draft
   notice, `## Preamble` and its text), per language. It may cite.
+- `[url]`, optional: the address of the full version on a public site,
+  one line per language, every language or none. It is the edition's
+  own page, which stays when later editions come, and the version for
+  agents gives it (below); a fork that publishes elsewhere gives its own.
 
 An article is a directory `articles/<NN>-<id>/`: its number,
 two digits from `01`, a hyphen and its ID. In it, `article.toml` holds
@@ -206,7 +210,7 @@ space (limae 0.13.3, read 2026-10). Section numbers are bold; an item
 number is bold inside its parentheses, because limae asks for a space
 between `**` and a parenthesis.
 
-Each output starts with a plain-text paragraph, in its own language:
+The full version starts with a plain-text paragraph, in its own language:
 generated file, do not edit it, edit the sources; and the `revision`,
 followed by `(draft)` (`(草案)`) while `status` is `draft`, and the
 language; in the full version, when a part has the
@@ -226,25 +230,20 @@ it and to an agent drafting an amendment, who reads the full version. So
 the build writes a second file per language, `constitution.<lang>.agent.md`,
 which differs from the full version in this:
 
-- The header line says it is the version for agents, without the text of
-  the provisions written for human readers.
+- It has no header line: it starts with the title. That it is generated
+  is kept by the checks (`constitution build --check`), not by a note in
+  it.
 - `[front]` (the draft notice and the preamble) is left out, so in the
   full version each heading in it, `## Preamble`, has the asterisk after
-  it. In its place
-  is a note of the build script's own, one sentence per language in
-  `LANGUAGES`: that this is the version for agents, while `index.toml` is
-  `draft` that the constitution is a draft that may be used on a trial
-  basis but is not final, once `active`
-  that every agent must follow it; that the preamble and the text of the
-  provisions written for human readers, on how the constitution is
-  organized and amended, are left out, with only a pointer to the full
-  version in their place; and that before changing the constitution or the
-  tools that build it, an agent reads the full version, named by its path.
-  It is not the text of the constitution (see [File structure](file-structure.md)).
+  it. In its place is one line of the build script's own, in the words
+  `LANGUAGES` gives each language: the full version's address,
+  `Full text: <url>.` (`完整版：<url>。`), when `index.toml` has a `[url]`,
+  and what the mark of a left-out provision means, when one is marked
+  (`… marks a provision whose text is left out here.`); with neither,
+  no line. It is not the text of the constitution (see [File structure](file-structure.md)).
 - A section or item with `audience = "maintainers"` keeps its number and
-  shows a note in place of its text: `-   **§2** (see the full text)`,
-  `-   **第二款** (见完整版)`; a repealed one shows its repealed note as
-  usual. In the full version the same provision keeps its text and has an
+  shows `…` in place of its text: `-   **§2** …`, `-   **第二款** …`; a
+  repealed one shows its repealed note as usual. In the full version the same provision keeps its text and has an
   asterisk after its number, `**§2**<sup class="omitted">*</sup>`, which
   the header line explains.
 - There are no anchors and no link definitions: a citation is its label

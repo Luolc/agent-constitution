@@ -329,10 +329,6 @@ fn a_repository_draws_on_the_global_first_party_source() {
     ok(&run);
     let agents = read(&w.repo, "AGENTS.md");
     assert!(agents.contains("Do the thing 2."), "{agents}");
-    assert!(
-        agents.contains(&format!("(`{} at {commit}`)", w.r_address)),
-        "{agents}"
-    );
     // statute reads the commit's files, never a work tree of the clone.
     assert!(
         w.home
