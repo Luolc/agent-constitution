@@ -1,12 +1,12 @@
 id = 22
 slug = "statute-release-tag-check"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 21
 lang = "en"
 parent = "R14"
-default = "on"
-requires = ["R58"]
+default = "off"
 authority = ["discriminating-checks", "evidence.facts"]
 constitution = ">=1"
 level = "project"

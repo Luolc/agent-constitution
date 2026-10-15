@@ -1,12 +1,11 @@
 id = 11
 slug = "private-search-before-push"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = "R13"
 default = "on"
-requires = ["R51"]
 authority = ["discriminating-checks", "sensitive-info"]
 constitution = ">=1"
 level = "project"
@@ -17,7 +16,7 @@ uses = ["instructions"]
 en = "Search what you push for private material, and prove each search reads"
 
 [text.statement]
-en = "Before a push, search the diff, the commit messages and the pull request text for each class of private material that {@rule:R51} lists, and run each search once on a file where it must match."
+en = "Before a push, search the diff, the commit messages and the pull request text for each class of private material that a public repository must not hold, and run each search once on a file where it must match."
 
 [text.reason]
 en = '''

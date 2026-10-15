@@ -1,12 +1,11 @@
 id = 3
 slug = "design-translation-check"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = "R232"
 default = "on"
-requires = ["R21"]
 authority = ["discriminating-checks"]
 constitution = ">=1"
 level = "project"

@@ -1,12 +1,11 @@
 id = 10
 slug = "made-up-values"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = "R13"
 default = "on"
-requires = ["R27"]
 authority = ["personal-info", "sensitive-info"]
 constitution = ">=1"
 level = "project"

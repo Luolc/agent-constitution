@@ -228,7 +228,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R138 On a machine you share with others, reproduce a problem that only shows under heavy load in a container with capped CPU (`docker run --cpus 1 …`, for example), keeping the 1-minute load average no higher than the machine's CPU count, or, where you cannot, record it as open work, say what isolated environment it needs, and leave the decision to a principal.
 - L8 Commit no instruction file compiled from a real person's rule set; the compiled outputs committed here are this repository's own `AGENTS.md` and outputs built from made-up rule sets.
 - L10 In test data and in examples, use only made-up values: domains under `example.test`, addresses from 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 and 2001:db8::/32, and fictional names.
-- L11 Before a push, search the diff, the commit messages and the pull request text for each class of private material that R51 lists, and run each search once on a file where it must match.
+- L11 Before a push, search the diff, the commit messages and the pull request text for each class of private material that a public repository must not hold, and run each search once on a file where it must match.
 - R32 Treat a release, any act that makes a version or artifact available, as an item of Art. V §1, which goes through a principal.
 - R33 Treat a breaking change that causes downtime of a running service as an item of Art. V §1, which goes through a principal.
 - R34 Treat publishing private material, rewriting shared history, deleting data without a copy, acting on someone's accounts and speaking for someone to third parties as irreversible external effects (Art. V §1(3)).
@@ -249,10 +249,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R95 Do not hold back a pull request that is ready to merge only because CI is failing on the main branch.
 - R205 When the implementer and the reviewer of a pull request use models of the same family, say so in its description without naming a model, and in any question about it put to a principal.
 - R211 Where a repository's instructions do not say whether a merge waits for CI, merge only after the required check has passed on the approved head; where they say a merge does not wait, do not merge when the summary job of CI has already failed on the approved head.
-- L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` then publishes to crates.io; a pull request that raises the version is not a release.
-- L22 Push a tag `statute-v<version>` only on a commit for which `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution` exits 0.
-- L23 For a new version of statute, raise only the patch number (after 0.1.0 come 0.1.1, 0.1.2 and so on), and raise the minor or major number only when a person says so for that version.
-- L24 The lead of a job may push, without asking a person, the tag of a version of statute that raises only the patch number of the last release, on a commit that L22 allows; every other release of statute, a minor or major one included, needs a person's yes, given at the time or written down in advance for that version.
+- L21 Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release.
 - R1 When you report work as done, whether to another agent or to a person, attach an acceptance record to the report.
 - R27 Build every fixture from made-up data only, with no effect outside the test environment.
 - R46 Change instruction files in a change of their own, never together with changes to other files.
@@ -279,7 +276,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
   - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
   - the site's inputs (`web/`, `rules/`, the constitution, `docs/design/`): `git submodule update --init` once, then `uv run site-rules`, `hugo-0.167.0 -s web` and `uv run check-site-anchors site`.
 - L17 In `.github/workflows/`, run every job on `ubuntu-24.04`, and pin every action to a commit SHA.
-- L18 Count `statute.toml`, `statute.lock`, `statute-checks.toml`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository, besides those R46 names.
+- L18 Count `statute.toml`, `statute.lock`, `statute-checks.toml`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too.
 - R68 Put what is still needed after the task ends, such as a decision, knowledge to keep or work handed over to a later agent, into a repository through review, never only into a conversation.
 - R69 Never write to the cross-session memory an agent tool keeps for itself; keep a lesson that must last in a repository, through review.
 - R74 Before you write into a repository a fact you have only from someone else's account, check that it holds at its source and name in the change what you read; when it does not hold there yet, write an open item with an owner and a condition that confirms it instead of the fact.
@@ -300,7 +297,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - L4 Keep the sources of an edition of the constitution in `constitution/<edition>/`: its `index.toml`, and for each article a directory `articles/<NN>-<id>/` that holds `article.toml` and one `<NN>-<id>.toml` per section with its items inside it; write an article's or section's number only in these name prefixes.
 - L5 Never edit a file in `constitution/<edition>/generated/` by hand: change the sources or statute's build of them, run `cargo run --locked --quiet -p statute -- constitution build`, and commit the sources and the generated files together.
 - L9 Create none of `behavior/`, `cases/` and `proposals/` before a change that builds what they hold: real-agent scenarios, decided cases and the adoption pipeline.
-- L12 In this repository's files, point to no rule, file or document outside it that a public reader cannot see: write a rule that is needed here, and leave out one that is not.
 - R50 Have a repository's commit hooks scan the staged changes for credentials at every commit.
 - R70 Change your local main branch only by fast-forwarding it to the remote main branch; never commit on it.
 - R210 When you create a file, run `git add` on it and confirm that `git ls-files` lists it before you run checks.
@@ -324,6 +320,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R170 Where work is divided among agents the way fleet does, as a research worker, change no repository.
 - R171 Where work is divided among agents the way fleet does, as a worker, give in your report what you did, its effect, why the task is done or abandoned, its metrics, the pull request number, the approved SHA, the merge commit, the checks run and the attempt number of the CI run, and for each follow-up left who takes it and when.
 - R227 Where work is divided among agents the way fleet does, as the agent responsible for a job, give a research worker no reviewer.
+- L25 New versions of statute raise only the patch number (0.1.1, 0.1.2, …); the lead of a job may push such a patch release's tag without asking a person; a minor or major version needs a person's yes for that version, given at the time or written down in advance.
 - R84 Write a regression test only for a bug that actually occurred.
 - R85 Put a regression test only with the tests of the module where the bug occurred.
 - R86 Write no test of what code does with input that is plainly unreasonable.

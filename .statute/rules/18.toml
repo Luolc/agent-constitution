@@ -1,12 +1,11 @@
 id = 18
 slug = "instruction-paths"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = "R15"
 default = "on"
-requires = ["R46"]
 authority = ["separate-instruction-changes"]
 constitution = ">=1"
 level = "project"
@@ -17,7 +16,7 @@ uses = ["instructions", "review"]
 en = "Count statute's files as instruction files"
 
 [text.statement]
-en = "Count `statute.toml`, `statute.lock`, `statute-checks.toml`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository, besides those {@rule:R46} names."
+en = "Count `statute.toml`, `statute.lock`, `statute-checks.toml`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too."
 
 [text.reason]
 en = '''

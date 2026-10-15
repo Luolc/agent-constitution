@@ -1,11 +1,12 @@
 id = 23
 slug = "statute-patch-by-default"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 25
 lang = "en"
 parent = "R14"
-default = "on"
+default = "off"
 authority = ["list-defaults.tightening"]
 constitution = ">=1"
 level = "project"

@@ -47,7 +47,8 @@ rules = [
   "R56",
   # main is protected and takes changes only through reviewed pull requests.
   "R57",
-  # A crate published or a site deployed is a release, from a commit CI passed on its first attempt.
+  # A crate published or a site deployed is a release, from a commit CI passed on its first attempt;
+  # L21 names the check that tells it for statute.
   "R58",
   # The merging agent reads CI on the merge commit.
   "R59",

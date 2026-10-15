@@ -1,12 +1,12 @@
 id = 24
 slug = "statute-patch-release-authorized"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 25
 lang = "en"
 parent = "R14"
-default = "on"
-requires = [21, 22]
+default = "off"
 authority = ["advance-authorization.listed-items", "advance-authorization.as-written"]
 constitution = ">=1"
 level = "project"

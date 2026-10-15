@@ -1,11 +1,11 @@
 id = 12
 slug = "no-outside-pointers"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "repealed"
 lang = "en"
 parent = "R16"
-default = "on"
+default = "off"
 authority = ["division-of-instructions.project-instructions"]
 constitution = ">=1"
 level = "project"
