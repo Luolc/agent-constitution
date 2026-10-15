@@ -1,6 +1,6 @@
 id = 80
 slug = "design-with-the-code"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,14 +29,14 @@ zh = '''
 
 [text.verification]
 en = '''
-Code here is every file of the repository other than the design and the instruction files. A change to instruction files is outside this rule: {@rule:46} keeps it apart from the design, so the two cannot share a change, and a repository that wants the design to follow such a change chooses {@rule:81} instead.
+Code here is every file of the repository other than the design and the instruction files. A change to instruction files is outside this rule: {@rule:280} keeps it apart from the design, so the two cannot share a change, and a repository that wants the design to follow such a change chooses {@rule:81} instead.
 
 For each thing the change adds, removes or alters in how the repository works, the design says so after the change: a new format, field, command or check has its place in the section that covers it; one that is gone or changed is no longer described the old way, in any file of the design. The parts that track the design's own state follow too: a status line, a list of what a planned part will replace, open questions that the change settles.
 
 Violated when a merged change to the code leaves a section of the design describing the repository as it was before the change.
 '''
 zh = '''
-这里的代码，指仓库里设计和指令文件以外的所有文件。修改指令文件的变更不受本规定约束：{@rule:46} 让它与设计分开，两者无法放在同一个变更里；希望设计也跟上这类变更的仓库，改选 {@rule:81}。
+这里的代码，指仓库里设计和指令文件以外的所有文件。修改指令文件的变更不受本规定约束：{@rule:280} 让它与设计分开，两者无法放在同一个变更里；希望设计也跟上这类变更的仓库，改选 {@rule:81}。
 
 变更在仓库运作方式上增加、删除或改动的每一项，变更之后的设计都写到了：新的格式、字段、命令或检查，在讲它的那一节里有它的位置；已经去掉或改掉的，设计的任何文件都不再按旧的样子描述。记录设计自身状态的部分也一并更新：状态行、计划中的部分将取代什么的清单、这个变更已经解决的待定问题。
 
@@ -44,4 +44,4 @@ zh = '''
 '''
 
 [translations]
-zh = "e6b1dcd1e3833f5005f6f77c9b7167ebfd3880c56921bc5c949170e5487bebdc"
+zh = "de18ace06ecf29fa9954eb4a53455995920ea13da2bc7ff2f0c68b1bf6953514"
