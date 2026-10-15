@@ -144,8 +144,8 @@ build script that alters only their numbering or layout is ordinary, and its
 pull request shows their diff so a person can glance at the format; one that
 alters their wording changes the text and is an amendment
 (`protected-text`). The notes the build script writes itself (the header
-line, the repealed note, and in the version for agents the opening note and
-the note in place of a provision's text) are not the text of the
+line, the repealed note, and in the version for agents the line under the
+title and the mark in place of a provision's text) are not the text of the
 constitution: they change as the script does, by an ordinary change
 (`ordinary-tooling`), and may only say what the text already says (that
 the constitution binds every agent, `terms.agent`), point to the full

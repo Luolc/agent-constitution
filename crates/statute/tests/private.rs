@@ -283,13 +283,9 @@ fn three_sources_from_init_to_check() {
     ok(&run);
     let public = read(&dir, "AGENTS.md");
     assert!(!public.contains("- me:4 "), "{public}");
-    assert!(
-        public.ends_with("\n---\n\nIf `.statute/AGENTS.full.md` exists, read it and follow it: it is this file with the repository's private rules added.\n"),
-        "{public}"
-    );
+    assert!(!public.contains("AGENTS.full.md"), "{public}");
     let full = read(&dir, ".statute/AGENTS.full.md");
-    // The full text is the public file with me:4 at its place under R1,
-    // and without the line that points to it.
+    // The full text is the public file with me:4 at its place under R1.
     assert!(
         full.contains("\n- me:4 Do the thing 4, after R2.\n"),
         "{full}"

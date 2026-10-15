@@ -3,12 +3,13 @@
   editions/<edition>/, the address of this edition that a later one does
   not take, and its version for agents, constitution.<lang>.agent.md, as
   agent/ (both found by
-  layouts/_partials/constitution/source.html). Each file
-  starts with the build's header line, a blank line and the `# ` title:
-  the header line is dropped, the title becomes the page's, and the
-  layouts set it above the text (layouts/home.html, layouts/page.html).
-  The page's params hold the length of the text the page gives, the file
-  without its header line: its characters, its words split on white space
+  layouts/_partials/constitution/source.html). The full version
+  starts with the build's header line, a blank line and the `# ` title,
+  the version for agents with the title: the header line is dropped, the
+  title becomes the page's, and the layouts set it above the text
+  (layouts/home.html, layouts/page.html). The page's params hold the
+  length of the text the page gives, the file from its title on: its
+  characters, its words split on white space
   and its SHA-256, which tells whether data/lengths.json counted this
   text. It runs once for each language of the site. */ -}}
 {{- .EnableAllLanguages }}
@@ -18,13 +19,18 @@
   {{- $file := printf "constitution.%s%s.md" $lang $version }}
   {{- $markdown := (partial "constitution/source.html" $file).Content }}
   {{- $lines := split $markdown "\n" }}
-  {{- if or (lt (len $lines) 3) (not (strings.Contains (index $lines 0) "constitution build")) (not (strings.HasPrefix (index $lines 2) "# ")) }}
-    {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" $file }}
+  {{- if eq $version "" }}
+    {{- if or (lt (len $lines) 3) (not (strings.Contains (index $lines 0) "constitution build")) (not (strings.HasPrefix (index $lines 2) "# ")) }}
+      {{- errorf "constitution/%s: does not start with the build's header line, a blank line and the `# ` title" $file }}
+    {{- end }}
+    {{- $lines = after 2 $lines }}
+  {{- else if not (strings.HasPrefix (index $lines 0) "# ") }}
+    {{- errorf "constitution/%s: does not start with the `# ` title" $file }}
   {{- end }}
-  {{- $text := delimit (after 1 $lines) "\n" }}
+  {{- $text := delimit $lines "\n" }}
   {{- $pages = merge $pages (dict (cond (eq $version "") "full" "agent") (dict
-    "title" (strings.TrimPrefix "# " (index $lines 2))
-    "body" (delimit (after 3 $lines) "\n")
+    "title" (strings.TrimPrefix "# " (index $lines 0))
+    "body" (delimit (after 1 $lines) "\n")
     "length" (dict
       "characters" (strings.RuneCount $text)
       "words" (len (findRE `\S+` $text))

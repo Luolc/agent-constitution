@@ -139,6 +139,11 @@ class MainTest(unittest.TestCase):
         md = (ROOT / path).read_text(encoding="utf-8")
         yield lang, version, count_tokens.counted(md)
 
+  def test_text_from_title(self):
+    for md in ("Generated.\n\n# Title\n\nText.\n", "# Title\n\nText.\n"):
+      with self.subTest(md=md):
+        self.assertEqual(count_tokens.counted(md), "# Title\n\nText.\n")
+
   def test_tokens_not_counted(self):
     for name, environ in (
       ("no credential", {}),

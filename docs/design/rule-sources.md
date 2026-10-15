@@ -315,12 +315,9 @@ AGENTS.override.md -> .statute/AGENTS.full.md
   `statute compile` warns of a `CLAUDE.md`
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
 - OpenCode is not supported yet.
-- The committed `AGENTS.md` ends with one fixed line, the same in every
-  public repository, that tells an agent to read `.statute/AGENTS.full.md`
-  when it exists. The path is in backticks, so that Claude Code does not
-  import it as an `@` path. It is a fallback for an agent that finds
-  neither link: it works only when the model goes and reads the file.
-  The full text leaves the line out.
+- The committed `AGENTS.md` does not point to `.statute/AGENTS.full.md`:
+  an agent that reads a link would read the full text twice, and one
+  that finds neither link gets the public rules.
 
 The two links are ignored through `.git/info/exclude`, never through a
 `.gitignore`: Grok skips an instruction file that a `.gitignore`
