@@ -134,9 +134,13 @@ fn repository(dir: &Path, git: &Git) -> Result<(PathBuf, bool), String> {
         ));
         let _ = std::fs::remove_dir_all(&temp);
         let mut cmd = self::git();
-        cmd.args(["clone", "--bare", "--quiet", &git.address])
+        // `--`: an address is never read as an option.
+        cmd.args(["clone", "--bare", "--quiet", "--", &git.address])
             .arg(&temp);
-        run(cmd, &format!("clone {}", git.address))?;
+        if let Err(e) = run(cmd, &format!("clone {}", git.address)) {
+            let _ = std::fs::remove_dir_all(&temp);
+            return Err(e);
+        }
         if let Err(e) = std::fs::rename(&temp, &target) {
             let _ = std::fs::remove_dir_all(&temp);
             if !target.exists() {
@@ -158,6 +162,7 @@ fn fetch(repo: &Path, address: &str) -> Result<(), String> {
         "fetch",
         "--quiet",
         "--force",
+        "--",
         address,
         "+refs/heads/*:refs/heads/*",
         "+refs/tags/*:refs/tags/*",
@@ -252,10 +257,17 @@ pub fn materialize(
                 fetch(&repo, &git.address).map_err(&err)?;
             }
             if !has(&repo, commit) {
-                return Err(err(format!(
-                    "commit {commit}, which the lock file records, is not in {}",
-                    git.address
-                )));
+                return Err(err(if own {
+                    format!(
+                        "commit {commit}, which the lock file records, is not in {}",
+                        git.address
+                    )
+                } else {
+                    format!(
+                        "commit {commit}, which the lock file records, is not in the clone {}; run `git fetch` there",
+                        repo.display()
+                    )
+                }));
             }
             commit.to_owned()
         }

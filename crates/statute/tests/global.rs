@@ -474,6 +474,16 @@ fn a_clone_of_the_users_own_is_read_as_its_last_fetch_left_it() {
     ok(&statute(&home, &repo, &["add", "R2"]));
     assert!(read(&repo, "statute.lock").contains(&fetched));
     assert!(!home.join(".statute/repos").exists());
+    // A recorded commit the clone lacks is fetched by the user, there.
+    let lock = read(&repo, "statute.lock").replace(&fetched, &"0".repeat(40));
+    std::fs::write(repo.join("statute.lock"), lock).unwrap();
+    fails(
+        &statute(&home, &repo, &["compile"]),
+        &format!(
+            "is not in the clone {}; run `git fetch` there",
+            work.display()
+        ),
+    );
     // A clone of another address is refused.
     write(
         &home,
