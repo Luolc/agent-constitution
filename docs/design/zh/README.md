@@ -1,4 +1,4 @@
-<!-- en-sha256: 5cd22bf480354459adbe671fda4485e50490a1eabd40e92eb8529976986e4026 -->
+<!-- en-sha256: b269a828be6930cad1416e30d86b891248cb841ea9ada51ae868d3cdaa4d5d4e -->
 # agent-constitution 设计
 
 状态：草案。这是本仓唯一的一份设计，由下面列出的几个文件组成。宪法本身从它的版目录 `constitution/2026-10/` 下的 `index.toml` 和 `articles/` 构建成两个版本：[英文版](../../../constitution/2026-10/generated/constitution.en.md)、[中文版](../../../constitution/2026-10/generated/constitution.zh.md)；本设计只按 ID 引用宪法 (见[源文件格式的 ID 一节](source-formats.md#ids))，从不复述它的内容。
@@ -17,6 +17,7 @@
 - [Skill](skills.md)：skill 的目录结构。
 - [编译](compilation.md)：怎样构建指令文件。
 - [静态网站](static-site.md)：Hugo 网站及其部署。
+- [前端](frontend.md)：网站页面的设计 token、图标、动效和组件，以及改动页面时的截图与审查；尚未实现。
 - [检查程序、fixture 与反馈](checkers.md)：检查程序、fixture、加载验证，以及预留的反馈回路。
 - [修正案与发布](amendments-and-releases.md)：批准修正案、发布与版本号。
 - [fleet 与迁移](fleet-and-migration.md)：与 fleet 的关系，以及怎样从手写的指南迁移过来。
