@@ -601,6 +601,13 @@ fn site_draws_the_tree_by_level() {
         edit(domain(11), "default = \"off\"", "parent = 9"),
     );
     put(&dir, "r/rules", rule(12, 10, ""));
+    // A third level, under domain 2.
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(13), "default", "parent = 2\ndefault"),
+    );
+    put(&dir, "r/rules", rule(14, 13, ""));
     let r = statute(&dir, &["site"]);
     assert_eq!(r.code, 0, "{}", r.stderr);
     let index = read(&dir, ".statute/site/index.html");
@@ -621,6 +628,23 @@ fn site_draws_the_tree_by_level() {
         "{deep}"
     );
     assert!(deep.contains("<span class=\"marks\"><span class=\"mark dot\" role=\"img\" aria-label=\"off by default\""), "{deep}");
+    // A third level goes a heading deeper and writes its whole path; its
+    // block has its row alone, the one that sticks.
+    let third = group(&index, "R/14.html");
+    assert!(
+        third.starts_with(
+            "<h6 class=\"group deep\"><a href=\"R/13.html\" aria-label=\"R13 Domain 1, Domain 2, Domain 13\">"
+        ),
+        "{third}"
+    );
+    assert_eq!(
+        third.matches("<span class=\"group-part\"").count(),
+        3,
+        "{third}"
+    );
+    let block = &index[..index.find("R/14.html\"").unwrap()];
+    let block = &block[block.rfind("<div class=\"block\">").unwrap()..];
+    assert_eq!(block.matches("class=\"group ").count(), 1, "{block}");
     // A rule under a domain that is an option of a one-of has that
     // domain in its path.
     assert!(group(&index, "R/12.html").contains("aria-label=\"R10 Domain 1, Domain 10\""));
@@ -1014,6 +1038,12 @@ const state = () => [
   document.querySelector("details.menu[data-field=enabled] .value").textContent,
   document.querySelector(".none").hidden ? "-" : "none",
   document.querySelector("details.legend").open ? "open" : "folded",
+  ["details.menu", "details.legend"]
+    .map((d) => document.querySelector(`${d} > summary`).getAttribute("aria-expanded"))
+    .join("/"),
+  Array.from(document.querySelectorAll("summary")).every((s) => document.getElementById(s.getAttribute("aria-controls")))
+    ? "controls"
+    : "no controls",
 ];
 const done = (r) => document.body.setAttribute("data-probe", r.join(" | "));
 addEventListener("load", () => {
@@ -1029,18 +1059,31 @@ addEventListener("load", () => {
     let page = dir.join("probe.html");
     std::fs::write(&page, index.replace("</body>", probe)).unwrap();
     let run = |query: &str| probe_run(&chrome, &dir, &page, query);
-    assert_eq!(run(""), "4 rules | 4 | 3/5 | All | - | open");
+    // Each summary says whether it is open and what it opens.
+    assert_eq!(
+        run(""),
+        "4 rules | 4 | 3/5 | All | - | open | false/true | controls"
+    );
     assert_eq!(
         run("?enabled=off"),
-        "1 rules | 1 | 3/5 | not enabled | - | open"
+        "1 rules | 1 | 3/5 | not enabled | - | open | false/true | controls"
     );
-    assert_eq!(run("?q=secret"), "1 rules | 1 | 3/5 | All | - | open");
-    assert_eq!(run("?status="), "0 rules | 0 | None | All | none | open");
+    assert_eq!(
+        run("?q=secret"),
+        "1 rules | 1 | 3/5 | All | - | open | false/true | controls"
+    );
+    assert_eq!(
+        run("?status="),
+        "0 rules | 0 | None | All | none | open | false/true | controls"
+    );
     assert_eq!(
         run("?status=&q=x#clear"),
-        "0 rules | 0 | None | All | none | open | 4 rules | 4 | 3/5 | All | - | open | -"
+        "0 rules | 0 | None | All | none | open | false/true | controls | 4 rules | 4 | 3/5 | All | - | open | false/true | controls | -"
     );
     // Folded, the legend stays folded on the next load.
     run("#fold");
-    assert_eq!(run(""), "4 rules | 4 | 3/5 | All | - | folded");
+    assert_eq!(
+        run(""),
+        "4 rules | 4 | 3/5 | All | - | folded | false/false | controls"
+    );
 }

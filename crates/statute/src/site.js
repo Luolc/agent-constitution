@@ -136,6 +136,16 @@
     changed();
   };
 
+  // Each summary says whether its details are open, kept in step as
+  // they open and close.
+  const expanded = (details) => {
+    details.querySelector("summary").setAttribute("aria-expanded", String(details.open));
+  };
+  for (const details of document.querySelectorAll("details")) {
+    expanded(details);
+    details.addEventListener("toggle", () => expanded(details));
+  }
+
   for (const menu of menus) {
     const field = menu.dataset.field;
     for (const hidden of menu.querySelectorAll("[hidden]")) hidden.hidden = false;

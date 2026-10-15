@@ -182,7 +182,7 @@ fn words(lang: &str) -> Words {
             all: "全选",
             every: "全部",
             nothing: "无",
-            none: "全不选",
+            none: "不选",
             search: "搜索领域",
             find: "搜索",
             find_placeholder: "编号、标题或要求",
@@ -839,9 +839,9 @@ fn group(site: &Site, source: &Source, groups: &[&Node]) -> String {
         );
         names.push(title);
     }
-    // Under the source's `h3`: a group of the first level `h4`, a deeper
-    // one `h5`.
-    let level = 4 + usize::from(groups.len() > 1);
+    // Under the source's `h3`, one level deeper per group of the path, to
+    // `h6` at most.
+    let level = (3 + groups.len()).min(6);
     let band = if groups.len() > 1 { "deep" } else { "top" };
     let dot = groups.last().map_or_else(
         || "<span class=\"mark\"></span>".to_owned(),
@@ -1198,7 +1198,7 @@ fn controls(project: &Project, l: &Lang) -> String {
         };
         let _ = write!(
             out,
-            "<div class=\"control\"><span class=\"control-label\" id=\"label-{field}\">{label}</span><details class=\"menu\" data-field=\"{field}\" data-all=\"{}\" data-none=\"{}\"><summary aria-labelledby=\"label-{field} value-{field}\"><span class=\"value\" id=\"value-{field}\">{shown}</span>{}</summary>\n<div class=\"menu-panel\" role=\"group\" aria-label=\"{label}\">",
+            "<div class=\"control\"><span class=\"control-label\" id=\"label-{field}\">{label}</span><details class=\"menu\" data-field=\"{field}\" data-all=\"{}\" data-none=\"{}\"><summary aria-labelledby=\"label-{field} value-{field}\" aria-controls=\"menu-{field}\"><span class=\"value\" id=\"value-{field}\">{shown}</span>{}</summary>\n<div class=\"menu-panel\" id=\"menu-{field}\" role=\"group\" aria-label=\"{label}\">",
             w.every,
             w.nothing,
             icon(CHEVRON_DOWN, "")
@@ -1417,7 +1417,7 @@ fn legend(w: &Words) -> String {
         (places, w.slots.to_owned()),
     ];
     let mut out = format!(
-        "<details class=\"legend\" open><summary>{}{}</summary>\n<dl>\n",
+        "<details class=\"legend\" open><summary aria-controls=\"legend-list\">{}{}</summary>\n<dl id=\"legend-list\">\n",
         icon(CHEVRON_RIGHT, ""),
         w.legend_name
     );

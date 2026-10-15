@@ -220,7 +220,7 @@ heading) stays in em, a multiple of the text size.
 | Token | Value | Use |
 | --- | --- | --- |
 | `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
-| `width-label` | `3.2em` | The column of the labels in the list of the rules. |
+| `width-label` | `3.2em` | The column of the labels in the list of the rules, at least. |
 | `width-mark` | `1.1em` | Each of the four places of a row's marks in that list. |
 | `size-dot` | `0.6em` | The dot of on or off by default. |
 
@@ -443,7 +443,8 @@ turned off (disabled), where it has these.
   can be linked; there is no Apply button. Escape, a click outside or
   the focus leaving it closes it. On the local site, which must work
   without its script, the check boxes apply at once through the style
-  sheet, with no primary button; the script adds the rest.
+  sheet, with no primary button, a domain's box holding only the rules
+  right in that domain; the script adds the rest.
 - **The view of the list**, after the filter in its bar: what each
   row of the table of rules shows. A segmented control, the word Show /
   「显示」 in `text-sm` and `text-muted`, then three segments in one box
@@ -466,7 +467,7 @@ turned off (disabled), where it has these.
   own, its segments sharing it.
 - **The table of rules**, as ESLint's list of rules is a table: a
   head, then one row a rule, three columns, the label (`width-label`,
-  `text-muted`, aligned to the end), the title, cut to the row with an
+  or the widest label where that is wider, `text-muted`, aligned to the end), the title, cut to the row with an
   ellipsis, and the marks; the head names the first two, `text-sm`,
   `weight-medium`, `text-muted`, over a line of `border-strong`. Every
   row is at least as tall as a target, with a hairline of
@@ -762,6 +763,8 @@ it opens at an address without one. Not built yet, and what each replaces:
   quadrant in the list, are boxes of one look; the tags of
   [Components](#components) replace them. A one-of whose options are
   off keeps its box in `border-strong`.
+- On the public site the column of the labels is `width-label` wide,
+  however wide its labels.
 - The local site's pages load no font and set the text in the local
   serif fonts.
 

@@ -389,7 +389,9 @@ file. It prints the path of `index.html`.
   superseded and repealed left out by default; the defaults; the use;
   the domain; the kind of source; and whether this rule set enables the
   rule. The style sheet applies the boxes at once, so the filter works
-  without the script, which writes the filter into the address and adds
+  without the script, a domain's box then holding only the rules right
+  in that domain; the script checks or clears the domains under a
+  domain with it, writes the filter into the address and adds
   All and None, a search of the rows' text, Clear filters and the
   number of rules shown. The legend above it folds, and stays as the
   reader left it.

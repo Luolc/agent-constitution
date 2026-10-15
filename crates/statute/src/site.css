@@ -342,15 +342,15 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 }
 
 /* The table of a source's rules: a grid of four columns, the label
-   (`width-label`), the title, the four places of the marks
+   (at least `width-label`, as wide as the widest label), the title, the four places of the marks
    (`width-mark` each) and whether the rule set enables a rule, as wide
    as its widest; each row a subgrid of it, so that every column lines up
    from row to row. The head sticks to the top of the window, on
-   `bg-panel`; a group row sticks under it while its rows are in view. */
+   `bg-page`; a group row sticks under it while its rows are in view. */
 .table {
   --row: max(var(--t-target), calc(1em * var(--t-line-height-ui) + 2 * var(--t-space-2)));
   display: grid;
-  grid-template-columns: var(--t-width-label) minmax(0, 1fr) calc(4 * var(--t-width-mark)) auto;
+  grid-template-columns: minmax(var(--t-width-label), max-content) minmax(0, 1fr) calc(4 * var(--t-width-mark)) auto;
   column-gap: var(--t-space-3);
   margin-block: var(--t-space-2) var(--t-space-6);
   line-height: var(--t-line-height-ui);
@@ -366,7 +366,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
   block-size: var(--row);
   color: var(--t-text-muted);
   font-weight: var(--t-weight-medium);
-  background: var(--t-bg-panel);
+  background: var(--t-bg-page);
   border-block-end-color: var(--t-border-strong);
 }
 .head > * { font-size: var(--t-text-sm); }
