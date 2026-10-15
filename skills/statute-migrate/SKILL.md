@@ -1,0 +1,286 @@
+---
+name: statute-migrate
+description: How to move a repository from hand-written instruction files (AGENTS.md, CLAUDE.md and the like) onto a statute rule set, so that its AGENTS.md is compiled from the constitution and the rules it chooses. Use when a person asks to migrate a repository to statute, or to redo the rule set of one that was migrated before default switches.
+metadata:
+  statute-rules: "126"
+---
+
+# Moving a repository onto statute
+
+The steps, in order: check the tools (step 0), read the constitution
+(a), find the rules that apply (b), take stock of how the repository
+works (c), write its own rules in one go (d), then rename the
+hand-written files, write the rule set, compile and check (e to g).
+Questions for the person are collected in one place
+([Questions](#questions)); ask them together, at most five at a time,
+each with its default, and go on with what they do not block.
+
+Some of what this skill uses is designed but not built yet. Each such
+place says so and names the command or key it waits for; when the
+command is missing, take the fallback given there and record in the
+pull request that you did.
+
+## Files
+
+Every path the skill uses is in this table, and the text below names
+them only by the name in the first column. Where the layout of these
+files changes, this table is the one place to change.
+
+| Name | Path | Committed |
+| --- | --- | --- |
+| the global configuration | `~/.statute/config.toml` | no, the user's home |
+| the rule set | `statute.toml` at the top of the repository | yes |
+| the lock file | `statute.lock`, next to the rule set | yes |
+| the compiled file | `AGENTS.md`, next to the rule set | yes |
+| the local rules directory | `rules/` next to the rule set, or what `local-rules` in the rule set names | yes |
+| the installed skills | `.agents/skills/<name>/`, with a link `.claude/skills/<name>` | yes |
+| the checks file | `statute-checks.toml`, next to the rule set | yes |
+| the private rule set | `statute.private.toml`, next to the rule set | no, git ignores it |
+| the private lock file | `statute.private.lock`, next to the rule set | no, git ignores it |
+| the private output | `.statute/AGENTS.full.md`, in `.statute/`, which the repository's `.gitignore` names | no |
+| the private links | `CLAUDE.local.md` and `AGENTS.override.md`, both leading to the private output | no, ignored through `.git/info/exclude` |
+| a legacy copy | `<name>.legacy.md` beside the hand-written `<name>.md` it replaces, as `AGENTS.legacy.md` | yes, until the person says to delete it |
+| the constitution for agents | `constitution/<edition>/generated/constitution.<lang>.agent.md` in the first-party source | in the source |
+| the rules of a source | `rules/<id>.toml` in that source | in the source |
+
+## 0. Before you start
+
+1. statute runs: `statute --version` prints a version. Run every
+   `statute` command from the directory of the rule set.
+2. The global configuration exists. Without it, `statute init` takes
+   the built-in first-party source, which is enough for a public
+   repository with no private rules. When the person keeps private
+   rules, it must name their private source; ask before writing it
+   ([Questions](#questions), Q1).
+3. The repository has no rule set yet. One that has a rule set
+   written before default switches is redone from step b: its `rules`
+   and `packs` are where the three lists of step f start.
+4. The work is on a branch of its own with a clean tree, and goes
+   into the main branch the way the repository takes changes.
+5. Know whether the repository is public:
+   `gh repo view <owner>/<repo> --json visibility --jq .visibility`
+   prints `PUBLIC` for a public one. A public repository keeps every
+   private rule out of its committed files (step d).
+6. `statute init` (with `--public` or `--private` when gh cannot
+   tell) writes the rule set with the first-party defaults and no
+   `rules`, `domains` or `exclude`, so that `statute site` and
+   `statute explain` work from step b on.
+
+## a. Read the constitution
+
+Read the constitution for agents of the edition the rule set will
+use, in the language the compiled file will be written in. It is what
+every rule rests on, and the compiled file opens with it.
+
+Product: nothing written. You know which provisions the repository's
+practices fall under, and so what a rule may require and what the
+constitution already says on its own.
+
+## b. Find the rules that apply
+
+Go through the first-party rules domain by domain: `statute site`
+writes a local site of every rule the sources hold, with each rule's
+statement, reason and verification; the rules of a source can also be
+read directly. For each domain, decide whether the repository needs
+it, then, inside each domain it keeps, which rules do not fit it, and
+at each one-of which child it takes.
+
+The defaults decide most of this
+([Default switches](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-config.md#default-switches)):
+a domain or rule that is `on` comes in without being listed. You look
+for departures only.
+
+- A rule `on` by default that the repository must not have: a rule
+  whose environment it lacks (no CI, no reviewer, no shared machine)
+  or that contradicts how it works on purpose.
+- A domain or rule `off` by default that it needs: Fleet when agents
+  divide work there, Writing rules (R96) when agents write or change
+  rules there, which a repository with local rules does (step d).
+- A one-of whose default child is not how the repository works.
+
+Product: a draft of the three lists of step f, each departure with
+one line that says why.
+
+Not built yet: `default` in the rule files. Until it is, nothing is
+on by default, and the draft lists every domain the repository keeps
+(as a pack) and every rule it needs from a domain it does not keep
+whole.
+
+## c. Take stock of how the repository works
+
+Read everything that tells an agent or a person how to work here: the
+hand-written instruction files at the top and in subdirectories
+(`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `GEMINI.md`, and any file
+they import), the README and the contributing guide, the commit hooks,
+the CI workflows, the scripts the docs tell people to run, and the
+repository's own skills.
+
+Give each item of the hand-written instruction files exactly one
+destination:
+
+- the constitution, when it already says so;
+- a first-party rule the rule set enables (name it, `R42`);
+- a parameter, when the item is a value a first-party rule leaves
+  open, such as the language of commit messages (name the parameter
+  and the value);
+- a local rule of this repository (step d);
+- a private rule, when it rests on a private asset (step d);
+- a skill, when it says how to do something rather than what must be
+  done;
+- removal, when it is out of date or said better elsewhere; say why.
+
+Items that only describe the repository (what it is, its layout, its
+check commands) become local rules too when an agent must follow them,
+and stay in the README otherwise.
+
+Product: the mapping, one line per item, written into the pull
+request description. In a public repository, an item whose destination
+is a private rule is written there as "private rule" only, without its
+text.
+
+## d. Write the repository's own rules in one go
+
+Write every local and private rule the mapping calls for in one
+change, not one rule per change, so that the person reviews the
+repository's rules together.
+
+- Write them as the rules of domain R96 (Writing rules) require: one
+  requirement per rule, worded so that a reviewer can decide it,
+  self-contained, citing in `authority` the most specific provisions
+  it refines, and new rules as trial rules. Their file format is that
+  of the rules of a source; take a first-party rule of the same kind
+  as the template.
+- Local rules go in the local rules directory, and are referred to as
+  `L12`. `local-rules` defaults to `rules`; do not set it unless the
+  repository already has a `rules/` that holds something else.
+- Keep in a private source only the private assets a requirement rests
+  on (rule R126). For each rule, take the private assets out and see
+  what is left: a whole requirement is a local rule; a principle whose
+  values are private becomes a local rule, and the private source keeps
+  only a rule that sets the values and requires it; nothing left, and
+  the rule is private. What the test does not settle stays private
+  until the person answers (Q5).
+- In a public repository, name the private source in the private rule
+  set, never in the rule set, and list there the private rules it
+  enables (`statute add --private`).
+
+Product: the rules, each passing the source's build check; for the
+private source, the change in the repository that holds it.
+
+## e. Rename the hand-written files
+
+`statute compile` writes the compiled file and refuses to overwrite a
+file it did not write, so the hand-written files leave first.
+
+- Rename each hand-written instruction file that the compiled file
+  replaces to its legacy copy, with `git mv`: `AGENTS.md` to
+  `AGENTS.legacy.md`, a `CLAUDE.md` that is a file to
+  `CLAUDE.legacy.md`. The legacy copies stay in the repository; ask
+  the person whether to delete them (Q2), delete them on a yes, and
+  keep them otherwise.
+- A `CLAUDE.md` that is a link to `AGENTS.md` is not renamed. Ask the
+  person whether to delete it (Q3), with this explanation:
+
+  > Recent Claude Code reads `AGENTS.md` itself when there is no
+  > `CLAUDE.md`, so the link is no longer needed. In our setup
+  > `AGENTS.md` is the public file, and `CLAUDE.local.md` is the
+  > override that replaces it whole with the full text, public and
+  > private rules together. Claude Code also reads a `CLAUDE.md` beside
+  > `CLAUDE.local.md`, so with the link in place it reads the public
+  > rules twice. `statute compile` warns about it on every run.
+
+- An `AGENTS.md` in a subdirectory: its items are in the mapping like
+  any other. With the private output, Claude Code does not load it, so
+  its rules belong in the rule set; once they are there, rename it as
+  above.
+
+## f. Write the rule set: three lists
+
+Start from the rule set `statute init` wrote in step 0 and go
+through three lists, in this order
+([Moving a repository over](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-config.md#moving-a-repository-over)):
+
+1. The rules on by default that the repository keeps: nothing to do.
+2. Those on by default that it must turn off: `exclude`, each entry
+   with a comment on the line above that says why.
+3. The domains and rules off by default that it needs: `domains` and
+   `rules`, each with a comment that says why; and each one-of where
+   it takes another child than the default: that child in `rules`,
+   with its reason.
+
+```toml
+domains = [
+  # Agents write and change the local rules here.
+  "R96",
+]
+exclude = [
+  # No CI runs on pushes to the main branch.
+  "R59",
+]
+```
+
+`statute add` writes a domain to `domains` and a rule to `rules`, and
+`statute remove` writes a rule the defaults enable to `exclude`; add
+the comments afterwards. Set the parameters the mapping found in their
+tables (`[language]` and others).
+
+Then show the person the three lists, with the reason on each line,
+and ask them to look them over (Q4). `statute explain --defaults`
+prints the three lists from the rule set as written; `statute explain
+<rule>` says why one rule is in or out.
+
+Not built yet: `domains`, `exclude`, `default` in the rule files,
+`statute explain --defaults`, parameters and `local-rules`. Until
+they are, write the draft of step b as `packs` and `rules`, with the
+same comments, show the person that list with the reasons, and leave
+the parameters' values in the local rules that need them.
+
+## g. Lock, compile, check
+
+1. `statute lock`. In a public repository with private rules, it
+   writes the private lock file as well.
+2. `statute compile`. It writes the compiled file, the installed
+   skills, the checks file, and with a private layer the private output
+   and the private links. When it names lines to add to
+   `.git/info/exclude` or a file git does not ignore, fix that and run
+   it again; it writes nothing until everything is in place.
+3. `statute check`, which exits 0 when no rule a script checks is
+   violated, and lists the rules for review.
+
+Acceptance, before you ask for a review:
+
+- `statute compile` runs again with no change to any file, and warns
+  of no `CLAUDE.md` unless the person chose to keep it.
+- The compiled file's first line says statute wrote it.
+- `statute check` exits 0.
+- The compiled file is compared with the legacy copies, section by
+  section, against the mapping of step c: every item is where the
+  mapping says, and every difference is recorded in the pull request
+  description as intended.
+- In a public repository, `git status --ignored` shows the private
+  rule set, the private lock file, `.statute/` and the private links as
+  ignored, and `git ls-files` lists none of them.
+- In each other worktree of the repository, `statute compile` is run
+  once: the private output and the private links are not committed and
+  do not come with a new worktree.
+
+The pull request carries the rule set, the lock file, the compiled
+file, the installed skills, the checks file, the local rules, the
+legacy copies and the `.gitignore` line for `.statute/`. Its
+description holds the mapping, the three lists with their reasons, the
+answers to the questions, and each place where a fallback above was
+taken.
+
+## Questions
+
+Ask together, each with its default, by whatever route the person
+gave you. Q1 comes in step 0, before `statute init`; Q2 to Q5 once the
+mapping and the draft lists exist.
+
+| | Ask | Default |
+| --- | --- | --- |
+| Q1 | The global configuration does not exist (or names no private source). Write it with `statute init --global`, and which private source should it name? | Write it with the built-in first-party source; name a private source only when the person gives one. |
+| Q2 | The hand-written files are kept as legacy copies (list them). Delete them? | Keep them. Delete only on a yes. |
+| Q3 | `CLAUDE.md` is a link to `AGENTS.md`. Delete it? (the explanation in step e) | Delete it. |
+| Q4 | Here are the three lists, each line with its reason. Anything to change? | As drafted. |
+| Q5 | These parts of requirements may or may not be private (list each with the private asset it rests on). Public or private? | Private, until answered. |
