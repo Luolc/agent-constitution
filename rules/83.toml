@@ -1,9 +1,10 @@
 id = 83
 slug = "code"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
+parent = 273
 default = "on"
 
 [title]
@@ -12,11 +13,11 @@ zh = "代码"
 
 [applicability]
 en = '''
-Covers how agents write code: which tests a change brings with it and what its comments say. Enable it in a repository where agents write or change code; a repository that holds only documents does not need it.
+How code itself is written, apart from its tests: what its comments say, and a repository's own rules for its languages and layout. Enable it in a repository with code.
 '''
 zh = '''
-管 agent 怎样写代码：一项变更要带上哪些测试，代码注释写什么。agent 在仓库里写代码或改代码，就要启用；只放文档的仓库不需要。
+代码本身怎么写 (测试之外)：注释写什么，以及仓库自己对语言与目录结构的规定。有代码的仓库都要启用。
 '''
 
 [translations]
-zh = "d94d843baed7f4906c14ee87cad74227c5779e62e0b7a668a08b19be7234f846"
+zh = "9dcd12ab5203a5900e8ca3ce9a57476929b475e7aa3d3613661b7377c8ce3e53"

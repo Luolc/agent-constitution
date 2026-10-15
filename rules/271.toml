@@ -1,0 +1,23 @@
+id = 271
+slug = "shared-record"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 14
+default = "on"
+
+[title]
+en = "Shared record"
+zh = "共享记录"
+
+[applicability]
+en = '''
+What outlasts a task and where it is kept: the repository as the shared memory, the facts and claims written into it, and the narrowings agreed in discussion. Enable it wherever agents work.
+'''
+zh = '''
+什么要活过任务、放在哪里：仓库是共享记忆，写进仓库的事实与主张，以及讨论中同意的收窄。凡有 agent 工作的地方都要启用。
+'''
+
+[translations]
+zh = "fcce1102ed34e0a520e590160fc509be50892833d938a780f6511b25051c44e8"
