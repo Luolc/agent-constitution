@@ -1,14 +1,15 @@
 id = 186
 slug = "take-and-release-by-command"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
+default = "on"
 authority = ["accountable-agent"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Take and release a work item only through the command that records it"

@@ -29,6 +29,10 @@ pub const FIRST_PARTY: &str = "R";
 /// `L12`.
 pub const LOCAL: &str = "L";
 
+/// A source's rules directory, below its top, when `rules-dir` names no
+/// other.
+pub const RULES_DIR: &str = "rules";
+
 /// Which source a reference in a rule set names.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Origin {
@@ -235,6 +239,9 @@ pub struct SourceSpec {
     /// `scope = "local"`: the rules are this repository's, as those of
     /// its own `rules/` are, and rank with them for overrides.
     pub local: bool,
+    /// The directory of the source's rules, below its top: `rules-dir`,
+    /// `rules` by default.
+    pub rules_dir: String,
 }
 
 impl SourceSpec {
@@ -293,6 +300,7 @@ pub fn built_in_first_party() -> SourceSpec {
         declared: Declared::BuiltIn,
         public: true,
         local: false,
+        rules_dir: RULES_DIR.to_owned(),
     }
 }
 
@@ -350,6 +358,8 @@ struct RawSource {
     clone: Option<String>,
     public: Option<bool>,
     scope: Option<String>,
+    #[serde(rename = "rules-dir")]
+    rules_dir: Option<String>,
 }
 
 /// An entry of a rule set's `[sources]`: a source, or `false`, which takes
@@ -471,6 +481,14 @@ fn read_sources(
                 continue;
             }
         };
+        let rules_dir = match s.rules_dir.as_deref().map(rules_dir) {
+            None => RULES_DIR.to_owned(),
+            Some(Ok(dir)) => dir,
+            Some(Err(why)) => {
+                errors.push(format!("[sources] `{name}`: {why}"));
+                continue;
+            }
+        };
         if public_rule_set == Some(true) && !source_public {
             errors.push(format!(
                 "[sources] `{name}` is private, and this rule set is of a public repository, where anyone can read it and the files compiled from it; name private sources in the private rule set, {}, as `statute source add` does",
@@ -485,6 +503,7 @@ fn read_sources(
             declared,
             public: source_public,
             local,
+            rules_dir: rules_dir.clone(),
         };
         match (&s.path, &s.git) {
             (Some(path), None) if s.tag.is_none() && s.branch.is_none() && s.clone.is_none() => {
@@ -526,6 +545,24 @@ fn read_sources(
         }
     }
     sources
+}
+
+/// A `rules-dir` as written, when it names a directory within the
+/// source, outside `.statute/`; else what is wrong.
+pub fn rules_dir(dir: &str) -> Result<String, String> {
+    use std::path::Component;
+    let path = Path::new(dir);
+    let fail = |why: &str| Err(format!("`rules-dir = \"{dir}\"` {why}"));
+    let first = path.components().find(|c| *c != Component::CurDir);
+    if path.is_absolute() {
+        fail("is absolute; name a directory below the source's top")
+    } else if path.components().any(|c| c == Component::ParentDir) {
+        fail("leads out of the source with `..`; a source is read only within itself")
+    } else if first.is_some_and(|c| c.as_os_str() == ".statute") {
+        fail("leads into `.statute/`, which holds a repository's rules for itself, never another's")
+    } else {
+        Ok(dir.to_owned())
+    }
 }
 
 /// The key a reference of a rule set names among `sources`; else what is
@@ -885,6 +922,7 @@ agents-md = ["statement", "reason"]
                 declared: Declared::RuleSet,
                 public: true,
                 local: false,
+                rules_dir: "rules".into(),
             }]
         );
         assert_eq!(m.rules, [Key::new("R", 42), Key::new("R", 7)]);

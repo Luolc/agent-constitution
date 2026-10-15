@@ -1,15 +1,16 @@
 id = 20
 slug = "design-links"
-revision = 3
+revision = 4
 kind = "rule"
 status = "superseded"
 superseded-by = [122, 123, 124, 125]
 lang = "en"
 parent = 16
+default = "off"
 authority = ["no-restating"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Link to the one place a fact is written"

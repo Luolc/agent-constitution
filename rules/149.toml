@@ -1,9 +1,10 @@
 id = 149
 slug = "agent-setup"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "on"
 
 [title]
 en = "Agent instructions, skills and tools"

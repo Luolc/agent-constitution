@@ -1,14 +1,16 @@
 id = 86
 slug = "no-tests-for-unreasonable-input"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 83
+default = "off"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
+uses = ["instructions", "review"]
 
 [title]
 en = "Write no test for input that is plainly unreasonable"

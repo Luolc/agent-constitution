@@ -1,0 +1,129 @@
+[[parameter]]
+name = "language.communication"
+type = "language"
+scope = "personal"
+default = "en"
+
+[parameter.title]
+en = "Language of what an agent writes to a person: replies, questions and reports"
+zh = "agent 写给人的内容 (回复、提问和报告) 用的语言"
+
+[parameter.translations]
+zh = "dc9b4382ed5703f2077a08ecb7d96cdd608ccc0d879fe1a187a750f0da2ade6d"
+
+[[parameter]]
+name = "language.code-comments"
+type = "language"
+scope = "repo"
+default = "en"
+
+[parameter.title]
+en = "Language of comments in code"
+zh = "代码注释用的语言"
+
+[parameter.translations]
+zh = "6035a7dbc8d68f6454356f2ed74c760edb14f15b23138ac25be4a7641c71ccaa"
+
+[[parameter]]
+name = "language.docs"
+type = "language"
+scope = "repo"
+default = "en"
+
+[parameter.title]
+en = "Language of the repository's documents"
+zh = "仓库文档用的语言"
+
+[parameter.translations]
+zh = "d3128c258b934a70a0aaec0db17cad55bfd65081117f312fe667f4b853581359"
+
+[[parameter]]
+name = "language.commits"
+type = "language"
+scope = "repo"
+default = "en"
+
+[parameter.title]
+en = "Language of commit messages and pull request titles"
+zh = "commit message 和 pull request 标题用的语言"
+
+[parameter.translations]
+zh = "5bc90d8c81b17e849b9f1a0c94c5241fb73083ec74c956320535fac5d8922b9f"
+
+[[parameter]]
+name = "language.pull-requests"
+type = "language"
+scope = "repo"
+default = "en"
+
+[parameter.title]
+en = "Language of pull request descriptions, their comments and reviews"
+zh = "pull request 描述及其评论和审查用的语言"
+
+[parameter.translations]
+zh = "5a0d092b2946529d8778aaddd8f084b00a30032a3f78b3401f3d48e6655e3d52"
+
+[[parameter]]
+name = "language.work-items"
+type = "language"
+scope = "repo"
+default = "en"
+
+[parameter.title]
+en = "Language of issues and other work items"
+zh = "issue 和其他工作项用的语言"
+
+[parameter.translations]
+zh = "c3e1be99e55eb682633254bc586df137f2aa06f4f5c32c0b2a8befcd014481d6"
+
+[[parameter]]
+name = "work-items.label-needs-decision"
+type = "string"
+scope = "repo"
+default = "needs-user"
+
+[parameter.title]
+en = "Label of a work item that waits for a person to look at it or decide"
+zh = "等人看或定的工作项挂的标签"
+
+[parameter.translations]
+zh = "82f033f1e7d375c28c5a020daea60daa3688e30279ad5c3f6ffba3c4dcd69ac8"
+
+[[parameter]]
+name = "work-items.label-approved"
+type = "string"
+scope = "repo"
+default = "approved"
+
+[parameter.title]
+en = "Label of a work item a person has approved"
+zh = "人已批准的工作项挂的标签"
+
+[parameter.translations]
+zh = "cfb076361545889e4ec35685e84883aa743a699fc82b995e788f446918d446dc"
+
+[[parameter]]
+name = "work-items.status-done"
+type = "string"
+scope = "repo"
+default = "Done"
+
+[parameter.title]
+en = "Status of an attempt that ended as done"
+zh = "以完成结束的尝试所处的状态"
+
+[parameter.translations]
+zh = "893299c6e9156c889668272dafaf382749f1d3b7a86d32adc9ae04a5e0e7c520"
+
+[[parameter]]
+name = "work-items.status-abandoned"
+type = "string"
+scope = "repo"
+default = "Abandoned"
+
+[parameter.title]
+en = "Status of an attempt that was given up"
+zh = "被放弃的尝试所处的状态"
+
+[parameter.translations]
+zh = "0204354e61552dd96778e9d8193d81951a1e40ad340a04dcffde17a3b1f88e26"

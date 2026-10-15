@@ -1,14 +1,15 @@
 id = 33
 slug = "downtime-must-ask"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "on"
 authority = ["must-ask", "list-defaults", "relaxations.project-overrides"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "A breaking change that causes downtime goes through a principal"

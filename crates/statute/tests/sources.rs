@@ -352,3 +352,49 @@ fn a_cycle_of_requirements_across_sources_fails() {
     let dir = repo("no-cycle", &private, &[team]);
     ok(&statute(&dir, &["lock"]));
 }
+
+#[test]
+fn rules_dir_names_where_a_source_keeps_its_rules() {
+    let with = |dir: &str| {
+        manifest(false, "\"team:8\"").replace(
+            "team = { path = \"team\", public = true }",
+            &format!("team = {{ path = \"team\", rules-dir = \"{dir}\", public = true }}"),
+        )
+    };
+    let dir = repo("rules-dir", &with("agent/rules"), &[]);
+    write(&dir, "team/agent/rules/1.toml", &domain(1).1);
+    write(&dir, "team/agent/rules/8.toml", &rule(8, 1, "").1);
+    ok(&statute(&dir, &["lock"]));
+    let lock = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+    assert!(
+        lock.contains(
+            "name = \"team\"\npath = \"team\"\npublic = true\nrules-dir = \"agent/rules\"\n"
+        ),
+        "{lock}"
+    );
+    ok(&statute(&dir, &["compile"]));
+    let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    assert!(out.contains("<a id=\"rule-team-8\"></a>"), "{out}");
+    // Without it, `rules/` is read, which has no rule 8.
+    let dir = repo("rules-dir-default", &manifest(false, "\"team:8\""), &[]);
+    write(&dir, "team/agent/rules/8.toml", &rule(8, 1, "").1);
+    let run = statute(&dir, &["lock"]);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+
+    for (value, why) in [
+        ("/team/rules", "is absolute"),
+        ("../team/rules", "leads out of the source with `..`"),
+        ("./.statute/rules", "leads into `.statute/`"),
+    ] {
+        let dir = repo("rules-dir-bad", &with(value), &[]);
+        let run = statute(&dir, &["lock"]);
+        assert_eq!(run.code, 1, "{value}: {}", run.stdout);
+        assert!(
+            run.stderr.contains(&format!(
+                "[sources] `team`: `rules-dir = \"{value}\"` {why}"
+            )),
+            "{value}: {}",
+            run.stderr
+        );
+    }
+}

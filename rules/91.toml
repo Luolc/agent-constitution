@@ -1,15 +1,16 @@
 id = 91
 slug = "record-a-put-off-item-at-once"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
 requires = [92]
+default = "on"
 authority = ["evidence.grounds", "accountable-agent.whole-task"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Write an item you put off into its record when you put it off"

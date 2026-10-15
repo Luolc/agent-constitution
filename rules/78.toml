@@ -1,9 +1,10 @@
 id = 78
 slug = "fleet"
-revision = 3
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "off"
 
 [title]
 en = "Fleet"

@@ -1,14 +1,15 @@
 id = 57
 slug = "changes-through-pull-requests"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["independent-review.another-party", "independent-review.reviewed-version"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Bring changes into the main branch only through reviewed pull requests"

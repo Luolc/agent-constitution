@@ -190,8 +190,10 @@ impl Project {
         }
         let mut list = Vec::new();
         for spec in &manifest.sources {
-            let (mut source, more) =
-                Source::load(&root.join(&spec.path).join("rules"), &spec.shown("rules"));
+            let (mut source, more) = Source::load(
+                &root.join(&spec.path).join(&spec.rules_dir),
+                &spec.shown(&spec.rules_dir),
+            );
             diags.0.extend(more.0);
             source.name = spec.name.clone();
             source.path = spec.path.clone();

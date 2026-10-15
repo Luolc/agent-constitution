@@ -1,14 +1,15 @@
 id = 153
 slug = "no-codex-update"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 151
+default = "on"
 authority = ["must-ask.means-of-production"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Do not run `codex update`"

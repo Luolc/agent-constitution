@@ -1,14 +1,15 @@
 id = 73
 slug = "decide-who-stops-a-background-process"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["decency.legitimate-means"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Before starting a lasting background process, record what stops it"

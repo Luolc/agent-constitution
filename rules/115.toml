@@ -1,14 +1,15 @@
 id = 115
 slug = "job-agent-asks-in-relay-conversation"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
+default = "on"
 authority = ["asking-principals", "asking"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "The agent responsible for a job asks principals only through the agent talking with them or in their conversation with it"

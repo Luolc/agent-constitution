@@ -1,9 +1,10 @@
 id = 96
 slug = "rule-writing"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "off"
 
 [title]
 en = "Writing rules"

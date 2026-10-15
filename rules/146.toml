@@ -1,14 +1,15 @@
 id = 146
 slug = "test-account-browser-profile"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 145
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Use a test account only in a browser profile kept for it"

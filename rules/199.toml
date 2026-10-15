@@ -1,14 +1,15 @@
 id = 199
 slug = "read-the-writing-guide"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 196
+default = "on"
 authority = ["purpose"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Read the writing guide before starting a task"

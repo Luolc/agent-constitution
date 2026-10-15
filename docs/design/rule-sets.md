@@ -56,9 +56,7 @@ commit; the two layers together are resolved in memory in each
 worktree, from its `statute.lock` and `private.lock`, and never written
 down. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
-([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
-today still `statute.private.toml` and a lock file of both layers,
-next to `statute.toml`).
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
 [Rule configuration](rule-config.md) adds the directory of the local
 rules, parameters and default switches, not built yet.
 
@@ -282,7 +280,6 @@ with `..` and one into `.statute/` fail: a source is read only
 within itself, and `.statute/rules/` holds a repository's rules for
 itself, which no other repository may use
 ([Four kinds of source](rule-sources.md#four-kinds-of-source)).
-`rules-dir` is not built yet.
 
 A source may be a git repository as well, cloned into statute's cache
 directory and read at the commit the lock file pins ([Git sources](global-configuration.md#git-sources)).

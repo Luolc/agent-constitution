@@ -1,14 +1,15 @@
 id = 117
 slug = "take-only-authorized-work"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["delivered-tasks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Take only authorized work items"

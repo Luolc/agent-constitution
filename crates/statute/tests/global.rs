@@ -781,6 +781,38 @@ fn source_add_in_a_private_repository_and_globally() {
 }
 
 #[test]
+fn a_git_source_with_rules_dir() {
+    let w = world("rules-dir");
+    ok(&w.run(&["init", "--private"]));
+    let (team_work, team) = source(&w.at, "team", &[domain(1), rule(7, 1, "")]);
+    git(&team_work, &["mv", "rules", "agent"]);
+    git(&team_work, &["commit", "-q", "-m", "move"]);
+    git(&team_work, &["push", "-q", "origin", "main"]);
+    let add = [
+        "source",
+        "add",
+        "--global",
+        "--public",
+        "team",
+        team.as_str(),
+    ];
+    fails(&w.run(&add), "has no rules/");
+    let config = read(&w.home, ".config/statute/config.toml");
+    ok(&w.run(&[&add[..], &["--rules-dir", "agent"]].concat()));
+    assert!(
+        read(&w.home, ".config/statute/config.toml").contains(&format!(
+            "team = {{ git = \"{team}\", branch = \"main\", public = true, rules-dir = \"agent\" }}"
+        ))
+    );
+    ok(&w.run(&["add", "team:7"]));
+    assert!(read(&w.repo, "statute.lock").contains("rules-dir = \"agent\""));
+    // Named by the lock file alone, it is read from the same directory.
+    std::fs::write(w.home.join(".config/statute/config.toml"), config).unwrap();
+    ok(&w.run(&["compile"]));
+    assert!(read(&w.repo, "AGENTS.md").contains("<a id=\"rule-team-7\"></a>"));
+}
+
+#[test]
 fn github_addresses() {
     use statute::global::github_repo;
     assert_eq!(

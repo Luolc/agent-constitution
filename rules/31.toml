@@ -1,14 +1,15 @@
 id = 31
 slug = "heavy-load-repro-isolated"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "off"
 authority = ["decency.legitimate-means"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Reproduce a heavy-load problem in an isolated environment"

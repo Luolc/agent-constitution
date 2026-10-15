@@ -1,14 +1,15 @@
 id = 134
 slug = "shared-tool-tmp-roots"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
+default = "on"
 authority = ["decency.legitimate-means"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Never delete a tool's root directory named after the user"

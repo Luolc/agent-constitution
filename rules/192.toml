@@ -1,9 +1,10 @@
 id = 192
 slug = "voice-input"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "on"
 
 [title]
 en = "Voice input"

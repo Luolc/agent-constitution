@@ -1,4 +1,4 @@
-<!-- en-sha256: ae1c964f913d7f69384407edfc36d5fa109477b60612584088f1b2f94dfd0789 -->
+<!-- en-sha256: 8165b8902fe5665e2187f0d9e29f33ff59f0b13eade3748d6df02e94aa23e0a4 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -23,7 +23,7 @@ agents-md = ["statement"]
 
 规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。在 one-of 的子节点中选一个，就是把它写进 `rules`，这里是 `R51`；没有别的字段管这件事。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个子节点启用。`[compile]` 设定编译出的 `AGENTS.md` 收录每条规定的哪些部分：默认只收 `statement`；加上 `reason` 或 `verification`，这些部分也会收进去 ([编译与网站](statute-command.md#compilation-and-the-site))。`[compile]` 里的 `lang` 指定用哪种语言写，默认 `en`。
 
-[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，有自己的锁文件 `private.lock`。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)；现在仍是 `statute.toml` 旁边的 `statute.private.toml`，锁文件同时锁定两层)。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
+[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，有自己的锁文件 `private.lock`。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
 
 锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public`；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
 
@@ -105,7 +105,7 @@ team = { git = "example.test/their-team/rules", branch = "main" }
 team = { git = "https://example.test/our-team/tools.git", branch = "main", rules-dir = "agent/rules", public = true }
 ```
 
-`rules-dir` 给那些除了规定还发布别的东西、把规定放在别处的仓库用；参数的声明 `params.toml` 也放在同一个目录 (见[参数](rule-config.md#parameters))。写绝对路径、带 `..` 的路径，或者指到 `.statute/` 里面的路径，都会报错：读规定源只在它自己里面读，而 `.statute/rules/` 放的是仓库给自己用的规定，别的仓库不能用 (见[四类规定源](rule-sources.md#four-kinds-of-source))。`rules-dir` 尚未实现。
+`rules-dir` 给那些除了规定还发布别的东西、把规定放在别处的仓库用；参数的声明 `params.toml` 也放在同一个目录 (见[参数](rule-config.md#parameters))。写绝对路径、带 `..` 的路径，或者指到 `.statute/` 里面的路径，都会报错：读规定源只在它自己里面读，而 `.statute/rules/` 放的是仓库给自己用的规定，别的仓库不能用 (见[四类规定源](rule-sources.md#four-kinds-of-source))。
 
 规定源也可以是一个 git 仓库，克隆到 statute 的缓存目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
 

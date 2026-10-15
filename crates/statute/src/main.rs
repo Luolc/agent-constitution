@@ -102,6 +102,12 @@ enum Command {
     /// included, to .statute/site, which git ignores; open its
     /// index.html in a browser.
     Site,
+    /// Build or check the constitution of this repository from its
+    /// sources.
+    Constitution {
+        #[command(subcommand)]
+        action: statute::constitution::cli::Action,
+    },
     /// Name a source of rules.
     Source {
         #[command(subcommand)]
@@ -150,6 +156,10 @@ enum SourceAction {
         /// Name it in the global configuration, for every rule set.
         #[arg(long)]
         global: bool,
+        /// The directory of the source's rules, below its top; `rules` by
+        /// default.
+        #[arg(long)]
+        rules_dir: Option<String>,
     },
 }
 
@@ -200,6 +210,7 @@ fn main() -> ExitCode {
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
         Command::Validate { dir } => validate(&dir),
+        Command::Constitution { action } => statute::constitution::cli::run(action).map_err(|_| ()),
         Command::Source {
             action:
                 SourceAction::Add {
@@ -210,6 +221,7 @@ fn main() -> ExitCode {
                     public,
                     private,
                     global,
+                    rules_dir,
                 },
         } => source_add(
             root,
@@ -218,6 +230,7 @@ fn main() -> ExitCode {
             branch.map(Follow::Branch).or(tag.map(Follow::Tag)),
             (public || private).then_some(public),
             global,
+            rules_dir.as_deref(),
         ),
     };
     match result {
@@ -389,14 +402,15 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
         .map(|p| statute::compile::full_text(&project, &p.both, &p.dir))
         .transpose()
         .map_err(|e| eprintln!("statute: error: {e}"))?;
+    let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
+    // `.statute/.gitignore` is the first file written, once nothing is
+    // left that can fail before the public files.
     if full.is_some() {
         private::ready(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     }
-    let mut written = statute::compile::compile(&project)
-        .and_then(|out| statute::compile::write(&out, &path))
-        .map_err(|e| {
-            eprintln!("statute: error: {e}");
-        })?;
+    let mut written = statute::compile::write(&out, &path).map_err(|e| {
+        eprintln!("statute: error: {e}");
+    })?;
     if let Some(full) = full {
         written.extend(private::write(root, &full).map_err(|e| eprintln!("statute: error: {e}"))?);
     }
@@ -1359,6 +1373,7 @@ fn source_add(
     follow: Option<Follow>,
     public: Option<bool>,
     global: bool,
+    rules_dir: Option<&str>,
 ) -> Result<(), ()> {
     let env = env(Mode::Lock)?;
     let fail = |e: String| eprintln!("statute: error: {e}");
@@ -1439,6 +1454,9 @@ fn source_add(
     if name != manifest::FIRST_PARTY || !public {
         entry.insert("public", public.into());
     }
+    if let Some(dir) = rules_dir {
+        entry.insert("rules-dir", dir.into());
+    }
 
     let global_path = statute::global::config_dir().map(|d| d.join(statute::global::CONFIG));
     // The private rule set's directory, when the source goes there.
@@ -1513,8 +1531,11 @@ fn source_add(
             .find(|s| s.name == name)
             .expect("the source was just added");
         statute::global::materialize(&mut spec, None, false).map_err(fail)?;
-        if !Path::new(&spec.path).join("rules").is_dir() {
-            fail(format!("source `{name}` ({address}) has no rules/"));
+        if !Path::new(&spec.path).join(&spec.rules_dir).is_dir() {
+            fail(format!(
+                "source `{name}` ({address}) has no {}/",
+                spec.rules_dir
+            ));
             return Err(());
         }
         let written = path

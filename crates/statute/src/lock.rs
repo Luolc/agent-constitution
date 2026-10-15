@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::manifest::{Declared, FIRST_PARTY, Follow, Git, Key, RuleRef, SourceSpec};
+use crate::manifest::{
+    self, Declared, FIRST_PARTY, Follow, Git, Key, RULES_DIR, RuleRef, SourceSpec,
+};
 use crate::project::Project;
 
 pub const FILE: &str = "statute.lock";
@@ -38,6 +40,9 @@ struct Source<'a> {
     /// alone is checked for which rules may cite which.
     #[serde(skip_serializing_if = "Option::is_none")]
     public: Option<bool>,
+    /// A `rules-dir` other than `rules`, for the same reason.
+    #[serde(rename = "rules-dir", skip_serializing_if = "Option::is_none")]
+    rules_dir: Option<&'a str>,
 }
 
 /// Where a source is. A source on disk is pinned by its path alone: its
@@ -112,6 +117,7 @@ pub fn render(project: &Project) -> String {
                 name: &spec.name,
                 at: pin(spec, true),
                 public: (spec.name != FIRST_PARTY).then_some(spec.public),
+                rules_dir: (spec.rules_dir != RULES_DIR).then_some(spec.rules_dir.as_str()),
             })
             .collect(),
         rules: project
@@ -146,6 +152,8 @@ struct PrivateSource<'a> {
     at: Pin<'a>,
     public: bool,
     scope: &'a str,
+    #[serde(rename = "rules-dir", skip_serializing_if = "Option::is_none")]
+    rules_dir: Option<&'a str>,
 }
 
 /// The private lock file of `both`, the project with both layers over
@@ -165,6 +173,7 @@ pub fn render_private(public: &Project, both: &Project) -> String {
                 at: pin(spec, true),
                 public: spec.public,
                 scope: if spec.local { "local" } else { "global" },
+                rules_dir: (spec.rules_dir != RULES_DIR).then_some(spec.rules_dir.as_str()),
             })
             .collect(),
     };
@@ -289,6 +298,8 @@ struct RawPin {
     commit: Option<String>,
     public: Option<bool>,
     scope: Option<String>,
+    #[serde(rename = "rules-dir")]
+    rules_dir: Option<String>,
 }
 
 /// The git sources a lock file's text records, each with its commit
@@ -308,6 +319,10 @@ pub fn sources(text: &str) -> Vec<SourceSpec> {
                 (None, Some(t)) => Follow::Tag(t),
                 _ => return None,
             };
+            let rules_dir = match p.rules_dir {
+                Some(dir) => manifest::rules_dir(&dir).ok()?,
+                None => RULES_DIR.to_owned(),
+            };
             let first_party = p.name == FIRST_PARTY;
             Some(SourceSpec {
                 git: Some(Git {
@@ -321,6 +336,7 @@ pub fn sources(text: &str) -> Vec<SourceSpec> {
                 name: p.name,
                 declared: Declared::Lock,
                 local: p.scope.as_deref() == Some("local"),
+                rules_dir,
             })
         })
         .collect()

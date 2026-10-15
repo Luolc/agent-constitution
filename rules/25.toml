@@ -1,14 +1,15 @@
 id = 25
 slug = "fixtures-for-both-outcomes"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "off"
 authority = ["discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Give each provision that can be checked happy-path and red-line fixtures"

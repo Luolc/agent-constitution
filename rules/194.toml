@@ -1,14 +1,15 @@
 id = 194
 slug = "check-names-against-real-ones"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 192
+default = "on"
 authority = ["evidence.facts"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Check the names in a message against the real ones before using them"

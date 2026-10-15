@@ -1,14 +1,15 @@
 id = 37
 slug = "credential-leak-report"
-revision = 4
+revision = 5
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["leaks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Treat a credential out of place as leaked and report it at once"

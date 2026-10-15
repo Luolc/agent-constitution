@@ -1,14 +1,15 @@
 id = 154
 slug = "no-grok-debug-log"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 152
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Do not generate or read Grok's debug log"

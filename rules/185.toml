@@ -1,14 +1,15 @@
 id = 185
 slug = "cross-repository-blocked-by"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
+default = "on"
 authority = ["evidence.facts"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Show a wait on another repository with the blocking relation"
