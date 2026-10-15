@@ -113,8 +113,8 @@ fn repo(name: &str) -> PathBuf {
         ("r/rules", domain(1)),
         ("r/rules", rule(2, 1, "")),
         ("r/rules", rule(6, 1, "")),
-        ("rules", domain(1)),
-        ("rules", rule(3, 1, "requires = [\"R2\"]")),
+        (".statute/rules", domain(1)),
+        (".statute/rules", rule(3, 1, "requires = [\"R2\"]")),
         ("me/rules", domain(1)),
         (
             "me/rules",
@@ -224,6 +224,19 @@ fn set_up_from(dir: &Path, at: &Path) {
         "{}",
         run.stdout
     );
+}
+
+/// What statute wrote in `.statute/`: everything there but the
+/// repository's own rules.
+fn written_in_statute_dir(dir: &Path) -> Vec<String> {
+    std::fs::read_dir(dir.join(".statute"))
+        .map(|entries| {
+            entries
+                .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+                .filter(|name| name != "rules")
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 fn set_up(dir: &Path) {
@@ -411,7 +424,7 @@ fn nothing_is_written_when_git_cannot_tell() {
         assert_eq!(files(), before, "{args:?}");
     }
     assert!(!dir.join("AGENTS.md").exists());
-    assert!(!dir.join(".statute").exists());
+    assert_eq!(written_in_statute_dir(&dir), Vec::<String>::new());
 }
 
 #[test]
@@ -421,7 +434,7 @@ fn outside_a_git_repository_there_is_no_private_layer() {
     std::fs::remove_dir_all(dir.join(".git")).unwrap();
     ok(&statute(&dir, &["compile"]));
     assert!(dir.join("AGENTS.md").exists());
-    assert!(!dir.join(".statute").exists());
+    assert_eq!(written_in_statute_dir(&dir), Vec::<String>::new());
     assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
     fails_with(
         &statute(&dir, &["add", "--private", "R6"]),
@@ -504,7 +517,7 @@ fn the_private_rule_set_is_written_in_git_s_directory() {
         .collect();
     names.sort();
     assert_eq!(names, ["private.lock", "private.toml"]);
-    assert!(!dir.join(".statute").exists());
+    assert_eq!(written_in_statute_dir(&dir), Vec::<String>::new());
     assert!(!dir.join("statute.private.toml").exists());
     ok(&statute(&dir, &["remove", "--private", "R6"]));
     assert_eq!(read_private(&dir, "private.toml"), "rules = []\n");
@@ -608,8 +621,8 @@ fn statute_writes_its_own_gitignore() {
     set_up(&dir);
     write(
         &dir,
-        ".statute/rules/9.toml",
-        "# a rule of the repository\n",
+        ".statute/rules/README.md",
+        "The rules of the repository.\n",
     );
     ok(&statute(&dir, &["compile"]));
     ok(&statute(&dir, &["site"]));
@@ -618,7 +631,7 @@ fn statute_writes_its_own_gitignore() {
     // generated files.
     let status = git_out(&dir, &["status", "--porcelain", "--untracked-files=all"]);
     assert!(status.contains("?? .statute/.gitignore\n"), "{status}");
-    assert!(status.contains("?? .statute/rules/9.toml\n"), "{status}");
+    assert!(status.contains("?? .statute/rules/README.md\n"), "{status}");
     for generated in [
         "AGENTS.full.md",
         ".statute/site/",

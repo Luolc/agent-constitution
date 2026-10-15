@@ -14,7 +14,7 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 /// `team/`, `me` (private) in `me/`, and the repository's own rules.
 fn manifest(rules: &str, packs: &str) -> String {
     format!(
-        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\nrules = [{rules}]\npacks = [{packs}]\n\n[sources]\nR = {{ path = \"r\" }}\nteam = {{ path = \"team\", public = true }}\nme = {{ path = \"me\", public = false }}\n"
+        "constitution = {{ source = \"R\", edition = \"2026-10\" }}\npublic = false\nlocal-rules = \"rules\"\nrules = [{rules}]\npacks = [{packs}]\n\n[sources]\nR = {{ path = \"r\" }}\nteam = {{ path = \"team\", public = true }}\nme = {{ path = \"me\", public = false }}\n"
     )
 }
 
