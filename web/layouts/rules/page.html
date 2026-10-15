@@ -6,18 +6,21 @@
   source it overrides, in place of a parent; and all its metadata. A domain or
   a one-of has no text, and lists the nodes below it; a domain's
   applicability, when it has one, follows its title. The title starts
-  with the node's label; under it, when the site has more than one
-  source, the quadrant and the name of the node's source, and when it has
-  a rule set, whether the set enables the rule. The table of contents at
+  with the node's label; under it, whether the defaults enable the node
+  and, for an option of a one-of, whether it is the default one; when
+  the site has more than one source, the quadrant and the name of the
+  node's source, and when it has a rule set, whether the set enables the
+  rule. A one-of marks its default option among the nodes below it, and
+  its metadata names it; a domain's or a rule's gives its own `default`,
+  and a rule's its `uses`. The table of contents at
   the right lists the headings below it. */ -}}
 {{ define "main" }}
 {{- $rule := .Params.rule }}
 {{- $lang := site.Language.Lang }}
 <article class="markdown book-article"><div class="design rules rule">
 <h1><span class="rule-label">{{ $rule.label }}</span> <span lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</span></h1>
-{{- if or (gt (len (index hugo.Data.rules $lang).sources) 1) (isset $rule "enabled") }}
-<p class="rule-tags">{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" $rule.source) }}{{ partial "rules/enabled.html" $rule }}</p>
-{{- end }}
+{{- $many := gt (len (index hugo.Data.rules $lang).sources) 1 }}
+<p class="rule-tags">{{ partial "rules/default.html" $rule }}{{ if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" $rule.source) }}{{ end }}{{ partial "rules/enabled.html" $rule }}</p>
 {{- with $rule.supersededBy }}
   {{- $links := slice }}
   {{- range . }}{{ $links = $links | append (partial "rules/link.html" .) }}{{ end }}
@@ -52,7 +55,7 @@
   {{- $value := index $rule . }}
   {{- if or $value (and (eq $rule.kind "rule") (in (slice "requires" "conflicts") .)) (and (eq $rule.kind "rule") (eq . "parent") (not $rule.overrides)) }}
 <dt>{{ i18n (printf "rule-%s" .) }}</dt>
-<dd>{{ with $value }}{{ range $i, $node := (cond (reflect.IsSlice .) . (slice .)) }}{{ if $i }}<br>{{ end }}{{ partial "rules/link.html" $node }}{{ end }}{{ else }}{{ i18n "rule-none" }}{{ end }}</dd>
+<dd>{{ with $value }}{{ range $i, $node := (cond (reflect.IsSlice .) . (slice .)) }}{{ if $i }}<br>{{ end }}{{ partial "rules/link.html" $node }}{{ with $rule.defaultOption }}{{ if eq .key $node.key }} <span class="rule-default option">{{ i18n "default-option" }}</span>{{ end }}{{ end }}{{ end }}{{ else }}{{ i18n "rule-none" }}{{ end }}</dd>
   {{- end }}
 {{- end }}
 </dl>
@@ -63,6 +66,15 @@
   {{- with index $rule $field }}
 <dt>{{ i18n (printf "rule-%s" $field) }}</dt><dd><code>{{ if reflect.IsSlice . }}{{ delimit . ", " }}{{ else }}{{ . }}{{ end }}</code></dd>
   {{- end }}
+{{- end }}
+{{- with $rule.default }}
+<dt>{{ i18n "rule-default" }}</dt><dd><code>{{ . }}</code></dd>
+{{- end }}
+{{- with $rule.defaultOption }}
+<dt>{{ i18n "rule-default" }}</dt><dd>{{ partial "rules/link.html" . }}</dd>
+{{- end }}
+{{- with $rule.uses }}
+<dt>{{ i18n "rule-uses" }}</dt><dd>{{ range $i, $use := . }}{{ if $i }}, {{ end }}{{ i18n (printf "uses-%s" $use) }} <code>{{ $use }}</code>{{ end }}</dd>
 {{- end }}
 <dt>{{ i18n "rule-lang" }}</dt><dd>{{ partial "rules/language.html" $rule.lang }} <code>{{ $rule.lang }}</code></dd>
 <dt>{{ i18n "rule-translations" }}</dt><dd>

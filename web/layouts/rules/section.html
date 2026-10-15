@@ -1,21 +1,25 @@
 {{- /* The list of the rules, in the order of the parent tree, one line
   each: the rule's label, its title, cut to the line by the style sheet,
-  and its status, all linked to its page; when the site has a rule set,
+  its status and whether the defaults enable it (and, for an option of a
+  one-of, whether it is the default one), all linked to its page; when
+  the site has a rule set,
   whether it enables the rule, and when it has more than one source, the
   quadrant of the rule's source. A rule under another rule is indented
   under it. Domains and one-ofs are not listed but head the rules below
-  them, each with its label, a level deeper for each domain or one-of
-  above them: a heading where a rule's group at that level differs from
+  them, each with its label and whether the defaults enable it, a level
+  deeper for each domain or one-of above them: a heading where a rule's group at that level differs from
   the one of the rule shown before it, and on each page above its first
   rule. With more than one source, each source heads its rules, as its
   quadrant and name, a level above its domains.
 
   Above the list, a form: a filter, which folds open, with a checkbox for
-  each status and each domain, and for each quadrant when the site has
+  each status, each value of `uses` and each domain, one for the rules
+  the defaults enable alone, and one for each quadrant when the site has
   more than one source, and the page size. The rules shown are those
-  whose status, nearest domain and quadrant are checked, rulesPerPage of
-  them a page; by default the statuses of rulesStatuses, every domain
-  and every quadrant.
+  whose status, nearest domain and quadrant are checked, whose `uses`
+  has a value checked, and, with that box, that the defaults enable,
+  rulesPerPage of them a page; by default the statuses of rulesStatuses,
+  both uses, every domain and every quadrant, whatever the defaults.
   Every page holds every rule, each with all its group headings, the
   rules and headings not shown hidden, so that assets/rules-list.js can
   show another filter and page size, from the address, without a page of
@@ -41,6 +45,14 @@
 <fieldset><legend>{{ i18n "rule-status" }}</legend>
   {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
 <label><input type="checkbox" name="status" value="{{ . }}"{{ if in $statuses . }} checked{{ end }}> {{ i18n (printf "status-%s" .) }}</label>
+  {{- end }}
+</fieldset>
+<fieldset><legend>{{ i18n "rules-defaults" }}</legend>
+<label><input type="checkbox" name="default" value="on"> {{ i18n "rules-default-only" }}</label>
+</fieldset>
+<fieldset><legend>{{ i18n "rule-uses" }}</legend>
+  {{- range slice "instructions" "review" }}
+<label><input type="checkbox" name="uses" value="{{ . }}" checked> {{ i18n (printf "uses-%s" .) }}</label>
   {{- end }}
 </fieldset>
 <fieldset><legend>{{ i18n "rules-domains" }}</legend>
@@ -76,7 +88,7 @@
     {{- $on = and (ge $k $first) (lt $k $end) }}
     {{- $k = add $k 1 }}
   {{- end }}
-<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
+<div class="rule-item" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}" data-uses="{{ delimit $rule.uses " " }}" data-default="{{ cond (eq $rule.onByDefault true) "on" "off" }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
   {{- $changed := false }}
   {{- range $j, $group := $rule.groups }}
     {{- $changed = or $changed (ge $j (len $previous)) (ne (index $previous $j).key $group.key) }}
@@ -86,12 +98,13 @@
     {{- if $shown }}{{ $toc = $toc | append (dict "key" $group.key "title" $title "level" $j) }}{{ end }}
 <h{{ add $j 2 }} class="rules-group" data-group="{{ $group.key }}"{{ if $shown }} id="group-{{ $group.key }}"{{ else }} hidden{{ end }}>
     {{- if $source }}{{ partial "rules/quadrant.html" (dict "quadrant" $group.quadrant "source" $group.source) }}
-    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}"><span class="group-label">{{ $group.label }}</span> {{ $group.title }}</a>{{ end -}}
+    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}"><span class="group-label">{{ $group.label }}</span> {{ $group.title }}</a>{{ partial "rules/default.html" (site.GetPage (printf "/rules/%s" $group.key)).Params.rule }}{{ end -}}
 </h{{ add $j 2 }}>
   {{- end }}
   {{- if $on }}{{ $previous = $rule.groups }}{{ end }}
   {{- $nested := len (where $rule.groups "kind" "ne" "source") }}
 <a class="rule-entry" href="{{ .RelPermalink }}" style="{{ printf "--indent: %d" (int (sub $rule.depth $nested)) | safeCSS }}"><span class="rule-id">{{ $rule.label }}</span><span class="rule-title" lang="{{ $rule.shown }}">{{ $rule.title | $.RenderString }}</span><span class="rule-status">{{ i18n (printf "status-%s" $rule.status) }}</span>
+  {{- partial "rules/default.html" $rule }}
   {{- partial "rules/enabled.html" $rule }}
   {{- if $many }}{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" "") }}{{ end -}}
 </a>

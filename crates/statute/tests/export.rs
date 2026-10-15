@@ -7,7 +7,7 @@ use std::process::Command;
 use serde_json::{Value, json};
 
 mod common;
-use common::{domain, edit, rule};
+use common::{domain, edit, one_of, option, rule, set_default};
 
 const INDEX: &str = r#"status = "active"
 edition = "2026-10"
@@ -121,13 +121,64 @@ fn constitution_and_nodes() {
 }
 
 #[test]
+fn on_by_default() {
+    let nodes = [
+        set_default(domain(1), "\"on\""),
+        set_default(rule(2, 1, ""), "\"on\""),
+        rule(3, 1, ""),
+        one_of(4, 1, 5),
+        option(5, 4, ""),
+        option(6, 4, ""),
+        domain(7),
+        set_default(rule(8, 7, ""), "\"on\""),
+        edit(
+            set_default(rule(9, 1, ""), "\"on\""),
+            "status = \"draft\"",
+            "status = \"superseded\"\nsuperseded-by = 2",
+        ),
+    ];
+    let (code, stdout, stderr) = export(&dir("on-by-default", false, &nodes));
+    assert_eq!((code, stderr.as_str()), (0, ""));
+    let data: Value = serde_json::from_str(&stdout).unwrap();
+    let on: Vec<(u64, &Value)> = data["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|n| (n["fields"]["id"].as_u64().unwrap(), &n["on-by-default"]))
+        .collect();
+    // On in a domain that is on; off; the one-of and its default option;
+    // the other option; a domain that is off, and a rule on in it; a rule
+    // on but no longer in force.
+    assert_eq!(
+        on,
+        [
+            (1, &json!(true)),
+            (2, &json!(true)),
+            (3, &json!(false)),
+            (4, &json!(true)),
+            (5, &json!(true)),
+            (6, &json!(false)),
+            (7, &json!(false)),
+            (8, &json!(false)),
+            (9, &json!(false)),
+        ]
+    );
+}
+
+#[test]
 fn rules_alone() {
-    let other = edit(rule(2, 1, ""), "parent = 1", "parent = \"R1\"");
+    let other = edit(
+        set_default(rule(2, 1, ""), "\"on\""),
+        "parent = 1",
+        "parent = \"R1\"",
+    );
     let (code, stdout, _) = export(&dir("rules-alone", false, &[other]));
     assert_eq!(code, 0);
     let data: Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(data["constitution"], Value::Null);
     assert_eq!(data["nodes"][0]["fields"]["parent"], "R1");
+    // On, but whether it comes in depends on R1, which is not here.
+    assert_eq!(data["nodes"][0]["on-by-default"], Value::Null);
 }
 
 #[test]

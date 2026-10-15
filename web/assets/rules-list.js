@@ -1,7 +1,8 @@
 // The list of the rules (layouts/rules/section.html) with the filter and
 // the page size the reader chose, read from the address: `filter` once the
-// form was sent, with the checked `status`, `domain` and, when the site
-// has more than one source, `quadrant` values, `per` (25,
+// form was sent, with the checked `status`, `uses`, `domain` and, when
+// the site has more than one source, `quadrant` values, `default=on` for
+// only the rules the defaults enable, `per` (25,
 // 50, 100 or all) and `page`. Without them, the default filter, as the
 // form's checkboxes were built, and the page Hugo built. Every page holds
 // every rule, so this only shows the rules of the filter and page, and
@@ -15,7 +16,9 @@
 (function () {
   var SIZES = ["25", "50", "100", "all"];
   // The filter's checkboxes; a name the form has none of filters nothing.
-  var NAMES = ["status", "domain", "quadrant"];
+  // A rule has one value of each, but may have both `uses`; the one
+  // `default` box, unchecked, filters nothing.
+  var NAMES = ["status", "uses", "domain", "quadrant", "default"];
   document.addEventListener("DOMContentLoaded", function () {
     var list = document.querySelector(".rules-list");
     var form = document.querySelector(".rules-controls");
@@ -33,11 +36,15 @@
     var checked = function (name) {
       return boxes(name).filter(function (box) { return box.checked; }).map(function (box) { return box.value; });
     };
-    var filters = NAMES.filter(function (name) { return boxes(name).length; }).map(function (name) {
+    var filters = NAMES.filter(function (name) {
+      return boxes(name).length && (name !== "default" || checked(name).length);
+    }).map(function (name) {
       return { name: name, values: checked(name) };
     });
     var matched = Array.prototype.filter.call(list.querySelectorAll(".rule-item"), function (item) {
-      return filters.every(function (f) { return f.values.indexOf(item.dataset[f.name]) >= 0; });
+      return filters.every(function (f) {
+        return item.dataset[f.name].split(" ").some(function (v) { return f.values.indexOf(v) >= 0; });
+      });
     });
 
     var per = query.get("per");
@@ -77,7 +84,7 @@
         li.style.setProperty("--level", Number(heading.tagName.slice(1)) - 2);
         var a = document.createElement("a");
         a.href = "#" + heading.id;
-        a.textContent = heading.textContent;
+        a.textContent = (heading.querySelector("a") || heading).textContent;
         li.append(a);
         toc.append(li);
       });
