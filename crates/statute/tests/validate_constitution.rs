@@ -473,7 +473,7 @@ fn params_toml_is_no_node() {
     let tree = Tree::new("base-params");
     tree.write(
         "rules/params.toml",
-        "[[parameter]]\nname = \"language.docs\"\n",
+        "[[parameter]]\nname = \"language.docs\"\ntype = \"language\"\nscope = \"repo\"\ndefault = \"en\"\n\n[parameter.title]\nen = \"Language of the docs\"\n",
     );
     tree.commit_base();
     tree.assert_passes(&["--base", "HEAD"]);
