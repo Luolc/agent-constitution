@@ -309,6 +309,32 @@ class SiteRulesTest(unittest.TestCase):
       ["R3", "demo:4", "team:7"],
     )
 
+  def test_rule_config_fields_are_read_past(self):
+    """params.toml is no node; `default`, `uses` and `check = "none"` pass.
+
+    statute validates them; the site does not show them yet. Rule 5 is
+    under a domain: a child of a one-of may not have `default`.
+    """
+    params = '[[parameter]]\nname = "language.docs"\n'
+    (self.root / "rules/params.toml").write_text(params, encoding="utf-8")
+    site_fixture.write_other(self.root / "demo")
+    (self.root / "demo/rules/params.toml").write_text(params, encoding="utf-8")
+    rule = self.root / "rules/5.toml"
+    text = rule.read_text(encoding="utf-8")
+    self.assertIn('check = "review"', text)
+    rule.write_text(
+      text.replace(
+        'check = "review"',
+        'check = "none"\ndefault = "on"\nuses = ["instructions", "review"]',
+      ),
+      encoding="utf-8",
+    )
+    data = self.other()["en"]
+    self.assertEqual(
+      [n["label"] for n in data["nodes"]],
+      ["R1", "R2", "R3", "R4", "R5", "R6", "demo:1", "demo:2", "demo:4"],
+    )
+
   def test_main_with_another_source(self):
     out = self.root / "web/data/rules.json"
     site_fixture.write_other(self.root / "demo")

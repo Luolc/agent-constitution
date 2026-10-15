@@ -1,6 +1,9 @@
-"""Checks 2 to 5 of the constitution and rule sources.
+"""Checks 2 to 5 of the constitution sources.
 
 IDs, structure, language alignment and references (docs/design/checkers.md).
+statute validates the rule tree (`statute validate rules`); of the rules,
+these checks read only the provisions they cite and name in their
+`authority`.
 """
 
 import re
@@ -10,8 +13,8 @@ from constitution_compiler.model import (
   Doc,
   Errors,
   ID,
-  Node,
   number_key,
+  RuleFile,
   Sources,
 )
 
@@ -22,7 +25,7 @@ def check_ids(src: Sources, errors: Errors) -> None:
   """Check 2: every ID has the format and is unique where it must be.
 
   Article and section IDs are unique in the constitution, item IDs in
-  their section, the rule tree's slugs among the slugs.
+  their section.
 
   Args:
     src: the sources.
@@ -35,10 +38,6 @@ def check_ids(src: Sources, errors: Errors) -> None:
   )
   for s in src.sections:
     unique_ids(errors, [(s.doc, i.id) for i in s.items])
-  unique_ids(
-    errors,
-    [(n.doc, n.slug) for n in src.nodes if n.slug is not None],
-  )
 
 
 def unique_ids(errors: Errors, declared: list[tuple[Doc, str]]) -> None:
@@ -50,7 +49,7 @@ def unique_ids(errors: Errors, declared: list[tuple[Doc, str]]) -> None:
   """
   seen = {}
   for doc, value in declared:
-    line = doc.line(f'id = "{value}"', f'slug = "{value}"')
+    line = doc.line(f'id = "{value}"')
     if not re.fullmatch(ID, value):
       errors.add(
         doc.path,
@@ -92,159 +91,6 @@ def check_structure(src: Sources, errors: Errors) -> None:
           )
   for s in src.sections:
     unique(errors, [(s.doc, i.number, f"item of {s.id}") for i in s.items])
-  check_tree(src.nodes, errors)
-
-
-def check_tree(nodes: list[Node], errors: Errors) -> None:
-  """Check the links between the nodes of the rule tree.
-
-  Each `parent` of this source and each entry of `superseded-by` names a
-  node of the tree, another rule for `superseded-by`. A rule's parent is
-  a domain or a one-of, a one-of's a domain, and a domain's a domain
-  with no parent or a one-of in one, so that domains nest two levels deep
-  at most, counting a domain that is the option of a one-of
-  (docs/design/rule-config.md, Proposed: no rule under a rule, and
-  docs/design/rule-sources.md, Subdomains); the options of a one-of are
-  all rules or all domains; and following the parents never comes back
-  to a node. A parent in another source is not checked here.
-
-  Args:
-    nodes: the nodes.
-    errors: where errors go.
-  """
-  by_id = {n.id: n for n in nodes}
-  for n in nodes:
-    parent = by_id.get(n.parent) if isinstance(n.parent, int) else None
-    if isinstance(n.parent, int) and parent is None:
-      errors.add(
-        n.doc.path, n.doc.line("parent ="), 3, f"parent {n.parent} is no node"
-      )
-    if parent is not None and (problem := parent_problem(n, parent, by_id)):
-      errors.add(n.doc.path, n.doc.line("parent ="), 3, problem)
-    for t in n.superseded_by:
-      target = by_id.get(t)
-      if target is None or target.kind != "rule" or target is n:
-        errors.add(
-          n.doc.path,
-          n.doc.line("superseded-by ="),
-          3,
-          f"superseded-by {t} is no other rule",
-        )
-  check_options(nodes, by_id, errors)
-  check_cycles(by_id, errors)
-
-
-def check_options(
-  nodes: list[Node], by_id: dict[int, Node], errors: Errors
-) -> None:
-  """Check that the options of each one-of are all rules or all domains.
-
-  An option of another kind than the first, by number, is the one out of
-  place, and the error is on it.
-
-  Args:
-    nodes: the nodes.
-    by_id: the nodes, by ID.
-    errors: where errors go.
-  """
-  for one_of in (n for n in nodes if n.kind == "one-of"):
-    options = sorted(
-      (n for n in nodes if n.parent == one_of.id and n.kind != "one-of"),
-      key=lambda n: n.id,
-    )
-    if not options:
-      continue
-    first = options[0].kind
-    like = ", ".join(str(n.id) for n in options if n.kind == first)
-    for n in (n for n in options if n.kind != first):
-      errors.add(
-        n.doc.path,
-        n.doc.line("parent ="),
-        3,
-        f"parent {one_of.id} is a one-of whose options are {first}s ({like});"
-        " the options of a one-of are all rules or all domains",
-      )
-
-
-def check_cycles(by_id: dict[int, Node], errors: Errors) -> None:
-  """Check that following the parents never comes back to a node.
-
-  Args:
-    by_id: the nodes, by ID.
-    errors: where errors go.
-  """
-  for n in by_id.values():
-    seen, at = {n.id}, n.parent
-    while isinstance(at, int) and at in by_id:
-      if at == n.id:
-        errors.add(
-          n.doc.path,
-          n.doc.line("parent ="),
-          3,
-          f"following the parents from {n.id} comes back to it",
-        )
-        break
-      if at in seen:
-        break  # a cycle above this node, reported at its own nodes
-      seen.add(at)
-      at = by_id[at].parent
-
-
-def parent_problem(node: Node, parent: Node, by_id: dict[int, Node]) -> str:
-  """Return what is wrong with a node's parent, or "" when nothing is.
-
-  Args:
-    node: the node.
-    parent: the node its `parent` names.
-    by_id: the nodes, by ID.
-
-  Returns:
-    The problem, or "".
-  """
-  if node.kind == "rule":
-    if parent.kind == "rule":
-      return f"a rule's parent is a domain or a one-of; {parent.id} is a rule"
-    return ""
-  if node.kind == "one-of":
-    if parent.kind != "domain":
-      return f"a one-of's parent is a domain; {parent.id} is a {parent.kind}"
-    return ""
-  if problem := domain_parent(node, parent, by_id):
-    return (
-      "a domain's parent is a domain with no parent, or a one-of in one;"
-      f" {problem}"
-    )
-  return ""
-
-
-def domain_parent(node: Node, parent: Node, by_id: dict[int, Node]) -> str:
-  """Return what is wrong with a domain's parent, or "" when nothing is.
-
-  Args:
-    node: the domain.
-    parent: the node its `parent` names.
-    by_id: the nodes, by ID.
-
-  Returns:
-    The problem, or "".
-  """
-  if parent is node:
-    return f"{node.id} is the domain itself"
-  if parent.kind == "rule":
-    return f"{parent.id} is a rule"
-  # The domain the subdomain or the option would be in.
-  above = parent
-  if parent.kind == "one-of":
-    if not isinstance(parent.parent, int) or parent.parent not in by_id:
-      return ""
-    above = by_id[parent.parent]
-  if above.parent is None:
-    return ""
-  if above is parent:
-    return f"{parent.id} is a subdomain, under {parent.parent}"
-  return (
-    f"{parent.id} is a one-of in {above.id}, a subdomain, under {above.parent}"
-  )
 
 
 def unique(errors: Errors, numbered: list) -> None:
@@ -274,19 +120,16 @@ def unique(errors: Errors, numbered: list) -> None:
 def check_languages(src: Sources, errors: Errors) -> None:
   """Check 4: each language of a text cites what the first language cites.
 
-  The first language is that of index.toml, or a node's original. A
-  node's translations are also each complete and made from its current
-  original.
+  The first language is the first of index.toml.
 
   Args:
     src: the sources.
     errors: where errors go.
   """
+  first = src.languages[0]
   for t in src.texts():
-    first = t.lang or src.languages[0]
     refs = {lang: set(citations(text)) for lang, text in t.texts.items()}
-    others = src.languages if t.lang is None else t.texts
-    for lang in [lang for lang in others if lang != first]:
+    for lang in src.languages[1:]:
       for a, b in ((first, lang), (lang, first)):
         for ref in sorted(refs[a] - refs[b]):
           errors.add(
@@ -295,121 +138,81 @@ def check_languages(src: Sources, errors: Errors) -> None:
             4,
             f"{a} `{t.field}` cites {ref}; {b} does not",
           )
-  for n in src.nodes:
-    check_translations(n, errors)
-
-
-def check_translations(node: Node, errors: Errors) -> None:
-  """Check that the node's texts have just the languages it translates to.
-
-  Each translation follows the current original: its hash is the one the
-  original has now.
-
-  Args:
-    node: the node.
-    errors: where errors go.
-  """
-  doc = node.doc
-  texts = (
-    {"title": node.title}
-    | ({"applicability": node.applicability} if node.applicability else {})
-    | {f"text.{p}": t for p, t in node.text.items()}
-  )
-  for field, table in texts.items():
-    for lang in sorted(set(table) - {node.lang} ^ set(node.translations)):
-      errors.add(
-        doc.path,
-        doc.line(f"[{field}]"),
-        4,
-        f"`{field}` has a text in `{lang}`, `translations` has no hash for it"
-        if lang in table
-        else f"`{field}` lacks its translation into `{lang}`",
-      )
-  start = doc.line("[translations]")
-  for lang, value in sorted(node.translations.items()):
-    if value != node.original:
-      errors.add(
-        doc.path,
-        doc.line(f"{lang} =", start=start),
-        4,
-        f"the `{lang}` translation was made from another original;"
-        f" once it follows the original, its hash is {node.original}",
-      )
 
 
 # Check 5: references.
 
 
 def check_refs(src: Sources, errors: Errors) -> None:
-  """Check 5: every citation and authority resolves to an unrepealed target.
+  """Check 5: every citation of the constitution resolves.
 
-  The constitution cites itself without a namespace; a rule cites with
-  `constitution:` or `rule:`; every citation and authority resolves to a
-  provision or rule that is not repealed.
+  The constitution cites itself without a namespace, and a rule cites it
+  with `constitution:`; each citation and each provision of a rule's
+  `authority` names a provision that is not repealed. A rule's other
+  citations are statute's to check.
 
   Args:
     src: the sources.
     errors: where errors go.
   """
-  rules = {str(n.id): n.status for n in src.nodes}
   for t in src.texts():
     if t.repealed:
       continue
     for text in t.texts.values():
       for ref in citations(text):
-        if found := problem(src, rules, ref, t.in_rule):
+        if ":" in ref:
+          found = (
+            f"{ref}; the constitution cites only itself, without a namespace"
+          )
+        else:
+          found = problem(src, ref)
+        if found:
           errors.add(t.doc.path, t.doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
-  for n in src.nodes:
-    if n.status != "repealed":
-      check_node_authority(src, rules, n, errors)
+  for r in src.rules:
+    if r.status != "repealed":
+      check_rule_refs(src, r, errors)
 
 
-def problem(
-  src: Sources, rules: dict[str, str], ref: str, in_rule: bool
-) -> str:
-  """Return what is wrong with the citation, or "" when nothing is.
+def problem(src: Sources, ref: str, written: str = "") -> str:
+  """Return what is wrong with a citation of a provision, or "" when nothing is.
 
   Args:
     src: the sources.
-    rules: the status of each node, by ID.
-    ref: the citation as written.
-    in_rule: whether a rule cites it.
+    ref: the provision, without a namespace.
+    written: the citation as written, when it differs from ref.
 
   Returns:
     The problem, or "".
   """
-  namespace, _, target = ref.rpartition(":")
-  if not in_rule and namespace:
-    return f"{ref}; the constitution cites only itself, without a namespace"
-  if in_rule and not namespace:
-    return f"{ref} without `constitution:` or `rule:`"
-  if namespace == "rule":
-    if target not in rules:
-      return f"undefined {ref}"
-    return f"repealed {ref}" if rules[target] == "repealed" else ""
-  if target not in src.provisions:
-    return f"undefined {ref}"
-  return f"repealed {ref}" if target in src.repealed else ""
+  if ref not in src.provisions:
+    return f"undefined {written or ref}"
+  return f"repealed {written or ref}" if ref in src.repealed else ""
 
 
-def check_node_authority(
-  src: Sources, rules: dict[str, str], node: Node, errors: Errors
-) -> None:
-  """Check that each authority of a node names a provision, no namespace.
+def check_rule_refs(src: Sources, rule: RuleFile, errors: Errors) -> None:
+  """Check what a rule cites of the constitution and its `authority`.
 
   Args:
     src: the sources.
-    rules: the status of each node, by ID.
-    node: the node.
+    rule: the rule, or a domain or one-of, which may cite too.
     errors: where errors go.
   """
-  for ref in node.authority:
-    if found := problem(src, rules, ref, False):
+  doc = rule.doc
+  for _, table in rule.texts:
+    for text in table.values():
+      for ref in citations(text):
+        namespace, _, target = ref.rpartition(":")
+        if namespace == "constitution" and (found := problem(src, target, ref)):
+          errors.add(doc.path, doc.line(f"{{@{ref}}}"), 5, f"cites {found}")
+  for ref in rule.authority:
+    found = (
+      f"{ref}; the constitution cites only itself, without a namespace"
+      if ":" in ref
+      else problem(src, ref)
+    )
+    if found:
       errors.add(
-        node.doc.path,
-        node.doc.line("authority ="),
-        5,
-        f"authority cites {found}",
+        doc.path, doc.line("authority ="), 5, f"authority cites {found}"
       )
 
 
@@ -427,7 +230,7 @@ def authority_overlaps(src: Sources) -> list[str]:
     The warnings, `path:line: warning: message`, one per pair.
   """
   warnings = []
-  for n in src.nodes:
+  for n in src.rules:
     if n.status in ("superseded", "repealed"):
       continue
     for ref in n.authority:

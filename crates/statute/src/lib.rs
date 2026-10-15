@@ -4,6 +4,7 @@
 pub mod check;
 pub mod cite;
 pub mod compile;
+pub mod constitution;
 pub mod diag;
 pub mod export;
 pub mod global;

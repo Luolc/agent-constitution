@@ -63,10 +63,20 @@ repos:
         language: system
         files: ^(crates/.*\.rs|(.*/)?Cargo\.toml|rust-toolchain\.toml)$
         pass_filenames: false
-      # The constitution build: --check validates the sources (the
-      # constitution and the rules) and requires the committed outputs to
-      # match a fresh build; the tests cover the script. The numbering check
-      # against a base commit (--base) runs only in CI.
+      # The rule files, validated by statute as a source of rules. The
+      # first build of statute in a checkout takes a while; after it, a run
+      # takes a second or two.
+      - id: statute-validate
+        name: statute validate rules
+        entry: cargo run --locked --quiet -p statute -- validate rules
+        language: system
+        files: ^(rules/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
+        pass_filenames: false
+      # The constitution build: --check validates the constitution sources,
+      # reads of the rules what the constitution decides (their status and
+      # what they cite of it), and requires the committed outputs to match a
+      # fresh build; the tests cover the script. The numbering check against
+      # a base commit (--base) runs only in CI.
       - id: constitution
         name: constitution build check
         entry: uv run --frozen --no-sync constitution-build --check

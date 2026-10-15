@@ -105,6 +105,12 @@ enum Command {
         #[arg(default_value = ".")]
         dir: PathBuf,
     },
+    /// Build or check the constitution of this repository from its
+    /// sources.
+    Constitution {
+        #[command(subcommand)]
+        action: statute::constitution::cli::Action,
+    },
     /// Name a source of rules.
     Source {
         #[command(subcommand)]
@@ -198,6 +204,7 @@ fn main() -> ExitCode {
         Command::Site => site(root),
         Command::Export { dir } => export(&dir),
         Command::Validate { dir } => validate(&dir),
+        Command::Constitution { action } => statute::constitution::cli::run(action).map_err(|_| ()),
         Command::Source {
             action:
                 SourceAction::Add {
