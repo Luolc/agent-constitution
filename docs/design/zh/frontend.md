@@ -1,4 +1,4 @@
-<!-- en-sha256: 468bcea82cda67f10788f0a03002addafe96853763d958838b65c53064e366b0 -->
+<!-- en-sha256: 41198a5edc570b4143b375b984b5790eced1a6520f1d6569c1811f25efbb02ca -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -41,10 +41,10 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | `bg-hover` | `#c7d0bf` | `#343b35` | 页面上的一行或一个按钮在指针下时。 |
 | `bg-panel-hover` | `#bcc7b4` | `#3a423b` | 面板上的一项在指针下时。 |
 | `bg-active` | `#b2bdaa` | `#444c45` | 一项被按下时。 |
-| `bg-selected` | `#c5c5b0` | `#3e3e33` | 当前项：侧边栏里的当前页、选中的选项。 |
+| `bg-selected` | `#c5c5b0` | `#3e3e33` | 当前项：侧边栏里的当前分组、选中的选项。 |
 | `bg-target` | `#e3d79c` | `#4a4a2a` | 锚点跳到的元素，短暂显示。 |
 | `text` | `#23301f` | `#d3dccf` | 正文和正文里的链接。 |
-| `text-muted` | `#4b5946` | `#9cab98` | 标签、次要文字、目录。 |
+| `text-muted` | `#4b5946` | `#9cab98` | 标签、次要文字、侧边栏里的页面、目录。 |
 | `text-faint` | `#5a6754` | `#839080` | 页面上更次一级的说明：标题下的图例。不用在面板上。 |
 | `accent` | `#7d3a1e` | `#dba37f` | 指针下的链接、当前项的文字、焦点框、主按钮。 |
 | `accent-hover` | `#6b381e` | `#d9ae8f` | 主按钮在指针下时。 |
@@ -231,7 +231,9 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **规定树。** 节点的层级靠字号、字重和色条区分 ([字体](#type))，不靠缩进：第一层的领域是一个标题，上方留 `space-8`；第二层的领域缩进一级 (`space-4`)，起始一侧有一条 `2px` 的 `border-strong` 色条，贯穿它下面的规定；更深的领域不再缩进，色条用 `border-subtle`。一个领域的规定与它的标题左边对齐。挂在另一条规定下的规定不再缩进，而是在标号前加 `corner-down-right` (`icon-sm`，`text-faint`) 表示。每条规定占一行：标号在固定宽度的一列里，用 `text-muted`；标题超出一行时以省略号截断；tag 在右边。整行是一个链接：hover 时整行填上 `bg-hover`、`radius-sm`，标题变成 `accent`；获得焦点时焦点框围住整行。
 - **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
-- **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`；当前页列在某个分组下面时，只标出这一页，不标分组。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
+- **侧边栏。** 照 Tailwind CSS 文档的侧边栏做 ([出处](#sources))，配色和字体用本文的。`bg-panel`，边上一条 `1px` 的 `border-subtle`，分组之间隔 `space-4`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。分组下的页面沿一条细线排列，细线是 `1px` 的 `border-subtle`，从图标中线的正下方开始。页面：`text-md`、`weight-regular`、`text-muted`，padding `space-1 space-2`，文字与分组名对齐，压在细线上有一条 `2px` 的短线，平时透明。一行 (分组或页面) 在指针下：`bg-panel-hover`，`radius-sm`，靠细线的一侧不圆；页面还会变成 `text`，短线变成 `border-strong`。按下：`bg-active`。当前页：短线和文字都用 `accent`，文字 `weight-medium`，不加底色。没有页面的分组是当前项时，没有细线可标，就用 `bg-selected` 底，文字用 `accent`。当前页列在某个分组下面时，只标出这一页，不标分组。页面加载时，当前页不在侧边栏的可见范围内，侧边栏就滚到能看见它。可以折叠的分组在这一行末尾有一个普通按钮，收起时显示 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`；这个按钮和语言切换按钮都标明自己的列表是否展开 (`aria-expanded`、`aria-controls`)。
+  - 右侧的目录：`text-sm`，标题用 `text-muted`；各个标题像侧边栏里的页面一样沿一条细线排列，`text-muted`，低一级的标题缩进 `space-4`，短线仍压在细线上。指针下：`text`，短线 `border-strong`。读者正在读的那个标题：短线和文字用 `accent`，`weight-bold`。它随滚动变化，所以这些标记立即切换，不加过渡。
+  - 窄屏的抽屉。宽度在 `56rem` 及以下时侧边栏、在 `70rem` 及以下时目录，收到顶栏的一个普通按钮后面，按钮分别是 `menu` 和 `table-of-contents`，抽屉打开时显示 `x`，并标明抽屉是否打开、打开的是哪一个 (`aria-expanded`、`aria-controls`)。`56rem` 及以下，顶栏固定在窗口顶部，`bg-page` 底，下面一条 `1px` 的 `border-subtle`。抽屉在顶栏下面从各自的一边打开，侧边栏从起始边，目录从末尾边：`bg-panel`、`1px` 的 `border-subtle` 和 `shadow-popover`，因为它盖在正文上。滑入用 `duration-base`，滑出用 `duration-fast`，都用 `ease-out`，后面的页面淡到原来不透明度的四分之一；减弱动效时抽屉在原地淡入淡出。抽屉打开时，页面的其余部分不可操作：焦点移到抽屉里的第一个链接；按 Escape、再点按钮、点抽屉外面，或在抽屉里点了链接，抽屉都会关上，由键盘或按钮关上时焦点回到按钮。没有脚本时没有抽屉：侧边栏排在正文上面，目录排在正文下面，所有列表都展开。
 - **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`，指针悬停时边框变成 `text-muted`；获得焦点时显示焦点框。原生控件在两套主题下都不保留浏览器自己的样子：菜单 (`select`) 末尾显示 `chevron-down`；浏览器允许页面自己画它的选项列表时，列表是一个弹出层，每个选项一行，选中的那项用 `bg-selected` 底，文字用 `accent` 和 `weight-medium`；浏览器自己画列表时，只有颜色跟随主题。复选框和单选按钮：`icon-sm` 大小的框，`bg-page` 底，`1px` 的 `border-strong`，复选框用 `radius-sm`，单选按钮是圆的；hover 时边框变成 `text-muted`；选中时框里填满 `accent` (指针悬停时 `accent-hover`)，复选框的勾是 `text-on-accent` 的 `check`，单选按钮的圆点靠框内一圈 `space-1` 宽的 `bg-page` 显出来；禁用时半透明。`summary` 显示 `chevron-right`，展开时转四分之一圈，取代浏览器自带的标记。
 
 ## <a id="not-done"></a>不做的事
@@ -260,13 +262,14 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 ## <a id="status"></a>现状
 
-公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的侧边栏和目录)；只在精确指针上用 hover；点击区域的大小；侧边栏的各种状态；原生控件；字体、正文字号和栏宽，以及断点；筛选器和图例，筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。本地网站上已经实现的：全部 token，样式表里的值都写 token 名；[组件](#components) 一节里的 tag、图例、领域树和 one-of；筛选器的按钮和弹出层；复选框；只在精确指针上用 hover，点击区域的大小，焦点框，以及筛选弹出层的动效。尚未实现的，以及各自取代什么：
+公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的抽屉)；只在精确指针上用 hover；点击区域的大小；[组件](#components) 一节的侧边栏、目录和抽屉；原生控件；字体、正文字号和栏宽，以及断点；筛选器和图例，筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮、条款下规定的按钮、侧边栏分组和语言切换的按钮、顶栏按钮上的 `aria-expanded` 与 `aria-controls`。本地网站上已经实现的：全部 token，样式表里的值都写 token 名；[组件](#components) 一节里的 tag、图例、领域树和 one-of；筛选器的按钮和弹出层；复选框；只在精确指针上用 hover，点击区域的大小，焦点框，以及筛选弹出层的动效。尚未实现的，以及各自取代什么：
 
 - 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
 - 新的规定树取代按深度缩进的做法，挂在规定下的规定也包括在内。
 - 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
 - 上面三项实现之前，`rules-list.css` 里还直接写着一些字号和间距，列表的翻页链接用的是字符 ‹ 和 ›。
 - 本地网站上，筛选器里状态、默认开关和领域这三组，每组的「全选」和「不选」，按钮上的徽标，按 Escape 或点击外面时关闭；以及应用筛选的主按钮，眼下由立即生效的复选框代替。它的弹出层一下子关上，只能再点一次按钮来关。它的页面不加载字体，正文用本机的衬线字体。
+- 侧边栏和抽屉的脚本 `web/assets/sidebars.js` 不止几行逻辑，却仍是 JavaScript；它会改成 TypeScript，放进 `web/assets/ts/` ([代码实现](#in-the-code))。
 
 ## <a id="open-questions"></a>待定问题
 
@@ -283,3 +286,4 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - Anthropic 的 frontend-design skill (<https://github.com/anthropics/skills>，`dbd4588f`)：一个强调色，「不做的事」里的一部分。
 - UI Design Brain (<https://github.com/carmahhawwari/ui-design-brain>，`38f04c5a`)：边框或阴影二选一，表格里的数字靠末端对齐，图标 16px 到 24px、描边和填充不混用，提示里不放页面没有的内容。
 - Better Icons (<https://github.com/better-auth/better-icons>，`033316ec`)：图标以来源命名，放在一处。
+- Tailwind CSS 的文档 (<https://tailwindcss.com/docs>，2026-10-15 时网站上的页面，没有 commit 可写)：侧边栏和目录的细线，以及标当前项的短线；平时淡、指针下变深的列表项；随滚动变化的当前标题；侧边栏把当前页滚进可见范围；抽屉在顶栏下打开时顶栏不动。
