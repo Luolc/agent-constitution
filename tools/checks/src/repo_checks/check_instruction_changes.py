@@ -54,11 +54,14 @@ REPO = [
 # tools, so they go with whichever side changed them. A path here is not an
 # instruction file even when GENERIC lists it. statute-checks.toml is one:
 # `statute compile --check` proves it equals a compile of the rule set, and
-# it changes with statute's version, which the tools set. Another repo
-# declares it with --generated once its CI runs that check.
+# it changes with statute's version, which the tools set. The AGENTS.md
+# at the top is another: the same check proves it, and it changes with how
+# statute renders the rule set as well as with the rule set. Another repo
+# declares them with --generated once its CI runs that check.
 GENERATED = [
   r"constitution/[^/]+/generated/constitution\.[^/]+\.md",
   r"statute-checks\.toml",
+  r"AGENTS\.md",
 ]
 
 

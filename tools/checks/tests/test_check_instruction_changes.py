@@ -16,7 +16,7 @@ from repo_checks import check_instruction_changes as cic
 from repo_checks import git_env
 
 BASE = {
-  "AGENTS.md": "agents\n",
+  "CLAUDE.md": "claude\n",
   "rules/a.toml": "rule\n",
   "constitution/2026-10/articles/01-a/article.toml": "article\n",
   "constitution/2026-10/generated/constitution.en.md": "generated\n",
@@ -82,7 +82,7 @@ class Change(unittest.TestCase):
 
   def test_instructions_only_pass(self):
     self.change(
-      "AGENTS.md",
+      "CLAUDE.md",
       "sub/CLAUDE.md",
       ".claude/skills/x/SKILL.md",
       "rules/a.toml",
@@ -194,6 +194,17 @@ class Change(unittest.TestCase):
         self.change(*names)
         self.assertEqual(self.run_check()[0], code)
 
+  def test_compiled_agents_file_goes_with_either_side(self):
+    for names, code in [
+      (["AGENTS.md", "crates/statute/src/compile.rs"], 0),
+      (["AGENTS.md", "statute.toml"], 0),
+      (["sub/AGENTS.md", "crates/statute/src/compile.rs"], 1),
+    ]:
+      with self.subTest(names):
+        self.git("reset", "-q", "--hard", "base")
+        self.change(*names)
+        self.assertEqual(self.run_check()[0], code)
+
   def test_checks_file_counts_as_instructions_unless_declared(self):
     self.change("statute-checks.toml", "crates/statute/Cargo.toml")
     own = ("--instructions", r"policy/.+")
@@ -207,11 +218,11 @@ class Change(unittest.TestCase):
     self.assertEqual(self.run_check("--instructions", r"policy/.+")[0], 1)
 
   def test_rename_of_instruction_file_to_other_path_fails(self):
-    self.git("mv", "AGENTS.md", "docs/agents.md")
+    self.git("mv", "CLAUDE.md", "docs/agents.md")
     self.commit("rename")
     code, out = self.run_check()
     self.assertEqual(code, 1)
-    self.assertIn("instruction files:\n  D AGENTS.md\n", out)
+    self.assertIn("instruction files:\n  D CLAUDE.md\n", out)
     self.assertIn("other files:\n  A docs/agents.md\n", out)
 
   def test_repo_declared_patterns_replace_this_repos(self):
