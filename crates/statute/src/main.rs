@@ -57,7 +57,7 @@ enum Command {
     },
     /// Write a new statute.toml in this directory, with no rules enabled.
     Init {
-        /// Write the global configuration, ~/.statute/config.toml, and
+        /// Write the global configuration, ~/.config/statute/config.toml, and
         /// clone the sources it names, in place of a rule set.
         #[arg(long, conflicts_with_all = ["edition", "public", "private"])]
         global: bool,
@@ -236,7 +236,7 @@ fn env(mode: Mode) -> Result<Env, ()> {
     env.layers.built_in = true;
     env.from_lock = matches!(mode, Mode::Read);
     env.newest = matches!(mode, Mode::Newest);
-    let Some(path) = statute::global::dir().map(|d| d.join(statute::global::CONFIG)) else {
+    let Some(path) = statute::global::config_dir().map(|d| d.join(statute::global::CONFIG)) else {
         return Ok(env);
     };
     let shown = statute::global::shown_config();
@@ -492,7 +492,7 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
 /// shows at once. An existing configuration is left as it is.
 fn init_global(address: Option<&str>) -> Result<(), ()> {
     let shown = statute::global::shown_config();
-    let Some(dir) = statute::global::dir() else {
+    let Some(dir) = statute::global::config_dir() else {
         eprintln!("{shown}: error: the system reports no home directory");
         return Err(());
     };
@@ -1364,7 +1364,7 @@ fn source_add(
         entry.insert("public", public.into());
     }
 
-    let global_path = statute::global::dir().map(|d| d.join(statute::global::CONFIG));
+    let global_path = statute::global::config_dir().map(|d| d.join(statute::global::CONFIG));
     // The private rule set's directory, when the source goes there.
     let mut private_at = None;
     let (file, path) = if global {

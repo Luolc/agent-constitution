@@ -115,6 +115,8 @@ fn statute(dir: &Path, args: &[&str]) -> Run {
 fn statute_with(dir: &Path, args: &[&str], env: &[(&str, &str)]) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_CACHE_HOME")
         .args(args)
         .current_dir(dir)
         .env_remove("GIT_DIR")

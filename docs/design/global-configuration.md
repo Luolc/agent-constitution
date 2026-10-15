@@ -54,8 +54,7 @@ for a command-line tool whose configuration the user edits by hand.
 A directory named `~/.statute/` would also have the name of the
 `.statute/` statute keeps in a repository, and the two would meet when
 statute runs in the home directory. There is no migration from
-`~/.statute/`: no repository used statute before. Not built yet:
-today statute keeps all three in `~/.statute/`.
+`~/.statute/`: no repository used statute before.
 
 `statute init --global` writes `config.toml` with the built-in default
 written out (below), or with `R` at the git address `--source` gives,

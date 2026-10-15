@@ -166,6 +166,13 @@ class Change(unittest.TestCase):
         self.change(name, "docs/design/README.md")
         self.assertEqual(self.run_check()[0], 1)
 
+  def test_statute_rules_directory_counts_as_instructions(self):
+    self.change(".statute/rules/1.toml")
+    self.assertEqual(self.run_check()[0], 0)
+    self.git("reset", "-q", "--hard", "base")
+    self.change(".statute/rules/1.toml", "docs/design/README.md")
+    self.assertEqual(self.run_check()[0], 1)
+
   def test_rename_of_instruction_file_to_other_path_fails(self):
     self.git("mv", "AGENTS.md", "docs/agents.md")
     self.commit("rename")

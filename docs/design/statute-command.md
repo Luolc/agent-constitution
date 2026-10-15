@@ -214,12 +214,11 @@ with which rules may cite which in `requires`, `conflicts`,
 ([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's or a domain's `parent`
 in another source, and the private layer with its lock file in git's
-directory, its output and `.statute/.gitignore`: `compile
---private-only` is not built yet.
+directory, its output and `.statute/.gitignore`:
+`compile --private-only` is not built yet.
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
-in `~/.statute/` rather than the XDG directories, and except that
-`upgrade` does not show the text of a changed rule yet.
+except that `upgrade` does not show the text of a changed rule yet.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
