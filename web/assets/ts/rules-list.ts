@@ -2,19 +2,18 @@
 // the page size the reader chose, read from the address: the values
 // chosen of each field as assets/ts/filter.ts writes them, `per` (25,
 // 50, 100 or all) and `page`. Without them, the default filter, as the
-// panel's check boxes were built, and the page Hugo built. Every page
+// panel's check boxes were built, the page size Hugo built the pages
+// with, all by default, and the page Hugo built. Every page
 // holds every rule, so this only shows the rules of the filter and page
 // on the rules' items (`.rule-item`, its values in `data-*`), and hides
 // the others; shows an item's group row where the group changes and on
 // top of the page, each group of its path with its id the first time it
-// shows on the page; and makes the table of contents and
-// the links to the other pages again. A change to the filter, the page
+// shows on the page; and makes the links to the other pages again. A change to the filter, the page
 // size or the page applies at once and is written into the address: the
 // first change after the panel opens adds an entry to the history, the
 // next ones replace it, so back returns to the list as it was before.
 // Checking or unchecking a domain does the same to the domains under it.
-// Inlined in <head>; it runs before assets/toc-current.js, which then
-// finds the headings shown.
+// Inlined in <head>.
 import { differing, type Fields, type Filter, matches, read, write } from "./filter";
 
 const SIZES = ["25", "50", "100", "all"];
@@ -49,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     new Map([...fields.keys()].map((f) => [f, new Set(boxes(f).filter((b) => b.checked).map((b) => b.value))]));
   const defaults = chosen();
 
-  let per = list.dataset.size ?? "100";
+  let per = list.dataset.size ?? "all";
   let page = 1;
   // Whether this opening of the panel has added its entry to the history.
   let pushed = false;
@@ -68,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filter = read(query, fields, defaults);
     for (const box of boxes()) box.checked = filter.get(box.name)?.has(box.value) ?? false;
     per = query.get("per") ?? "";
-    if (!SIZES.includes(per)) per = list.dataset.size ?? "100";
+    if (!SIZES.includes(per)) per = list.dataset.size ?? "all";
     const size = per === "all" ? 0 : Number(per);
     page = query.has("page")
       ? Number(query.get("page"))
@@ -111,20 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
       previous = group;
     }
     if (none) none.hidden = shown.length > 0;
-
-    const toc = document.querySelector("#TableOfContents ul");
-    if (toc) {
-      toc.textContent = "";
-      for (const part of list.querySelectorAll<HTMLElement>(".group-part[id]")) {
-        const li = document.createElement("li");
-        li.style.setProperty("--level", part.dataset.level ?? "0");
-        const a = document.createElement("a");
-        a.href = `#${part.id}`;
-        a.textContent = part.dataset.toc ?? "";
-        li.append(a);
-        toc.append(li);
-      }
-    }
 
     select.value = per;
     const n = differing(filter, fields, defaults).length;
