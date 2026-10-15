@@ -448,8 +448,9 @@ impl RawEntry {
     }
 }
 
-/// The keys of a rule set's top level that are not tables. Written after
-/// the `[sources]` header, such a key falls in that table.
+/// The keys of a rule set's top level that are not tables, those of
+/// `RawManifest` and `RawPrivate`. Written after the `[sources]` header,
+/// such a key falls in that table.
 const TOP_LEVEL: &[&str] = &[
     "public",
     "local-rules",
@@ -460,11 +461,15 @@ const TOP_LEVEL: &[&str] = &[
 ];
 
 /// Takes out of a `[sources]` table the keys of `TOP_LEVEL` that fell in
-/// it, each with an error, and returns their names.
+/// it, each with an error, and returns their names. `false` stays: it
+/// takes out a source of the global configuration of that name.
 fn misplaced(sources: &mut BTreeMap<String, toml::Value>, errors: &mut Vec<String>) -> Vec<String> {
     let mut names = Vec::new();
     sources.retain(|name, value| {
-        if value.is_table() || !TOP_LEVEL.contains(&name.as_str()) {
+        if value.is_table()
+            || *value == toml::Value::Boolean(false)
+            || !TOP_LEVEL.contains(&name.as_str())
+        {
             return true;
         }
         errors.push(format!(
@@ -1425,6 +1430,22 @@ lang = "en"
             &GOOD.replace("[compile]", "exclude = [\"R7\"]\n\n[compile]"),
             "[sources] `exclude`: written after the `[sources]` header",
         );
+        // `false` takes out a source of the global configuration of that
+        // name.
+        let global = read_config(
+            "[sources]\nrules = { git = \"https://example.test/rules.git\", branch = \"main\", public = true }\n",
+        )
+        .unwrap();
+        let layers = Layers {
+            global,
+            ..Layers::default()
+        };
+        let m = Manifest::parse_with(
+            &GOOD.replace("[compile]", "rules = false\n\n[compile]"),
+            &layers,
+        )
+        .unwrap();
+        assert!(m.spec("rules").is_none());
         let base = Manifest::parse(&GOOD.replace("public = false", "public = true")).unwrap();
         let errors = base
             .with_private("[sources]\nteam = { path = \"/srv/team\" }\nexclude = [\"R7\"]\n")
