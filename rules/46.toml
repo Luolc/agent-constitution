@@ -1,8 +1,9 @@
 id = 46
 slug = "instruction-files-apart"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 280
 lang = "en"
 parent = 275
 default = "off"

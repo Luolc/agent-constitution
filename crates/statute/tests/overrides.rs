@@ -574,3 +574,24 @@ fn a_citation_of_an_overridden_rule_is_the_rule_in_its_place() {
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     assert!(out.contains("\n- R9 Do the thing 9, after L20.\n"), "{out}");
 }
+
+#[test]
+fn the_rule_in_its_place_cites_an_overridden_rule_as_itself() {
+    let l20 = edit(
+        overriding(20, "R2", ""),
+        "Do the thing 20.",
+        "Do the thing 20, in place of {@rule:R2}.",
+    );
+    let dir = repo(
+        "citation-by-overrider",
+        &manifest("\"R2\", \"20\""),
+        &[("rules", l20)],
+    );
+    ok(&statute(&dir, &["lock"]));
+    ok(&statute(&dir, &["compile"]));
+    let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    assert!(
+        out.contains("\n- L20 Do the thing 20, in place of R2.\n"),
+        "{out}"
+    );
+}

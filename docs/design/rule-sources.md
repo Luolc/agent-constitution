@@ -679,9 +679,10 @@ parent = 104
 **Rendering.** The compiled `AGENTS.md` shows no domain or subdomain:
 its rules are a flat list in the order of the tree, as in
 [Compilation and the site](statute-command.md#compilation-and-the-site),
-so a subdomain's rules come at its place in its domain. Under a domain,
-its own nodes come first, then those of other sources by the sources'
-names, as the domains themselves are ordered. On the site, a subdomain heads the rules
+which gives the order: a subdomain's rules come after the rules and
+one-ofs directly under its domain, and in each part the domain's own
+source comes first, then the other sources by their names, as the
+domains themselves are ordered. On the site, a subdomain heads the rules
 below it as a domain does, nested under its domain's heading, and its
 page lists the nodes below it ([Static site](static-site.md)).
 

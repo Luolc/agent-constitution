@@ -1,6 +1,6 @@
 id = 18
 slug = "design-with-the-change"
-revision = 4
+revision = 5
 kind = "rule"
 status = "superseded"
 superseded-by = [80, 81]
@@ -32,17 +32,17 @@ zh = '''
 en = '''
 For each thing the change adds, removes or alters in how the repository works, the design says so after the change: a new format, field, command or check has its place in the section that covers it; one that is gone or changed is no longer described the old way, in any file of the design. The parts that track the design's own state follow too: a status line, a list of what a planned part will replace, open questions that the change settles.
 
-Where the change is instructions only and {@rule:46} keeps it apart from other files, the design changes in a change of its own next to it, before or after, and the description of each says so.
+Where the change is instructions only and {@rule:280} keeps it apart from other files, the design changes in a change of its own next to it, before or after, and the description of each says so.
 
 Violated when a merged change leaves a section of the design describing the repository as it was before the change.
 '''
 zh = '''
 变更在仓库运作方式上增加、删除或改动的每一项，变更之后的设计都写到了：新的格式、字段、命令或检查，在讲它的那一节里有它的位置；已经去掉或改掉的，设计的任何文件都不再按旧的样子描述。记录设计自身状态的部分也一并更新：状态行、计划中的部分将取代什么的清单、这个变更已经解决的待定问题。
 
-变更只涉及指令、按 {@rule:46} 与其他文件分开的，设计在紧挨着它的另一个变更里修改，先后均可，两个变更的说明里都写明这一点。
+变更只涉及指令、按 {@rule:280} 与其他文件分开的，设计在紧挨着它的另一个变更里修改，先后均可，两个变更的说明里都写明这一点。
 
 已合入的变更留下某一节设计仍按变更之前的样子描述仓库的，即为违反本规定。
 '''
 
 [translations]
-zh = "cd1dcef906456fd050c4ea2948b415f29e383333bc1e8903b92312f774861929"
+zh = "3944bc310f10cb00c36058d8deb2ad6676e40020e8907cd02097a745e278491f"
