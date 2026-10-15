@@ -1,4 +1,4 @@
-<!-- en-sha256: 102ce05507981fa714c5d871211204acb39b6ed31f6c65c9973f72227161c263 -->
+<!-- en-sha256: 375dc3ec34cc7cb800fc13a691de2143caeae80d902b66a930e6168637fdce6d -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -26,7 +26,7 @@ $XDG_CACHE_HOME/statute/            ~/.cache/statute/ by default
 - `repos/` 里每个地址一份裸克隆 (bare clone)：`<name>` 是地址的最后一段，去掉 `.git` (`agent-constitution`)，`<hash>` 是按原样写的地址的 SHA-256 的前 12 位十六进制，所以两个地址永远不会共用一份克隆。裸克隆没有工作区，statute 在那里做的任何事都不会改动别人正在用的文件。
 - `snapshots/<commit>/` 放一个提交的文件，statute 像读磁盘上的规定源一样读它。它先写进旁边的一个临时目录，再改名放到位，此后不再改动；一个提交唯一确定它的内容，所以有这个提交的每份克隆都共用同一份快照。
 
-缓存目录里的东西随时可以删：statute 需要时会重新克隆、重新写出。缓存本来就是这样的东西，规范把它和配置分开，配置是用户自己写、要留着的；备份或者同步 dotfiles 时，只取配置、不取缓存。`XDG_CONFIG_HOME` 和 `XDG_CACHE_HOME` 设成绝对路径时才用；没设、为空或者是相对路径时，规范说要忽略它们，这时退回家目录下的 `.config` 和 `.cache`，家目录取系统报告的那个 (Unix 上是 `HOME`)。macOS 也用同样的路径，不用 `~/Library`，与 uv、ruff 和 mise 对这类配置要用户手改的命令行工具的做法一样。如果叫 `~/.statute/`，它会和 statute 在仓库里放的 `.statute/` 同名，statute 在家目录里运行时两者就撞在一起。不从 `~/.statute/` 迁移：此前没有仓库用过 statute。尚未实现：现在 statute 把这三样都放在 `~/.statute/`。
+缓存目录里的东西随时可以删：statute 需要时会重新克隆、重新写出。缓存本来就是这样的东西，规范把它和配置分开，配置是用户自己写、要留着的；备份或者同步 dotfiles 时，只取配置、不取缓存。`XDG_CONFIG_HOME` 和 `XDG_CACHE_HOME` 设成绝对路径时才用；没设、为空或者是相对路径时，规范说要忽略它们，这时退回家目录下的 `.config` 和 `.cache`，家目录取系统报告的那个 (Unix 上是 `HOME`)。macOS 也用同样的路径，不用 `~/Library`，与 uv、ruff 和 mise 对这类配置要用户手改的命令行工具的做法一样。如果叫 `~/.statute/`，它会和 statute 在仓库里放的 `.statute/` 同名，statute 在家目录里运行时两者就撞在一起。不从 `~/.statute/` 迁移：此前没有仓库用过 statute。
 
 `statute init --global` 写出 `config.toml`，里面写明内置默认 (见下)，或者把 `R` 写成 `--source` 给的 git 地址，再附一个私有规定源的示例，以注释的形式；接着克隆或拉取它登记的每个 git 规定源，这样没有网络或没有账号的问题当场就会暴露。已有 `config.toml` 时原样保留，命令以退出码 1 退出。
 
