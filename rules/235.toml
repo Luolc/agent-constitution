@@ -1,14 +1,15 @@
 id = 235
 slug = "stop-and-report-when-quota-runs-out"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 145
+default = "on"
 authority = ["must-ask.capital"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "When a quota runs out, stop and report"

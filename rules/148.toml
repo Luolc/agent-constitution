@@ -1,14 +1,15 @@
 id = 148
 slug = "quota-reset-by-principal-only"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 145
+default = "on"
 authority = ["must-ask.capital"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Only a principal resets, buys or unlocks usage quota, by hand"
