@@ -53,6 +53,8 @@ which git ignores, inherits `statute.toml` through
 `statute.private.lock`. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+[Rule configuration](rule-config.md) adds the directory of the local
+rules, parameters and default switches, not built yet.
 
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
