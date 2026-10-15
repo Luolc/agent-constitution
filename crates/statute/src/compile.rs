@@ -654,7 +654,8 @@ pub fn cited(
 }
 
 /// Writes node `key` and what is below it, in the order of the tree, a
-/// node before its children: each rule shown as one item of a flat list,
+/// node before its children and a domain's subdomains after its other
+/// children: each rule shown as one item of a flat list,
 /// its number and its statement, and nothing of a domain or a one-of but
 /// the rules below it (`docs/design/statute-command.md`, Compilation and
 /// the site). An overridden rule's place holds the rule that stands in it.
@@ -692,7 +693,7 @@ fn render(
         return Ok(());
     }
     let mut children = project.sources.children(key);
-    children.sort();
+    children.sort_by_key(|c| (project.sources.subdomain(key, c), c.clone()));
     for child in children {
         render(project, labels, &child, private, out)?;
     }

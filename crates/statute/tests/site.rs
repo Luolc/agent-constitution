@@ -583,6 +583,14 @@ fn site_draws_the_tree_by_level() {
         index.contains("<li class=\"has-statement u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
         "{index}"
     );
+    // Below domain 1, the one-of 9 comes before the subdomain 2, though
+    // its number is higher.
+    let at = |page: &str| {
+        index
+            .find(&format!("<a href=\"R/{page}.html\">"))
+            .expect(page)
+    };
+    assert!(at("9") < at("2"), "{index}");
     // A one-of none of whose options is enabled is drawn lighter.
     assert!(index.contains("<li class=\"one-of unset\">"), "{index}");
     // One with a domain on is not.

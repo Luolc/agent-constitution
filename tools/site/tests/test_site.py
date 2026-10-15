@@ -556,20 +556,20 @@ class SiteTest(unittest.TestCase):
   def test_rules_list_subdomain(self):
     """A domain under a domain: a row with its path, and a nested checkbox.
 
-    The list coming back to the domain above shows that domain's row
-    again.
+    The domain's own rules come before the subdomain's, so each group's
+    row shows once, though R4 to R6 have higher numbers than R3.
     """
     raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
     page = raw["rules/index.html"]
-    # The domain's page lists the subdomain, the subdomain's its rule, in
-    # both languages.
+    # The domain's page lists its rules, then the subdomain, the
+    # subdomain's its rule, in both languages.
     for lang, below, two, three in (
       ("", "Below it", "R2 Group 2", "R3 Rule 3"),
       ("zh/", "下级", "R2 组 2", "R3 规定 3"),
     ):
       with self.subTest(lang):
         one = visible(raw[f"{lang}rules/1/index.html"])
-        self.assertIn(f"{below} {two} R4", one)
+        self.assertIn(f"{below} R4 Rule 4 R5 Rule 5 R6 Rule 6 {two} ", one)
         sub = visible(raw[f"{lang}rules/2/index.html"])
         self.assertIn(f"{below} {three}", sub)
     self.assertIn(
@@ -582,17 +582,17 @@ class SiteTest(unittest.TestCase):
     self.assertEqual(
       HEADING.findall(page),
       [
-        ("3", "2", ""),
         ("2", "1", " hidden"),
         ("2", "1", ""),
         ("2", "1", " hidden"),
+        ("3", "2", ""),
       ],
     )
     self.assertEqual(GROUP_ID.findall(page), ["1", "2"])
     self.assertIn(
       '<a href="../rules/2/" aria-label="R2 Group 1, Group 2"><span'
       ' class="group-label">R2</span><span class="group-path"><span'
-      ' class="group-part" data-group="1" id="group-1">Group 1</span><svg ',
+      ' class="group-part" data-group="1">Group 1</span><svg ',
       page,
     )
 
@@ -611,17 +611,17 @@ class SiteTest(unittest.TestCase):
       self.skipTest("needs Google Chrome or Chromium")
     assert chrome, "no Chrome in CI"
     raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
-    # R3 is in domain 2, under domain 1, which holds the others; R4 is
-    # superseded.
+    # R3 is in domain 2, under domain 1, which holds the others and lists
+    # them first; R4 is superseded.
     with tempfile.TemporaryDirectory() as tmp:
       page = Path(tmp) / "rules.html"
       page.write_text(raw["rules/index.html"], encoding="utf-8")
       for query, rules, groups, fields in (
-        ("", ["3", "5", "6"], ["2", "1"], "0"),
+        ("", ["5", "6", "3"], ["1", "2"], "0"),
         (
           "?status=active,trial,draft,superseded,repealed",
-          ["3", "4", "5", "6"],
-          ["2", "1"],
+          ["4", "5", "6", "3"],
+          ["1", "2"],
           "1",
         ),
         ("?status=superseded", ["4"], ["1"], "1"),
@@ -665,8 +665,8 @@ class SiteTest(unittest.TestCase):
             dom,
           )
           self.assertEqual(shown, rules)
-          # A group row shows where the group changes, so the domain
-          # comes back after its subdomain.
+          # A group row shows where the group changes, each group once,
+          # the subdomain after its domain's rules.
           self.assertEqual(
             re.findall(r'<h\d class="rules-group" data-group="(\d+)">', dom),
             groups,

@@ -67,13 +67,17 @@ class SiteRulesTest(unittest.TestCase):
   def test_subdomain(self):
     """A domain under a domain heads the rules below it, under its own."""
     site_fixture.subdomain(self.root)
-    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    data = self.load()["en"]["nodes"]
+    nodes = {n["id"]: n for n in data}
     self.assertEqual((nodes[2]["kind"], nodes[2]["depth"]), ("domain", 1))
     self.assertEqual(
       [(g["id"], g["kind"]) for g in nodes[3]["groups"]],
       [(1, "domain"), (2, "domain")],
     )
-    self.assertEqual([c["id"] for c in nodes[1]["children"]], [2, 4, 5, 6])
+    # The domain's rules come before its subdomain, in the list and on
+    # its page.
+    self.assertEqual([n["id"] for n in data], [1, 4, 5, 6, 2, 3])
+    self.assertEqual([c["id"] for c in nodes[1]["children"]], [4, 5, 6, 2])
     self.assertEqual([c["id"] for c in nodes[2]["children"]], [3])
 
   def test_other_sources(self):

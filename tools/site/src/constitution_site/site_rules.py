@@ -395,11 +395,28 @@ def listed(node: Node) -> bool:
   return node.kind == "rule" and node.status not in ("superseded", "repealed")
 
 
+def sibling_key(node: Node, parent_kind: str | None) -> tuple[bool, int]:
+  """Return the key that orders a node among the children of its parent.
+
+  By ID, except that a domain's subdomains come after its rules and
+  one-ofs, as statute orders them (`docs/design/statute-command.md`,
+  Compilation and the site).
+
+  Args:
+    node: the node.
+    parent_kind: the kind of its parent, or None when it has none here.
+
+  Returns:
+    Whether it is a subdomain, then its ID.
+  """
+  return (node.kind == "domain" and parent_kind == "domain", node.id)
+
+
 def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
   """Return the nodes along the parent tree, each with its depth.
 
-  Each node comes before its children, which follow in order of ID, as
-  the domains do; a node with no parent in this source starts at depth 0.
+  Each node comes before its children, which follow in the order of
+  `sibling_key`; a node with no parent in this source starts at depth 0.
 
   Args:
     nodes: the nodes, a valid tree.
@@ -407,11 +424,18 @@ def tree_order(nodes: list[Node]) -> list[tuple[Node, int]]:
   Returns:
     Each node and its depth, 0 for a domain that is not a subdomain.
   """
+  kinds = {n.id: n.kind for n in nodes}
   children: dict[int | None, list[Node]] = defaultdict(list)
-  for n in sorted(nodes, key=lambda n: n.id):
+  for n in nodes:
     # A node under a domain of another source, or in place of a rule of
     # another source, heads a tree of its own here.
     children[n.parent if isinstance(n.parent, int) else None].append(n)
+  for siblings in children.values():
+    siblings.sort(
+      key=lambda n: sibling_key(
+        n, kinds.get(n.parent) if isinstance(n.parent, int) else None
+      )
+    )
   order: list[tuple[Node, int]] = []
 
   def visit(parent: int | None, depth: int) -> None:
@@ -782,7 +806,11 @@ class _Language:
         "overrides": self.ref(node.overrides, name) if node.overrides else None,
         "supersededBy": [self.ref(t, name) for t in node.superseded_by],
         "children": [
-          self.ref(n.id, name) for n in source.nodes if n.parent == node.id
+          self.ref(n.id, name)
+          for n in sorted(
+            (n for n in source.nodes if n.parent == node.id),
+            key=lambda n: sibling_key(n, node.kind),
+          )
         ],
         "requires": [self.ref(t, name) for t in data.get("requires", [])],
         "conflicts": [self.ref(t, name) for t in conflicts],

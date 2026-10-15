@@ -145,7 +145,9 @@ screenshots (Screenshots, below). The workflow
   which Hugo reads; the build fails without it, so CI and
   `pages.yml` run it before Hugo. For each language of `index.toml` it
   holds every node of the rule tree along the parent tree, a node's
-  children in order of ID, each with its label, `R` and its ID (`R12`),
+  children in the order of the compiled file
+  ([Compilation and the site](statute-command.md#compilation-and-the-site)),
+  made by `tree_order` in `site_rules.py`, each with its label, `R` and its ID (`R12`),
   made by `rule_label` in `site_rules.py`, the one place that makes it;
   the templates read the node's `label`. With `--source
   <name>:<quadrant>:<dir>`, once for each, it also reads the rules of other
@@ -195,8 +197,8 @@ screenshots (Screenshots, below). The workflow
   row for its nearest domain, with that domain's label (`R13`) and the
   path of its domains (`Documentation › Design`), shown where the group
   changes from the rule shown before it and again at the top of each
-  page, so that the list coming back to a domain from one under it shows
-  the domain's row again; with more than one source, the path starts
+  page, so each group's row shows once on a page, as a domain's rules
+  come before its subdomains; with more than one source, the path starts
   with the source, as its quadrant and name. The head and the group rows
   stick to the top of the window as it scrolls, a group row under the
   head until the next one covers it, with the style sheet alone. Above

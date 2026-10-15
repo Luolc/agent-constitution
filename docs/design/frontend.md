@@ -469,8 +469,10 @@ turned off (disabled), where it has these.
   as `accent` would fall under 4.5 on the band, and named for screen
   readers by the label and the domains joined by commas. A group row shows where
   the nearest domain changes from the rule shown before it and at the
-  top of each page, so the list coming back to a domain from one under
-  it shows that domain's row again. The head sticks to the top of the
+  top of each page. The rows follow the order of the compiled file, a
+  domain's rules before its subdomains
+  ([Compilation and the site](statute-command.md#compilation-and-the-site)),
+  so each domain's row shows once on a page. The head sticks to the top of the
   window, under a narrow screen's top bar, and each group row sticks
   under the head until the next one covers it, so that the domain of
   the rows in view is always named; only the nearest domain's row
