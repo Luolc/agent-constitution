@@ -1,0 +1,42 @@
+id = 238
+slug = "ask-before-drafting-a-decision"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["asking"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Ask a principal for a design decision directly, not through a merged draft"
+zh = "要委托人裁决的设计问题直接问，不先走草稿的审查与合入"
+
+[text.statement]
+en = "Put a design question a principal must decide to them directly; do not first write it up as a draft decision document, have the draft reviewed and merged, and only then ask."
+zh = "要委托人裁决的设计问题直接交给委托人；不先写成决策文档的草稿、审完合入再等委托人裁决。"
+
+[text.reason]
+en = '''
+A draft that first goes through review and merge stretches one question into several rounds, and the principal has to read the whole document before giving a view ({@constitution:asking}); the memo of {@rule:237} puts the same question in one round.
+'''
+zh = '''
+先写草稿再走审查、合入，是把一次提问拖成好几轮，委托人还要读完整份文档才能表态 ({@constitution:asking})；按 {@rule:237} 写的决策备忘，一轮就能问完。
+'''
+
+[text.verification]
+en = '''
+A draft decision document is any document that sets out the question and a proposed answer for the principal to approve, such as a design change or a decision record.
+
+Violated when, so as to have a principal decide a design question, an agent first opens a pull request with a draft decision document and asks the principal only after it has been reviewed and merged.
+'''
+zh = '''
+决策文档的草稿指任何写出问题和拟定答案、等委托人批准的文档，比如对设计的改动或决策记录。
+
+agent 为了让委托人裁决一个设计问题，先开一个决策文档草稿的 PR，等它审完合入才去问委托人的，即为违反本规定。
+'''
+
+[translations]
+zh = "b25afccb23d0a783719a86f0f2d19e6d353b33640d35a0d6f107d00c85d42709"

@@ -15,28 +15,28 @@ en = "Put design questions to a principal at most five at a time"
 zh = "要委托人裁决的设计问题一次不超过五条"
 
 [text.statement]
-en = "Put the design questions a principal must decide to them directly, in one memo of at most five points, each with a recommended default, so that one sentence can settle it; do not first write them up as a draft decision document, have it reviewed and merged, and only then ask."
-zh = "要委托人裁决的设计问题，写成一份不超过五条、每条带推荐默认值的决策备忘直接交给委托人，让委托人一句话就能定；不先写成决策文档的草稿、审完合入再等委托人裁决。"
+en = "Put the design questions a principal must decide to them in one memo of at most five points, each with a recommended default, so that one sentence can settle it."
+zh = "要委托人裁决的设计问题，写成一份不超过五条、每条带推荐默认值的决策备忘交给委托人，让委托人一句话就能定。"
 
 [text.reason]
 en = '''
-The more questions there are, the more times the principal has to read and answer; with a default on each, one sentence is enough when they agree ({@constitution:asking}). A draft that first goes through review and merge stretches one question into several rounds, and the principal has to read the whole document before giving a view.
+The more questions there are, the more times the principal has to read and answer; with a default on each, one sentence is enough when they agree ({@constitution:asking}).
 '''
 zh = '''
-问题条数多了，委托人就得分几次读、几次答；每条带默认值，委托人同意时一句话就够 ({@constitution:asking})。先写草稿再走审查、合入，是把一次提问拖成好几轮，委托人还要读完整份文档才能表态。
+问题条数多了，委托人就得分几次读、几次答；每条带默认值，委托人同意时一句话就够 ({@constitution:asking})。
 '''
 
 [text.verification]
 en = '''
 Questions put to a principal for decision at one time number at most five, and each comes with its recommended default.
 
-Violated when an agent puts more than five design questions to a principal for decision at once, puts one without a recommended default, or, so as to have a principal decide, first opens a pull request with a draft decision document and asks only after it has been reviewed and merged.
+Violated when an agent puts more than five design questions to a principal for decision at once, or puts one without a recommended default.
 '''
 zh = '''
 一次交给委托人裁决的设计问题，条数不超过五，每条写明推荐的默认值。
 
-一次向委托人提出超过五条要裁决的设计问题的，有一条没有推荐默认值的，或者为了让委托人裁决而先开一个决策文档草稿的 PR、等它审完合入才去问委托人的，即为违反本规定。
+一次向委托人提出超过五条要裁决的设计问题的，或者有一条没有推荐默认值的，即为违反本规定。
 '''
 
 [translations]
-zh = "eb0709962942dabf3939027ec328da24545bc51884043fae041742f63666db52"
+zh = "bee75f3565893f61712bfa5cd6e06e760cafdbb157f1d555f4017308635b1504"
