@@ -1,0 +1,43 @@
+id = 250
+slug = "hook-seconds-no-tests"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 77
+default = "on"
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Keep only checks that take seconds, and no tests, in the commit hooks"
+zh = "commit hook 只放秒级的检查，不放测试"
+
+[text.statement]
+en = "Put into a repository's commit hooks only checks that finish in seconds, such as formatting, lint, a secret scan and validating or building the repository's own sources, aiming at no more than 5 seconds for all of them; never run tests in the hooks, whether unit, integration or end-to-end, nor checks that need a heavy toolchain or outside state, and leave those to the checks before a push and to CI."
+zh = "commit hook 只放几秒内跑完的检查，例如格式化、lint、凭证扫描、校验或构建本仓自己的源文件，全部跑完的目标不超过 5 秒；测试一律不进 hook，单元测试、集成测试、端到端测试都不进，要装重工具链或依赖外部状态的检查也不进，这些放到 push 之前和 CI 里跑。"
+
+[text.reason]
+en = '''
+The hooks run at every commit: slow ones hold up each commit and tempt the author to skip them ({@constitution:automation-first.keep-moving}). Tests are the checks that grow with the code: a suite that takes a second today takes a minute a year later, so a hook that runs them leaves the budget sooner or later, and drawing the line at tests keeps the decision from being made again for each suite. The tests and the heavy checks still run before the push and in CI, so none is lost.
+'''
+zh = '''
+hook 每次提交都跑，慢了就拖住每一次提交，还会诱人跳过它 ({@constitution:automation-first.keep-moving})。测试是随代码一起长的检查：今天一秒跑完的测试集，一年后要跑一分钟，hook 里跑测试，迟早会超出时间预算；把线划在测试上，就不用每个测试集都重新判断一次。测试和重的检查在 push 之前和 CI 里照样会跑，不会漏掉。
+'''
+
+[text.verification]
+en = '''
+What counts is what the hooks run, read from their configuration, and the total time of all the hooks on a commit of ordinary size, in a checkout where they are installed. A test is any run of a test suite or test runner, however fast, unit, integration and end-to-end tests alike; validating or building the repository's own sources, or checking that a generated file is current, is not a test. The credential scan goes into the hooks before other checks, and scans the staged changes ({@rule:50}). Hooks that pass do not clear a push: the checks the change touches still run before it ({@rule:53}).
+
+Violated when a repository's commit hooks run any test, hold a check that needs a toolchain installed on the spot (downloading dependencies, for example) or needs the network or an outside service, or when all the hooks on an ordinary commit take more than 5 seconds time after time.
+'''
+zh = '''
+看的是 hook 跑了什么 (从 hook 的配置里读)，以及在已经装好 hook 的检出里，对一次普通大小的提交跑全部 hook 的总耗时。测试指任何一次跑测试集或测试运行器，不论多快，单元测试、集成测试、端到端测试都算；校验或构建本仓自己的源文件、检查生成文件是否最新，不算测试。防凭证泄漏的扫描优先放进 hook，且扫暂存区 ({@rule:50})。hook 跑完不等于可以 push，push 之前还要跑改动涉及的检查 ({@rule:53})。
+
+仓库的 commit hook 里跑了任何测试，或者有要现装工具链 (例如下载依赖) 或要访问网络、外部服务才能完成的检查，或者对一次普通提交跑全部 hook 稳定超过 5 秒的，即为违反本规定。
+'''
+
+[translations]
+zh = "f6a7fb31dd5c73bf1f3dc730e25e07f463a230dbc19e32641b2076ba4fa438aa"
