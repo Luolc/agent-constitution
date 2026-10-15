@@ -8,9 +8,8 @@ apply here.
 **Locally**, the compiler takes the constitution (the version for agents)
 and a rule set with its lock file, and writes:
 
-- an `AGENTS.md`, which opens with the repository, the edition and the
-  revision of the constitution it rests on, and then has the enabled
-  rules as one flat list, each rule an item of its reference and its
+- an `AGENTS.md`, which holds the constitution's version for agents and
+  then the enabled rules as one flat list, each rule an item of its reference and its
   statement and nothing more (below). The file is not split for now. Once the
   compiled file of a repository using it has been measured with
   `count-tokens`, a length threshold is set from that measurement, and a
@@ -28,17 +27,13 @@ once parameters are built, each placeholder is replaced by its value
 another file with `--output`, and the other two next to it (below),
 and only when the lock file is what `statute lock` would write now. The
 `AGENTS.md` holds, in
-this order: a comment that the file is generated; a line with the
-constitution's edition, revision and source; the constitution's version
+this order: a comment that the file is generated, which `compile` reads to
+tell its own file from one written by hand; the constitution's version
 for agents in the rule set's language, the file
 `constitution/<edition>/generated/constitution.<lang>.agent.md` that the
 constitution's build writes, unchanged; and a heading "Rules" with the
-enabled rules. In a public repository it ends with one more line, for
-an agent that finds no link to the full text the private layer compiles
-to ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)):
-"If `.statute/AGENTS.full.md` exists, read it and follow it: it is this
-file with the repository's private rules added." (in Chinese
-「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」).
+enabled rules. The edition, revision and source the file rests on are in
+`statute.lock`, not in the file.
 
 `AGENTS.md` is for agents, as is the private full text,
 `.statute/AGENTS.full.md`, built the same way, and each is always a
@@ -336,8 +331,10 @@ each git source at the commit the lock file records
 ([Git sources](global-configuration.md#git-sources)); it writes no lock
 file. It prints the path of `index.html`.
 
-- **Files.** Plain HTML with one inline style sheet: no script, no Hugo,
-  no dependency beyond those statute has. Each run builds the site
+- **Files.** Plain HTML with one inline style sheet, which follows
+  [Frontend](frontend.md) with the public site's tokens, and its icons
+  inlined: no script, no Hugo, no dependency beyond those statute
+  has. Each run builds the site
   anew: it removes the old `.statute/site/` first, but only when that
   directory holds statute's `.gitignore` (below), and otherwise writes
   nothing and fails. Nothing is written outside `.statute/site/` but

@@ -1,4 +1,4 @@
-<!-- en-sha256: af7c6cc4b3746a334b72b6e2487d8cb3f4bc33273f15c63ec02a6225bb4563e9 -->
+<!-- en-sha256: bffcfce81b0a4ced8ba0d48dbb158fdc7783641245bc9184e3076aa5bb4a00c1 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -141,7 +141,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - Grok 既读 `AGENTS.md` 也读 `CLAUDE.local.md`，所以公开规定它会读两遍。两遍是同样的规定，互不矛盾；这样的重复可以接受。
 - 仓库里有 `CLAUDE.md` 时，Claude Code 除了 `CLAUDE.local.md` 也会读它，于是它的内容叠在全文之上：它是指向 `AGENTS.md` 的软链或 `AGENTS.md` 的副本时，公开规定读两遍；否则多出来的文字可能与规定不一致。Grok 把指向同一个文件的 `CLAUDE.md` 和 `AGENTS.md` 算作一份，所以有没有这个软链，公开规定它都读两遍。`statute compile` 遇到 `CLAUDE.md` 会给出 warning ([编译与网站](statute-command.md#compilation-and-the-site))。
 - OpenCode 暂不支持。
-- 提交进仓库的 `AGENTS.md` 最后有固定的一行，每个公开仓库都一样，告诉 agent 有 `.statute/AGENTS.full.md` 时读它。路径写在反引号里，免得 Claude Code 把它当作 `@` 路径导入。这一行是兜底，给两个软链都没找到的 agent 用：只有模型自己去读那个文件，它才起作用。全文里不写这一行。
+- 提交进仓库的 `AGENTS.md` 不指向 `.statute/AGENTS.full.md`：读了软链的 agent 会把全文读两遍，两个软链都没找到的 agent 读到的是公开规定。
 
 两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则什么都不写，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
 

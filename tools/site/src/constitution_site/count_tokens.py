@@ -2,8 +2,8 @@
 
 Writes web/data/lengths.json, which Hugo reads (docs/design/static-site.md):
 for each language and each version, the full one and the one for agents, the
-SHA-256 of the text whose length the site gives (the generated file without
-its header line) and its tokens, as counted by Anthropic's count_tokens API
+SHA-256 of the text whose length the site gives (the generated file from its
+title on) and its tokens, as counted by Anthropic's count_tokens API
 for the model `params.tokenCount.model` in web/hugo.toml, and the full SHA
 of the commit the count ran on, which the site links. The site shows a count
 only when its SHA-256 matches the text it builds, so a file left from
@@ -75,16 +75,17 @@ def output(name: str) -> Path:
 def counted(markdown: str) -> str:
   """Return the text whose length the site gives.
 
-  That is the built constitution without its header line, anchors and link
-  definitions included.
+  That is the built constitution from its `# ` title on, anchors and link
+  definitions included: the full version has a header line and a blank
+  line above the title, the version for agents starts with it.
 
   Args:
     markdown: A built constitution.
 
   Returns:
-    The text after the header line.
+    The text from the title on.
   """
-  return markdown.partition("\n")[2]
+  return markdown if markdown.startswith("# ") else markdown.split("\n", 2)[2]
 
 
 def credential(environ: Mapping[str, str]) -> dict[str, str] | None:

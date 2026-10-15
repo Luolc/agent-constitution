@@ -1,8 +1,8 @@
 # Rule configuration
 
-Status: decided; partly built. What is built is under
+Status: decided; built. What is built is under
 [The command and the first version](statute-command.md#the-command-and-the-first-version),
-and [What this changes](#what-this-changes) lists what is not.
+and [What this changes](#what-this-changes) lists it.
 This part of the design says three things a rule set can set beyond
 the list of its rules: the directory of the repository's own rules,
 the values of parameters that rules leave open (the languages first),
@@ -252,7 +252,9 @@ A parameter's `scope` says who sets it:
   may not: a value of this kind set there draws a warning that names
   the parameter and the file, and is ignored.
 - **`personal`**: what concerns only the person an agent works for,
-  today only the language in which an agent writes to that person.
+  wherever the agent works: today the language in which an agent
+  writes to that person, and the language of the work items it writes
+  for them, whose tracker serves every repository of the person.
   `statute.toml` gives the repository's value, and
   [the global configuration](global-configuration.md#the-global-configuration)
   and the private rule set may each set the person's own, which the
@@ -290,7 +292,7 @@ rules. What only one person wants stays out of them.
 | `language.docs` | `repo` | the repository's documents: Markdown, the design, other prose files |
 | `language.commits` | `repo` | commit messages and pull request titles |
 | `language.pull-requests` | `repo` | pull request descriptions, their comments and reviews |
-| `language.work-items` | `repo` | issues and other work items |
+| `language.work-items` | `personal` | issues and other work items |
 
 Commit messages and pull request descriptions are two parameters
 because a common setup writes the first in English, for the history
@@ -492,6 +494,14 @@ packs = ["R96"]
   add, and no `exclude`: the private layer leaves out no rule of the
   public one
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+  They may name rules and domains of any source, the first-party one
+  included, which the private output alone then holds. The file
+  belongs to one clone, so a person who turns on the same domains in
+  several repositories lists them in the `private.toml` of each; the
+  global configuration turns on none, and one place that does it for
+  every repository of the person belongs to the personal layer of
+  [Where it lives](rule-sets.md#rule-sets-and-the-lock-file), which is
+  not designed yet.
 
 **Whose defaults.** A rule set takes the defaults of the first-party
 source, `R`, wherever it comes from, and of each source its own

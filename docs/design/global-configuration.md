@@ -97,7 +97,7 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   `personal` parameters, such as the language replies are written in,
   which only the private output takes, never the committed files; a
   value of a `repo` parameter there draws a warning and is ignored
-  ([Setting a value](rule-config.md#setting-a-value), not built yet).
+  ([Setting a value](rule-config.md#setting-a-value)).
 
 **The built-in default** is the one source statute knows by itself:
 `R = { git = "https://github.com/Luolc/agent-constitution", branch = "main" }`.

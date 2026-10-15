@@ -1,18 +1,22 @@
-{{- /* hugo-book's top bar of a narrow screen, its buttons' icons Lucide's
-  (layouts/_partials/icon.html): `menu` for the sidebar and
-  `table-of-contents` for the table of contents. */ -}}
+{{- /* hugo-book's top bar of a narrow screen, its two check boxes made
+  buttons that say whether their drawer is open (assets/ts/sidebars.ts,
+  which also names the drawer each controls): `menu` for the sidebar
+  and `table-of-contents` for the table of contents, from
+  layouts/_partials/icon.html, each turning to `x` while its drawer is
+  open. Without scripts the buttons are hidden and
+  both drawers stand in the page (docs/inject/head.html). */ -}}
 <div class="flex align-center justify-between gap">
-  <input type="checkbox" class="toggle" id="menu-control" />
-  <label for="menu-control" aria-label="{{ partial "docs/text/i18n" "Menu" }}">
-    {{- partial "icon.html" "lucide:menu" -}}
-  </label>
+  <button type="button" class="drawer-toggle" data-drawer="menu" aria-expanded="false" aria-label="{{ partial "docs/text/i18n" "Menu" }}">
+    <span class="drawer-shut">{{ partial "icon.html" "lucide:menu" }}</span>
+    <span class="drawer-open">{{ partial "icon.html" "lucide:x" }}</span>
+  </button>
 
   {{ partial "docs/brand" . }}
 
   {{ if .Param "BookToC" | default true }}
-  <input type="checkbox" class="toggle" id="toc-control" />
-  <label for="toc-control" aria-label="{{ partial "docs/text/i18n" "Table of Contents" }}">
-    {{- partial "icon.html" "lucide:table-of-contents" -}}
-  </label>
+  <button type="button" class="drawer-toggle" data-drawer="toc" aria-expanded="false" aria-label="{{ partial "docs/text/i18n" "Table of Contents" }}">
+    <span class="drawer-shut">{{ partial "icon.html" "lucide:table-of-contents" }}</span>
+    <span class="drawer-open">{{ partial "icon.html" "lucide:x" }}</span>
+  </button>
   {{ else }}<div></div>{{ end }}
 </div>

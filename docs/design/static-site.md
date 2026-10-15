@@ -3,7 +3,9 @@
 The built constitution is also published as static web pages, English at
 `site/index.html` and Chinese at `site/zh/index.html`, each with the
 version for agents under `agent/` (`site/agent/index.html`,
-`site/zh/agent/index.html`), and so is this design, under `design/`
+`site/zh/agent/index.html`) and the full version again under
+`editions/<edition>/` (`site/editions/2026-10/index.html`,
+`site/zh/editions/2026-10/index.html`), and so is this design, under `design/`
 (`site/design/index.html`, `site/zh/design/index.html`), and so are the
 rules, under `rules/` (`site/rules/index.html`,
 `site/zh/rules/index.html`). Hugo builds them with `hugo-0.167.0 -s
@@ -40,13 +42,14 @@ screenshots (Screenshots, below). The workflow
   failing the build unless exactly one file matches; Python writes no
   page, only the data of the rules' pages (Rules, below). The content
   adapter `web/content/_content.gotmpl` makes each into the home page of
-  its language: the header line is dropped,
-  the title becomes the page's, each heading's anchor (`## <a
+  its language: the full version's header line is dropped (the version
+  for agents has none), the title becomes the page's, each heading's anchor (`## <a
   id="general-provisions"></a>Article I. ...`) becomes the heading's id,
   so the table of contents links to it, and the page gets the lengths
-  (below) as params. It fails the build when a file does not start with
-  the header line, a blank line and the `# ` title. The layout
-  (`web/layouts/home.html`) sets the title, the list under it and the
+  (below) as params. It fails the build when the full version does not
+  start with the header line, a blank line and the `# ` title, or the
+  version for agents with the `# ` title. The layout
+  (`web/layouts/_partials/constitution/full.html`) sets the title, the list under it and the
   text in `<div class="constitution">`, the root the style sheet hangs
   on. The title (`web/layouts/_partials/constitution/title.html`) has no
   `#` link from the theme and keeps its name and its parenthesis each on
@@ -78,6 +81,22 @@ screenshots (Screenshots, below). The workflow
   The sidebar, the language switch (to the other language's version for
   agents), the color switch and the table of contents are as on the home
   page, the table of contents linking to the IDs Hugo gives the headings.
+- The edition's page: the full version is also the page
+  `editions/<edition>/` of its language, an address that keeps this
+  edition when a later one takes the home page; a link to an edition from
+  outside the site goes there. The content adapter adds it with the home
+  page's text, title and params, and its layout,
+  `web/layouts/editions/page.html`, sets them as the home page's does,
+  both through `web/layouts/_partials/constitution/full.html`. It has no
+  entry in the sidebar, `bookHidden` hides it from the theme's own list,
+  and the section `editions/` gets no page (`build` with `render` and
+  `list` `never`). As the home page has the same text, the edition's page
+  carries `<meta name="robots" content="noindex">`
+  (`web/layouts/_partials/docs/inject/head.html`), so search engines
+  index the text once, on the home page. The links in the lists of the
+  rules under the provisions start at the site's root (`relLangURL`),
+  which `relativeURLs` makes relative to each page, so they lead to the
+  rules' pages from both.
 - Design: the files of `docs/design/` become the pages under `design/`
   of each language, read where they are: `web/hugo.toml` mounts
   `docs/design/*.md` and `docs/design/zh/*.md` as assets, and the content
@@ -178,39 +197,50 @@ screenshots (Screenshots, below). The workflow
   domain above them, a subdomain under its domain's heading,
   where the group changes and again at the top of each page; with more
   than one source, each source heads its rules, as its quadrant and
-  name, a level above its domains. Above the list, a filter folds open a
-  checkbox for each status, one that keeps only the rules the defaults
-  enable, one for each value of `uses` and one for each domain, and for
-  each quadrant when there is more than one source, applied with its
-  button; a rule is shown when its status, its nearest domain and its
-  quadrant are checked, its `uses` (`["instructions"]` when its file
-  leaves it out) has a value checked, and, with that box, the defaults
-  enable it (a node whose answer depends on another source has no tag
-  and is left out by that box); and checking or unchecking a domain does the same to the domains under
-  it. A node whose `parent` is in another source, and a
+  name, a level above its domains. Above the list, a legend gives each
+  mark a rule carries there and what it means: the statuses, on and off
+  by default and the default option, and, when the site has them,
+  enabled or not and the quadrant. Below it, the filter, a button that
+  opens a panel of check boxes ([Frontend](frontend.md#components)), a
+  group for each field: each status, on and off by default, each value
+  of `uses` and each domain, and each quadrant when there is more than
+  one source, each group with All and None. A rule is shown when, in
+  every field, one of its values is checked: its status, whether the
+  defaults enable it (a node whose answer depends on another source,
+  which has no tag, counts as off), its `uses`
+  (`["instructions"]` when its file leaves it out), its nearest domain
+  and its quadrant; checking or unchecking a domain does the same to the
+  domains under it. A change applies at once. A node whose `parent` is
+  in another source, and a
   rule with `overrides`, has no domain on the site: it is at the top
   of the tree, with no group above it. When its parent is a domain of a
   source the site reads, the filter goes by that domain. Otherwise the
-  filter does not show it yet,
-  since it shows only the rules of a checked domain; without scripts it
-  appears under the heading before it. This repo has no such node yet;
-  the pull request that first adds one fixes the list, and the
+  filter shows it only while every domain is checked; without scripts
+  it appears under the heading before it. This repo has no such node
+  yet; the pull request that first adds one fixes the list, and the
   first-party source overrides nothing. By default the filter checks
-  the statuses of
-  `params.rulesStatuses` in `web/hugo.toml`, both values of `uses` and
-  every domain, and leaves the box of the defaults unchecked; superseded
-  and repealed rules are in the list but not checked, and so are draft
-  ones. Beside the filter, a menu sets the page size: 100 by default,
-  `params.rulesPerPage`, or 25, 50 or all; the rules are filtered first
-  and then split into pages. Hugo builds the pages of the default
-  filter; each holds every rule, each rule with all its group headings,
-  those not shown hidden.
-  `web/assets/rules-list.js`, inlined in `<head>`, takes the filter, the
-  size and the page from the address, where the form puts them
-  (`?filter=1&status=draft&uses=review&default=on&domain=14&per=50&page=2`),
-  shows that page's
-  rules and headings, and makes the links to the pages and the table of contents again; without
-  scripts the form is hidden and Hugo's pages stay. The table of
+  the statuses of `params.rulesStatuses` in `web/hugo.toml` and every
+  other value; superseded, repealed and draft rules are in the list but
+  not checked. Beside the filter, a menu sets the page size: 100 by
+  default, `params.rulesPerPage`, or 25, 50 or all; the rules are
+  filtered first and then split into pages. Hugo builds the pages of
+  the default filter; each holds every rule, each rule with all its
+  group headings, those not shown hidden.
+  `web/assets/ts/rules-list.ts`, bundled by Hugo
+  ([Frontend](frontend.md#in-the-code)) and inlined in `<head>`, takes the
+  filter, the size and the page from the address, shows that page's
+  rules and headings, makes the links to the pages and the table of
+  contents again, and writes each change back into the address. The
+  address holds only the fields whose check boxes differ from the
+  default, each as the values checked, keys of `[a-z0-9-]` joined by
+  commas: `?status=draft,trial&uses=review&domain=14,15&per=50&page=2`,
+  with `status=` for no status. An address of the earlier form, with
+  `filter=1` and one parameter per box checked, a field without one
+  having none checked
+  (`?filter=1&status=draft&uses=review&default=on&domain=14`), is read
+  as the same filter and rewritten in the new form. Without scripts the
+  controls are hidden and Hugo's pages stay.
+  The table of
   contents at the right lists the headings on the page, each indented by
   its level. A
   rule's page (`web/layouts/rules/page.html`) gives its label and title,
@@ -281,9 +311,14 @@ screenshots (Screenshots, below). The workflow
   without scripts the lists are open. The lengths are of the text
   without these lines. The rules' pages have the design's layout and
   style (`<div class="design rules">`).
+- Length: the second item of the list gives the length of the version
+  for agents, bare, which is what takes room in an agent's context: the
+  generated file from its `# ` title on, in characters in both
+  languages, words split on white space (ASCII white space, the only kind
+  the files hold) in English, and tokens as counted for the model
   `params.tokenCount.model` of `web/hugo.toml` by Anthropic's count_tokens
-  API (`POST /v1/messages/count_tokens`, standard library only). The
-  content adapter counts the characters and words; `count-tokens`
+  API (`POST /v1/messages/count_tokens`, standard library only). The content adapter counts
+  the characters and words; `count-tokens`
   counts the tokens and writes them to `web/data/lengths.json` (not
   committed), with the SHA-256 of each text it counted and the full SHA
   of the commit it ran on. The site shows a token count, and the commit, only
@@ -299,7 +334,7 @@ screenshots (Screenshots, below). The workflow
   popup first says that the length it hangs under is that of the version
   for agents and gives the lengths of both versions in a small table
   (spans with ARIA table roles, so a screen reader names the columns; the
-  full version is the generated file without its header line, anchors and
+  full version is the generated file from its `# ` title on, anchors and
   link definitions included; a token count not made is a dash), the table
   as wide as the popup; under it, fainter than the table, a bulleted list
   (spans with ARIA list roles): what the version for agents omits, which
@@ -372,9 +407,11 @@ screenshots (Screenshots, below). The workflow
   the content adapter adds each page's entry to the menu, named from
   `index.toml` as "2026-10 Edition" / 「2026-10 版」, followed
   by "(draft)" / 「(草案)」 while `status` is `draft`, and weighted by the
-  edition's year and month, negated. Today that is the one edition, the
-  home page; a page per edition, once there are several, is not built
-  yet. The version for agents is not listed, as
+  edition's year and month, negated. Today that is the one edition, whose
+  entry links the home page; the edition's page is not listed. A site of
+  several editions, an older one on its own page alone and indexed there,
+  is not built yet: the site reads one edition (Input, above). The
+  version for agents is not listed, as
   it is not meant for people to read; the home page links it (the legend
   and the popup on the length), and the content adapter hides it from the
   theme's own list with `bookHidden`, as it hides the design's pages,

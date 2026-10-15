@@ -86,6 +86,9 @@ fn statute(dir: &Path, args: &[&str]) -> Run {
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .env_remove("XDG_CONFIG_HOME")
         .env_remove("XDG_CACHE_HOME")
+        // git looks for a repository no further up than the tests' directory,
+        // which lies inside this repository's work tree.
+        .env("GIT_CEILING_DIRECTORIES", env!("CARGO_TARGET_TMPDIR"))
         .args(args)
         .current_dir(dir)
         .output()
@@ -127,7 +130,7 @@ const RULES_EN: &str = "# Rules
 fn compiles_the_rules_along_the_tree() {
     let dir = repo("tree", &manifest(""));
     let expected = format!(
-        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n\nConstitution: edition 2026-10, revision 1, from source `R` (`.`).\n\n# Constitution\n\nAgents follow it.\n\n{RULES_EN}"
+        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n\n# Constitution\n\nAgents follow it.\n\n{RULES_EN}"
     );
     assert_eq!(compiled(&dir), expected);
     // AGENTS.md is written only without --output.
@@ -228,7 +231,7 @@ fn compiles_in_the_language_of_the_rule_set() {
     let dir = repo("zh", &manifest("\n[compile]\nlang = \"zh\"\n"));
     let out = compiled(&dir);
     assert!(
-        out.contains("依据的宪法：2026-10 版，修订号 1，来自规定源 `R` (`.`)。\n\n# 宪法\n"),
+        out.contains("do not edit by hand. -->\n\n# 宪法\n"),
         "{out}"
     );
     assert!(out.contains("\n# 规定\n"), "{out}");

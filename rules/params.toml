@@ -66,7 +66,7 @@ zh = "5a0d092b2946529d8778aaddd8f084b00a30032a3f78b3401f3d48e6655e3d52"
 [[parameter]]
 name = "language.work-items"
 type = "language"
-scope = "repo"
+scope = "personal"
 default = "en"
 
 [parameter.title]

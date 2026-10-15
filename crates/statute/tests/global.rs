@@ -329,10 +329,6 @@ fn a_repository_draws_on_the_global_first_party_source() {
     ok(&run);
     let agents = read(&w.repo, "AGENTS.md");
     assert!(agents.contains("Do the thing 2."), "{agents}");
-    assert!(
-        agents.contains(&format!("(`{} at {commit}`)", w.r_address)),
-        "{agents}"
-    );
     // statute reads the commit's files, never a work tree of the clone.
     assert!(
         w.home
@@ -565,7 +561,7 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
         ("here", w.at.join("here").display().to_string()),
     ] {
         let heading =
-            format!("<h3 id=\"source-{source}\">{source} <span class=\"tag\">{place}</span></h3>");
+            format!("<h3 id=\"source-{source}\">{source}<span class=\"place\">{place}</span></h3>");
         assert!(index.contains(&heading), "{heading}\n{index}");
     }
     assert!(!index.contains("snapshots"), "{index}");

@@ -64,4 +64,4 @@ the whole design.
 - [Rule configuration](rule-config.md): the directory of the local
   rules, parameters such as the languages, which domains and rules
   are on by default, where a rule is used, and no rule under a rule;
-  built in part.
+  built.

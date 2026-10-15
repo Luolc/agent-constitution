@@ -26,8 +26,8 @@ tokens, the icons and the scripts are written in the code is in
 - [Interaction and accessibility](#interaction-and-accessibility):
   target sizes, hover on devices that have it, names and states for
   assistive technology, pages that work without scripts.
-- [Components](#components): tags, the filter, the tree of rules, the
-  one-of, popovers, the sidebar and buttons.
+- [Components](#components): tags, the legend, the filter, the tree of
+  rules, the one-of, popovers, the sidebar and buttons.
 - [Not done](#not-done): what the pages never do.
 - [Screenshots and review](#screenshots-and-review): what a pull request
   that changes the pages attaches, what CI runs, what the reviewer
@@ -77,16 +77,16 @@ below.
 | `bg-hover` | `#c7d0bf` | `#343b35` | A row or a button on the page under the pointer. |
 | `bg-panel-hover` | `#bcc7b4` | `#3a423b` | An item on a panel under the pointer. |
 | `bg-active` | `#b2bdaa` | `#444c45` | An item while it is pressed. |
-| `bg-selected` | `#c5c5b0` | `#3e3e33` | The current item: the sidebar's current page, a chosen option. |
+| `bg-selected` | `#c5c5b0` | `#3e3e33` | The current item: the sidebar's current group, a chosen option. |
 | `bg-target` | `#e3d79c` | `#4a4a2a` | The element an anchor led to, for a moment. |
 | `text` | `#23301f` | `#d3dccf` | Text and links in the text. |
-| `text-muted` | `#4b5946` | `#9cab98` | Labels, secondary text, the table of contents. |
+| `text-muted` | `#4b5946` | `#9cab98` | Labels, secondary text, the sidebar's pages, the table of contents. |
 | `text-faint` | `#5a6754` | `#839080` | Notes under notes on the page: the legend under the title. Never on a panel. |
 | `accent` | `#7d3a1e` | `#dba37f` | Links under the pointer, the current item's text, the focus ring, a primary button. |
 | `accent-hover` | `#6b381e` | `#d9ae8f` | A primary button under the pointer. |
 | `text-on-accent` | `#dde6d5` | `#1e2520` | Text on an `accent` background. |
 | `border-subtle` | `#b5c4aa` | `#38453a` | Hairlines: the rules between parts, a link's underline, a tag's outline. |
-| `border-strong` | `#9ca695` | `#5d655d` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
+| `border-strong` | `#6d7968` | `#717970` | Controls and boxes: inputs, the one-of's box, a tree level's bar. |
 | `status-active` | `#245a20` | `#9fd39a` | The text of an Active tag. |
 | `status-active-bg` | `#c3d2bc` | `#303d31` | Its background. |
 | `status-trial` | `#66460a` | `#e2c07a` | The text of a Trial tag. |
@@ -103,7 +103,8 @@ chosen and how they stay in tune if the palette changes: `bg-hover` is
 12% `text` into `bg-page`, `bg-panel-hover` 12% `text` into `bg-panel`,
 `bg-active` 18% `text` into `bg-panel`, `bg-selected` 14% `accent` into
 `bg-panel`, `accent-hover` 20% `text` into `accent`, `border-strong`
-35% `text` into `bg-page`, each status background 14% of its text color
+60% `text` into `bg-page` in the light theme and 46% in the dark one
+(the least that keeps the contrast below), each status background 14% of its text color
 into `bg-page`, and each quadrant 30%
 of its hue (blue `#3b82f6`, amber `#f59e0b`, green `#22c55e`, purple
 `#a855f7`) into `bg-page`.
@@ -124,6 +125,10 @@ The contrast the values must keep, in both themes:
   the change shows in light mode too (`bg-hover` on the page 1.24 light
   and 1.36 dark; `bg-panel-hover` on a panel 1.24 and 1.36).
 - `accent` on `bg-selected`: at least 4.5 (4.80 light, 4.92 dark).
+- `border-strong`, the edge of a control (an unchecked box, an input, a
+  menu), on `bg-page` and on `bg-panel`: at least 3, the floor of WCAG
+  for the boundary of a control (3.57 and 3.22 light, 3.48 and 3.15
+  dark).
 - A state never lowers the contrast of the text it holds below 4.5.
   `text-muted` keeps it only on `bg-hover` (4.69 light, 4.77 dark); on
   `bg-panel-hover`, `bg-active` and `bg-selected` it falls to between
@@ -206,6 +211,10 @@ heading) stays in em, a multiple of the text size.
 
 | Token | Value | Use |
 | --- | --- | --- |
+| `width-popover` | `28rem` | The width of a popover that holds controls, the filter's panel. |
+
+| Token | Value | Use |
+| --- | --- | --- |
 | `radius-sm` | `0.25rem` | Tags, inputs, buttons, a row's hover background. |
 | `radius-md` | `0.5rem` | Popovers, panels, the one-of's box. |
 | `radius-full` | `9999px` | Round things: a count badge, a status pill. |
@@ -269,8 +278,7 @@ What replaces today's icons:
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
 | A text button | The filter | `funnel` |
 | The characters ‹ and › | The list's previous and next page | `chevron-left`, `chevron-right` |
-| None | Closing a popover, removing a condition | `x` |
-| None | Adding a condition | `plus` |
+| None | Closing a popover | `x` |
 | None | A rule under another rule | `corner-down-right` |
 | None | An option of a one-of, the default one | `circle`, `circle-dot` |
 | None | Enabled by the rule set | `check` |
@@ -322,8 +330,11 @@ target still fades from `bg-target`.
   `button`, a link, a `details`, a `select`), and ARIA is added only for
   what that element does not say itself. A control that opens or folds
   something says whether it is open (`aria-expanded`) and what it opens
-  (`aria-controls`). A popover with controls takes the focus when it
-  opens and gives it back to its control when it closes; Escape closes
+  (`aria-controls`). A control's name says what it acts on, not the
+  words of a link beside it: the button that folds a group of the
+  sidebar is named for the group's pages ("Pages of Design"), as the
+  group's link already says its name. A popover with controls takes the
+  focus when it opens and gives it back to its control when it closes; Escape closes
   it.
 - **Tooltips.** A tip shown on hover appears after `delay-tip`; once one
   is shown, the next one under the pointer appears at once. A tip never
@@ -336,7 +347,7 @@ target still fades from `bg-target`.
   scripts fail or never run still shows all its text, with the parts
   that scripts fold open left open.
 - **Empty and loading.** A list that the filter leaves empty says so and
-  offers the next step, Clear filter. Should a page ever load something
+  offers the next step, Reset filter. Should a page ever load something
   while the reader waits, its indicator appears only after about 150 to
   300 ms and then stays at least 300 to 500 ms, so it does not flicker;
   the sites load nothing that way today.
@@ -372,25 +383,39 @@ turned off (disabled), where it has these.
   - In the list the tags stand in a column at the right edge of the
     row, aligned from one row to the next, not right after the title.
   - Tags do not react to the pointer; the row does.
-- **The filter**, in the manner of Linear and Notion. Shut, it is one
-  button: `funnel` (`icon-md`), the word Filter, and, when any condition
-  is set, their number in a badge (`radius-full`, `accent` on
-  `bg-selected`). Open, it is a popover under the button, about `28rem`
-  wide (the column's width on a narrow screen), holding one row per
-  condition: the field (status, defaults, use, domain, and the quadrant
-  when there is more than one source, enabled when the site has a rule
-  set), the operator (is, is not), the value (one or more values of the
-  field, chosen from a list), and `x` to remove the row. The first row
-  starts with Where; each later row starts with the connective, and or
-  or, a menu on the second row that sets it for the whole filter (one
-  connective for all rows, as Notion's simple filter). Under the rows,
-  Add condition (`plus`), and Clear, which removes them all. A change
+- **The legend**, above the list of the rules, as Ruff's list of rules
+  has one: each mark a rule carries in the list, drawn as the list
+  draws it, and a line on what it means: each status, on and off by
+  default, the default option of a one-of, and, when the site has them,
+  enabled and not enabled and a quadrant. A term and its meaning on one
+  line (a description list), `text-sm`, the meanings in `text-muted`;
+  it goes by the marks only, not by how the list is laid out.
+- **The filter**, as far as Ruff's list of rules goes, no further: no
+  conditions to combine. Shut, it is one button: `funnel` (`icon-md`),
+  the word Filter, and, when the reader has changed a field from the
+  default filter, the number of such fields in a badge (`radius-full`,
+  `accent` on `bg-selected`); the default filter shows no badge. Open,
+  it is a popover under the button, `width-popover` wide (the column's
+  width on a narrow screen), holding a group of check boxes per field: the status,
+  the defaults (on, off), the use, the domain, its boxes indented by its
+  depth, and the quadrant when there is more than one source. Each
+  group has its name, then All and None, quiet buttons. Within a field
+  a rule needs one of the values checked; across fields it needs that
+  in each, and a field with every value checked filters nothing.
+  Checking or unchecking a domain does the same to the domains under it.
+  Under the groups, Reset filter, which brings back the default filter,
+  the list as its address without a filter shows it; to see every
+  status, the reader checks All in its group. A change
   applies at once and is written into the address, so a filtered list
-  can be linked; there is no Apply button. A domain's condition takes
-  in the domains under it. Escape or a click outside closes it. A site
-  without scripts, as the local site is, shows the same button and
-  popover with one row per field holding its values as check boxes,
-  joined by and.
+  can be linked; there is no Apply button. Escape, a click outside or
+  the focus leaving it closes it. A site without scripts, as the local
+  site is, shows the same groups in the popover, applied with a primary
+  button. The local site differs today: its check boxes apply at once,
+  through the style sheet, with no primary button; its groups are the
+  kind of source, the use, and the rules not enabled and those
+  superseded or repealed, shown besides; and it has no groups for the
+  status, the defaults and the domain, no All and None, and no badge
+  ([Status](#status)).
 - **The tree of rules.** The level of a node shows by its size, weight
   and a bar ([Type](#type)), not by indentation: a domain of the first
   level is a heading with `space-8` above it; one of the second level
@@ -425,15 +450,56 @@ turned off (disabled), where it has these.
   outside. It opens over `duration-base` from `scale(0.95)` and
   transparent, and closes over `duration-fast`, both `ease-out`
   ([Motion](#motion)).
-- **The sidebar.** `bg-panel`, with `1px` of `border-subtle` along its
-  edge. A group's name: its icon (`icon-md`) and its name in `text-md`,
-  `weight-bold`, `text`. A page: `text-md`, `weight-regular`, `text`,
-  padding `space-1 space-2`, `radius-sm`. Hover: `bg-panel-hover`.
-  Active: `bg-active`. The current page: `bg-selected`, its text in
-  `accent` and `weight-medium`; a group whose current page is listed
-  under it marks that page alone. A group that folds has its chevron at
-  its end, `chevron-right` shut and `chevron-down` open, the turn taking
-  `duration-base`.
+- **The sidebar.** After the sidebars of Tailwind CSS's documentation
+  ([Sources](#sources)), in this file's colors and fonts. `bg-panel`,
+  with `1px` of `border-subtle` along its edge, its groups `space-4`
+  apart. A group's name: its icon (`icon-md`) and its name in `text-md`,
+  `weight-bold`, `text`. Its pages stand under it along a hairline, `1px`
+  of `border-subtle` that starts under the middle of the icon. A page:
+  `text-md`, `weight-regular`, `text-muted`, padding `space-1 space-2`,
+  its text in line with the group's name, with a `2px` bar over the
+  hairline, transparent at rest. A row, a group's or a page's, under the
+  pointer: `bg-panel-hover`, `radius-sm` but on the hairline's side; a
+  page also turns to `text`, its bar to `border-strong`. Active:
+  `bg-active`. The current page: its bar and its text in `accent`, the
+  text in `weight-medium`, with no fill. A group with no pages, when
+  current, has no hairline to mark: it takes `bg-selected`, its text in
+  `accent`. A group whose current page is listed under it marks that
+  page alone. When the page loads, the sidebar scrolls its current page
+  into view if it is out of it. A group that folds has a quiet button at
+  the end of its row, its chevron `chevron-right` shut and
+  `chevron-down` open, the turn taking `duration-base`; that button and
+  the language switch say whether their list is shown
+  (`aria-expanded`, `aria-controls`).
+  - The table of contents, at the right: `text-sm`, under its heading in
+    `text-muted`; its headings along a hairline as the sidebar's pages
+    are, `text-muted`, a heading of a lower level indented by `space-4`
+    with its bar still on the hairline. Under the pointer: `text`, the
+    bar `border-strong`. The heading the reader is in: the bar and the
+    text in `accent`, `weight-bold`. It follows the scroll, so its marks
+    change at once, without a transition.
+  - The drawers of a narrow screen. At `56rem` and under the sidebar,
+    and at `70rem` and under the table of contents, go behind a quiet
+    button of the top bar, `menu` and `table-of-contents`, each showing
+    `x` while its drawer is open and saying whether it is and which
+    drawer it opens (`aria-expanded`, `aria-controls`). At `56rem` and
+    under the top bar stays at the top of the window, `bg-page` with
+    `1px` of `border-subtle` under it. A drawer opens under the top bar
+    from its own edge, the sidebar from the start and the table of
+    contents from the end: `bg-panel`, `1px` of `border-subtle` and
+    `shadow-popover`, as it lies over the text. It slides in over
+    `duration-base` and out over `duration-fast`, both `ease-out`, and
+    the page behind it fades to a quarter of its opacity; under reduced
+    motion it fades in and out in place. While a drawer is open the
+    rest of the page is inert: the focus goes to the drawer's first
+    link shown, and Escape, its button, a click outside it or a link followed
+    in it closes it, the focus going back to the button when the
+    keyboard or the button closed it. The sidebar does not repeat the
+    site's title, which the top bar shows. Without scripts there are no
+    drawers: the sidebar stands above the text and the table of
+    contents below it, every list open: the buttons that fold the
+    sidebar's groups are hidden, and the language switch's chevron is
+    turned to open and its button does nothing on a click.
 - **Buttons and inputs.** A primary button (one per popover at most):
   `accent` with `text-on-accent`, `radius-sm`, padding
   `space-1 space-3`; hover `accent-hover`, disabled at half opacity. A
@@ -515,10 +581,14 @@ turned off (disabled), where it has these.
   `controls.css` (the native controls wherever they stand),
   `constitution.css`, `design.css` (the design and a rule's page),
   `rules-list.css` (the list of the rules and the tags) and `filter.css`
-  (the form above the list, whose markup is
-  `web/layouts/_partials/rules/filter.html`). Hugo joins them, after
+  (the legend, the filter and the page size above the list, whose
+  markup is in `web/layouts/_partials/rules/`). Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
-  `web/assets/styles/index.yaml`.
+  `web/assets/styles/index.yaml`. The local site's own is
+  `crates/statute/src/site.css`, which `statute` writes into each page
+  after `tokens.css`; it draws the check boxes as `controls.css` does,
+  and holds nothing of the public site's other sheets, which style the
+  theme's markup.
 - **Icons.** The SVG files are in `crates/statute/assets/icons/`, one
   directory per source, `lucide/` and `octicons/`, unchanged from the
   release, with the license in each and the versions in its
@@ -527,11 +597,32 @@ turned off (disabled), where it has these.
   one line with the class `icon`, hidden from screen readers; the class
   sets its stroke, `icon-stroke`, and its size, `icon-sm` unless the
   component makes it `icon-md`. A chevron that turns is `chevron-right`
-  turned a quarter, which draws `chevron-down`.
-- **Scripts.** A script is written in TypeScript and built by Hugo's
-  `js.Build`, the esbuild that Hugo carries, with no Node and no npm
-  package. Not built yet: today's scripts are JavaScript in
-  `web/assets/`, minified and inlined in each page's head.
+  turned a quarter, which draws `chevron-down`. The local site inlines
+  the files it needs in the same way, built into `statute` with
+  `include_str!`.
+- **Scripts.** A script that holds more than a few lines of logic, the
+  list of the rules and its filter and the sidebar and its drawers
+  today, is written in TypeScript in
+  `web/assets/ts/`, the logic that needs no page (the filter's choice
+  and the address) in a file of its own. Hugo's `js.Build`, the esbuild
+  that Hugo carries, bundles each one, with no Node and no npm package,
+  for the target `es2018`, minified, and the page inlines it in its
+  head as it does the other scripts; there is no source map, as the
+  script is small and its source is in the repository. The short
+  scripts stay JavaScript in `web/assets/`, minified by Hugo. Read on
+  2026-10-15 with Hugo 0.167.0: `js.Build` strips the types and
+  type-only imports, bundles the imports between the files, lowers `?.`
+  and `??` to the target, and fails the build on a syntax error.
+- **Types and tests.** esbuild does not check types: a type error
+  builds, and the build passes. Neither the machines nor CI have `tsc`,
+  which would need Node and an npm package the site does not otherwise
+  use, so no tool checks the types today; the reviewer reads them. The
+  behavior is tested on the built page instead: a test of `tools/site`
+  builds the site from made-up rules, loads the list in headless Chrome
+  with each of a set of addresses and reads the page Chrome leaves
+  (`--dump-dom`), skipped without Chrome except in CI. Clicks and keys,
+  which `--dump-dom` cannot send, are checked by hand the same way, with
+  a script added to a copy of the page that sends them.
 
 ## Status
 
@@ -541,17 +632,23 @@ of its style sheets named by a token, but in the parts below that are
 not built yet; the icons of the table in [Icons](#icons) that the pages
 have today; the motion of [Motion](#motion), reduced motion included,
 on what moves today (the popover on the length, the chevrons, the
-flash on a target, the sidebar and the table of contents of a narrow
-screen); hover only on fine pointers; the sizes of targets; the
-sidebar's states; the native controls; the fonts, the text size and the column, and the breakpoints;
-the filter and the page in the address, pages readable without
-scripts, tabular figures, and `aria-expanded` with `aria-controls` on
-the info button and the buttons of the rules under a provision. Not
-built yet, and what each replaces:
+flash on a target, the drawers of a narrow screen); hover only on fine
+pointers; the sizes of targets; the sidebar, the table of contents and
+the drawers of [Components](#components); the native controls; the
+fonts, the text size and the column, and the breakpoints; the filter
+and the legend, the filter and the page in the address, pages readable
+without scripts, tabular figures, and `aria-expanded` with
+`aria-controls` on the info button, the buttons of the rules under a
+provision, the sidebar's groups and language switch and the top bar's
+buttons. Built today on the local site: every token, and every value
+of its style sheet named by one; the tags, the legend, the tree of
+domains and the one-of of [Components](#components); the filter's
+button and popover; the check boxes; hover only on fine pointers, the
+sizes of targets, the focus ring, and the motion of the filter's
+popover. Not built yet, and what each replaces:
 
 - The tags replace the boxes of the same look for status, defaults,
   enabled and quadrant.
-- The filter replaces the panel of check boxes with its Apply button.
 - The tree replaces the indentation by depth, a rule under a rule
   included.
 - The list shows a one-of as a box today
@@ -559,13 +656,16 @@ built yet, and what each replaces:
   prefix "One of:" (「择一：」) before its title, and the circles before
   its options and the tag of [Components](#components) replace the
   plain tag that marks its default option.
-- Until the four above are built, `rules-list.css` and `filter.css`
-  write some sizes and spaces as values, and the list's pages are
+- Until the three above are built, `rules-list.css` writes some sizes
+  and spaces as values, and the list's pages are
   linked by the characters ‹ and ›.
-- The empty list says that no rule matches, without the step to clear
-  the filter.
-- The local site's style sheet writes its own values; it includes
-  neither the tokens nor the icons yet.
+- On the local site, the filter's groups for the status, the defaults
+  and the domain, with All and None in each, the badge on its button,
+  and its closing on Escape or a click outside; and the primary button
+  that applies it, which the style sheet's check boxes, applying at
+  once, stand in for. Its popover closes at once, by a click on the
+  button. Its pages load no font and set the text in the local serif
+  fonts.
 
 ## Open questions
 
@@ -605,3 +705,9 @@ read on 2026-10-15 at the commits named:
   tips that hold nothing the page lacks.
 - Better Icons (<https://github.com/better-auth/better-icons>,
   `033316ec`): icons named by source and kept in one place.
+- Tailwind CSS's documentation (<https://tailwindcss.com/docs>, the
+  pages as served on 2026-10-15, which have no commit to name): the
+  sidebar's and the table of contents' hairline with a bar for the
+  current item, muted items that darken under the pointer, the current
+  heading following the scroll, the sidebar scrolling its current page
+  into view, and a top bar that stays while a drawer opens under it.

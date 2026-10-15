@@ -190,7 +190,10 @@ fn site_shows_the_four_quadrants() {
     let page = read(&dir, ".statute/site/me/4.html");
     assert!(page.contains("Keep the secret"), "{page}");
     assert!(page.contains("<a href=\"../R/2.html\">"), "{page}");
-    assert!(page.contains("class=\"tag on\">enabled"), "{page}");
+    assert!(
+        page.contains("<span class=\"enabled on\"><svg class=\"icon\""),
+        "{page}"
+    );
     // Rule 5 is not.
     assert!(read(&dir, ".statute/site/here/5.html").contains("not enabled"));
 }
@@ -460,26 +463,43 @@ fn site_marks_defaults_uses_and_values() {
             .map_or(index.len(), |e| start + e);
         &index[start..end]
     };
+    // In the list a default switch is a dot named by its words.
     assert!(
-        item(2).contains("<span class=\"tag\">on by default</span>"),
+        item(2).contains("<span class=\"switch on\" role=\"img\" aria-label=\"on by default\""),
         "{}",
         item(2)
     );
     assert!(
-        item(3).contains("<span class=\"tag\">off by default</span>"),
+        item(3).contains("<span class=\"switch off\" role=\"img\" aria-label=\"off by default\""),
         "{}",
         item(3)
     );
     assert!(
-        item(5).contains("<span class=\"tag\">default option</span>"),
+        item(5).contains("<span class=\"default-option\"><svg class=\"icon\""),
         "{}",
         item(5)
     );
     assert!(!item(6).contains("default"), "{}", item(6));
-    // The one-of is a box that holds its options, and they stand nowhere
-    // else in the list.
+    // The options are led by Lucide's circles, the default's with a dot.
+    let circle = include_str!("../assets/icons/lucide/circle.svg");
+    let circle_dot = include_str!("../assets/icons/lucide/circle-dot.svg");
+    let lead = |id: u64| {
+        let at = index.find(&format!("<a href=\"R/{id}.html\">")).unwrap();
+        &index[index[..at].rfind("<svg").unwrap()..at]
+    };
+    assert!(
+        lead(5).contains("<circle cx=\"12\" cy=\"12\" r=\"1\"/>"),
+        "{}",
+        lead(5)
+    );
+    assert!(circle_dot.contains("r=\"1\""));
+    assert!(!lead(6).contains("r=\"1\""), "{}", lead(6));
+    assert!(lead(6).contains("<circle cx=\"12\" cy=\"12\" r=\"10\"/>"));
+    assert!(circle.contains("r=\"10\""));
+    // The one-of is a box that holds its options, labeled on its border,
+    // and they stand nowhere else in the list.
     let one_of = index
-        .find("<li class=\"one-of\"><a href=\"R/4.html\">")
+        .find("<li class=\"one-of\"><span class=\"one-of-label\">One of</span><div class=\"row\"><a href=\"R/4.html\">")
         .expect(&index);
     let options = index[one_of..]
         .find("</ul></li>")
@@ -492,11 +512,11 @@ fn site_marks_defaults_uses_and_values() {
     assert_eq!(index.matches("<a href=\"R/5.html\">").count(), 1, "{index}");
     // A rule only for review is hidden with its filter.
     assert!(
-        index.contains("<li class=\"off u-r\"><a href=\"R/3.html\">"),
+        index.contains("<li class=\"off u-r\"><div class=\"row\"><a href=\"R/3.html\">"),
         "{index}"
     );
     assert!(index.contains("<input type=\"checkbox\" id=\"show-review\" checked>"));
-    assert!(index.contains(" <a class=\"tag\" href=\"R/parameters.html\">Parameters</a>"));
+    assert!(index.contains("<a class=\"params\" href=\"R/parameters.html\">Parameters</a>"));
     assert!(read(&site, "R/3.html").contains("<p>Used in: review</p>"));
     assert!(read(&site, "R/2.html").contains("<p>Used in: AGENTS.md</p>"));
     assert!(
@@ -513,4 +533,80 @@ fn site_marks_defaults_uses_and_values() {
         ),
         "{params}"
     );
+}
+
+/// The style of `docs/design/frontend.md`: the tokens and the icons the
+/// public site uses, the filter behind a button, and the level of a
+/// domain shown by its heading and its class, not by its depth.
+#[test]
+fn site_draws_the_tree_by_level() {
+    let dir = repo("levels", "r/");
+    write(
+        &dir,
+        "statute.toml",
+        "constitution = { source = \"R\", edition = \"2026-10\" }\npublic = false\nrules = [\"R4\", \"R12\"]\n\n[sources]\nR = { path = \"r\" }\n",
+    );
+    put(&dir, "r/rules", domain(1));
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(2), "default", "parent = 1\ndefault"),
+    );
+    put(&dir, "r/rules", rule(4, 2, ""));
+    put(&dir, "r/rules", one_of(5, 2, 6));
+    put(&dir, "r/rules", option(6, 5, ""));
+    // A one-of whose options are domains, one of them on.
+    put(&dir, "r/rules", one_of(9, 1, 10));
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(10), "default = \"off\"", "parent = 9"),
+    );
+    put(
+        &dir,
+        "r/rules",
+        edit(domain(11), "default = \"off\"", "parent = 9"),
+    );
+    put(&dir, "r/rules", rule(12, 10, ""));
+    let r = statute(&dir, &["site"]);
+    assert_eq!(r.code, 0, "{}", r.stderr);
+    let index = read(&dir, ".statute/site/index.html");
+    for (id, class, h) in [(1, "d1", 4), (2, "d2", 5)] {
+        let row = format!(
+            "<li class=\"domain {class}\"><div class=\"row\"><h{h}><a href=\"R/{id}.html\">"
+        );
+        assert!(index.contains(&row), "{row}: {index}");
+    }
+    assert!(
+        index.contains("<li class=\"u-i\"><div class=\"row\"><a href=\"R/4.html\">"),
+        "{index}"
+    );
+    // A one-of none of whose options is enabled is drawn lighter.
+    assert!(index.contains("<li class=\"one-of unset\">"), "{index}");
+    // One with a domain on is not.
+    assert!(
+        index.contains("<li class=\"one-of\"><span class=\"one-of-label\">One of</span><div class=\"row\"><a href=\"R/9.html\">"),
+        "{index}"
+    );
+    // Every page carries the tokens, as the public site has them.
+    let tokens = include_str!("../assets/tokens.css");
+    assert!(index.contains(tokens));
+    assert!(read(&dir, ".statute/site/R/4.html").contains(tokens));
+    assert!(index.contains("--icon-check: url(\"data:image/svg+xml,%3Csvg "));
+    // The legend draws each mark as the tree does and says what it means.
+    let legend = &index[index.find("<dl class=\"legend\">").expect(&index)..];
+    let legend = &legend[..legend.find("</dl>").unwrap()];
+    assert_eq!(legend.matches("<div><dt>").count(), 11, "{legend}");
+    assert!(legend.contains("<dt><span class=\"switch on\" role=\"img\" aria-label=\"on by default\" title=\"on by default\"></span></dt><dd>A new rule set gets it without listing it.</dd>"), "{legend}");
+    assert!(
+        legend.contains("<dt><span class=\"status trial\">trial</span></dt>"),
+        "{legend}"
+    );
+    // The filter is a button with Lucide's funnel.
+    let funnel = include_str!("../assets/icons/lucide/funnel.svg");
+    let path = funnel.lines().find(|l| l.contains("<path")).unwrap().trim();
+    let filter = &index[index
+        .find("<details class=\"filter\"><summary><svg class=\"icon\"")
+        .expect(&index)..];
+    assert!(filter[..filter.find("</summary>").unwrap()].contains(&path.replace(" />", "/>")));
 }

@@ -51,12 +51,12 @@ svg.icon:not([fill="none"]) { fill: currentColor; }
 
 /* Every link in the text and in the popovers is underlined: the text
    color with a light underline, both turning to the accent color under
-   the pointer. The theme's heading self-links are left out. The table of
-   contents and the top bar of a narrow screen are known by where they
-   stand and are not underlined, but under the pointer or the keyboard's
-   focus. The sidebar's links are rows (below). */
+   the pointer. The theme's heading self-links are left out. The title in
+   the top bar of a narrow screen is known by where it stands and is not
+   underlined, but under the pointer or the keyboard's focus. The
+   sidebar's links and the table of contents' are rows (below). */
 :is(.constitution, .design) a[href]:not(.anchor),
-:is(.book-toc, .book-header) a[href] {
+.book-header a[href] {
   color: inherit;
   text-decoration: underline;
   text-decoration-color: var(--t-border-subtle);
@@ -65,10 +65,10 @@ svg.icon:not([fill="none"]) { fill: currentColor; }
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
-:is(.book-toc, .book-header) a[href]:not(:focus-visible) { text-decoration-line: none; }
+.book-header a[href]:not(:focus-visible) { text-decoration-line: none; }
 @media (hover: hover) and (pointer: fine) {
   :is(.constitution, .design) a[href]:not(.anchor):hover,
-  :is(.book-toc, .book-header) a[href]:hover {
+  .book-header a[href]:hover {
     color: var(--t-accent);
     text-decoration-line: underline;
     text-decoration-color: currentColor;
@@ -93,13 +93,18 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
    text the size of a control's. The column carries it down the whole
    page; its content scrolls on its own. Under the site's title, the link
    to the source, then the language switch with the color switch at the
-   end of its row, then the groups: each a row of its icon and its name in
-   bold, its pages under it, their text in line with the group's name.
-   Each page is a row: the panel's hover color under the pointer, darker
-   while pressed, and the current page on the selected color, in the
-   accent color and heavier, so that it does not show by color alone. A
-   group that folds has its chevron at the end, turned a quarter when
-   open. */
+   end of its row, then the groups, set apart by space: each a row of its
+   icon and its name in bold, its pages under it along a hairline that
+   starts under the middle of the icon, their text muted and in line with
+   the group's name, so that the groups stand out from their pages. A row
+   takes the panel's hover color under the pointer and is darker while
+   pressed; a page under the pointer also turns to the text color and
+   darkens its stretch of the hairline. The current page is marked on the
+   hairline by a bar of the accent color, its text in the accent color
+   and heavier, so that it does not show by color alone; a group with no
+   pages, current, is on the selected color instead, as it has no
+   hairline. A group that folds has a button with its chevron at the end
+   of its row, turned a quarter when open. */
 .book-menu { font-size: var(--t-font-size-base); }
 .book-menu-content { font-size: var(--t-text-sm); }
 .book-menu, .book-menu .book-menu-content { background: var(--t-bg-panel); }
@@ -116,9 +121,9 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
 }
 .book-menu .source-link .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
 .book-menu nav ul { line-height: var(--t-line-height-ui); }
-.book-menu nav > ul > li + li { margin-top: var(--t-space-1); }
-.book-menu nav ul ul { padding-inline-start: calc(var(--t-icon-md) + var(--t-space-2)); }
-.book-menu nav :is(a, label) {
+.book-menu nav > ul > li + li { margin-top: var(--t-space-4); }
+.book-menu nav :where(a, .languages-toggle) {
+  display: flex;
   align-items: center;
   gap: var(--t-space-2);
   min-block-size: var(--t-target);
@@ -128,46 +133,74 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
   font-weight: var(--t-weight-regular);
   color: var(--t-text);
   text-decoration: none;
-  transition: background-color var(--t-duration-fast) var(--t-ease-out);
-}
-/* A group that folds is a label holding its link and its chevron: the
-   label is the row, the link fills it. */
-.book-menu nav label { padding: 0; }
-.book-menu nav label > a { min-block-size: 0; }
-.book-menu nav label > .icon:last-child {
-  width: var(--t-icon-md);
-  height: var(--t-icon-md);
-  margin-inline-end: var(--t-space-2);
-  cursor: pointer;
-  transition: transform var(--t-duration-base) var(--t-ease-out);
-}
-.book-menu nav input.toggle:checked + label > .icon:last-child { transform: rotate(90deg); }
-@media (prefers-reduced-motion: reduce) {
-  .book-menu nav label > .icon:last-child { transition: none; }
+  transition-property: background-color, color, border-color;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
 }
 .book-menu a.menu-group { font-weight: var(--t-weight-bold); }
-.book-menu a.menu-group .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+.book-menu nav .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+/* The pages of a group, along the hairline. */
+.book-menu nav ul ul {
+  margin: var(--t-space-1) 0 0;
+  margin-inline-start: calc(var(--t-space-2) + var(--t-icon-md) / 2);
+  padding: 0;
+  border-inline-start: 1px solid var(--t-border-subtle);
+}
+.book-menu nav ul ul a {
+  margin-inline-start: -1px;
+  padding-inline-start: calc(var(--t-icon-md) / 2 + var(--t-space-2));
+  border-inline-start: 2px solid transparent;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  color: var(--t-text-muted);
+}
+/* A group that folds: its link fills the row, its button at the end. */
+.book-menu .menu-fold-row { display: flex; align-items: center; gap: var(--t-space-1); }
+.book-menu .menu-fold-row > a { flex: 1; }
+.book-menu .menu-fold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--t-target);
+  min-block-size: var(--t-target);
+  padding: var(--t-space-1);
+  color: var(--t-text);
+  background: none;
+  border: none;
+  border-radius: var(--t-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+.book-menu [data-fold] > .icon:last-child { transition: transform var(--t-duration-base) var(--t-ease-out); }
+.book-menu [data-fold][aria-expanded="true"] > .icon:last-child { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) {
+  .book-menu [data-fold] > .icon:last-child { transition: none; }
+}
+.book-menu li:has(> [data-fold][aria-expanded="false"], > .menu-fold-row > [data-fold][aria-expanded="false"]) > ul { display: none; }
 @media (hover: hover) and (pointer: fine) {
-  .book-menu nav label:hover,
-  .book-menu nav a[href]:hover,
-  .book-menu nav a[role=button]:hover { background-color: var(--t-bg-panel-hover); }
-  .book-menu nav label:hover > a { background-color: transparent; }
+  .book-menu nav :is(a[href], .languages-toggle, .menu-fold):hover { background-color: var(--t-bg-panel-hover); }
+  .book-menu nav ul ul a[href]:hover { color: var(--t-text); border-inline-start-color: var(--t-border-strong); }
   .book-menu .source-link:hover { color: var(--t-text); }
 }
-.book-menu nav a[href]:active { background-color: var(--t-bg-active); }
+.book-menu nav :is(a[href], .languages-toggle, .menu-fold):active { background-color: var(--t-bg-active); }
 .book-menu nav a.active {
   background-color: var(--t-bg-selected);
   color: var(--t-accent);
   font-weight: var(--t-weight-medium);
 }
 .book-menu nav a.menu-group.active { font-weight: var(--t-weight-bold); }
+.book-menu nav ul ul a.active {
+  background-color: transparent;
+  border-inline-start-color: var(--t-accent);
+}
 /* A group whose current page is listed under it marks that page alone. */
-.book-menu nav li:has(> ul a.active) > :is(a, label > a).active {
+.book-menu nav li:has(> ul a.active) > :is(a, .menu-fold-row > a).active {
   background-color: transparent;
   color: var(--t-text);
 }
 .book-menu nav a.active:active { color: var(--t-text); }
-/* The language switch fills its row, the color switch at its end. */
+/* The language switch fills its row, the color switch at its end; the
+   chevron at the switch's end. */
 .book-menu .menu-row {
   display: flex;
   align-items: flex-start;
@@ -175,8 +208,15 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
   margin-bottom: var(--t-space-4);
 }
 .book-menu .menu-row .book-languages { flex: 1; margin: 0; }
-.book-menu .book-languages ul { padding-inline-start: calc(var(--t-icon-md) + var(--t-space-2)); }
-.book-menu .book-languages .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+.book-menu .languages-toggle {
+  inline-size: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.book-menu .languages-toggle > span { flex: 1; }
 
 /* The color switch, a quiet button that shows the icon of the current
    setting. */
@@ -206,11 +246,13 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
 
 /* The table of contents at the right: the headings of the page, the size
    of a control's text, under a muted heading. Set apart from the text as
-   a column of its own: muted, along a hairline. The heading the reader
-   is in (assets/toc-current.js) is marked by a bar over the hairline and
-   bold, in the accent color. On a narrow screen the theme hides it
-   behind the button at the right of the top bar, which opens it above
-   the text. */
+   a column of its own: muted, along a hairline, as the sidebar's pages
+   are. A heading under the pointer turns to the text color and darkens
+   its stretch of the hairline; the heading the reader is in
+   (assets/toc-current.js) is marked by a bar of the accent color over the
+   hairline and bold, in the accent color. A heading of a lower level
+   keeps its bar on the hairline, its text indented. The marks change at
+   once, without a transition, as the current one follows the scroll. */
 .book-toc { font-size: var(--t-font-size-base); }
 .book-toc-content { font-size: var(--t-text-sm); }
 .book-toc nav > ul {
@@ -219,14 +261,25 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
   list-style: none;
   border-inline-start: 1px solid var(--t-border-subtle);
 }
+/* Block, so that the asterisk sits in the line; closer than the theme
+   sets its lists, as one list of a dozen short lines. */
 .book-toc nav a[href] {
+  display: block;
   margin-inline-start: -1px;
-  padding-inline-start: var(--t-space-3);
+  padding-block: var(--t-space-1);
+  padding-inline-start: calc(var(--t-space-3) + var(--level, 0) * var(--t-space-4));
   border-inline-start: 2px solid transparent;
   color: var(--t-text-muted);
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .book-toc nav a[href]:hover {
+    color: var(--t-text);
+    border-inline-start-color: var(--t-border-strong);
+  }
 }
 .book-toc nav a[aria-current] {
-  border-color: currentColor;
+  border-inline-start-color: var(--t-accent);
   color: var(--t-accent);
   font-weight: var(--t-weight-bold);
 }
@@ -236,58 +289,137 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
   font-size: var(--t-text-sm);
   letter-spacing: .05em;
 }
-/* Block, so that the asterisk sits in the line; closer than the theme
-   sets its lists, as one list of a dozen short lines. */
-.book-toc nav a { display: block; padding-block: var(--t-space-1); }
-/* The rules' table of contents indents a heading by its level. */
-.book-toc li[style] { padding-inline-start: calc(var(--level, 0) * var(--t-space-4)); }
 
 /* The top bar of a narrow screen: its two buttons, the sidebar's and the
-   table of contents', each as large as a target. */
-.book-header label {
-  display: inline-flex;
+   table of contents', quiet buttons as large as a target, each showing
+   `x` while its drawer is open. The bar's height is that of a button and
+   the space around it; the drawers open under it. */
+:root { --header-height: calc(var(--t-target) + 2 * var(--t-space-2)); }
+.book-header .drawer-toggle {
+  display: flex;
   align-items: center;
   justify-content: center;
   min-inline-size: var(--t-target);
   min-block-size: var(--t-target);
+  padding: var(--t-space-1);
+  color: var(--t-text);
+  background: none;
+  border: none;
+  border-radius: var(--t-radius-sm);
   cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
 }
-.book-header label .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
-/* The sidebar and the table of contents slide in from the edge on a
-   narrow screen; under reduced motion they appear in place. */
-.book-menu-content,
-.book-toc-content {
+@media (hover: hover) and (pointer: fine) {
+  .book-header .drawer-toggle:hover { background-color: var(--t-bg-hover); }
+}
+.book-header .drawer-toggle:active { background-color: var(--t-bg-active); }
+.book-header .drawer-toggle .icon { display: block; width: var(--t-icon-md); height: var(--t-icon-md); }
+.drawer-toggle[aria-expanded="true"] .drawer-shut,
+.drawer-toggle[aria-expanded="false"] .drawer-open { display: none; }
+
+/* The drawers of a narrow screen: the sidebar at 56rem and under, from
+   the start edge, and the table of contents at 70rem and under, from the
+   end edge, on the panel's color with a hairline and a popover's shadow,
+   as they lie over the text. Each slides in over `duration-base` and out
+   over `duration-fast` (assets/ts/sidebars.ts opens them); the text behind
+   fades. Under reduced motion a drawer fades in and out in place. */
+@media screen and (width <= 70rem) {
+  .book-toc { display: block; flex: none; }
+  .book-toc .book-toc-content {
+    position: fixed;
+    top: var(--header-height);
+    bottom: 0;
+    inset-inline-end: 0;
+    z-index: 2;
+    inline-size: var(--toc-width);
+    max-inline-size: 100%;
+    padding: var(--t-space-6) var(--t-space-4);
+    overflow-y: auto;
+    background: var(--t-bg-panel);
+    border-inline-start: 1px solid var(--t-border-subtle);
+    box-shadow: var(--t-shadow-popover);
+    transform: translateX(100%);
+    visibility: hidden;
+  }
+  /* A target's height, its line in the middle: block, not flex, so
+     that the asterisk stays in the line. */
+  .book-toc nav a[href] {
+    padding-block: max(var(--t-space-1), (var(--t-target) - 1lh) / 2);
+  }
+  .book-toc-content,
+  .book-page,
+  .book-menu {
+    transition-property: transform, opacity, visibility;
+    transition-duration: var(--t-duration-fast);
+    transition-timing-function: var(--t-ease-out);
+  }
+  :root[data-drawer] .book-page,
+  :root[data-drawer="toc"] .book-menu {
+    opacity: .25;
+    transition-duration: var(--t-duration-base);
+  }
+}
+@media screen and (width <= 56rem) {
+  .book-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    block-size: var(--header-height);
+    padding: var(--t-space-2) var(--t-space-4);
+    background: var(--t-bg-page);
+    border-block-end: 1px solid var(--t-border-subtle);
+  }
+  .book-header > div { block-size: 100%; }
+  .book-menu { visibility: visible; }
+  /* The top bar shows the site's title; the sidebar under it does not
+     repeat it, as a drawer or, without scripts, above the text. */
+  .book-menu .book-brand { display: none; }
+  .book-menu .book-menu-content {
+    top: var(--header-height);
+    inset-inline-start: 0;
+    z-index: 2;
+    max-inline-size: 100%;
+    padding-top: 0;
+    border-inline-end: 1px solid var(--t-border-subtle);
+    box-shadow: var(--t-shadow-popover);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition-property: transform, opacity, visibility;
+    transition-duration: var(--t-duration-fast);
+    transition-timing-function: var(--t-ease-out);
+  }
+}
+:root[data-drawer="menu"] .book-menu .book-menu-content,
+:root[data-drawer="toc"] .book-toc .book-toc-content {
+  visibility: visible;
+  transform: none;
+  /* Visible at once, so that it takes the focus as it opens; hidden only
+     once it has slid out. */
+  transition-property: transform, opacity;
   transition-duration: var(--t-duration-base);
-  transition-timing-function: var(--t-ease-out);
 }
-@media (prefers-reduced-motion: reduce) {
-  .book-menu-content,
-  .book-toc-content { transition-property: opacity, visibility; }
+@media screen and (width <= 70rem) and (prefers-reduced-motion: reduce) {
+  .book-toc .book-toc-content { transform: none; transition-property: opacity, visibility; }
+  :root:not([data-drawer="toc"]) .book-toc .book-toc-content { opacity: 0; }
+}
+@media screen and (width <= 56rem) and (prefers-reduced-motion: reduce) {
+  .book-menu .book-menu-content { transform: none; transition-property: opacity, visibility; }
+  :root:not([data-drawer="menu"]) .book-menu .book-menu-content { opacity: 0; }
 }
 /* Between the theme's breakpoint (56rem) and 70rem the table of contents
    would leave the text under about 65 characters a line in English: it
-   goes behind the theme's button, which floats at the top right, the
-   sidebar staying, and opens over the text at the right edge. Below 56rem
-   the theme hides the sidebar too. */
+   goes behind its button, which floats at the top right, the sidebar
+   staying, and opens over the text at the right edge, under the button. */
 @media screen and (56rem < width <= 70rem) {
   .book-header {
     display: block;
     position: fixed;
     top: 0;
     inset-inline-end: 0;
-    z-index: 2;
+    z-index: 3;
     padding: var(--t-space-2);
     background: var(--t-bg-page);
     border-end-start-radius: var(--t-radius-md);
   }
-  .book-header :is(label[for="menu-control"], .book-brand) { display: none; }
-  .book-toc { display: none; flex: none; }
-  body:has(#toc-control:checked) .book-toc { display: block; }
-  .book-toc .book-toc-content {
-    inset-inline-end: 0;
-    padding-top: var(--t-space-12);
-    background: var(--t-bg-page);
-    border-inline-start: 1px solid var(--t-border-subtle);
-    box-shadow: var(--t-shadow-popover);
-  }
+  .book-header :is([data-drawer="menu"], .book-brand) { display: none; }
 }

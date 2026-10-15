@@ -1,59 +1,125 @@
-/* The form above the list of the rules
-   (layouts/_partials/rules/filter.html), in the muted color: the filter,
-   a button that folds open a panel of checkboxes over the list, and the
-   page size. Their controls' common look is controls.css's. */
+/* The controls above the list of the rules
+   (layouts/_partials/rules/filter.html) and the legend above them
+   (layouts/_partials/rules/legend.html), as docs/design/frontend.md
+   (Components) draws them. The filter, shut: a quiet button with a
+   border, `funnel`, the word and, when fields filter, their number in a
+   badge. Open: a popover under it, a group of check boxes per field,
+   its name and its All and None at the top, each box a row that the
+   pointer fills; Clear filter under them. The popover enters from
+   scale(0.95) at the button, and only fades under reduced motion. The
+   controls' common look is controls.css's. The legend: each mark and
+   its meaning on a line, in columns. */
 .rules .rules-controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: .5em 1.5em;
+  align-items: center;
+  gap: var(--t-space-2) var(--t-space-6);
+  margin-block: var(--t-space-4);
   color: var(--t-text-muted);
   font-size: var(--t-text-sm);
 }
-.rules .rules-filter { position: relative; margin: 0; padding: 0; border: 0; background: none; }
-.rules .rules-filter summary {
+.rules .rules-filter { position: relative; }
+.rules .rules-filter-button {
   display: inline-flex;
   align-items: center;
   gap: var(--t-space-1);
-  min-block-size: var(--t-target);
-  margin: 0;
-  line-height: inherit;
-  padding: 0 .5em;
-  border: 1px solid var(--t-border-subtle);
-  border-radius: var(--t-radius-sm);
-  color: var(--t-text);
+  border: 1px solid var(--t-border-strong);
+}
+.rules .rules-filter-button .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+.rules .rules-filter-count {
+  min-inline-size: var(--t-icon-sm);
+  padding: 0 var(--t-space-1);
+  font-size: var(--t-text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--t-accent);
+  background: var(--t-bg-selected);
+  border-radius: var(--t-radius-full);
 }
 .rules .rules-filter-panel {
   position: absolute;
   z-index: 2;
   top: 100%;
-  left: 0;
-  margin-top: .4em;
-  padding: .6em 1em .8em;
-  min-width: 16em;
+  inset-inline-start: 0;
+  inline-size: var(--t-width-popover);
+  margin-top: var(--t-space-1);
+  padding: var(--t-space-3) var(--t-space-4);
   color: var(--t-text);
   background: var(--t-bg-panel);
   border: 1px solid var(--t-border-subtle);
   border-radius: var(--t-radius-md);
   box-shadow: var(--t-shadow-popover);
+  transform-origin: top left;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.95);
+  transition-property: opacity, transform, visibility;
+  transition-duration: var(--t-duration-fast), var(--t-duration-fast), 0s;
+  transition-delay: 0s, 0s, var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
 }
-.rules .rules-filter fieldset { border: 0; margin: 0 0 .6em; padding: 0; }
-.rules .rules-filter legend { color: var(--t-text-muted); padding: 0; margin-bottom: .2em; }
-.rules .rules-filter label {
-  display: block;
-  margin-inline-start: calc(var(--indent, 0) * 1.2em);
-  white-space: nowrap;
+.rules .rules-filter-panel.open {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition-duration: var(--t-duration-base), var(--t-duration-base), 0s;
+  transition-delay: 0s;
 }
-.rules .rules-filter button {
-  font: inherit;
-  color: var(--t-text-on-accent);
-  background: var(--t-accent);
+.rules .rules-filter-group {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  margin: 0 0 var(--t-space-3);
+  padding: 0;
   border: 0;
+}
+.rules .rules-filter-group legend {
+  display: contents;
+  color: var(--t-text-muted);
+  font-weight: var(--t-weight-medium);
+}
+.rules .rules-filter-all { display: flex; gap: var(--t-space-1); }
+.rules .rules-filter-all button { color: var(--t-text-muted); font-size: var(--t-text-xs); }
+.rules .rules-filter-group label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--t-space-2);
+  min-block-size: var(--t-target);
+  padding: 0 var(--t-space-2);
+  padding-inline-start: calc(var(--t-space-2) + var(--indent, 0) * var(--t-space-4));
   border-radius: var(--t-radius-sm);
-  padding: .15em .9em;
   cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .rules .rules-filter button:hover { background: var(--t-accent-hover); }
+  .rules .rules-filter-panel button:hover,
+  .rules .rules-filter-group label:hover {
+    color: var(--t-text);
+    background-color: var(--t-bg-panel-hover);
+  }
 }
-.rules .rules-size .select { margin-inline-start: .3em; }
+.rules .rules-filter-panel button:active { color: var(--t-text); background-color: var(--t-bg-active); }
+.rules .rules-size .select { margin-inline-start: var(--t-space-1); }
+.rules .rules-none-reset { color: var(--t-accent); }
+@media (max-width: 48rem) {
+  .rules .rules-filter { position: static; }
+  .rules .rules-controls { position: relative; }
+  .rules .rules-filter-panel { inline-size: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rules .rules-filter-panel,
+  .rules .rules-filter-panel.open { transform: none; }
+}
+
+.rules .rules-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--t-measure) / 2), 1fr));
+  gap: var(--t-space-1) var(--t-space-6);
+  margin-block: var(--t-space-4);
+  font-size: var(--t-text-sm);
+  line-height: var(--t-line-height-ui);
+}
+.rules .rules-legend > div { display: flex; align-items: baseline; gap: var(--t-space-2); }
+.rules .rules-legend dt { flex: none; margin: 0; font-weight: inherit; }
+.rules .rules-legend dd { margin: 0; color: var(--t-text-muted); }
