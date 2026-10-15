@@ -7,8 +7,8 @@ position. What each one proves, and what it does not:
 
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
-| Constitution (`constitution-build --check`) | Each constitution source has the format and the name in [Source formats](source-formats.md) and [The constitution](constitution.md); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation of the constitution and every rule's authority resolves to a provision that is not repealed, the constitution citing only itself, and each rule's status agrees with the constitution's; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved, and no rule of the base is gone; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
-| Rules (`statute validate rules`) | Each rule file has the format of [Rule file format](rule-format.md#rule-file-format), the tree the shape of [No rule under a rule](rule-config.md#no-rule-under-a-rule), every reference a target of the right kind, every translation the original's hash and citations, and the defaults resolve on their own (below) | That a rule says what it should, or that two rules that nobody marked as conflicting work together |
+| Constitution (`statute constitution build --check`) | Each constitution source has the format and the name in [Source formats](source-formats.md) and [The constitution](constitution.md); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation of the constitution resolves to a provision that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
+| Rules (`statute validate rules`) | Each rule file has the format of [Rule file format](rule-format.md#rule-file-format), the tree the shape of [No rule under a rule](rule-config.md#no-rule-under-a-rule), every reference a target of the right kind, every translation the original's hash and citations, and the defaults resolve on their own; each rule's status agrees with the constitution's, and every citation of the constitution and every `authority` entry resolves to a provision that is not repealed; with `--base`, no node of the base is gone or no longer repealed or superseded (below) | That a rule says what it should, or that two rules that nobody marked as conflicting work together |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
 | Chinese typography (`lint-zh-sources`; limae on every Markdown file of the repo) | Every `zh` text of the constitution and rule sources, both versions of the built Chinese constitution and the design's translation pass limae's default rules, a constitution citation judged as the Chinese text it renders to | That the Chinese reads naturally or says what the English says; the English text gets limae's rules too, which mostly find nothing there |
@@ -43,15 +43,9 @@ first one that finds errors, printing all of that one's errors:
    only repealed sections.
 4. Languages: in each text table, every language cites the same set of
    IDs as the default language.
-5. References: each `{@...}` and each `authority` entry resolves; a
-   repealed target (an item of a repealed section counts as repealed) is an
-   error; the constitution cites only itself, without a namespace; a rule
-   cites with `constitution:` or `rule:`. A rule, neither superseded nor
-   repealed, whose `authority` names a provision and one above it (an item and its section or article, a
-   section and its article) is not an error: once the checks pass, the
-   build, with or without `--check`, prints a warning for each such pair,
-   `path:line: warning: rule <id>: authority names both <above> and
-   <below>, which is under it`, and its exit status stays as it was.
+5. References: each `{@...}` resolves; a repealed target (an item of a
+   repealed section counts as repealed) is an error; the constitution
+   cites only itself, without a namespace.
 6. A fresh build equals the committed `constitution.<lang>.md` and
    `constitution.<lang>.agent.md` files byte for byte (only under
    `--check`).
@@ -61,8 +55,7 @@ first one that finds errors, printing all of that one's errors:
    base's or a later month; when it is the base's, every article, section and list item of the base, matched
    by ID, still exists with the same number, a section in the same
    article's directory and an item in the same section; what was repealed
-   is still repealed; every node of the rule tree of the base still
-   exists. Each error says which it is: an edition not later than the
+   is still repealed. Each error says which it is: an edition not later than the
    base's, gone, renumbered, moved to another article,
    no longer repealed. The base's files are found in
    the base's own edition directory, which may have another name than the
@@ -89,15 +82,21 @@ first one that finds errors, printing all of that one's errors:
 
 The rules are nodes of the rule tree in the format of
 [Rule file format](rule-format.md#rule-file-format), each in
-`rules/<id>.toml`. The checks above read of them only what the
-constitution decides: 1: a node's status agrees with `index.toml` as a
-rule's does; 5: each `{@constitution:...}` citation and each
-`authority` entry, without a namespace, resolves to a provision that is
-not repealed, with the warning on an `authority` that names a provision
-and one above it; 7: a node of the base still exists, and stays
+`rules/<id>.toml`; the checks above do not read them. `statute validate
+rules`, which finds the constitution beside `rules/`, checks what the
+constitution decides of them, with the messages of the checks above: 1:
+a node's status agrees with `index.toml` as a rule's does; 5: each
+`{@constitution:...}` citation and each `authority` entry, without a
+namespace, resolves to a provision that is not repealed; a rule, neither
+superseded nor repealed, whose `authority` names a provision and one
+above it (an item and its section or article, a section and its
+article) is not an error, but draws a warning for each such pair,
+`rules/<id>.toml:<line>: warning: rule <id>: authority names both
+<above> and <below>, which is under it`; 7, with `--base` and where the
+numbering is compared: a node of the base still exists, and stays
 repealed or superseded once it was; a rule of a base from before the
 rule tree, named by a word, lives on as the node whose `slug` is that
-word. `params.toml` is no node, and the build skips it.
+word ([The command and the first version](statute-command.md#the-command-and-the-first-version)).
 
 Everything else of the rule files is checked by `statute validate
 rules` ([The command and the first version](statute-command.md#the-command-and-the-first-version)),
@@ -144,10 +143,9 @@ All of these are built.
 
 Each check has a test that makes it fail and a passing control; the
 numbering check is tested on a temporary git repository
-(`tests/test_constitution_checks.py`, `tests/test_constitution_base.py`
-and, for what they read of the rules, `tests/test_rule_tree.py` of
-`tools/compiler`; `statute validate` in `crates/statute/tests/validate.rs`
-and the crate's other tests).
+(`crates/statute/tests/constitution.rs`; what `statute validate` checks
+of the rules against the constitution in `validate_constitution.rs`,
+the rest in `validate.rs` and the crate's other tests).
 Checks 1 to 6 and the tests run as commit hooks and in CI; check 7 runs in
 CI only, on a pull request against the tip of the base branch the
 checked-out merge commit was made on (its first parent), on a push to

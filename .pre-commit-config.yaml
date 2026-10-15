@@ -64,14 +64,16 @@ repos:
         language: system
         files: ^(crates/.*\.rs|(.*/)?Cargo\.toml|rust-toolchain\.toml)$
         pass_filenames: false
-      # The rule files, validated by statute as a source of rules. The
+      # The rule files, validated by statute as a source of rules, and what
+      # the constitution beside them decides of them (their status and what
+      # they cite of it), so a change to the constitution runs it too. The
       # first build of statute in a checkout takes a while; after it, a run
       # takes a second or two.
       - id: statute-validate
         name: statute validate rules
         entry: cargo run --locked --quiet -p statute -- validate rules
         language: system
-        files: ^(rules/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
+        files: ^(rules/|constitution/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
         pass_filenames: false
       # The constitution build: --check validates the constitution sources
       # and requires the committed outputs to match a fresh build. The
