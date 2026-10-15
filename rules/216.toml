@@ -1,0 +1,58 @@
+id = 216
+slug = "main-checkouts-root-holds-nothing-else"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep nothing but main checkouts in the root for main checkouts"
+zh = "主检出的根目录下只放主检出"
+
+[text.statement]
+en = "Keep nothing but main checkouts directly under the root the jurisdiction designates for main checkouts."
+zh = "法域为主检出指定的根目录下，不放主检出以外的任何东西。"
+
+[text.reason]
+en = '''
+A script that walks the root and takes each entry for a repository needs a special case for every stray file or directory, and what lies there stray has no owner, so nobody dares delete it ({@constitution:simplicity}).
+'''
+zh = '''
+把根目录下每个一级条目都当作一个仓库来遍历的脚本，碰到混进来的文件或目录就要加特判；散落在那里的东西没有归属，也没人敢删 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+A main checkout is a clone whose `.git` is a directory; a worktree's `.git` is a file, so a worktree is not one. The jurisdiction designates the root, for example in a rule of a lower layer.
+
+Every entry directly under the root is a directory whose `.git` is a directory. Each line this command prints, with the root in place of `<root>`, is an entry that does not belong there:
+
+```sh
+find <root> -mindepth 1 -maxdepth 1 -exec sh -c '[ -d "$1/.git" ] || echo "STRAY: $1"' _ {} \;
+```
+
+Only whether it prints anything counts; the number of entries under the root changes all the time and is no criterion.
+
+Violated when the root holds an entry that is not a main checkout.
+'''
+zh = '''
+主检出指 `.git` 是目录的那份 clone；worktree 的 `.git` 是文件，所以 worktree 不算主检出。根目录由法域指定，例如写在下层的规定里。
+
+根目录下的每个一级条目都是目录，并且其中的 `.git` 是目录。把下面这条命令里的 `<root>` 换成根目录，它每输出一行，就是一个不该在那里的条目：
+
+```sh
+find <root> -mindepth 1 -maxdepth 1 -exec sh -c '[ -d "$1/.git" ] || echo "STRAY: $1"' _ {} \;
+```
+
+只看这条命令有没有输出；根目录下的条目数随时在变，不拿它当判据。
+
+根目录下有不是主检出的条目的，即为违反本规定。
+'''
+
+[translations]
+zh = "6916d0e6b134f1db17f9bdecb177abdc7148e57ff534d42b48468781b02ece94"

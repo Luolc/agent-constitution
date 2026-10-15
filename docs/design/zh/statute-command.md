@@ -1,4 +1,4 @@
-<!-- en-sha256: 834648b218fc8aeff97b2671e438660241867e42bd1d9725e52229d931655023 -->
+<!-- en-sha256: 75f53e0f94fda12e7fd9561d2ff8447e060f1ef5f1c9ac9477001b60d6bd998c -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -44,7 +44,7 @@
 
 **第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
-**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个。没有规定源在 `.` 时，`statute.toml` 旁边的 `rules/` 是仓库自己的规定，写作 `L12`；有 `R = { path = "." }` 时，它们是第一方规定，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定指向另一个规定源的 `parent`，以及 `statute.private.toml` 连同它的锁文件和输出，也都已实现。全局配置、`init --global` 和 git 规定源已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。继承规定清单、按路径分段、`source add` 和领域指向另一个规定源的 `parent` ([子领域](rule-sources.md#subdomains)) 还没有实现。
+**目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个。没有规定源在 `.` 时，`statute.toml` 旁边的 `rules/` 是仓库自己的规定，写作 `L12`；有 `R = { path = "." }` 时，它们是第一方规定，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。覆盖已经实现，连同 `scope` 和级别；子领域、规定指向另一个规定源的 `parent`，以及 `statute.private.toml` 连同它的锁文件和输出，也都已实现。全局配置、`init --global`、git 规定源和 `source add` 已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。继承规定清单、按路径分段和领域指向另一个规定源的 `parent` ([子领域](rule-sources.md#subdomains)) 还没有实现。
 
 **`init`** 在当前目录写一份 `statute.toml`：宪法取自哪个规定源、哪一版，`public = true` 或 `public = false`，空的 `rules`，以及给了 `--source` 时的一个磁盘上的规定源，即第一方规定源 `R`。`public` 取 `--public` 或 `--private` 指定的值 (两者最多给一个)，没有指定时取 `gh` 显示的这个仓库的情况，见[公开与否](rule-sources.md#public-or-not)。`--source <dir>` 指定规定源的目录，相对于当前目录。不给它时，`init` 不写 `[sources]`，`R` 取全局配置里的或内置默认的那个 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))，读它所跟踪分支的最新提交。`--edition` 指定哪一版；不给时，`init` 取规定源 `constitution/` 下唯一一个含 `index.toml` 的目录，一个都没有或多于一个时报错，并列出找到的那些。写之前它先解析一遍这份规定清单，解析失败就什么都不写。它不写 `statute.lock`：没有启用任何规定，也就没有要锁定的东西；第一次 `add` 会写出锁文件，已有的 `statute.lock` 会被替换。已有 `statute.toml` 时原样保留，`init` 以退出码 1 退出。
 

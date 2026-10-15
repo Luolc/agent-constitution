@@ -170,6 +170,52 @@ impl World {
         statute(&self.home, &self.repo, args)
     }
 
+    /// As `run`, with a fake gh first on `PATH` that answers `repo view
+    /// --json visibility` with `visibility`, or fails as gh does outside
+    /// a GitHub repository when it is `None`.
+    fn run_gh(&self, args: &[&str], visibility: Option<&str>) -> Run {
+        let bin = self.at.join("gh-bin");
+        let _ = std::fs::remove_dir_all(&bin);
+        std::fs::create_dir_all(&bin).unwrap();
+        let answer = match visibility {
+            Some(v) => format!("echo '{{\"visibility\":\"{v}\"}}'"),
+            None => "echo 'not a GitHub repository' >&2; exit 1".to_owned(),
+        };
+        let script = bin.join("gh");
+        std::fs::write(
+            &script,
+            format!("#!/bin/sh\n[ \"$*\" = 'repo view --json visibility' ] || exit 9\n{answer}\n"),
+        )
+        .unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let out = Command::new(env!("CARGO_BIN_EXE_statute"))
+            .env("HOME", &self.home)
+            .env(
+                "PATH",
+                format!("{}:{}", bin.display(), std::env::var("PATH").unwrap()),
+            )
+            .args(args)
+            .current_dir(&self.repo)
+            .env_remove("GIT_DIR")
+            .env_remove("GIT_INDEX_FILE")
+            .env_remove("GIT_WORK_TREE")
+            .output()
+            .unwrap();
+        Run {
+            code: out.status.code().unwrap(),
+            stdout: String::from_utf8(out.stdout).unwrap(),
+            stderr: String::from_utf8(out.stderr).unwrap(),
+        }
+    }
+
+    /// A source on disk at `<at>/<name>` with domain 1 and rule `id`.
+    fn on_disk(&self, name: &str, id: u64) {
+        let dir = self.at.join(name);
+        write(&dir, "rules/1.toml", &domain(1).1);
+        write(&dir, &format!("rules/{id}.toml"), &rule(id, 1, "").1);
+    }
+
     /// Adds a source to the global configuration.
     fn configure(&self, line: &str) {
         let path = self.home.join(".statute/config.toml");
@@ -569,4 +615,141 @@ fn site_of_the_first_party_source_with_a_global_private_source() {
     .filter(|c| !section(c).contains("No source."))
     .count();
     assert_eq!(held, 3, "{index}");
+}
+
+#[test]
+fn source_add_writes_where_its_visibility_says() {
+    let w = world("source-add");
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
+    );
+    ok(&w.run(&["add", "R2"]));
+    w.on_disk("team", 7);
+    w.on_disk("me", 4);
+    w.on_disk("ours", 5);
+    // PUBLIC: statute.toml, and the lock file is written again.
+    let run = w.run_gh(&["source", "add", "team", "../team"], Some("PUBLIC"));
+    ok(&run);
+    let manifest = read(&w.repo, "statute.toml");
+    assert!(
+        manifest.contains("team = { path = \"../team\", public = true }"),
+        "{manifest}"
+    );
+    assert!(read(&w.repo, "statute.lock").contains("name = \"team\""));
+    // INTERNAL: private, so statute.private.toml, made with its base.
+    let run = w.run_gh(&["source", "add", "me", "../me"], Some("INTERNAL"));
+    ok(&run);
+    assert!(
+        run.stdout.contains("GitHub shows it as INTERNAL"),
+        "{}",
+        run.stdout
+    );
+    let private = read(&w.repo, "statute.private.toml");
+    assert!(private.starts_with("base = \"statute.toml\""), "{private}");
+    assert!(
+        private.contains("me = { path = \"../me\", public = false }"),
+        "{private}"
+    );
+    assert!(!read(&w.repo, "statute.toml").contains("me ="));
+    // No answer: private as well.
+    let run = w.run_gh(&["source", "add", "ours", "../ours"], None);
+    ok(&run);
+    assert!(
+        run.stdout.contains("GitHub could not tell"),
+        "{}",
+        run.stdout
+    );
+    assert!(read(&w.repo, "statute.private.toml").contains("ours = { path"));
+    // A name the file holds, or the public layer has, fails.
+    fails(
+        &w.run(&["source", "add", "team", "../team", "--public"]),
+        "[sources] names `team` already",
+    );
+    fails(
+        &w.run(&["source", "add", "team", "../team", "--private"]),
+        "`team` is a source of the public layer already",
+    );
+}
+
+#[test]
+fn source_add_in_a_private_repository_and_globally() {
+    let w = world("source-add-private");
+    ok(&w.run(&["init", "--private"]));
+    w.on_disk("me", 4);
+    ok(&w.run(&["source", "add", "me", "../me", "--private"]));
+    assert!(read(&w.repo, "statute.toml").contains("me = { path = \"../me\", public = false }"));
+    assert!(!w.repo.join("statute.private.toml").exists());
+    // --global: a git address, its default branch written out.
+    let (_, team) = source(&w.at, "team", &[domain(1), rule(7, 1, "")]);
+    let run = w.run(&["source", "add", "--global", "--public", "team", &team]);
+    ok(&run);
+    let config = read(&w.home, ".statute/config.toml");
+    assert!(
+        config.contains(&format!(
+            "team = {{ git = \"{team}\", branch = \"main\", public = true }}"
+        )),
+        "{config}"
+    );
+    ok(&w.run(&["add", "team:7"]));
+    assert!(read(&w.repo, "statute.lock").contains(&format!("git = \"{team}\"")));
+}
+
+#[test]
+fn github_addresses() {
+    use statute::global::github_repo;
+    assert_eq!(
+        github_repo("https://github.com/o/r.git").as_deref(),
+        Some("o/r")
+    );
+    assert_eq!(github_repo("git@github.com:o/r").as_deref(), Some("o/r"));
+    assert_eq!(github_repo("https://example.test/o/r.git"), None);
+    assert_eq!(github_repo("https://github.com/o"), None);
+}
+
+#[test]
+fn source_add_writes_nothing_when_the_private_layer_would_fail() {
+    let w = world("source-add-clash");
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".gitignore",
+        "/statute.private.toml\n/statute.private.lock\n/.statute/\n",
+    );
+    ok(&w.run(&["add", "R2"]));
+    w.on_disk("team", 7);
+    write(
+        &w.repo,
+        "statute.private.toml",
+        "base = \"statute.toml\"\n\n[sources]\nteam = { path = \"../team\", public = false }\n",
+    );
+    ok(&w.run(&["lock"]));
+    let before = (read(&w.repo, "statute.toml"), read(&w.repo, "statute.lock"));
+    fails(
+        &w.run(&["source", "add", "team", "../team", "--public"]),
+        "`team` is named in statute.toml already",
+    );
+    assert_eq!(
+        (read(&w.repo, "statute.toml"), read(&w.repo, "statute.lock")),
+        before
+    );
+}
+
+#[test]
+fn source_add_takes_a_bare_repository_as_a_git_address() {
+    let w = world("source-add-bare");
+    ok(&w.run(&["init", "--private"]));
+    source(&w.at, "team", &[domain(1), rule(7, 1, "")]);
+    let bare = w.at.join("team.git");
+    ok(&w.run(&["source", "add", "team", bare.to_str().unwrap(), "--public"]));
+    let manifest = read(&w.repo, "statute.toml");
+    assert!(
+        manifest.contains(&format!(
+            "team = {{ git = \"{}\", branch = \"main\", public = true }}",
+            bare.display()
+        )),
+        "{manifest}"
+    );
 }

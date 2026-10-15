@@ -1,0 +1,42 @@
+id = 134
+slug = "shared-tool-tmp-roots"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Never delete a tool's root directory named after the user"
+zh = "不删按用户名命名的共享工具根目录"
+
+[text.statement]
+en = "Never delete a tool's root directory named after the user rather than the project (such as `/tmp/pytest-of-<user>` or `/tmp/pytest-current`); delete only your own numbered subtree in it (such as `pytest-<n>`)."
+zh = "不删除按用户名而不是按项目命名的工具根目录 (例如 `/tmp/pytest-of-<user>`、`/tmp/pytest-current`)，只删自己那棵编号子树 (例如 `pytest-<n>`)。"
+
+[text.reason]
+en = '''
+Such a root is named after the user, so every agent of that user shares it; deleting it deletes directories others are using, and their tests fail across the board. No task of one agent justifies breaking the work of the others ({@constitution:decency.legitimate-means}).
+'''
+zh = '''
+这类根目录按用户名命名，同一个用户下的所有 agent 共用一个；删掉它，就删掉了别人正在用的目录，别人的测试会大面积失败。一个 agent 的任务不能成为弄坏别人工作的理由 ({@constitution:decency.legitimate-means})。
+'''
+
+[text.verification]
+en = '''
+Your own numbered subtree is the numbered directory your own run created.
+
+Violated when an agent deletes such a root itself, or a numbered subtree it did not create.
+'''
+zh = '''
+自己的编号子树，指自己这次运行生成的那个编号目录。
+
+agent 删除了这类根目录本身，或者删除了不是自己生成的编号子树的，即为违反本规定。
+'''
+
+[translations]
+zh = "699eb4f228c6a22e2a6644b2509ed44bb8fff40641973e649aa22e3085d135f5"

@@ -1,0 +1,42 @@
+id = 221
+slug = "third-party-root-only-others"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep nothing but others' sources in the root for third-party sources"
+zh = "第三方源码的根目录下只放别人的源码"
+
+[text.statement]
+en = "Keep nothing but others' sources in the root for third-party sources ({@rule:132})."
+zh = "第三方源码的根目录 ({@rule:132}) 下只放别人的源码。"
+
+[text.reason]
+en = '''
+Your own reports or findings put among others' sources mix with their code and get lost ({@constitution:simplicity}).
+'''
+zh = '''
+自己的调研报告、findings 放进别人的源码中间，就和别人的代码混在一起，也找不到了 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+Your own output (research reports, findings) goes to the scratch directory ({@rule:130}).
+
+Violated when the root for third-party sources holds your own output.
+'''
+zh = '''
+自己的产物 (调研报告、findings) 放在 scratch 目录 ({@rule:130})。
+
+第三方源码的根目录下放了自己的产物的，即为违反本规定。
+'''
+
+[translations]
+zh = "2627eb2ff9b3022c079af4fa7f253654e5f7bbb17c50fef7d6489c5fe55e3652"

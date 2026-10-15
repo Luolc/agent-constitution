@@ -522,3 +522,21 @@ fn a_worktree_names_the_clones_exclude_file() {
     write(&dir, ".git/info/exclude", EXCLUDE);
     ok(&statute(&tree, &["compile"]));
 }
+
+#[test]
+fn the_private_layer_enables_packs() {
+    let dir = ignoring("private-packs");
+    set_up(&dir);
+    // R1 as a pack of the private layer adds R6, which only it enables.
+    ok(&statute(&dir, &["add", "--private", "--pack", "R1"]));
+    assert!(read(&dir, "statute.private.toml").contains("packs = [\"R1\"]"));
+    assert!(read(&dir, "statute.private.lock").contains("rule = \"R6\""));
+    assert!(!read(&dir, "statute.lock").contains("rule = \"R6\""));
+    // A pack of statute.toml is not listed again.
+    ok(&statute(&dir, &["remove", "--private", "--pack", "R1"]));
+    ok(&statute(&dir, &["add", "--pack", "R1"]));
+    fails_with(
+        &statute(&dir, &["add", "--private", "--pack", "R1"]),
+        "`packs` lists `R1`, which statute.toml lists already",
+    );
+}
