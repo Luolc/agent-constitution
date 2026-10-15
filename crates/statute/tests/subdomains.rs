@@ -163,9 +163,9 @@ fn a_subdomains_rules_follow_the_order_of_the_tree() {
         &manifest("\"R3\", \"R4\", \"R7\", \"R8\"", ""),
         &[],
     );
-    // The rules of subdomain 2 before R4, which follows it in domain 1;
-    // no domain shows, and no requirement.
-    assert_eq!(numbers(&dir), ["R3", "R7", "R8", "R4"]);
+    // R4, a rule of domain 1, before the rules of its subdomain 2, though
+    // its number is higher; no domain shows, and no requirement.
+    assert_eq!(numbers(&dir), ["R4", "R3", "R7", "R8"]);
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     assert!(
         !out.contains("Domain") && !out.contains("Requires"),
@@ -180,7 +180,9 @@ fn a_rule_hangs_under_a_domain_of_another_source() {
         &manifest("\"R3\", \"20\", \"team:21\"", ""),
         &[("rules", hung(20, "R2")), ("team/rules", hung(21, "R1"))],
     );
-    assert_eq!(numbers(&dir), ["R3", "L20", "team:21"]);
+    // Hung under domain 1, team:21 comes before its subdomain 2, which
+    // holds R3 and L20.
+    assert_eq!(numbers(&dir), ["team:21", "R3", "L20"]);
     // Its parent is a domain or a subdomain there, never a rule or a
     // one-of.
     let dir = repo(
