@@ -1,0 +1,42 @@
+id = 211
+slug = "merge-waits-for-ci-by-default"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["evidence.grounds", "independent-review.reviewed-version"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Unless the repository says otherwise, merge after the required check passes"
+zh = "仓库没写的，合并等 required check 通过"
+
+[text.statement]
+en = "Where a repository's instructions do not say whether a merge waits for CI, merge only after the required check has passed on the approved head; where they say a merge does not wait, do not merge when the summary job of CI has already failed on the approved head."
+zh = "仓库的说明没写明合并等不等 CI 的，合并之前等 approved head 上的 required check 通过；写明合并不等 CI 的，approved head 上 CI 的汇总 job 已经失败就不合并。"
+
+[text.reason]
+en = '''
+What was approved is that head, and CI passing on it is the ground for saying it works ({@constitution:evidence.grounds}, {@constitution:independent-review.reviewed-version}). A repository may choose not to wait, for speed, and that is for the repository to say; where it says nothing, the safe course holds. Even where a merge does not wait, merging after a failure is already in sight is merging a known error.
+'''
+zh = '''
+批准的是那个 head，CI 在它上面通过，才算有了它能正常工作的依据 ({@constitution:evidence.grounds}、{@constitution:independent-review.reviewed-version})。有的仓库为了快，选择合并不等 CI，这要由仓库自己写明；没写的按稳妥的办。即便不等，已经看到失败了还合，就是明知有错照合。
+'''
+
+[text.verification]
+en = '''
+A repository's instructions are its project instructions, such as its `AGENTS.md`, or the rules it enables. The summary job is the job of CI that sums up the conclusions of all checks, often called `check`; in a repository that keeps a required check, it is the required check. The duty to read CI on the main branch after a merge is in {@rule:59}, for both kinds of repository.
+
+Violated when a repository does not say that a merge does not wait for CI and the required check had not passed on the approved head when it was merged, or when the repository says a merge does not wait and the summary job had already failed on the approved head when it was merged.
+'''
+zh = '''
+仓库的说明指它的项目说明 (例如 `AGENTS.md`) 或启用的规定。汇总 job 是 CI 里汇总全部检查结论的那个 job，一般叫 `check`；仓库保留 required check 的，它就是 required check。合并之后查看主分支上 CI 的义务见 {@rule:59}，两种仓库都适用。
+
+仓库没写明合并不等 CI，而合并时 approved head 上的 required check 还没有通过的，或者仓库写明不等，而合并时 approved head 上的汇总 job 已经是失败的，即为违反本规定。
+'''
+
+[translations]
+zh = "f703c29fe4c63e166e291064faa0bb09c42af5b8a1f64077ea2597af47aad063"

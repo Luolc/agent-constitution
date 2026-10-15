@@ -58,3 +58,6 @@ the whole design.
   statute directory in the home directory, the global configuration,
   which source a name means, git sources and adding a source; built in
   part.
+- [Rule configuration](rule-config.md): the directory of the local
+  rules, parameters such as the languages, and which domains and rules
+  are on by default; not built yet.
