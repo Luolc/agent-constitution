@@ -1,6 +1,6 @@
 # Agent 宪法 (2026-10 版)
 
-只写 … 的条款，这里略去了正文。
+完整版：<https://agent-constitution.luolc.com/zh/editions/2026-10/>。只写 … 的条款，这里略去了正文。
 
 ## 第一条 总则
 

@@ -1,6 +1,6 @@
 # Agent Constitution (2026-10 Edition)
 
-… marks a provision whose text is left out here.
+Full text: <https://agent-constitution.luolc.com/editions/2026-10/>. … marks a provision whose text is left out here.
 
 ## Article I. General provisions
 
