@@ -156,8 +156,7 @@ en = "Violated when not."
 
 [[cases]]
 name = "a domain under a subdomain"
-passes = false
-statute = "parent 4 is a subdomain already, under 2; domains nest two levels at most"
+passes = true
 node = """
 id = 20
 revision = 1

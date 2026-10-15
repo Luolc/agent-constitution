@@ -1,4 +1,4 @@
-<!-- en-sha256: f4731c0a9f158813c84bc60731ba7fe1a76c4d1d80ae8428dc7d4609ce69a760 -->
+<!-- en-sha256: 01d9e28f3b746bfefb81f89ac2b7c8970606c6b4d19ab6484ece0671cc34ef18 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -301,7 +301,7 @@ uses = ["instructions", "review"]
 
 - 规定的 parent 是领域或 one-of，从不是规定。规定挂在规定下面时原本表达的「它细化了另一条」，改写成 `requires`。
 - one-of 的 parent 是领域。
-- one-of 的选项就是它的子节点，要么全是规定，要么全是领域，不能混。只有一条规定的选项就是那条规定，外面不套领域；需要几条规定的选项是一个以这个 one-of 为 parent 的领域，规定放在里面；它被选中时，其中的规定各按自己的 `default` 进来，与 `domains` 开启的领域一样。领域仍然最多嵌套两层，这样的领域算一层：子领域里的 one-of 只能以规定为选项。
+- one-of 的选项就是它的子节点，要么全是规定，要么全是领域，不能混。只有一条规定的选项就是那条规定，外面不套领域；需要几条规定的选项是一个以这个 one-of 为 parent 的领域，规定放在里面；它被选中时，其中的规定各按自己的 `default` 进来，与 `domains` 开启的领域一样。这样的领域和别的领域一样，也可以有自己的子领域和 one-of。
 - 每个 one-of 都指定一个选项作为默认 (见[one-of 的默认](#in-the-rule-files))。
 - 选项在自己的 `parent` 里写它的 one-of；one-of 不列 `options`。树仍然只记在 `parent` 里 ([规定文件格式](rule-format.md#rule-file-format))，增加或移动一个选项只改一个文件。one-of 自己的文件里看不到它的选项；`statute explain` 和网站会列出来。
 - 编译出的 `AGENTS.md` 是一个平铺的列表，one-of 被选中的选项放在 one-of 的位置，不写任何指明 one-of 的内容：是规定的选项和别的规定一样是一项，是领域的选项给出它的规定 ([编译与网站](statute-command.md#compilation-and-the-site))。在网站上，one-of 是它所在领域列表里的一个框，列出每个选项并标出默认；是规定的选项只出现在这个框里，不在列表里再出现一次。是领域的选项，它的规定也留在列表里，挂在它自己的标题下 (公开网站上是它的分组行)，比 one-of 所在的领域低一级；one-of 不作任何分组的小标题。两个网站都已经这样渲染。

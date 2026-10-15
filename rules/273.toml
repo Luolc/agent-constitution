@@ -1,0 +1,22 @@
+id = 273
+slug = "engineering"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+default = "on"
+
+[title]
+en = "Engineering"
+zh = "工程"
+
+[applicability]
+en = '''
+Engineering practice in a repository: Git, pull requests and review, CI and releases, tests, code, frontend and documentation. Enable it in every repository whose code or documents are under version control.
+'''
+zh = '''
+仓库里的工程实践：Git、PR 与审查、CI 与发版、测试、代码、前端与文档。代码或文档受版本控制的仓库都要启用。
+'''
+
+[translations]
+zh = "d55ecc9f28084102f3178ba26e415d4d8df48800f4b827d82188c0f84bb0f8e4"

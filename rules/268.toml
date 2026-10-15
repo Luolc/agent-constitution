@@ -1,0 +1,22 @@
+id = 268
+slug = "authority"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+default = "on"
+
+[title]
+en = "Authority"
+zh = "权限与同意"
+
+[applicability]
+en = '''
+Which actions go through a principal (releases, downtime, irreversible effects, usage quotas, changes to the machine) and how a principal's yes reaches the agent that acts on it. Enable it wherever agents work.
+'''
+zh = '''
+哪些动作要经委托人同意 (发版、停机、不可逆的对外影响、用量额度、改动机器)，以及委托人的同意怎么传到执行的 agent。凡有 agent 工作的地方都要启用。
+'''
+
+[translations]
+zh = "a4820c2fe31231946eb55b1bbb41b966b68a6d4bfe9b8f7ff0baaa73b903ea41"

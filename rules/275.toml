@@ -1,0 +1,23 @@
+id = 275
+slug = "instruction-changes"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 274
+default = "on"
+
+[title]
+en = "Instruction changes"
+zh = "指令改动"
+
+[applicability]
+en = '''
+Changes to instruction files: kept apart from other changes, merged before the work they govern, and checked in CI. Enable it in a repository whose instructions agents change.
+'''
+zh = '''
+改指令文件的改动：与其他改动分开，先于它所约束的工作合入，并在 CI 里检查。agent 会改指令的仓库要启用。
+'''
+
+[translations]
+zh = "1b730026cb6f930ebf9ab528a3d48e2ef6061e40874771f2ba701474aa895b53"

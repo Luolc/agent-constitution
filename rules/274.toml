@@ -1,0 +1,23 @@
+id = 274
+slug = "pull-requests"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 273
+default = "on"
+
+[title]
+en = "Pull requests"
+zh = "Pull request"
+
+[applicability]
+en = '''
+How a change reaches the main branch: reviewed pull requests, the duties of the reviewer and of the author, the description read back against the head, review rounds, and when a merge waits for CI. Enable it in a repository whose main branch takes changes through pull requests.
+'''
+zh = '''
+改动怎么进主干：经审查的 PR，审查方与作者各自的本分，描述对照 head 回读，审查轮数，合并什么时候等 CI。主干经 PR 收改动的仓库都要启用。
+'''
+
+[translations]
+zh = "cfd3debde33a2336642781a86c20ca61fe9e4ba8e295d0d0f807ef6dc7ca0193"
