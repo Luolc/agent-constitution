@@ -1,8 +1,8 @@
 # Rule configuration
 
-Status: decided; partly built. What is built is under
+Status: decided; built. What is built is under
 [The command and the first version](statute-command.md#the-command-and-the-first-version),
-and [What this changes](#what-this-changes) lists what is not.
+and [What this changes](#what-this-changes) lists it.
 This part of the design says three things a rule set can set beyond
 the list of its rules: the directory of the repository's own rules,
 the values of parameters that rules leave open (the languages first),
