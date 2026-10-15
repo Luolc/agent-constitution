@@ -771,3 +771,60 @@ fn the_private_lock_file_records_a_sources_rules_dir() {
     ok(&statute(&dir, &["compile"]));
     assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- me:4 "));
 }
+
+#[test]
+fn a_public_rule_overrides_a_rule_only_the_private_layer_brings_in() {
+    for listed in [false, true] {
+        let dir = ignoring(if listed {
+            "cross-layer-listed"
+        } else {
+            "cross-layer-unlisted"
+        });
+        // L7 overrides R6, which only me:8, of the private layer, requires.
+        write(
+            &dir,
+            ".statute/rules/7.toml",
+            &edit(
+                rule(7, 1, ""),
+                "parent = 1\ndefault = \"off\"",
+                "overrides = \"R6\"",
+            )
+            .1,
+        );
+        write(
+            &dir,
+            "me/rules/8.toml",
+            &rule(8, 1, "requires = [\"R6\"]").1,
+        );
+        set_up(&dir);
+        if listed {
+            ok(&statute(&dir, &["add", "7"]));
+        }
+        write_private(
+            &dir,
+            &private(&dir).replace("rules = []", "rules = [\"me:4\", \"me:8\"]"),
+        );
+        let run = statute(&dir, &["compile"]);
+        ok(&run);
+        let public = read(&dir, "AGENTS.md");
+        let full = read(&dir, ".statute/AGENTS.full.md");
+        if listed {
+            assert!(
+                run.stderr.contains("statute.toml: warning: rule L7 (Rule 7) overrides R6 (Rule 6), which nothing else in the rule set enables; L7 is compiled where R6 would stand\n"),
+                "{}",
+                run.stderr
+            );
+            assert!(public.contains("\n- L7 Do the thing 7.\n"), "{public}");
+            assert!(full.contains("\n- L7 Do the thing 7.\n"), "{full}");
+            assert!(!full.contains("- R6 "), "{full}");
+        } else {
+            assert!(
+                run.stderr.contains("statute.toml: warning: rule L7 (Rule 7) overrides R6 (Rule 6), and nothing in the rule set enables it, so it is compiled nowhere; list \"7\" in `rules`\n"),
+                "{}",
+                run.stderr
+            );
+            assert!(!public.contains("- L7 "), "{public}");
+            assert!(full.contains("\n- R6 Do the thing 6.\n"), "{full}");
+        }
+    }
+}

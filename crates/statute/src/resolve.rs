@@ -640,6 +640,29 @@ pub fn resolve(
         }
     }
 
+    // An overriding rule has no `default`, so the repository's own one is
+    // left out unless the rule set enables it.
+    for (key, node) in sources.nodes() {
+        let Some(target) = sources.overrides(&key) else {
+            continue;
+        };
+        if sources.rank(&key.source) == 3
+            && !matches!(node.status, Status::Superseded | Status::Repealed)
+            && !res.enabled.contains_key(&key)
+            && !sw.excluded(&key)
+        {
+            diags.warning(
+                file,
+                format!(
+                    "rule {} overrides {}, and nothing in the rule set enables it, so it is compiled nowhere; list \"{}\" in `rules`",
+                    label(sources, &key),
+                    label(sources, &target),
+                    Manifest::entry(&key)
+                ),
+            );
+        }
+    }
+
     for (rule, one_of) in &one_of_requirements {
         if sw.excluded(one_of) && !is_enabled(sources, &res, one_of) {
             diags.error(

@@ -390,11 +390,11 @@ default = "on"
 
 - `on` or `off`. The children of a one-of have no `default`; the
   one-of names one of them as its default (below).
-- A rule with `overrides` has no `default` either: it takes the place
-  of the rule it overrides
-  ([Overrides](rule-sources.md#overrides)), whose place decides whether
-  it comes in, and when that rule is an option of a one-of, a switch of
-  its own would contradict the one-of's default.
+- A rule with `overrides` has no `default` either: it comes in only
+  when the rule set enables it, and then stands in the place of the
+  rule it overrides ([Overrides](rule-sources.md#overrides)); when that
+  rule is an option of a one-of, a switch of its own would contradict
+  the one-of's default.
 - A domain is `off` when it is for some repositories or some ways of
   working only, as Fleet is for work divided among agents: none of its
   rules comes in until a rule set turns it on. A subdomain's `default`
