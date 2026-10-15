@@ -11,7 +11,7 @@ and a rule set with its lock file, and writes:
 - an `AGENTS.md`, which opens with the repository, the edition and the
   revision of the constitution it rests on, and then has the enabled rules
   in nested blocks along the parent tree, one heading level per level of
-  the tree, each domain with an enabled rule below it as a top heading,
+  the tree, a one-of's enabled option at the one-of's level, each domain with an enabled rule below it as a top heading,
   followed by the domain's applicability when it has one; a
   subtree whose root is not enabled (for a one-of: none of its children
   is) contributes nothing, since none of its rules can be enabled without
@@ -49,9 +49,12 @@ to ([Private rules in a public repository](rule-sources.md#private-rules-in-a-pu
 file with the repository's private rules added." (in Chinese
 「如果 `.statute/AGENTS.full.md` 存在，读它并照做：它是本文件加上本仓库的私有规定。」). Each domain is a heading of level two, a subdomain one of
 level three ([Subdomains](rule-sources.md#subdomains)),
-and each level of the tree one level deeper, down to level six, where
-deeper levels stay;
-a one-of none of whose children is enabled does not appear. The
+and each level of the tree one level deeper. A one-of has no heading
+of its own: its enabled option stands at its place, after the one-of's
+anchor, and under the option's heading a line names the one-of,
+`One of: <its title>.` (in Chinese `择一：<its title>。`); an option
+that is a domain keeps its heading, with its rules below it. A one-of
+none of whose children is enabled does not appear. The
 first-party source's domains come first, then those of the other
 sources by the sources' names, then the repository's own. A node's
 heading is its title and its reference as statute shows it (`R42`),
@@ -239,8 +242,9 @@ default switches of a rule set are built, with `domains`, `exclude`,
 them; `default` is required where the rule files need it, and
 `check = "review"` fails; parameters are built, with their values in
 the lock file, `upgrade`, `explain <name>` and both outputs. Not built
-yet: the one-of's rendering, and the marks of the public site; the
-local site's marks are built.
+yet: the one-of as a box on the sites, and the marks of the public
+site; the local site's marks and the one-of's place in the compiled
+`AGENTS.md` are built.
 Inherited rule sets and path segments are not built.
 
 **`init`** writes `statute.toml` in the current directory: the
