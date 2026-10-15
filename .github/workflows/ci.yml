@@ -3,7 +3,7 @@
 # cargo fmt (local hooks; the site's tests need Hugo and the Rust
 # toolchain, cargo fmt the toolchain, both installed before them), then the Rust
 # lint, tests and package check, then the static site build with its link
-# check, then the constitution numbering check and the instruction-only
+# check and its screenshots, then the constitution numbering check and the instruction-only
 # check, both against the base commit.
 # The job name `check` is the required status check.
 
@@ -121,6 +121,18 @@ jobs:
         run: hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning
       - name: Link check
         run: uv run --frozen check-site-anchors site
+
+      # Screenshots of the built site (docs/design/static-site.md,
+      # Screenshots), taken with the runner's Google Chrome: the
+      # ubuntu-24.04 image lists it under Browsers (read 2026-10-14).
+      # They are an artifact of the run, to look at, not a check.
+      - name: Screenshots
+        run: uv run --frozen site-screenshots site --out site-screenshots
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site-screenshots
+          path: site-screenshots/
+          if-no-files-found: error
 
       # Numbering against the base, of the constitution and of the rules
       # (check 7, docs/design/checkers.md): on a pull request the first

@@ -11,7 +11,8 @@ web`, once `uv run site-rules` has written the rules' data (Rules,
 below). CI runs four steps on every pull request and push: `uv run
 site-rules`, `uv run count-tokens` (the token count, below),
 `hugo-0.167.0 --source web --cleanDestinationDir --panicOnWarning`, and
-`uv run check-site-anchors site`, the link check. The workflow
+`uv run check-site-anchors site`, the link check, and then takes the
+screenshots (Screenshots, below). The workflow
 `.github/workflows/pages.yml` publishes the site to GitHub Pages at
 `https://agent-constitution.luolc.com/`, which it passes to Hugo as
 `--baseURL`.
@@ -440,3 +441,26 @@ site-rules`, `uv run count-tokens` (the token count, below),
   is not a commit hook, and the tests of the templates
   (`test_site.py`, which builds a made-up constitution and design) are
   skipped without it, except in CI; CI installs Hugo before the tests.
+- Screenshots: `uv run site-screenshots [<dir>] [--out <dir>] [--page
+  <path> ...]` (`tools/site`) serves a built site, `site/` by default,
+  on a free local port and takes, with headless Google Chrome, one
+  screenshot of each page path per color scheme, light and dark, and
+  width, desktop (1280 by 900 pixels) and mobile (390 by 844): one
+  Chrome run each, one after the other, each with a fresh profile and
+  `--no-proxy-server`, the window's view only, not the whole page. The
+  file of a page is named by its path, the scheme and the width
+  (`zh-rules-79.dark.mobile.png`, `index.light.desktop.png` for `/`),
+  in `site-screenshots/` by default, which is not committed. The script
+  knows nothing of Hugo: its input is a directory and paths, a language
+  is a path prefix (`/zh/`), and without `--page` it takes the
+  constitution, the list of rules and two rules (rule 79, a one-of, and
+  rule 132, with code in its title), in English and Chinese. Dark is
+  Chrome's `--force-dark-mode`, which makes the preferred color scheme
+  dark; it works because the theme switch (`web/assets/theme.js`)
+  follows that scheme until the reader picks a theme, which a fresh
+  profile never has. This is the one place the script depends on the
+  site's theme, written in `SCHEMES` in the script. CI takes the
+  screenshots after the link check, with the runner's Google Chrome
+  (listed in the ubuntu-24.04 image, read 2026-10-14), and uploads them
+  as the artifact `site-screenshots` of the run. They are for a person
+  or a reviewer to look at; nothing compares them with earlier ones.
