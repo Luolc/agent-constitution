@@ -163,6 +163,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
   align-items: center;
   gap: var(--t-space-1);
   min-block-size: var(--t-target);
+  padding-block: var(--t-space-1);
   color: var(--t-text-muted);
   font-weight: var(--t-weight-medium);
   list-style: none;
@@ -269,7 +270,8 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 .views label:active { color: var(--t-text); background-color: var(--t-bg-active); }
 
 /* A menu: a button with a border, what it chooses and `chevron-down`,
-   what it chooses in `accent` when it differs from the default filter.
+   what it chooses in a badge, `accent` on `bg-selected`, when it
+   differs from the default filter.
    Open, a popover under it, over the tables' sticky rows: All and None,
    then a row per value, the domains' scrolling under their search. */
 .menu > summary {
@@ -290,7 +292,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 .menu > summary::-webkit-details-marker { display: none; }
 .menu > summary > .icon { color: var(--t-text-muted); transition: rotate var(--t-duration-base) var(--t-ease-out); }
 .menu[open] > summary > .icon { rotate: 180deg; }
-.menu.changed .value { color: var(--t-accent); }
+.menu.changed .value { padding: 0 var(--t-space-1); color: var(--t-accent); background: var(--t-bg-selected); border-radius: var(--t-radius-full); }
 @media (hover: hover) and (pointer: fine) {
   .menu > summary:hover { background-color: var(--t-bg-hover); }
 }
@@ -346,7 +348,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
    (`width-mark` each) and whether the rule set enables a rule, as wide
    as its widest; each row a subgrid of it, so that every column lines up
    from row to row. The head sticks to the top of the window, on
-   `bg-page`; a group row sticks under it while its rows are in view. */
+   `bg-panel`, with no border around the table; a group row sticks under it while its rows are in view. */
 .table {
   --row: max(var(--t-target), calc(1em * var(--t-line-height-ui) + 2 * var(--t-space-2)));
   display: grid;
@@ -366,7 +368,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
   block-size: var(--row);
   color: var(--t-text-muted);
   font-weight: var(--t-weight-medium);
-  background: var(--t-bg-page);
+  background: var(--t-bg-panel);
   border-block-end-color: var(--t-border-strong);
 }
 .head > * { font-size: var(--t-text-sm); }
@@ -416,7 +418,9 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 }
 .table .entry { align-items: start; }
 .entry > .ref { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
-.rule-title { display: flex; align-items: start; gap: var(--t-space-2); min-inline-size: 0; }
+/* A word too long for the row, such as a path in code, breaks anywhere
+   rather than run past the page's edge. */
+.rule-title { display: flex; align-items: start; gap: var(--t-space-2); min-inline-size: 0; overflow-wrap: anywhere; }
 .rule-title > .icon { color: var(--t-text-faint); margin-block-start: calc((1lh - 1em) / 2); }
 .rule-main { display: grid; flex: 1; min-inline-size: 0; }
 .rule-head { display: flex; align-items: center; gap: var(--t-space-2); min-inline-size: 0; }
@@ -503,7 +507,8 @@ body:has(#view-statement:checked) .entry .statement > * { font-size: var(--t-tex
 /* A narrow screen: a title takes as many lines as it needs, and whether
    the rule set enables a rule goes under it; a group row leaves out the
    quadrant and source, which the headings above it name, when it has
-   domains to show; a menu's popover spans the row. */
+   domains to show; the search takes a row of its own; a menu's popover
+   spans the row. */
 @media (max-width: 48rem) {
   .rule-text .title { white-space: normal; }
   .group-path > .q:has(+ .icon) { display: none; }
@@ -511,6 +516,8 @@ body:has(#view-statement:checked) .entry .statement > * { font-size: var(--t-tex
   .entry > .rule-enabled { grid-row: 2; grid-column: 2 / -1; padding-inline-end: 0; }
   .control { position: static; }
   .controls { position: relative; }
+  .find { flex-basis: 100%; }
+  .find input { inline-size: 100%; box-sizing: border-box; }
   .menu-panel { inline-size: 100%; max-inline-size: none; }
 }
 

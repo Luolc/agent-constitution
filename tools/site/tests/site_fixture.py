@@ -186,6 +186,27 @@ def long_domain(root: Path) -> None:
   )
 
 
+def long_code(root: Path) -> None:
+  """Put a path in code, longer than a phone's row, in two statements.
+
+  Rule 5's English one, which the English list shows, and rule 3's
+  Chinese one, which the Chinese list shows; the English text the
+  translation follows is unchanged.
+
+  Args:
+    root: the checkout.
+  """
+  code = "`.claude/skills/<name>/references/alongfilename.md`"
+  for name, old, new in (
+    ("5", 'en = "New."', f'en = "New, in {code}."'),
+    ("3", "和{@rule:6}。", f"和{{@rule:6}}，见 {code}。"),
+  ):
+    rule = root / f"rules/{name}.toml"
+    text = rule.read_text(encoding="utf-8")
+    assert old in text
+    rule.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+
 def subdomain(root: Path) -> None:
   """Make the one-of 2 a domain under the domain 1.
 

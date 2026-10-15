@@ -10,6 +10,6 @@ Icons), one SVG file each, copied unchanged from the release named:
   v19.33.0 (<https://github.com/primer/octicons>), under the MIT license
   in `octicons/LICENSE`.
 
-A page names an icon by its directory and its file name, `lucide:funnel`
-for `lucide/funnel.svg`. A new icon is copied from the release above, or
+A page names an icon by its directory and its file name, `lucide:info`
+for `lucide/info.svg`. A new icon is copied from the release above, or
 all of them from a newer one, with this file's version changed.

@@ -178,9 +178,8 @@ screenshots (Screenshots, below). The workflow
   The list (`web/layouts/rules/section.html`) is a table under a head,
   one row a rule, along the tree: each rule's label, its title, cut to
   the row by the style sheet, under it its statement, and its marks,
-  linked to its page: its
-  status, whether the source's defaults enable it (on or off, as
-  `statute export` reckons it), and its `uses`, each an icon or a dot in
+  linked to its page: whether the source's defaults enable it (on or
+  off, as `statute export` reckons it), its status, and its `uses`, each an icon or a dot in
   a place of its own ([Frontend](frontend.md#components)); then, with
   `--enabled`, whether it is enabled, and with more than one source, the
   quadrant of its source, each a small tag. A rule under another rule
@@ -194,7 +193,8 @@ screenshots (Screenshots, below). The workflow
   one-of's status, domain and switch and the `uses` of its rule
   options. Domains are not rows of their own: each rule carries a group
   row for its nearest domain, with that domain's label (`R13`) and the
-  path of its domains (`Documentation › Design`), shown where the group
+  path of its domains (`Documentation › Design`), and in the first place
+  of the marks whether the defaults enable the domain, shown where the group
   changes from the rule shown before it and above the first rule shown,
   so that the list coming back to a domain from one under it shows
   the domain's row again; with more than one source, the path starts
@@ -202,14 +202,21 @@ screenshots (Screenshots, below). The workflow
   stick to the top of the window as it scrolls, a group row under the
   head until the next one covers it, with the style sheet alone. Above
   the list, a legend gives each mark a rule carries there, a row per
-  kind ([Frontend](frontend.md#components)): the statuses, on and off by
-  default, the two `uses`, a one-of's options, and, when the site has
+  kind ([Frontend](frontend.md#components)): on and off by default, the
+  statuses, the two `uses`, a one-of's options, and, when the site has
   them, enabled or not and the quadrant; its last row gives the order
-  of the marks' places. Below it, the filter, a row of menus
-  ([Frontend](frontend.md#components)), one for each field, each a
+  of the marks' places. It folds, open by default; the script keeps it
+  folded or open as the reader left it, in `localStorage`. Below it,
+  one row of controls ([Frontend](frontend.md#components)): a search,
+  what the rows show, the filter, a menu for each field, each a
   button that opens its check boxes with All and None: each status, on
   and off by default, each value of `uses`, each domain, with a search
-  box, and each quadrant when there is more than one source. A rule is shown when, in
+  box, and each quadrant when there is more than one source; then Clear
+  filters, which brings back the default filter and an empty search.
+  Under the row, the number of rules shown. The search shows the rules
+  whose rows' text, their labels, titles and statements, holds what is
+  typed, case aside; a group row's text does not count. A rule is shown
+  when it meets the search and when, in
   every field, one of its values is checked: its status, whether the
   defaults enable it (a node whose answer depends on another source,
   whose place stays empty, counts as off), its `uses`
@@ -226,7 +233,7 @@ screenshots (Screenshots, below). The workflow
   first-party source overrides nothing. By default the filter checks
   the statuses of `params.rulesStatuses` in `web/hugo.toml` and every
   other value; superseded, repealed and draft rules are in the list but
-  not checked. After the filter, a segmented
+  not checked. In the row, after the search, a segmented
   control sets what each row shows ([Frontend](frontend.md#components)):
   its title and statement, by default, its title alone, or its
   statement alone; the style sheet shows the rows as its checked radio
@@ -242,18 +249,20 @@ screenshots (Screenshots, below). The workflow
   with the rules of the default filter shown, each rule with its group
   row, the others hidden. `web/assets/ts/rules-list.ts`, bundled by
   Hugo ([Frontend](frontend.md#in-the-code)) and inlined in `<head>`,
-  takes the filter from the address, shows its rules and group rows,
-  and writes each change back into the address. The address holds only
-  the fields whose check boxes differ from the default, each as the
-  values checked, keys of `[a-z0-9-]` joined by commas:
-  `?status=draft,trial&uses=review&domain=14,15`, with `status=` for no
-  status. An address of the earlier forms is read as the same filter,
+  takes the search and the filter from the address, shows their rules
+  and group rows and counts the rules, and writes each change back into
+  the address. The address holds only the fields whose check boxes
+  differ from the default, each as the values checked, keys of
+  `[a-z0-9-]` joined by commas, then the search as `q`, when it holds
+  anything: `?status=draft,trial&uses=review&domain=14,15&q=shell`, with
+  `status=` for no status. An address of the earlier forms is read as the same filter,
   on the whole list, and written again in the new form: one with
   `filter=1` and one parameter per box checked, a field without one
   having none checked
   (`?filter=1&status=draft&uses=review&default=on&domain=14`), and one
   with a page size and a page (`per=50&page=2`), which are dropped.
-  Without scripts the controls are hidden and Hugo's page stays.
+  Without scripts the controls but what the rows show are hidden, and
+  Hugo's page stays.
   The list has no
   table of contents, nor a button for one in the top bar of a narrow
   screen (`BookToC` off): the group rows that stick name the domain in

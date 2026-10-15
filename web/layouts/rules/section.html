@@ -12,7 +12,8 @@
   status, domain and switch and the `uses` of its options. Domains are
   not rows of their own: each rule carries a group row for its innermost
   group, its label and the path of its groups, with a source as its
-  quadrant and name when the site has more than one, shown where that
+  quadrant and name when the site has more than one, and in the first
+  place of the marks whether the defaults enable the group, shown where that
   group differs from the one of the rule shown before it, and above the
   first rule shown, so that the list coming back to a domain
   from one under it shows the domain's row again. The head and the group
@@ -22,10 +23,9 @@
   Each rule's statement follows its title in its row
   (_partials/rules/statement.html).
 
-  Above the list, its legend (_partials/rules/legend.html), then, in
-  one bar, the filter (_partials/rules/filter.html) and what the rows
-  show (_partials/rules/view.html). The rules shown are those of the
-  filter, all on one page; by default those of a status in
+  Above the list, its legend (_partials/rules/legend.html), then the
+  controls (_partials/rules/filter.html). The rules shown are those of
+  the search and the filter, all on one page; by default those of a status in
   rulesStatuses. The page holds every rule, each with its group row, the
   rules and rows not shown hidden, so that assets/ts/rules-list.ts can
   show another filter, from the address, without a page of its own.
@@ -49,10 +49,7 @@
 {{- $enabled := false }}
 {{- range $all }}{{ if isset .Params.rule "enabled" }}{{ $enabled = true }}{{ end }}{{ end }}
 {{ partial "rules/legend.html" (dict "enabled" $enabled "many" $many) }}
-<div class="rules-bar">
 {{ partial "rules/filter.html" (dict "page" . "statuses" $statuses "sources" $sources) }}
-{{ partial "rules/view.html" }}
-</div>
 <div class="rules-table">
 <div class="rules-head" aria-hidden="true"><span class="rule-id">{{ i18n "rule-id" }}</span><span class="rule-title">{{ i18n "rules-column-rule" }}</span></div>
 <div class="rules-list">
@@ -82,7 +79,9 @@
     {{- $path = delimit $path (partial "icon.html" "lucide:chevron-right") }}
 <h{{ add (len .) 1 }} class="rules-group" data-group="{{ $group.key }}"{{ if not $shown }} hidden{{ end }}>
     {{- if eq $group.kind "source" }}<span class="group-path">{{ $path | safeHTML }}</span>
-    {{- else }}<a href="{{ (site.GetPage (printf "/rules/%s" $group.key)).RelPermalink }}" aria-label="{{ $group.label }} {{ delimit $names ", " }}"><span class="group-label">{{ $group.label }}</span><span class="group-path">{{ $path | safeHTML }}</span></a>{{ end -}}
+    {{- else }}
+      {{- with site.GetPage (printf "/rules/%s" $group.key) }}<a href="{{ .RelPermalink }}" aria-label="{{ $group.label }} {{ delimit $names ", " }}"><span class="group-label">{{ $group.label }}</span><span class="group-path">{{ $path | safeHTML }}</span></a><span class="rule-marks">{{ partial "rules/dot.html" .Params.rule | safeHTML }}</span>{{ end }}
+    {{- end -}}
 </h{{ add (len .) 1 }}>
     {{- if $on }}{{ $previous = $group.key }}{{ end }}
   {{- end }}

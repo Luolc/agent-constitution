@@ -1,13 +1,15 @@
-{{- /* One field's menu in the filter: its button, its name and what it
-  chooses (assets/ts/rules-list.ts writes All, None or the number of
-  values chosen), and the popover it opens, the field's check boxes with
-  All and None, and, given "search", a box that narrows the check boxes
-  to those whose label holds what is typed. Takes (dict "field" its name
-  "legend" its title "values" a list of (dict "key" "label" "checked",
-  and for a domain "parent" and "depth"), and "search" the search box's
-  label where the field has one). */ -}}
+{{- /* One field's menu in the filter: its name above it, then its button,
+  which says what the field chooses (assets/ts/rules-list.ts writes All,
+  None, the one value chosen or how many of how many), and the popover
+  it opens, the field's check boxes with All and None, and, given
+  "search", a box that narrows the check boxes to those whose label
+  holds what is typed. Takes (dict "field" its name "legend" its title
+  "values" a list of (dict "key" "label" "checked", and for a domain
+  "parent" and "depth"), and "search" the search box's label where the
+  field has one). */ -}}
 <div class="rules-menu">
-<button type="button" class="rules-menu-button" aria-expanded="false" aria-controls="rules-filter-{{ .field }}">{{ .legend }}<span class="rules-menu-value"></span>{{ partial "icon.html" "lucide:chevron-down" }}</button>
+<span class="rules-control-label" id="rules-label-{{ .field }}">{{ .legend }}</span>
+<button type="button" class="rules-menu-button" aria-expanded="false" aria-controls="rules-filter-{{ .field }}" aria-labelledby="rules-label-{{ .field }} rules-value-{{ .field }}"><span class="rules-menu-value" id="rules-value-{{ .field }}"></span>{{ partial "icon.html" "lucide:chevron-down" }}</button>
 <fieldset class="rules-filter-group" id="rules-filter-{{ .field }}" data-field="{{ .field }}"><legend>{{ .legend }}</legend>
 <span class="rules-filter-all"><button type="button" data-all="true">{{ i18n "rules-all-chosen" }}</button><button type="button" data-all="false">{{ i18n "rules-none-chosen" }}</button></span>
   {{- with .search }}
