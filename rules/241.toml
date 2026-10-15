@@ -1,0 +1,44 @@
+id = 241
+slug = "frontend-design-tokens"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Write a page's colors, sizes and timings as design tokens"
+zh = "页面样式里的颜色、尺寸和时间都写成设计 token"
+
+[text.statement]
+en = "In a page's styles, name a design token for every color, font size, font weight, spacing, corner radius, shadow, duration and easing, and write the value itself only where the tokens are defined."
+zh = "页面样式里的颜色、字号、字重、间距、圆角、阴影、时长和缓动，都引用设计 token，值本身只写在定义 token 的地方。"
+
+[text.reason]
+en = '''
+A value defined once under a name is changed in one place and is the same wherever it is used. Written out again at each use, the same color or space drifts into near copies that nobody chose, and changing it means finding every one of them ({@constitution:simplicity}).
+'''
+zh = '''
+一个值在一处定义、有了名字，改它只改一处，用到它的地方也都一样。每次用都把值重写一遍，同一个颜色、同一段间距就会慢慢变成一堆谁也没选过的近似值，要改还得一处处找出来 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+A design token is a named value defined in one place of the repository, such as a CSS custom property or a key of a framework's theme. Values that are not a choice of the design may be written as they are: `0`, `auto`, `100%`, the width of a `1px` or `2px` border, a breakpoint in a media query, where a token cannot stand, and an offset that sets a single glyph in its line, with a comment saying so.
+
+Violated when a change writes, outside the definition of the tokens, a color, font size, font weight, spacing, corner radius, shadow, duration or easing of a page as a value rather than a token, other than the values above.
+'''
+zh = '''
+设计 token 指在仓库里一处定义、有名字的值，比如一个 CSS 自定义属性 (custom property)，或者某个框架主题里的一个键。不属于设计取舍的值可以直接写：`0`、`auto`、`100%`、`1px` 或 `2px` 边框的宽度、媒体查询里的断点 (那里放不了 token)，以及为把单个字形摆进行内而设的偏移，旁边要有注释说明。
+
+变更在 token 定义之外，把页面的颜色、字号、字重、间距、圆角、阴影、时长或缓动直接写成值、而不是引用 token 的，除上面列出的值以外，即为违反本规定。
+'''
+
+[translations]
+zh = "d28b4f48453704a203b128b150a10dd8cd981624a67368f1d3e98f69bf51c519"

@@ -1,0 +1,44 @@
+id = 243
+slug = "frontend-reduced-motion"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Under reduced motion, move nothing and keep only the fades"
+zh = "减弱动效时什么都不移动，只保留淡入淡出"
+
+[text.statement]
+en = "When the reader's system asks for reduced motion (`prefers-reduced-motion: reduce`), let nothing on a page move or change size, and keep only the fades that show a change of state."
+zh = "读者的系统要求减弱动效 (`prefers-reduced-motion: reduce`) 时，页面上什么都不移动、不改变大小，只保留表示状态变化的淡入淡出。"
+
+[text.reason]
+en = '''
+A reader asks for less motion because motion costs them: it pulls their eyes away or makes them unwell. The pages are there to serve the reader's attention ({@constitution:purpose}); a fade still shows that something changed, without moving anything.
+'''
+zh = '''
+读者要求减弱动效，是因为动效让他们付出代价：分散注意力，或者让人不舒服。页面是为读者的注意力服务的 ({@constitution:purpose})；淡入淡出不移动任何东西，照样能表明有东西变了。
+'''
+
+[text.verification]
+en = '''
+Moving or changing size covers a translation, a scale or a rotation, and an animated position, size or scroll. A fade is a change of opacity or of color.
+
+Violated when a change adds or alters a transition or animation that still moves an element or changes its size under `prefers-reduced-motion: reduce`.
+'''
+zh = '''
+移动或改变大小包括平移、缩放、旋转，以及以动画改变位置、尺寸或滚动。淡入淡出指透明度或颜色的变化。
+
+变更加入或修改的过渡或动画，在 `prefers-reduced-motion: reduce` 下仍会移动元素或改变其大小的，即为违反本规定。
+'''
+
+[translations]
+zh = "d8a6c2c831b1989886bb72d014a20215cbbbdc8ad0a1bfa86e57925ae0379436"

@@ -1,0 +1,44 @@
+id = 247
+slug = "frontend-expanded-state"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Give a control that opens or folds a part `aria-expanded` and `aria-controls`"
+zh = "展开或收起某部分的控件带上 `aria-expanded` 和 `aria-controls`"
+
+[text.statement]
+en = "Give every control on a page that opens or folds another part of it `aria-expanded`, saying whether that part is open, and `aria-controls`, naming that part."
+zh = "页面上每个展开或收起另一部分的控件，都带上 `aria-expanded` 说明那部分是否展开，带上 `aria-controls` 指明是哪一部分。"
+
+[text.reason]
+en = '''
+Without them a screen reader announces only a button, and its user cannot tell that the button opens anything, or whether it is open; the page then costs them a try to find out what it would have told them at once ({@constitution:purpose}).
+'''
+zh = '''
+没有这两个属性，屏幕阅读器只会读出「按钮」，用户分不清它会不会展开什么，也不知道现在是不是展开的；页面本该直接告诉他们的事，就得他们试一下才知道 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+Opening or folding a part covers showing and hiding it: a menu, a popover, a panel, a group of a list. The `summary` of a `details` element says this itself and needs neither attribute. `aria-expanded` follows the state: it changes when the part opens or folds.
+
+Violated when a change adds or changes such a control, other than a `summary`, without an `aria-expanded` that follows the part's state, or without an `aria-controls` that names the part.
+'''
+zh = '''
+展开或收起某部分，包括把它显示出来或隐藏起来：菜单、弹出层、面板、列表里的一组。`details` 元素的 `summary` 本身就会说明这一点，两个属性都不需要。`aria-expanded` 要跟着状态变：那部分展开或收起时，它跟着改变。
+
+变更加入或修改的这类控件，除 `summary` 外，没有随那部分状态变化的 `aria-expanded`，或者没有指明那部分的 `aria-controls` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "da1aa46c944cd3c9273340c32d540d60dbff661fa369d0b15a78c0ccc2ec04ac"
