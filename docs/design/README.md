@@ -59,5 +59,6 @@ the whole design.
   which source a name means, git sources and adding a source; built in
   part.
 - [Rule configuration](rule-config.md): the directory of the local
-  rules, parameters such as the languages, and which domains and rules
-  are on by default; not built yet.
+  rules, parameters such as the languages, which domains and rules
+  are on by default, where a rule is used, and no rule under a rule;
+  built in part.

@@ -631,15 +631,19 @@ parent = 104
 
 - A domain's `parent`, when present, is a domain that has no parent:
   of the same source, written as its number, or of another source,
-  written as `requires` writes one (`"R78"`). So
+  written as `requires` writes one (`"R78"`). It may also be a one-of
+  of the same source, of which the domain is an option, and that
+  counts as a level too
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)). So
   there are at most two levels; a subdomain under a subdomain fails the
-  build, as does a domain whose parent is a rule or a one-of. The
-  reference direction applies: a domain of a public source hangs only
-  under a public domain.
+  build, as does a domain whose parent is a rule or a one-of in a
+  subdomain. The reference direction applies: a domain of a public
+  source hangs only under a public domain.
 - A rule or a one-of may have a subdomain as its parent, as it may a
-  domain. A one-of cannot have a domain below it, so subdomains and
-  one-ofs never interleave: the tree goes domain, subdomain, then rules
-  and one-ofs.
+  domain; a rule's parent is never a rule. A one-of in a subdomain has
+  rules as its options, so the tree goes domain, then a subdomain or a
+  one-of whose options are domains, then rules and one-ofs whose
+  options are rules.
 - A rule's `parent` may also name a domain or a subdomain of another
   source, never a rule or a one-of of another source, so that the local
   rules of a repository about Git appear under the general Git heading
@@ -649,7 +653,7 @@ parent = 104
   same reason: a private source's domain about the user's fleet of
   agents appears as a subdomain of the first-party domain about agents,
   with its rules below it. The first-party source's own domains are the
-  roots: its build accepts a `parent` in another source on a rule only
+  roots: in it, a `parent` in another source is accepted on a rule only
   ([Checkers](checkers.md#checkers)).
 - Enabling a domain as a pack enables its subdomains' rules; a subdomain
   may be the root of a pack of its own. A pack is a subtree of one
@@ -766,7 +770,8 @@ marking what is not built:
   subdomain headings, and which requirements are links.
 - [The command and the first version](statute-command.md#the-command-and-the-first-version):
   what is built so far, and moving over by the cutover above.
-- [Checkers](checkers.md#checkers): what `constitution-build` checks of
-  the new fields and what statute does.
+- [Checkers](checkers.md#checkers): what `statute validate` checks of
+  the new fields within one source and what statute checks across
+  sources.
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
