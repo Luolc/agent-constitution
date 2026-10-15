@@ -1,0 +1,42 @@
+id = 128
+slug = "main-checkouts-root"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep each main checkout directly under the root for main checkouts"
+zh = "每个主检出都直接放在主检出的根目录下"
+
+[text.statement]
+en = "Keep each repository's main checkout in a directory named after the repository, directly under the root the jurisdiction designates for main checkouts."
+zh = "每个仓库的主检出 (main checkout) 直接放在法域为主检出指定的根目录下，目录名就是仓库名。"
+
+[text.reason]
+en = '''
+With one layout on every machine, people and agents find a repository's checkout from its name alone ({@constitution:simplicity}).
+'''
+zh = '''
+每台机器的目录布局相同，人和 agent 只凭仓库名就能找到它的检出 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+A main checkout is a clone whose `.git` is a directory; a worktree's `.git` is a file, so a worktree is not one. The jurisdiction designates the root, for example in a rule of a lower layer. What else the root may hold is {@rule:216}'s matter.
+
+Violated when a repository's main checkout is not directly under the root, or its directory is not named after the repository.
+'''
+zh = '''
+主检出指 `.git` 是目录的那份 clone；worktree 的 `.git` 是文件，所以 worktree 不算主检出。根目录由法域指定，例如写在下层的规定里。根目录下还能放什么，由 {@rule:216} 管。
+
+某个仓库的主检出不直接在根目录下，或者目录名与仓库名不同的，即为违反本规定。
+'''
+
+[translations]
+zh = "7a690d65fde901eb7fc51c0d307b982f7c41e4206cf36ee9c2d4a59e514c6d8d"
