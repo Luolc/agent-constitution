@@ -1,24 +1,20 @@
-{{- /* The rules under a provision of the home page that cite it, on one
-  row: a link for each rule that names the provision, a pill of its
-  label, then, when rules name only provisions under it, a button of
-  their count after `circle-plus`, or `circle-minus` while it is open,
-  that shows their links in the same row before it (assets/cites.js).
-  A link's name is the rule's label and title; the title is
-  `titleHtml` without its tags, as the page's Markdown is not rendered
-  in an attribute. Takes (dict "id" the id of the part the button shows
-  "direct" the rules that name the provision "more" the rules that name
-  only one under it, as data/rules.json gives them, "name" the row's
-  accessible name and "text" the button's text). The links start at
-  the site's root, which relativeURLs makes relative to each page that
-  holds them: the home page and the edition's. */ -}}
-{{- $links := dict "direct" "" "more" "" }}
-{{- range $kind := slice "direct" "more" }}
-  {{- range index $ $kind }}
-    {{- $links = merge $links (dict $kind (printf `%s<a class="cites-rule" href="%s" aria-label="%s %s"><span class="cites-box">%s</span></a>` (index $links $kind) (relLangURL (printf "rules/%s/" .key)) .label (plainify .titleHtml) .label)) }}
-  {{- end }}
+{{- /* The rules under a provision of the home page that cite it, folded:
+  a button that shows them as a row of boxes, each a rule's label, or
+  shows a text in their place, then `circle-plus`, or `circle-minus`
+  while it is open, and opens a list under it, each rule's
+  label and title linked to its page (assets/cites.js); the title is
+  `titleHtml`, since the page's Markdown is not rendered under a heading
+  and would escape a code span's text again under an item. Takes (dict
+  "id" the list's id "rules" the rules, as data/rules.json gives them "name"
+  the button's accessible name "text" the button's text, or "" for the
+  boxes). The links start at the site's root, which relativeURLs makes
+  relative to each page that holds them: the home page and the
+  edition's. */ -}}
+{{- $boxes := "" }}
+{{- $items := "" }}
+{{- range .rules }}
+  {{- $boxes = printf `%s<span class="cites-box">%s</span>` $boxes .label }}
+  {{- $items = printf `%s<span class="cites-item" role="listitem"><a href="%s"><span class="cites-label">%s</span>%s</a></span>` $items (relLangURL (printf "rules/%s/" .key)) .label .titleHtml }}
 {{- end }}
-{{- $more := "" }}
-{{- with .more }}
-  {{- $more = printf `<span class="cites-more" id="%s">%s</span><button type="button" class="cites-button" aria-expanded="false" aria-controls="%s">%s%s<span>%s</span></button>` $.id $links.more $.id (partial "icon.html" "lucide:circle-plus") (partial "icon.html" "lucide:circle-minus") $.text }}
-{{- end }}
-{{- return printf `<span class="cites" role="group" aria-label="%s">%s%s</span>` .name $links.direct $more }}
+{{- $name := cond (eq .text "") (printf ` aria-label="%s" title="%s"` .name .name) "" }}
+{{- return printf `<span class="cites"><button type="button" class="cites-button" aria-expanded="false" aria-controls="%s"%s>%s<span class="cites-toggle">%s%s</span></button><span class="cites-list" id="%s" role="list">%s</span></span>` .id $name (or .text $boxes) (partial "icon.html" "lucide:circle-plus") (partial "icon.html" "lucide:circle-minus") .id $items }}

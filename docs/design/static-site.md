@@ -93,7 +93,7 @@ screenshots (Screenshots, below). The workflow
   `list` `never`). As the home page has the same text, the edition's page
   carries `<meta name="robots" content="noindex">`
   (`web/layouts/_partials/docs/inject/head.html`), so search engines
-  index the text once, on the home page. The links in the rows of the
+  index the text once, on the home page. The links in the lists of the
   rules under the provisions start at the site's root (`relLangURL`),
   which `relativeURLs` makes relative to each page, so they lead to the
   rules' pages from both.
@@ -165,9 +165,9 @@ screenshots (Screenshots, below). The workflow
   lock files lists it. The private overlay's review site uses both; the
   public site uses neither, so its pages show no quadrant and nothing
   enabled. For each provision it holds the
-  rules that name it in `authority`, and for each article or section
-  with a provision under it the rules that name it or a provision under
-  it, each rule once, in order of source and ID. An
+  rules that name it in `authority`, and for each article the rules that
+  name it or a provision under it, each rule once, in order of source and
+  ID. An
   `authority` that names a provision and one above it (an item and its
   section or article, a section and its article) counts only the
   narrower one, so a rule is listed under the most specific provisions it
@@ -302,9 +302,10 @@ screenshots (Screenshots, below). The workflow
   marked as a value: a link to the parameter's entry on its source's
   page of parameters, the parameter's name as its title, shown on hover;
   in a code span the span becomes HTML around the link. A title stands
-  inside a link in the list, in a one-of's box and in a node named on a
-  page, and so does a statement in the list (`statementInLink`, its
-  citations as their labels alone, not linked), so there the value is
+  inside a link in the list, in a one-of's box, in a node named on a
+  page and in the home page's lists of the rules under a provision, and
+  so does a statement in the list (`statementInLink`, its citations as
+  their labels alone, not linked), so there the value is
   marked as a span with the parameter's name as its
   title, escaped, and not linked; on the rule's own page it is marked
   and linked as in the text, and elsewhere the value stands alone. A
@@ -313,8 +314,7 @@ screenshots (Screenshots, below). The workflow
   `site-rules` gives each node named in a rule's data and each rule
   under a provision its title as HTML as well (`titleHtml`: the text
   escaped once, each code span a `<code>`), since the home page's
-  content adapter cannot render Markdown; the name of a rule's link under
-  a provision is that HTML without its tags. A node's page's own title, in the
+  content adapter cannot render Markdown. A node's page's own title, in the
   browser's tab and in a shared link, is its label and path as text,
   without the backticks (`pageTitle`). Each
   source with parameters has
@@ -330,22 +330,20 @@ screenshots (Screenshots, below). The workflow
   (英文)。`), with the text's `lang` set. `statute export` fails on a
   translation of an older original, and `site-rules` with it, so every
   translation the pages get follows its current original. Under each provision of the home page that a listed rule cites,
-  the home page's content adapter adds a row: a link to each rule that
-  names it, its label in a pill; then, when rules name only a provision
-  under it, a button of their count, "+N citing provisions under it" after
-  rules that name it and "N rules cite provisions under it" in a row
-  without them, with a ring holding a plus before it. A click, or Enter
-  or Space, shows the links to those rules in the same row, before the
-  button, and the ring holds a minus; a click again, or Escape from
-  within the row, hides them, leaving the focus on the button; its
-  `aria-expanded` says which, and its `aria-controls` names them
-  (`web/layouts/_partials/rules/cites.html`, `web/assets/cites.js`). The
-  row wraps as it needs. A link's accessible name is the rule's label
-  and title. The row comes after an article's heading, or at the end of
-  the first line of a section or an item, which the style sheet sets on
-  a line of its own; without scripts every link is shown and the button
-  hidden. The lengths are of the text
-  without these rows. The rules' pages have the design's layout and
+  the home page's content adapter adds a line: a button that shows the
+  rules' labels as a row of boxes, with a ring holding a plus after them,
+  and opens a list under it of each rule's label and title, linked to its
+  page; a click, or Enter or Space, opens it and closes it again, the
+  button's `aria-expanded` saying which
+  (`web/layouts/_partials/rules/cites.html`, `web/assets/cites.js`). An
+  article that rules cite through a provision under it also gets a
+  button with their count, "N rules cite this article or a provision
+  under it", which opens the list of them all. A provision lists only the
+  rules that name it, not those that name one under it. The line comes
+  after an article's heading, or at the end of the first line of a
+  section or an item, which the style sheet sets on a line of its own;
+  without scripts the lists are open. The lengths are of the text
+  without these lines. The rules' pages have the design's layout and
   style (`<div class="design rules">`).
 - Length: the second item of the list gives the length of the version
   for agents, bare, which is what takes room in an agent's context: the
