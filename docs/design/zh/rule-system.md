@@ -1,7 +1,7 @@
-<!-- en-sha256: a774eb61dba0e34795b705d7209dcdaea66f70a2d4fdc0bb5e24791f62535fdb -->
+<!-- en-sha256: 9e32d8cbf7769a4eef00efe19b0bb078ce15acd69fcee7d0ca209a97d1b3e003 -->
 # 规定体系
 
-状态：草案。本仓的规定已经按[规定文件格式](rule-format.md#rule-file-format) 编写，由 `constitution-build` 检查。命令 `statute` 已经实现了本设计仓库级的一部分，只支持磁盘上的一个规定源：它能写出、解析和升级规定清单及其锁文件，把它们编译成一份 `AGENTS.md`，连同启用的规定需要的 skill 一起写出，还能运行检查。目前实现了什么、还没实现什么，见[命令与第一版](statute-command.md#the-command-and-the-first-version)；用户级还没有实现。设计的这一部分由下面几个文件组成，描述规定怎样编写、编号、选用、检查和编译，包括还没实现的部分。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
+状态：草案。本仓的规定已经按[规定文件格式](rule-format.md#rule-file-format) 编写，由 `constitution-build` 检查。命令 `statute` 已经实现了本设计仓库级的一部分，支持磁盘上的规定源和 git 规定源：它能写出、解析和升级规定清单及其锁文件，把它们编译成一份 `AGENTS.md`，连同启用的规定需要的 skill 一起写出，还能运行检查。目前实现了什么、还没实现什么，见[命令与第一版](statute-command.md#the-command-and-the-first-version)；用户级还没有实现。设计的这一部分由下面几个文件组成，描述规定怎样编写、编号、选用、检查和编译，包括还没实现的部分。凡与设计其余部分目前的说法不同之处，都列在下文的[它将取代什么](#what-this-replaces)；那些部分保持原样，等到实现本设计的工作再去修改。
 
 ## <a id="contents"></a>目录
 

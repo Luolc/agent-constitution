@@ -643,5 +643,5 @@ marking what is not built:
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
 
-Building the rest replaces what the tools do today: statute fails a
-git source, and `base` anywhere but in `statute.private.toml`.
+Building the rest replaces what the tools do today: statute fails
+`base` anywhere but in `statute.private.toml`.

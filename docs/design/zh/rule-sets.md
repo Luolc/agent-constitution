@@ -1,4 +1,4 @@
-<!-- en-sha256: 1cf2a83ac9bd84dd1d6feea8ae34b716c7d0d2022e51089a8e273f10f86fbe1e -->
+<!-- en-sha256: caf3b8b238bd44afa43fd69d38bcb3cd340b881f588dcc42f061858721c05a46 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -25,7 +25,7 @@ agents-md = ["statement"]
 
 [规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
 
-锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public` (还没有写入)；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
+锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public`；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
 
 ```toml
 [constitution]
@@ -98,7 +98,7 @@ R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
-键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag、分支或路径；也可以不写，交给全局配置和内置默认，即第一方仓库的 `main` 分支 ([全局配置与 git 规定源](global-configuration.md#the-global-configuration))。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。规定源也可以是一个 git 仓库，克隆到用户的 statute 目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))；statute 目前只读磁盘上的规定源，`git` 规定源会报告为暂不支持。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
+键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag、分支或路径；也可以不写，交给全局配置和内置默认，即第一方仓库的 `main` 分支 ([全局配置与 git 规定源](global-configuration.md#the-global-configuration))。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。规定源也可以是一个 git 仓库，克隆到用户的 statute 目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
 
 **三种引用。** 每种引用各有自己的写法，不会把一种读成另一种：
 
