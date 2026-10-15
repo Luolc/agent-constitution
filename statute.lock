@@ -182,9 +182,9 @@ original-sha256 = "f0321a9e1af193e443d6ff51b1438c41a56c1cd6ee7a27bbec8ffe3aa88df
 
 [[rules]]
 rule = "R47"
-revision = 3
-sha256 = "9dc0e4dbe548e051d89eb619b3af2431cd545373d28a98fd3cdae7a5e2473545"
-original-sha256 = "3098ad875ae41dc788384b5a9e5496d0077b0c57b02a9fd1e25f22d19c3e52cd"
+revision = 4
+sha256 = "c7cf12102e681c02f056512264aac77cb1962c3e458b00d9bbd72e6fc9834f18"
+original-sha256 = "02d7a6366c088e598e74c8fb919ff9f2ed49f5c1e35183e6f80f64eea34efb0d"
 
 [[rules]]
 rule = "R48"
@@ -1290,6 +1290,69 @@ rule = "R238"
 revision = 2
 sha256 = "4e7581be9f957d7ca175c4556a7246c9deaa014db8deebc62293d0c9c9e0cec6"
 original-sha256 = "8a6cf97f259f69458a676076888f4273ad906f85b3785ea9d10d002ea0da4b6a"
+
+[[rules]]
+rule = "R239"
+revision = 1
+sha256 = "baa83929fcbc0400ff64f76bb7683a766a0b859d8aeaef213f52381af59c2a81"
+original-sha256 = "c9e3ee5e307db73838fc28d4e16fdfab22f1de19aeb985b91ca98d4ad85841ba"
+by = "default"
+
+[[rules]]
+rule = "R241"
+revision = 1
+sha256 = "5dd70649029a769107db225243ae1470ae5b706b2fb240789758c7a916706dad"
+original-sha256 = "29173f6c2761c57c2f055f12c1173c9c74989f969036256dbd2a466ef8522294"
+by = "default"
+
+[[rules]]
+rule = "R242"
+revision = 1
+sha256 = "7448302992932db2f24ac31ae024b0b42594fb0aead7b6ae5a2e978aba3b63b7"
+original-sha256 = "4971734ad358e940af4465aa7c8cd61a0f9253e7ddd653ce6b3003a3ee33cd1e"
+by = "default"
+
+[[rules]]
+rule = "R243"
+revision = 1
+sha256 = "e92b0ba4f53a77c28860f72957264bb6c2a16740fe59d3c24a663e80cdba45d4"
+original-sha256 = "9c079471b501e0d6776fc07087c31551d4a85454b967e3560cf7dbd0e4474c7b"
+by = "default"
+
+[[rules]]
+rule = "R244"
+revision = 1
+sha256 = "071d578d12393823f8e87cfd11a613f394027b53adf6bbbec455fb525502c149"
+original-sha256 = "a24b415999c5e6b1854dcd0867ee961435a168e9736f5309eef5807bbac90516"
+by = "default"
+
+[[rules]]
+rule = "R245"
+revision = 1
+sha256 = "bfc864ea1211af5bbf96e1e4bd71ea69617069b893eb195de3c4f45dfcca1e87"
+original-sha256 = "8e2c20f4ab2c81d5b39793b926539f257b687fbb468444259054bf6dde26806c"
+by = "default"
+
+[[rules]]
+rule = "R246"
+revision = 1
+sha256 = "fc39ee5b75febd2f0b854fca98599f6050cc4a0dd3d12890b244bb56efbfa410"
+original-sha256 = "08669eb1e5dd4755add19251e920c7a2d91e06b05f17ead68692bb20f3c46546"
+by = "default"
+
+[[rules]]
+rule = "R247"
+revision = 1
+sha256 = "813fefcbe99e42fbb92ff80a32e95f00841eec01af12fdef63c26cfdf20591d7"
+original-sha256 = "3eca238aa6d9ac118af997a71161b565f21fa1107822104656aefedb4c2d5dd1"
+by = "default"
+
+[[rules]]
+rule = "R248"
+revision = 1
+sha256 = "dcdb7d6e4e977415bd969e35e42c35902c2523e45bb181c1faf11bfa10c7ce57"
+original-sha256 = "fe588daac774674bbc8f3edcafc127067a971c5cc9dbf9977d303c70b6c64d8b"
+by = "default"
 
 [[rules]]
 rule = "L1"
