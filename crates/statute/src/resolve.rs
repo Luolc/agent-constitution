@@ -195,7 +195,7 @@ impl<'a> Switches<'a> {
             .filter(|(_, n)| matches!(n.kind, Kind::Domain | Kind::OneOf))
             .map(|(k, _)| k)
             .collect();
-        sw.active = groups.into_iter().filter(|k| sw.is_on(k, 0)).collect();
+        sw.active = groups.into_iter().filter(|k| sw.is_on(k)).collect();
         sw
     }
 
@@ -288,11 +288,11 @@ impl<'a> Switches<'a> {
             .then_some(child)
     }
 
-    fn is_on(&self, key: &Key, depth: usize) -> bool {
+    fn is_on(&self, key: &Key) -> bool {
         let Some(node) = self.sources.get(key) else {
             return false;
         };
-        if depth > 8 || self.excluded(key) {
+        if self.excluded(key) {
             return false;
         }
         let parent = self.sources.parent(key);
@@ -306,15 +306,15 @@ impl<'a> Switches<'a> {
             // when its one-of is and has chosen it.
             Kind::Domain => match (&parent, parent_kind) {
                 (Some(p), Some(Kind::OneOf)) => {
-                    self.is_on(p, depth + 1) && self.chosen(p).as_ref() == Some(key)
+                    self.is_on(p) && self.chosen(p).as_ref() == Some(key)
                 }
                 (None, _) => self.switched_on(key) && self.counts(key),
                 (Some(p), Some(Kind::Domain)) => {
-                    self.is_on(p, depth + 1) && self.switched_on(key) && self.counts(key)
+                    self.is_on(p) && self.switched_on(key) && self.counts(key)
                 }
                 _ => false,
             },
-            Kind::OneOf => parent.is_some_and(|p| self.is_on(&p, depth + 1)),
+            Kind::OneOf => parent.is_some_and(|p| self.is_on(&p)),
             Kind::Rule => false,
         }
     }

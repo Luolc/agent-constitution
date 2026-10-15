@@ -624,21 +624,17 @@ kind = "domain"
 parent = 104
 ```
 
-- A domain's `parent`, when present, is a domain that has no parent:
-  of the same source, written as its number, or of another source,
+- A domain's `parent`, when present, is a domain, at any depth: of
+  the same source, written as its number, or of another source,
   written as `requires` writes one (`"R78"`). It may also be a one-of
-  of the same source, of which the domain is an option, and that
-  counts as a level too
-  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)). So
-  there are at most two levels; a subdomain under a subdomain fails the
-  build, as does a domain whose parent is a rule or a one-of in a
-  subdomain. The reference direction applies: a domain of a public
+  of the same source, of which the domain is an option
+  ([No rule under a rule](rule-config.md#no-rule-under-a-rule)).
+  Domains nest to any depth; a domain whose parent is a rule fails the
+  build, as do parents that form a cycle, within one source or across
+  sources. The reference direction applies: a domain of a public
   source hangs only under a public domain.
 - A rule or a one-of may have a subdomain as its parent, as it may a
-  domain; a rule's parent is never a rule. A one-of in a subdomain has
-  rules as its options, so the tree goes domain, then a subdomain or a
-  one-of whose options are domains, then rules and one-ofs whose
-  options are rules.
+  domain; a rule's parent is never a rule.
 - A rule's `parent` may also name a domain or a subdomain of another
   source, never a rule or a one-of of another source, so that the local
   rules of a repository about Git appear under the general Git heading
@@ -755,7 +751,7 @@ marking what is not built:
   `public`, `scope`, the private rule set and `overridden-by` in the
   lock file.
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
-  two levels of domains.
+  domains nested to any depth.
 - [Compilation and the site](statute-command.md#compilation-and-the-site):
   where a subdomain's rules come in the flat list.
 - [The command and the first version](statute-command.md#the-command-and-the-first-version):

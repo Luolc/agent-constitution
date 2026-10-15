@@ -411,10 +411,8 @@ repositories it is for ([Rule file format](rule-format.md#rule-file-format)), an
 check; it cannot be enabled on its own. When any rule
 below it is enabled, the domain's rules appear in the compiled output,
 together, without the domain. A
-domain may sit under a domain that has no parent, as a subdomain, so
-domains nest two levels deep and no deeper
-([Subdomains](rule-sources.md#subdomains)); a finer
-grouping is a one-of under the domain.
+domain may sit under a domain, as a subdomain, to any depth
+([Subdomains](rule-sources.md#subdomains)).
 
 **One-ofs.** A one-of is a node of the parent tree, under a domain, of
 which at most one child, an option, is enabled within one rule set (or
@@ -423,7 +421,7 @@ a repository with no Python at all; "one of" here never means "exactly
 one". The one-of "Python package manager" under Python has the options
 uv, Poetry and Bazel. The options of a one-of are all rules or all
 domains: an option that needs several rules is a domain under the
-one-of, which counts as a level of the two that domains may nest. A
+one-of. A
 one-of has an ID, and adding one goes through review like adding a
 rule. A rule that requires a one-of is satisfied when any one of its
 options is enabled. Every one-of names a default option
@@ -455,8 +453,8 @@ The build checks these constraints:
 
 - No cycle, in the tree or in the requirements, within one source or
   across sources.
-- A domain has no parent, or, as a subdomain, a domain that has none,
-  or, as an option, a one-of; every rule and one-of has one, except a
+- A domain has no parent, or, as a subdomain, a domain, or, as an
+  option, a one-of; every rule and one-of has one, except a
   rule with `overrides`. A rule's parent is a domain or a one-of, a
   one-of's a domain, and a one-of's options are all rules or all
   domains ([No rule under a rule](rule-config.md#no-rule-under-a-rule)).

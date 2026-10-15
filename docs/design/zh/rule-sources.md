@@ -1,4 +1,4 @@
-<!-- en-sha256: c39cac1d7bc1badb8137987941b37378adc2e4c8f9d97dfbf6579ac2f1a5cc1b -->
+<!-- en-sha256: 7f6e8ae9be5440a253ca07ad90d2e5f2345a874f7759b820e8de51c07c785b31 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -264,8 +264,8 @@ kind = "domain"
 parent = 104
 ```
 
-- 领域的 `parent` 如果有，只能是一个自己没有 `parent` 的领域：同一规定源里的写编号，另一个规定源里的写法与 `requires` 相同 (`"R78"`)。它也可以是同一规定源里的一个 one-of，这个领域是它的一个选项，同样算一级 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。所以最多两级；子领域下面再挂子领域，构建失败；领域的 `parent` 是规定或子领域里的 one-of，构建也失败。引用方向同样适用：公开规定源的领域只能挂在公开的领域下面。
-- 规定和 one-of 可以把子领域当作 `parent`，就像把领域当作 `parent` 一样；规定的 `parent` 从不是规定。子领域里的 one-of 只能以规定为选项，所以树的顺序是领域，然后是子领域或以领域为选项的 one-of，再然后是规定和以规定为选项的 one-of。
+- 领域的 `parent` 如果有，是一个领域，层数不限：同一规定源里的写编号，另一个规定源里的写法与 `requires` 相同 (`"R78"`)。它也可以是同一规定源里的一个 one-of，这个领域是它的一个选项 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。领域可以嵌套任意多层；领域的 `parent` 是规定，构建失败；各节点的 parent 成环，无论在一个规定源里还是跨规定源，构建也失败。引用方向同样适用：公开规定源的领域只能挂在公开的领域下面。
+- 规定和 one-of 可以把子领域当作 `parent`，就像把领域当作 `parent` 一样；规定的 `parent` 从不是规定。
 - 规定的 `parent` 也可以指向另一个规定源的领域或子领域，但不能指向另一个规定源的规定或 one-of。这样，一个仓库关于 Git 的本地规定会出现在通用的 Git 标题下面，而不是另起一个标题。引用方向同样适用：公开规定的 `parent` 必须是公开的领域。
 - 出于同样的理由，一个规定源的领域也可以挂在另一个规定源的领域下面：私有规定源里关于用户自己那套 agent 的领域，作为第一方「agent」领域的子领域出现，它的规定在它下面。第一方规定源自己的领域是根：在它里面，只有规定可以有指向另一个规定源的 `parent` ([检查程序](checkers.md#checkers))。
 - 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定或子领域，不在规定包里；规定要由规定清单在 `rules` 里列出来启用，别的规定源的子领域可以作为它自己的规定包启用。
@@ -312,7 +312,7 @@ parent = 104
 
 - [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，在自己的规定源或另一个规定源里，规定可以用 `overrides` 代替 `parent`。
 - [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、私有规定清单，以及锁文件里的 `overridden-by`。
-- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：两级领域。
+- [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：任意多层嵌套的领域。
 - [编译与网站](statute-command.md#compilation-and-the-site)：子领域的规定在平铺列表里排在哪里。
 - [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
 - [检查程序](checkers.md#checkers)：`statute validate` 在一个规定源之内对新字段查什么，跨规定源的哪些由 statute 查。

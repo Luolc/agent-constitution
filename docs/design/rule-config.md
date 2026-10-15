@@ -647,9 +647,8 @@ has this shape, and statute checks it when it reads a source:
   around it; an option that needs several rules is a domain whose
   parent is the one-of, holding them; when it is the option enabled,
   its rules come in each by its own `default`, as in a domain that
-  `domains` turns on. Domains still nest at most two levels, counting
-  such a domain as one: a one-of in a subdomain has rules as its
-  options.
+  `domains` turns on. Such a domain may hold subdomains and one-ofs of
+  its own, as any domain may.
 - Every one-of names one of its options as its default
   ([A one-of's default](#in-the-rule-files)).
 - An option names its one-of in its `parent`; the one-of lists no

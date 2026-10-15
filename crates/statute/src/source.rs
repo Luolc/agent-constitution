@@ -500,10 +500,16 @@ impl Sources {
                             ),
                         );
                     }
-                    self.check_ref(source, r, &what, &file, diags, |(_, target), file, diags| {
-                        if target.kind != Kind::Domain {
-                            let whose = if domain { "a domain's" } else { "a rule's" };
-                            diags.error(
+                    self.check_ref(
+                        source,
+                        r,
+                        &what,
+                        &file,
+                        diags,
+                        |(_, target), file, diags| {
+                            if target.kind != Kind::Domain {
+                                let whose = if domain { "a domain's" } else { "a rule's" };
+                                diags.error(
                                 file,
                                 format!(
                                     "{what}, a {}; {whose} parent in another source is a domain{}",
@@ -511,17 +517,9 @@ impl Sources {
                                     if domain { "" } else { " or a subdomain" }
                                 ),
                             );
-                        } else if domain
-                            && (target.parent.is_some() || target.foreign_parent.is_some())
-                        {
-                            diags.error(
-                                file,
-                                format!(
-                                    "{what}, a subdomain already; domains nest two levels at most, so name a domain with no parent"
-                                ),
-                            );
-                        }
-                    });
+                            }
+                        },
+                    );
                 }
                 if let Some(r) = &node.overrides {
                     let what = format!("`overrides` names {}", show_ref(r));
@@ -558,8 +556,45 @@ impl Sources {
                 }
             }
         }
+        self.check_tree_cycles(diags);
         self.check_cycles(diags);
         self.check_overrides_brought_in(diags);
+    }
+
+    /// Fails a cycle of parents that goes through more than one source;
+    /// each source has found those within it already.
+    fn check_tree_cycles(&self, diags: &mut Diagnostics) {
+        let mut reported = BTreeSet::new();
+        for (start, _) in self.nodes() {
+            let mut path = vec![start];
+            while let Some(parent) = path.last().and_then(|k| self.parent(k)) {
+                if self.get(&parent).is_none() {
+                    break;
+                }
+                if let Some(pos) = path.iter().position(|k| *k == parent) {
+                    let cycle = &path[pos..];
+                    let first = (0..cycle.len()).min_by_key(|&i| &cycle[i]).unwrap_or(0);
+                    let shown: Vec<String> = cycle[first..]
+                        .iter()
+                        .chain(&cycle[..=first])
+                        .map(Key::to_string)
+                        .collect();
+                    if cycle.iter().any(|k| k.source != parent.source)
+                        && reported.insert(cycle[first].clone())
+                    {
+                        diags.error(
+                            self.file(&cycle[first]),
+                            format!(
+                                "the parents form a cycle across sources: {}",
+                                shown.join(" -> ")
+                            ),
+                        );
+                    }
+                    break;
+                }
+                path.push(parent);
+            }
+        }
     }
 
     /// The nodes a node leads to: what it requires.
@@ -996,8 +1031,7 @@ impl Checker<'_> {
     /// What a node's parent of this source may be
     /// (`docs/design/rule-config.md`, No rule under a rule): a
     /// rule's is a domain or a one-of, a one-of's a domain, a domain's a
-    /// domain with no parent or a one-of in one, so that domains nest two
-    /// levels at most, counting a domain that is an option of a one-of.
+    /// domain or a one-of, at any depth.
     fn check_parent(&mut self, node: &Node, parent: &Node) {
         let file = self.file(node.id);
         let id = parent.id;
@@ -1015,42 +1049,7 @@ impl Checker<'_> {
             (Kind::Domain, Kind::Rule) => format!(
                 "parent {id} is a rule; a domain's parent is a domain, or a one-of of which it is an option"
             ),
-            (Kind::Domain, kind) => {
-                // The domain the subdomain or the option would be in.
-                let above = if kind == Kind::OneOf {
-                    match parent.parent.and_then(|p| self.source.get(p)) {
-                        Some(domain) => domain,
-                        None => return,
-                    }
-                } else {
-                    parent
-                };
-                let how = if kind == Kind::OneOf {
-                    format!(
-                        "parent {id} is a one-of in domain {}, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of, so a one-of in a subdomain has rules as its options",
-                        above.id
-                    )
-                } else {
-                    format!("parent {id} is a subdomain already")
-                };
-                match (above.parent, &above.foreign_parent) {
-                    (None, None) => return,
-                    (None, Some(_)) => format!(
-                        "{how}, under a domain of another source; domains nest two levels at most, so name a domain with no parent"
-                    ),
-                    (Some(over), _) if kind == Kind::OneOf => format!("{how} (under {over})"),
-                    (Some(over), _)
-                        if self.source.get(over).is_some_and(|n| n.kind == Kind::OneOf) =>
-                    {
-                        format!(
-                            "parent {id} is the option of one-of {over}, a subdomain already; domains nest two levels at most, counting a domain that is an option of a one-of"
-                        )
-                    }
-                    (Some(over), _) => format!(
-                        "{how}, under {over}; domains nest two levels at most, so name a domain with no parent"
-                    ),
-                }
-            }
+            (Kind::Domain, Kind::Domain | Kind::OneOf) => return,
         };
         self.diags.error(&file, message);
     }
