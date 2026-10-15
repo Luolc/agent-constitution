@@ -30,13 +30,13 @@ zh = '''
 en = '''
 A report states at least what was done, its effect, why the attempt was judged done or abandoned, and the numbers.
 
-Violated when a child work item has moved to the status for a done or an abandoned attempt ({@rule:177}) and none of its comments is such a report.
+Violated when a child work item has moved to the status for a done or an abandoned attempt ({@rule:224}) and none of its comments is such a report.
 '''
 zh = '''
 报告至少写做了什么、效果、为什么判为完成或放弃，以及指标。
 
-子工作项已经转为完成或放弃的状态 ({@rule:177})，评论里却没有这样一份报告的，即为违反本规定。
+子工作项已经转为完成或放弃的状态 ({@rule:224})，评论里却没有这样一份报告的，即为违反本规定。
 '''
 
 [translations]
-zh = "c890b906a7ee987787b989fe4c42ed7bb0bf61dc483f5cdabc29baf65060c19f"
+zh = "f62836a3471a681d49adb24064aa8a034f4ab4c50d3f55fe3f23fa4a53e59dec"

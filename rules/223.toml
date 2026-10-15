@@ -1,0 +1,43 @@
+id = 223
+slug = "work-item-names-untranslated"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 175
+requires = [176]
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Leave names untranslated in work items"
+zh = "工作项里的名称不翻译"
+
+[text.statement]
+en = "In the text of a work item, keep label, status and project names, code, paths, commands and identifiers as they are, untranslated."
+zh = "工作项的文字里，标签名、状态名、project 名，以及代码、路径、命令和标识符保持原样，不翻译。"
+
+[text.reason]
+en = '''
+Labels, statuses and identifiers are names that are searched for and matched as they are; translated, they no longer match, and the reader cannot find what the text names ({@constitution:purpose}).
+'''
+zh = '''
+标签、状态与标识符是要原样搜索、匹配的名字，翻译了就对不上，读的人也找不到文字里说的东西 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+As they are means as the ticketing system, the repository or the tool names them. This holds for the same texts as {@rule:176}.
+
+Violated when the text of a work item gives a label, status or project name, or a piece of code, a path, a command or an identifier, translated into another language.
+'''
+zh = '''
+保持原样，指照工单系统、仓库或工具里的写法。适用的文字与{@rule:176}相同。
+
+工作项的文字把标签名、状态名、project 名，或者代码、路径、命令、标识符译成了别的语言的，即为违反本规定。
+'''
+
+[translations]
+zh = "f6b815d9f03204941c9444728f29aa3b31f9677bf2dd2f78a8082dcc0d245ca4"

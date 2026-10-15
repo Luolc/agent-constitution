@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-In progress and backlog are the ticketing system's own statuses for them, for example Active and Backlog in Linear. A design work item whose content has been built and is live has nothing left to do and moves to the status for a done attempt ({@rule:177}).
+In progress and backlog are the ticketing system's own statuses for them, for example Active and Backlog in Linear. A design work item whose content has been built and is live has nothing left to do and moves to the status for a done attempt ({@rule:224}).
 
 Violated when a child work item is in progress while its parent is in the backlog, when all children are closed and nothing is left under the parent but it stays open, or when a design work item whose content has been built and is live has not moved to that status.
 '''
 zh = '''
-进行中和待办，指工单系统里表示这两种情况的状态，比如 Linear 的 Active 和 Backlog。设计类的工作项，内容已经实现、上线了，就没剩下的事，转为完成的状态 ({@rule:177})。
+进行中和待办，指工单系统里表示这两种情况的状态，比如 Linear 的 Active 和 Backlog。设计类的工作项，内容已经实现、上线了，就没剩下的事，转为完成的状态 ({@rule:224})。
 
 有子工作项在进行中而父工作项在待办里，子工作项全部关闭、父工作项没剩下的事却仍开着，或者设计类的工作项内容已经实现上线却没有转为这个状态的，即为违反本规定。
 '''
 
 [translations]
-zh = "14ff347f9a2b3ab3eb7923d736270ba00de7ea04e4e5fc728fb9634179521516"
+zh = "49310d6527c2a4ea70f33b11e1a257db33346453f869968a88ad5b8e73a1ac02"

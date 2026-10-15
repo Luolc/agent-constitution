@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The statuses are those of {@rule:177}. A work item that only collects others, as an index, does not take the label; what a principal is to review is labeled on the child work item.
+The statuses are those of {@rule:224}. A work item that only collects others, as an index, does not take the label; what a principal is to review is labeled on the child work item.
 
 Violated when the label is on a closed work item, on one the principal has already decided or on an index work item, or when an open work item that waits for a principal's decision lacks it.
 '''
 zh = '''
-状态见{@rule:177}。只用来汇总其他工作项的索引工作项不挂这个标签；要委托人审的，挂在子工作项上。
+状态见{@rule:224}。只用来汇总其他工作项的索引工作项不挂这个标签；要委托人审的，挂在子工作项上。
 
 这个标签挂在已经关闭的工作项、委托人已经定了的工作项或者索引工作项上，或者等委托人定的开着的工作项上没有它的，即为违反本规定。
 '''
 
 [translations]
-zh = "58d8be1f6f2862f0b4cb451fd88d1e5515a1e2b97a8167cdc9a41e8b64d58c3f"
+zh = "8ff04e1b77b06abfa3f27309c96b15f61baa889fa48df84ac73b66019b8ce13f"

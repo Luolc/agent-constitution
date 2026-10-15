@@ -15,28 +15,28 @@ en = "A parent work item is the goal, a child work item one attempt"
 zh = "父工作项是目标，子工作项是一次尝试"
 
 [text.statement]
-en = "Write what is to be done in a parent work item and record each attempt at it in a child work item, and end an attempt only in the status `Done` (parameter `work-items.status-done`, default `Done`) or the status `Abandoned` (parameter `work-items.status-abandoned`, default `Abandoned`)."
-zh = "要做的事写在父工作项里，每一次尝试记在一个子工作项里；尝试只以状态 `Done` (参数 `work-items.status-done`，默认 `Done`) 或状态 `Abandoned` (参数 `work-items.status-abandoned`，默认 `Abandoned`) 结束。"
+en = "Write what is to be done in a parent work item, and record each attempt at it in a child work item."
+zh = "要做的事写在父工作项里，每一次尝试记在一个子工作项里。"
 
 [text.reason]
 en = '''
-A goal may take several attempts. With the goal and the attempts apart, a failed attempt still leaves its record, and the parent shows at a glance how many attempts there were and how each ended. Whoever made the attempt judges how it ended, whether or not anything was merged ({@constitution:decide-yourself.changing-approach}).
+A goal may take several attempts. With the goal and the attempts apart, a failed attempt still leaves its record, and the parent shows at a glance how many attempts there were and how each ended ({@constitution:decide-yourself.changing-approach}).
 '''
 zh = '''
-一件事可能要试几次才成。目标和尝试分开，失败的尝试也留得下记录，父工作项一眼就看得出试过几次、各是什么结局。结局由做这次尝试的一方自己判，与有没有合入无关 ({@constitution:decide-yourself.changing-approach})。
+一件事可能要试几次才成。目标和尝试分开，失败的尝试也留得下记录，父工作项一眼就看得出试过几次、各是什么结局 ({@constitution:decide-yourself.changing-approach})。
 '''
 
 [text.verification]
 en = '''
-The status for an abandoned attempt is a status of its own, added beside the existing ones; no existing status is renamed or deleted for it. On a ticketing system that groups statuses into types, it is of the type for canceled work (in Linear, the canceled type).
+How an attempt ends is in {@rule:224}.
 
-Violated when a child work item ends in a status other than these two, or when an attempt is recorded directly on the parent work item.
+Violated when an attempt is recorded directly on the parent work item.
 '''
 zh = '''
-放弃的尝试所用的状态是单独的一个状态，加在现有状态旁边；不为它改名或删除任何现有状态。工单系统把状态分成类型的，它属于取消类的类型 (在 Linear 里是 canceled 类型)。
+尝试怎样结束，见{@rule:224}。
 
-子工作项结束时停在这两个状态以外的状态，或者把一次尝试直接记在父工作项上的，即为违反本规定。
+把一次尝试直接记在父工作项上的，即为违反本规定。
 '''
 
 [translations]
-zh = "9b1a0c68449259f502d73f28c7baaca4c3be48c3269a9be26c2b8260092d1ef2"
+zh = "a0266b4ae6ea46fb8610a3c6ee79df07201e3aa21dd0fe2cf6ab46d35c0add0c"
