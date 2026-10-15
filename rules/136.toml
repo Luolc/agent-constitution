@@ -15,8 +15,8 @@ en = "Push before you leave a machine"
 zh = "离开一台机器之前 push"
 
 [text.statement]
-en = "Keep work not yet pushed only on a branch other than the main branch, and push it to the remote before you leave a machine."
-zh = "还没 push 的工作只放在主分支以外的分支上，离开一台机器之前 push 到远端。"
+en = "Push your work to the remote before you leave a machine."
+zh = "离开一台机器之前，把工作 push 到远端。"
 
 [text.reason]
 en = '''
@@ -30,13 +30,13 @@ zh = '''
 en = '''
 The remote is the one the repository treats as the reference, usually `origin`. Leaving a machine means ending the session or task on it, or handing the work to a person or agent on another machine.
 
-Violated when commits are still unpushed on leaving, or work not yet pushed is left on the main branch.
+Violated when commits are still unpushed on leaving.
 '''
 zh = '''
 远端指仓库以之为准的那个远端，通常是 `origin`。离开一台机器，指结束在这台机器上的会话或任务，或者把工作交给另一台机器上的人或 agent 接着做。
 
-离开时还有没 push 的提交，或者把没 push 的工作留在了主分支上的，即为违反本规定。
+离开时还有没 push 的提交的，即为违反本规定。
 '''
 
 [translations]
-zh = "f43c5736289eaecacd8c305d880ebd214e527c0d46055b645ea329c3f0168b9d"
+zh = "7b44986f127f851334d683c928c7813dab30ec6e4a4b59550d0a005c310c2689"

@@ -11,32 +11,32 @@ level = "user"
 check = "review"
 
 [title]
-en = "Keep third-party sources under a root of their own, at `<owner>/<repo>`"
-zh = "第三方源码放在自己的根目录下的 `<owner>/<repo>`"
+en = "Clone third-party sources to `<owner>/<repo>` under a root of their own"
+zh = "第三方源码 clone 到自己的根目录下的 `<owner>/<repo>`"
 
 [text.statement]
-en = "Clone third-party sources to `<root>/<owner>/<repo>/`, under the root the jurisdiction designates for them, and keep nothing but others' sources there."
-zh = "第三方源码的 clone 放在法域为它指定的根目录下的 `<root>/<owner>/<repo>/`，那里只放别人的源码。"
+en = "Clone third-party sources to `<root>/<owner>/<repo>/`, under the root the jurisdiction designates for them."
+zh = "第三方源码的 clone 放在法域为它指定的根目录下的 `<root>/<owner>/<repo>/`。"
 
 [text.reason]
 en = '''
-Others' sources cloned into the root of main checkouts ({@rule:128}) mix with your own repositories; with `<owner>` in the path, two repositories of the same name do not collide. Your own reports or findings put among them mix with others' code and get lost ({@constitution:simplicity}).
+Others' sources cloned into the root of main checkouts ({@rule:216}) mix with your own repositories; with `<owner>` in the path, two repositories of the same name do not collide ({@constitution:simplicity}).
 '''
 zh = '''
-别人的源码放进主检出的根目录 ({@rule:128})，就和自己的仓库混在一起；路径带上 `<owner>`，同名的仓库也不会冲突。自己的调研报告、findings 放进去，就和别人的代码混在一起，也找不到了 ({@constitution:simplicity})。
+别人的源码放进主检出的根目录 ({@rule:216})，就和自己的仓库混在一起；路径带上 `<owner>`，同名的仓库也不会冲突 ({@constitution:simplicity})。
 '''
 
 [text.verification]
 en = '''
-The root holds two levels of directories, `<owner>/<repo>`; the jurisdiction designates it, for example in a rule of a lower layer. Your own output (research reports, findings) goes to the scratch directory ({@rule:130}).
+The root holds two levels of directories, `<owner>/<repo>`; the jurisdiction designates it, for example in a rule of a lower layer.
 
-Violated when a clone of third-party sources is kept elsewhere than in `<root>/<owner>/<repo>/`, or the root holds your own output.
+Violated when a clone of third-party sources is kept elsewhere than in `<root>/<owner>/<repo>/`.
 '''
 zh = '''
-根目录下是两级目录 `<owner>/<repo>`；根目录由法域指定，例如写在下层的规定里。自己的产物 (调研报告、findings) 放在 scratch 目录 ({@rule:130})。
+根目录下是两级目录 `<owner>/<repo>`；根目录由法域指定，例如写在下层的规定里。
 
-第三方源码的 clone 放在 `<root>/<owner>/<repo>/` 以外，或者根目录下放了自己的产物的，即为违反本规定。
+第三方源码的 clone 放在 `<root>/<owner>/<repo>/` 以外的，即为违反本规定。
 '''
 
 [translations]
-zh = "316a955adc954e54501c3174e75abddb09b18b3064e39def7949fb1b97e555e2"
+zh = "44b0c3c425cfc98816f3a874da078d40f18e20eab52cbfd048ceac7c9fe8cf4b"

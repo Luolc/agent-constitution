@@ -20,10 +20,10 @@ zh = "仓库的每个 worktree 都放在法域为 worktree 指定的根目录下
 
 [text.reason]
 en = '''
-With a root of their own, worktrees leave the root of main checkouts ({@rule:128}) to main checkouts alone ({@constitution:simplicity}). A worktree put inside a repository's directory (for example `<repo>/.worktrees/<slug>`) sits inside the main checkout, and an agent tool that reads instruction files up the parent directories, as Claude Code reads `CLAUDE.md`, lays the main checkout's instructions over the worktree's.
+With a root of their own, worktrees leave the root of main checkouts ({@rule:216}) to main checkouts alone ({@constitution:simplicity}). A worktree put inside a repository's directory (for example `<repo>/.worktrees/<slug>`) sits inside the main checkout, and an agent tool that reads instruction files up the parent directories, as Claude Code reads `CLAUDE.md`, lays the main checkout's instructions over the worktree's.
 '''
 zh = '''
-worktree 有了自己的根目录，主检出的根目录 ({@rule:128}) 里就只剩主检出 ({@constitution:simplicity})。放进仓库目录 (例如 `<repo>/.worktrees/<slug>`) 的 worktree 嵌在主检出里面：沿父目录向上读指令文件的 agent 工具 (比如 Claude Code 读 `CLAUDE.md`) 会把主检出的指令叠到 worktree 上。
+worktree 有了自己的根目录，主检出的根目录 ({@rule:216}) 里就只剩主检出 ({@constitution:simplicity})。放进仓库目录 (例如 `<repo>/.worktrees/<slug>`) 的 worktree 嵌在主检出里面：沿父目录向上读指令文件的 agent 工具 (比如 Claude Code 读 `CLAUDE.md`) 会把主检出的指令叠到 worktree 上。
 '''
 
 [text.verification]
@@ -43,4 +43,4 @@ zh = '''
 '''
 
 [translations]
-zh = "3400d7c9ed3547c981487dd00b733b2d1dac8169bae5408030fe6fe3db4f82f1"
+zh = "6f7b41a2cf3411a2e6f76e46eb6e706b1f84264010f3588f1dc170ce3437715f"

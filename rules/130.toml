@@ -1,46 +1,42 @@
 id = 130
-slug = "dated-scratch-files"
+slug = "scratch-directory"
 revision = 1
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
-authority = ["simplicity", "evidence.grounds"]
+authority = ["simplicity"]
 constitution = ">=1"
 level = "user"
 check = "review"
 
 [title]
-en = "Put files handed between agents in the scratch directory, with dated names"
-zh = "agent 之间交接的临时文件放在 scratch 目录，文件名带日期"
+en = "Put files handed between agents in the scratch directory"
+zh = "agent 之间交接的临时文件放在 scratch 目录"
 
 [text.statement]
-en = "Put the temporary files handed between agents (handover notes, findings, drafts, research output) in the scratch directory of their repository, with a date in each name, and keep them there only in transit."
-zh = "agent 之间交接的临时文件 (交接文档、findings、草稿、调研产物) 放在所属仓库的 scratch 目录，文件名带日期，只做中转。"
+en = "Put the temporary files handed between agents (handover notes, findings, drafts, research output) in the scratch directory of their repository."
+zh = "agent 之间交接的临时文件 (交接文档、findings、草稿、调研产物) 放在所属仓库的 scratch 目录。"
 
 [text.reason]
 en = '''
-Other agents read these files only if they are where everyone knows to look ({@constitution:simplicity}). A date in the name shows when a file was written and whether it still holds ({@constitution:evidence.grounds}); content meant to last goes into the repository, and the copy in the scratch directory only carries it there.
+Other agents read these files only if they are where everyone knows to look ({@constitution:simplicity}).
 '''
 zh = '''
-这些文件要让别的 agent 读到，就得放在大家都知道的地方 ({@constitution:simplicity})。文件名带日期，才看得出一份文件是什么时候写的、还算不算数 ({@constitution:evidence.grounds})；要长期留下的内容进仓库，scratch 目录里的那份只是中转。
+这些文件要让别的 agent 读到，就得放在大家都知道的地方 ({@constitution:simplicity})。
 '''
 
 [text.verification]
 en = '''
-The scratch directory of a repository is `<root>/<repo>/`, `<repo>` being the repository the file belongs to, under the root the jurisdiction designates for files handed between agents, for example in a rule of a lower layer. A date is written `YYYY-MM-DD`, and research output is named `research-<topic>-<YYYY-MM-DD>.md`.
+The scratch directory of a repository is `<root>/<repo>/`, `<repo>` being the repository the file belongs to, under the root the jurisdiction designates for files handed between agents, for example in a rule of a lower layer.
 
-The scratch directory is only a transit: content to be kept for more than a day goes into the repository through a pull request, and once it is there, the copy in the scratch directory is deleted.
-
-Violated when a file handed between agents is kept elsewhere, a file in the scratch directory has no date in its name, or content already in the repository still has its copy in the scratch directory.
+Violated when a file handed between agents is kept elsewhere.
 '''
 zh = '''
-仓库的 scratch 目录是法域为 agent 之间交接的文件指定的根目录下的 `<root>/<repo>/`，`<repo>` 是这份文件所属的仓库；根目录例如写在下层的规定里。日期写成 `YYYY-MM-DD`，调研产物命名为 `research-<topic>-<YYYY-MM-DD>.md`。
+仓库的 scratch 目录是法域为 agent 之间交接的文件指定的根目录下的 `<root>/<repo>/`，`<repo>` 是这份文件所属的仓库；根目录例如写在下层的规定里。
 
-scratch 目录只是中转：要留过一天的内容经 pull request 进仓库，进仓之后删掉 scratch 目录里的那份。
-
-agent 之间交接的文件放在别处，scratch 目录里的文件名不带日期，或者内容已经进了仓库、scratch 目录里的那份还留着的，即为违反本规定。
+agent 之间交接的文件放在别处的，即为违反本规定。
 '''
 
 [translations]
-zh = "8ac7040239ae30e295784deffa8aef587deb6752c567a05137d992103945ff5a"
+zh = "88ea23460084f2f05fd789bb6934e2717c45d95112cc3552124c9731a441389d"

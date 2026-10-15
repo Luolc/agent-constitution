@@ -1,0 +1,38 @@
+id = 222
+slug = "unpushed-work-off-main"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Keep work not yet pushed off the main branch"
+zh = "没 push 的工作不放在主分支上"
+
+[text.statement]
+en = "Keep work not yet pushed only on a branch other than the main branch."
+zh = "还没 push 的工作只放在主分支以外的分支上。"
+
+[text.reason]
+en = '''
+Where work goes on across several machines, the remote's main branch is the reference. Work kept only on a local main branch makes that branch differ from the remote's, so it no longer shows what others can check ({@constitution:evidence.grounds}).
+'''
+zh = '''
+工作在几台机器上进行时，以远端的主分支为准。只放在本地主分支上的工作，会让本地主分支与远端的不同，它也就不再是别人能核对的那个版本 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+Violated when work not yet pushed is on the main branch.
+'''
+zh = '''
+没 push 的工作放在了主分支上的，即为违反本规定。
+'''
+
+[translations]
+zh = "d74e7dc7b7bea14072f59590e2e0cf28079a649d3bc19bb910322c1e4de358ad"
