@@ -1389,15 +1389,16 @@ Promise.all(frames.map((f) => new Promise((done) =>
     """Under each provision, the rules not superseded that cite it, folded.
 
     Rule 3 names `one` and `one-a`, under it, so it is under `one-a`
-    alone; the article also counts the rules that cite a provision under
+    alone; the article, which rules cite through a provision under it,
+    gets only the count of the rules that cite it or a provision under
     it, which the section, with nothing under it cited, does not.
     """
     raw = self.build(raw=True)
     pages = {p: visible(t) for p, t in raw.items()}
     self.assertIn(
-      "Article One * R5 R5 Rule 5 3 rules cite this article or a provision"
-      " under it R3 Rule 3 R5 Rule 5 R6 Rule 6 One two three. §1 Section. R3"
-      " R3 Rule 3 On this page",
+      "Article One * 3 rules cite this article or a provision under it R3"
+      " Rule 3 R5 Rule 5 R6 Rule 6 One two three. §1 Section. R3 R3 Rule 3"
+      " On this page",
       pages["index.html"],
     )
     page = raw["index.html"]
@@ -1420,10 +1421,81 @@ Promise.all(frames.map((f) => new Promise((done) =>
     )
     self.assertEqual(page.count('aria-controls="cites-within-'), 1)
     self.assertIn('id="cites-within-one"', page)
+    self.assertNotIn('id="cites-one"', page)
     self.assertNotIn('id="cites-within-one-a"', page)
     self.assertIn("本条及其下各款、项共被 3 条规定引用", pages["zh/index.html"])
     self.assertNotIn('class="cites"', raw["agent/index.html"])
     self.assertIn('class="cites"', raw["zh/index.html"])
+
+  def test_rules_under_an_article_on_one_line(self):
+    """Under the article, one button on one line opens its list and shuts it.
+
+    Rules cite the article and a provision under it; shut, its line holds
+    one visible button and is no taller than it, its list hidden; a click
+    opens the list and a second click shuts it. Skipped without Chrome,
+    except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True)
+    script = """<script>
+window.addEventListener("load", () => {
+  const row = document.getElementById("one").closest("h2").nextElementSibling;
+  const shown = (e) => e.getClientRects().length > 0;
+  const buttons = Array.from(row.querySelectorAll(".cites-button"))
+    .filter(shown);
+  const lists = () => Array.from(row.querySelectorAll(".cites-list"))
+    .filter(shown).length;
+  const out = { buttons: buttons.length, lists: lists() };
+  out.oneLine = row.getBoundingClientRect().height
+    <= buttons[0].getBoundingClientRect().height + 1;
+  buttons[0].click();
+  out.open = [lists(), buttons[0].getAttribute("aria-expanded")];
+  buttons[0].click();
+  out.shut = [lists(), buttons[0].getAttribute("aria-expanded")];
+  document.body.dataset.result = JSON.stringify(out);
+});
+</script>"""
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css"):
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "index.html"
+      page.write_text(
+        raw["index.html"].replace("</body>", script + "</body>"),
+        encoding="utf-8",
+      )
+      dom = subprocess.run(
+        [
+          chrome,
+          "--headless",
+          "--no-proxy-server",
+          "--hide-scrollbars",
+          f"--user-data-dir={Path(tmp) / 'profile'}",
+          "--window-size=1280,900",
+          "--dump-dom",
+          page.as_uri(),
+        ],
+        capture_output=True,
+        check=True,
+        text=True,
+        timeout=CHROME_TIMEOUT,
+      ).stdout
+    found = re.search(r'data-result="([^"]*)"', dom)
+    assert found, "the script wrote no result"
+    self.assertEqual(
+      json.loads(html.unescape(found.group(1))),
+      {
+        "buttons": 1,
+        "lists": 0,
+        "oneLine": True,
+        "open": [1, "true"],
+        "shut": [0, "false"],
+      },
+    )
 
   def test_a_code_span_in_a_title_is_escaped_once(self):
     """A title's code span with `<` shows as code, its text escaped once.

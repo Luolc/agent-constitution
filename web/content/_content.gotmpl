@@ -47,9 +47,10 @@
 {{- /* Under each provision that rules cite in their `authority`, those
   rules (data/rules.json, which content/rules/_content.gotmpl requires),
   folded into a row of their labels that opens a list of them linked to
-  their pages (layouts/_partials/rules/cites.html); an article also gets
-  the count of the rules that cite it or a provision under it, when some
-  cite one under it, which opens the same way. A paragraph after an
+  their pages (layouts/_partials/rules/cites.html); an article that
+  rules cite through a provision under it gets instead the count of the
+  rules that cite it or a provision under it, which opens the list of
+  them all, so that its line holds one button. A paragraph after an
   article's heading, or a line ending the first line of a section or an
   item, which the style sheet sets on a line of its own. The lengths
   above are of the text without them. */ -}}
@@ -61,11 +62,10 @@
     {{- $direct := index $citedBy $ref | default slice }}
     {{- $within := index $citedWithin $ref | default slice }}
     {{- $line := "" }}
-    {{- with $direct }}
-      {{- $line = partial "rules/cites.html" (dict "id" (printf "cites-%s" $ref) "rules" . "name" (i18n "cited-by" (len .)) "text" "") }}
-    {{- end }}
     {{- if gt (len $within) (len $direct) }}
-      {{- $line = printf "%s%s" $line (partial "rules/cites.html" (dict "id" (printf "cites-within-%s" $ref) "rules" $within "name" "" "text" (i18n "cited-within" (len $within)))) }}
+      {{- $line = partial "rules/cites.html" (dict "id" (printf "cites-within-%s" $ref) "rules" $within "name" "" "text" (i18n "cited-within" (len $within))) }}
+    {{- else if $direct }}
+      {{- $line = partial "rules/cites.html" (dict "id" (printf "cites-%s" $ref) "rules" $direct "name" (i18n "cited-by" (len $direct)) "text" "") }}
     {{- end }}
     {{- $line = replace $line "$" "$$" }}
     {{- $anchor := printf `<a id="%s"></a>` (replace $ref "." `\.`) }}

@@ -336,9 +336,10 @@ screenshots (Screenshots, below). The workflow
   page; a click, or Enter or Space, opens it and closes it again, the
   button's `aria-expanded` saying which
   (`web/layouts/_partials/rules/cites.html`, `web/assets/cites.js`). An
-  article that rules cite through a provision under it also gets a
+  article that rules cite through a provision under it gets instead a
   button with their count, "N rules cite this article or a provision
-  under it", which opens the list of them all. A provision lists only the
+  under it", which opens the list of them all, those that name the
+  article included, so its line holds one button. A provision lists only the
   rules that name it, not those that name one under it. The line comes
   after an article's heading, or at the end of the first line of a
   section or an item, which the style sheet sets on a line of its own;
