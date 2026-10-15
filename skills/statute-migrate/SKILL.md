@@ -28,20 +28,32 @@ files changes, this table is the one place to change.
 
 | Name | Path | Committed |
 | --- | --- | --- |
-| the global configuration | `~/.statute/config.toml` | no, the user's home |
+| the global configuration | `$XDG_CONFIG_HOME/statute/config.toml` (`~/.config/statute/config.toml` by default) | no, the user's home |
 | the rule set | `statute.toml` at the top of the repository | yes |
 | the lock file | `statute.lock`, next to the rule set | yes |
 | the compiled file | `AGENTS.md`, next to the rule set | yes |
-| the local rules directory | `rules/` next to the rule set, or what `local-rules` in the rule set names | yes |
+| the local rules directory | `.statute/rules/` next to the rule set, or what `local-rules` in the rule set names | yes |
 | the installed skills | `.agents/skills/<name>/`, with a link `.claude/skills/<name>` | yes |
 | the checks file | `statute-checks.toml`, next to the rule set | yes |
-| the private rule set | `statute.private.toml`, next to the rule set | no, git ignores it |
-| the private lock file | `statute.private.lock`, next to the rule set | no, git ignores it |
-| the private output | `.statute/AGENTS.full.md`, in `.statute/`, which the repository's `.gitignore` names | no |
-| the private links | `CLAUDE.local.md` and `AGENTS.override.md`, both leading to the private output | no, ignored through `.git/info/exclude` |
+| the private rule set | `private.toml` in `$(git rev-parse --git-path common/statute)`, shared by the worktrees of a clone | no, in git's own directory |
+| the private lock file | `private.lock`, next to the private rule set | no, in git's own directory |
+| the private output | `.statute/AGENTS.full.md` | no, the statute ignore file lists it |
+| the statute ignore file | `.statute/.gitignore`, written by statute | yes |
+| the private links | `CLAUDE.local.md` and `AGENTS.override.md`, both leading to the private output | no, ignored through the exclude file |
+| the exclude file | `.git/info/exclude`, shared by the worktrees of a clone | no, in git's own directory |
+| the checkout hook | the file `git rev-parse --git-path hooks/post-checkout` prints, shared by the worktrees of a clone | no, in git's own directory |
+| the hook line | `[ "$3" = 1 ] && statute compile --private-only; exit 0` | in the checkout hook |
 | a legacy copy | `<name>.legacy.md` beside the hand-written `<name>.md` it replaces, as `AGENTS.legacy.md` | yes, until the person says to delete it |
 | the constitution for agents | `constitution/<edition>/generated/constitution.<lang>.agent.md` in the first-party source | in the source |
-| the rules of a source | `rules/<id>.toml` in that source | in the source |
+| the rules of a source | `rules/<id>.toml` at the top of that source, or in the directory its `rules-dir` names | in the source |
+
+Not built yet: reading the local rules directory at the path above,
+and `local-rules`. Until they are, statute reads the repository's own
+rules from the place in this table:
+
+| Name | Path until it is built |
+| --- | --- |
+| the local rules directory | `rules/` next to the rule set |
 
 ## 0. Before you start
 
@@ -144,6 +156,17 @@ Write every local and private rule the mapping calls for in one
 change, not one rule per change, so that the person reviews the
 repository's rules together.
 
+A source and the repository's own rules are two different things
+([Four kinds of source](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-sources.md#four-kinds-of-source)).
+A source publishes rules for other repositories to use: they are the
+rules of a source, it has a git address or a path, and a rule set
+that wants them names it in `[sources]` and cites them as `R42` or
+`team:7`. The repository's own rules bind this repository alone: they
+are in the local rules directory, cited as `L12`, compiled into this
+repository's output only, and no other repository can name them. A
+repository may be both; this step writes only its own rules. Say
+which is which when you show the person the rules.
+
 - Write them as the rules of domain R96 (Writing rules) require: one
   requirement per rule, worded so that a reviewer can decide it,
   self-contained, citing in `authority` the most specific provisions
@@ -151,8 +174,12 @@ repository's rules together.
   of the rules of a source; take a first-party rule of the same kind
   as the template.
 - Local rules go in the local rules directory, and are referred to as
-  `L12`. `local-rules` defaults to `rules`; do not set it unless the
-  repository already has a `rules/` that holds something else.
+  `L12`. Leave `local-rules` unset: its default is the local rules
+  directory. Until reading it is built (the note under
+  [Files](#files)), write the local rules where statute reads them
+  today; when something else is there already (files that are not
+  this repository's rules for agents, or a source's rules), stop and
+  ask the person (Q6).
 - Keep in a private source only the private assets a requirement rests
   on (rule R126). For each rule, take the private assets out and see
   what is left: a whole requirement is a local rule; a principle whose
@@ -214,8 +241,8 @@ domains = [
   "R96",
 ]
 exclude = [
-  # No CI runs on pushes to the main branch.
-  "R59",
+  # This repository has no commit hooks.
+  "R53",
 ]
 ```
 
@@ -242,11 +269,31 @@ the parameters' values in the local rules that need them.
    writes the private lock file as well.
 2. `statute compile`. It writes the compiled file, the installed
    skills, the checks file, and with a private layer the private output
-   and the private links. When it names lines to add to
-   `.git/info/exclude` or a file git does not ignore, fix that and run
-   it again; it writes nothing until everything is in place.
+   and the private links, and the statute ignore file before the files
+   it lists. When it names lines to add to the exclude file or a file
+   git does not ignore, fix that and run it again; it writes nothing
+   until everything is in place.
 3. `statute check`, which exits 0 when no rule a script checks is
    violated, and lists the rules for review.
+4. In a public repository with private rules, install the checkout
+   hook, so that each new worktree and each switch of branch writes the
+   private output and the private links
+   ([Private rules in a public repository](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-sources.md#private-rules-in-a-public-repository),
+   A new worktree).
+   statute does not install it. With no checkout hook, write one with
+   `#!/bin/sh` and the hook line, and make it executable; when there is
+   one, append the hook line and change nothing else in it. When a hook
+   manager owns the checkout hook, add the line that manager's way;
+   pre-commit runs a hook of stage `post-checkout` once installed with
+   `pre-commit install --hook-type post-checkout`, and gives the
+   checkout type in `PRE_COMMIT_CHECKOUT_TYPE` instead of `$3`.
+
+   Not built yet: `statute compile --private-only`. Until it is, do not
+   install the checkout hook: the hook line would print an error on
+   every switch of branch and write nothing. Instead run `statute
+   compile` once in each other worktree of the repository, and record
+   in the pull request that the checkout hook is still to be installed
+   once the option exists.
 
 Acceptance, before you ask for a review:
 
@@ -259,15 +306,16 @@ Acceptance, before you ask for a review:
   mapping says, and every difference is recorded in the pull request
   description as intended.
 - In a public repository, `git status --ignored` shows the private
-  rule set, the private lock file, `.statute/` and the private links as
-  ignored, and `git ls-files` lists none of them.
-- In each other worktree of the repository, `statute compile` is run
-  once: the private output and the private links are not committed and
-  do not come with a new worktree.
+  output and the private links as ignored, and `git ls-files` lists
+  none of them; the private rule set and the private lock file are in
+  git's own directory, where git tracks nothing.
+- In a public repository with private rules, the checkout hook holds
+  the hook line, or, until `--private-only` is built, `statute compile`
+  has run in each other worktree (step 4).
 
 The pull request carries the rule set, the lock file, the compiled
 file, the installed skills, the checks file, the local rules, the
-legacy copies and the `.gitignore` line for `.statute/`. Its
+legacy copies and the statute ignore file. Its
 description holds the mapping, the three lists with their reasons, the
 answers to the questions, and each place where a fallback above was
 taken.
@@ -275,7 +323,7 @@ taken.
 ## Questions
 
 Ask together, each with its default, by whatever route the person
-gave you. Q1 comes in step 0, before `statute init`; Q2 to Q5 once the
+gave you. Q1 comes in step 0, before `statute init`; Q2 to Q6 once the
 mapping and the draft lists exist.
 
 | | Ask | Default |
@@ -285,3 +333,4 @@ mapping and the draft lists exist.
 | Q3 | `CLAUDE.md` is a link to `AGENTS.md`. Delete it? (the explanation in step e) | Delete it. |
 | Q4 | Here are the three lists, each line with its reason. Anything to change? | As drafted. |
 | Q5 | These parts of requirements may or may not be private (list each with the private asset it rests on). Public or private? | Private, until answered. |
+| Q6 | statute reads the local rules from a directory that already holds something else (say what). How to go on? | Stop the migration until reading the local rules directory is built. |
