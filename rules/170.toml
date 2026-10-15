@@ -5,38 +5,38 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
-authority = ["decide-yourself.splitting-work", "delegated-authority"]
+authority = ["delegated-authority"]
 constitution = ">=1"
 level = "project"
 check = "review"
 
 [title]
-en = "A research worker only reads and has no reviewer"
-zh = "调研 worker 只读、不配审查方"
+en = "A research worker only reads"
+zh = "调研 worker 只读"
 
 [text.statement]
-en = "Where work is divided among agents the way fleet does, keep a research worker read-only and give it no reviewer."
-zh = "在像 fleet 那样在 agent 之间分工的法域里，调研 worker 只读，不给它配审查方。"
+en = "Where work is divided among agents the way fleet does, as a research worker, change no repository."
+zh = "在像 fleet 那样在 agent 之间分工的法域里，作为调研 worker，不改任何仓库。"
 
 [text.reason]
 en = '''
-A research worker's product is a conclusion, not a change. It is delegated only reading ({@constitution:delegated-authority}), changes no repository, and so leaves nothing for a reviewer to review; whoever splits the work spends no reviewer on it ({@constitution:decide-yourself.splitting-work}).
+A research worker's product is a conclusion, not a change, and what is delegated to it is only reading ({@constitution:delegated-authority}); a change it made would be outside its task and would have no reviewer.
 '''
 zh = '''
-调研 worker 的产出是结论，不是变更。委派给它的只有读 ({@constitution:delegated-authority})，它不改任何仓库，也就没有要审查的东西；拆分任务的一方不必为它配审查方 ({@constitution:decide-yourself.splitting-work})。
+调研 worker 的产出是结论，不是变更，委派给它的只有读 ({@constitution:delegated-authority})；它要是改了什么，就超出了任务，也没有人审查。
 '''
 
 [text.verification]
 en = '''
 This rule is for the jurisdictions of {@rule:28}. A research worker is a worker whose task is to find something out and report it. It writes its result as `research-<topic>-<date>.md` in the directory for its files outside any worktree (with fleet, `$FLEET_SCRATCH`), and commits and pushes nothing.
 
-Violated when a research worker changes any repository, or the agent responsible for its job gives it a reviewer.
+Violated when a research worker changes any repository.
 '''
 zh = '''
 本规定适用于{@rule:28}所说的法域。调研 worker 指任务是查清某件事并报告结论的 worker。它把结果写成 `research-<topic>-<date>.md`，放在它存放 worktree 之外文件的目录里 (用 fleet 时是 `$FLEET_SCRATCH`)，不 commit、不 push。
 
-调研 worker 改了任何仓库，或者负责这项工作的 agent 给它配了审查方的，即为违反本规定。
+调研 worker 改了任何仓库的，即为违反本规定。
 '''
 
 [translations]
-zh = "552f74a58ed21d10a809cc0b26da40e1d7ac6bb01dfa4a7a4e87e6a1a59afaac"
+zh = "695cc4f0e024f6ed00383bf705ce0f74766b72b324b511d871e984c2c99e401a"

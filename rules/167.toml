@@ -5,7 +5,7 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 78
-authority = ["delegated-authority", "safety"]
+authority = ["delegated-authority", "must-ask.capital"]
 constitution = ">=1"
 level = "project"
 check = "review"
@@ -20,10 +20,10 @@ zh = "在像 fleet 那样在 agent 之间分工的法域里，只有作为负责
 
 [text.reason]
 en = '''
-Pressing keys in another agent's terminal makes a decision for that agent: a wrong key may switch its model, spend usage or break off what it is doing. Kept to the agent responsible for the job and to that job's workers, the responsibility stays with the one that delegated the work ({@constitution:delegated-authority}). Reading a screen changes nothing, and anyone may do it.
+Pressing keys in another agent's terminal makes a decision for that agent: a wrong key may switch its model, spend usage ({@constitution:must-ask.capital}) or break off what it is doing. Kept to the agent responsible for the job and to that job's workers, the responsibility stays with the one that delegated the work ({@constitution:delegated-authority}). Reading a screen changes nothing, and anyone may do it.
 '''
 zh = '''
-往别的 agent 的终端里按键，等于替那个 agent 做了决定，按错了可能换了型号、花了额度，或者打断它正在做的事。限定由负责这项工作的 agent 按、只按这项工作的 worker，责任就落在派活的一方 ({@constitution:delegated-authority})。读屏不改变任何东西，谁都可以。
+往别的 agent 的终端里按键，等于替那个 agent 做了决定，按错了可能换了型号、花了额度 ({@constitution:must-ask.capital})，或者打断它正在做的事。限定由负责这项工作的 agent 按、只按这项工作的 worker，责任就落在派活的一方 ({@constitution:delegated-authority})。读屏不改变任何东西，谁都可以。
 '''
 
 [text.verification]
@@ -39,4 +39,4 @@ zh = '''
 '''
 
 [translations]
-zh = "43069f95447056a5bb728935bee592831bbf93824530ed75fe9f98c8bb69ba3c"
+zh = "04e25ab4916092df478b98f9cc1db5a81b89aee0f4dba9fecc39e32dd42f1787"

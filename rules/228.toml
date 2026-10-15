@@ -1,0 +1,42 @@
+id = 228
+slug = "hand-in-with-fleet-done"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+authority = ["decide-yourself.changing-approach", "accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Hand in an attempt with `fleet done` once nothing is left"
+zh = "没有剩下的事了才用 `fleet done` 交"
+
+[text.statement]
+en = "As a worker that fleet started, judge the outcome of your attempt yourself and hand it in with `fleet done`, or `fleet done --abandon` when you stop short of the goal, and not while your pull request still waits for a review or a merge."
+zh = "作为 fleet 起的 worker，自己判断这次尝试的结局，用 `fleet done` 交，没达到目标时用 `fleet done --abandon` 交；PR 还在等审查或合并时不交。"
+
+[text.reason]
+en = '''
+Whoever made an attempt knows best whether it succeeded ({@constitution:decide-yourself.changing-approach}). `fleet done` writes the report, releases the work order and tells the lead in one step, so handing in early leaves a pull request no one answers for ({@constitution:accountable-agent}).
+'''
+zh = '''
+一次尝试成没成，做的人最清楚 ({@constitution:decide-yourself.changing-approach})。`fleet done` 一次做完写 report、释放工单、通知 lead，交早了，PR 就没人负责了 ({@constitution:accountable-agent})。
+'''
+
+[text.verification]
+en = '''
+Without a work order, `fleet done --abandon` is refused, and the outcome is written only in the report.
+
+Violated when a worker runs `fleet done` while its pull request still waits for a review or a merge, or hands in without `--abandon` an attempt that did not reach its goal.
+'''
+zh = '''
+没有工单时 `fleet done --abandon` 会被拒，结局只写在 report 里。
+
+worker 在 PR 还在等审查或合并时运行了 `fleet done`，或者没达到目标却不带 `--abandon` 交的，即为违反本规定。
+'''
+
+[translations]
+zh = "7878b8615c2ef01bcf255daef012f2b9feed05c68d234ffd0195b4bd5a7408e8"

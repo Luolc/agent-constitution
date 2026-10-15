@@ -5,7 +5,7 @@ kind = "rule"
 status = "trial"
 lang = "en"
 parent = 161
-authority = ["accountable-agent", "decide-yourself.changing-approach"]
+authority = ["accountable-agent"]
 constitution = ">=1"
 level = "project"
 check = "review"
@@ -15,28 +15,28 @@ en = "fleet claims and releases a worker's work order"
 zh = "worker 的工单由 fleet 领取和释放"
 
 [text.statement]
-en = "As a worker that fleet started, never claim or release your own work order; judge the outcome yourself and hand it in with `fleet done`, or `fleet done --abandon` when you stop short of the goal, and not while your pull request still waits for a review or a merge."
-zh = "作为 fleet 起的 worker，不自己领取或释放自己的工单；结局由自己判，用 `fleet done` 交，没达到目标时用 `fleet done --abandon` 交，PR 还在等审查或合并时不交。"
+en = "As a worker that fleet started, never claim or release your own work order yourself."
+zh = "作为 fleet 起的 worker，不自己领取或释放自己的工单。"
 
 [text.reason]
 en = '''
-When fleet starts a worker, it creates and claims the work order for it, and `fleet done` writes the report, releases the work order and tells the lead in one step; a worker that claims or releases the work order itself puts fleet's records out of step. Whoever made an attempt knows best whether it succeeded ({@constitution:decide-yourself.changing-approach}).
+When fleet starts a worker, it creates and claims the work order for it, and `fleet done` writes the report, releases the work order and tells the lead in one step; a worker that claims or releases the work order itself puts fleet's records out of step, and who answers for the work order is no longer clear ({@constitution:accountable-agent}).
 '''
 zh = '''
-fleet 起 worker 时替它建好、领好工单，`fleet done` 一次做完写 report、释放工单、通知 lead 三件事；worker 自己领取或释放，会和 fleet 的记录对不上。一次尝试成没成，做的人最清楚 ({@constitution:decide-yourself.changing-approach})。
+fleet 起 worker 时替它建好、领好工单，`fleet done` 一次做完写 report、释放工单、通知 lead 三件事；worker 自己领取或释放，会和 fleet 的记录对不上，工单该由谁负责也就说不清了 ({@constitution:accountable-agent})。
 '''
 
 [text.verification]
 en = '''
-Claiming or releasing covers doing it by hand in the issue tracker or with a command, for example `atb linear claim` or `atb linear release`. Without a work order, `fleet done --abandon` is refused, and the outcome is written only in the report.
+Claiming or releasing here is running a command that claims or releases a work order, for example `atb linear claim` or `atb linear release`. The worker hands in its outcome as {@rule:228} says, and `fleet done` releases the work order.
 
-Violated when a worker claims or releases its own work order, runs `fleet done` while its pull request still waits for a review or a merge, or hands in without `--abandon` an attempt that did not reach its goal.
+Violated when a worker runs such a command on its own work order.
 '''
 zh = '''
-领取或释放，包括在工单系统里手动操作，也包括用命令，例如 `atb linear claim`、`atb linear release`。没有工单时 `fleet done --abandon` 会被拒，结局只写在 report 里。
+这里的领取或释放，指运行领取或释放工单的命令，例如 `atb linear claim`、`atb linear release`。worker 照{@rule:228}交结局，由 `fleet done` 释放工单。
 
-worker 领取或释放了自己的工单，在 PR 还在等审查或合并时运行了 `fleet done`，或者没达到目标却不带 `--abandon` 交的，即为违反本规定。
+worker 对自己的工单运行了这样的命令的，即为违反本规定。
 '''
 
 [translations]
-zh = "84fb8e486251166bb634a314a286e031a86f70f55c34b343de6e8077857bb814"
+zh = "49f12abf419c40478b7986cad242aa446050a564e7c07608700741cc2a759ac1"

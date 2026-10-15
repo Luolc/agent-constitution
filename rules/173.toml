@@ -15,8 +15,8 @@ en = "Keep a joint project's charter in its initiative's repository"
 zh = "联合项目的章程放在 initiative 的仓库里"
 
 [text.statement]
-en = "Write the charter of a cross-repository joint project in the `AGENTS.md` of its initiative's repository, and put its cross-repository issues in that initiative's project in the issue tracker."
-zh = "跨仓联合项目的章程写在它的 initiative 仓库的 `AGENTS.md` 里，跨仓 issue 放在工单系统里该 initiative 的 project 中。"
+en = "Write the charter of a cross-repository joint project in the `AGENTS.md` of its initiative's repository."
+zh = "跨仓联合项目的章程写在它的 initiative 仓库的 `AGENTS.md` 里。"
 
 [text.reason]
 en = '''
@@ -28,15 +28,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The initiative's repository is the one whose checkout is in the scope's initiatives directory under the initiative's name ({@rule:162}); the initiative's thread agents work there, and direct messages use the scope's general initiative. How the repository and the issue tracker's project are named is set by the layers below.
+The initiative's repository is the one whose checkout is in the scope's initiatives directory under the initiative's name ({@rule:162}); the initiative's thread agents work there, and direct messages use the scope's general initiative. How the repository is named is set by the layers below.
 
-Violated when the charter of a joint project is written elsewhere, or a cross-repository issue of it is not in that initiative's project in the issue tracker.
+Violated when the charter of a joint project is written elsewhere.
 '''
 zh = '''
-initiative 的仓库，指在 scope 的 initiatives 目录下以 initiative 名字检出的那个仓库 ({@rule:162})；该 initiative 的 thread agent 在那里工作，私信用 scope 的通用 initiative。仓库和工单系统里的 project 怎么命名，由下层规定定。
+initiative 的仓库，指在 scope 的 initiatives 目录下以 initiative 名字检出的那个仓库 ({@rule:162})；该 initiative 的 thread agent 在那里工作，私信用 scope 的通用 initiative。仓库怎么命名，由下层规定定。
 
-联合项目的章程写在了别处，或者它的跨仓 issue 不在工单系统里该 initiative 的 project 中的，即为违反本规定。
+联合项目的章程写在了别处的，即为违反本规定。
 '''
 
 [translations]
-zh = "3f73821cc324544860819b63e7952a849cc018901b6ab5a0382e254cd7d11222"
+zh = "7ab83e35d61c06db60be4289807a26044fc597e03e8f71a0132ff90af8666aea"
