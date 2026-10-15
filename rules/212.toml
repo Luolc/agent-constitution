@@ -1,0 +1,42 @@
+id = 212
+slug = "pin-hosted-runner-release"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+authority = ["discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Pin the hosted Linux runners of CI to a fixed release"
+zh = "CI 托管的 Linux runner 钉到固定的版本"
+
+[text.statement]
+en = "Pin each Linux runner that the CI service hosts to a label that names a fixed release of its system, never to a label the service moves, in a matrix too."
+zh = "CI 服务托管的 Linux runner，一律钉到指明系统固定版本的标签，不用服务方会改指向的标签，matrix 里的也一样。"
+
+[text.reason]
+en = '''
+A moving label, such as `ubuntu-latest` of GitHub Actions, points to whichever release the CI service chooses, and it moves while the repository does not change. The same change can then reach another conclusion on another runner, and the check cannot tell whether the code changed or the environment did ({@constitution:discriminating-checks}).
+'''
+zh = '''
+会改指向的标签 (例如 GitHub Actions 的 `ubuntu-latest`) 指向哪个版本由 CI 服务决定，会在仓库没有任何改动的时候换掉。同一个变更，换了 runner 就可能得出不同的结论，这样的检查分不清是代码变了还是环境变了 ({@constitution:discriminating-checks})。
+'''
+
+[text.verification]
+en = '''
+A label that names a fixed release is one that the CI service keeps on one release of the system, such as `ubuntu-<version>` of GitHub Actions; which release is the jurisdiction's choice. Self-hosted runners and runners of a system other than Linux are not covered.
+
+Violated when a CI workflow of the repository sets a Linux runner that the CI service hosts, a value in a matrix included, to a label that does not name a fixed release.
+'''
+zh = '''
+指明固定版本的标签，指 CI 服务始终对应系统同一个版本的标签，例如 GitHub Actions 的 `ubuntu-<version>`；选哪个版本由法域定。自托管 runner 与 Linux 以外系统的 runner 不在此列。
+
+仓库的 CI workflow 里，CI 服务托管的 Linux runner (包括 matrix 里的取值) 用的标签没有指明固定版本的，即为违反本规定。
+'''
+
+[translations]
+zh = "27d3593a76f7e1956a5cdade60901937e21ae5de4a94c23c22e3bbd25997c143"

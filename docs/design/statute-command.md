@@ -28,6 +28,10 @@ and a rule set with its lock file, and writes:
 - the version of the check binary to install, and the external commands
   of the enabled rules.
 
+Once built, the `AGENTS.md` holds only the enabled rules whose `uses`
+has `instructions`, with each placeholder replaced by its value
+([Rule configuration](rule-config.md)).
+
 `statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
 another file with `--output`, and the other two next to it (below),
 and only when the lock file is what `statute lock` would write now. The

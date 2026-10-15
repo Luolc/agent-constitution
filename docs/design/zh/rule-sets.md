@@ -1,4 +1,4 @@
-<!-- en-sha256: 260002680f9c66d7bb4af2b59e7b605ddc863492d030be51696233047315a866 -->
+<!-- en-sha256: caf3b8b238bd44afa43fd69d38bcb3cd340b881f588dcc42f061858721c05a46 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -23,7 +23,7 @@ agents-md = ["statement"]
 
 规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。在 one-of 的子节点中选一个，就是把它写进 `rules`，这里是 `R51`；没有别的字段管这件事。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个子节点启用。`[compile]` 设定编译出的 `AGENTS.md` 收录每条规定的哪些部分：默认只收 `statement`；加上 `reason` 或 `verification`，这些部分也会收进去 ([编译与网站](statute-command.md#compilation-and-the-site))。`[compile]` 里的 `lang` 指定用哪种语言写，默认 `en`。
 
-[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。
+[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
 
 锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public`；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
 
@@ -135,7 +135,7 @@ statute 不论在哪里提到一条规定，都用同一种写法：提示信息
 
 **领域。** 领域是树顶层的节点，例如 Python、CI、Git 或安全。除了 ID 和标题，它只有每个节点都有的那几个字段，以及可选的 applicability，用一两句话说明它适用于哪些仓库 ([规定文件格式](rule-format.md#rule-file-format))，没有正文和检查；它不能单独启用。它下面有任何一条规定启用时，它就作为标题出现在编译输出里。一个领域可以挂在一个没有 parent 的领域下面，成为子领域，所以领域最多嵌套两级 (见[子领域](rule-sources.md#subdomains))；更细的分组用领域下面的规定或 one-of。
 
-**one-of。** one-of 是 parent 树上的一种节点，在一份规定清单 (或者它的一个路径分段) 里，它的子节点至多启用一个。一个都不启用也可以，比如完全不用 Python 的仓库；这里的 one-of 从不表示「恰好一个」。Python 下的 one-of「Python 包管理器」有 uv、Poetry 和 Bazel 三个子节点。one-of 有 ID，增加一个 one-of 和增加一条规定一样要经过审查。依赖 one-of 的规定，只要它的任何一个子节点启用，就算满足。
+**one-of。** one-of 是 parent 树上的一种节点，在一份规定清单 (或者它的一个路径分段) 里，它的子节点至多启用一个。一个都不启用也可以，比如完全不用 Python 的仓库；这里的 one-of 从不表示「恰好一个」。Python 下的 one-of「Python 包管理器」有 uv、Poetry 和 Bazel 三个子节点。one-of 有 ID，增加一个 one-of 和增加一条规定一样要经过审查。依赖 one-of 的规定，只要它的任何一个子节点启用，就算满足。实现之后，每个 one-of 都指定一个默认子节点，规定清单没有点名子节点时，规定包和依赖都取这个默认子节点，而不是像下文那样不产生内容或报错 ([one-of 的默认](rule-config.md#in-the-rule-files))。
 
 **后来才发现的冲突。** 没人当作备选项的两条规定，可能后来发现不能一起用。怀疑这一点的 agent 报告它，由审查方判断。通常的解决办法是修改规定：拆分、收窄或者改写措辞，保不保留 ID，见[ID 与修订号](rule-format.md#ids-and-revisions)。两条规定都没有问题、只是不能一起用时，在其中一条上写 `conflicts = [ID]`。这个关系是对称的，只写在一边：写在后来的那条上，即发现冲突时正在新增或修改的那条，从不改动早已存在的那条。跨规定源时本来也只能写在自己这边。另一边由命令反推出来，构建检查和网站都在两条规定上显示这个冲突。两边都写了，给一个警告，不算错误。理由是：同一个事实只写在一处 (`no-restating`)，而别的规定源的文件改不了。同一位置上三条或更多互相冲突的规定是备选项，改为收进一个 one-of。一条规定不得声明与这样的规定冲突：启用它时会沿着 `parent` 或 `requires` 直接或间接带进来的规定，因为启用前者就会启用后者；构建遇到这种声明会失败。同一个 parent 下的兄弟规定可以互相冲突。
 

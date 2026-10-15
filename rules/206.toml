@@ -1,0 +1,42 @@
+id = 206
+slug = "content-markdown-in-docs"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep content Markdown under docs/"
+zh = "内容类 Markdown 放在 docs/ 下"
+
+[text.statement]
+en = "Put the Markdown that holds content, such as knowledge, decisions and logs, under `docs/`, put code in the directories of its languages, and keep only convention files at the root of the repository."
+zh = "知识、决策、日志这类内容的 Markdown 都放在 `docs/` 下，代码放进各语言的目录；仓库根目录只留约定文件。"
+
+[text.reason]
+en = '''
+Documents and code each keep to their own part of the repository: a reader knows where to find the documents, and a change to the code does not touch them ({@constitution:simplicity}). The root holds only the files that tools and platforms look for there, so the layout of the repository shows at a glance.
+'''
+zh = '''
+文档和代码各占一块，读者知道去哪找文档，改代码的变更也不会碰到文档 ({@constitution:simplicity})。根目录只放工具与平台约定要找的文件，一眼就能看清仓库的结构。
+'''
+
+[text.verification]
+en = '''
+Convention files are files that a tool or platform reads at a fixed place, for example `README.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSE` and `CONTRIBUTING.md`. A subproject's README sits with its code and is no violation.
+
+Violated when the root of the repository or a code directory holds Markdown with content (knowledge, decisions, logs and the like) other than convention files and the READMEs of subprojects.
+'''
+zh = '''
+约定文件指工具或平台按固定位置读取的文件，例如 `README.md`、`AGENTS.md`、`CLAUDE.md`、`LICENSE`、`CONTRIBUTING.md`。子项目的 README 跟着它的代码放，不算违反。
+
+仓库根目录或代码目录里有约定文件和子项目 README 以外的内容类 Markdown (知识、决策、日志等) 的，即为违反本规定。
+'''
+
+[translations]
+zh = "3b4eb81dcf5463f736cb762944752da43dc8ba69bcec49c78aeb475bf233a457"

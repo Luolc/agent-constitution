@@ -496,17 +496,13 @@
 }
 .constitution .cites-toggle {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1em;
-  height: 1.1em;
-  border: 1px solid currentColor;
-  border-radius: 50%;
+  font-size: 1.1em;
   opacity: .7;
-  line-height: 1;
+  line-height: 0;
 }
-.constitution .cites-toggle::before { content: "+"; }
-.constitution .cites.open .cites-toggle::before { content: "\2212"; }
+.constitution .cites-button:hover .cites-toggle,
+.constitution .cites.open .cites-toggle { opacity: 1; }
+.constitution .cites.open .cites-bar { display: none; }
 .constitution .cites-list { display: none; margin: .3em 0 .2em; }
 .constitution .cites.open .cites-list { display: block; }
 .constitution .cites-item { display: block; }

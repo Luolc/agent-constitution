@@ -1,0 +1,43 @@
+id = 208
+slug = "tool-docs-split"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+requires = [206]
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Split a tool's documents into research, installation and use"
+zh = "工具类文档按调研、安装、用法三分"
+
+[text.statement]
+en = "Write the documents about a tool in three layers, its research evidence (comparisons for a choice, measurements) in `docs/research/`, its installation runbook in `docs/knowledge/` and how to use it at run time as a skill, and write each fact in one layer only, linking to it from the others."
+zh = "关于一个工具的文档分三层写：调研证据 (选型对比、实测) 放 `docs/research/`，安装手册放 `docs/knowledge/`，运行时怎么用写成 skill；每个事实只写在一层，其他层链接过去。"
+
+[text.reason]
+en = '''
+The three layers have different readers and change at different rates: the research is read when choosing the tool, the installation runbook when setting up a machine, the use every time the tool is used. Mixed together, one fact is written several times, and a change reaches some of them and misses others ({@constitution:no-restating}).
+'''
+zh = '''
+三层的读者和更新频率都不同：调研只在选型时读，安装手册在装机时读，用法每次用都要读。混在一起，同一个事实会写好几遍，改一处漏一处 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+A skill on run-time use that concerns only this project sits in the repository's `.agents/skills/<name>/`; one that concerns no particular project is a user-level skill, installed into the user's directory from the repository that distributes the user-level skills, and is not put into a project's own `.agents/skills/`.
+
+Violated when a tool's research evidence, installation runbook or run-time use sits outside the place given above, or when one fact is written out in two layers instead of in one and linked to from the other.
+'''
+zh = '''
+运行时用法的 skill：只与本项目有关的放在仓库的 `.agents/skills/<name>/`；与项目无关的写成用户级 skill，经分发用户级 skill 的仓库装到用户目录，不放进某个项目自己的 `.agents/skills/`。
+
+一个工具的调研证据、安装手册或运行时用法放在了上述位置之外的，或者同一个事实在两层里都写了正文、而不是一处写、别处链接的，即为违反本规定。
+'''
+
+[translations]
+zh = "11ddd3ff8bfd6b13bbbeab87955ba7d44ea5bd20e1300f544a072445e8aa5fe1"

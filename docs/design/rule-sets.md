@@ -53,6 +53,8 @@ which git ignores, inherits `statute.toml` through
 `statute.private.lock`. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
 ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+[Rule configuration](rule-config.md) adds the directory of the local
+rules, parameters and default switches, not built yet.
 
 The lock file is TOML, written by statute and never edited by hand. It
 records the constitution (its repository, edition, revision and commit),
@@ -394,7 +396,10 @@ Python at all; "one of" here never means "exactly one". The one-of
 "Python package manager" under Python has the children uv, Poetry and
 Bazel. A one-of has an ID, and adding one goes through review like adding
 a rule. A rule that requires a one-of is satisfied when any one of its
-children is enabled.
+children is enabled. Once built, every one-of names a default child,
+which a pack and a requirement take where the rule set names none, in
+place of contributing nothing or failing as below
+([A one-of's default](rule-config.md#in-the-rule-files)).
 
 **Conflicts found later.** Two rules that nobody saw as alternatives may
 turn out not to work together. An agent that suspects this reports it, and
