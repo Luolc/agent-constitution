@@ -1,4 +1,4 @@
-<!-- en-sha256: caf3b8b238bd44afa43fd69d38bcb3cd340b881f588dcc42f061858721c05a46 -->
+<!-- en-sha256: ae1c964f913d7f69384407edfc36d5fa109477b60612584088f1b2f94dfd0789 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -23,7 +23,7 @@ agents-md = ["statement"]
 
 规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。在 one-of 的子节点中选一个，就是把它写进 `rules`，这里是 `R51`；没有别的字段管这件事。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个子节点启用。`[compile]` 设定编译出的 `AGENTS.md` 收录每条规定的哪些部分：默认只收 `statement`；加上 `reason` 或 `verification`，这些部分也会收进去 ([编译与网站](statute-command.md#compilation-and-the-site))。`[compile]` 里的 `lang` 指定用哪种语言写，默认 `en`。
 
-[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在 `statute.private.toml` 里，这个文件被 git 忽略，用 `base = "statute.toml"` 继承 `statute.toml`，有自己的锁文件 `statute.private.lock`。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
+[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，有自己的锁文件 `private.lock`。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)；现在仍是 `statute.toml` 旁边的 `statute.private.toml`，锁文件同时锁定两层)。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，都还没有实现。
 
 锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public`；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
 
@@ -98,17 +98,26 @@ R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 team = { git = "example.test/their-team/rules", branch = "main" }
 ```
 
-键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag、分支或路径；也可以不写，交给全局配置和内置默认，即第一方仓库的 `main` 分支 ([全局配置与 git 规定源](global-configuration.md#the-global-configuration))。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：自己存放规定的仓库，比如本仓，就这样指向自己。它的规定在该目录下的 `rules/` 里，宪法在 `constitution/<edition>/` 里。规定源也可以是一个 git 仓库，克隆到用户的 statute 目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
+键 `R` 留给第一方规定源，也就是本仓：宪法和通用规定都由它发布。规定清单像声明别的规定源一样声明它，写明要读的 tag、分支或路径；也可以不写，交给全局配置和内置默认，即第一方仓库的 `main` 分支 ([全局配置与 git 规定源](global-configuration.md#the-global-configuration))。其余每个规定源都有一个短名，由小写单词加连字符组成，由规定清单自己起。`L` 和 `local` 留给仓库自己的规定 (见下)；`ac` 是第一方规定源以前的名字，用它会报错，并提示改名为 `R`。规定源也可以是磁盘上的一个目录，`R = { path = "." }`，路径相对于规定清单所在的目录：发布规定的仓库，比如本仓，就这样指向自己。规定源的规定在它顶层的 `rules/` 里，或者在 `rules-dir` 指定的目录里，路径相对于它的顶层；宪法在 `constitution/<edition>/` 里：
+
+```toml
+[sources]
+team = { git = "https://example.test/our-team/tools.git", branch = "main", rules-dir = "agent/rules", public = true }
+```
+
+`rules-dir` 给那些除了规定还发布别的东西、把规定放在别处的仓库用；参数的声明 `params.toml` 也放在同一个目录 (见[参数](rule-config.md#parameters))。写绝对路径、带 `..` 的路径，或者指到 `.statute/` 里面的路径，都会报错：读规定源只在它自己里面读，而 `.statute/rules/` 放的是仓库给自己用的规定，别的仓库不能用 (见[四类规定源](rule-sources.md#four-kinds-of-source))。`rules-dir` 尚未实现。
+
+规定源也可以是一个 git 仓库，克隆到 statute 的缓存目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
 
 **三种引用。** 每种引用各有自己的写法，不会把一种读成另一种：
 
 - 第一方规定：`R` 加 ID，`R42`；
-- 本地规定，即规定清单旁边 `rules/` 目录里的规定，也就是存放这份清单的仓库自己的规定：只写 ID，`12`；`L12` 和 `local:12` 意思相同；
+- 本地规定，即仓库自己放在 `.statute/rules/` 里的规定 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))，也就是存放这份清单的仓库自己的规定：只写 ID，`12`；`L12` 和 `local:12` 意思相同；
 - 别的规定源的规定：短名、一个冒号和 ID，`team:7`。
 
 statute 不论在哪里提到一条规定，都用同一种写法：提示信息、`statute explain`、锁文件和编译出的 `AGENTS.md` 里都是 `R42`、`L12` 或 `team:7`。本地规定显示成 `L12`，免得看起来像 `R12`。网站只列第一方规定，写成 `R42`。规定清单里的条目按写进去的样子保留，添加条目的命令写成 `R42`、`12` 或 `team:7`。
 
-第一方规定源就是规定清单所在的目录时，即 `R = { path = "." }`，比如本仓，它的 `rules/` 就是第一方规定。这些规定写成也显示成 `R12`；用本地写法引用其中一条，比如 `12`，会报错并提示写成 `R12`，这样一个文件不会有两个名字。
+第一方规定源就是规定清单所在的目录时，即 `R = { path = "." }`，比如本仓，它的 `rules/` 就是第一方规定，写成也显示成 `R12`；本仓自己的规定与它们分开，放在 `.statute/rules/`。`local-rules` 指向磁盘上某个规定源的规定目录时，那些规定仍归那个规定源：用本地写法引用其中一条，比如 `12`，会报错并提示写成 `R12`，这样一个文件不会有两个名字。
 
 别的规定源的短名只在定义它的文件内有意义，所以两份规定清单可以用 `team` 指不同的规定源。规定源搬到别的地址时，规定清单改一行，引用一个都不用改。一个规定源如果引用了别的规定源里的规定，它也有自己的 `[sources]` 表，形式相同，其中的名字不必与使用它的任何规定清单一致。构建按地址而不是按名字匹配规定源：一个文件里的 `team` 和另一个文件里的 `core` 指向同一个地址时，就是同一个规定源。
 

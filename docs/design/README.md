@@ -55,7 +55,7 @@ the whole design.
   local, public or private), which may cite which, overrides,
   subdomains and the cutover from the hand-written guide; built in part.
 - [Global configuration and git sources](global-configuration.md): the
-  statute directory in the home directory, the global configuration,
+  statute directories in the home directory, the global configuration,
   which source a name means, git sources and adding a source; built in
   part.
 - [Rule configuration](rule-config.md): the directory of the local

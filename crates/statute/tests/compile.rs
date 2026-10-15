@@ -509,18 +509,23 @@ fn citations_render_as_titles_and_numbers() {
 
 #[test]
 fn a_citation_of_nothing_fails_and_names_where_it_is() {
-    for (citation, message) in [
+    // A citation of a rule, or one without a namespace, fails when the
+    // source is read; one of a provision, when the constitution is.
+    for (citation, command, message) in [
         (
             "{@rule:99}",
-            "rules/2.toml: statement: cites `{@rule:99}`, which is not in source `R`",
+            "lock",
+            "rules/2.toml: error: [text.statement] cites `{@rule:99}`, which does not exist in this source",
         ),
         (
             "{@constitution:principals.nobody}",
+            "compile",
             "rules/2.toml: statement: cites `{@constitution:principals.nobody}`, which is not in edition 2026-10 of the constitution",
         ),
         (
             "{@principals}",
-            "rules/2.toml: statement: cites `{@principals}` without `rule:` or `constitution:`",
+            "lock",
+            "rules/2.toml: error: [text.statement] cites `{@principals}` without `rule:` or `constitution:`",
         ),
     ] {
         let dir = repo("cite-missing", &manifest(""));
@@ -531,8 +536,13 @@ fn a_citation_of_nothing_fails_and_names_where_it_is() {
         )
         .1;
         std::fs::write(dir.join("rules/2.toml"), text).unwrap();
-        ok(&statute(&dir, &["lock"]));
-        let run = statute(&dir, &["compile", "--output", "out.md"]);
+        let lock = statute(&dir, &["lock"]);
+        let run = if command == "lock" {
+            lock
+        } else {
+            ok(&lock);
+            statute(&dir, &["compile", "--output", "out.md"])
+        };
         assert_eq!(run.code, 1);
         assert!(run.stderr.contains(message), "{}", run.stderr);
         assert!(!dir.join("out.md").exists());

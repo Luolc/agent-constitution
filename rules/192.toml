@@ -1,0 +1,21 @@
+id = 192
+slug = "voice-input"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Voice input"
+zh = "语音输入"
+
+[applicability]
+en = '''
+Covers how an agent reads the messages of a principal who writes to it by voice input, where speech-to-text turns words into others that sound alike: reading a message for its intent, checking the names it gives against the real ones, and listing the guesses made. Enable it in a repository where a principal writes to agents by voice input; one whose principals never do can leave it off.
+'''
+zh = '''
+管委托人用语音输入给 agent 发消息时，agent 怎样读这些消息：语音转文字会把词换成读音相近的别的词，所以要按意图读消息，把消息里给的名字与真实存在的名字核对，并列出做过的推断。委托人用语音输入给 agent 发消息的仓库启用；委托人从不用语音输入的可以不启用。
+'''
+
+[translations]
+zh = "0e49a17fc27e065d02fd2d967df4cfc1c350ee06105bbf1c510163cee459be58"

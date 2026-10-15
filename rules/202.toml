@@ -1,0 +1,42 @@
+id = 202
+slug = "code-in-english"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Write code in English"
+zh = "代码一律用英文写"
+
+[text.statement]
+en = "Write code in English: its identifiers, its file names and the strings that are part of its interface."
+zh = "代码一律用英文写：标识符、文件名，以及属于接口的字符串。"
+
+[text.reason]
+en = '''
+Code is read by all kinds of tools and by people who do not share one another's language, and English is the language they share ({@constitution:purpose}).
+'''
+zh = '''
+代码会被各种工具读，也会被说不同语言的人读，英文是他们共同的语言 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+Comments in code have a rule of their own ({@rule:203}). Text in another language that the code holds as data or test input (a sample it processes, say) does not count.
+
+Violated when an identifier, a file name or a string that is part of the interface of code is in a language other than English.
+'''
+zh = '''
+代码注释另有规定 ({@rule:203})。代码里作为数据或测试输入出现的其他语言文字 (比如它要处理的样本) 不算违反。
+
+代码的标识符、文件名或属于接口的字符串用了英文以外的语言的，即为违反本规定。
+'''
+
+[translations]
+zh = "74a29e1ec499cce8530198c8250fd3c149f72b31685010678b8b8bc6c7c6d6d7"
