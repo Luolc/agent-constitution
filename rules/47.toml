@@ -1,6 +1,6 @@
 id = 47
 slug = "generated-file-side"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -17,8 +17,8 @@ en = "A generated file goes with the side that changed it"
 zh = "生成文件归入使它发生变化的那一方"
 
 [text.statement]
-en = "Count a generated file with the side of the work that changed it, and when a change to tools changes it, say that only its rendering changed."
-zh = "生成文件归入使它发生变化的那一方；工具的修改使它发生变化的，说明变化只在渲染。"
+en = "When you keep changes to instruction files apart from changes to other files, count a generated file with whichever of the two changed it, and when a change to tools changes it, say that only its rendering changed."
+zh = "把指令文件的修改与其他文件的修改分开时，生成文件归入使它发生变化的那一方 (指令文件或其他文件)；工具的修改使它发生变化的，说明变化只在渲染。"
 
 [text.reason]
 en = '''
@@ -41,4 +41,4 @@ CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:46})�
 '''
 
 [translations]
-zh = "36dafd5e09cccef25e784362eaf8a3cba24dc305c3a80ff2abb6fe27e752d371"
+zh = "526de3101e7f620face7e50187fd185e3a962345796316793a827961e4bb7aff"

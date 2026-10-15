@@ -472,6 +472,27 @@ class _Language:
     shown = self.shown(node)
     return self.values(node.title[shown], shown, key[0], mark="none")
 
+  def title_html(self, key: tuple[str, int]) -> str:
+    """Return a node's title as HTML, for a template that does not render it.
+
+    The text is escaped, each code span is code and each placeholder
+    its parameter's default, marked as a span.
+
+    Args:
+      key: its source's name and its ID.
+
+    Returns:
+      The title.
+    """
+    node = self.nodes[key]
+    shown = self.shown(node)
+    # Escaping leaves the backticks and the placeholders as they are.
+    text = CODE_SPAN.sub(
+      lambda m: f"<code>{m.group(2)}</code>",
+      html.escape(node.title[shown], quote=False),
+    )
+    return self.values(text, shown, key[0], "span")
+
   def param(self, name: str, source: str) -> tuple[str, Param] | None:
     """Return the parameter a placeholder of a source's rule names.
 
@@ -549,8 +570,8 @@ class _Language:
       source: the source of the node that names it.
 
     Returns:
-      Its ID, label, title and page, or the reference alone when it names
-      a node of a source the site does not have.
+      Its ID, label, title, title as HTML and page, or the reference
+      alone when it names a node of a source the site does not have.
     """
     key = (source, target) if isinstance(target, int) else other_ref(target)
     if key not in self.nodes:
@@ -559,6 +580,7 @@ class _Language:
       "id": key[1],
       "label": rule_label(key[1], key[0]),
       "title": self.title(key),
+      "titleHtml": self.title_html(key),
       "key": page_key(key[1], key[0]),
     }
 
