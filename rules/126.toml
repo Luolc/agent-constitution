@@ -23,7 +23,7 @@ en = '''
 A rule applies to every project in a jurisdiction that adopts it ({@constitution:division-of-instructions.rules}), but only those who can read a private source can adopt its rules: a requirement kept there cannot be adopted, reviewed or improved by other users, and is written again wherever another user needs it. A private source is there for what may not be published, and that is the private assets alone.
 '''
 zh = '''
-规定适用于采纳它的管辖范围内的每个项目 ({@constitution:division-of-instructions.rules})，但私有来源里的规定只有读得到这个来源的人才能采纳：要求放在那里，别的使用者就没法采纳、审查或改进它，别的使用者也需要时，就得再写一份。私有来源是为不能公开的东西准备的，而不能公开的只有私有资产。
+规定适用于采用它的法域内的每个项目 ({@constitution:division-of-instructions.rules})，但私有来源里的规定只有读得到这个来源的人才能采用：要求放在那里，别的使用者就没法采用、审查或改进它，别的使用者也需要时，就得再写一份。私有来源是为不能公开的东西准备的，而不能公开的只有私有资产。
 '''
 
 [text.verification]

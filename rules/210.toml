@@ -1,0 +1,42 @@
+id = 210
+slug = "git-add-before-checks"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 77
+authority = ["discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Add a new file to Git before running checks"
+zh = "新建的文件先 git add 再跑检查"
+
+[text.statement]
+en = "When you create a file, run `git add` on it and confirm that `git ls-files` lists it before you run checks."
+zh = "新建了文件，先 `git add`，确认 `git ls-files` 列得出它，再跑检查。"
+
+[text.reason]
+en = '''
+Some checkers (the hooks of pre-commit, for example) look only at the files Git tracks. A new file not yet added is invisible to them: a problem in it passes, and such a pass is no evidence ({@constitution:discriminating-checks}). Which version of which checker looks at untracked files is hard to keep in mind, and adding every new file first settles it.
+'''
+zh = '''
+有些检查器 (例如 pre-commit 的钩子) 只看 Git 已经跟踪的文件，新文件没加进去，检查对它就是瞎的：有问题照样通过，这样的通过不能当证据 ({@constitution:discriminating-checks})。哪个版本的检查器看不看未跟踪的文件不好一一记住，一律先加进去最省事。
+'''
+
+[text.verification]
+en = '''
+The checks here are the commit hooks and the checks the change touches that run locally before a push ({@rule:53}).
+
+Violated when an agent that created a file runs checks while `git ls-files` does not yet list it, and cites that result as a pass.
+'''
+zh = '''
+这里的检查指 push 之前在本地跑的 commit hook 与改动涉及的检查 ({@rule:53})。
+
+agent 新建了文件，在 `git ls-files` 还列不出它的时候跑了检查，并把这次结果当作通过引用的，即为违反本规定。
+'''
+
+[translations]
+zh = "359dd96093ca94c7da86e8785ba3e9ff0e397108507ba8634fd0bc3118634260"

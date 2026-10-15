@@ -1,0 +1,43 @@
+id = 207
+slug = "runbooks-in-knowledge"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 16
+requires = [206]
+authority = ["no-restating"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep runbooks in docs/knowledge/"
+zh = "操作手册放在 docs/knowledge/"
+
+[text.statement]
+en = "Put a step-by-step runbook for manual work in `docs/knowledge/`."
+zh = "逐步的人工操作手册放在 `docs/knowledge/`。"
+
+[text.reason]
+en = '''
+A runbook says how to do something, and it changes again and again as the tools change. Kept in one place, its steps are written once and every other document links to them ({@constitution:no-restating}).
+'''
+zh = '''
+手册说的是怎么做，会随工具的变化反复修改。放在一处，同一套步骤只写一次，别的文档都链接过去 ({@constitution:no-restating})。
+'''
+
+[text.verification]
+en = '''
+A runbook is a description that a person follows step by step, for example the steps to set up a machine, rotate a key or restore a service. Another document that needs those steps links to the runbook in `docs/knowledge/`.
+
+Violated when a step-by-step runbook for manual work is written outside `docs/knowledge/`.
+'''
+zh = '''
+操作手册指人照着一步一步做的说明，例如装机、换密钥、恢复服务的步骤。别的文档需要提到这些步骤的，链接到 `docs/knowledge/` 里的手册。
+
+逐步的人工操作手册写在 `docs/knowledge/` 之外的，即为违反本规定。
+'''
+
+[translations]
+zh = "47d194f513a830af3f8604440efb5e79105feece0fb034c9d7f68bcb0225aeae"
