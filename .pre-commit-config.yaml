@@ -1,8 +1,9 @@
 # Commit hooks, each taking a second or so: secret scan, lock check,
 # Python lint, format and docstring checks, Rust format check, rule
-# validation, constitution build check, the design translation check, and
-# limae on the Chinese text in the sources and on every Markdown file of
-# the repo. The type check and the tests take longer and run in CI.
+# validation, constitution build check, compile check of this repo's
+# AGENTS.md, the design translation check, and limae on the Chinese text
+# in the sources and on every Markdown file of the repo. The type check
+# and the tests take longer and run in CI.
 repos:
   # Scans only the staged diff (the upstream entry ends in --staged); CI
   # scans the commits of each PR or push, and gitleaks.yml the full history
@@ -77,6 +78,16 @@ repos:
         entry: cargo run --locked --quiet -p statute -- constitution build --check
         language: system
         files: ^(constitution/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
+        pass_filenames: false
+      # This repo's compiled output: --check writes nothing and requires
+      # AGENTS.md, statute-checks.toml and the skills statute copies and
+      # links to match a fresh compile of statute.toml and statute.lock.
+      # The private output, which git ignores, is not compared.
+      - id: statute-compile
+        name: statute compile check
+        entry: cargo run --locked --quiet -p statute -- compile --check
+        language: system
+        files: ^(statute(\.toml|\.lock|-checks\.toml)$|AGENTS\.md$|\.statute/|\.agents/|\.claude/|skills/|rules/|constitution/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
         pass_filenames: false
       # The `zh` text of each source, citations replaced by Chinese text
       # shaped like their rendering. Checks only; fix locally with

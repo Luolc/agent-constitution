@@ -801,6 +801,33 @@ fn the_whole_output_compiles_to_the_same_bytes() {
 
 #[cfg(unix)]
 #[test]
+fn compile_check_writes_nothing_and_names_each_file_that_differs() {
+    let dir = skills_repo("skills-check");
+    compiled(&dir);
+    let before = tree(&dir);
+    let run = statute(&dir, &["compile", "--check", "--output", "out.md"]);
+    ok(&run);
+    assert_eq!(
+        run.stdout,
+        "out.md: up to date, with the rest of the output\n"
+    );
+    assert_eq!(tree(&dir), before);
+
+    let more = dir.join(".agents/skills/three/references/more.md");
+    std::fs::write(dir.join("out.md"), "edited by hand\n").unwrap();
+    std::fs::write(&more, "edited by hand\n").unwrap();
+    let run = statute(&dir, &["compile", "--check", "--output", "out.md"]);
+    assert_eq!(run.code, 1, "{}", run.stderr);
+    assert_eq!(
+        run.stderr,
+        "out.md: error: not what `statute compile` writes; run it\n\
+         .agents/skills/three/references/more.md: error: not what `statute compile` writes; run it\n"
+    );
+    assert_eq!(std::fs::read_to_string(&more).unwrap(), "edited by hand\n");
+}
+
+#[cfg(unix)]
+#[test]
 fn a_skill_no_longer_enabled_goes_with_its_link_and_nothing_else() {
     let dir = skills_repo("skills-stale");
     compiled(&dir);
