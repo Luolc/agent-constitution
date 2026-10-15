@@ -13,7 +13,7 @@ check = "none"
 
 [title]
 en = "Keep each main checkout directly under the directory for main checkouts"
-zh = "每个主检出都直接放在放主检出的目录下"
+zh = "每个主检出都直接放在主检出目录下"
 
 [text.statement]
 en = "Keep each repository's main checkout at `{$dirs.main-checkouts}/<repo>`, in a directory named after the repository."
