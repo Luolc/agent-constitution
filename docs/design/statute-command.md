@@ -189,6 +189,8 @@ be published anew. The rule set is `statute.toml`, the lock file
 - `explain`: say why a rule is enabled and which rules require it;
 - `site`: write a local site of the rules the rule set can draw on
   ([The local site](#the-local-site));
+- `export`: print the constitution and the rules of a directory as JSON,
+  for a program that reads them ([Export](#export));
 - `constitution build`: build the constitution of the repository it runs
   in from its sources, or check it (below);
 - `validate <dir>`: check a directory of rule files on its own, as one
@@ -207,7 +209,7 @@ which try the whole process on real work.
 which 43 and 46 supersede), `site`, `constitution build` and
 `validate`, for sources on disk and git
 sources, as many as
-`[sources]` names. The repository's own rules, `L12`, are read from
+`[sources]` names, and `export`. The repository's own rules, `L12`, are read from
 `.statute/rules/`, or the directory `local-rules` names
 ([The directory of local rules](rule-config.md#the-directory-of-local-rules));
 when that is a source's rules directory, as with `local-rules = "rules"`
@@ -372,6 +374,33 @@ file. It prints the path of `index.html`.
   compiled `AGENTS.md`. The pages are in the language of
   `[compile] lang`, the kind of each node included; a status is shown
   as the rule file writes it, `draft` or `trial`.
+
+## Export
+
+`statute export [<dir>]` prints the constitution and the rules of a
+directory, `.` by default, as one JSON value, for a program that reads
+them; this repo's site does
+([Static site](static-site.md), Rules). It reads no rule set: the
+directory is a source, holding `constitution/`, `rules/` or both.
+
+- `constitution`: `null` without `constitution/`; otherwise the
+  `edition`, `revision`, `status` and `languages` of the `index.toml` of
+  its one edition (with none or more than one, the export fails), and its
+  `provisions` in the order of the text: each article, section and item
+  with its `id` as a citation names it, its `parent` (`null` for an
+  article) and its `labels` by language, as the compiled `AGENTS.md`
+  writes them.
+- `nodes`: each node of `rules/` in order of ID, with its `file` and
+  its `fields` as the file writes them, texts included. A program gets
+  each value as written and a field statute learns later without a
+  change to the export; it applies its own defaults.
+
+Before it prints anything, statute checks the rules as it checks any
+source ([Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs));
+when a check fails, it prints the errors alone and exits with status 1.
+A translation that follows an older original fails that check, so every
+translation a node lists follows its current original. JSON is the one
+format, so the command has no option to choose one.
 
 ## Why Rust
 

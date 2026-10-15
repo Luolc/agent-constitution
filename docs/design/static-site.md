@@ -118,8 +118,10 @@ site-rules`, `uv run count-tokens` (the token count, below),
   file that does not exist is left to the design translation check. Links on the
   constitution's pages, and absolute ones and fragments alone everywhere,
   are left as written.
-- Rules: `uv run site-rules` (`tools/site`) reads `rules/*.toml` with the
-  compiler's reader and writes `web/data/rules.json` (not committed),
+- Rules: `uv run site-rules` (`tools/site`) reads the constitution and
+  `rules/*.toml` through `statute export`
+  ([The statute command](statute-command.md#export)), which it runs from
+  this checkout with `cargo run`, and writes `web/data/rules.json` (not committed),
   which Hugo reads; the build fails without it, so CI and
   `pages.yml` run it before Hugo. For each language of `index.toml` it
   holds every node of the rule tree along the parent tree, a node's
@@ -127,8 +129,8 @@ site-rules`, `uv run count-tokens` (the token count, below),
   made by `rule_label` in `site_rules.py`, the one place that makes it;
   the templates read the node's `label`. With `--source
   <name>:<quadrant>:<dir>`, once for each, it also reads the rules of other
-  sources, `<dir>/rules/*.toml`, as the same reader reads this repo's but
-  taking `R12` in them for this repo's rule 12, as `requires` writes it
+  sources, `<dir>/rules/*.toml`, through the same export, where `R12`
+  names this repo's rule 12, as `requires` writes it
   ([Rule sources](rule-sources.md)); their nodes follow this repo's,
   source by source in the order of the quadrants (global public, global
   private, local public, local private), each labeled `<name>:<id>`
@@ -212,14 +214,11 @@ site-rules`, `uv run count-tokens` (the token count, below),
   as the full version labels it, in the language of the text, and
   `{@rule:N}` a link to the rule's page ("rule N", 「规定 N」). A page
   shows a node's texts in its own language when the node is written in
-  it or has a translation into it whose hash in `[translations]` is that
-  of the current original; otherwise it shows the original, under a line
+  it or has a translation into it; otherwise it shows the original, under a line
   that names its language (`这条规定还没有中文译文，下面是原文
-  (英文)。`), with the text's `lang` set. A translation of an older
-  original is treated as no translation: it is not shown, and not listed
-  among the translations. `constitution-build --check` fails on such a
-  translation, so only a build from sources that fail that check meets
-  one. Under each provision of the home page that a listed rule cites,
+  (英文)。`), with the text's `lang` set. `statute export` fails on a
+  translation of an older original, and `site-rules` with it, so every
+  translation the pages get follows its current original. Under each provision of the home page that a listed rule cites,
   the home page's content adapter adds a line: a button that shows the
   rules' labels as a row of boxes, with a ring holding a plus after them,
   and opens a list under it of each rule's label and title, linked to its

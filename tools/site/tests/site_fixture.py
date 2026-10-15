@@ -9,10 +9,9 @@ tree:
 - 1, a domain, translated;
   - 2, a one-of, translated;
     - 3, a rule, translated, citing `one` and `one-a`;
-  - 4, a rule superseded by 5 and 6, its translation made from another
-    original;
-  - 5, a rule, untranslated, requiring 3 and in conflict with it;
-    - 6, a rule, untranslated, citing `one-a.x`.
+  - 4, a rule superseded by 5 and 6, untranslated;
+  - 5, a rule, untranslated, requiring 6 and in conflict with 3;
+  - 6, a rule, untranslated, citing `one-a.x`.
 """
 
 import hashlib
@@ -61,13 +60,13 @@ STATEMENTS = {
     "See {@constitution:one-a} and {@rule:6}.",
     "见{@constitution:one-a}和{@rule:6}。",
   ),
-  4: ("Old.", "旧。"),
+  4: ("Old.", None),
   5: ("New.", None),
-  6: ("Under five, see {@constitution:one-a.x}.", None),
+  6: ("Rule six, see {@constitution:one-a.x}.", None),
 }
 
 
-APPLICABILITY = "For every repository; see {@rule:3}."
+APPLICABILITY = "For every repository; see {{@rule:{rule}}}."
 
 
 def original(*texts: str) -> str:
@@ -82,15 +81,18 @@ def original(*texts: str) -> str:
   return hashlib.sha256("\0".join(texts).encode()).hexdigest()
 
 
-def group(node_id: int, kind: str, parent: int | None) -> str:
+def group(node_id: int, kind: str, parent: int | None, cites: str = "3") -> str:
   """Return the file of a domain or a one-of, translated.
 
-  A domain has an applicability that cites rule 3.
+  A domain has an applicability that cites a rule and is off by
+  default; the one-of's default is its option, rule 3.
 
   Args:
     node_id: its ID.
     kind: domain or one-of.
     parent: its parent, None for a domain.
+    cites: the rule a domain's applicability cites, as `{@rule:...}`
+      names it.
 
   Returns:
     The TOML text.
@@ -101,12 +103,14 @@ def group(node_id: int, kind: str, parent: int | None) -> str:
     f'id = {node_id}\nslug = "group-{node_id}"\nrevision = 1\n'
     f'kind = "{kind}"\nstatus = "active"\nlang = "en"\n'
     + (f"parent = {parent}\n" if parent else "")
+    + ('default = "off"\n' if kind == "domain" else "default = 3\n")
     + f'\n[title]\nen = "{title}"\nzh = "组 {node_id}"\n'
   )
   if kind == "domain":
-    texts.append(APPLICABILITY)
-    text += f'\n[applicability]\nen = "{APPLICABILITY}"\n'
-    text += 'zh = "所有仓库，见{@rule:3}。"\n'
+    applicability = APPLICABILITY.format(rule=cites)
+    texts.append(applicability)
+    text += f'\n[applicability]\nen = "{applicability}"\n'
+    text += f'zh = "所有仓库，见{{@rule:{cites}}}。"\n'
   return text + f'\n[translations]\nzh = "{original(*texts)}"\n'
 
 
@@ -126,8 +130,8 @@ def rule(node_id: int, parent: int, extra: str = "") -> str:
   texts = [("statement", en, zh), ("reason", "Why.", "为何。")]
   texts.append(("verification", "Violated when not.", "否则违反。"))
   text = f'id = {node_id}\nrevision = 2\nkind = "rule"\nstatus = "active"\n'
-  text += f'lang = "en"\nparent = {parent}\n{extra}'
-  text += 'constitution = ">=1"\nlevel = "project"\ncheck = "review"\n'
+  text += f'lang = "en"\nparent = {parent}\ndefault = "off"\n{extra}'
+  text += 'constitution = ">=1"\nlevel = "project"\ncheck = "none"\n'
   text += f'\n[title]\nen = "{title}"\n'
   if zh:
     text += f'zh = "规定 {node_id}"\n'
@@ -137,8 +141,6 @@ def rule(node_id: int, parent: int, extra: str = "") -> str:
       text += f'zh = "{zh_text}"\n'
   if zh:
     sha = original(title, *(t[1] for t in texts))
-    if node_id == 4:
-      sha = original("An older title", *(t[1] for t in texts))
     text += f'\n[translations]\nzh = "{sha}"\n'
   return text
 
@@ -149,17 +151,37 @@ FILES = {
   "constitution/2026-10/articles/01-one/01-one-a.toml": SECTION,
   "rules/1.toml": group(1, "domain", None),
   "rules/2.toml": group(2, "one-of", 1),
-  "rules/3.toml": rule(3, 2, 'authority = ["one", "one-a"]\n'),
+  # An option of the one-of, which names the default, has none.
+  "rules/3.toml": rule(3, 2, 'authority = ["one", "one-a"]\n').replace(
+    'default = "off"\n', "", 1
+  ),
   "rules/4.toml": rule(
     4,
     1,
     'status = "superseded"\nsuperseded-by = [5, 6]\nauthority = ["one"]\n',
   ).replace('status = "active"\n', "", 1),
   "rules/5.toml": rule(
-    5, 1, 'requires = [3]\nconflicts = [3, "team:7"]\nauthority = ["one"]\n'
+    5, 1, 'requires = [6]\nconflicts = [3, "team:7"]\nauthority = ["one"]\n'
   ),
-  "rules/6.toml": rule(6, 5, 'authority = ["one-a.x"]\n'),
+  "rules/6.toml": rule(6, 1, 'authority = ["one-a.x"]\n'),
 }
+
+
+def subdomain(root: Path) -> None:
+  """Make the one-of 2 a domain under the domain 1.
+
+  Its rule 3, no longer an option, says whether it is on by default.
+
+  Args:
+    root: the checkout.
+  """
+  (root / "rules/2.toml").write_text(group(2, "domain", 1), encoding="utf-8")
+  rule = root / "rules/3.toml"
+  text = rule.read_text(encoding="utf-8")
+  rule.write_text(
+    text.replace("parent = 2\n", 'parent = 2\ndefault = "off"\n', 1),
+    encoding="utf-8",
+  )
 
 
 def write(root: Path) -> None:
@@ -175,10 +197,10 @@ def write(root: Path) -> None:
 
 
 # A made-up second source, `demo`: 1, a domain, translated, whose
-# applicability cites a rule 3 the source does not have; 2, a rule under
-# it, untranslated, that requires and cites rule 3 of this repo and cites
-# itself; 4, the same rule under this repo's domain 1, in conflict with
-# this repo's rule 5.
+# applicability cites a first-party rule 9 that no source here has; 2, a
+# rule under it, untranslated, that requires and cites rule 3 of this repo
+# and cites itself; 4, the same rule under this repo's domain 1, in
+# conflict with this repo's rule 5.
 OTHER_RULE = """\
 id = 2
 revision = 1
@@ -186,11 +208,12 @@ kind = "rule"
 status = "active"
 lang = "en"
 parent = 1
+default = "off"
 requires = ["R3"]
 authority = ["one-a"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Demo rule"
@@ -205,7 +228,7 @@ en = "Why."
 en = "Violated when not."
 """
 OTHER_FILES = {
-  "rules/1.toml": group(1, "domain", None),
+  "rules/1.toml": group(1, "domain", None, "R9"),
   "rules/2.toml": OTHER_RULE,
   "rules/4.toml": OTHER_RULE.replace("id = 2", "id = 4")
   .replace("parent = 1", 'parent = "R1"')

@@ -29,13 +29,14 @@ from unittest import mock
 
 import site_fixture
 
-from constitution_compiler import render as constitution_render
 from constitution_site import count_tokens, site_rules
 
 ROOT = Path(__file__).resolve().parents[3]
 HUGO = "hugo-0.167.0"  # the version CI installs
 HUGO_TIMEOUT = 120  # seconds; a build takes well under one
-MARK = constitution_render.OMITTED_MARK
+# The mark the full version puts on a part the version for agents leaves
+# out, as constitution-build writes it.
+MARK = '<sup class="omitted">*</sup>'
 # Each file as constitution-build writes it: the header line, a blank
 # line, the title, the text. The full version marks a part left out of
 # the version for agents and gives its headings anchors.
@@ -87,17 +88,6 @@ INDEX = (
 HEADING = re.compile(
   r'<h(\d) class="rules-group" data-group="(\d+)"( id="[^"]*"| hidden)>'
 )
-
-
-def subdomain(checkout: Path) -> None:
-  """Make the one-of 2 of site_fixture a domain under the domain 1.
-
-  Args:
-    checkout: The rules' checkout.
-  """
-  (checkout / "rules/2.toml").write_text(
-    site_fixture.group(2, "domain", 1), encoding="utf-8"
-  )
 
 
 def visible(page: str) -> str:
@@ -396,7 +386,7 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       "R1 组 1 R2 组 2 R3 规定 3 生效", pages["zh/rules/index.html"]
     )
-    self.assertIn('style="--indent: 1"><span class="rule-id">R6', page)
+    self.assertIn('style="--indent: 0"><span class="rule-id">R6', page)
     # A heading shows where its group changes from the rule shown before.
     self.assertEqual(
       HEADING.findall(page),
@@ -469,7 +459,7 @@ class SiteTest(unittest.TestCase):
 
   def test_rules_list_subdomain(self):
     """A domain under a domain: a deeper heading and a nested checkbox."""
-    raw = self.build(raw=True, edit_rules=subdomain)
+    raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
     page = raw["rules/index.html"]
     # The domain's page lists the subdomain, the subdomain's its rule, in
     # both languages.
@@ -544,7 +534,8 @@ class SiteTest(unittest.TestCase):
       path = checkout / "rules/6.toml"
       text = path.read_text(encoding="utf-8")
       path.write_text(
-        text.replace("parent = 5", 'overrides = "team:8"'), encoding="utf-8"
+        text.replace('parent = 1\ndefault = "off"', 'overrides = "team:8"'),
+        encoding="utf-8",
       )
 
     raw = self.build(raw=True, edit_rules=override)
@@ -576,7 +567,7 @@ class SiteTest(unittest.TestCase):
       " when not. Provisions of the constitution it cites Art. I §1 one-a"
       " Relations Parent R2 Group 2 Requires none Conflicts with R5 Rule 5"
       " Metadata ID 3 Revision 2 Kind rule Status active Default level project"
-      " Constitution revisions >=1 Check review Original language English en"
+      " Constitution revisions >=1 Check none Original language English en"
       " Translations Chinese zh On this page Reason Verification Provisions of"
       " the constitution it cites Relations Metadata",
       pages["rules/3/index.html"],
@@ -592,7 +583,7 @@ class SiteTest(unittest.TestCase):
     )
     self.assertIn(
       "R1 Group 1 For every repository; see rule 3 . Relations Below it"
-      " R2 Group 2 R4 Rule 4 R5 Rule 5 Metadata ID 1",
+      " R2 Group 2 R4 Rule 4 R5 Rule 5 R6 Rule 6 Metadata ID 1",
       pages["rules/1/index.html"],
     )
     self.assertIn('href="../3/"', raw["rules/1/index.html"])

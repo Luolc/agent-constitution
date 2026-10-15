@@ -15,8 +15,6 @@ import unittest
 
 import site_fixture
 
-from constitution_compiler.model import Errors
-from constitution_compiler.read import load
 from constitution_site import site_rules
 
 
@@ -26,17 +24,14 @@ class SiteRulesTest(unittest.TestCase):
     self.addCleanup(tmp.cleanup)
     self.root = Path(tmp.name)
     site_fixture.write(self.root)
-    errors = Errors()
-    src = load(self.root, errors, nodes=True)
-    assert src is not None, errors
-    self.data = site_rules.site_data(src)
+    self.data = self.load()
 
   def nodes(self, lang):
     return {n["id"]: n for n in self.data[lang]["nodes"]}
 
   def test_tree_order(self):
     order = [(n["id"], n["depth"]) for n in self.data["en"]["nodes"]]
-    self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (4, 1), (5, 1), (6, 2)])
+    self.assertEqual(order, [(1, 0), (2, 1), (3, 2), (4, 1), (5, 1), (6, 1)])
     nodes = self.nodes("en")
     self.assertEqual([g["id"] for g in nodes[3]["groups"]], [1, 2])
     self.assertEqual(
@@ -44,29 +39,27 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
     self.assertEqual(
-      nodes[5]["children"],
-      [{"id": 6, "label": "R6", "title": "Rule 6", "key": "6"}],
+      nodes[2]["children"],
+      [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
     )
 
   def test_subdomain(self):
     """A domain under a domain heads the rules below it, under its own."""
-    (self.root / "rules/2.toml").write_text(
-      site_fixture.group(2, "domain", 1), encoding="utf-8"
-    )
+    site_fixture.subdomain(self.root)
     nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
     self.assertEqual((nodes[2]["kind"], nodes[2]["depth"]), ("domain", 1))
     self.assertEqual(
       [(g["id"], g["kind"]) for g in nodes[3]["groups"]],
       [(1, "domain"), (2, "domain")],
     )
-    self.assertEqual([c["id"] for c in nodes[1]["children"]], [2, 4, 5])
+    self.assertEqual([c["id"] for c in nodes[1]["children"]], [2, 4, 5, 6])
     self.assertEqual([c["id"] for c in nodes[2]["children"]], [3])
 
   def test_other_sources(self):
     """A rule under another source's domain, or overriding its rule."""
     for name, old, new in (
-      ("rules/6.toml", "parent = 5", 'parent = "team:7"'),
-      ("rules/4.toml", "parent = 1", 'overrides = "team:8"'),
+      ("rules/6.toml", "parent = 1", 'parent = "team:7"'),
+      ("rules/4.toml", 'parent = 1\ndefault = "off"', 'overrides = "team:8"'),
     ):
       path = self.root / name
       path.write_text(path.read_text().replace(old, new), encoding="utf-8")
@@ -81,11 +74,15 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertIsNone(nodes[5]["overrides"])
 
+  def read(self, path=None):
+    read = site_rules.load(path or self.root)
+    assert read is not None
+    return read
+
   def load(self):
-    errors = Errors()
-    src = load(self.root, errors, nodes=True)
-    assert src is not None, errors
-    return site_rules.site_data(src)
+    src, nodes = self.read()
+    assert src is not None
+    return site_rules.site_data(src, nodes)
 
   def test_superseded_is_not_under_provisions(self):
     nodes = self.nodes("en")
@@ -107,7 +104,7 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual((zh[3]["shown"], zh[3]["title"]), ("zh", "规定 3"))
     self.assertEqual(zh[3]["translations"], ["zh"])
     self.assertEqual(zh[1]["title"], "组 1")
-    # A translation of an older original is shown as none is.
+    # An untranslated node is shown in its original.
     for node_id in (4, 5):
       with self.subTest(node_id):
         self.assertEqual(zh[node_id]["shown"], "en")
@@ -131,7 +128,7 @@ class SiteRulesTest(unittest.TestCase):
     # An English text on a Chinese page keeps English labels.
     self.assertEqual(
       zh[6]["text"]["statement"],
-      "Under five, see [Art. I §1(1)](../../#one-a.x).",
+      "Rule six, see [Art. I §1(1)](../../#one-a.x).",
     )
     self.assertEqual(
       zh[6]["authority"], [{"ref": "one-a.x", "label": "第一条第一款第一项"}]
@@ -146,10 +143,8 @@ class SiteRulesTest(unittest.TestCase):
     self.assertIsNone(en[2]["applicability"])
 
   def test_listed_only_in_force(self):
-    errors = Errors()
-    src = load(self.root, errors, nodes=True)
-    assert src is not None, errors
-    rule = next(n for n in src.nodes if n.id == 5)
+    _, nodes = self.read()
+    rule = next(n for n in nodes if n.id == 5)
     self.assertTrue(site_rules.listed(rule))
     for status in ("superseded", "repealed"):
       with self.subTest(status):
@@ -202,7 +197,7 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual(
       nodes[5]["requires"],
-      [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
+      [{"id": 6, "label": "R6", "title": "Rule 6", "key": "6"}],
     )
     self.assertEqual(nodes[6]["conflicts"], [])
 
@@ -215,7 +210,7 @@ class SiteRulesTest(unittest.TestCase):
       ("lang", "en"),
       ("level", "project"),
       ("constitution", ">=1"),
-      ("check", "review"),
+      ("check", "none"),
     ):
       self.assertEqual(rule[field], value)
     self.assertEqual(self.nodes("en")[1]["text"], {})
@@ -232,14 +227,12 @@ class SiteRulesTest(unittest.TestCase):
     )
 
   def other(self, enabled=None):
-    errors = Errors()
-    src = load(self.root, errors, nodes=True)
-    assert src is not None, errors
+    src, nodes = self.read()
+    assert src is not None
     demo = self.root / "demo"
     site_fixture.write_other(demo)
-    other = site_rules.load_source(demo, "demo", "global-private", src, errors)
-    self.assertEqual(list(errors), [])
-    return site_rules.site_data(src, [other], enabled)
+    other = site_rules.Source("demo", "global-private", self.read(demo)[1])
+    return site_rules.site_data(src, nodes, [other], enabled)
 
   def test_one_source(self):
     """Alone, this repo's nodes have no source heading and no `enabled`."""
@@ -290,7 +283,7 @@ class SiteRulesTest(unittest.TestCase):
       "After [rule R3](../3/), see [rule demo:2](../demo-2/).",
     )
     self.assertEqual(
-      nodes["demo:1"]["applicability"], "For every repository; see rule 3."
+      nodes["demo:1"]["applicability"], "For every repository; see rule R9."
     )
     self.assertEqual(
       [(label, nodes[label].get("enabled")) for label in ("R1", "R3", "R5")]
@@ -315,21 +308,25 @@ class SiteRulesTest(unittest.TestCase):
     )
 
   def test_rule_config_fields_are_read_past(self):
-    """params.toml is no node; `default`, `uses` and `check = "none"` pass.
+    """params.toml is no node; `default = "on"` and `uses` pass.
 
     statute validates them; the site does not show them yet.
     """
-    params = '[[parameter]]\nname = "language.docs"\n'
+    params = (
+      '[[parameter]]\nname = "language.docs"\ntype = "language"\n'
+      'scope = "repo"\ndefault = "en"\n\n'
+      '[parameter.title]\nen = "Language of documents"\n'
+    )
     (self.root / "rules/params.toml").write_text(params, encoding="utf-8")
     site_fixture.write_other(self.root / "demo")
     (self.root / "demo/rules/params.toml").write_text(params, encoding="utf-8")
-    rule = self.root / "rules/3.toml"
+    rule = self.root / "rules/5.toml"
     text = rule.read_text(encoding="utf-8")
-    self.assertIn('check = "review"', text)
+    self.assertIn('default = "off"', text)
     rule.write_text(
       text.replace(
-        'check = "review"',
-        'check = "none"\ndefault = "on"\nuses = ["instructions", "review"]',
+        'default = "off"',
+        'default = "on"\nuses = ["instructions", "review"]',
       ),
       encoding="utf-8",
     )

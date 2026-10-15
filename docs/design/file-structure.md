@@ -65,8 +65,8 @@ tools/                    a uv workspace, one Python project each:
       revision.py         check 7, the revision against the base's     A
     tests/                render, checks, base, and the shared test
                           tree (test_constitution_fixture.py)          A
-  site/                   package constitution_site, depends on the
-                          compiler                                     A
+  site/                   package constitution_site, runs statute
+                          export                                       A
     src/constitution_site/
       count_tokens.py     counts the tokens the static site shows
                           (count-tokens)                               A
