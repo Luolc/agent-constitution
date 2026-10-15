@@ -382,9 +382,21 @@ file. It prints the path of `index.html`.
   and the successors; the path of parents and the children. A domain's
   page is the list of its nodes. A citation of a rule is a link to its
   page, and one of the constitution the provision's label, as in the
-  compiled `AGENTS.md`. The pages are in the language of
-  `[compile] lang`, the kind of each node included; a status is shown
-  as the rule file writes it, `draft` or `trial`.
+  compiled `AGENTS.md`. A status is shown as the rule file writes it,
+  `draft` or `trial`.
+- **Two languages.** The pages are written in English and in Chinese:
+  at the top of `.statute/site/` in the language of `[compile] lang`,
+  since the site is the repository's and not the reader's, and in
+  `zh/`, or `en/` when that language is Chinese, in the other, with the
+  same paths below it. Each page links to itself in the other language
+  ([Frontend](frontend.md#components), the language switch). The words
+  statute adds, the kind of each node and of its source included, are
+  in the page's language. A node's title and texts are in the page's
+  language where the rule file has them, and otherwise in the node's
+  own, marked with that language's `lang`; its page then carries a tag
+  that says it is not translated. Such a text cites the constitution
+  with the labels of its own language and names the rules it cites in
+  that language too.
 - **The marks of [Rule configuration](rule-config.md).** Every domain
   and rule, in the index and on its page, says whether it is on or off
   by default, and an option of a one-of whether it is the one-of's

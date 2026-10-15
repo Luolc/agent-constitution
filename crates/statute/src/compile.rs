@@ -94,13 +94,12 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
 }
 
 /// `text`, of node `key`, with each placeholder replaced by the value of
-/// its parameter, a language as its name in the language compiled to:
+/// its parameter, a language as its name in `lang`:
 /// the committed value, or with `private` the person's own
 /// (`docs/design/rule-config.md`, Values in the lock file and the
 /// outputs). A rule that is not enabled, whose parameters have no
 /// setting, gets each default.
-pub fn filled(project: &Project, key: &Key, text: &str, private: bool) -> String {
-    let lang = project.manifest.lang.as_str();
+pub fn filled(project: &Project, key: &Key, text: &str, private: bool, lang: &str) -> String {
     param::fill(text, |name| match project.values.get(name) {
         Some(s) => s
             .param
@@ -119,6 +118,7 @@ fn title(project: &Project, key: &Key, node: &Node, private: bool) -> String {
         key,
         pick(&node.title, node, &project.manifest.lang),
         private,
+        &project.manifest.lang,
     )
 }
 
@@ -453,7 +453,7 @@ fn agents_md(project: &Project, private: bool) -> Result<String, String> {
             )
         })?;
 
-    let labels = labels(project)?;
+    let labels = labels(project, lang)?;
 
     let w = words(lang);
     let mut out = String::new();
@@ -499,15 +499,15 @@ fn shown(project: &Project, key: &Key) -> bool {
     }
 }
 
-/// The labels of the provisions of the project's constitution, in the
-/// language compiled to.
-pub fn labels(project: &Project) -> Result<Labels, String> {
+/// The labels of the provisions of the project's constitution, in
+/// `lang`.
+pub fn labels(project: &Project, lang: &str) -> Result<Labels, String> {
     let m = &project.manifest;
     let articles = project
         .root
         .join(&m.constitution_spec().path)
         .join(format!("constitution/{}/articles", m.edition));
-    Labels::load(&articles, &m.lang)
+    Labels::load(&articles, lang)
 }
 
 /// The text of node `key` with its citations rendered: a rule, with
@@ -526,7 +526,7 @@ pub fn cited(
     let lang = project.manifest.lang.as_str();
     let w = words(lang);
     let fail = |what: &str| Err(format!("{}: {part}: {what}", project.sources.file(key)));
-    let text = filled(project, key, text, private);
+    let text = filled(project, key, text, private, lang);
     cite::replace(&text, |c| match c {
         Citation::Rule(text) => {
             let Some(cited) = node::cited_ref(text).map(|r| r.key(&key.source)) else {
