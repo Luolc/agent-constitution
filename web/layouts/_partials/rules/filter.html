@@ -1,20 +1,18 @@
-{{- /* The controls above the list of the rules: the filter's button, which
-  opens its panel, and the page size. The panel has a group of check
-  boxes per field: each status, whether the defaults enable the rule,
-  each value of `uses`, each domain, indented by its depth, and each
-  quadrant when the site has more than one source; each group with All
-  and None, and Reset filter under them. The boxes are checked as the
-  default filter is, the statuses of rulesStatuses and every other
-  value; assets/ts/rules-list.ts checks them as the address says.
-  Without scripts the controls stay hidden, as nothing could run them.
-  The page size is a menu in its wrapper (assets/styles/controls.css).
-  Takes (dict "page" the list's page "statuses" the statuses checked by
-  default "size" the page size "sources" the sources, as
-  data/rules.json gives them). */ -}}
+{{- /* The controls above the list of the rules: the filter, a row of
+  menus, one per field, each a button that opens its group of check
+  boxes: the statuses, whether the defaults enable the rule, the values
+  of `uses`, the domains, indented by their depth, and the quadrants
+  when the site has more than one source; then Reset filter, with the
+  number of fields changed from the default filter. The boxes are
+  checked as the default filter is, the statuses of rulesStatuses and
+  every other value; assets/ts/rules-list.ts checks them as the address
+  says. Without scripts the controls stay hidden, as nothing could run
+  them. The page size is a menu in its wrapper
+  (assets/styles/controls.css). Takes (dict "page" the list's page
+  "statuses" the statuses checked by default "size" the page size
+  "sources" the sources, as data/rules.json gives them). */ -}}
 <div class="rules-controls" hidden>
-<div class="rules-filter">
-<button type="button" class="rules-filter-button" aria-expanded="false" aria-controls="rules-filter-panel">{{ partial "icon.html" "lucide:funnel" }}{{ i18n "rules-filter" }}<span class="rules-filter-count" hidden></span></button>
-<div class="rules-filter-panel" id="rules-filter-panel" role="dialog" aria-label="{{ i18n "rules-filter" }}">
+<div class="rules-filter" role="group" aria-label="{{ i18n "rules-filter" }}" data-every="{{ i18n "rules-filter-all" }}" data-nothing="{{ i18n "rules-filter-none" }}">
 {{- $values := slice }}
 {{- range slice "active" "trial" "draft" "superseded" "repealed" }}
   {{- $values = $values | append (dict "key" . "label" (i18n (printf "status-%s" .)) "checked" (in $.statuses .)) }}
@@ -32,7 +30,7 @@
   {{- $domain := .Params.rule }}
   {{- $values = $values | append (dict "key" $domain.key "label" (printf "%s %s" $domain.label $domain.title) "parent" $domain.domain "depth" (int $domain.depth) "checked" true) }}
 {{- end }}
-{{- partial "rules/filter-group.html" (dict "field" "domain" "legend" (i18n "rules-domains") "values" $values) }}
+{{- partial "rules/filter-group.html" (dict "field" "domain" "legend" (i18n "rules-domains") "values" $values "search" (i18n "rules-find-domain")) }}
 {{- if gt (len .sources) 1 }}
   {{- $values = slice }}
   {{- range uniq (apply .sources "index" "." "quadrant") }}
@@ -40,8 +38,7 @@
   {{- end }}
   {{- partial "rules/filter-group.html" (dict "field" "quadrant" "legend" (i18n "rules-quadrants") "values" $values) }}
 {{- end }}
-<button type="button" class="rules-filter-reset">{{ i18n "rules-reset-filter" }}</button>
-</div>
+<button type="button" class="rules-filter-reset">{{ i18n "rules-reset-filter" }}<span class="rules-filter-count" hidden></span></button>
 </div>
 <label class="rules-size">{{ i18n "rules-per-page" }} <span class="select"><select name="per">
   {{- range slice "25" "50" "100" "all" }}

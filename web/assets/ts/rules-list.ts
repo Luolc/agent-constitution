@@ -2,7 +2,7 @@
 // the page size the reader chose, read from the address: the values
 // chosen of each field as assets/ts/filter.ts writes them, `per` (25,
 // 50, 100 or all) and `page`. Without them, the default filter, as the
-// panel's check boxes were built, and the page Hugo built. Every page
+// menus' check boxes were built, and the page Hugo built. Every page
 // holds every rule, so this only shows the rules of the filter and page
 // on the rules' items (`.rule-item`, its values in `data-*`), and hides
 // the others; shows an item's group row where the group changes and on
@@ -10,9 +10,12 @@
 // shows on the page; and makes the table of contents and
 // the links to the other pages again. A change to the filter, the page
 // size or the page applies at once and is written into the address: the
-// first change after the panel opens adds an entry to the history, the
-// next ones replace it, so back returns to the list as it was before.
-// Checking or unchecking a domain does the same to the domains under it.
+// first change after a menu of the filter opens adds an entry to the
+// history, the next ones replace it, so back returns to the list as it
+// was before. Checking or unchecking a domain does the same to the
+// domains under it. Each menu's button says what its field chooses, and
+// Reset filter shows while a field differs from the default filter,
+// with their number.
 // Inlined in <head>; it runs before assets/toc-current.js, which then
 // finds the headings shown.
 import { differing, type Fields, type Filter, matches, read, write } from "./filter";
@@ -25,9 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!list || !controls) return;
   // The controls below are in the partial that made `controls`
   // (layouts/_partials/rules/filter.html), so they are there.
-  const button = controls.querySelector<HTMLButtonElement>(".rules-filter-button")!;
+  const filter = controls.querySelector<HTMLElement>(".rules-filter")!;
   const badge = controls.querySelector<HTMLElement>(".rules-filter-count")!;
-  const panel = controls.querySelector<HTMLElement>(".rules-filter-panel")!;
+  const resetButton = controls.querySelector<HTMLButtonElement>(".rules-filter-reset")!;
   const select = controls.querySelector<HTMLSelectElement>("select[name='per']")!;
   const none = document.querySelector<HTMLElement>(".rules-none");
   const pager = document.querySelector<HTMLElement>(".rules-pager");
@@ -35,12 +38,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const table = list.closest<HTMLElement>(".rules-table") ?? list;
   const items = Array.from(list.querySelectorAll<HTMLElement>(".rule-item"));
   const boxes = (field?: string): HTMLInputElement[] =>
-    Array.from(panel.querySelectorAll<HTMLInputElement>(field ? `input[name='${field}']` : "input[type='checkbox']"));
+    Array.from(filter.querySelectorAll<HTMLInputElement>(field ? `input[name='${field}']` : "input[type='checkbox']"));
+  // Each field's menu: its button, the button's value and its group of
+  // boxes, which the button controls.
+  const menus = Array.from(filter.querySelectorAll<HTMLElement>(".rules-menu"), (menu) => ({
+    menu,
+    button: menu.querySelector<HTMLButtonElement>(".rules-menu-button")!,
+    value: menu.querySelector<HTMLElement>(".rules-menu-value")!,
+    group: menu.querySelector<HTMLElement>("[data-field]")!,
+  }));
 
-  // The fields as the panel offers them, and the default filter, as its
+  // The fields as the menus offer them, and the default filter, as their
   // boxes were built.
   const fields: Fields = new Map(
-    Array.from(panel.querySelectorAll<HTMLElement>("[data-field]"), (group) => {
+    Array.from(filter.querySelectorAll<HTMLElement>("[data-field]"), (group) => {
       const field = group.dataset.field ?? "";
       return [field, boxes(field).map((box) => box.value)];
     }),
@@ -51,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let per = list.dataset.size ?? "100";
   let page = 1;
-  // Whether this opening of the panel has added its entry to the history.
+  // Whether this opening of a menu has added its entry to the history.
   let pushed = false;
   const address = (n: number): string => {
     const query = write(chosen(), fields, defaults);
@@ -65,8 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const load = (): void => {
     const query = new URLSearchParams(location.search);
-    const filter = read(query, fields, defaults);
-    for (const box of boxes()) box.checked = filter.get(box.name)?.has(box.value) ?? false;
+    const choice = read(query, fields, defaults);
+    for (const box of boxes()) box.checked = choice.get(box.name)?.has(box.value) ?? false;
     per = query.get("per") ?? "";
     if (!SIZES.includes(per)) per = list.dataset.size ?? "100";
     const size = per === "all" ? 0 : Number(per);
@@ -81,9 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Shows the rules of the filter and the page.
   const show = (): void => {
-    const filter = chosen();
+    const choice = chosen();
     const matched = items.filter((item) =>
-      matches(filter, fields, (field) => (item.dataset[field] ?? "").split(" ")),
+      matches(choice, fields, (field) => (item.dataset[field] ?? "").split(" ")),
     );
     const size = per === "all" ? Math.max(matched.length, 1) : Number(per);
     const pages = Math.max(1, Math.ceil(matched.length / size));
@@ -127,9 +138,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     select.value = per;
-    const n = differing(filter, fields, defaults).length;
+    const changedFields = differing(choice, fields, defaults);
+    for (const { button, value, group } of menus) {
+      const field = group.dataset.field ?? "";
+      const n = choice.get(field)?.size ?? 0;
+      const all = fields.get(field)?.length ?? 0;
+      value.textContent =
+        n === all ? (filter.dataset.every ?? "") : n === 0 ? (filter.dataset.nothing ?? "") : String(n);
+      button.classList.toggle("changed", changedFields.includes(field));
+    }
+    const n = changedFields.length;
     badge.textContent = String(n);
     badge.hidden = n === 0;
+    if (n === 0 && document.activeElement === resetButton) menus[0]?.button.focus();
+    resetButton.hidden = n === 0;
 
     if (pager) {
       pager.textContent = "";
@@ -181,9 +203,10 @@ document.addEventListener("DOMContentLoaded", () => {
     changed();
   };
 
-  // The panel's events come from its check boxes and buttons alone.
-  panel.addEventListener("change", (event) => {
+  // The menus' changes come from their check boxes and search boxes.
+  filter.addEventListener("change", (event) => {
     const box = event.target as HTMLInputElement;
+    if (box.type !== "checkbox") return;
     if (box.name === "domain") {
       const below = [box.value];
       for (const other of boxes("domain")) {
@@ -195,43 +218,60 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     changed();
   });
-  panel.addEventListener("click", (event) => {
+  filter.addEventListener("click", (event) => {
     const all = (event.target as Element).closest<HTMLElement>("[data-all]");
     if (all) checkAll(all.dataset.all === "true", all.closest<HTMLElement>("[data-field]")?.dataset.field);
   });
-  panel.querySelector(".rules-filter-reset")?.addEventListener("click", reset);
+  // A search box shows the boxes whose label holds what is typed.
+  filter.addEventListener("input", (event) => {
+    const search = event.target as HTMLInputElement;
+    if (search.type !== "search") return;
+    const typed = search.value.trim().toLowerCase();
+    for (const label of search.closest("[data-field]")?.querySelectorAll<HTMLElement>("label") ?? []) {
+      label.hidden = !(label.textContent ?? "").toLowerCase().includes(typed);
+    }
+  });
+  resetButton.addEventListener("click", reset);
   const again = document.querySelector<HTMLButtonElement>(".rules-none-reset");
   again?.addEventListener("click", reset);
   if (again) again.hidden = false;
 
-  // The panel, opened and closed by its button: Escape, a click outside
-  // or the focus leaving it closes it, Escape and the button giving the
-  // focus back to the button.
-  const filter = controls.querySelector<HTMLElement>(".rules-filter")!;
-  // A pointer or focus event's target and related target are nodes.
-  const open = (): boolean => button.getAttribute("aria-expanded") === "true";
-  const toggle = (show: boolean, refocus: boolean): void => {
-    button.setAttribute("aria-expanded", String(show));
-    panel.classList.toggle("open", show);
-    if (show) {
-      pushed = false;
-      panel.querySelector<HTMLElement>("input, button")?.focus();
-    } else if (refocus) {
-      button.focus();
-    }
+  // The menus, each opened and closed by its button, one open at a
+  // time: Escape, a click outside or the focus leaving it closes it,
+  // Escape and the button giving the focus back to the button.
+  type Menu = (typeof menus)[number];
+  let current: Menu | undefined;
+  const close = (refocus: boolean): void => {
+    if (!current) return;
+    const { button, group } = current;
+    current = undefined;
+    button.setAttribute("aria-expanded", "false");
+    group.classList.remove("open");
+    if (refocus) button.focus();
   };
-  button.addEventListener("click", () => toggle(!open(), true));
+  const openMenu = (menu: Menu): void => {
+    close(false);
+    current = menu;
+    pushed = false;
+    menu.button.setAttribute("aria-expanded", "true");
+    menu.group.classList.add("open");
+    (menu.group.querySelector<HTMLElement>("input[type='search']") ?? menu.group.querySelector<HTMLElement>("input, button"))?.focus();
+  };
+  for (const menu of menus) {
+    menu.button.addEventListener("click", () => (current === menu ? close(true) : openMenu(menu)));
+  }
   filter.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !open()) return;
+    if (event.key !== "Escape" || !current) return;
     event.preventDefault();
-    toggle(false, true);
+    close(true);
   });
+  // A pointer or focus event's target and related target are nodes.
   document.addEventListener("pointerdown", (event) => {
-    if (open() && !filter.contains(event.target as Node)) toggle(false, false);
+    if (current && !current.menu.contains(event.target as Node)) close(false);
   });
   filter.addEventListener("focusout", (event) => {
     const next = event.relatedTarget as Node | null;
-    if (open() && next && !filter.contains(next)) toggle(false, false);
+    if (current && next && !current.menu.contains(next)) close(false);
   });
 
   select.addEventListener("change", () => {

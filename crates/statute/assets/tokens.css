@@ -63,6 +63,7 @@
   --t-space-8: 2rem;
   --t-space-12: 3rem;
   --t-width-popover: 28rem;
+  --t-height-popover: 20rem;
   --t-width-label: 3.2em;
   --t-width-mark: 1.1em;
   --t-size-dot: 0.6em;
@@ -75,6 +76,14 @@
   --t-shadow-popover:
     0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.30)),
     0 0.25rem 0.9rem light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.45));
+
+  /* Layers, lowest first: what sticks in the list, what opens over the
+     text, the narrow screen's top bar, the drawers. */
+  --t-z-row: 10;
+  --t-z-head: 20;
+  --t-z-popover: 30;
+  --t-z-bar: 40;
+  --t-z-drawer: 50;
 
   /* Icons. */
   --t-icon-sm: 1em;

@@ -140,7 +140,8 @@ class SiteTest(unittest.TestCase):
         `demo`, global private, with a rule set enabling R3 and demo:2.
 
     Returns:
-      The visible text of every page, or its HTML, by path.
+      The visible text of every page, or its HTML, by path, and so the
+      site's style sheets.
     """
     with tempfile.TemporaryDirectory() as tmp:
       root = Path(tmp)
@@ -207,7 +208,8 @@ class SiteTest(unittest.TestCase):
         page.relative_to(root / "site").as_posix(): page.read_text(
           encoding="utf-8"
         )
-        for page in (root / "site").rglob("*.html")
+        for page in (root / "site").rglob("*.*")
+        if page.suffix in (".html", ".css")
       }
       return pages if raw else {p: visible(t) for p, t in pages.items()}
 
@@ -390,9 +392,10 @@ class SiteTest(unittest.TestCase):
       " one-of that a rule set gets unless it chooses another. The marks at"
       " the end of a row stand in four places, in this order: status,"
       " default, instructions, review; a place without its mark stays empty."
-      " Filter Status All None Active Trial Draft Superseded Repealed"
-      " Defaults All None On by default Off by default Uses All None"
-      " Instructions Review Domains All None R1 Group 1 Reset filter Rules"
+      " Status Status All None Active Trial Draft Superseded Repealed"
+      " Defaults Defaults All None On by default Off by default Uses Uses All"
+      " None Instructions Review Domains Domains All None R1 Group 1 Reset"
+      " filter Rules"
       " per page 25 50 100 All ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3"
       " Default option R1",
       pages["rules/index.html"],
@@ -494,11 +497,13 @@ class SiteTest(unittest.TestCase):
     self.assertEqual(GROUP_ID.findall(page), ["1"])
     self.assertIn('<div class="rules-controls" hidden>', page)
     self.assertIn(
-      '<button type="button" class="rules-filter-button"'
-      ' aria-expanded="false" aria-controls="rules-filter-panel">',
+      '<button type="button" class="rules-menu-button"'
+      ' aria-expanded="false" aria-controls="rules-filter-status">Status',
       page,
     )
-    self.assertIn('id="rules-filter-panel" role="dialog"', page)
+    self.assertIn(
+      '<fieldset class="rules-filter-group" id="rules-filter-status"', page
+    )
     self.assertIn('<option value="100" selected>', page)
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
@@ -685,6 +690,115 @@ class SiteTest(unittest.TestCase):
           )
           self.assertEqual('<p class="rules-none">' in dom, not rules)
 
+  def test_rules_filter_menus(self):
+    """The filter's menus open one at a time, over the list's head.
+
+    Loaded in headless Chrome with the site's style sheets and a script
+    that clicks through them: a menu opens under its button and lies
+    over the table's head where they meet; opening another closes it;
+    the domains' search box narrows the boxes; Escape closes a menu and
+    gives the focus back to its button, and so does a click outside;
+    each button says what its field chooses, and Reset filter shows
+    while a field differs from the default.
+    Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True)
+    script = """<script>
+window.addEventListener("load", () => {
+  const $ = (s) => document.querySelector(s);
+  const button = (f) => $(`[aria-controls='rules-filter-${f}']`);
+  const state = () => ["status", "domain", "uses"]
+    .filter((f) => button(f).getAttribute("aria-expanded") === "true"
+      && $(`#rules-filter-${f}`).classList.contains("open"));
+  const out = {};
+  button("status").click();
+  out.status = state();
+  const panel = $("#rules-filter-status").getBoundingClientRect();
+  const head = $(".rules-head").getBoundingClientRect();
+  out.overlap = panel.top < head.top && panel.bottom > head.bottom;
+  const hit = document.elementFromPoint(panel.left + 8, head.top + 4);
+  out.over = Boolean(hit && hit.closest("#rules-filter-status"));
+  button("domain").click();
+  out.domain = state();
+  const search = $(".rules-filter-search");
+  out.searchFocused = document.activeElement === search;
+  const shown = () =>
+    Array.from($("#rules-filter-domain").querySelectorAll("label"))
+      .filter((l) => !l.hidden).length;
+  search.value = "nothing";
+  search.dispatchEvent(new Event("input", { bubbles: true }));
+  out.found = [shown()];
+  search.value = "group";
+  search.dispatchEvent(new Event("input", { bubbles: true }));
+  out.found.push(shown());
+  search.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  out.escaped = [state(), document.activeElement === button("domain")];
+  button("uses").click();
+  document.body.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true }));
+  out.outside = state();
+  const value = (f) =>
+    button(f).querySelector(".rules-menu-value").textContent;
+  const reset = $(".rules-filter-reset");
+  out.values = [value("status"), value("domain"), reset.hidden];
+  $("#rules-filter-status [data-all='false']").click();
+  out.none = [value("status"), button("status").classList.contains("changed"),
+    reset.hidden, $(".rules-filter-count").textContent];
+  reset.click();
+  out.reset = [value("status"), reset.hidden];
+  document.body.dataset.result = JSON.stringify(out);
+});
+</script>"""
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css"):
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "rules/index.html"
+      page.parent.mkdir(exist_ok=True)
+      page.write_text(
+        raw["rules/index.html"].replace("</body>", script + "</body>"),
+        encoding="utf-8",
+      )
+      dom = subprocess.run(
+        [
+          chrome,
+          "--headless",
+          "--no-proxy-server",
+          f"--user-data-dir={Path(tmp) / 'profile'}",
+          "--window-size=1280,900",
+          "--dump-dom",
+          page.as_uri(),
+        ],
+        capture_output=True,
+        check=True,
+        text=True,
+        timeout=CHROME_TIMEOUT,
+      ).stdout
+    found = re.search(r'data-result="([^"]*)"', dom)
+    assert found, "the script wrote no result"
+    self.assertEqual(
+      json.loads(html.unescape(found.group(1))),
+      {
+        "status": ["status"],
+        "overlap": True,
+        "over": True,
+        "domain": ["domain"],
+        "searchFocused": True,
+        "found": [0, 1],
+        "escaped": [[], True],
+        "outside": [],
+        "values": ["2", "All", True],
+        "none": ["None", True, False, "1"],
+        "reset": ["2", True],
+      },
+    )
+
   def test_params(self):
     """A page of parameters; a placeholder marked, linked to its entry."""
     raw = self.build(raw=True, edit_rules=site_fixture.params)
@@ -771,7 +885,7 @@ class SiteTest(unittest.TestCase):
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
     self.assertIn(
-      "Quadrants All None Global public Global private Reset filter",
+      "Quadrants Quadrants All None Global public Global private Reset filter",
       pages["rules/index.html"],
     )
     # The legend: the rule set's marks and the quadrant.

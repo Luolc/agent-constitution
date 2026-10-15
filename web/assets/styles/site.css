@@ -330,7 +330,7 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
     top: var(--header-height);
     bottom: 0;
     inset-inline-end: 0;
-    z-index: 2;
+    z-index: var(--t-z-drawer);
     inline-size: var(--toc-width);
     max-inline-size: 100%;
     padding: var(--t-space-6) var(--t-space-4);
@@ -363,21 +363,23 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
   .book-header {
     position: sticky;
     top: 0;
-    z-index: 3;
+    z-index: var(--t-z-bar);
     block-size: var(--header-height);
     padding: var(--t-space-2) var(--t-space-4);
     background: var(--t-bg-page);
     border-block-end: 1px solid var(--t-border-subtle);
   }
   .book-header > div { block-size: 100%; }
-  .book-menu { visibility: visible; }
+  /* The theme puts the sidebar in a layer of its own (`z-index: 1`), which
+     its drawer cannot leave: the layer is the drawers'. */
+  .book-menu { visibility: visible; z-index: var(--t-z-drawer); }
   /* The top bar shows the site's title; the sidebar under it does not
      repeat it, as a drawer or, without scripts, above the text. */
   .book-menu .book-brand { display: none; }
   .book-menu .book-menu-content {
     top: var(--header-height);
     inset-inline-start: 0;
-    z-index: 2;
+    z-index: var(--t-z-drawer);
     max-inline-size: 100%;
     padding-top: 0;
     border-inline-end: 1px solid var(--t-border-subtle);
@@ -416,7 +418,7 @@ nav ul a:is([href], [role=button]):hover { opacity: 1; }
     position: fixed;
     top: 0;
     inset-inline-end: 0;
-    z-index: 3;
+    z-index: var(--t-z-bar);
     padding: var(--t-space-2);
     background: var(--t-bg-page);
     border-end-start-radius: var(--t-radius-md);

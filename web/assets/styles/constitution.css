@@ -79,7 +79,7 @@
   vertical-align: middle;
   cursor: pointer;
   position: relative;
-  z-index: 3;
+  z-index: calc(var(--t-z-popover) + 1);
   transition-property: color, background-color;
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
@@ -96,7 +96,7 @@
    opens. Under reduced motion it only fades. */
 .constitution .count-popup {
   position: absolute;
-  z-index: 2;
+  z-index: var(--t-z-popover);
   top: 100%;
   left: 50%;
   translate: -50% 0;

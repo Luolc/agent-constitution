@@ -83,7 +83,7 @@
 .rules .rules-head {
   position: sticky;
   top: var(--rules-top);
-  z-index: 2;
+  z-index: var(--t-z-head);
   block-size: var(--rules-row);
   color: var(--t-text-muted);
   font-weight: var(--t-weight-medium);
@@ -108,7 +108,7 @@
 .rules .rules-group {
   position: sticky;
   top: calc(var(--rules-top) + var(--rules-row));
-  z-index: 1;
+  z-index: var(--t-z-row);
   block-size: var(--rules-row);
   font-weight: var(--t-weight-bold);
   background: var(--t-bg-panel-hover);

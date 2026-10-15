@@ -1,10 +1,22 @@
-{{- /* One field's group of check boxes in the filter's panel, with All
-  and None. Takes (dict "field" its name "legend" its title "values" a
-  list of (dict "key" "label" "checked", and for a domain "parent" and
-  "depth")). */ -}}
-<fieldset class="rules-filter-group" data-field="{{ .field }}"><legend>{{ .legend }}</legend>
+{{- /* One field's menu in the filter: its button, its name and what it
+  chooses (assets/ts/rules-list.ts writes All, None or the number of
+  values chosen), and the popover it opens, the field's check boxes with
+  All and None, and, given "search", a box that narrows the check boxes
+  to those whose label holds what is typed. Takes (dict "field" its name
+  "legend" its title "values" a list of (dict "key" "label" "checked",
+  and for a domain "parent" and "depth"), and "search" the search box's
+  label where the field has one). */ -}}
+<div class="rules-menu">
+<button type="button" class="rules-menu-button" aria-expanded="false" aria-controls="rules-filter-{{ .field }}">{{ .legend }}<span class="rules-menu-value"></span>{{ partial "icon.html" "lucide:chevron-down" }}</button>
+<fieldset class="rules-filter-group" id="rules-filter-{{ .field }}" data-field="{{ .field }}"><legend>{{ .legend }}</legend>
 <span class="rules-filter-all"><button type="button" data-all="true">{{ i18n "rules-all-chosen" }}</button><button type="button" data-all="false">{{ i18n "rules-none-chosen" }}</button></span>
+  {{- with .search }}
+<input type="search" class="rules-filter-search" placeholder="{{ . }}" aria-label="{{ . }}" autocomplete="off">
+  {{- end }}
+<div class="rules-filter-options">
   {{- range .values }}
 <label{{ with .depth }} style="{{ printf "--indent: %d" (int .) | safeCSS }}"{{ end }}><input type="checkbox" name="{{ $.field }}" value="{{ .key }}"{{ with .parent }} data-parent="{{ . }}"{{ end }}{{ if .checked }} checked{{ end }}> {{ .label }}</label>
   {{- end }}
+</div>
 </fieldset>
+</div>
