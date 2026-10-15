@@ -1,6 +1,6 @@
 id = 16
 slug = "touched-checks"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -19,6 +19,7 @@ en = "Run the checks of what you change before a push"
 en = '''
 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
 
+- a Python file or a `pyproject.toml`: `uv run basedpyright`, and for each member of `tools/` the change touches, its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
 - a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
 - `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
 - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
@@ -32,7 +33,7 @@ en = '''
 
 [text.verification]
 en = '''
-The commit hooks run gitleaks on the staged changes, `uv-lock`, ruff, pydoclint, basedpyright, `cargo-fmt`, `statute validate rules`, the constitution build check, the tests of each member of the uv workspace, `check-design-translation`, `lint-zh-sources` and limae on the Markdown files. `site/` and `web/data/*.json` are built, never committed. When unsure whether a check is touched, it runs.
+The commit hooks run gitleaks on the staged changes, `uv-lock`, ruff (check and format), pydoclint, `cargo-fmt`, `statute validate rules`, the constitution build check, `lint-zh-sources`, `check-design-translation` and limae on the Markdown files; the type check and the tests of the members of `tools/` run in CI and before a push, not in the hooks. `site/` and `web/data/*.json` are built, never committed. When unsure whether a check is touched, it runs.
 
 Violated when a change is pushed and the hooks, the instruction-only check or a check listed for what it touches did not run on the pushed version, or did not pass.
 '''

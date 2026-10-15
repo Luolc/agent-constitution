@@ -271,6 +271,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - L15 Pass over a false positive of limae with a `<!-- limae-disable-next-line <rule> -->` comment above the line, never by turning the rule off.
 - L16 Before a push, run on the version you push the commit hooks, `uv run pre-commit run --all-files`, and `uv run check-instruction-changes --base origin/main`, and besides them, for what the change touches:
 
+  - a Python file or a `pyproject.toml`: `uv run basedpyright`, and for each member of `tools/` the change touches, its tests, `uv run python -m unittest discover -s tools/<member>/tests` (those of `tools/site` need Hugo and the Rust toolchain);
   - a Rust file or a manifest: `cargo clippy --all-targets --locked -- -D warnings`, `cargo test --locked` and `cargo publish --dry-run --locked -p statute`;
   - `rules/`, the constitution or the crates: `cargo run --locked --quiet -p statute -- validate rules`, with `--base origin/main` when `rules/` or the constitution changed;
   - the constitution sources: `cargo run --locked --quiet -p statute -- constitution build --check --base origin/main`;
@@ -300,6 +301,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R50 Have a repository's commit hooks scan the staged changes for credentials at every commit.
 - R70 Change your local main branch only by fast-forwarding it to the remote main branch; never commit on it.
 - R210 When you create a file, run `git add` on it and confirm that `git ls-files` lists it before you run checks.
+- R250 Put into a repository's commit hooks only checks that finish in seconds, such as formatting, lint, a secret scan and validating or building the repository's own sources, aiming at no more than 5 seconds for all of them; never run tests in the hooks, whether unit, integration or end-to-end, nor checks that need a heavy toolchain or outside state, and leave those to the checks before a push and to CI.
 - R28 Where work is divided among agents the way fleet does, as a worker, stay within your task and ask the agent responsible for your job.
 - R115 Where work is divided among agents the way fleet does, as the agent responsible for a job, ask principals only through the agent talking with them, or by posting the question into the conversation they hold with that agent.
 - R162 Do cross-repository work in the working directory of its fleet job, inside the checkout of the initiative's repository in the scope's initiatives directory.
