@@ -1,14 +1,15 @@
 id = 234
 slug = "no-opening-quota-screens-to-look"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 145
+default = "on"
 authority = ["must-ask.capital"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Do not open a screen that offers more usage just to look"

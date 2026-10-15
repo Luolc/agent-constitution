@@ -1,14 +1,15 @@
 id = 226
 slug = "work-item-decisions-to-repository"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
+default = "on"
 authority = ["no-restating"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "When the task ends, move what is still needed from the work item into the repository"

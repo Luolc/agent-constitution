@@ -1,14 +1,15 @@
 id = 76
 slug = "write-agreed-narrowings-into-the-text"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 16
+default = "on"
 authority = ["evidence.grounds", "independent-review"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Write a narrowing agreed in discussion into the repository text"

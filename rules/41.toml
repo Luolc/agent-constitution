@@ -1,14 +1,15 @@
 id = 41
 slug = "take-the-reviewed-route"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 13
+default = "on"
 authority = ["guards"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "When a guard blocks an action, take the reviewed route"

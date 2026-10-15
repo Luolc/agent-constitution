@@ -1,14 +1,15 @@
 id = 136
 slug = "push-before-leaving-machine"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
+default = "on"
 authority = ["evidence.grounds"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Push before you leave a machine"

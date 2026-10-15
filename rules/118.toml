@@ -1,14 +1,15 @@
 id = 118
 slug = "take-work-in-order"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["automation-first.keep-moving"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Take work items in the jurisdiction's order"

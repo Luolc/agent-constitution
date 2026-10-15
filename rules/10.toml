@@ -1,15 +1,16 @@
 id = 10
 slug = "never-repeat-credentials"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = [36, 37]
 lang = "en"
 parent = 13
+default = "off"
 authority = ["safety", "sensitive-info", "leaks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Never ask for, read or repeat a credential; report a suspected leak"

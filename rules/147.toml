@@ -1,14 +1,15 @@
 id = 147
 slug = "confirm-browser-account-before-login"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 145
+default = "on"
 authority = ["evidence.facts"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Ask which account the browser is signed in to before a browser login"

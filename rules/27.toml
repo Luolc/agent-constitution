@@ -1,14 +1,15 @@
 id = 27
 slug = "fixtures-made-up-data"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "off"
 authority = ["sensitive-info", "personal-info", "must-ask.irreversible-effects"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Build fixtures from made-up data only"

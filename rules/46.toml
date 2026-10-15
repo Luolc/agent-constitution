@@ -1,14 +1,16 @@
 id = 46
 slug = "instruction-files-apart"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
+default = "off"
 authority = ["separate-instruction-changes"]
 constitution = ">=1"
 level = "project"
 check = "builtin"
+uses = ["instructions", "review"]
 
 [title]
 en = "Keep instruction files apart from other files in a change"

@@ -1,14 +1,15 @@
 id = 143
 slug = "attended-machine-reads-interactively"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 137
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "On an attended machine, read through the interactive route, and give a service account only to scheduled tasks"

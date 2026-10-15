@@ -1,14 +1,15 @@
 id = 63
 slug = "review-in-change-comments"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 14
+default = "off"
 authority = ["evidence.grounds", "independent-review.another-party"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Hold a review in the comments of the change"

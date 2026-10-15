@@ -1,10 +1,11 @@
 id = 151
 slug = "codex"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
 parent = 149
+default = "off"
 
 [title]
 en = "Codex"

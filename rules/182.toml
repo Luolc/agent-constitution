@@ -1,23 +1,24 @@
 id = 182
 slug = "approved-label"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 175
 requires = [181]
+default = "on"
 authority = ["evidence.grounds"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "When a principal approves, replace the decision label with the approval label"
 zh = "委托人批准后换挂表示批准的标签"
 
 [text.statement]
-en = "When a principal has looked at and approved what a work item asked them to decide, put the label `approved` (parameter `work-items.label-approved`, default `approved`) on it as you take off the label of {@rule:181}."
-zh = "委托人看过并批准了工作项里要委托人定的事，摘下{@rule:181}的标签时，换挂标签 `approved` (参数 `work-items.label-approved`，默认 `approved`)。"
+en = "When a principal has looked at and approved what a work item asked them to decide, put the label `{$work-items.label-approved}` on it as you take off the label of {@rule:181}."
+zh = "委托人看过并批准了工作项里要委托人定的事，摘下{@rule:181}的标签时，换挂标签 `{$work-items.label-approved}`。"
 
 [text.reason]
 en = '''
@@ -40,4 +41,4 @@ zh = '''
 '''
 
 [translations]
-zh = "3a5528733bc2cf8902b3cbe0ccdacb3c64f3e642b78301335b54572faf597803"
+zh = "ca77f290a01705e70276f5e3c2398b173afc0dfbf93e1f65462a32b294c76ce0"

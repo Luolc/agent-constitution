@@ -1,14 +1,15 @@
 id = 68
 slug = "shared-memory-is-the-repository"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 16
+default = "on"
 authority = ["evidence.grounds", "independent-review"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Keep what is needed after the task in a repository"

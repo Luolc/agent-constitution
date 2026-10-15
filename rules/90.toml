@@ -1,15 +1,16 @@
 id = 90
 slug = "fix-or-follow-up-a-blind-check"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 15
 requires = [92]
+default = "on"
 authority = ["wrong-checkers.fixing", "discriminating-checks"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "When a check is found blind, fix it or record a follow-up at once"

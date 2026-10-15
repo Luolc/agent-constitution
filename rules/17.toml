@@ -1,15 +1,16 @@
 id = 17
 slug = "one-design"
-revision = 2
+revision = 3
 kind = "rule"
 status = "superseded"
 superseded-by = 82
 lang = "en"
 parent = 16
+default = "off"
 authority = ["no-restating", "simplicity"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "Keep the design in one directory, one file per part, with an index"

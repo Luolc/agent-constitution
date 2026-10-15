@@ -1,9 +1,10 @@
 id = 83
 slug = "code"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
+default = "on"
 
 [title]
 en = "Code"

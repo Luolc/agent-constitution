@@ -1,14 +1,15 @@
 id = 191
 slug = "sender-is-principal"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 188
+default = "on"
 authority = ["explicit-yes.verification"]
 constitution = ">=1"
 level = "project"
-check = "review"
+check = "none"
 
 [title]
 en = "The sender is the principal's Slack ID, with no `bot_id`"

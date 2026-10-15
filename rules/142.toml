@@ -1,14 +1,15 @@
 id = 142
 slug = "meta-tier-read-only-through-unlocked-route"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 137
+default = "on"
 authority = ["sensitive-info"]
 constitution = ">=1"
 level = "user"
-check = "review"
+check = "none"
 
 [title]
 en = "Read the meta tier only through a route that a person unlocks"
