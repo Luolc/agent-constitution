@@ -1,0 +1,42 @@
+id = 205
+slug = "same-family-review-note"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 14
+authority = ["evidence.grounds", "independent-review.another-party"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Say that a review is same-family"
+zh = "同家族审查要写明"
+
+[text.statement]
+en = "When the implementer and the reviewer of a pull request use models of the same family, say so in its description without naming a model, and in any question about it put to a principal."
+zh = "pull request 的实现方与审查方用的是同一家族的模型时，在它的描述里写明这一点，不点名型号；就这个 pull request 向委托人提问时，问题里也写明。"
+
+[text.reason]
+en = '''
+Models of one family tend to share blind spots, so a same-family review is a fallback, not the equal of a review by a model of another family. Said plainly, it is something whoever reads the pull request or decides its merge can take into account ({@constitution:evidence.grounds}). No model is named, since a public repository names none ({@rule:51}).
+'''
+zh = '''
+同一家族的模型容易有相同的盲点，同家族审查只是降级方案，不等于由另一家族的模型审查。写明这一点，读 pull request 的人和决定合并的一方才能把它算进去 ({@constitution:evidence.grounds})。不点名型号，是因为公开仓库里不写型号 ({@rule:51})。
+'''
+
+[text.verification]
+en = '''
+Models of the same family are models from the same provider. The description gives the sentence `Same-family review this round.` in the language it is written in; in Chinese, `本轮为同家族审查`. When the implementer and the reviewer also use the same model, the review is weaker still, and whoever decides the merge takes that into account, but the description still gives only that sentence. A question about the pull request includes one put to a principal for another reason, such as review rounds running out or a change that would cause downtime.
+
+Violated when the description of a pull request with a same-family review lacks that sentence, the sentence names a model, or a question about the pull request put to a principal does not say that the review is same-family.
+'''
+zh = '''
+同一家族的模型，指同一个提供方的模型。描述里写的是 `Same-family review this round.` 这句话，用描述所用的语言写；中文写作 `本轮为同家族审查`。实现方与审查方用的还是同一个型号的，审查又弱一层，决定合并的一方要把这一点算进去，但描述里仍只写上面那句。就这个 pull request 向委托人提问，也包括因别的事交给委托人的问题，例如审查轮数用完了、变更会造成停机。
+
+同家族审查的 pull request 描述里没有这句话，这句话点名了型号，或者就这个 pull request 向委托人提问时没有写明是同家族审查的，即为违反本规定。
+'''
+
+[translations]
+zh = "38b753a868118da57d3b6726304660fd52f3679a06cfb3751a1d88808b07ad43"

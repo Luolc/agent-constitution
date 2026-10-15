@@ -1,0 +1,42 @@
+id = 209
+slug = "hook-seconds-budget"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 77
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Keep only checks that take seconds in the commit hooks"
+zh = "commit hook 只放秒级的检查"
+
+[text.statement]
+en = "Put only checks that take seconds into a repository's commit hooks, aiming at no more than 5 seconds for all of them, and leave checks that need a heavy toolchain or outside state to the checks before a push and to CI."
+zh = "commit hook 只放秒级的检查，全部跑完的目标不超过 5 秒；要装重工具链或依赖外部状态的检查放到 push 之前与 CI 里。"
+
+[text.reason]
+en = '''
+The hooks run at every commit: slow ones hold up each commit and tempt the author to skip them ({@constitution:automation-first.keep-moving}). The heavy checks still run before the push and in CI, so none is lost.
+'''
+zh = '''
+hook 每次提交都跑，慢了就拖住每一次提交，还会诱人跳过它 ({@constitution:automation-first.keep-moving})。重的检查在 push 之前和 CI 里照样会跑，不会漏掉。
+'''
+
+[text.verification]
+en = '''
+What counts is the total time of all the hooks on a commit of ordinary size, in a checkout where they are installed. The credential scan goes into the hooks before other checks, and scans the staged changes ({@rule:50}). Hooks that pass do not clear a push: the checks the change touches still run before it ({@rule:53}).
+
+Violated when a repository's commit hooks hold a check that needs a toolchain installed on the spot (compiling the whole project or downloading dependencies, for example) or needs the network or an outside service, or when all the hooks on an ordinary commit take more than 5 seconds time after time.
+'''
+zh = '''
+在已经装好 hook 的检出里，对一次普通大小的提交跑全部 hook，计的是总耗时。防凭证泄漏的扫描优先放进 hook，且扫暂存区 ({@rule:50})。hook 跑完不等于可以 push，push 之前还要跑改动涉及的检查 ({@rule:53})。
+
+仓库的 commit hook 里有要现装工具链 (例如编译整个项目、下载依赖) 或要访问网络、外部服务才能完成的检查的，或者对一次普通提交跑全部 hook 稳定超过 5 秒的，即为违反本规定。
+'''
+
+[translations]
+zh = "61695258cef463e301a39e492fac5ac11118af05ffd6c2384936ec152982bbf2"
