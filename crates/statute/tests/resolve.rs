@@ -390,6 +390,62 @@ fn a_superseded_successor_is_followed_to_the_rules_in_force() {
 }
 
 #[test]
+fn successors_that_merge_into_one_rule_name_that_rule() {
+    // R8 is split into R4 and R5, both superseded by R2.
+    let superseded = |r: (u64, String)| edit(r, "status = \"draft\"", "status = \"superseded\"");
+    let s = source(&[
+        domain(1),
+        rule(2, 1, ""),
+        superseded(rule(4, 1, "superseded-by = 2")),
+        superseded(rule(5, 1, "superseded-by = 2")),
+        superseded(rule(8, 1, "superseded-by = [4, 5]")),
+    ]);
+    warns(
+        &s,
+        &[8],
+        "rule R8 (Rule 8) (listed in `rules`) is superseded by R4 (Rule 4), R5 (Rule 5); replace R8 with R2 in `rules` (`statute upgrade --replace-superseded` does it)",
+    );
+}
+
+#[test]
+fn a_repealed_successor_takes_no_place() {
+    let superseded = |r: (u64, String)| edit(r, "status = \"draft\"", "status = \"superseded\"");
+    let repealed = |r: (u64, String)| edit(r, "status = \"draft\"", "status = \"repealed\"");
+    // R8 is split into R2 and R3, and R3 is repealed: R2 alone takes its
+    // place.
+    let s = source(&[
+        domain(1),
+        rule(2, 1, ""),
+        repealed(rule(3, 1, "")),
+        superseded(rule(8, 1, "superseded-by = [2, 3]")),
+    ]);
+    warns(
+        &s,
+        &[8],
+        "rule R8 (Rule 8) (listed in `rules`) is superseded by R2 (Rule 2), R3 (Rule 3); replace R8 with R2 in `rules` (`statute upgrade --replace-superseded` does it)",
+    );
+    // R9 is superseded by R3 alone.
+    let s = source(&[
+        domain(1),
+        repealed(rule(3, 1, "")),
+        superseded(rule(9, 1, "superseded-by = 3")),
+    ]);
+    warns(
+        &s,
+        &[9],
+        "rule R9 (Rule 9) (listed in `rules`) is superseded by R3 (Rule 3), and nothing takes its place: what it leads to is repealed; take R9 out of `rules`",
+    );
+    let (_, diags) = run(&s, &[], &[9], 1);
+    let warnings: Vec<String> = diags.warnings().map(ToString::to_string).collect();
+    assert_eq!(
+        warnings,
+        [
+            "statute.toml: warning: pack R9 (Rule 9) enables nothing: its root is superseded by R3 (Rule 3), and nothing takes its place: what it leads to is repealed; take it out of `packs`"
+        ]
+    );
+}
+
+#[test]
 fn a_repealed_rule_is_a_warning() {
     let s = source(&[
         domain(1),

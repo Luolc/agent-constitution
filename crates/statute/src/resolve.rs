@@ -121,9 +121,10 @@ pub fn successors(key: &Key, node: &Node) -> Vec<Key> {
 }
 
 /// What takes the place of `key` now: nothing when it is not superseded,
-/// else its successors, each superseded one replaced by its own in turn,
-/// as far as the chain goes; a superseded rule whose successors have all
-/// been met already, on a cycle, stands for itself.
+/// else the rules that are neither superseded nor repealed which
+/// `superseded-by` leads to from it, through any number of superseded
+/// rules; nothing when all it leads to are repealed, and its own
+/// successors when it leads to no rule that is not superseded (a cycle).
 pub fn current_successors(sources: &Sources, key: &Key) -> Vec<Key> {
     fn walk(sources: &Sources, at: &Key, seen: &mut Vec<Key>, out: &mut Vec<Key>) {
         let Some(node) = sources.get(at) else {
@@ -138,23 +139,24 @@ pub fn current_successors(sources: &Sources, key: &Key) -> Vec<Key> {
                 .get(&next)
                 .is_some_and(|n| n.status == Status::Superseded)
             {
-                let before = out.len();
                 walk(sources, &next, seen, out);
-                if out.len() == before {
-                    out.push(next);
-                }
             } else {
                 out.push(next);
             }
         }
     }
-    let mut out = Vec::new();
-    if sources
-        .get(key)
-        .is_some_and(|n| n.status == Status::Superseded)
-    {
-        walk(sources, key, &mut vec![key.clone()], &mut out);
+    let Some(node) = sources.get(key) else {
+        return Vec::new();
+    };
+    if node.status != Status::Superseded {
+        return Vec::new();
     }
+    let mut out = Vec::new();
+    walk(sources, key, &mut vec![key.clone()], &mut out);
+    if out.is_empty() {
+        return successors(key, node);
+    }
+    out.retain(|k| sources.get(k).is_none_or(|n| n.status != Status::Repealed));
     out
 }
 
@@ -215,6 +217,10 @@ pub fn resolve(
         };
         if matches!(node.status, Status::Superseded | Status::Repealed) {
             let what = match current_successors(sources, root).as_slice() {
+                [] if node.status == Status::Superseded => format!(
+                    "superseded by {}, and nothing takes its place: what it leads to is repealed; take it out of `packs`",
+                    labels(sources, &successors(root, node)),
+                ),
                 [] => "repealed; take it out of `packs`".to_owned(),
                 [next] => format!(
                     "superseded by {}; replace {root} with {next} in `packs` (`statute upgrade --replace-superseded` does it)",
@@ -478,6 +484,10 @@ pub fn resolve(
         };
         let next = current_successors(sources, key);
         let what = match node.status {
+            Status::Superseded if next.is_empty() => format!(
+                "superseded by {}, and nothing takes its place: what it leads to is repealed",
+                labels(sources, &successors(key, node))
+            ),
             Status::Superseded => {
                 format!("superseded by {}", labels(sources, &successors(key, node)))
             }
