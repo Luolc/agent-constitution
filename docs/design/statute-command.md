@@ -122,6 +122,17 @@ finishes it. The order makes that work: a skill's
 `.statute-generated` is written before its files, a link is removed
 before its directory, and the `AGENTS.md` is written last.
 
+`statute compile --check` writes nothing. It compiles the public layer
+and fails, naming each place, wherever `statute compile` would change
+something: an `AGENTS.md` or `statute-checks.toml` that differs or is
+missing, a file of a skill's copy that differs from the source, is
+missing or is not in the source, a copy or a link that is not statute's,
+and a skill directory with `.statute-generated` that the rule set no
+longer needs. The private output, which git ignores, is neither compiled
+nor compared, so a private layer that does not load does not fail it.
+Like `compile`, it fails when `statute.lock` is not what `statute lock`
+would write now. This repo runs it as a commit hook, which CI runs too.
+
 A `CLAUDE.md` next to the `AGENTS.md` written (the top of the
 repository, unless `--output` names another place), a file or a link to
 `AGENTS.md`, draws a warning on every `statute compile`, with or without
@@ -177,7 +188,8 @@ The rule set is `statute.toml`, the lock file
   `--private-only`, only the private output, for a git hook in a new
   worktree, without the network and never failing
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
-  A new worktree);
+  A new worktree); with `--check`, nothing, failing when the committed
+  output differs from a fresh compile;
 - `check`: list the enabled rules for review by domain, with the outcome
   of those a script checks ([Checks](rule-checks.md#checks));
 - `upgrade`: move the sources and the constitution to newer versions
@@ -382,9 +394,21 @@ file. It prints the path of `index.html`.
   and the successors; the path of parents and the children. A domain's
   page is the list of its nodes. A citation of a rule is a link to its
   page, and one of the constitution the provision's label, as in the
-  compiled `AGENTS.md`. The pages are in the language of
-  `[compile] lang`, the kind of each node included; a status is shown
-  as the rule file writes it, `draft` or `trial`.
+  compiled `AGENTS.md`. A status is shown as the rule file writes it,
+  `draft` or `trial`.
+- **Two languages.** The pages are written in English and in Chinese:
+  at the top of `.statute/site/` in the language of `[compile] lang`,
+  since the site is the repository's and not the reader's, and in
+  `zh/`, or `en/` when that language is Chinese, in the other, with the
+  same paths below it. Each page links to itself in the other language
+  ([Frontend](frontend.md#components), the language switch). The words
+  statute adds, the kind of each node and of its source included, are
+  in the page's language. A node's title and texts are in the page's
+  language where the rule file has them, and otherwise in the node's
+  own, marked with that language's `lang`; its page then carries a tag
+  that says it is not translated. Such a text cites the constitution
+  with the labels of its own language and names the rules it cites in
+  that language too.
 - **The marks of [Rule configuration](rule-config.md).** Every domain
   and rule, in the index and on its page, says whether it is on or off
   by default, and an option of a one-of whether it is the one-of's

@@ -1,4 +1,4 @@
-<!-- en-sha256: a9fcad8c406c69314bd5e12c949062ff193b12f33410e78392f122433a60406c -->
+<!-- en-sha256: 53c1c15342951d5e8888db82b68721a4567859492f9a6b3f5b6c6257b6203044 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -26,6 +26,8 @@
 
 每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，`statute-checks.toml` 里是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
 
+`statute compile --check` 什么都不写。它只编译公开层，凡是 `statute compile` 会改动的地方都逐个列出并失败：内容不同或缺失的 `AGENTS.md`、`statute-checks.toml`，skill 副本里与源不同、缺失或源里没有的文件，不是 statute 写的副本或软链，以及带 `.statute-generated`、但规定清单已经不需要的 skill 目录。git 忽略的私有输出既不编译也不比较，所以私有层加载失败也不会让它失败。和 `compile` 一样，`statute.lock` 不是 `statute lock` 此刻会写出的内容时它也失败。本仓库把它作为提交钩子运行，CI 也跑这些钩子。
+
 写出的 `AGENTS.md` 旁边 (不给 `--output` 时就是仓库顶层) 有 `CLAUDE.md` 时，不论是普通文件还是指向 `AGENTS.md` 的软链，每次 `statute compile` 都给出 warning，有没有私有层都一样。warning 问要不要删掉它，并用几句短话说明原因：没有 `CLAUDE.md` 时 Claude Code 自己会读 `AGENTS.md` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，所以不需要 `CLAUDE.md` 指向它；有私有输出时，`CLAUDE.local.md` 用全文代替 `AGENTS.md` 给 Claude Code 读，Claude Code 还会再读 `CLAUDE.md`，它的内容就叠在规定之上，指向 `AGENTS.md` 的软链会让公开规定读两遍 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，没有私有层时 warning 不说这一句；迁移时 ([statute-migrate](../../../skills/statute-migrate/SKILL.md)，第 e 步)，普通文件的 `CLAUDE.md` 改名为旧版副本，指向 `AGENTS.md` 的软链不改名，只问用户要不要删。statute 既不删它，也不改名。尚未实现：warning 仍说迁移时两种都会改名。
 
 编译、检查和升级规定清单由同一个命令完成 ([命令与第一版](#the-command-and-the-first-version))。宪法也由这个命令构建，即 `statute constitution build`。
@@ -40,7 +42,7 @@
 - `source add`：在规定清单、它的私有层或全局配置里登记一个规定源 ([添加规定源](global-configuration.md#adding-a-source))；
 - `add` 和 `remove`：在规定清单里启用一条规定或去掉它，并更新锁文件；加 `--private` 时改的是私有规定清单 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))；
 - `lock`：把规定清单解析成锁文件；
-- `compile`：写出编译输出 ([编译与网站](#compilation-and-the-site))；加 `--private-only` 时只写私有输出，供新 worktree 里的 git 钩子用，不联网，也从不失败 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)，新的 worktree 一段)；
+- `compile`：写出编译输出 ([编译与网站](#compilation-and-the-site))；加 `--private-only` 时只写私有输出，供新 worktree 里的 git 钩子用，不联网，也从不失败 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)，新的 worktree 一段)；加 `--check` 时什么都不写，提交的输出与重新编译的结果不同就失败；
 - `check`：按 domain 列出启用的规定供审查，脚本能检查的附上结果 ([检查](rule-checks.md#checks))；
 - `upgrade`：把规定源和宪法移到更新的版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；
 - `explain`：说明一条规定为什么被启用、哪些规定依赖它；
@@ -71,7 +73,8 @@
 - **让 git 忽略。** statute 写 `.statute/site/.gitignore`，内容是 `*`，这样 git 忽略那里的每个文件，包括它自己，它也标明这个目录归 statute。statute 还写 `.statute/.gitignore`，其中列出 `/site/`，每个往 `.statute/` 写生成文件的命令都这样做 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。在 git 仓库里，它先用 `git ls-files` 问 `.statute/site/`，git 跟踪着那里的某个文件时，什么都不写并报错，写明是哪个文件和解决办法 `git rm -r --cached .statute/site`。git 回答不了时 (起不来或出错)，也什么都不写，报错并带上 git 的错误信息。不在 git 仓库里时没有东西会被提交，也就不用问。
 - **首页**按四类规定源 ([四类规定源](rule-sources.md#four-kinds-of-source)) 分节：全局公开、全局私有、本仓公开、本仓私有。每节列出它的规定源，每个规定源列出它的领域树，包括每个节点，不论启用与否：节点的引用、标题和状态，以及这份规定清单是启用它、覆盖它还是没选它；one-of 是一个框，装着它的选项，默认的那个加了标记。按规定源类别筛选、隐藏这份规定清单没有启用的规定，以及显示默认隐藏的已被取代和已废止的节点，都只靠复选框和样式表实现。
 - **规定源属于哪一类**看它的两个属性：仓库自己的规定 (`L`) 和 `scope = "local"` 的规定源是本仓的，其余都是全局的，包括全局配置里的；公开与否按规定源自己的声明，`L` 按规定清单的声明。在 `.` 的规定源，比如本仓的 `R = { path = "." }`，是第一方规定源，所以是全局公开的。`local-rules` 指向它的规定目录时，它的规定同时也是仓库自己的规定：它只在全局公开下列一次，本仓公开那一节写明这一点并链接过去；否则仓库自己的规定列在它所属类别的本仓那一节。尚未实现：不论 `local-rules` 指向哪里，网站仍把在 `.` 的规定源当作仓库自己的规定。每个节点在首页和它自己的页面上都标出所属规定源的类别：用页面的语言写出类别名，底色是四种颜色之一。节点自己的页面上，标记还写出规定源的名字，例如 `全局私有 · me`。
-- **每个节点一页**，`<source>/<id>.html`：陈述、理由、验证方式和适用范围；`requires`、`conflicts`、`overrides` 和取代它的规定；上溯的父节点路径和子节点。领域的页面就是它下面节点的列表。对规定的引用链接到那条规定的页面，对宪法的引用写成条款的标签，和编译出的 `AGENTS.md` 一样。页面用 `[compile] lang` 指定的语言，节点的类别也是；状态按规定文件里的写法显示，比如 `draft` 或 `trial`。
+- **每个节点一页**，`<source>/<id>.html`：陈述、理由、验证方式和适用范围；`requires`、`conflicts`、`overrides` 和取代它的规定；上溯的父节点路径和子节点。领域的页面就是它下面节点的列表。对规定的引用链接到那条规定的页面，对宪法的引用写成条款的标签，和编译出的 `AGENTS.md` 一样。状态按规定文件里的写法显示，比如 `draft` 或 `trial`。
+- **两种语言。** 页面有英文和中文两份：`.statute/site/` 顶层用 `[compile] lang` 指定的语言，因为这个站点属于仓库，不随读的人变；另一种语言放在 `zh/` 下 (那种语言是中文时放在 `en/` 下)，下面的路径相同。每一页都链接到自己的另一种语言版本 ([前端](frontend.md#components) 的语言切换)。statute 加上的文字，包括节点和规定源的类别，用页面的语言。节点的标题和正文，规定文件里有页面语言的就用页面语言，没有的用节点自己的语言，并标上那种语言的 `lang`；这时节点页上有一个 tag，说明它没有译文。这样的正文引用宪法时用它自己语言的条款标签，引用的规定也用这种语言的标题。
 - **[规定配置](rule-config.md) 的标记。** 每个领域和每条规定，在索引和自己的页面上，都写明默认开启还是默认关闭；one-of 的选项写明是不是 one-of 的默认选项。规定的页面写明它用在哪里：`AGENTS.md`、审查，或两者都有；索引有两个筛选，分别隐藏这两种规定。占位符显示这份规定清单给参数的取值 (这个人有自己的取值时用这个人自己的)，加上标记，鼠标悬停时显示参数名，并链接到它所在规定源的参数页 `<source>/parameters.html`。参数页列出每个参数的标题、名字、类型、范围和默认值，它的取值和取值从哪里来，以及用到它的启用规定。
 
 ## <a id="export"></a>导出

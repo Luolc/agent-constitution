@@ -98,6 +98,11 @@ enum Command {
         /// network, and warnings in place of errors, exiting 0.
         #[arg(long, conflicts_with = "output")]
         private_only: bool,
+        /// Write nothing; fail, naming each file, when the committed
+        /// output differs from a fresh compile. The private output is
+        /// not compared.
+        #[arg(long, conflicts_with = "private_only")]
+        check: bool,
     },
     /// List the enabled rules for review by domain, with the outcome of
     /// those a script checks; exits 1 on a violation.
@@ -210,6 +215,11 @@ fn main() -> ExitCode {
             compile_private_only(root);
             Ok(())
         }
+        Command::Compile {
+            output,
+            check: true,
+            ..
+        } => compile_check(root, output.as_deref()),
         Command::Compile { output, .. } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
         Command::Init {
@@ -471,6 +481,32 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     Ok(())
 }
 
+/// `compile --check`: compiles the public layer alone and compares what
+/// `compile` would write with what is on disk, naming each difference.
+fn compile_check(root: &Path, output: Option<&Path>) -> Result<(), ()> {
+    let (project, diags) = Project::load(root, &env(Mode::Read)?);
+    print(&diags);
+    let project = project.ok_or(())?;
+    let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
+    let fail = |e: String| eprintln!("statute: error: {e}");
+    let out = statute::compile::compile(&project).map_err(fail)?;
+    let differ = statute::compile::differences(&out, &path).map_err(fail)?;
+    if differ.is_empty() {
+        println!(
+            "{}: up to date, with the rest of the output",
+            path.display()
+        );
+        return Ok(());
+    }
+    for p in differ {
+        eprintln!(
+            "{}: error: not what `statute compile` writes; run it",
+            p.display()
+        );
+    }
+    Err(())
+}
+
 /// In a private repository, which has no private output, the note that
 /// a person's own value of a parameter goes unused.
 fn unused_personal(project: &Project) {
@@ -599,9 +635,11 @@ fn check(root: &Path, base: Option<&str>) -> Result<(), ()> {
         |r: &statute::check::Report| matches!(r.outcome, Outcome::Inconclusive | Outcome::Review);
     // The labels are read only when a rule's text is printed.
     let labels = if reports.iter().any(|(_, r)| for_reviewer(r)) {
-        Some(statute::compile::labels(&project).map_err(|e| {
-            eprintln!("statute: error: {e}");
-        })?)
+        Some(
+            statute::compile::labels(&project, &project.manifest.lang).map_err(|e| {
+                eprintln!("statute: error: {e}");
+            })?,
+        )
     } else {
         None
     };
@@ -1388,7 +1426,7 @@ fn explain_parameter(project: &Project, name: &str) -> Result<(), ()> {
                 let title = n.title.get(&n.lang).map_or("", String::as_str);
                 format!(
                     "{k} ({})",
-                    statute::compile::filled(project, k, title, false)
+                    statute::compile::filled(project, k, title, false, &project.manifest.lang)
                 )
             }
             None => k.to_string(),

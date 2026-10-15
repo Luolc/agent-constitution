@@ -94,13 +94,12 @@ pub fn pick<'a>(text: &'a Text, node: &Node, lang: &str) -> &'a str {
 }
 
 /// `text`, of node `key`, with each placeholder replaced by the value of
-/// its parameter, a language as its name in the language compiled to:
+/// its parameter, a language as its name in `lang`:
 /// the committed value, or with `private` the person's own
 /// (`docs/design/rule-config.md`, Values in the lock file and the
 /// outputs). A rule that is not enabled, whose parameters have no
 /// setting, gets each default.
-pub fn filled(project: &Project, key: &Key, text: &str, private: bool) -> String {
-    let lang = project.manifest.lang.as_str();
+pub fn filled(project: &Project, key: &Key, text: &str, private: bool, lang: &str) -> String {
     param::fill(text, |name| match project.values.get(name) {
         Some(s) => s
             .param
@@ -119,6 +118,7 @@ fn title(project: &Project, key: &Key, node: &Node, private: bool) -> String {
         key,
         pick(&node.title, node, &project.manifest.lang),
         private,
+        &project.manifest.lang,
     )
 }
 
@@ -327,6 +327,91 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
     Ok(written)
 }
 
+/// What `write` would change for `output`, with `AGENTS.md` at
+/// `agents_md`, writing nothing: each file it would write whose content
+/// differs or that is missing; each file of a skill's copy that differs
+/// from the source, is missing or is not in the source; a skill's copy
+/// that is not one statute wrote, and a link that is not the skill's;
+/// `.agents/skills` or `.claude/skills` when it is not a plain directory
+/// while a skill is to be written; and each skill directory statute
+/// wrote that is no longer needed. Fails when a skill's source cannot be
+/// read.
+pub fn differences(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> {
+    let same = |path: &Path, text: &[u8]| {
+        path.symlink_metadata().is_ok_and(|m| m.is_file())
+            && std::fs::read(path).is_ok_and(|t| t == text)
+    };
+    let dir = agents_md.parent().unwrap_or(Path::new(""));
+    let mut differ = Vec::new();
+    for (path, text) in [
+        (agents_md.to_path_buf(), &output.agents_md),
+        (dir.join(CHECKS), &output.checks),
+    ] {
+        if !same(&path, text.as_bytes()) {
+            differ.push(path);
+        }
+    }
+    let (skills, links) = (dir.join(SKILLS), dir.join(LINKS));
+    if !output.skills.is_empty() {
+        for d in [&skills, &links] {
+            if d.symlink_metadata().is_ok_and(|m| !m.is_dir()) {
+                differ.push(d.clone());
+            }
+        }
+    }
+    for (name, from) in &output.skills {
+        let target = skills.join(name);
+        match files_below(&target) {
+            Ok(copied) if generated_skill(&target) => {
+                let marker = Path::new(MARKER);
+                if !same(
+                    &target.join(marker),
+                    format!("{GENERATED_HASH}\n").as_bytes(),
+                ) {
+                    differ.push(target.join(marker));
+                }
+                let wanted = files_below(from)?;
+                for file in &wanted {
+                    let text = std::fs::read(from.join(file))
+                        .map_err(|e| format!("{}: cannot read: {e}", from.join(file).display()))?;
+                    if !same(&target.join(file), &text) {
+                        differ.push(target.join(file));
+                    }
+                }
+                differ.extend(
+                    copied
+                        .iter()
+                        .filter(|f| f.as_path() != marker && !wanted.contains(f))
+                        .map(|f| target.join(f)),
+                );
+            }
+            _ => differ.push(target),
+        }
+        let link = links.join(name);
+        if !links_to(&link, name) {
+            differ.push(link);
+        }
+    }
+    if skills.symlink_metadata().is_ok_and(|m| m.is_dir())
+        && let Ok(entries) = std::fs::read_dir(&skills)
+    {
+        let mut unneeded: Vec<PathBuf> = entries
+            .filter_map(Result::ok)
+            .filter(|e| {
+                !output
+                    .skills
+                    .iter()
+                    .any(|(name, _)| e.file_name() == name.as_str())
+            })
+            .map(|e| e.path())
+            .filter(|p| generated_skill(p))
+            .collect();
+        unneeded.sort();
+        differ.extend(unneeded);
+    }
+    Ok(differ)
+}
+
 #[cfg(unix)]
 fn symlink(target: &Path, link: &Path) -> std::io::Result<()> {
     std::os::unix::fs::symlink(target, link)
@@ -453,7 +538,7 @@ fn agents_md(project: &Project, private: bool) -> Result<String, String> {
             )
         })?;
 
-    let labels = labels(project)?;
+    let labels = labels(project, lang)?;
 
     let w = words(lang);
     let mut out = String::new();
@@ -499,15 +584,15 @@ fn shown(project: &Project, key: &Key) -> bool {
     }
 }
 
-/// The labels of the provisions of the project's constitution, in the
-/// language compiled to.
-pub fn labels(project: &Project) -> Result<Labels, String> {
+/// The labels of the provisions of the project's constitution, in
+/// `lang`.
+pub fn labels(project: &Project, lang: &str) -> Result<Labels, String> {
     let m = &project.manifest;
     let articles = project
         .root
         .join(&m.constitution_spec().path)
         .join(format!("constitution/{}/articles", m.edition));
-    Labels::load(&articles, &m.lang)
+    Labels::load(&articles, lang)
 }
 
 /// The text of node `key` with its citations rendered: a rule, with
@@ -526,7 +611,7 @@ pub fn cited(
     let lang = project.manifest.lang.as_str();
     let w = words(lang);
     let fail = |what: &str| Err(format!("{}: {part}: {what}", project.sources.file(key)));
-    let text = filled(project, key, text, private);
+    let text = filled(project, key, text, private, lang);
     cite::replace(&text, |c| match c {
         Citation::Rule(text) => {
             let Some(cited) = node::cited_ref(text).map(|r| r.key(&key.source)) else {
