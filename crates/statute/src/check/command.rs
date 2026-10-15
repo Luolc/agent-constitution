@@ -212,6 +212,7 @@ mod tests {
         let ctx = Context {
             root: &root,
             base: None,
+            compiled: None,
         };
         let start = Instant::now();
         // A command that starts another and waits for it: the timeout
@@ -234,6 +235,7 @@ mod tests {
         let ctx = Context {
             root: &root,
             base: None,
+            compiled: None,
         };
         // Next to the test binary, under the build directory.
         let pid_file = std::env::current_exe()
@@ -271,6 +273,7 @@ mod tests {
         let ctx = Context {
             root: &root,
             base: None,
+            compiled: None,
         };
         let limit = OUTPUT_LIMIT.to_string();
         let at_limit = check_within(

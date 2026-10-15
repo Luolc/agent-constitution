@@ -1,4 +1,4 @@
-<!-- en-sha256: d5ac62398aeac8823d429fd3e60a8ef1795f23d8ffa20f9396d300972b08c13e -->
+<!-- en-sha256: 5e1a76aa888a2a71d636b424485303afc4dc863500170f8abc91d2ed2afc43d6 -->
 # 规定检查与审查
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -32,14 +32,15 @@
 
 第一版里，`statute check` 列出仓库里 `uses` 含 `review` 的已启用规定供审查，有检查的就运行它的检查；带 `--base <ref>` 时，检查变更 `git diff <ref>...HEAD`。它把规定按顶层 domain 分组，子领域的规定归在它所属的 domain 下，domain 和每组里的规定都按 ID 排序，每组以 domain 的引用和标题作标题 (`## R13 (Security)`)。每条规定一行，写明结果 (`pass`、`violation`、`inconclusive`，没有自动检查、`uses` 含 `review` 的规定写 `review`)、引用和标题，以及一句说明，发现列在下面；无法判定或待审的规定后面紧跟它的理由和核验方法，其中的引用与编译出的 `AGENTS.md` 一样渲染，只是被引的规定写成标题加引用 (`标题 (规定 R42)`)，因为审查方是离开那个文件读它的。在各领域之前，`## statute.toml` 一节把规定清单的 `public` 与仓库在 GitHub 上的可见性比对 (见[公开与否](rule-sources.md#public-or-not))，经 `gh repo view --json visibility` 查询：仓库在 GitHub 上显示为 `PUBLIC` 而清单写着 `public = false`，即为违反；`gh` 给不出答案，算无法判定；其余情况都通过。有规定或规定清单被违反时退出码为 1，否则为 0。内置检查只覆盖规定的一部分时，什么也没发现也算无法判定，不算通过，因为规定的其余部分仍要审查方看。内置检查属于第一方规定源的规定；别的规定源里写了 `check = "builtin"` 的规定算无法判定，并附一句说明 statute 没有它的内置检查，所以本地的 `L50` 不会运行规定 50 的检查。各条内置检查如下：
 
-- 规定 46 (instruction-files-apart) 用与 `check-instruction-changes` 相同的路径表区分指令文件、生成文件和其他文件，变更里既有指令文件又有其他文件的即为违反；路径表没有列出的 agent 工具的文件、路径表以外的指令源文件，以及仓库在自己的 `AGENTS.md` 里声明的路径，交给审查方；没有 `--base` 就没有可检查的变更。
+- 规定 46 (instruction-files-apart) 用 `check-instruction-changes` 的路径表区分指令文件、生成文件和其他文件，变更里既有指令文件又有其他文件的即为违反。statute 自己的文件按规定清单所在的目录认，不论清单在仓库的哪一层：`statute.toml`、`statute.lock` 和 `.statute/` 下的所有文件都是指令文件。锁文件算指令文件，是因为它钉住每个 git 规定源的 commit，`statute upgrade` 只改写锁文件就能把规定源升到更新的规定，而 `statute compile --check` 照样通过。statute 在规定清单旁编出的 `AGENTS.md` 和 `statute-checks.toml`，只在各自等于 statute 现在从公开层编出的结果时算生成文件，这正是规定 47 对生成文件的要求；手改过、没有重编，或者 statute 编译不了时，都算指令文件，所以手改的文件与其他文件混在一起即为违反，不论仓库的 CI 跑不跑 `statute compile --check`。只改了生成文件的变更 (例如为 statute 的新版本重编) 不算混合。说明里列出变更涉及的生成文件，供规定 47 的审查方核对。脚本在这里有两处不同：在本仓，它按本仓规定 L28 和 L27 始终把仓库顶层的 `AGENTS.md` 和 `statute-checks.toml` 算作生成文件，因为本仓的 CI 跑 `statute compile --check`；它也只认仓库顶层的 statute 文件。路径表没有列出的 agent 工具的文件、路径表以外的指令源文件，以及仓库在自己的 `AGENTS.md` 里声明的路径，交给审查方；没有 `--base` 就没有可检查的变更；
+- 规定 280 (instruction-files-apart-but-migration) 取代规定 46，运行同一项检查，只多它唯一的例外：在规定清单旁新增 `statute.toml`、而 base 的任何目录里都没有 `statute.toml` 的变更是迁移变更，可以把指令文件和其他文件放在一起。这时结果是无法判定，其他文件逐个列出交给审查方，由审查方核对它们只是把 `statute compile --check` 加进仓库在 base 上已有的 commit hook 和 CI。其余变更都按规定 46 判定；
 - 规定 43 (credential-designated-place) 带 `--redact` 运行机器上的 gitleaks，扫描变更里的提交或全部历史，有命中即为违反，命中只显示位置和 gitleaks 的规则名；gitleaks 识别不出的凭证，以及仓库以外的地方，交给审查方；没有 gitleaks 时算无法判定；
 - 规定 50 (commit-hook-credential-scan) 读仓库顶层的 `.pre-commit-config.yaml` (不在 git 里时读规定清单所在目录的)，有 hook 在 commit 阶段对每次提交、不带文件过滤、带 `--staged` 和 `--redact` 运行 gitleaks，即为通过；gitleaks 自己发布的 hook，无论用它现在的还是以前的仓库名，`rev` 为 v8.1.1 或更新时按它自己的 entry 计。statute 看不到命令的 hook (`rev` 更旧或读不出的 gitleaks 自带 hook、别的仓库的 hook、运行脚本的本地 hook)、不带 `--redact` 或带文件过滤的 gitleaks hook、别的扫描器、别的 hook 框架的配置，以及 statute 读不了的 YAML，算无法判定。根本没有 hook 配置，或者配置里 commit 阶段的 hook 都看得到命令、却没有一个扫描暂存的改动，即为违反；
 - 规定 58 (release-first-green-commit) 把 `HEAD` 上的 tag 当作发布，把默认分支当作主分支，把包含默认分支所要求检查 (分支保护或 ruleset 要求的) 的 workflow 当作 CI；这个 workflow 为 `HEAD` 推送到默认分支而跑的 run 在第 1 次 attempt 就以成功结束的，即为通过，否则即为违反。`HEAD` 上没有 tag、没有要求的检查、没有这样的 run (推送不触发 CI，或者 commit 不在该分支上)，以及 run 还没跑完时，算无法判定；
 - 规定 61 (verdict-names-version) 读 `HEAD` 所属 pull request 上的 verdict：正文以 `Verdict:` 开头的评论或 review，以及批准或要求修改的 review。verdict 里没有其 pull request 中某个 commit 的完整 SHA，即为违反，review 还以 GitHub 为它记下的 commit 写明版本；在别处给出的 verdict，以及写明的 SHA 是不是审查过的版本，交给审查方；
 - 规定 71 (no-automatic-merge) 读 `HEAD` 所属 pull request 的时间线，只要某个 pull request 开过 auto-merge 就是违反，之后关掉了或已经由它合并了也一样；其他自动合并的方式，以及是谁开的，交给审查方。
 
-规定 43 和 46 取代的规定 3 和 7 保留各自的模块，只在规定清单仍然启用它们时运行。
+规定 43、46 和 280 取代的规定 3、7 和 46 保留各自的检查，只在规定清单仍然启用它们时运行。
 
 `statute check` 由审查方运行，也可以在 CI 里运行。它不作为提交钩子：有的检查要扫描全部历史，或者经网络访问代码托管平台，可能很慢，而提交钩子只放几秒内跑完的检查。
 

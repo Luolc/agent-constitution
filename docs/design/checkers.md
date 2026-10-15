@@ -203,7 +203,9 @@ for agents, and passes the same paths to the script as `--instructions
 either option replaces this repo's own part and generated files.
 `statute-checks.toml` and the top `AGENTS.md` stay instruction files
 there until the repo declares them with `--generated`, once its CI runs
-`statute compile --check`.
+`statute compile --check`. statute's built-in check of rule 46 needs no
+such declaration: it tells statute's files apart by itself, and where it
+differs from the script is in [Rule checks and review](rule-checks.md#checks).
 
 The design translation check (`check-design-translation`) keeps the
 Chinese translation of the design, `docs/design/zh/<name>.md`, in step
