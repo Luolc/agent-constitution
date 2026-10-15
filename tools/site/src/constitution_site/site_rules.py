@@ -378,8 +378,8 @@ def page_title(label: str, path: list[str], title: str) -> str:
   """Return the title of a node's page: its label, then the path to it.
 
   The titles above the node are left out from the farthest, for an
-  ellipsis, until the whole fits in PAGE_TITLE_LENGTH characters; the
-  node's own title stays whole.
+  ellipsis, until the whole fits in PAGE_TITLE_LENGTH characters; its
+  parent's title and its own stay whole.
 
   Args:
     label: the node's label.
@@ -389,7 +389,7 @@ def page_title(label: str, path: list[str], title: str) -> str:
   Returns:
     The title, as `R7 Security › Credentials › Tiers`.
   """
-  for cut in range(len(path) + 1):
+  for cut in range(max(len(path), 1)):
     text = (
       f"{label} {' › '.join([*(['…'] if cut else []), *path[cut:], title])}"
     )

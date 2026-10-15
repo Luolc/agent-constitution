@@ -102,7 +102,8 @@ class SiteRulesTest(unittest.TestCase):
     title = site_rules.page_title("R7", ["A" * 30, "B" * 30], "C" * 5)
     self.assertEqual(title, f"R7 … › {'B' * 30} › CCCCC")
     self.assertEqual(
-      site_rules.page_title("R7", ["A" * 60], "C" * 60), f"R7 … › {'C' * 60}"
+      site_rules.page_title("R7", ["A" * 9, "B" * 9], "C" * 60),
+      f"R7 … › {'B' * 9} › {'C' * 60}",
     )
 
   def test_other_sources(self):

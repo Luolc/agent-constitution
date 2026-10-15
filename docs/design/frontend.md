@@ -551,6 +551,34 @@ turned off (disabled), where it has these.
   its tag, Default option / 「默认选项」, in `accent` with `check`, so the
   default shows by shape as well as color. A one-of whose options are
   off has its box in `border-subtle`.
+- **The path of a node.** Two nodes under different parents may have
+  one title (a domain Tiers under Credentials and another under
+  Release, say), so a node is named by the path of the nodes above it
+  where a title alone could be either:
+  - On a node's page, above its title, a breadcrumb: a `nav` named
+    Breadcrumb / 「所在位置」 holding an ordered list, each node above
+    it, one-ofs included, outermost first, by its title alone and as a
+    link, then the node itself, its title in `text`, not a link,
+    marked `aria-current="page"`. `text-sm`, `line-height-ui`,
+    `text-muted`, the items joined by `chevron-right` (`icon-sm`) and
+    wrapping on a narrow screen; each link at least `target` tall,
+    turning to `accent` under the pointer as the text's links do. A
+    node with nothing above it has no breadcrumb. The local site's
+    pages keep their line of the path, which starts at the index.
+  - The title of a node's page, in the browser's tab and in a shared
+    link (`og:title`): its label, then the titles of the path joined by
+    ` › ` (`R137 Security › Credentials › Secret manager`). Past 70 characters the
+    titles above its parent are left out from the farthest, an ellipsis
+    in their place (`R22 … › Credentials › Confirm a credential is in
+    place by its presence only`); the parent's title and the node's own
+    stay whole.
+  - Where a node's title stands alone (in a page's relations, the rules
+    of a parameter, the filter's domains, the local site's links and
+    its menu of domains), a title that another node of the site has in
+    that language is followed by the parent's title in parentheses, in
+    `text-muted` (`Tiers (Credentials)`); a title no other node has
+    stands alone. A breadcrumb or a path does not add it, as it names
+    the parents.
 - **Popovers** (the filter's menus, the info on the length): `bg-panel`,
   `1px` of `border-subtle`, `radius-md`, `shadow-popover`, padding
   `space-3 space-4`, under the control that opens it. A popover with controls
@@ -780,6 +808,7 @@ fonts, the text size and the column, and the breakpoints; the rows of
 the rules under a provision; the filter, the legend, the table of rules
 with its marks and its group rows and head that stick, and the one-of;
 the layers; the view of the list and the statements in its rows; the
+path of a node; the
 filter and the view in the address, pages readable without
 scripts, tabular figures, and `aria-expanded` with `aria-controls` on
 the info button, the filter's menus, the buttons of the rules under a
@@ -791,7 +820,8 @@ its group rows and head that stick, the one-of and the legend of
 closing on Escape or a click outside; the check boxes; hover only on
 fine pointers, the sizes of targets, the focus ring, and the motion of
 the filter's popovers; the language switch and the tag of a text not
-in the page's language; the view of the list of [Components](#components), its choice
+in the page's language; the parent's title after a title two nodes
+have; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
 it opens at an address without one. Not built yet, and what each replaces:
 
