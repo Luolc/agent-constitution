@@ -437,7 +437,16 @@ turned off (disabled), where it has these.
   quiet button (most of them: the color switch, the
   filter's, an icon alone): no fill, `text`, hover `bg-hover`, active
   `bg-active`. Inputs and menus: `bg-page`, `1px` of `border-strong`,
-  `radius-sm`; focus the ring.
+  `radius-sm`, its border `text-muted` under the pointer; focus the
+  ring. No native control keeps the browser's own surface, in either
+  theme: a menu (`select`) shows `chevron-down` at its end, and its
+  list, where the browser lets a page draw it, is a popover whose
+  options are rows, the chosen one in `bg-selected` with its text in
+  `accent` and `weight-medium`; where the browser draws the list itself,
+  only its colors follow the theme. Check boxes and radio buttons are
+  the browser's, `icon-sm` in size, filled with `accent`. A `summary`
+  shows `chevron-right`, turned a quarter while it is open, in place of
+  the browser's marker.
 
 ## Not done
 
@@ -495,6 +504,7 @@ turned off (disabled), where it has these.
   for each part of the pages, so that changes to different parts touch
   different files: `site.css` (the theme's variables, links, the focus
   ring, icons, the sidebar, the table of contents, the top bar),
+  `controls.css` (the native controls wherever they stand),
   `constitution.css`, `design.css` (the design and a rule's page),
   `rules-list.css` (the list of the rules and the tags) and `filter.css`
   (the form above the list, whose markup is
@@ -525,7 +535,7 @@ have today; the motion of [Motion](#motion), reduced motion included,
 on what moves today (the popover on the length, the chevrons, the
 flash on a target, the sidebar and the table of contents of a narrow
 screen); hover only on fine pointers; the sizes of targets; the
-sidebar; the fonts, the text size and the column, and the breakpoints;
+sidebar's states; the native controls; the fonts, the text size and the column, and the breakpoints;
 the filter and the page in the address, pages readable without
 scripts, tabular figures, and `aria-expanded` with `aria-controls` on
 the info button and the buttons of the rules under a provision. Not
@@ -543,8 +553,7 @@ built yet, and what each replaces:
   plain tag that marks its default option.
 - Until the four above are built, `rules-list.css` and `filter.css`
   write some sizes and spaces as values, and the list's pages are
-  linked by the characters ‹ and › and the filter opens by the
-  browser's marker.
+  linked by the characters ‹ and ›.
 - The empty list says that no rule matches, without the step to clear
   the filter.
 - The local site's style sheet writes its own values; it includes

@@ -1,4 +1,4 @@
-<!-- en-sha256: e911c07c46dae7f32712e24d50f32882943b9aa3f9ecfd4499183b0949625555 -->
+<!-- en-sha256: ccfb242e7fab262b54068b7559654f78b110da14fd68bd316694ba6a5773187a -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -227,7 +227,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
 - **侧边栏。** `bg-panel`，边上一条 `1px` 的 `border-subtle`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。页面：`text-md`、`weight-regular`、`text`，padding `space-1 space-2`，`radius-sm`。hover：`bg-panel-hover`。按下：`bg-active`。当前页：`bg-selected`，文字用 `accent` 和 `weight-medium`；当前页列在某个分组下面时，只标出这一页，不标分组。可以折叠的分组在末尾有箭头，收起时 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`。
-- **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`；获得焦点时显示焦点框。
+- **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`，指针悬停时边框变成 `text-muted`；获得焦点时显示焦点框。原生控件在两套主题下都不保留浏览器自己的样子：菜单 (`select`) 末尾显示 `chevron-down`；浏览器允许页面自己画它的选项列表时，列表是一个弹出层，每个选项一行，选中的那项用 `bg-selected` 底，文字用 `accent` 和 `weight-medium`；浏览器自己画列表时，只有颜色跟随主题。复选框和单选按钮用浏览器的，大小 `icon-sm`，填充 `accent`。`summary` 显示 `chevron-right`，展开时转四分之一圈，取代浏览器自带的标记。
 
 ## <a id="not-done"></a>不做的事
 
@@ -248,19 +248,19 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 ## <a id="in-the-code"></a>代码实现
 
 - **token。** 本文的全部 token 定义在一份样式表 `crates/statute/assets/tokens.css` 里，每个是一个 CSS 自定义属性，名字是 token 名加前缀 `--t-` (`--t-text`、`--t-space-4`)；有了前缀，就不会与主题自己的属性混在一起，主题里就有一个取值不同的 `--space-1`。颜色只写一次，两个值一起写成 `light-dark(<light>, <dark>)`，随页面的 `color-scheme` 取值：跟随系统设置，页面根元素带 `data-theme` 时按读者的选择。英文和中文取值不同的 token 在 `:root:lang(zh)` 下重新设定，`target` 在 `pointer: coarse` 下重新设定。这份文件放在 crate 里，是为了让 `statute` 能用 `include_str!` 把它编进本地网站，同时照样能发布：发布的包不能引用 crate 目录以外的文件。公开网站从那里挂载它 (`web/hugo.toml`)。
-- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表和 tag)、`filter.css` (列表上方的表单，它的标记在 `web/layouts/_partials/rules/filter.html`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。
+- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`controls.css` (各处的原生控件)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表和 tag)、`filter.css` (列表上方的表单，它的标记在 `web/layouts/_partials/rules/filter.html`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。
 - **图标。** SVG 文件在 `crates/statute/assets/icons/`，每个来源一个目录，`lucide/` 和 `octicons/`，与发布版里的一样、不做改动，各目录里放着许可，版本号写在它的 `README.md` 里。页面按名字引入图标，`partial "icon.html" "lucide:funnel"`，把文件里的 SVG 压成一行内联进来，带上 class `icon`，并对读屏软件隐藏；这个 class 设定线宽 `icon-stroke` 和大小，大小默认 `icon-sm`，组件要求时改成 `icon-md`。会转向的箭头用 `chevron-right` 转四分之一圈，转过去就是 `chevron-down`。
 - **脚本。** 脚本用 TypeScript 写，由 Hugo 的 `js.Build` 构建，也就是 Hugo 自带的 esbuild，不用 Node，不用 npm 包。尚未实现：现在的脚本是 `web/assets/` 里的 JavaScript，压缩后内联在每个页面的 head 里。
 
 ## <a id="status"></a>现状
 
-公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的侧边栏和目录)；只在精确指针上用 hover；点击区域的大小；侧边栏；字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。尚未实现的，以及各自取代什么：
+公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的侧边栏和目录)；只在精确指针上用 hover；点击区域的大小；侧边栏的各种状态；原生控件；字体、正文字号和栏宽，以及断点；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮和条款下规定按钮上的 `aria-expanded` 与 `aria-controls`。尚未实现的，以及各自取代什么：
 
 - 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
 - 新的筛选器取代现在那块带「应用」按钮的复选框面板。
 - 新的规定树取代按深度缩进的做法，挂在规定下的规定也包括在内。
 - 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
-- 上面四项实现之前，`rules-list.css` 和 `filter.css` 里还直接写着一些字号和间距，列表的翻页链接用的是字符 ‹ 和 ›，筛选器靠浏览器自带的小三角打开。
+- 上面四项实现之前，`rules-list.css` 和 `filter.css` 里还直接写着一些字号和间距，列表的翻页链接用的是字符 ‹ 和 ›。
 - 筛选后为空的列表现在只说没有规定符合，不给清除筛选的下一步。
 - 本地网站的样式表写的是它自己的值，还没有引入 token 和图标。
 

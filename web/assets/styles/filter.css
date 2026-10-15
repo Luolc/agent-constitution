@@ -1,7 +1,7 @@
 /* The form above the list of the rules
    (layouts/_partials/rules/filter.html), in the muted color: the filter,
    a button that folds open a panel of checkboxes over the list, and the
-   page size. */
+   page size. Their controls' common look is controls.css's. */
 .rules .rules-controls {
   display: flex;
   flex-wrap: wrap;
@@ -12,10 +12,13 @@
 }
 .rules .rules-filter { position: relative; margin: 0; padding: 0; border: 0; background: none; }
 .rules .rules-filter summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--t-space-1);
+  min-block-size: var(--t-target);
   margin: 0;
   line-height: inherit;
-  cursor: pointer;
-  padding: .1em .5em;
+  padding: 0 .5em;
   border: 1px solid var(--t-border-subtle);
   border-radius: var(--t-radius-sm);
   color: var(--t-text);
@@ -51,12 +54,7 @@
   padding: .15em .9em;
   cursor: pointer;
 }
-.rules .rules-size select {
-  font: inherit;
-  color: var(--t-text);
-  background: var(--t-bg-page);
-  border: 1px solid var(--t-border-strong);
-  border-radius: var(--t-radius-sm);
-  padding: .1em .3em;
-  margin-inline-start: .3em;
+@media (hover: hover) and (pointer: fine) {
+  .rules .rules-filter button:hover { background: var(--t-accent-hover); }
 }
+.rules .rules-size .select { margin-inline-start: .3em; }

@@ -1,0 +1,137 @@
+/* The native controls, wherever they stand, so that none is left with
+   the browser's own surface, in either theme: a button is a quiet button
+   unless its component makes it another; inputs and menus sit on the
+   page with a border; check boxes and radio buttons are the browser's,
+   in the accent color; a `details` loses the browser's marker, and its
+   `summary` brings its own icon. The rules on elements are wrapped in
+   :where(), so that a component's own style wins without having to
+   outweigh it.
+
+   A menu (`select`) shows `chevron-down` from its wrapper,
+   `<span class="select">`. Its list is the browser's: where the browser
+   lets a page draw it (`appearance: base-select`), it is a popover as
+   docs/design/frontend.md (Components) describes, its options rows, the
+   chosen one on the selected color, in the accent color and heavier;
+   elsewhere the system draws it, and the page sets only its colors, in
+   the theme's scheme. */
+
+:where(button) {
+  min-inline-size: var(--t-target);
+  min-block-size: var(--t-target);
+  padding: var(--t-space-1) var(--t-space-2);
+  font: inherit;
+  color: var(--t-text);
+  background: none;
+  border: 0;
+  border-radius: var(--t-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  :where(button):hover { background-color: var(--t-bg-hover); }
+}
+:where(button):active { background-color: var(--t-bg-active); }
+:where(button):disabled { opacity: .5; cursor: default; }
+
+:where(select, textarea, input:not([type="checkbox"], [type="radio"], [type="hidden"])) {
+  min-block-size: var(--t-target);
+  padding: var(--t-space-1) var(--t-space-2);
+  font: inherit;
+  line-height: var(--t-line-height-ui);
+  color: var(--t-text);
+  background-color: var(--t-bg-page);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--t-radius-sm);
+  transition: border-color var(--t-duration-fast) var(--t-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  :where(select, textarea, input:not([type="checkbox"], [type="radio"], [type="hidden"])):hover {
+    border-color: var(--t-text-muted);
+  }
+}
+:where(select) {
+  appearance: none;
+  padding-inline-end: calc(var(--t-space-4) + var(--t-icon-sm));
+  cursor: pointer;
+}
+:where(.select) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+:where(.select) > .icon {
+  position: absolute;
+  inset-inline-end: var(--t-space-2);
+  pointer-events: none;
+}
+:where(option) { color: var(--t-text); background-color: var(--t-bg-panel); }
+
+@supports (appearance: base-select) {
+  :where(select), ::picker(select) { appearance: base-select; }
+  select::picker-icon { display: none; }
+  ::picker(select) {
+    margin-block: var(--t-space-1);
+    padding: var(--t-space-1);
+    color: var(--t-text);
+    background: var(--t-bg-panel);
+    border: 1px solid var(--t-border-subtle);
+    border-radius: var(--t-radius-md);
+    box-shadow: var(--t-shadow-popover);
+    transform-origin: top center;
+    opacity: 0;
+    scale: .95;
+    transition-property: opacity, scale, display, overlay;
+    transition-duration: var(--t-duration-fast);
+    transition-timing-function: var(--t-ease-out);
+    transition-behavior: allow-discrete;
+  }
+  select:open::picker(select) {
+    opacity: 1;
+    scale: 1;
+    transition-duration: var(--t-duration-base);
+  }
+  @starting-style {
+    select:open::picker(select) { opacity: 0; scale: .95; }
+  }
+  option {
+    min-block-size: var(--t-target);
+    padding: var(--t-space-1) var(--t-space-2);
+    background: none;
+    border-radius: var(--t-radius-sm);
+  }
+  option::checkmark { display: none; }
+  option:checked {
+    background-color: var(--t-bg-selected);
+    color: var(--t-accent);
+    font-weight: var(--t-weight-medium);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    option:hover { background-color: var(--t-bg-panel-hover); }
+    option:checked:hover { color: var(--t-text); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::picker(select), select:open::picker(select) { scale: none; }
+    @starting-style {
+      select:open::picker(select) { scale: none; }
+    }
+  }
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  inline-size: var(--t-icon-sm);
+  block-size: var(--t-icon-sm);
+  margin: 0;
+  vertical-align: middle;
+  accent-color: var(--t-accent);
+  cursor: pointer;
+}
+
+:where(summary) { list-style: none; cursor: pointer; }
+:where(summary)::-webkit-details-marker { display: none; }
+:where(summary) > .icon { transition: rotate var(--t-duration-base) var(--t-ease-out); }
+:where(details[open] > summary) > .icon { rotate: 90deg; }
+@media (prefers-reduced-motion: reduce) {
+  :where(summary) > .icon { transition: none; }
+}
+/* The theme puts its own marker before a summary in the text. */
+.markdown details > summary::before { content: none; }
