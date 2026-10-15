@@ -16,7 +16,7 @@ en = "Reproduce a heavy-load problem only where its load is capped, or leave it 
 zh = "高负载下才出现的问题只在限制了负载的地方复现，否则交委托人决定"
 
 [text.statement]
-en = "On a machine you share with others, reproduce a problem that only shows under heavy load only in an isolated environment whose resources are capped so that the machine's load stays within what it can carry; where you have none, record it as open work, say what isolated environment it needs, and leave the decision to a principal."
+en = "On a machine you share with others, reproduce a problem that shows only under heavy load, and only in an isolated environment whose resources are capped so that the machine's load stays within what it can carry; where you have none, record it as open work, say what isolated environment it needs, and leave the decision to a principal."
 zh = "在与他人共用的机器上，只在高负载下才能复现的问题，只放到限制了资源、让机器负载不超出它承受能力的隔离环境里复现；没有这样的环境的，记为待办，写清需要什么样的隔离环境，交委托人决定。"
 
 [text.reason]
@@ -40,4 +40,4 @@ agent 在共用的机器上、在这样的环境之外复现这类问题，复�
 '''
 
 [translations]
-zh = "ad1a522143533b42339a58d3514a64319047903b7fc7ad034e8a0ee9c53bb877"
+zh = "280b8ec77958c694d9f14e413c7b2d16065a5795ac1b69a19f83e7c44550cc5b"
