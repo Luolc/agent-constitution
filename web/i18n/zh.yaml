@@ -121,3 +121,5 @@ default-off: "默认关闭"
 default-option: "默认选项"
 # 规定列表里 one-of 画成框时，标题前的字样。
 one-of: "择一："
+# 左栏里显示或收起一组页面的按钮的名字 (layouts/_partials/docs/menu-hugo.html)。
+fold-pages: "{{ .name }}的页面"
