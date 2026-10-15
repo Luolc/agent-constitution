@@ -16,7 +16,7 @@ uses = ["instructions", "review"]
 en = "Count statute's inputs as instruction files"
 
 [text.statement]
-en = "Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml`, which `statute compile` generates, with whichever side changed it ({@rule:R47})."
+en = "Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml` as a generated file ({@rule:R47}), not as an instruction file."
 
 [text.reason]
 en = '''
@@ -27,5 +27,5 @@ The listed files decide or record what the compiled `AGENTS.md` holds, so a chan
 en = '''
 `uv run check-instruction-changes --base origin/main` fails a change that mixes instruction files with other files, and CI runs it on every pull request. `statute compile --check` shows that `statute-checks.toml` equals a recompile.
 
-Violated when a change mixes one of the listed files with files that are not instruction files, or when a change to the listed files alters `statute-checks.toml` by hand instead of by `statute compile`.
+Violated when a change mixes one of the listed files with files that are not instruction files.
 '''
