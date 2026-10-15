@@ -303,11 +303,10 @@ What replaces today's icons:
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
 | The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
-| A text button | The filter | `funnel` |
+| A text button | The local site's filter | `funnel` |
 | A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
 | None | A rule's uses in the list and the legend: instructions, review | `scroll-text`, `scan-eye` |
 | None | Between the domains of a group row's path | `chevron-right` |
-| The characters ‹ and › | The list's previous and next page | `chevron-left`, `chevron-right` |
 | None | Closing a popover | `x` |
 | None | A rule under another rule | `corner-down-right` |
 | None | An option of a one-of, the default one | `circle`, `circle-dot` |
@@ -319,8 +318,7 @@ Motion is for three things only: a part that folds open or shut, a
 change under the pointer or the keyboard's focus, and a popover that
 opens or closes; and, once, the flash on an anchor's target. Nothing
 moves on its own, on scroll or while the page loads. What is done often
-does not move at all: turning a page of the list, a change to the
-filter, and anything done from the keyboard (a shortcut, Escape) take
+does not move at all: a change to the filter, and anything done from the keyboard (a shortcut, Escape) take
 effect at once.
 
 | Token | Value | Use |
@@ -370,8 +368,7 @@ target still fades from `bg-target`.
   is shown, the next one under the pointer appears at once. A tip never
   holds what the page says nowhere else: what it says is also the
   element's accessible name or in a legend.
-- **State in the address.** The filter, the page size and the page of
-  the list are in the address, so a list can be linked, and back and
+- **State in the address.** The filter of the list is in the address, so a list can be linked, and back and
   forward return to the list as it was.
 - **Without scripts.** The content is visible by default: a page whose
   scripts fail or never run still shows all its text, with the parts
@@ -494,8 +491,8 @@ turned off (disabled), where it has these.
   is the whole link to the domain's page, underlined under the pointer,
   as `accent` would fall under 4.5 on the band, and named for screen
   readers by the label and the domains joined by commas. A group row shows where
-  the nearest domain changes from the rule shown before it and at the
-  top of each page, so the list coming back to a domain from one under
+  the nearest domain changes from the rule shown before it and above
+  the first rule shown, so the list coming back to a domain from one under
   it shows that domain's row again. The head sticks to the top of the
   window, under a narrow screen's top bar, and each group row sticks
   under the head until the next one covers it, so that the domain of
@@ -691,7 +688,7 @@ turned off (disabled), where it has these.
   `constitution.css`, `design.css` (the design and a rule's page),
   `rules-list.css` (the list of the rules, its marks and the tags, and
   the width of its page),
-  `filter.css` (the filter and the page size above the list) and
+  `filter.css` (the filter above the list) and
   `legend.css` (the legend above them), whose markup is in
   `web/layouts/_partials/rules/`. Hugo joins them, after
   the theme's and `tokens.css`, into one file, in the order of
@@ -750,7 +747,7 @@ fonts, the text size and the column, and the breakpoints; the rows of
 the rules under a provision; the filter, the legend, the table of rules
 with its marks and its group rows and head that stick, and the one-of;
 the layers;
-the filter and the page in the address, pages readable without
+the filter in the address, pages readable without
 scripts, tabular figures, and `aria-expanded` with `aria-controls` on
 the info button, the filter's menus, the buttons of the rules under a
 provision, the sidebar's groups and language switch and the top bar's

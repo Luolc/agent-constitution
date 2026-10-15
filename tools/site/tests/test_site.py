@@ -121,7 +121,6 @@ class SiteTest(unittest.TestCase):
     index: str = INDEX,
     design: dict[str, str] = DESIGN,
     rules: bool = True,
-    per_page: int | None = None,
     edit_rules: Callable[[Path], None] | None = None,
     other: bool = False,
   ) -> dict[str, str]:
@@ -134,7 +133,6 @@ class SiteTest(unittest.TestCase):
       design: The files of docs/design/ by path.
       rules: Whether to write web/data/rules.json, from the rules of
         site_fixture.
-      per_page: The rules a page of their list shows, if not the site's.
       edit_rules: Changes the rules' checkout before site-rules reads it.
       other: Whether site-rules also reads site_fixture's second source,
         `demo`, global private, with a rule set enabling R3 and demo:2.
@@ -188,8 +186,6 @@ class SiteTest(unittest.TestCase):
           args += ["--enabled", str(lock)]
         self.assertEqual(site_rules.main(args), 0)
       env = dict(os.environ)
-      if per_page:
-        env["HUGO_PARAMS_RULESPERPAGE"] = str(per_page)
       subprocess.run(
         [
           HUGO,
@@ -390,8 +386,7 @@ class SiteTest(unittest.TestCase):
       " a rule has none Status Status All None Active Trial Draft Superseded"
       " Repealed Defaults Defaults All None On by default Off by default Uses"
       " Uses All None Instructions Review Domains Domains All None R1 Group 1"
-      " Reset filter Rules"
-      " per page 25 50 100 All ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3"
+      " Reset filter ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3"
       " Default option R1",
       pages["rules/index.html"],
     )
@@ -422,7 +417,7 @@ class SiteTest(unittest.TestCase):
     self.assertRegex(
       page,
       r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
-      r' href="\.\./rules/3/">.*Default option</span></span>'
+      r' href="\.\./rules/3/" title="Rule 3">.*Default option</span></span>'
       r'<span class="rule-marks">.*</a></li>\n</ul>',
     )
     # The superseded rule 4 is there, with its status, but filtered out.
@@ -468,7 +463,8 @@ class SiteTest(unittest.TestCase):
     # A rule's marks: its status, the ring of off by default, its one use.
     self.assertRegex(
       page,
-      r'<a class="rule-entry" href="\.\./rules/6/"><span class="rule-id">R6'
+      r'<a class="rule-entry" href="\.\./rules/6/" title="Rule 6">'
+      r'<span class="rule-id">R6'
       r'</span><span class="rule-title" lang="en"><span class="rule-text">'
       r'Rule 6</span></span><span class="rule-marks"><span class="rule-mark'
       r' rule-status status-active" role="img" aria-label="Active"'
@@ -499,8 +495,6 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       '<fieldset class="rules-filter-group" id="rules-filter-status"', page
     )
-    self.assertIn('<option value="all" selected>', page)
-    self.assertIn('data-size="all" data-first="0"', page)
     self.assertNotIn("rules/page/2/index.html", raw)
     self.assertIn('<p class="rules-none" hidden>', page)
     self.assertIn(
@@ -520,42 +514,6 @@ class SiteTest(unittest.TestCase):
       "Constitution 2026-10 Edition (draft) Rules Design", pages["index.html"]
     )
     self.assertIn("宪法 2026-10 版 (草案) 规定 设计", pages["zh/index.html"])
-
-  def test_rules_list_pages(self):
-    """Every page holds every rule, those of other pages hidden.
-
-    The pages split the rules of the default filter; each heads its first
-    rule with the rule's groups.
-    """
-    raw = self.build(raw=True, per_page=2)
-    one, two = raw["rules/index.html"], raw["rules/page/2/index.html"]
-    for page in (one, two):
-      self.assertEqual(
-        re.findall(r'class="rule-entry" href="[^"]*/(\d)/"', page),
-        ["2", "3", "4", "5", "6"],
-      )
-    self.assertIn('data-size="2" data-first="0"', one)
-    self.assertIn('data-size="2" data-first="2"', two)
-    self.assertEqual(
-      re.findall(r'data-domain="1"[^>]*"( hidden)?>', one),
-      ["", " hidden", "", " hidden"],
-    )
-    self.assertEqual(
-      re.findall(r'data-domain="1"[^>]*"( hidden)?>', two),
-      [" hidden", " hidden", " hidden", ""],
-    )
-    self.assertEqual(
-      HEADING.findall(two),
-      [
-        ("2", "1", " hidden"),
-        ("2", "1", " hidden"),
-        ("2", "1", " hidden"),
-        ("2", "1", ""),
-      ],
-    )
-    self.assertEqual(GROUP_ID.findall(two), ["1"])
-    self.assertIn('<a href="../rules/page/2/">2</a>', one)
-    self.assertIn('<a aria-current="page">2</a>', two)
 
   def test_rules_list_subdomain(self):
     """A domain under a domain: a row with its path, and a nested checkbox.
@@ -605,7 +563,8 @@ class SiteTest(unittest.TestCase):
 
     Loaded in headless Chrome, which runs the page's scripts: one value
     or several of a field, two fields, none of a field, a domain alone
-    or with the one under it, the old address of the form, the group
+    or with the one under it, the old addresses of the form and with a
+    page size and page, which show the whole list, the group
     rows shown, and the number of fields changed from the default on the
     filter's button.
     Skipped without Chrome, except in CI.
@@ -629,6 +588,7 @@ class SiteTest(unittest.TestCase):
           "1",
         ),
         ("?status=superseded", ["4"], ["1"], "1"),
+        ("?per=2&page=2", ["3", "5", "6"], ["2", "1"], "0"),
         ("?status=", [], [], "1"),
         ("?domain=2", ["3"], ["2"], "1"),
         ("?status=active,superseded&domain=1", ["4", "5", "6"], ["1"], "2"),
@@ -834,7 +794,8 @@ window.addEventListener("load", () => {
     self.assertRegex(
       page,
       r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
-      r' href="\.\./rules/7/"><span class="rule-id">R7</span>.*Default'
+      r' href="\.\./rules/7/" title="[^"]*"><span class="rule-id">R7</span>'
+      r".*Default"
       r" option</span></span>.*</a></li>\n</ul>",
     )
     self.assertNotIn('data-group="2"', page)
@@ -1031,10 +992,9 @@ window.addEventListener("load", () => {
 
   def test_rules_group_current(self):
     """The rules group is marked current on all of its pages, only there."""
-    raw = self.build(raw=True, per_page=2)
+    raw = self.build(raw=True)
     for page, href, mark in (
       ("rules/index.html", "../rules/", " active"),
-      ("rules/page/2/index.html", "../../../rules/", " active"),
       ("rules/3/index.html", "../../rules/", " active"),
       ("zh/rules/3/index.html", "../../../zh/rules/", " active"),
       ("design/one/index.html", "../../rules/", ""),

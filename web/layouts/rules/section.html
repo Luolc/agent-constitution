@@ -13,22 +13,20 @@
   not rows of their own: each rule carries a group row for its innermost
   group, its label and the path of its groups, with a source as its
   quadrant and name when the site has more than one, shown where that
-  group differs from the one of the rule shown before it, and on each
-  page above its first rule, so that the list coming back to a domain
+  group differs from the one of the rule shown before it, and above the
+  first rule shown, so that the list coming back to a domain
   from one under it shows the domain's row again. The head and the group
   rows stick to the top as the page scrolls, each group row under the
   head until the next one covers it.
 
   Above the list, its legend (_partials/rules/legend.html), then the
-  filter and the page size (_partials/rules/filter.html). The rules
-  shown are those of the filter, rulesPerPage of them a page, or all on
-  one page when it is "all"; by default those of a status in
-  rulesStatuses. Every page holds every rule, each
-  with its group row, the rules and rows not shown hidden, so that
-  assets/ts/rules-list.ts can show another filter and page size, from
-  the address, without a page of their own. Without scripts the pages
-  are Hugo's, of the rules of the default filter, and the controls stay
-  hidden. In a group row shown, each group of the path has the id
+  filter (_partials/rules/filter.html). The rules shown are those of
+  the filter, all on one page; by default those of a status in
+  rulesStatuses. The page holds every rule, each with its group row, the
+  rules and rows not shown hidden, so that assets/ts/rules-list.ts can
+  show another filter, from the address, without a page of its own.
+  Without scripts the page shows the rules of the default filter, and
+  the controls stay hidden. In a group row shown, each group of the path has the id
   `group-<key>` the first time it shows on the page, so that an address
   can point at it. The page has no table of contents
   (content/rules/_content.gotmpl). */ -}}
@@ -36,12 +34,6 @@
 {{- $all := where (where .Pages "Params.rule.kind" "in" (slice "rule" "one-of")) "Params.rule.boxed" "ne" true }}
 {{- $statuses := site.Params.rulesStatuses }}
 {{- $default := where $all "Params.rule.status" "in" $statuses }}
-{{- $size := site.Params.rulesPerPage }}
-{{- $count := len $default }}
-{{- if ne (string $size) "all" }}{{ $count = int $size }}{{ end }}
-{{- $pager := .Paginate $default (cond (gt $count 0) $count 1) }}
-{{- $first := mul (sub $pager.PageNumber 1) $count }}
-{{- $end := add $first $count }}
 {{- $sources := (index hugo.Data.rules site.Language.Lang).sources }}
 {{- $many := gt (len $sources) 1 }}
 <article class="markdown book-article"><div class="design rules rules-index">
@@ -53,20 +45,15 @@
 {{- $enabled := false }}
 {{- range $all }}{{ if isset .Params.rule "enabled" }}{{ $enabled = true }}{{ end }}{{ end }}
 {{ partial "rules/legend.html" (dict "enabled" $enabled "many" $many) }}
-{{ partial "rules/filter.html" (dict "page" . "statuses" $statuses "size" $size "sources" $sources) }}
+{{ partial "rules/filter.html" (dict "page" . "statuses" $statuses "sources" $sources) }}
 <div class="rules-table">
 <div class="rules-head" aria-hidden="true"><span class="rule-id">{{ i18n "rule-id" }}</span><span class="rule-title">{{ i18n "rules-column-rule" }}</span></div>
-<div class="rules-list" data-size="{{ $size }}" data-first="{{ $first }}">
-{{- $k := 0 }}
+<div class="rules-list">
 {{- $previous := "" }}
 {{- $ids := dict }}
 {{- range $all }}
   {{- $rule := .Params.rule }}
-  {{- $on := false }}
-  {{- if in $statuses $rule.status }}
-    {{- $on = and (ge $k $first) (lt $k $end) }}
-    {{- $k = add $k 1 }}
-  {{- end }}
+  {{- $on := in $statuses $rule.status }}
 <div class="rule-item{{ if eq $rule.kind "one-of" }} one-of-box{{ end }}" data-status="{{ $rule.status }}" data-domain="{{ $rule.domain }}" data-uses="{{ delimit (or $rule.optionUses $rule.uses) " " }}" data-default="{{ cond (eq $rule.onByDefault true) "on" "off" }}"{{ if $many }} data-quadrant="{{ $rule.quadrant }}"{{ end }}{{ if not $on }} hidden{{ end }}>
   {{- with $rule.groups }}
     {{- $group := index . (sub (len .) 1) }}
@@ -116,25 +103,7 @@
 {{- end }}
 </div>
 </div>
-<p class="rules-none"{{ if $pager.Pages }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-reset" hidden>{{ i18n "rules-reset-filter" }}</button></p>
-<nav class="rules-pager" aria-label="{{ i18n "rules-pages" }}" data-previous="{{ i18n "rules-previous" }}" data-next="{{ i18n "rules-next" }}">
-{{- if gt $pager.TotalPages 1 }}
-  {{- with $pager.Prev }}
-<a href="{{ .URL }}" rel="prev" aria-label="{{ i18n "rules-previous" }}">{{ partial "icon.html" "lucide:chevron-left" }}</a>
-  {{- end }}
-  {{- range $pager.Pagers }}
-    {{- if eq .PageNumber $pager.PageNumber }}
-<a aria-current="page">{{ .PageNumber }}</a>
-    {{- else }}
-<a href="{{ .URL }}">{{ .PageNumber }}</a>
-    {{- end }}
-  {{- end }}
-  {{- with $pager.Next }}
-<a href="{{ .URL }}" rel="next" aria-label="{{ i18n "rules-next" }}">{{ partial "icon.html" "lucide:chevron-right" }}</a>
-  {{- end }}
-{{- end }}
-</nav>
-<template class="rules-pager-icons"><span data-rel="prev">{{ partial "icon.html" "lucide:chevron-left" }}</span><span data-rel="next">{{ partial "icon.html" "lucide:chevron-right" }}</span></template>
+<p class="rules-none"{{ if $default }} hidden{{ end }}>{{ i18n "rules-none" }} <button type="button" class="rules-none-reset" hidden>{{ i18n "rules-reset-filter" }}</button></p>
 </div>
 </article>
 {{ end }}

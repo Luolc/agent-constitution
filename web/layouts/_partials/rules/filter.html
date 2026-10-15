@@ -7,10 +7,9 @@
   checked as the default filter is, the statuses of rulesStatuses and
   every other value; assets/ts/rules-list.ts checks them as the address
   says. Without scripts the controls stay hidden, as nothing could run
-  them. The page size is a menu in its wrapper
-  (assets/styles/controls.css). Takes (dict "page" the list's page
-  "statuses" the statuses checked by default "size" the page size
-  "sources" the sources, as data/rules.json gives them). */ -}}
+  them. Takes (dict "page" the list's page "statuses" the statuses
+  checked by default "sources" the sources, as data/rules.json gives
+  them). */ -}}
 <div class="rules-controls" hidden>
 <div class="rules-filter" role="group" aria-label="{{ i18n "rules-filter" }}" data-every="{{ i18n "rules-filter-all" }}" data-nothing="{{ i18n "rules-filter-none" }}">
 {{- $values := slice }}
@@ -40,9 +39,4 @@
 {{- end }}
 <button type="button" class="rules-filter-reset">{{ i18n "rules-reset-filter" }}<span class="rules-filter-count" hidden></span></button>
 </div>
-<label class="rules-size">{{ i18n "rules-per-page" }} <span class="select"><select name="per">
-  {{- range slice "25" "50" "100" "all" }}
-<option value="{{ . }}"{{ if eq . (string $.size) }} selected{{ end }}>{{ if eq . "all" }}{{ i18n "rules-all" }}{{ else }}{{ . }}{{ end }}</option>
-  {{- end }}
-</select>{{ partial "icon.html" "lucide:chevron-down" }}</span></label>
 </div>

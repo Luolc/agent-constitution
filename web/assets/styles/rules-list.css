@@ -4,8 +4,7 @@
    start in the muted color, its title cut to the row, its marks in four
    places at the end; a domain a group row on a band, the first level's
    darker. The head and the group rows stick to the top of the window,
-   under the top bar of a narrow screen. Below the list, the links to its
-   pages, the current page bold. */
+   under the top bar of a narrow screen. */
 .rules .rules-intro { color: var(--t-text-muted); }
 /* The list's page is a table, not text to read on: with no table of
    contents beside it, its column fills the page beside the sidebar, a
@@ -15,26 +14,6 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 .book-page:has(.rules-index) { padding-inline: var(--t-space-4); }
 .rules .rules-intro { max-width: var(--t-measure); }
 .rules .rules-params { margin-top: calc(-1 * var(--t-space-2)); }
-.rules .rules-pager {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--t-space-1) var(--t-space-4);
-  margin-top: var(--t-space-6);
-  font-variant-numeric: tabular-nums;
-}
-.rules .rules-pager a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: auto;
-  min-inline-size: var(--t-target);
-  min-block-size: var(--t-target);
-  text-decoration: none;
-}
-.rules .rules-pager span { display: inline-flex; }
-.rules .rules-pager a[aria-current] { font-weight: var(--t-weight-bold); color: var(--t-text); }
 .rules .rules-none { color: var(--t-text-muted); }
 
 /* A rule's tags on its page, small and muted, in boxes: whether the

@@ -96,11 +96,6 @@ status-trial: "试行"
 status-draft: "草案"
 status-superseded: "已取代"
 status-repealed: "已废止"
-rules-per-page: "每页条数"
-rules-all: "全部"
-rules-previous: "上一页"
-rules-next: "下一页"
-rules-pages: "列表的页码"
 # 规定源的象限、规定是否启用，站点有多个规定源或一套规定集时才显示
 # (layouts/rules/、layouts/_partials/rules/quadrant.html)。
 quadrant-global-public: "全局公开"

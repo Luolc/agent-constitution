@@ -134,7 +134,6 @@
   }
 }
 .rules .rules-filter-group button:active { color: var(--t-text); background-color: var(--t-bg-active); }
-.rules .rules-size .select { margin-inline-start: var(--t-space-1); }
 .rules .rules-none-reset { color: var(--t-accent); }
 @media (max-width: 48rem) {
   .rules .rules-menu { position: static; }

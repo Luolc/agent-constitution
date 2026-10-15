@@ -1,25 +1,22 @@
-// The list of the rules (layouts/rules/section.html) with the filter and
-// the page size the reader chose, read from the address: the values
-// chosen of each field as assets/ts/filter.ts writes them, `per` (25,
-// 50, 100 or all) and `page`. Without them, the default filter, as the
-// menus' check boxes were built, the page size Hugo built the pages
-// with, all by default, and the page Hugo built. Every page
-// holds every rule, so this only shows the rules of the filter and page
-// on the rules' items (`.rule-item`, its values in `data-*`), and hides
-// the others; shows an item's group row where the group changes and on
-// top of the page, each group of its path with its id the first time it
-// shows on the page; and makes the links to the other pages again. A
-// change to the filter, the page size or the page applies at once and
-// is written into the address: the first change after a menu of the
-// filter opens adds an entry to the history, the next ones replace it,
-// so back returns to the list as it was before. Checking or unchecking a domain does the same to the
-// domains under it. Each menu's button says what its field chooses, and
-// Reset filter shows while a field differs from the default filter,
-// with their number.
+// The list of the rules (layouts/rules/section.html) with the filter the
+// reader chose, read from the address: the values chosen of each field
+// as assets/ts/filter.ts writes them. Without them, the default filter,
+// as the menus' check boxes were built. The page holds every rule, so
+// this only shows the rules of the filter on the rules' items
+// (`.rule-item`, its values in `data-*`), and hides the others; and
+// shows an item's group row where the group changes and above the first
+// rule shown, each group of its path with its id the first time it
+// shows. A change to the filter applies at once and is written into the
+// address: the first change after a menu of the filter opens adds an
+// entry to the history, the next ones replace it, so back returns to the
+// list as it was before. Checking or unchecking a domain does the same
+// to the domains under it. Each menu's button says what its field
+// chooses, and Reset filter shows while a field differs from the
+// default filter, with their number. An address of the list's earlier
+// forms, with `filter=1`, a page size (`per`) or a page (`page`), shows
+// its filter on the whole list and is written again without them.
 // Inlined in <head>.
 import { differing, type Fields, type Filter, matches, read, write } from "./filter";
-
-const SIZES = ["25", "50", "100", "all"];
 
 document.addEventListener("DOMContentLoaded", () => {
   const list = document.querySelector<HTMLElement>(".rules-list");
@@ -30,11 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const filter = controls.querySelector<HTMLElement>(".rules-filter")!;
   const badge = controls.querySelector<HTMLElement>(".rules-filter-count")!;
   const resetButton = controls.querySelector<HTMLButtonElement>(".rules-filter-reset")!;
-  const select = controls.querySelector<HTMLSelectElement>("select[name='per']")!;
   const none = document.querySelector<HTMLElement>(".rules-none");
-  const pager = document.querySelector<HTMLElement>(".rules-pager");
-  const icons = document.querySelector<HTMLTemplateElement>("template.rules-pager-icons");
-  const table = list.closest<HTMLElement>(".rules-table") ?? list;
   const items = Array.from(list.querySelectorAll<HTMLElement>(".rule-item"));
   const boxes = (field?: string): HTMLInputElement[] =>
     Array.from(filter.querySelectorAll<HTMLInputElement>(field ? `input[name='${field}']` : "input[type='checkbox']"));
@@ -59,46 +52,29 @@ document.addEventListener("DOMContentLoaded", () => {
     new Map([...fields.keys()].map((f) => [f, new Set(boxes(f).filter((b) => b.checked).map((b) => b.value))]));
   const defaults = chosen();
 
-  let per = list.dataset.size ?? "all";
-  let page = 1;
   // Whether this opening of a menu has added its entry to the history.
   let pushed = false;
-  const address = (n: number): string => {
+  const address = (): string => {
     const query = write(chosen(), fields, defaults);
-    if (per !== list.dataset.size) query.push(`per=${per}`);
-    if (n > 1 || list.dataset.first !== "0") query.push(`page=${n}`);
     return query.length ? `${location.pathname}?${query.join("&")}` : location.pathname;
   };
   const save = (push: boolean): void => {
-    if (push) history.pushState(null, "", address(page));
-    else history.replaceState(null, "", address(page));
+    if (push) history.pushState(null, "", address());
+    else history.replaceState(null, "", address());
   };
   const load = (): void => {
     const query = new URLSearchParams(location.search);
     const choice = read(query, fields, defaults);
     for (const box of boxes()) box.checked = choice.get(box.name)?.has(box.value) ?? false;
-    per = query.get("per") ?? "";
-    if (!SIZES.includes(per)) per = list.dataset.size ?? "all";
-    const size = per === "all" ? 0 : Number(per);
-    page = query.has("page")
-      ? Number(query.get("page"))
-      : size
-        ? Math.floor(Number(list.dataset.first) / size) + 1
-        : 1;
-    // An address of the old form is written in the new one.
-    if (query.has("filter")) save(false);
+    if (["filter", "per", "page"].some((p) => query.has(p))) save(false);
   };
 
-  // Shows the rules of the filter and the page.
+  // Shows the rules of the filter.
   const show = (): void => {
     const choice = chosen();
-    const matched = items.filter((item) =>
+    const shown = items.filter((item) =>
       matches(choice, fields, (field) => (item.dataset[field] ?? "").split(" ")),
     );
-    const size = per === "all" ? Math.max(matched.length, 1) : Number(per);
-    const pages = Math.max(1, Math.ceil(matched.length / size));
-    page = Math.min(Math.max(Math.floor(page) || 1, 1), pages);
-    const shown = matched.slice((page - 1) * size, page * size);
 
     for (const item of items) item.hidden = true;
     for (const heading of list.querySelectorAll<HTMLElement>(".rules-group")) heading.hidden = true;
@@ -122,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (none) none.hidden = shown.length > 0;
 
-    select.value = per;
     const changedFields = differing(choice, fields, defaults);
     for (const { button, value, group } of menus) {
       const field = group.dataset.field ?? "";
@@ -137,43 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
     badge.hidden = n === 0;
     if (n === 0 && document.activeElement === resetButton) menus[0]?.button.focus();
     resetButton.hidden = n === 0;
-
-    if (pager) {
-      pager.textContent = "";
-      const link = (n: number, text: string, label?: string, rel?: string): void => {
-        const a = document.createElement("a");
-        // The previous and next pages' links show the icons the page
-        // keeps in a template, the others their number.
-        const icon = rel ? icons?.content.querySelector(`[data-rel='${rel}']`) : null;
-        if (icon) a.append(icon.cloneNode(true));
-        else a.textContent = text;
-        if (n === page && !rel) {
-          a.setAttribute("aria-current", "page");
-        } else {
-          a.href = address(n);
-          a.addEventListener("click", (event) => {
-            event.preventDefault();
-            page = n;
-            save(true);
-            show();
-            table.scrollIntoView();
-          });
-        }
-        if (label) a.setAttribute("aria-label", label);
-        if (rel) a.rel = rel;
-        pager.append(a);
-      };
-      if (pages > 1) {
-        if (page > 1) link(page - 1, "‹", pager.dataset.previous, "prev");
-        for (let i = 1; i <= pages; i++) link(i, String(i));
-        if (page < pages) link(page + 1, "›", pager.dataset.next, "next");
-      }
-    }
   };
 
-  // A change to the filter: the first page of the new list.
   const changed = (): void => {
-    page = 1;
     save(!pushed);
     pushed = true;
     show();
@@ -259,12 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (current && next && !current.menu.contains(next)) close(false);
   });
 
-  select.addEventListener("change", () => {
-    per = select.value;
-    page = 1;
-    save(true);
-    show();
-  });
   window.addEventListener("popstate", () => {
     load();
     show();
