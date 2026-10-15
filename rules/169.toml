@@ -1,0 +1,42 @@
+id = 169
+slug = "starter-picks-model-and-effort"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+authority = ["decide-yourself.splitting-work", "evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Whoever starts an agent with fleet picks its model and effort"
+zh = "用 fleet 起 agent 的一方定型号与 effort"
+
+[text.statement]
+en = "When you start an agent with fleet, pick its model and effort, and give a reason in the task file whenever you pass a model or effort the scope's `models` setting does not give, or an effort above the default effort the rules set."
+zh = "用 fleet 起 agent 时，由你定它的型号与 effort；传了 scope 的 `models` 设置没有给出的型号或 effort，或者 effort 高于规定定下的默认值时，都在 task file 里写一句理由。"
+
+[text.reason]
+en = '''
+The model and the effort decide a task's quality and cost, and the one that hands out the task knows its difficulty best ({@constitution:decide-yourself.splitting-work}). A reason written down whenever the default is left lets the choice be judged afterwards ({@constitution:evidence.grounds}).
+'''
+zh = '''
+型号与 effort 决定一个任务的质量和花销，最清楚任务难度的是派活的一方 ({@constitution:decide-yourself.splitting-work})。偏离默认值时写下理由，事后才能判断这个选择对不对 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+The thread agent starts the lead, and the lead starts the workers; a model or effort that differs from the scope's settings is passed with `--model` or `--effort`. When `fleet job start` or `fleet spawn` gets no `--model` or `--effort`, fleet uses `models.lead` or `models.worker` of the scope's settings; when the scope sets none, it passes neither and the agent's own default applies. A worker that `fleet watch` starts uses the `model` and `effort` of the watch's entry, and neither when the entry sets none. Which model each role uses (the lead, an implementer by the difficulty of its task, a reviewer, a research worker) and the default effort are set by the layers below, where they set them.
+
+Violated when an agent is started with a model or effort that differs from the scope's settings, or with one passed where the scope sets none, and the task file gives no reason for it; or with an effort above the default effort the rules set, and no reason for it in the task file.
+'''
+zh = '''
+thread agent 起 lead，lead 起 worker；与 scope 设置不同的型号或 effort 用 `--model` / `--effort` 传。`fleet job start` / `fleet spawn` 没给 `--model` / `--effort` 时，fleet 用 scope 设置里的 `models.lead` / `models.worker`；scope 也没配，就都不传，由 agent 自己的默认值决定。`fleet watch` 起的 worker 用 watch 条目里的 `model` / `effort`，条目没配就都不传。各角色用什么型号 (lead、按任务难度分档的实现方、审查方、调研 worker) 和 effort 的默认值，由下层规定定，下层定了才有。
+
+起 agent 时型号或 effort 与 scope 设置不同，或者 scope 没配而传了参数，task file 里却没有理由；或者 effort 高于规定定下的默认值，task file 里没有理由的，即为违反本规定。
+'''
+
+[translations]
+zh = "9f1cf460a4bf2b899cd49224d17107f86a53df6c0a291db32b870b581ba6ac3a"

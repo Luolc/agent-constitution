@@ -1,0 +1,42 @@
+id = 164
+slug = "one-task-per-lock-file"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 78
+authority = ["decide-yourself.splitting-work"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Let one task at a time change a repository's lock file"
+zh = "同一时刻只让一个任务改仓库的锁文件"
+
+[text.statement]
+en = "Where work is divided among agents the way fleet does, let only one task at a time change a repository's dependency lock file."
+zh = "在像 fleet 那样在 agent 之间分工的法域里，同一个仓库的依赖锁文件，同一时刻只许一个任务修改。"
+
+[text.reason]
+en = '''
+Two tasks that change a lock file at the same time nearly always conflict at the merge, and the conflict is hard to resolve by hand: the dependencies have to be resolved again. Whoever splits the work keeps such colliding changes apart ({@constitution:decide-yourself.splitting-work}).
+'''
+zh = '''
+两个任务同时改锁文件，合并时几乎一定冲突，而且冲突很难手工解开，只能重新解析依赖。拆分任务的一方本来就要把这类会撞车的改动排开 ({@constitution:decide-yourself.splitting-work})。
+'''
+
+[text.verification]
+en = '''
+This rule is for the jurisdictions of {@rule:28}. A lock file is the file a package manager writes with the exact versions of the dependencies, for example `Cargo.lock`, `uv.lock`, `package-lock.json` or `go.sum`. A task changes it from the first commit of its branch that changes it until the branch is merged or abandoned. The agent responsible for the job puts the tasks that change a lock file one after another; a worker that finds it must change a lock file while another task of its job is changing one tells the agent responsible for its job first and waits until that agent has ordered them.
+
+Violated when the branches of two tasks both change a lock file of the same repository at the same time, neither of them yet merged or abandoned.
+'''
+zh = '''
+本规定适用于{@rule:28}所说的法域。锁文件指包管理器生成的、记录依赖确切版本的文件，例如 `Cargo.lock`、`uv.lock`、`package-lock.json`、`go.sum`。一个任务修改锁文件，从它的分支第一次改它的 commit 算起，到这个分支合入或者放弃为止。负责这项工作的 agent 把要改锁文件的任务排成先后；worker 发现自己要改锁文件，而同一项工作里另一个任务正在改，先告诉负责这项工作的 agent，等它排定先后。
+
+两个任务的分支同时修改了同一个仓库的锁文件，又都还没有合入或放弃的，即为违反本规定。
+'''
+
+[translations]
+zh = "8925b65a5b838d8588e9d4f845aac32cc73462226a657cfb492816346527ed35"

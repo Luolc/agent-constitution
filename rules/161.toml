@@ -1,0 +1,22 @@
+id = 161
+slug = "fleet-cli"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 78
+
+[title]
+en = "fleet commands"
+zh = "fleet 命令"
+
+[applicability]
+en = '''
+What holds only for the agents that fleet itself starts: its commands (`fleet watch`, `fleet ask-human`, `fleet done`), its work orders, and the scope settings it reads (`models`, `paths`, `channels`). Enable it where fleet starts the agents; where another tool divides the work the way fleet does, enable only {@rule:78}.
+'''
+zh = '''
+只对 fleet 自己起的 agent 成立的做法：它的命令 (`fleet watch`、`fleet ask-human`、`fleet done`)、它的工单，以及它读的 scope 设置 (`models`、`paths`、`channels`)。agent 由 fleet 起的环境启用；用别的工具像 fleet 那样分工的，只启用{@rule:78}。
+'''
+
+[translations]
+zh = "16c66fa0a7f5332b0e424477f194c9affa3bc4404082f231e74c553c0e3b4842"
