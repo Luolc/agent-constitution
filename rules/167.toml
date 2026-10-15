@@ -1,0 +1,42 @@
+id = 167
+slug = "keystrokes-only-by-responsible-agent"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 78
+authority = ["delegated-authority", "must-ask.capital"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Only the agent responsible for a job presses keys in another agent's terminal"
+zh = "只有负责一项工作的 agent 能在别的 agent 的终端里按键"
+
+[text.statement]
+en = "Where work is divided among agents the way fleet does, press keys in another agent's terminal only as the agent responsible for a job, and only to clear a menu that blocks a worker of that job."
+zh = "在像 fleet 那样在 agent 之间分工的法域里，只有作为负责一项工作的 agent，才能在别的 agent 的终端里按键，而且只用来清掉挡在这项工作的 worker 面前的菜单。"
+
+[text.reason]
+en = '''
+Pressing keys in another agent's terminal makes a decision for that agent: a wrong key may switch its model, spend usage ({@constitution:must-ask.capital}) or break off what it is doing. Kept to the agent responsible for the job and to that job's workers, the responsibility stays with the one that delegated the work ({@constitution:delegated-authority}). Reading a screen changes nothing, and anyone may do it.
+'''
+zh = '''
+往别的 agent 的终端里按键，等于替那个 agent 做了决定，按错了可能换了型号、花了额度 ({@constitution:must-ask.capital})，或者打断它正在做的事。限定由负责这项工作的 agent 按、只按这项工作的 worker，责任就落在派活的一方 ({@constitution:delegated-authority})。读屏不改变任何东西，谁都可以。
+'''
+
+[text.verification]
+en = '''
+This rule is for the jurisdictions of {@rule:28}. Pressing keys covers sending keys to a terminal pane (for example with `herdr agent send-keys`), typing text into it, and any other means by which a program in another agent's terminal receives input. A blocking menu is a screen other than the input box at which a worker stops and waits for a choice; which keys to press there is as the instructions of the tool for that role say (with fleet, the lead's built-in prompt). The one exception is an agent the tool itself starts to clear a blocked screen, within its task, such as the worker of fleet's `unblock` watch ({@rule:168}).
+
+Violated when an agent other than the one responsible for a job presses keys in another agent's terminal, outside the exception above, or when the agent responsible for a job presses keys in the terminal of an agent outside its job, or for any purpose other than clearing a blocking menu.
+'''
+zh = '''
+本规定适用于{@rule:28}所说的法域。按键包括往终端 pane 里发送按键 (例如用 `herdr agent send-keys`)、往里面输入文字，以及其他任何让别的 agent 终端里的程序收到输入的手段。挡路的菜单指 worker 停在输入框以外的屏幕上、等人选择的那类界面；在那里按哪个键，以工具给这个角色的指令为准 (用 fleet 时是 lead 的内置 prompt)。唯一的例外是工具自己为清掉挡路屏幕而起的 agent，在它的任务范围内按键，例如 fleet 的 `unblock` watch 起的 worker ({@rule:168})。
+
+负责一项工作的 agent 以外的 agent 在别的 agent 的终端里按了键 (上面的例外除外)，或者负责一项工作的 agent 在这项工作以外的 agent 的终端里按键、或为清挡路菜单以外的目的按键的，即为违反本规定。
+'''
+
+[translations]
+zh = "04e25ab4916092df478b98f9cc1db5a81b89aee0f4dba9fecc39e32dd42f1787"

@@ -1,0 +1,22 @@
+id = 137
+slug = "secret-tiers"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 13
+
+[title]
+en = "Credential tiers"
+zh = "凭证分层"
+
+[applicability]
+en = '''
+Keeps credentials in a secret manager in tiers by sensitivity, and says who reads or writes each tier, and by which route. Enable it where credentials are kept in a secret manager and agents or unattended tasks read them; where only people fetch credentials, by hand, it need not be enabled.
+'''
+zh = '''
+管凭证在密钥管理器里按敏感程度分层存放，以及每一层由谁、经什么途径读写。凭证存放在密钥管理器里、并且有 agent 或无人值守的任务要读取凭证的地方启用；凭证只由人手动取用的，不必启用。
+'''
+
+[translations]
+zh = "fd40bbc1826babf63ba09a52155f924c640c02e312e450c69fad88a7ecda3d45"

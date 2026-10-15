@@ -75,3 +75,12 @@ rules-all: "全部"
 rules-previous: "上一页"
 rules-next: "下一页"
 rules-pages: "列表的页码"
+# 规定源的象限、规定是否启用，站点有多个规定源或一套规定集时才显示
+# (layouts/rules/、layouts/_partials/rules/quadrant.html)。
+rules-quadrants: "象限"
+quadrant-global-public: "全局公开"
+quadrant-global-private: "全局私有"
+quadrant-local-public: "本仓公开"
+quadrant-local-private: "本仓私有"
+rule-enabled: "已启用"
+rule-not-enabled: "未启用"

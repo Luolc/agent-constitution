@@ -1,0 +1,42 @@
+id = 139
+slug = "development-machine-reads-through-its-service-account"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "On a development machine, read the secret manager only through the machine's own service account"
+zh = "开发机上的 agent 只经本机的 service account 读密钥管理器"
+
+[text.statement]
+en = "On a development machine, read the secret manager only through that machine's own service account, and read general credentials from the general tier, read-only."
+zh = "在开发机上，agent 读密钥管理器只经本机自己的 service account，通用凭证从通用层只读。"
+
+[text.reason]
+en = '''
+Agents on a development machine run unattended, so what they can read has to be bounded by a service account granted only what it needs. Each machine has one of its own, so when one machine is compromised, only its service account needs rotating.
+'''
+zh = '''
+开发机上的 agent 无人值守地运行，能读到什么，要由一个只授了必要权限的 service account 限定。每台机器各有一个，哪台机器出了问题，只需轮换那一个。
+'''
+
+[text.verification]
+en = '''
+A development machine is one that agents work on unattended, with no person there to unlock each read. A tier is a part of the secret manager (a vault, say) kept for one kind of credential; the general tier holds the credentials people put there for agents to use. Which machines are development machines, and which part of the secret manager is the general tier, is set in the jurisdiction. The machine's service account reads the general tier, reads and writes the runtime tier ({@rule:140}), and sees no other part of the secret manager.
+
+Violated when an agent on a development machine reads the secret manager through another service account or by another route, reads from a tier other than the general tier and the runtime tier, or writes to the general tier.
+'''
+zh = '''
+开发机，指 agent 在上面无人值守地工作、没有人逐次解锁读取的机器。层，指密钥管理器里专放一类凭证的部分 (例如一个 vault)；通用层放的是人放进去给 agent 用的凭证。哪些机器是开发机、密钥管理器的哪一部分是通用层，由法域规定。本机的 service account 对通用层只读，对运行时层 ({@rule:140}) 可读可写，看不到密钥管理器的其他部分。
+
+开发机上的 agent 经别的 service account 或别的途径读密钥管理器，从通用层和运行时层以外的层读，或者往通用层写的，即为违反本规定。
+'''
+
+[translations]
+zh = "642563467c3244858f2169002ffead1bfe8b04ebd027466a280de7b4828f9cb1"

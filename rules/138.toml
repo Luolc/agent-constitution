@@ -1,0 +1,43 @@
+id = 138
+slug = "heavy-load-in-cpu-capped-container"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 13
+requires = [31]
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Reproduce a heavy-load problem in a container with capped CPU"
+zh = "只在高负载下出现的问题，放到限制了 CPU 的容器里复现"
+
+[text.statement]
+en = "On a machine you share with others, reproduce a problem that only shows under heavy load in a container with capped CPU (`docker run --cpus 1 …`, for example), keeping the 1-minute load average no higher than the machine's CPU count, or, where you cannot, record it as open work, say what isolated environment it needs, and leave the decision to a principal."
+zh = "在与他人共用的机器上，只在高负载下才能复现的问题，放到限制了 CPU 的容器里复现 (例如 `docker run --cpus 1 …`)，并让 1 分钟 load 不超过这台机器的 CPU 核数；做不到的，记为待办，写清需要什么样的隔离环境，交委托人决定。"
+
+[text.reason]
+en = '''
+{@rule:31} asks for such a problem to be reproduced in an isolated environment with capped resources, without saying what that is. On a shared machine, load left behind distorts the machine-wide load reading that every agent on it relies on, and slows the interactive sessions of the people working there; this rule names an environment that will do and a ceiling on the load.
+'''
+zh = '''
+{@rule:31} 要求这类问题放到限制了资源的隔离环境里复现，没说那是什么样的环境。在共用的机器上，残留的负载会让全机的 load 读数失真，而机器上所有 agent 都依赖这一个读数，在上面工作的人的交互会话也会被拖慢；本规定写明可以用的环境和负载的上限。
+'''
+
+[text.verification]
+en = '''
+The 1-minute load average is the first number that `uptime` or `/proc/loadavg` prints; the CPU count is what `nproc` prints on the machine.
+
+Violated when an agent on a shared machine reproduces such a problem outside a container, or in a container whose CPU is not capped, lets the 1-minute load average rise above the CPU count while reproducing it, or, unable to do this, neither records it as open work nor leaves the decision to a principal.
+'''
+zh = '''
+1 分钟 load 是 `uptime` 或 `/proc/loadavg` 打出的第一个数，CPU 核数是这台机器上 `nproc` 打出的数。
+
+agent 在共用的机器上、在容器外复现这类问题，或者所用的容器没有限制 CPU，复现期间 1 分钟 load 超过 CPU 核数，或者做不到时既没记为待办、也没交委托人决定的，即为违反本规定。
+'''
+
+[translations]
+zh = "48cc1d2872ae19a037c9fa1e79f6cdd3757838decefb37609f1813be359e75b7"

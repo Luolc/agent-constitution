@@ -1,6 +1,7 @@
 //! `statute compile`, run as a user runs it, in repositories written under
 //! Cargo's test directory; and on this repository's own rules.
 
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -276,12 +277,27 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
         .canonicalize()
         .unwrap();
     let (source, _) = statute::source::Source::load(&repo_root.join("rules"), "rules");
-    let domains: Vec<String> = source
+    let is_domain = |id: &statute::node::Id| {
+        source
+            .nodes
+            .get(id)
+            .is_some_and(|n| n.kind == statute::node::Kind::Domain)
+    };
+    // A domain under a domain is a subdomain, a heading of level three.
+    let levels: BTreeMap<statute::node::Id, &str> = source
         .nodes
         .values()
         .filter(|n| n.kind == statute::node::Kind::Domain)
-        .map(|n| format!("\"R{}\"", n.id))
+        .map(|n| {
+            let level = if n.parent.as_ref().is_some_and(is_domain) {
+                "###"
+            } else {
+                "##"
+            };
+            (n.id, level)
+        })
         .collect();
+    let domains: Vec<String> = levels.keys().map(|id| format!("\"R{id}\"")).collect();
     assert!(!domains.is_empty());
     // The rules cite both rules and the constitution, so that the check
     // that none of it is left as written below can fail.
@@ -316,10 +332,9 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
             !first.contains("{@"),
             "{lang}: a citation is left as written"
         );
-        for domain in &domains {
-            let id = domain.trim_matches('"').trim_start_matches("R");
+        for (id, level) in &levels {
             assert!(
-                first.contains(&format!("<a id=\"rule-R{id}\"></a>\n## ")),
+                first.contains(&format!("<a id=\"rule-R{id}\"></a>\n{level} ")),
                 "{lang}: domain {id}"
             );
         }

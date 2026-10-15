@@ -1,0 +1,42 @@
+id = 144
+slug = "no-personal-vaults"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+authority = ["sensitive-info", "personal-info"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Reference no vault that a person keeps for their own use, except one set aside for agents"
+zh = "不引用人自己用的 vault，专为 agent 留出的除外"
+
+[text.statement]
+en = "Reference no vault that a person keeps for their own use, except a vault that a principal sets aside for agents."
+zh = "不引用人自己用的 vault，委托人专为 agent 留出的 vault 除外。"
+
+[text.reason]
+en = '''
+A vault that a person keeps for their own use holds that person's own logins, which are not meant for agents. What an agent does need from the person, such as the answers it fills into a form on their behalf, a principal puts into a vault set aside for agents.
+'''
+zh = '''
+人自己用的 vault 里是这个人自己的登录项，不是给 agent 用的。agent 确实需要的东西，比如代人填表时要填的答案，由委托人放进专为 agent 留出的 vault。
+'''
+
+[text.verification]
+en = '''
+A vault that a person keeps for their own use is one holding that person's own logins and other entries, such as the personal vault of a password manager; reading an entry of a vault references the vault. A vault set aside for agents is one that a principal names for agents to read; which vault that is, which machines may read it and who writes to it are set in the jurisdiction.
+
+Violated when an agent references or reads a vault that a person keeps for their own use and that no principal has set aside for agents.
+'''
+zh = '''
+人自己用的 vault，指放着这个人自己的登录项和其他条目的 vault，例如密码管理器里的个人 vault；读取一个 vault 里的条目，也算引用了这个 vault。专为 agent 留出的 vault，指委托人点名给 agent 读的 vault；具体是哪个、哪些机器可以读、由谁写入，由法域规定。
+
+agent 引用或读取了人自己用的、又没有委托人专为 agent 留出的 vault 的，即为违反本规定。
+'''
+
+[translations]
+zh = "fc54fb8f01b7cb0c78b1125bfa7b9c3cf6041e9267b1b4c0ea68096d426d6293"

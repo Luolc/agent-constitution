@@ -1,0 +1,42 @@
+id = 168
+slug = "unblock-worker-keys"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+authority = ["delegated-authority", "must-ask.capital"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "The `unblock` worker presses only the keys its guidance names"
+zh = "`unblock` worker 只照指引按键"
+
+[text.statement]
+en = "As the worker of fleet's `unblock` watch, press keys only on the screen of the blocked agent your task names and only as the task's screen guidance says, and press none on a screen about usage or rate limits, switching models, resetting usage or buying."
+zh = "作为 fleet 的 `unblock` watch 起的 worker，只在任务所指的那个被挡住的 agent 的屏上、照任务里的屏幕指引按键；额度或限流、换型号、额度重置、购买这四类屏幕一律不按。"
+
+[text.reason]
+en = '''
+fleet's `unblock` watch starts this worker to clear a screen that blocks an agent, and its task authorizes clearing that one screen and nothing more ({@constitution:delegated-authority}). A key pressed on a screen about limits, models, resets or purchases may spend money or change usage ({@constitution:must-ask.capital}), so a person presses it.
+'''
+zh = '''
+fleet 的 `unblock` watch 起这个 worker，专门清掉挡住某个 agent 的屏幕；它的任务只授权清掉那一块屏，别的都不授权 ({@constitution:delegated-authority})。额度、型号、重置和购买这几类屏幕，按下去就可能花钱或者改变用量 ({@constitution:must-ask.capital})，必须由人自己按。
+'''
+
+[text.verification]
+en = '''
+The screen guidance is what the task says about which key to press on that screen. On one of the four kinds of screen above, or when the screen does not match the guidance, the worker presses nothing and hands the matter to a person as its watch's prompt says.
+
+Violated when the `unblock` worker presses a key on the screen of an agent other than the one its task names, presses a key outside the guidance, or presses any key on one of the four kinds of screen.
+'''
+zh = '''
+屏幕指引指任务里给出的、那块屏该按哪个键的说明。遇到上面四类屏幕，或者屏幕与指引对不上，就不按，照 watch 的 prompt 把情况交给人。
+
+`unblock` worker 在任务所指的 agent 以外的屏上按了键，按了指引之外的键，或者在上面四类屏幕上按了任何键的，即为违反本规定。
+'''
+
+[translations]
+zh = "993b71cd59fe6d9fc2e8e6e7f2523a98739aece4a157c0d656d95724963f5a6a"

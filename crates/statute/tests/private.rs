@@ -116,6 +116,12 @@ fn statute(dir: &Path, args: &[&str]) -> Run {
         .env("HOME", concat!(env!("CARGO_TARGET_TMPDIR"), "/home"))
         .args(args)
         .current_dir(dir)
+        // git looks for a repository no further up than the tests' own
+        // directories, so one that `.git` was taken from is outside any.
+        .env(
+            "GIT_CEILING_DIRECTORIES",
+            concat!(env!("CARGO_TARGET_TMPDIR"), "/private"),
+        )
         .env_remove("GIT_DIR")
         .env_remove("GIT_INDEX_FILE")
         .env_remove("GIT_WORK_TREE")
@@ -242,6 +248,14 @@ fn the_private_layer_overrides_no_public_rule() {
         &PRIVATE.replace("rules = []", "rules = [\"me:4\", \"R6\"]"),
     );
     ok(&statute(&dir, &["add", "--private", "me:5"]));
+    // A public change the private layer cannot follow is not written.
+    let files = ["statute.toml", "statute.lock", "statute.private.lock"];
+    let before = files.map(|f| read(&dir, f));
+    fails_with(
+        &statute(&dir, &["add", "R6"]),
+        "statute.private.toml: error: `rules` lists `R6`, which statute.toml lists already",
+    );
+    assert_eq!(files.map(|f| read(&dir, f)), before);
 }
 
 #[test]
@@ -270,6 +284,43 @@ fn nothing_private_is_written_unless_git_ignores_it() {
     );
     assert!(!dir.join(".statute/AGENTS.full.md").exists());
     assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
+}
+
+#[test]
+fn nothing_is_written_when_git_cannot_tell() {
+    let dir = ignoring("no-repository");
+    set_up(&dir);
+    std::fs::remove_dir_all(dir.join(".git")).unwrap();
+    const CANNOT_TELL: &str = "git cannot tell whether it ignores statute.private.toml";
+    fails_with(&statute(&dir, &["compile"]), CANNOT_TELL);
+    assert!(!dir.join("AGENTS.md").exists());
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+
+    // R2 changed, so that a lock file written now would differ.
+    let r2 = read(&dir, "r/rules/2.toml");
+    write(
+        &dir,
+        "r/rules/2.toml",
+        &r2.replace("Do the thing 2.", "Do the thing 2 well."),
+    );
+    let files = ["statute.toml", "statute.lock", "statute.private.lock"];
+    let before = files.map(|f| read(&dir, f));
+    for args in [
+        &["lock"][..],
+        &["add", "R6"],
+        &["remove", "3"],
+        &["upgrade"],
+    ] {
+        fails_with(&statute(&dir, args), CANNOT_TELL);
+        assert_eq!(files.map(|f| read(&dir, f)), before, "{args:?}");
+    }
+
+    // In a repository again, `lock` writes both lock files.
+    git(&dir, &["init", "-q"]);
+    write(&dir, ".git/info/exclude", EXCLUDE);
+    ok(&statute(&dir, &["lock"]));
+    assert_ne!(read(&dir, "statute.lock"), before[1]);
+    assert_ne!(read(&dir, "statute.private.lock"), before[2]);
 }
 
 #[test]

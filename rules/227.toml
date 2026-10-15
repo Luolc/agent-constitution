@@ -1,0 +1,42 @@
+id = 227
+slug = "research-worker-no-reviewer"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 78
+authority = ["decide-yourself.splitting-work"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "Give a research worker no reviewer"
+zh = "不给调研 worker 配审查方"
+
+[text.statement]
+en = "Where work is divided among agents the way fleet does, as the agent responsible for a job, give a research worker no reviewer."
+zh = "在像 fleet 那样在 agent 之间分工的法域里，作为负责一项工作的 agent，不给调研 worker 配审查方。"
+
+[text.reason]
+en = '''
+A research worker changes no repository ({@rule:170}), so it leaves no change for a reviewer to review; whoever splits the work spends no reviewer on it ({@constitution:decide-yourself.splitting-work}).
+'''
+zh = '''
+调研 worker 不改任何仓库 ({@rule:170})，没有要审查的变更；拆分任务的一方不必为它配审查方 ({@constitution:decide-yourself.splitting-work})。
+'''
+
+[text.verification]
+en = '''
+This rule is for the jurisdictions of {@rule:28}. A research worker is a worker whose task is to find something out and report it. Giving it a reviewer means starting a reviewer for its work or naming one in its task.
+
+Violated when the agent responsible for a job gives a research worker a reviewer.
+'''
+zh = '''
+本规定适用于{@rule:28}所说的法域。调研 worker 指任务是查清某件事并报告结论的 worker。给它配审查方，指为它的工作起一个审查方，或者在它的任务里指定一个审查方。
+
+负责一项工作的 agent 给调研 worker 配了审查方的，即为违反本规定。
+'''
+
+[translations]
+zh = "c5958331f3709db5d2746cbf2404393eab5598bf5b25e2ea96179ef09896fd1e"

@@ -1,0 +1,42 @@
+id = 172
+slug = "fleet-owns-work-orders"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+authority = ["accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "review"
+
+[title]
+en = "fleet claims and releases a worker's work order"
+zh = "worker 的工单由 fleet 领取和释放"
+
+[text.statement]
+en = "As a worker that fleet started, never claim or release your own work order yourself."
+zh = "作为 fleet 起的 worker，不自己领取或释放自己的工单。"
+
+[text.reason]
+en = '''
+When fleet starts a worker, it creates and claims the work order for it, and `fleet done` writes the report, releases the work order and tells the lead in one step; a worker that claims or releases the work order itself puts fleet's records out of step, and who answers for the work order is no longer clear ({@constitution:accountable-agent}).
+'''
+zh = '''
+fleet 起 worker 时替它建好、领好工单，`fleet done` 一次做完写 report、释放工单、通知 lead 三件事；worker 自己领取或释放，会和 fleet 的记录对不上，工单该由谁负责也就说不清了 ({@constitution:accountable-agent})。
+'''
+
+[text.verification]
+en = '''
+Claiming or releasing here is running a command that claims or releases a work order, for example `atb linear claim` or `atb linear release`. The worker hands in its outcome as {@rule:228} says, and `fleet done` releases the work order.
+
+Violated when a worker runs such a command on its own work order.
+'''
+zh = '''
+这里的领取或释放，指运行领取或释放工单的命令，例如 `atb linear claim`、`atb linear release`。worker 照{@rule:228}交结局，由 `fleet done` 释放工单。
+
+worker 对自己的工单运行了这样的命令的，即为违反本规定。
+'''
+
+[translations]
+zh = "49f12abf419c40478b7986cad242aa446050a564e7c07608700741cc2a759ac1"

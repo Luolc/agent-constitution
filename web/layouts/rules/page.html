@@ -6,13 +6,18 @@
   source it overrides, in place of a parent; and all its metadata. A domain or
   a one-of has no text, and lists the nodes below it; a domain's
   applicability, when it has one, follows its title. The title starts
-  with the node's label; the table of contents at the right lists the
-  headings below it. */ -}}
+  with the node's label; under it, when the site has more than one
+  source, the quadrant and the name of the node's source, and when it has
+  a rule set, whether the set enables the rule. The table of contents at
+  the right lists the headings below it. */ -}}
 {{ define "main" }}
 {{- $rule := .Params.rule }}
 {{- $lang := site.Language.Lang }}
 <article class="markdown book-article"><div class="design rules rule">
 <h1><span class="rule-label">{{ $rule.label }}</span> <span lang="{{ $rule.shown }}">{{ .Title | .RenderString }}</span></h1>
+{{- if or (gt (len (index hugo.Data.rules $lang).sources) 1) (isset $rule "enabled") }}
+<p class="rule-tags">{{ partial "rules/quadrant.html" (dict "quadrant" $rule.quadrant "source" $rule.source) }}{{ partial "rules/enabled.html" $rule }}</p>
+{{- end }}
 {{- with $rule.supersededBy }}
   {{- $links := slice }}
   {{- range . }}{{ $links = $links | append (partial "rules/link.html" .) }}{{ end }}

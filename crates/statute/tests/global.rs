@@ -435,7 +435,7 @@ fn a_private_global_source_joins_the_private_layer_of_a_public_repository() {
 #[test]
 fn site_shows_the_four_quadrants_of_global_and_local_sources() {
     let w = world("site");
-    let (_, me) = source(
+    let (me_work, me) = source(
         &w.at,
         "me",
         &[
@@ -487,6 +487,22 @@ fn site_shows_the_four_quadrants_of_global_and_local_sources() {
         );
         assert!(section.contains(title), "{class}: {section}");
     }
+    // A git source is named by its address and commit, as in the compiled
+    // `AGENTS.md`, not by the snapshot directory it is read from; a
+    // source on disk by its path.
+    let r_commit = git(&w.r, &["rev-parse", "HEAD"]);
+    let me_commit = git(&me_work, &["rev-parse", "HEAD"]);
+    for (source, place) in [
+        ("R", format!("{} at {r_commit}", w.r_address)),
+        ("me", format!("{me} at {me_commit}")),
+        ("L", ".".to_owned()),
+        ("here", "../here".to_owned()),
+    ] {
+        let heading =
+            format!("<h3 id=\"source-{source}\">{source} <span class=\"tag\">{place}</span></h3>");
+        assert!(index.contains(&heading), "{heading}\n{index}");
+    }
+    assert!(!index.contains("snapshots"), "{index}");
 }
 
 #[test]

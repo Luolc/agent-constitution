@@ -1,5 +1,7 @@
 """A made-up checkout with rules, shared by the tests of the rules' pages.
 
+Also a second source, `demo`, at the end.
+
 The constitution is active, so that a rule may be superseded: one article,
 `one`, with one section, `one-a`, holding one item, `one-a.x`. The rule
 tree:
@@ -167,6 +169,53 @@ def write(root: Path) -> None:
     root: the directory to write it in.
   """
   for name, text in FILES.items():
+    path = root / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+# A made-up second source, `demo`: 1, a domain, translated, whose
+# applicability cites a rule 3 the source does not have; 2, a rule under
+# it, untranslated, that requires and cites rule 3 of this repo and cites
+# itself.
+OTHER_RULE = """\
+id = 2
+revision = 1
+kind = "rule"
+status = "active"
+lang = "en"
+parent = 1
+requires = ["R3"]
+authority = ["one-a"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Demo rule"
+
+[text.statement]
+en = "After {@rule:R3}, see {@rule:2}."
+
+[text.reason]
+en = "Why."
+
+[text.verification]
+en = "Violated when not."
+"""
+OTHER_FILES = {
+  "rules/1.toml": group(1, "domain", None),
+  "rules/2.toml": OTHER_RULE,
+}
+
+
+def write_other(root: Path) -> None:
+  """Write the second source.
+
+  Args:
+    root: the directory to write it in.
+  """
+  for name, text in OTHER_FILES.items():
     path = root / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
