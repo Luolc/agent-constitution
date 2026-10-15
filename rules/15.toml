@@ -1,6 +1,6 @@
 id = 15
 slug = "verification"
-revision = 5
+revision = 6
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -12,11 +12,11 @@ zh = "验证"
 
 [applicability]
 en = '''
-Covers how agents show that work is done and checks passed: acceptance records, fixtures, checks before a push, reading CI, keeping instruction changes apart, and recording what is put off. Enable it wherever agents change a repository that has checks or CI.
+How an agent proves what it claims: acceptance records, readings that match their claims, checks that tell apart the cases they are meant to separate, cleanups counted, and failures kept open until shown fixed; the checks that CI runs are under {@rule:276}. Enable it wherever agents work.
 '''
 zh = '''
-管 agent 怎样证明活做完了、检查过了：验收记录、fixture、push 前的检查、怎样读 CI、把指令改动单独提交，以及把推迟的事情记下来。agent 修改的仓库只要有检查或 CI，就要启用。
+agent 怎么证明自己的主张：验收记录，读数与主张对得上，检查能分开它该分开的情况，清理之后数残留，没证实修好的失败不关闭；CI 跑的检查见 {@rule:276}。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "74885e0a0a0b24538bc9b957e3987884acea51622313ec6228922c468e195ed0"
+zh = "6ceddb2751439fea722333231b0fdd8fd4d80a115f5b5f4855a678ee2d2fdc40"

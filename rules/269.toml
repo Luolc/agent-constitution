@@ -1,0 +1,23 @@
+id = 269
+slug = "relayed-approvals"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 268
+default = "on"
+
+[title]
+en = "Relayed approvals"
+zh = "转告的同意"
+
+[applicability]
+en = '''
+How a principal's yes is relayed from one agent to another, and how the agent that acts on it checks it against the original message; what holds only for one messaging tool is in that tool's domain below. Enable it wherever agents work.
+'''
+zh = '''
+委托人的同意怎么从一个 agent 转告给另一个，执行的 agent 怎么对照原消息核实；只对某个消息工具成立的，在下面那个工具的 domain 里。凡有 agent 工作的地方都要启用。
+'''
+
+[translations]
+zh = "0f02a9a508fd2c1879000704a02935488151edc13d439fba4ee83f2cc71fa0a7"
