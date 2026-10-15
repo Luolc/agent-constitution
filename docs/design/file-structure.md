@@ -12,7 +12,22 @@ LICENSE                   Apache-2.0, for everything but the text
                           below                                        A
 LICENSE-CC-BY-4.0         CC BY 4.0, for the text of constitution/,
                           rules/ and skills/                           A
-AGENTS.md                 repo rules for agents working here           A
+AGENTS.md                 the instruction file for agents working
+                          here, compiled by statute from
+                          statute.toml; never edited by hand           A
+AGENTS.legacy.md          the former hand-written AGENTS.md, kept
+                          until a person says to delete it             A
+statute.toml              the rule set: the constitution, the domains
+                          and rules this repo takes, its parameters    A
+statute.lock              the pinned rules and their hashes, written
+                          by statute                                   A
+statute-checks.toml       the checks file, written by statute beside
+                          statute.toml                                 A
+.statute/
+  .gitignore              written by statute before its first generated
+                          file, so that a new clone ignores the files
+                          statute generates in .statute/               A
+  rules/                  the local rules, one file per rule           A
 constitution/
   <YYYY-MM>/              the edition directory, today 2026-10
                           (constitution.md)                            A
@@ -46,6 +61,8 @@ rules/
 skills/
   <name>/SKILL.md         one general skill per directory, with any
                           template files beside it, installed as is    A
+.agents/skills/<name>/    skills installed by statute, with a link
+                          .claude/skills/<name> to each                A
 schema/                   schemas for the rules, fixtures and the
                           overlay manifest                             B
 tools/                    a uv workspace, one Python project each:
@@ -144,8 +161,8 @@ build script that alters only their numbering or layout is ordinary, and its
 pull request shows their diff so a person can glance at the format; one that
 alters their wording changes the text and is an amendment
 (`protected-text`). The notes the build script writes itself (the header
-line, the repealed note, and in the version for agents the opening note and
-the note in place of a provision's text) are not the text of the
+line, the repealed note, and in the version for agents the line under the
+title and the mark in place of a provision's text) are not the text of the
 constitution: they change as the script does, by an ordinary change
 (`ordinary-tooling`), and may only say what the text already says (that
 the constitution binds every agent, `terms.agent`), point to the full

@@ -1,0 +1,31 @@
+id = 2
+slug = "zh-punctuation"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R196"
+default = "on"
+authority = ["text-and-sources.languages"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Punctuate Chinese text with full-width marks and half-width parentheses"
+
+[text.statement]
+en = "In the `zh` text of a source and in a Chinese translation of the design, write commas, full stops, enumeration commas, semicolons and colons full-width, and parentheses half-width, with one space outside and none inside; keep code, paths, commands and IDs with half-width punctuation."
+
+[text.reason]
+en = '''
+One form of punctuation across the Chinese texts lets limae check them, and keeps the generated texts and the site uniform.
+'''
+
+[text.verification]
+en = '''
+An example of the parentheses: `第二款 (见第三条)`. `uv run lint-zh-sources` runs limae on the `zh` text of the constitution and rule sources, and limae runs on the Markdown files in the commit hooks; `uv run lint-zh-sources --fix` writes limae's fixes back into the sources.
+
+Violated when such a text has a half-width comma, full stop, enumeration comma, semicolon or colon, or full-width parentheses, outside code, paths, commands and IDs.
+'''

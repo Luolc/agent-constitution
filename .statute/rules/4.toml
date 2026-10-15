@@ -1,0 +1,31 @@
+id = 4
+slug = "constitution-source-layout"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R16"
+default = "on"
+authority = ["text-and-sources.sources"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Lay out the constitution sources one file per section, numbered in the names"
+
+[text.statement]
+en = "Keep the sources of an edition of the constitution in `constitution/<edition>/`: its `index.toml`, and for each article a directory `articles/<NN>-<id>/` that holds `article.toml` and one `<NN>-<id>.toml` per section with its items inside it; write an article's or section's number only in these name prefixes."
+
+[text.reason]
+en = '''
+The numbers of the edition in force never change ({@constitution:stable-numbers}); kept in the file names alone, they cannot disagree with a second copy of themselves.
+'''
+
+[text.verification]
+en = '''
+`<edition>` is the year and month of the edition, `2026-10`, with no draft marker; whether it is a draft is the `status` in its `index.toml`. Each text in these files has one key per language of `index.toml`. A section inserted between two others in the edition in force takes a letter suffix, `<NN>a-<id>.toml` ({@constitution:stable-numbers.additions}).
+
+Violated when an edition's sources hold a file outside this layout, or a number of an article or section anywhere but in the prefix of its name.
+'''

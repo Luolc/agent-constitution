@@ -1,0 +1,31 @@
+id = 9
+slug = "reserved-directories"
+revision = 2
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R16"
+default = "on"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Create no reserved directory before what it holds is built"
+
+[text.statement]
+en = "Create none of `behavior/`, `cases/` and `proposals/` before a change that builds what they hold: real-agent scenarios, decided cases and the adoption pipeline."
+
+[text.reason]
+en = '''
+These directories are reserved for later stages of the plan in `docs/design/file-structure.md`; an empty directory waiting for its stage tells a reader that something exists which does not.
+'''
+
+[text.verification]
+en = '''
+`behavior/` holds real-agent scenarios, `cases/<id>.md` decided cases, and `proposals/` the adoption pipeline.
+
+Violated when a change adds one of these directories without building what it holds.
+'''

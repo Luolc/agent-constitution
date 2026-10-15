@@ -265,6 +265,8 @@ pub struct Sources {
     pub revision: String,
     pub title: Texts,
     pub front: Texts,
+    /// The address of the full version, by language, if published.
+    pub url: Option<Texts>,
     /// In the order of their directories.
     pub articles: Vec<Article>,
     /// In the order of their articles and files.

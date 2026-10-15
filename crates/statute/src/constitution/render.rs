@@ -258,19 +258,20 @@ impl<'a> Renderer<'a> {
         block.join("\n\n")
     }
 
-    /// The front text, or the note in its place for agents.
+    /// The front text; for agents, the line in its place: the full
+    /// version's URL, when `index.toml` gives one, and what the mark of a
+    /// left-out provision means, when one is marked; empty without both.
     fn front(&mut self) -> String {
         if self.agent {
-            let opening = if self.src.status == "active" {
-                self.lng.agent_active
-            } else {
-                self.lng.agent_draft
-            };
-            let full = self.src.layout.output(self.lang).display().to_string();
-            return fill(
-                self.lng.agent_front,
-                &[("opening", opening), ("full", &full)],
-            );
+            let lng = self.lng;
+            let mut line: Vec<String> = Vec::new();
+            if let Some(url) = self.src.url.as_ref().and_then(|u| u.get(self.lang)) {
+                line.push(fill(lng.full_text, &[("url", url)]));
+            }
+            if self.marked() {
+                line.push(lng.omitted_note.to_string());
+            }
+            return line.join(lng.space);
         }
         let front = self.refs(&self.src.front[self.lang]);
         FRONT_HEADING
@@ -280,7 +281,16 @@ impl<'a> Renderer<'a> {
             .into_owned()
     }
 
-    /// The header line, with the legend when a text is marked.
+    /// Whether a section or an item is marked for leaving out.
+    fn marked(&self) -> bool {
+        self.src
+            .sections
+            .iter()
+            .any(|s| s.omitted || s.items.iter().any(|i| i.omitted))
+    }
+
+    /// The header line of the full version, with the legend when a text
+    /// is marked.
     fn header(&self, front: &str) -> String {
         let lng = self.lng;
         let revision = if self.src.status == "draft" {
@@ -293,25 +303,15 @@ impl<'a> Renderer<'a> {
             layout.index().display().to_string(),
             layout.articles().display().to_string(),
         );
-        let template = if self.agent {
-            lng.agent_header
-        } else {
-            lng.header
-        };
         let mut header = fill(
-            template,
+            lng.header,
             &[
                 ("revision", &revision),
                 ("index", &index),
                 ("articles", &articles),
             ],
         );
-        let marked = self
-            .src
-            .sections
-            .iter()
-            .any(|s| s.omitted || s.items.iter().any(|i| i.omitted));
-        if !self.agent && (front.contains(OMITTED_MARK) || marked) {
+        if front.contains(OMITTED_MARK) || self.marked() {
             let agent = layout.output(&format!("{}{AGENT}", self.lang));
             header += &fill(lng.legend, &[("agent", &agent.display().to_string())]);
         }
@@ -322,10 +322,14 @@ impl<'a> Renderer<'a> {
         let edition = fill(self.lng.edition, &[("edition", &self.src.edition)]);
         let front = self.front();
         let title = self.refs(&self.src.title[self.lang]);
-        let mut parts = vec![
-            self.header(&front),
-            format!("# {title} ({edition})\n\n{front}"),
-        ];
+        let mut parts = Vec::new();
+        if !self.agent {
+            parts.push(self.header(&front));
+        }
+        parts.push(format!("# {title} ({edition})"));
+        if !front.is_empty() {
+            parts.push(front);
+        }
         let mut articles: Vec<&Article> = self.src.articles.iter().collect();
         articles.sort_by_key(|a| number_key(&a.number));
         for a in articles {

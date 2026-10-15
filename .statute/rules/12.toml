@@ -1,0 +1,31 @@
+id = 12
+slug = "no-outside-pointers"
+revision = 2
+kind = "rule"
+status = "repealed"
+lang = "en"
+parent = "R16"
+default = "off"
+authority = ["division-of-instructions.project-instructions"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Point to nothing outside the repository that a public reader cannot see"
+
+[text.statement]
+en = "In this repository's files, point to no rule, file or document outside it that a public reader cannot see: write a rule that is needed here, and leave out one that is not."
+
+[text.reason]
+en = '''
+The repository is read by people who see only the repository; a pointer to what they cannot read is a requirement they cannot know.
+'''
+
+[text.verification]
+en = '''
+Public pages, such as the documentation of a public tool, may be linked.
+
+Violated when a file of the repository points to a rule, file or document that is outside it and not public.
+'''

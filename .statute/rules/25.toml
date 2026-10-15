@@ -1,0 +1,31 @@
+id = 25
+slug = "statute-versions"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R78"
+default = "on"
+authority = ["list-defaults.tightening", "advance-authorization.listed-items", "advance-authorization.as-written"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "New versions of statute raise only the patch number, and the lead of a job may release them"
+
+[text.statement]
+en = "New versions of statute raise only the patch number (0.1.1, 0.1.2, …); the lead of a job may push such a patch release's tag without asking a person; a minor or major version needs a person's yes for that version, given at the time or written down in advance."
+
+[text.reason]
+en = '''
+A minor or major version tells the users of statute that more changed than a fix; whether that is so is the owner's call, which this rule adds to what goes through a principal ({@constitution:list-defaults.tightening}). The patch releases are the owner's advance authorization of one class of releases, written into this repository's instructions as {@constitution:advance-authorization.listed-items} requires; it counts only as written and within its conditions ({@constitution:advance-authorization.as-written}).
+'''
+
+[text.verification]
+en = '''
+The version is the one in `crates/statute/Cargo.toml`; a patch release raises only the patch number of the highest version of statute already published. A release outside these conditions (pushed by an agent other than the lead of a job, or raising the minor or major number) needs a person's yes.
+
+Violated when a change raises the minor or major number of statute without a person's word for that version, or when a release of statute that this authorization does not cover is made without a person's yes.
+'''

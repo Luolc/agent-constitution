@@ -1,0 +1,33 @@
+id = 21
+slug = "statute-release-act"
+revision = 2
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R14"
+default = "on"
+authority = ["must-ask", "discriminating-checks"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Count the push of a `statute-v` tag as the release of statute, and push it only once the release tag check passes"
+
+[text.statement]
+en = "Count pushing a tag `statute-v<version>` as the release of statute at that version, which `.github/workflows/release.yml` publishes to crates.io; before pushing it, create the tag on the commit to release and, in a checkout of that commit, run `uv run check-release-tag --tag statute-v<version> --repo Luolc/agent-constitution`, and push it only when the check exits 0. A pull request that raises the version is not a release."
+
+[text.reason]
+en = '''
+{@rule:R32} asks for a principal's yes before a release; this says which act of this repository is the release of statute, so that the yes is asked before that act and not before a harmless one. The check is how this repository meets {@rule:R58}.
+'''
+
+[text.verification]
+en = '''
+On crates.io, statute 0.0.1 is a placeholder that held the name; the command starts with 0.1.0, and the version is the one in `crates/statute/Cargo.toml`.
+
+The check reads the version in `crates/statute/Cargo.toml` of the checkout and resolves the tag in it, so the tag exists locally before the push. It takes three steps in order and stops at the first that fails: the tag is `statute-v` followed by that version; the tagged commit is `origin/main` or an ancestor of it; and that commit's run of `ci.yml` for its push to `main` completed with `success` on its first attempt (read with `gh api`, so `gh` must be signed in). It exits 0 when the tag may publish, 1 when a step says no, 2 when git or gh fails and 4 when the manifest has no version. The job `check` of `release.yml` runs it again before the job `publish`.
+
+Violated when a tag `statute-v<version>` is pushed without the check exiting 0 on its commit, or without the yes that {@rule:R32} asks for where {@rule:25} does not give it in advance.
+'''

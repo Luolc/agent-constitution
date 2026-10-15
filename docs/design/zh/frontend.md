@@ -1,4 +1,4 @@
-<!-- en-sha256: 830318c4b8c051c7d87908328fb1d47e81f98917983a02063797862e00e5f252 -->
+<!-- en-sha256: 1661ef2e620a8ddbe5d931fa064e4ed390539b8c06482acc706a91a453ddfce7 -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -213,7 +213,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 - **点击区域。** 能点的东西至少 24px 见方 (padding 算在内)，在粗指针 (`pointer: coarse`，即触屏) 上至少 44px 见方，即 token `target`；小图标靠 padding 达到这个大小，不靠把图画大。行文中间的链接不在此列：它的高度就是行高。
 - **hover。** hover 样式只在有能悬停的精确指针时生效 (`@media (hover: hover) and (pointer: fine)`)，触屏上点一下不会留下 hover 样式。
-- **名称和状态。** 控件就用本来是控件的元素 (`button`、链接、`details`、`select`)，只为元素本身表达不了的东西加 ARIA。打开或折叠某个部分的控件要说明它是否打开 (`aria-expanded`) 以及它打开的是什么 (`aria-controls`)。带控件的弹出层打开时接过焦点，关闭时把焦点交还给它的控件；按 Escape 关闭。
+- **名称和状态。** 控件就用本来是控件的元素 (`button`、链接、`details`、`select`)，只为元素本身表达不了的东西加 ARIA。打开或折叠某个部分的控件要说明它是否打开 (`aria-expanded`) 以及它打开的是什么 (`aria-controls`)。控件的名字说它作用于什么，不重复旁边链接的文字：侧边栏里折叠一组页面的按钮，名字是这一组的页面 (「设计的页面」)，因为组的链接已经写着组名。带控件的弹出层打开时接过焦点，关闭时把焦点交还给它的控件；按 Escape 关闭。
 - **提示气泡。** hover 时显示的提示在 `delay-tip` 之后出现；已经有一个显示过之后，指针移到下一个上面时立即出现。提示里不放页面别处没有的内容：它说的内容也是元素的无障碍名称，或者写在图例里。
 - **状态写进地址。** 列表的筛选、每页条数和页码都在地址里，列表可以直接链接，前进后退能回到原来的样子。
 - **不靠脚本。** 内容默认可见：脚本出错或根本没运行的页面照样显示全部文字，靠脚本展开的部分保持展开。
@@ -244,7 +244,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
 - **侧边栏。** 照 Tailwind CSS 文档的侧边栏做 ([出处](#sources))，配色和字体用本文的。`bg-panel`，边上一条 `1px` 的 `border-subtle`，分组之间隔 `space-4`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。分组下的页面沿一条细线排列，细线是 `1px` 的 `border-subtle`，从图标中线的正下方开始。页面：`text-md`、`weight-regular`、`text-muted`，padding `space-1 space-2`，文字与分组名对齐，压在细线上有一条 `2px` 的短线，平时透明。一行 (分组或页面) 在指针下：`bg-panel-hover`，`radius-sm`，靠细线的一侧不圆；页面还会变成 `text`，短线变成 `border-strong`。按下：`bg-active`。当前页：短线和文字都用 `accent`，文字 `weight-medium`，不加底色。没有页面的分组是当前项时，没有细线可标，就用 `bg-selected` 底，文字用 `accent`。当前页列在某个分组下面时，只标出这一页，不标分组。页面加载时，当前页不在侧边栏的可见范围内，侧边栏就滚到能看见它。可以折叠的分组在这一行末尾有一个普通按钮，收起时显示 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`；这个按钮和语言切换按钮都标明自己的列表是否展开 (`aria-expanded`、`aria-controls`)。
   - 右侧的目录：`text-sm`，标题用 `text-muted`；各个标题像侧边栏里的页面一样沿一条细线排列，`text-muted`，低一级的标题缩进 `space-4`，短线仍压在细线上。指针下：`text`，短线 `border-strong`。读者正在读的那个标题：短线和文字用 `accent`，`weight-bold`。它随滚动变化，所以这些标记立即切换，不加过渡。
-  - 窄屏的抽屉。宽度在 `56rem` 及以下时侧边栏、在 `70rem` 及以下时目录，收到顶栏的一个普通按钮后面，按钮分别是 `menu` 和 `table-of-contents`，抽屉打开时显示 `x`，并标明抽屉是否打开、打开的是哪一个 (`aria-expanded`、`aria-controls`)。`56rem` 及以下，顶栏固定在窗口顶部，`bg-page` 底，下面一条 `1px` 的 `border-subtle`。抽屉在顶栏下面从各自的一边打开，侧边栏从起始边，目录从末尾边：`bg-panel`、`1px` 的 `border-subtle` 和 `shadow-popover`，因为它盖在正文上。滑入用 `duration-base`，滑出用 `duration-fast`，都用 `ease-out`，后面的页面淡到原来不透明度的四分之一；减弱动效时抽屉在原地淡入淡出。抽屉打开时，页面的其余部分不可操作：焦点移到抽屉里的第一个链接；按 Escape、再点按钮、点抽屉外面，或在抽屉里点了链接，抽屉都会关上，由键盘或按钮关上时焦点回到按钮。没有脚本时没有抽屉：侧边栏排在正文上面，目录排在正文下面，所有列表都展开。
+  - 窄屏的抽屉。宽度在 `56rem` 及以下时侧边栏、在 `70rem` 及以下时目录，收到顶栏的一个普通按钮后面，按钮分别是 `menu` 和 `table-of-contents`，抽屉打开时显示 `x`，并标明抽屉是否打开、打开的是哪一个 (`aria-expanded`、`aria-controls`)。`56rem` 及以下，顶栏固定在窗口顶部，`bg-page` 底，下面一条 `1px` 的 `border-subtle`。抽屉在顶栏下面从各自的一边打开，侧边栏从起始边，目录从末尾边：`bg-panel`、`1px` 的 `border-subtle` 和 `shadow-popover`，因为它盖在正文上。滑入用 `duration-base`，滑出用 `duration-fast`，都用 `ease-out`，后面的页面淡到原来不透明度的四分之一；减弱动效时抽屉在原地淡入淡出。抽屉打开时，页面的其余部分不可操作：焦点移到抽屉里显示出来的第一个链接；按 Escape、再点按钮、点抽屉外面，或在抽屉里点了链接，抽屉都会关上，由键盘或按钮关上时焦点回到按钮。侧边栏不重复站名，顶栏已经有了。没有脚本时没有抽屉：侧边栏排在正文上面，目录排在正文下面，所有列表都展开：折叠侧边栏各组的按钮藏起来，语言切换的 chevron 转到展开的方向，点它的按钮没有反应。
 - **按钮和输入框。** 主按钮 (每个弹出层至多一个)：`accent` 底，文字 `text-on-accent`，`radius-sm`，padding `space-1 space-3`；hover 时 `accent-hover`，禁用时半透明。普通按钮 (大多数按钮：配色开关、筛选器的按钮、只有图标的按钮)：无填充，`text`，hover `bg-hover`，按下 `bg-active`。输入框和菜单：`bg-page`，`1px` 的 `border-strong`，`radius-sm`，指针悬停时边框变成 `text-muted`；获得焦点时显示焦点框。原生控件在两套主题下都不保留浏览器自己的样子：菜单 (`select`) 末尾显示 `chevron-down`；浏览器允许页面自己画它的选项列表时，列表是一个弹出层，每个选项一行，选中的那项用 `bg-selected` 底，文字用 `accent` 和 `weight-medium`；浏览器自己画列表时，只有颜色跟随主题。复选框和单选按钮：`icon-sm` 大小的框，`bg-page` 底，`1px` 的 `border-strong`，复选框用 `radius-sm`，单选按钮是圆的；hover 时边框变成 `text-muted`；选中时框里填满 `accent` (指针悬停时 `accent-hover`)，复选框的勾是 `text-on-accent` 的 `check`，单选按钮的圆点靠框内一圈 `space-1` 宽的 `bg-page` 显出来；禁用时半透明。`summary` 显示 `chevron-right`，展开时转四分之一圈，取代浏览器自带的标记。
 
 ## <a id="not-done"></a>不做的事
@@ -268,7 +268,7 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - **token。** 本文的全部 token 定义在一份样式表 `crates/statute/assets/tokens.css` 里，每个是一个 CSS 自定义属性，名字是 token 名加前缀 `--t-` (`--t-text`、`--t-space-4`)；有了前缀，就不会与主题自己的属性混在一起，主题里就有一个取值不同的 `--space-1`。颜色只写一次，两个值一起写成 `light-dark(<light>, <dark>)`，随页面的 `color-scheme` 取值：跟随系统设置，页面根元素带 `data-theme` 时按读者的选择。英文和中文取值不同的 token 在 `:root:lang(zh)` 下重新设定，`target` 在 `pointer: coarse` 下重新设定。这份文件放在 crate 里，是为了让 `statute` 能用 `include_str!` 把它编进本地网站，同时照样能发布：发布的包不能引用 crate 目录以外的文件。公开网站从那里挂载它 (`web/hugo.toml`)。
 - **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`controls.css` (各处的原生控件)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表、它的标记和 tag)、`filter.css` (列表上方的图例、筛选器和每页条数，它们的标记在 `web/layouts/_partials/rules/`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。本地网站自己的样式表是 `crates/statute/src/site.css`，`statute` 把它接在 `tokens.css` 后面写进每个页面；复选框照 `controls.css` 的画法画，公开网站其余几份样式表是给主题的标记用的，它一概不取。
 - **图标。** SVG 文件在 `crates/statute/assets/icons/`，每个来源一个目录，`lucide/` 和 `octicons/`，与发布版里的一样、不做改动，各目录里放着许可，版本号写在它的 `README.md` 里。页面按名字引入图标，`partial "icon.html" "lucide:funnel"`，把文件里的 SVG 压成一行内联进来，带上 class `icon`，并对读屏软件隐藏；这个 class 设定线宽 `icon-stroke` 和大小，大小默认 `icon-sm`，组件要求时改成 `icon-md`。会转向的箭头用 `chevron-right` 转四分之一圈，转过去就是 `chevron-down`。本地网站用同样的办法内联它要的那几个文件，借 `include_str!` 编进 `statute`。
-- **脚本。** 逻辑超过几行的脚本 (目前是规定列表和它的筛选器) 用 TypeScript 写，放在 `web/assets/ts/`，不依赖页面的逻辑 (筛选的勾选和地址) 单独放一个文件。每个脚本由 Hugo 的 `js.Build` (Hugo 自带的 esbuild) 打包，不用 Node，不用 npm 包；目标是 `es2018`，压缩，页面像别的脚本一样把它内联在 head 里。不生成 source map，因为脚本很小，源码就在仓库里。短小的脚本仍是 `web/assets/` 里的 JavaScript，由 Hugo 压缩。2026-10-15 用 Hugo 0.167.0 核实：`js.Build` 去掉类型和只导入类型的 import，把文件之间的 import 打包到一起，把 `?.` 和 `??` 降级到目标版本，遇到语法错误时构建失败。
+- **脚本。** 逻辑超过几行的脚本 (目前是规定列表和它的筛选器，以及侧边栏和抽屉) 用 TypeScript 写，放在 `web/assets/ts/`，不依赖页面的逻辑 (筛选的勾选和地址) 单独放一个文件。每个脚本由 Hugo 的 `js.Build` (Hugo 自带的 esbuild) 打包，不用 Node，不用 npm 包；目标是 `es2018`，压缩，页面像别的脚本一样把它内联在 head 里。不生成 source map，因为脚本很小，源码就在仓库里。短小的脚本仍是 `web/assets/` 里的 JavaScript，由 Hugo 压缩。2026-10-15 用 Hugo 0.167.0 核实：`js.Build` 去掉类型和只导入类型的 import，把文件之间的 import 打包到一起，把 `?.` 和 `??` 降级到目标版本，遇到语法错误时构建失败。
 - **类型和测试。** esbuild 不检查类型：有类型错误照样构建，构建照样通过。机器上和 CI 上都没有 `tsc`，装它要用 Node 和一个网站别处用不到的 npm 包，所以目前没有任何工具检查类型，由审查方读。行为改在构建出的页面上测：`tools/site` 的一个测试用虚构的规定构建网站，在 headless Chrome 里依次带着一组地址打开列表，读 Chrome 留下的页面 (`--dump-dom`)；没有 Chrome 时跳过，CI 里不跳过。`--dump-dom` 发不出点击和按键，这些用同样的办法手工检查：在页面的副本里加一个发出它们的脚本。
 
 ## <a id="status"></a>现状
@@ -278,7 +278,6 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - 公开网站上，规定页面上的 tag，以及列表里的是否启用和象限，都是一模一样的方框；[组件](#components) 一节里的 tag 取代它们。选项都关闭的 one-of，框仍用 `border-strong`。
 - 本地网站把规定排成一棵领域树，每个领域是一个标题，字号和字重表示层级，更深的一层缩进并带色条；每条规定的事实是行尾的 tag，状态是胶囊，另有说明这些 tag 的图例。[组件](#components) 一节里的规定表、标记、tag 和图例也要在那里取代它们。
 - 本地网站上，筛选器里状态、默认开关和领域这三组，每组的「全选」和「不选」，按钮上的徽标，按 Escape 或点击外面时关闭；以及应用筛选的主按钮，眼下由立即生效的复选框代替。它的弹出层一下子关上，只能再点一次按钮来关。它的页面不加载字体，正文用本机的衬线字体。
-- 侧边栏和抽屉的脚本 `web/assets/sidebars.js` 不止几行逻辑，却仍是 JavaScript；它会改成 TypeScript，放进 `web/assets/ts/` ([代码实现](#in-the-code))。
 
 ## <a id="open-questions"></a>待定问题
 
