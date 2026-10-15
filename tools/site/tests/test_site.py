@@ -322,8 +322,8 @@ class SiteTest(unittest.TestCase):
   def test_design_group_folds(self):
     """The design group is closed except on the design's own pages."""
     raw = self.build(raw=True)
-    closed = '<input type="checkbox" id="menu-design" class="toggle" />'
-    opened = '<input type="checkbox" id="menu-design" class="toggle" checked />'
+    closed = 'aria-expanded="false" aria-controls="menu-design"'
+    opened = 'aria-expanded="true" aria-controls="menu-design"'
     for page, box in (
       ("index.html", closed),
       ("zh/index.html", closed),
