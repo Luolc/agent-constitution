@@ -167,14 +167,10 @@ fn the_overriding_rule_stands_in_the_place_of_the_one_it_overrides() {
     ok(&statute(&dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     assert!(
-        out.contains(
-            "\n<a id=\"rule-R2\"></a>\n<a id=\"rule-L20\"></a>\n### Rule 20 (L20)\n\nOverrides R2.\n\nDo the thing 20.\n\n<a id=\"rule-R3\"></a>\n### Rule 3 (R3)\n"
-        ),
+        out.contains("\n- L20 Do the thing 20.\n- R3 Do the thing 3.\n"),
         "{out}"
     );
-    assert!(!out.contains("(R2)"), "{out}");
-    // Its own rules' domain gets no heading: L20 is under R1.
-    assert!(!out.contains("(L1)"), "{out}");
+    assert!(!out.contains("- R2 "), "{out}");
 
     let run = statute(&dir, &["explain", "R2"]);
     ok(&run);
@@ -206,7 +202,7 @@ fn a_chain_of_overrides() {
     ok(&statute(&dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     assert!(
-        out.contains("<a id=\"rule-R2\"></a>\n<a id=\"rule-team-7\"></a>\n<a id=\"rule-L20\"></a>\n### Rule 20 (L20)\n\nOverrides team:7, which overrides R2.\n"),
+        out.ends_with("\n# Rules\n\n- L20 Do the thing 20.\n"),
         "{out}"
     );
     let run = statute(&dir, &["explain", "20"]);
@@ -573,8 +569,5 @@ fn a_citation_of_an_overridden_rule_is_the_rule_in_its_place() {
     ok(&statute(&dir, &["lock"]));
     ok(&statute(&dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
-    assert!(
-        out.contains("Do the thing 9, after [Rule 20](#rule-L20).\n"),
-        "{out}"
-    );
+    assert!(out.contains("\n- R9 Do the thing 9, after L20.\n"), "{out}");
 }

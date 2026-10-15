@@ -569,8 +569,7 @@ rule is enabled:
   a requirement of the overriding rule, which stands in its place.
 - Conflicts declared on the overridden rule, or by other rules against
   it, do not apply; the overriding rule's conflicts do.
-- Its children stay as they are and are rendered under the overriding
-  rule's heading.
+- Its children stay as they are.
 - Its check does not run; the overriding rule's does.
 - An override applies where the overriding rule is enabled: in a rule
   set split into path segments, in the segments that enable it, and
@@ -661,17 +660,12 @@ parent = 104
   hung under its domains, which a rule set enables by listing them in
   `rules`, or a subdomain of another source as a pack of its own.
 
-**Rendering.** In the compiled `AGENTS.md`, a domain is a heading of
-level two and a subdomain one of level three; each level of the tree
-below is one level deeper, down to level six, as in
-[Compilation and the site](statute-command.md#compilation-and-the-site). A
-subdomain with no enabled rule below it does not appear, nor does a
-domain all of whose subdomains and rules are absent. Under a domain,
-its own subdomains come first, then those of other sources by the
-sources' names, as the domains themselves are ordered; a domain with an
-enabled rule only in a subdomain of another source appears for it. A requirement is
-rendered as a link when it leads out of the requiring rule's nearest
-domain, subdomain included. On the site, a subdomain heads the rules
+**Rendering.** The compiled `AGENTS.md` shows no domain or subdomain:
+its rules are a flat list in the order of the tree, as in
+[Compilation and the site](statute-command.md#compilation-and-the-site),
+so a subdomain's rules come at its place in its domain. Under a domain,
+its own nodes come first, then those of other sources by the sources'
+names, as the domains themselves are ordered. On the site, a subdomain heads the rules
 below it as a domain does, nested under its domain's heading, and its
 page lists the nodes below it ([Static site](static-site.md)).
 
@@ -767,7 +761,7 @@ marking what is not built:
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
   two levels of domains.
 - [Compilation and the site](statute-command.md#compilation-and-the-site):
-  subdomain headings, and which requirements are links.
+  where a subdomain's rules come in the flat list.
 - [The command and the first version](statute-command.md#the-command-and-the-first-version):
   what is built so far, and moving over by the cutover above.
 - [Checkers](checkers.md#checkers): what `statute validate` checks of

@@ -40,7 +40,15 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual([g["id"] for g in nodes[6]["groups"]], [1])
     self.assertEqual(
       nodes[2]["children"],
-      [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
+      [
+        {
+          "id": 3,
+          "label": "R3",
+          "title": "Rule 3",
+          "titleHtml": "Rule 3",
+          "key": "3",
+        }
+      ],
     )
 
   def test_domain_option(self):
@@ -102,8 +110,20 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       nodes[4]["supersededBy"],
       [
-        {"id": 5, "label": "R5", "title": "Rule 5", "key": "5"},
-        {"id": 6, "label": "R6", "title": "Rule 6", "key": "6"},
+        {
+          "id": 5,
+          "label": "R5",
+          "title": "Rule 5",
+          "titleHtml": "Rule 5",
+          "key": "5",
+        },
+        {
+          "id": 6,
+          "label": "R6",
+          "title": "Rule 6",
+          "titleHtml": "Rule 6",
+          "key": "6",
+        },
       ],
     )
     self.assertEqual(nodes[4]["text"]["statement"], "Old.")
@@ -125,7 +145,14 @@ class SiteRulesTest(unittest.TestCase):
         self.assertEqual(zh[node_id]["title"], f"Rule {node_id}")
     self.assertEqual(zh[5]["supersededBy"], [])
     self.assertEqual(
-      zh[3]["parent"], {"id": 2, "label": "R2", "title": "组 2", "key": "2"}
+      zh[3]["parent"],
+      {
+        "id": 2,
+        "label": "R2",
+        "title": "组 2",
+        "titleHtml": "组 2",
+        "key": "2",
+      },
     )
 
   def test_citations_are_links(self):
@@ -189,9 +216,27 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       within["one"],
       [
-        {"id": 3, "label": "R3", "title": "规定 3", "key": "3"},
-        {"id": 5, "label": "R5", "title": "Rule 5", "key": "5"},
-        {"id": 6, "label": "R6", "title": "Rule 6", "key": "6"},
+        {
+          "id": 3,
+          "label": "R3",
+          "title": "规定 3",
+          "titleHtml": "规定 3",
+          "key": "3",
+        },
+        {
+          "id": 5,
+          "label": "R5",
+          "title": "Rule 5",
+          "titleHtml": "Rule 5",
+          "key": "5",
+        },
+        {
+          "id": 6,
+          "label": "R6",
+          "title": "Rule 6",
+          "titleHtml": "Rule 6",
+          "key": "6",
+        },
       ],
     )
 
@@ -200,17 +245,39 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       nodes[5]["conflicts"],
       [
-        {"id": 3, "label": "R3", "title": "Rule 3", "key": "3"},
+        {
+          "id": 3,
+          "label": "R3",
+          "title": "Rule 3",
+          "titleHtml": "Rule 3",
+          "key": "3",
+        },
         {"ref": "team:7"},
       ],
     )
     self.assertEqual(
       nodes[3]["conflicts"],
-      [{"id": 5, "label": "R5", "title": "Rule 5", "key": "5"}],
+      [
+        {
+          "id": 5,
+          "label": "R5",
+          "title": "Rule 5",
+          "titleHtml": "Rule 5",
+          "key": "5",
+        }
+      ],
     )
     self.assertEqual(
       nodes[5]["requires"],
-      [{"id": 6, "label": "R6", "title": "Rule 6", "key": "6"}],
+      [
+        {
+          "id": 6,
+          "label": "R6",
+          "title": "Rule 6",
+          "titleHtml": "Rule 6",
+          "key": "6",
+        }
+      ],
     )
     self.assertEqual(nodes[6]["conflicts"], [])
 
@@ -290,7 +357,15 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual(
       demo["requires"],
-      [{"id": 3, "label": "R3", "title": "Rule 3", "key": "3"}],
+      [
+        {
+          "id": 3,
+          "label": "R3",
+          "title": "Rule 3",
+          "titleHtml": "Rule 3",
+          "key": "3",
+        }
+      ],
     )
     self.assertEqual(
       demo["text"]["statement"],
@@ -353,7 +428,13 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual(
       nodes[2]["defaultOption"],
-      {"id": 3, "label": "R3", "title": "Rule 3", "key": "3"},
+      {
+        "id": 3,
+        "label": "R3",
+        "title": "Rule 3",
+        "titleHtml": "Rule 3",
+        "key": "3",
+      },
     )
     self.assertEqual(
       [(i, n.get("optionDefault")) for i, n in nodes.items()],
@@ -415,7 +496,15 @@ class SiteRulesTest(unittest.TestCase):
         "shown": "中文",
         "title": "Language of documents",
         "lang": "en",
-        "rules": [{"id": 6, "label": "R6", "title": "Rule 6", "key": "6"}],
+        "rules": [
+          {
+            "id": 6,
+            "label": "R6",
+            "title": "Rule 6",
+            "titleHtml": "Rule 6",
+            "key": "6",
+          }
+        ],
       },
     )
     self.assertEqual((label["title"], label["lang"]), ("完成项的标签", "zh"))

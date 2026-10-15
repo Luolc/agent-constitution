@@ -1,0 +1,44 @@
+id = 242
+slug = "frontend-one-icon-library"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Take every icon on the pages from one icon library"
+zh = "页面上的图标都取自同一套图标库"
+
+[text.statement]
+en = "Take every icon on a repository's pages from the one icon library the repository has chosen; draw none by hand, and use no character or emoji as an icon."
+zh = "仓库页面上的每个图标都取自仓库选定的那一套图标库；不手画图标，也不拿字符或 emoji 当图标。"
+
+[text.reason]
+en = '''
+Icons from one library share one stroke, one size and one style, and come with one license to keep track of. A second library, a drawing of one's own or a character that each font renders in its own way makes the pages look patched together and adds a source to keep up ({@constitution:simplicity}).
+'''
+zh = '''
+同一套图标库的图标线宽、尺寸和风格都一致，要留意的许可证也只有一份。再加一套图标库、自己画一个，或者用一个每种字体各画各样的字符，页面就显得东拼西凑，还多了一处要维护的来源 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The library is the one the repository names where it records how its pages look; a change that moves the pages to another library names the new one there in the same change. A brand's logo, such as a code host's mark on a link to it, is not an icon here.
+
+Violated when a change adds to a page an icon that is not from that library, drawn by hand, or a character or emoji standing for an icon.
+'''
+zh = '''
+图标库指仓库在记录页面外观的地方写明的那一套；把页面换到另一套图标库的变更，要在同一变更里把新的那套写到那里。品牌标志，比如指向代码托管平台的链接上它的标志，不算这里说的图标。
+
+变更往页面上加的图标不是取自那套图标库，是手画的，或者是拿来当图标的字符或 emoji 的，即为违反本规定。
+'''
+
+[translations]
+zh = "4be4f1372ec9f385cd4522a18f9feb1f52b58b08c989badfc05e27bdeb6978ab"

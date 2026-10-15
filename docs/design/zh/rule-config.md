@@ -1,4 +1,4 @@
-<!-- en-sha256: 4f44f18ee63d1b4d5be47b3a823e7dce0c99e335804b5fa355ddb4936e3a8b30 -->
+<!-- en-sha256: 57a5ebc718eced6ff76d4b6bebdeb74c96460579ba05008f8eb54b16d1d6ca3f -->
 # 规定配置
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，还没实现的列在[它改变什么](#what-this-changes)。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -165,7 +165,7 @@ value = "zh"
 
 规定清单里的取值或参数的默认值变了，锁文件就过期了，与规定改动时一样；`upgrade` 列出这个参数及其新旧取值。个人的取值来自全局配置和私有规定清单，不进任何锁文件：statute 每次编译私有输出时现读。
 
-**编译出的 `AGENTS.md`** 用取值替换占位符，不加任何标记：语言写成它在文件所用语言里的名称 (`Chinese`、`中文`)，字符串照写。规定的标题和要求读起来就像取值本来就写在规定里。
+**编译出的 `AGENTS.md`** 用取值替换占位符，不加任何标记：语言写成它在文件所用语言里的名称 (`Chinese`、`中文`)，字符串照写。规定的要求读起来就像取值本来就写在规定里。
 
 **私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。在公开仓库里，某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，`statute compile --private-only` 这时同样会写。私有仓库 (`public = false`) 没有私有输出，所以那里个人的取值不起作用，`statute compile` 用一条 note 说明这一点，并指出是哪个参数。
 
@@ -289,7 +289,7 @@ uses = ["instructions", "review"]
 
 **由此而来的。** statute 读 `uses`，编译出的 `AGENTS.md`、`statute check`、`statute explain` 和两个网站都按它来。
 
-- 编译出的 `AGENTS.md` 收录 `uses` 含 `instructions` 的启用规定。一个领域里启用的规定全都只进审查时，那里没有它的标题；对只进审查的规定的依赖或引用，按引用文件之外的规定渲染，即它的标题后面加「(规定 R42)」。
+- 编译出的 `AGENTS.md` 收录 `uses` 含 `instructions` 的启用规定；对只进审查的规定的引用，和别的引用一样写成它的引用。
 - `statute check` 在各个领域里列出 `uses` 含 `review` 的启用规定，以及它运行的每个程序的结果。
 - `statute explain <rule>` 说明一条启用的规定去哪里：「R43 编进 `AGENTS.md`，并列给审查方」。
 - 锁文件不记新东西：`uses` 是规定文件的一部分，锁文件已经用 SHA-256 钉住了它。
@@ -304,9 +304,9 @@ uses = ["instructions", "review"]
 - one-of 的选项就是它的子节点，要么全是规定，要么全是领域，不能混。只有一条规定的选项就是那条规定，外面不套领域；需要几条规定的选项是一个以这个 one-of 为 parent 的领域，规定放在里面；它被选中时，其中的规定各按自己的 `default` 进来，与 `domains` 开启的领域一样。领域仍然最多嵌套两层，这样的领域算一层：子领域里的 one-of 只能以规定为选项。
 - 每个 one-of 都指定一个选项作为默认 (见[one-of 的默认](#in-the-rule-files))。
 - 选项在自己的 `parent` 里写它的 one-of；one-of 不列 `options`。树仍然只记在 `parent` 里 ([规定文件格式](rule-format.md#rule-file-format))，增加或移动一个选项只改一个文件。one-of 自己的文件里看不到它的选项；`statute explain` 和网站会列出来。
-- 在编译出的 `AGENTS.md` 里，领域的规定放在它的标题下一层；one-of 被选中的选项放在 one-of 的位置，加一行写明 one-of (「One of: Keep the design in step with the code.」)；是领域的选项保留自己的标题。在网站上，one-of 是它所在领域列表里的一个框，列出每个选项并标出默认；选项只出现在这个框里，不在列表里再出现一次。是领域的选项，它的规定仍留在列表里，挂在它自己的标题下，比 one-of 所在的领域低一级；one-of 不作任何分组的小标题。编译出的 `AGENTS.md` 和两个网站都已经这样渲染。
+- 编译出的 `AGENTS.md` 是一个平铺的列表，one-of 被选中的选项放在 one-of 的位置，不写任何指明 one-of 的内容：是规定的选项和别的规定一样是一项，是领域的选项给出它的规定 ([编译与网站](statute-command.md#compilation-and-the-site))。在网站上，one-of 是它所在领域列表里的一个框，列出每个选项并标出默认；选项只出现在这个框里，不在列表里再出现一次。是领域的选项，它的规定仍留在列表里，挂在它自己的标题下，比 one-of 所在的领域低一级；one-of 不作任何分组的小标题。两个网站都已经这样渲染。
 
-**为什么。** 读编译出的文件或网站的人，看到的每条规定都直接在领域或 one-of 下面，没有规定嵌在规定里；只有一条规定的选项也不需要自己的领域。规定的 parent 算作依赖的特例没有了；依赖穿过 one-of 传到 one-of 的 parent 的特例也没有了，因为那个 parent 总是领域。失去的是表示一条规定细化另一条的缩进；`requires` 保留了这层关系，网站在两条规定上都会显示。
+**为什么。** 读网站的人，看到的每条规定都直接在领域或 one-of 下面，没有规定嵌在规定里；只有一条规定的选项也不需要自己的领域。规定的 parent 算作依赖的特例没有了；依赖穿过 one-of 传到 one-of 的 parent 的特例也没有了，因为那个 parent 总是领域。失去的是表示一条规定细化另一条的缩进；`requires` 保留了这层关系，网站在两条规定上都会显示。
 
 **改了什么。** 移动了一条规定：R94 原来的 parent 是 R93，现在挂在 R13 下，并依赖 R93。statute 不再把 parent 算作依赖；锁文件没有变。
 
@@ -320,7 +320,7 @@ uses = ["instructions", "review"]
 
 本地网站标出默认开关、每个 one-of 的默认选项、`uses` 和参数的取值 (见[本地网站](statute-command.md#the-local-site))；公开网站标出默认开关和每个 one-of 的默认选项，显示 `uses`，并能按它们筛选；它还为每个规定源设一个参数页，规定正文里的占位符链接到那里。
 
-编译出的 `AGENTS.md` 把每个 one-of 启用的选项放在 one-of 的位置，并加上写明 one-of 的那一行；两个网站都把 one-of 画成装着它的选项的框。
+编译出的 `AGENTS.md` 把每个 one-of 启用的选项里的规定放在 one-of 的位置，不写任何指明 one-of 的内容；两个网站都把 one-of 画成装着它的选项的框。
 
 这部分设计描述的内容都已实现。
 

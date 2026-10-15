@@ -1,0 +1,44 @@
+id = 246
+slug = "frontend-target-size"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 240
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Make every target on a page at least 24px square, and 44px under a coarse pointer"
+zh = "页面上可点击的目标至少 24px 见方，粗指针下至少 44px"
+
+[text.statement]
+en = "Make every element on a page that can be clicked or tapped at least 24px by 24px, its padding counted, and at least 44px by 44px where the pointer is coarse (`pointer: coarse`, a touch screen)."
+zh = "页面上每个能点击或轻触的元素，连同内边距在内至少 24px × 24px；在粗指针下 (`pointer: coarse`，即触摸屏) 至少 44px × 44px。"
+
+[text.reason]
+en = '''
+A small target makes the reader miss and try again, most of all with a finger on a touch screen, and each miss costs attention the pages are there to spare ({@constitution:purpose}).
+'''
+zh = '''
+目标太小，读者就会点偏、再点一次，在触摸屏上用手指点时尤其如此；每点偏一次，都在消耗页面本该为读者省下的注意力 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+An element can be clicked when it is a link, a button or another control. Its size is that of the box that takes the click, padding included, not that of its icon or text. A link within a line of text is exempt: it is as tall as the line.
+
+Violated when a change adds or changes a clickable element whose box is smaller than 24px by 24px, or smaller than 44px by 44px under `pointer: coarse`.
+'''
+zh = '''
+链接、按钮和其他控件都算能点击的元素。它的大小指接收点击的那个框的大小，包括内边距，而不是图标或文字的大小。行文中间的链接不在此列：它的高度就是行高。
+
+变更加入或修改的可点击元素，接收点击的框小于 24px × 24px，或者在 `pointer: coarse` 下小于 44px × 44px 的，即为违反本规定。
+'''
+
+[translations]
+zh = "631160eb646da4f469c65bf3edc21bbf4006fecd8064c3d7eeaeecca14808fa7"

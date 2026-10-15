@@ -23,7 +23,7 @@ packs = ["R3"]
 R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 
 [compile]
-agents-md = ["statement"]
+lang = "en"
 ```
 
 The rule set names the constitution's source and edition; the revision
@@ -36,11 +36,12 @@ option of a one-of that is a rule is chosen by listing it in `rules`,
 here `R51`; one that is a domain, through `domains`
 ([In the rule set](rule-config.md#in-the-rule-set)). A domain or a
 one-of listed in `rules` fails the build, which says to enable the
-domain as a pack and the one-of through one of its options. `[compile]` sets what the compiled `AGENTS.md` carries of each rule:
-by default only `statement`; adding `reason` or `verification` puts those
-parts in as well ([Compilation and the site](statute-command.md#compilation-and-the-site)).
-`lang` in `[compile]` names the language it is written in, `en` by
-default.
+domain as a pack and the one-of through one of its options.
+`lang` in `[compile]` names the language the compiled `AGENTS.md` is
+written in, `en` by default. What the file carries of each rule is not
+a setting: its reference and its statement, nothing more
+([Compilation and the site](statute-command.md#compilation-and-the-site));
+`agents-md`, a former key of `[compile]`, fails the build and says so.
 
 [Rule sources](rule-sources.md) adds fields. `public` at the top,
 required, says whether the repository is public, and each source but
@@ -408,7 +409,8 @@ CI, Git or security. Besides its ID and title it has only the few fields
 every node has and an optional applicability, a sentence or two on which
 repositories it is for ([Rule file format](rule-format.md#rule-file-format)), and no text or
 check; it cannot be enabled on its own. When any rule
-below it is enabled, the domain appears in the compiled output as a heading. A
+below it is enabled, the domain's rules appear in the compiled output,
+together, without the domain. A
 domain may sit under a domain that has no parent, as a subdomain, so
 domains nest two levels deep and no deeper
 ([Subdomains](rule-sources.md#subdomains)); a finer

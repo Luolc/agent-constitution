@@ -141,45 +141,31 @@ fn locked(dir: &Path) -> Vec<String> {
 }
 
 /// The headings of the compiled file, below the constitution's.
-fn headings(dir: &Path) -> Vec<String> {
+/// The numbers of the rules in `AGENTS.md`, in their order.
+fn numbers(dir: &Path) -> Vec<String> {
     ok(&statute(dir, &["lock"]));
     ok(&statute(dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     out.lines()
-        .filter(|l| l.starts_with("##"))
-        .map(str::to_owned)
+        .filter_map(|l| l.strip_prefix("- "))
+        .filter_map(|l| l.split_once(' '))
+        .map(|(n, _)| n.to_owned())
         .collect()
 }
 
 #[test]
-fn a_subdomain_is_a_heading_below_its_domain() {
+fn a_subdomains_rules_follow_the_order_of_the_tree() {
     let dir = repo(
         "headings",
         &manifest("\"R3\", \"R4\", \"R7\", \"R8\"", ""),
         &[],
     );
-    // Subdomain 5 has no enabled rule, so no heading; nor has the domain
-    // of the repository's own rules.
-    assert_eq!(
-        headings(&dir),
-        [
-            "## Domain 1 (R1)",
-            "### Domain 2 (R2)",
-            "#### Rule 3 (R3)",
-            "#### Rule 7 (R7)",
-            "#### Rule 8 (R8)",
-            "### Rule 4 (R4)",
-        ]
-    );
+    // The rules of subdomain 2 before R4, which follows it in domain 1;
+    // no domain shows, and no requirement.
+    assert_eq!(numbers(&dir), ["R3", "R7", "R8", "R4"]);
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
-    // R7 requires R4, out of subdomain 2: a link. R8 requires R3, in it:
-    // none.
     assert!(
-        out.contains("#### Rule 7 (R7)\n\nDo the thing 7.\n\nRequires: [Rule 4](#rule-R4)\n"),
-        "{out}"
-    );
-    assert!(
-        out.contains("#### Rule 8 (R8)\n\nDo the thing 8.\n\n<a id=\"rule-R4\"></a>"),
+        !out.contains("Domain") && !out.contains("Requires"),
         "{out}"
     );
 }
@@ -191,16 +177,7 @@ fn a_rule_hangs_under_a_domain_of_another_source() {
         &manifest("\"R3\", \"20\", \"team:21\"", ""),
         &[("rules", hung(20, "R2")), ("team/rules", hung(21, "R1"))],
     );
-    assert_eq!(
-        headings(&dir),
-        [
-            "## Domain 1 (R1)",
-            "### Domain 2 (R2)",
-            "#### Rule 3 (R3)",
-            "#### Rule 20 (L20)",
-            "### Rule 21 (team:21)",
-        ]
-    );
+    assert_eq!(numbers(&dir), ["R3", "L20", "team:21"]);
     // Its parent is a domain or a subdomain there, never a rule or a
     // one-of.
     let dir = repo(
@@ -336,16 +313,7 @@ fn a_domain_hangs_under_a_domain_of_another_source() {
         ("me/rules", rule(31, 30, "")),
     ];
     let dir = repo("hung-domain", &manifest("\"R3\", \"me:31\"", ""), &more);
-    assert_eq!(
-        headings(&dir),
-        [
-            "## Domain 1 (R1)",
-            "### Domain 2 (R2)",
-            "#### Rule 3 (R3)",
-            "### Domain 30 (me:30)",
-            "#### Rule 31 (me:31)",
-        ]
-    );
+    assert_eq!(numbers(&dir), ["R3", "me:31"]);
     // A pack stays in its source: R1 does not reach me:31, me:30 does.
     let dir = repo("hung-domain-pack", &manifest("", "\"R1\""), &more);
     ok(&statute(&dir, &["lock"]));
