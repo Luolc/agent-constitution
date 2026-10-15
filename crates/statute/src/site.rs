@@ -159,6 +159,9 @@ a{color:#05c}code{background:#f3f3f3;padding:0 .2em;border-radius:3px}\
 .tag{font-size:.8em;color:#666;margin-left:.4em}.on{color:#080}\
 ul.tree{list-style:none;padding-left:1.2rem}nav label{margin-right:1rem}\
 section{border-top:1px solid #ddd;margin-top:1.5rem}\
+.q{font-size:.8em;margin-left:.4em;padding:0 .4em;border-radius:3px;white-space:nowrap}\
+.q.global-public{background:#dbeafe;color:#1e3a8a}.q.global-private{background:#fde7c8;color:#7c2d12}\
+.q.local-public{background:#dcfce7;color:#14532d}.q.local-private{background:#f3e3f9;color:#581c87}\
 body:has(#show-old:not(:checked)) .old,body:has(#show-off:not(:checked)) .off{display:none}";
 
 /// One page of the site: its path below the site's directory, and its
@@ -297,6 +300,7 @@ fn tree(project: &Project, w: &Words, source: &Source, node: &Node, out: &mut St
         c => format!(" class=\"{}\"", c.join(" ")),
     };
     let _ = write!(out, "<li{class}>{}", link(project, &key, ""));
+    out.push_str(&mark(project, w, &key, false));
     out.push_str(&tags(project, w, &key, node, ""));
     let children: Vec<&Node> = source.children(node.id).collect();
     if !children.is_empty() {
@@ -322,6 +326,21 @@ fn link(project: &Project, key: &Key, up: &str) -> String {
         escape(&key.to_string()),
         escape(title)
     )
+}
+
+/// The quadrant of a node's source, and with `named` the source's name:
+/// the class gives the mark its color, and the words say it without one.
+fn mark(project: &Project, w: &Words, key: &Key, named: bool) -> String {
+    let Some(source) = project.sources.source(&key.source) else {
+        return String::new();
+    };
+    let q = Quadrant::of(source);
+    let name = if named {
+        format!(" · {}", escape(&source.name))
+    } else {
+        String::new()
+    };
+    format!("<span class=\"q {}\">{}{name}</span>", q.class(), q.name(w))
 }
 
 /// A node's kind, status and, for a rule, what this rule set does with
@@ -390,9 +409,10 @@ fn node_page(
     }
     let _ = writeln!(
         out,
-        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}",
+        "</nav>\n<h1><span class=\"ref\">{}</span>{}</h1>\n<p>{}{}",
         escape(&key.to_string()),
         escape(title),
+        mark(project, w, key, true),
         tags(project, w, key, node, "../")
     );
     if let Some(slug) = &node.slug {
@@ -508,23 +528,36 @@ fn escape(text: &str) -> String {
 /// Writes the pages to the site's directory below `root`, the directory
 /// of `statute.toml`, in place of what was there, after the
 /// directory's `.gitignore`. Writes nothing when git tracks a file in
-/// the directory, or when the directory is there without statute's
+/// the directory or cannot tell whether it does, or when the directory is there without statute's
 /// `.gitignore`. Returns the index's path.
 pub fn write(root: &Path, pages: &[Page]) -> Result<PathBuf, String> {
     let site = root.join(dir());
     let fail = |path: &Path, e: std::io::Error| format!("{}: cannot write: {e}", path.display());
     let gitignore = site.join(".gitignore");
     // The `.gitignore` keeps git from adding a page, but not from
-    // tracking a file someone added already; outside a git repository,
-    // where git cannot tell, nothing can be committed either.
-    let tracked = Command::new("git")
+    // tracking a file someone added already; outside a git repository
+    // nothing can be committed either. Any other failure of git leaves
+    // the question open, so nothing is written.
+    let out = Command::new("git")
         .arg("-C")
         .arg(root)
         .args(["ls-files", "--"])
         .arg(dir())
+        .env("LC_ALL", "C")
         .output()
-        .map(|out| String::from_utf8_lossy(&out.stdout).into_owned())
-        .unwrap_or_default();
+        .map_err(|e| format!("cannot run git, so no page is written: {e}"))?;
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let tracked = if out.status.success() {
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    } else if stderr.starts_with("fatal: not a git repository (") {
+        String::new()
+    } else {
+        return Err(format!(
+            "git cannot tell whether it tracks a file in {}, so no page is written: {}",
+            dir().display(),
+            stderr.trim()
+        ));
+    };
     if let Some(file) = tracked.lines().next() {
         return Err(format!(
             "{file}: git tracks it, so it would commit the pages, private rules included, and no page is written; take the directory out of git with `git rm -r --cached {}`",

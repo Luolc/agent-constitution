@@ -278,6 +278,20 @@ fn a_repository_draws_on_the_global_first_party_source() {
 }
 
 #[test]
+fn a_new_source_is_locked_at_the_newest_commit() {
+    let w = world("new-source");
+    // The clone `init --global` made is behind once `r` moves on.
+    let new = change(
+        &w.r,
+        edit(rule(2, 1, ""), "Do the thing 2.", "Do the new thing 2."),
+    );
+    ok(&w.run(&["init", "--private"]));
+    ok(&w.run(&["add", "R2"]));
+    let lock = read(&w.repo, "statute.lock");
+    assert!(lock.contains(&new), "{new} not in {lock}");
+}
+
+#[test]
 fn nothing_changes_until_upgrade() {
     let w = world("upgrade");
     ok(&w.run(&["init", "--private"]));

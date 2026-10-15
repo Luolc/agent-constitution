@@ -682,16 +682,49 @@ fn upgrade_leaves_a_rule_with_two_successors_to_the_user() {
     ok(&run);
     assert!(
         run.stdout.starts_with(
-            "left R10 in `rules`: superseded by R11, R12; choose among them with `statute add` and `statute remove`\n"
+            "left R10 in `rules`: superseded by R11, R12, which together take its place; add them with `statute add`, leaving out any that does not apply, and take R10 out with `statute remove`\n"
         ),
         "{}",
         run.stdout
     );
     assert!(
         run.stderr
-            .contains("replace R10 in `rules` with those of R11, R12 that apply"),
+            .contains("replace R10 in `rules` with R11, R12, which together take its place, leaving out any that does not apply"),
         "{}",
         run.stderr
+    );
+    assert_eq!(read(&dir, "statute.toml"), manifest("\"R10\", \"R3\""));
+}
+
+#[test]
+fn upgrade_names_the_rules_in_force_past_a_split() {
+    // R10 is split into R11 and R12, and R12 is superseded by R13.
+    let mut nodes = superseded_nodes("");
+    nodes[8] = edit(
+        rule(10, 1, "superseded-by = [11, 12]"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    );
+    nodes.push(edit(
+        rule(12, 1, "superseded-by = 13"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    ));
+    nodes.push(rule(13, 1, ""));
+    let dir = repo(
+        "upgrade-replace-split-chain",
+        &manifest("\"R10\", \"R3\""),
+        &nodes,
+    );
+    ok(&statute(&dir, &["lock"]));
+    let run = statute(&dir, &["upgrade", "--replace-superseded"]);
+    ok(&run);
+    assert!(
+        run.stdout.starts_with(
+            "left R10 in `rules`: superseded by R11, R13, which together take its place;"
+        ),
+        "{}",
+        run.stdout
     );
     assert_eq!(read(&dir, "statute.toml"), manifest("\"R10\", \"R3\""));
 }
