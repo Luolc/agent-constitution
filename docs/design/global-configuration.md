@@ -194,7 +194,10 @@ commit = "<commit>"
 public = true
 ```
 
-Every source but `R` has its `public` there, a source on disk as well.
+Every source but `R` has its `public` there, a source on disk as well,
+and a source whose `rules-dir` is not `rules` has its `rules-dir`, so
+that a source the lock file alone names is read from the same
+directory.
 
 - `lock` keeps the commit the lock file records when the source's
   address and branch or tag are those recorded, so that nothing changes
@@ -240,6 +243,8 @@ commit, `R@1a2b3c4d:rules/7.toml`.
   `clone`, its `origin` the `git`.
 - `--branch` or `--tag` says what to follow; without either, the branch
   the remote's `HEAD` names, written out in the entry.
+- `--rules-dir` writes the entry's `rules-dir`
+  ([Sources and references](rule-sets.md#sources-and-references)).
 - The source is cloned, or the directory read, and the rule set
   resolved with it before anything is written; nothing is written when
   that fails.

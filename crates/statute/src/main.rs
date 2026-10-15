@@ -146,6 +146,10 @@ enum SourceAction {
         /// Name it in the global configuration, for every rule set.
         #[arg(long)]
         global: bool,
+        /// The directory of the source's rules, below its top; `rules` by
+        /// default.
+        #[arg(long)]
+        rules_dir: Option<String>,
     },
 }
 
@@ -200,6 +204,7 @@ fn main() -> ExitCode {
                     public,
                     private,
                     global,
+                    rules_dir,
                 },
         } => source_add(
             root,
@@ -208,6 +213,7 @@ fn main() -> ExitCode {
             branch.map(Follow::Branch).or(tag.map(Follow::Tag)),
             (public || private).then_some(public),
             global,
+            rules_dir.as_deref(),
         ),
     };
     match result {
@@ -1263,6 +1269,7 @@ fn source_add(
     follow: Option<Follow>,
     public: Option<bool>,
     global: bool,
+    rules_dir: Option<&str>,
 ) -> Result<(), ()> {
     let env = env(Mode::Lock)?;
     let fail = |e: String| eprintln!("statute: error: {e}");
@@ -1343,6 +1350,9 @@ fn source_add(
     if name != manifest::FIRST_PARTY || !public {
         entry.insert("public", public.into());
     }
+    if let Some(dir) = rules_dir {
+        entry.insert("rules-dir", dir.into());
+    }
 
     let global_path = statute::global::config_dir().map(|d| d.join(statute::global::CONFIG));
     let (file, path) = if global {
@@ -1409,8 +1419,11 @@ fn source_add(
             .find(|s| s.name == name)
             .expect("the source was just added");
         statute::global::materialize(&mut spec, None, false).map_err(fail)?;
-        if !Path::new(&spec.path).join("rules").is_dir() {
-            fail(format!("source `{name}` ({address}) has no rules/"));
+        if !Path::new(&spec.path).join(&spec.rules_dir).is_dir() {
+            fail(format!(
+                "source `{name}` ({address}) has no {}/",
+                spec.rules_dir
+            ));
             return Err(());
         }
         let written = path
