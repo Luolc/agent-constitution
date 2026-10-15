@@ -1,4 +1,4 @@
-<!-- en-sha256: ae1c964f913d7f69384407edfc36d5fa109477b60612584088f1b2f94dfd0789 -->
+<!-- en-sha256: 57ef8c2a9c72f52bdfe755ef1aec0135d9dd9f359aa21eae02793ff8ba4cfec4 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -105,7 +105,7 @@ team = { git = "example.test/their-team/rules", branch = "main" }
 team = { git = "https://example.test/our-team/tools.git", branch = "main", rules-dir = "agent/rules", public = true }
 ```
 
-`rules-dir` 给那些除了规定还发布别的东西、把规定放在别处的仓库用；参数的声明 `params.toml` 也放在同一个目录 (见[参数](rule-config.md#parameters))。写绝对路径、带 `..` 的路径，或者指到 `.statute/` 里面的路径，都会报错：读规定源只在它自己里面读，而 `.statute/rules/` 放的是仓库给自己用的规定，别的仓库不能用 (见[四类规定源](rule-sources.md#four-kinds-of-source))。`rules-dir` 尚未实现。
+`rules-dir` 给那些除了规定还发布别的东西、把规定放在别处的仓库用；参数的声明 `params.toml` 也放在同一个目录 (见[参数](rule-config.md#parameters))。写绝对路径、带 `..` 的路径，或者指到 `.statute/` 里面的路径，都会报错：读规定源只在它自己里面读，而 `.statute/rules/` 放的是仓库给自己用的规定，别的仓库不能用 (见[四类规定源](rule-sources.md#four-kinds-of-source))。
 
 规定源也可以是一个 git 仓库，克隆到 statute 的缓存目录里，按锁文件固定的提交读取 ([git 规定源](global-configuration.md#git-sources))。一个用户的所有规定清单都能用的规定源，以及第一方规定源的默认地址，来自全局配置，规定清单自己的 `[sources]` 按名字覆盖它们 ([一个名字指哪个规定源](global-configuration.md#which-source-a-name-means))；只用到这些规定源的规定清单可以不写 `[sources]`。
 

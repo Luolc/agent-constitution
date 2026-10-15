@@ -282,7 +282,6 @@ with `..` and one into `.statute/` fail: a source is read only
 within itself, and `.statute/rules/` holds a repository's rules for
 itself, which no other repository may use
 ([Four kinds of source](rule-sources.md#four-kinds-of-source)).
-`rules-dir` is not built yet.
 
 A source may be a git repository as well, cloned into statute's cache
 directory and read at the commit the lock file pins ([Git sources](global-configuration.md#git-sources)).

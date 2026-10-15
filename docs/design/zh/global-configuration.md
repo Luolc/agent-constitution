@@ -1,4 +1,4 @@
-<!-- en-sha256: 375dc3ec34cc7cb800fc13a691de2143caeae80d902b66a930e6168637fdce6d -->
+<!-- en-sha256: 4e31fa58214cf8c207eb787398158ac7aed8632a96942cbffc88f1944cfe106e -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -100,7 +100,7 @@ commit = "<commit>"
 public = true
 ```
 
-除 `R` 以外，每个规定源在那里都记有 `public`，磁盘上的规定源也一样。
+除 `R` 以外，每个规定源在那里都记有 `public`，磁盘上的规定源也一样；`rules-dir` 不是 `rules` 的规定源还记有 `rules-dir`，这样只有锁文件写着的规定源也从同一个目录读。
 
 - 规定源的地址和分支或 tag 与锁文件记的相同时，`lock` 保留锁文件记的提交，这样规定清单不升级就什么都不变。新的规定源，或者地址、分支变了的，`lock` 会拉取，取分支的最新提交或 tag 指向的提交。
 - `upgrade` 拉取每个 git 规定源，取各自最新的提交，再像现在一样显示变了什么。因为旧提交读得到了，现在可以显示一条规定改动的文字；这一点还没有实现。
@@ -116,6 +116,7 @@ public = true
 
 - `<address>` 是一个 git 地址，或者磁盘上的一个目录。裸仓库算 git 地址，写成它的绝对路径。在规定清单里，别的目录写成 `path`，相对于 `statute.toml` 所在的目录；加 `--global` 时，目录必须是一份克隆，写成 `clone`，它的 `origin` 写成 `git`。
 - `--branch` 或 `--tag` 说明跟踪什么；两个都不给时，取远端 `HEAD` 指向的分支，并在条目里写明。
+- `--rules-dir` 写出条目的 `rules-dir` (见[规定源与引用](rule-sets.md#sources-and-references))。
 - 写入之前，先克隆这个规定源或读那个目录，并带上它解析一遍规定清单；失败就什么都不写。
 
 **公开与否。** `--public` 或 `--private` 说了算。两个都不给时，statute 用 `gh repo view --json visibility` 问这个地址；是目录时，问包含它的那个仓库：
