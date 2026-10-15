@@ -82,10 +82,14 @@ INDEX = (
 )
 
 
-# A group heading of the list of the rules: its level, its group, and its
-# id when shown, else `hidden`.
+# A group row of the list of the rules: its level, its group, and
+# `hidden` when hidden, else "".
 HEADING = re.compile(
-  r'<h(\d) class="rules-group" data-group="(\d+)"( id="[^"]*"| hidden)>'
+  r'<h(\d) class="rules-group" data-group="([^"]+)"( hidden)?>'
+)
+# A group in a group row's path, with an id where the page links it.
+GROUP_ID = re.compile(
+  r'<span class="group-part" data-group="([^"]+)"[^>]*? id="group-\1"'
 )
 
 
@@ -381,12 +385,15 @@ class SiteTest(unittest.TestCase):
       " Superseded Replaced by the rules its page names. Repealed Withdrawn,"
       " with nothing in its place. On by default A new rule set gets it"
       " without listing it. Off by default A rule set gets it only by listing"
-      " it. Default option The option of a one-of that a rule set gets unless"
-      " it chooses another. Filter Status All None Active Trial Draft"
-      " Superseded Repealed Defaults All None On by default Off by default"
-      " Uses All None Instructions Review Domains All None R1 Group 1 Reset"
-      " filter Rules per page 25 50 100 All R1 Group 1 Off by default R2 One"
-      " of: Group 2 Active Off by default R3 Rule 3 Active Off by default"
+      " it. Instructions Goes into the instructions an agent reads. Review A"
+      " reviewer checks a change against it. Default option The option of a"
+      " one-of that a rule set gets unless it chooses another. The marks at"
+      " the end of a row stand in four places, in this order: status,"
+      " default, instructions, review; a place without its mark stays empty."
+      " Filter Status All None Active Trial Draft Superseded Repealed"
+      " Defaults All None On by default Off by default Uses All None"
+      " Instructions Review Domains All None R1 Group 1 Reset filter Rules"
+      " per page 25 50 100 All ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3"
       " Default option R1",
       pages["rules/index.html"],
     )
@@ -408,10 +415,17 @@ class SiteTest(unittest.TestCase):
       ' data-domain="1" data-uses="instructions" data-default="off">',
       page,
     )
+    # The box is a group named by its label, One of.
+    self.assertIn(
+      '<div class="one-of" role="group" aria-labelledby="one-of-2">'
+      '<span class="one-of-label" id="one-of-2">One of</span>',
+      page,
+    )
     self.assertRegex(
       page,
-      r'<ul class="one-of-options">\n<li><a class="rule-entry"'
-      r' href="\.\./rules/3/">.*Default option</span></a></li>\n</ul>',
+      r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
+      r' href="\.\./rules/3/">.*Default option</span></span>'
+      r'<span class="rule-marks">.*</a></li>\n</ul>',
     )
     # The superseded rule 4 is there, with its status, but filtered out.
     self.assertIn(
@@ -419,7 +433,11 @@ class SiteTest(unittest.TestCase):
       ' data-uses="instructions" data-default="off" hidden>',
       page,
     )
-    self.assertIn('<span class="rule-status">Superseded</span>', page)
+    self.assertIn(
+      '<span class="rule-mark rule-status status-superseded" role="img"'
+      ' aria-label="Superseded" title="Superseded">',
+      page,
+    )
     self.assertEqual(page.count('class="rule-item" data-status="active"'), 2)
     self.assertEqual(
       page.count('data-status="active" data-domain="1" data-uses'), 3
@@ -446,21 +464,34 @@ class SiteTest(unittest.TestCase):
       '<input type="checkbox" name="domain" value="1" checked>', page
     )
     self.assertIn(
-      "R1 组 1 默认关闭 R2 择一：组 2 生效 默认关闭 R3 规定 3 生效 默认关闭"
-      " 默认选项",
+      "ID 规定 R1 组 1 择一 R2 组 2 R3 规定 3 默认选项 R1",
       pages["zh/rules/index.html"],
     )
-    self.assertIn('style="--indent: 0"><span class="rule-id">R6', page)
-    # A heading shows where its group changes from the rule shown before.
+    # A rule's marks: its status, the ring of off by default, its one use.
+    self.assertRegex(
+      page,
+      r'<a class="rule-entry" href="\.\./rules/6/"><span class="rule-id">R6'
+      r'</span><span class="rule-title" lang="en"><span class="rule-text">'
+      r'Rule 6</span></span><span class="rule-marks"><span class="rule-mark'
+      r' rule-status status-active" role="img" aria-label="Active"'
+      r' title="Active"><svg [^\n]*</svg></span><span class="rule-mark'
+      r' rule-dot" role="img" aria-label="Off by default" title="Off by'
+      r' default"></span><span class="rule-mark rule-use" role="img"'
+      r' aria-label="Instructions" title="Instructions"><svg [^\n]*</svg>'
+      r'</span><span class="rule-mark"></span></span></a>',
+    )
+    # A group row shows where its group changes from the rule shown
+    # before, its group with an id the first time.
     self.assertEqual(
       HEADING.findall(page),
       [
-        ("2", "1", ' id="group-1"'),
+        ("2", "1", ""),
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
       ],
     )
+    self.assertEqual(GROUP_ID.findall(page), ["1"])
     self.assertIn('<div class="rules-controls" hidden>', page)
     self.assertIn(
       '<button type="button" class="rules-filter-button"'
@@ -510,9 +541,10 @@ class SiteTest(unittest.TestCase):
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
         ("2", "1", " hidden"),
-        ("2", "1", ' id="group-1"'),
+        ("2", "1", ""),
       ],
     )
+    self.assertEqual(GROUP_ID.findall(two), ["1"])
     self.assertIn(
       '<li style="--level: 0"><a href="#group-1">R1 Group 1</a></li>\n</ul>',
       two,
@@ -522,7 +554,11 @@ class SiteTest(unittest.TestCase):
     self.assertIn('<a aria-current="page">2</a>', two)
 
   def test_rules_list_subdomain(self):
-    """A domain under a domain: a deeper heading and a nested checkbox."""
+    """A domain under a domain: a row with its path, and a nested checkbox.
+
+    The list coming back to the domain above shows that domain's row
+    again.
+    """
     raw = self.build(raw=True, edit_rules=site_fixture.subdomain)
     page = raw["rules/index.html"]
     # The domain's page lists the subdomain, the subdomain's its rule, in
@@ -543,16 +579,37 @@ class SiteTest(unittest.TestCase):
     )
     self.assertIn('data-status="active" data-domain="2" data-uses', page)
     self.assertEqual(page.count('data-domain="1" data-uses'), 3)
-    self.assertIn('<li style="--level: 1"><a href="#group-2">', page)
-    self.assertEqual(HEADING.findall(page)[1], ("3", "2", ' id="group-2"'))
+    self.assertIn(
+      '<li style="--level: 0"><a href="#group-1">R1 Group 1</a></li>\n'
+      '<li style="--level: 1"><a href="#group-2">R2 Group 2</a></li>',
+      page,
+    )
+    self.assertEqual(
+      HEADING.findall(page),
+      [
+        ("3", "2", ""),
+        ("2", "1", " hidden"),
+        ("2", "1", ""),
+        ("2", "1", " hidden"),
+      ],
+    )
+    self.assertEqual(GROUP_ID.findall(page), ["1", "2"])
+    self.assertIn(
+      '<a href="../rules/2/" aria-label="R2 Group 1, Group 2"><span'
+      ' class="group-label">R2</span><span class="group-path"><span'
+      ' class="group-part" data-group="1" data-level="0" data-toc="R1 Group 1"'
+      ' id="group-1">Group 1</span><svg ',
+      page,
+    )
 
   def test_rules_list_filter(self):
     """The script shows the rules of the filter in the address.
 
     Loaded in headless Chrome, which runs the page's scripts: one value
     or several of a field, two fields, none of a field, a domain alone
-    or with the one under it, the old address of the form, and the
-    number of fields changed from the default on the filter's button.
+    or with the one under it, the old address of the form, the group
+    rows shown, and the number of fields changed from the default on the
+    filter's button.
     Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
@@ -565,25 +622,32 @@ class SiteTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp:
       page = Path(tmp) / "rules.html"
       page.write_text(raw["rules/index.html"], encoding="utf-8")
-      for query, rules, fields in (
-        ("", ["3", "5", "6"], "0"),
+      for query, rules, groups, fields in (
+        ("", ["3", "5", "6"], ["2", "1"], "0"),
         (
           "?status=active,trial,draft,superseded,repealed",
           ["3", "4", "5", "6"],
+          ["2", "1"],
           "1",
         ),
-        ("?status=superseded", ["4"], "1"),
-        ("?status=", [], "1"),
-        ("?domain=2", ["3"], "1"),
-        ("?status=active,superseded&domain=1", ["4", "5", "6"], "2"),
-        ("?status=active,superseded&default=on", [], "2"),
+        ("?status=superseded", ["4"], ["1"], "1"),
+        ("?status=", [], [], "1"),
+        ("?domain=2", ["3"], ["2"], "1"),
+        ("?status=active,superseded&domain=1", ["4", "5", "6"], ["1"], "2"),
+        ("?status=active,superseded&default=on", [], [], "2"),
         (
           "?filter=1&status=superseded&uses=instructions&domain=1&domain=2",
           ["4"],
+          ["1"],
           "2",
         ),
-        ("?filter=1&status=active&uses=review&domain=1&domain=2", [], "2"),
-        ("?filter=1&status=superseded", [], "3"),
+        (
+          "?filter=1&status=active&uses=review&domain=1&domain=2",
+          [],
+          [],
+          "2",
+        ),
+        ("?filter=1&status=superseded", [], [], "3"),
       ):
         with self.subTest(query):
           dom = subprocess.run(
@@ -602,11 +666,17 @@ class SiteTest(unittest.TestCase):
           ).stdout
           shown = re.findall(
             r'<div class="rule-item[^"]*"[^>]*?(?<! hidden="")>\n?'
-            r'(?:<h[^\n]*\n)*(?:<div class="one-of"[^>]*>\n)?'
+            r'(?:<h[^\n]*\n)*(?:<div class="one-of"[^\n]*\n)?'
             r'<a class="rule-entry" href="[^"]*/(\d+)/"',
             dom,
           )
           self.assertEqual(shown, rules)
+          # A group row shows where the group changes, so the domain
+          # comes back after its subdomain.
+          self.assertEqual(
+            re.findall(r'<h\d class="rules-group" data-group="(\d+)">', dom),
+            groups,
+          )
           self.assertRegex(
             dom,
             r'<span class="rules-filter-count"( hidden="")?>'
@@ -647,22 +717,23 @@ class SiteTest(unittest.TestCase):
     )
 
   def test_domain_option(self):
-    """A domain as an option: a line of the box, and the head of its rules.
+    """A domain as an option: a line of the box, and the row of its rules.
 
-    No heading for the one-of, so the option's heading is a level below
-    the one-of's domain.
+    No group for the one-of, so the option's row is a level below the
+    one-of's domain, its path that domain's and its own.
     """
     raw = self.build(raw=True, edit_rules=site_fixture.domain_option)
     page = raw["rules/index.html"]
     self.assertRegex(
       page,
-      r'<ul class="one-of-options">\n<li><a class="rule-entry"'
+      r'<ul class="one-of-options">\n<li class="default"><a class="rule-entry"'
       r' href="\.\./rules/7/"><span class="rule-id">R7</span>.*Default'
-      r" option</span></a></li>\n</ul>",
+      r" option</span></span>.*</a></li>\n</ul>",
     )
     self.assertNotIn('data-group="2"', page)
-    self.assertIn(("3", "7", ' id="group-7"'), HEADING.findall(page))
-    self.assertIn('href="../rules/3/" style="--indent: 0"', page)
+    self.assertIn(("3", "7", ""), HEADING.findall(page))
+    self.assertIn("7", GROUP_ID.findall(page))
+    self.assertIn('aria-label="R7 Group 1, Group 7"', page)
     self.assertIn(
       '<input type="checkbox" name="domain" value="7" data-parent="1" checked>',
       page,
@@ -688,14 +759,14 @@ class SiteTest(unittest.TestCase):
 
     raw = self.build(raw=True, edit_rules=edit)
     self.assertIn(
-      '<span class="rule-title" lang="en">Label <span class="param-value"'
+      '<span class="rule-text">Label <span class="param-value"'
       ' title="work-items.label-done">a &lt;b&gt; c</span></span>',
       raw["rules/index.html"],
     )
     self.assertNotIn("<b>", raw["rules/index.html"])
 
   def test_rules_of_two_sources(self):
-    """Each source heads its rules; the tags say quadrant and rule set."""
+    """Each source starts its rows' paths; tags say quadrant and rule set."""
     raw = self.build(raw=True, other=True)
     pages = {p: visible(t) for p, t in raw.items()}
     page = raw["rules/index.html"]
@@ -707,7 +778,7 @@ class SiteTest(unittest.TestCase):
     self.assertIn(
       "Enabled The rule set of this site has it. Not enabled The rule set"
       " of this site does not have it. Global public The quadrant of the"
-      " rule's source. Filter",
+      " rule's source. The marks",
       pages["rules/index.html"],
     )
     self.assertIn(
@@ -715,18 +786,19 @@ class SiteTest(unittest.TestCase):
       page,
     )
     for text in (
-      "Global public · R R1 Group 1 Off by default R2 One of: Group 2 Active"
-      " Off by default R3 Rule 3 Active Off by default Default option Enabled"
-      " Global public",
-      "R5 Rule 5 Active Off by default Not enabled Global public",
-      "Global private · demo demo:1 Group 1 Off by default demo:2 Demo rule"
-      " Active Off by default Enabled Global private",
+      "R1 Global public · R Group 1 One of R2 Group 2 R3 Rule 3 Default"
+      " option Enabled Global public",
+      "R5 Rule 5 Not enabled Global public",
+      "demo:1 Global private · demo Group 1 demo:2 Demo rule Enabled Global"
+      " private",
     ):
       self.assertIn(text, pages["rules/index.html"])
     self.assertIn(
-      '<h2 class="rules-group" data-group="source-demo" id="group-source-demo">'
-      '<span class="quadrant quadrant-global-private">Global private · demo'
-      "</span></h2>",
+      '<h2 class="rules-group" data-group="source-demo"><span'
+      ' class="group-path"><span class="group-part" data-group="source-demo"'
+      ' data-level="0" data-toc="Global private · demo"><span'
+      ' class="quadrant quadrant-global-private">Global private · demo'
+      "</span></span></span></h2>",
       page,
     )
     self.assertIn(

@@ -1,0 +1,6 @@
+{{- /* A node's status as its icon in the list of the rules and its
+  legend, named for assistive technology and on hover: takes the
+  status. Returns the HTML. */ -}}
+{{- $icon := index (dict "active" "circle-check" "trial" "flask-conical" "draft" "pencil" "superseded" "arrow-right-left" "repealed" "circle-slash") . }}
+{{- $name := i18n (printf "status-%s" .) }}
+{{- return printf `<span class="rule-mark rule-status status-%s" role="img" aria-label="%s" title="%s">%s</span>` . $name $name (partial "icon.html" (printf "lucide:%s" $icon)) }}

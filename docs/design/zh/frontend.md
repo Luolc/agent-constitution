@@ -1,4 +1,4 @@
-<!-- en-sha256: 74d8a4e185a0a82690a6f2e2c2df74ded7bd4a16e0603b45be926133dd22857c -->
+<!-- en-sha256: 475ec33011077173fbe0a57834bf31d0aa45d8b819bd1e3670c0127d1efea97f -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -9,12 +9,12 @@
 
 - [设计 token](#design-tokens)：什么是 token，以及关于取值的那条规矩。
 - [颜色](#color)：两套主题和各种状态。
-- [字体](#type)：字体、字号和字重，以及规定树的各个层级。
+- [字体](#type)：字体、字号和字重，以及规定列表的各种行。
 - [间距、圆角和阴影](#space-radius-and-shadow)。
 - [图标](#icons)：只用一套图标库 Lucide，以及现有图标换成什么。
 - [动效](#motion)：时长、缓动和减弱动效。
 - [交互与无障碍](#interaction-and-accessibility)：点击区域的大小、只在能悬停的设备上用 hover、给辅助技术的名称和状态、不靠脚本也能用的页面。
-- [组件](#components)：tag、图例、筛选器、规定树、one-of、弹出层、侧边栏和按钮。
+- [组件](#components)：标记和 tag、图例、筛选器、规定表、one-of、弹出层、侧边栏和按钮。
 - [不做的事](#not-done)：页面上永远不做的事。
 - [截图与审查](#screenshots-and-review)：改动页面的 pull request 附什么、CI 跑什么、审查方核什么。
 - [代码实现](#in-the-code)：token、样式表和图标放在哪里，脚本怎么构建。
@@ -50,12 +50,12 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | `accent-hover` | `#6b381e` | `#d9ae8f` | 主按钮在指针下时。 |
 | `text-on-accent` | `#dde6d5` | `#1e2520` | `accent` 底色上的文字。 |
 | `border-subtle` | `#b5c4aa` | `#38453a` | 细线：各部分之间的分隔线、链接的下划线、tag 的轮廓。 |
-| `border-strong` | `#6d7968` | `#717970` | 控件和框：输入框、one-of 的框、树的层级色条。 |
-| `status-active` | `#245a20` | `#9fd39a` | Active tag 的文字。 |
+| `border-strong` | `#6d7968` | `#717970` | 控件和框：输入框、one-of 的框、规定列表表头下面的线。 |
+| `status-active` | `#245a20` | `#9fd39a` | 规定列表里 Active 的图标；Active tag 的文字。 |
 | `status-active-bg` | `#c3d2bc` | `#303d31` | 它的底色。 |
-| `status-trial` | `#66460a` | `#e2c07a` | Trial tag 的文字。 |
+| `status-trial` | `#66460a` | `#e2c07a` | Trial 的图标；Trial tag 的文字。 |
 | `status-trial-bg` | `#ccd0b9` | `#393b2d` | 它的底色。 |
-| `status-draft` | `#4b5946` | `#9cab98` | Draft tag 的文字。 |
+| `status-draft` | `#4b5946` | `#9cab98` | Draft 的图标；Draft tag 的文字。 |
 | `status-draft-bg` | `#c9d2c1` | `#303831` | 它的底色。 |
 | `quadrant-global-public` | `#acc8df` | `#274160` | 规定源象限 tag 的底色 (文字用 `text`)。 |
 | `quadrant-global-private` | `#e4d098` | `#5e491a` | |
@@ -70,6 +70,8 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 - `text-on-accent` 在 `accent` 和 `accent-hover` 上：不低于 4.5 (light 6.55 和 7.40，dark 7.13 和 7.76)。
 - 状态 tag 的文字在它的底色上：不低于 4.5 (light 5.19、5.43、4.78；dark 6.67、6.56、5.01)。
 - `text` 在象限 tag 上：不低于 4.5 (最低 6.10)。
+- 列表里状态的图标在页面上和 `bg-hover` 上：不低于 4.5，高于图标要求的 3 (Active light 6.39 和 5.16，dark 9.14 和 6.72；Trial 6.69 和 5.40，8.99 和 6.61；Draft 5.81 和 4.69，6.48 和 4.77)。
+- `text` 在分组行的底色上：不低于 4.5 (在 `bg-active` 上 light 7.10，dark 6.30；在 `bg-panel-hover` 上 7.90 和 7.37)。
 - hover 底色相对它所在的表面：不低于 1.2，这样在 light 模式下也看得出变化 (`bg-hover` 在页面上 light 1.24、dark 1.36；`bg-panel-hover` 在面板上 1.24 和 1.36)。
 - `accent` 在 `bg-selected` 上：不低于 4.5 (light 4.80，dark 4.92)。
 - `border-strong` 作为控件的边 (未勾选的复选框、输入框、菜单)，在 `bg-page` 和 `bg-panel` 上：不低于 3，即 WCAG 对控件边界的下限 (light 3.57 和 3.22，dark 3.48 和 3.15)。
@@ -97,9 +99,9 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | --- | --- | --- |
 | `text-xs` | `0.75em` | tag、按钮上的计数。 |
 | `text-sm` | `0.875em` | 控件、侧边栏分组名、说明、目录。 |
-| `text-md` | `1em` | 正文；列表里规定的一行。 |
-| `text-lg` | `1.25em` | 二级标题；第二层的领域。 |
-| `text-xl` | `1.5em` | 第一层的领域。 |
+| `text-md` | `1em` | 正文；规定列表里的每一行。 |
+| `text-lg` | `1.25em` | 二级标题。 |
+| `text-xl` | `1.5em` | 设计各页的一级标题。 |
 | `text-2xl` | `1.75em` | 页面标题。 |
 
 | Token | 英文 | 中文 |
@@ -108,15 +110,15 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | `weight-medium` | `600` | `650` |
 | `weight-bold` | `750` | `800` |
 
-同样的字重下，Noto Serif SC 比 EB Garamond 显得细，所以中文另有一列。规定树的各层同时在字号和字重上拉开，相邻两层不会看起来一样：
+同样的字重下，Noto Serif SC 比 EB Garamond 显得细，所以中文另有一列。规定列表的各行字号相同，这样才排得成一张表；领域的行与规定的行靠字重和底色区分 ([组件](#components))：
 
-| 层级 | 字号 | 字重 | 颜色 |
+| 行 | 字号 | 字重 | 颜色 |
 | --- | --- | --- | --- |
-| 第一层的领域 | `text-xl` | `weight-bold` | `text` |
-| 第二层的领域 | `text-lg` | `weight-bold` | `text` |
-| 第三层及更深的领域；one-of 框里的标题 | `text-md` | `weight-medium` | `text` |
-| 规定 | `text-md` | `weight-regular` | `text` |
-| 节点的标号 (`R13`) | 与所在行相同 | 与所在行相同 | `text-muted`，等宽数字 |
+| 领域的分组行，它的标号和路径 | `text-md` | `weight-bold` | `text`，第一层的底色是 `bg-active`，更深的是 `bg-panel-hover` |
+| 框里 one-of 自己的那一行 | `text-md` | `weight-medium` | `text` |
+| 规定的行 | `text-md` | `weight-regular` | `text` |
+| 规定的标号 (`R13`) | 与所在行相同 | 与所在行相同 | `text-muted`，等宽数字，向末端对齐 |
+| 表头 | `text-sm` | `weight-medium` | `text-muted` |
 
 ## <a id="space-radius-and-shadow"></a>间距、圆角和阴影
 
@@ -135,12 +137,15 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | Token | 值 | 用途 |
 | --- | --- | --- |
 | `width-popover` | `28rem` | 装着控件的弹出层的宽度，即筛选器的面板。 |
+| `width-label` | `3.2em` | 规定列表里标号那一列。 |
+| `width-mark` | `1.1em` | 那个列表里一行标记的四个位置，每个的宽度。 |
+| `size-dot` | `0.6em` | 默认开启或关闭的圆点。 |
 
 | Token | 值 | 用途 |
 | --- | --- | --- |
 | `radius-sm` | `0.25rem` | tag、输入框、按钮、一行的 hover 底色。 |
 | `radius-md` | `0.5rem` | 弹出层、面板、one-of 的框。 |
-| `radius-full` | `9999px` | 圆形的东西：计数徽标、状态胶囊。 |
+| `radius-full` | `9999px` | 圆形的东西：计数徽标、标记里的圆点、状态胶囊。 |
 
 | Token | Light | Dark | 用途 |
 | --- | --- | --- | --- |
@@ -179,6 +184,9 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 | 主题自带的 `translate` | 语言切换 | `languages` |
 | 主题自带的 `menu` 和 `toc` | 窄屏顶栏上的两个按钮 | `menu`、`table-of-contents` |
 | 文字按钮 | 筛选器 | `funnel` |
+| tag 里状态的文字 | 列表和图例里规定的状态：生效、试行、草案、已取代、已废止 | `circle-check`、`flask-conical`、`pencil`、`arrow-right-left`、`circle-slash` |
+| 无 | 列表和图例里规定的用途：指令、审查 | `scroll-text`、`scan-eye` |
+| 无 | 分组行路径里领域之间 | `chevron-right` |
 | 字符 ‹ 和 › | 列表的上一页和下一页 | `chevron-left`、`chevron-right` |
 | 无 | 关闭弹出层 | `x` |
 | 无 | 挂在另一条规定下的规定 | `corner-down-right` |
@@ -219,17 +227,20 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 下面每个组件都写出静止时的样子和各种状态：指针悬停 (hover)、按下 (active)、获得键盘焦点 (focus，即[颜色](#color) 一节的焦点框)、当前或选中 (selected)、禁用 (disabled)，有哪些写哪些。
 
-- **tag。** 小号，`text-xs`、`line-height-ui`，只占一行，不折行。不同的事实用不同的形式，规定后面那排 tag 不再是一排一样的方框：
-  - 状态：胶囊 (`radius-full`，padding `0 space-2`)，用该状态的颜色 `status-active`、`status-trial`、`status-draft`，无边框。已被取代和已废止：`text-muted`，`border-subtle` 的轮廓，无填充。
-  - 默认是否启用：不用框，一个圆点加一个词。默认开启：`accent` 的实心圆点，词用 `text-muted`；默认关闭：`text-muted` 的空心圆圈，词用 `text-muted`。在紧凑的列表里只显示圆点，那个词作为它的无障碍名称并在 hover 时显示，列表上方的图例说明圆点的含义。
+- **标记。** 在规定列表里，一行的标记放在行尾的四个位置，每个宽 `width-mark`，合起来约四个字符宽，依次是：状态，默认是否启用，以及用途里的指令和审查。没有某项标记的位置空着，这样上下行的标记对齐；这一列没有表头，每个位置放什么由图例说明。每个标记是一个图标 (`icon-sm`) 或一个圆点，用它的词给读屏软件命名，hover 时也显示这个词 (`role="img"`、`aria-label` 和 `title`)：
+  - 状态：Active 是 `status-active` 的 `circle-check`，Trial 是 `status-trial` 的 `flask-conical`，Draft 是 `status-draft` 的 `pencil`，Superseded 是 `arrow-right-left`、Repealed 是 `circle-slash`，这两个用 `text-muted`。
+  - 默认是否启用：`size-dot` 的圆点，默认开启时用 `accent` 填满，默认关闭时是 `text-muted` 的空心圆圈 (一条 `2px` 的边框)；要看别的规定源才定得下来时，这个位置空着。
+  - 用途：指令是 `scroll-text`，审查是 `scan-eye`，都用 `text-muted`。
+  - 标记本身不响应指针，响应的是整行。
+- **tag。** 小号，`text-xs`、`line-height-ui`，只占一行，不折行，用在一行的四个位置放不下的事实和规定自己的页面上：
+  - 默认是否启用，在节点自己的页面上：标记里的那个圆点后面跟着词，用 `text-muted`。
   - 规定清单启用了它：词前加 `check` (`icon-sm`)，用 `accent`；没有启用：只有那个词，用 `text-muted`。
   - 规定源的象限：`radius-sm` 的方框，填象限的颜色，文字用 `text`。
-  - 在列表里，tag 排在行最右边的一列，上下行对齐，不紧跟在标题后面。
-  - tag 本身不响应指针，响应的是整行。
-- **图例**，放在规定列表上方，同 Ruff 的规则列表一样：列表里规定带的每种标记，照列表里的样子画出来，后面一行说明它的含义：每种状态、默认开启和默认关闭、one-of 的默认选项，网站上有的话，还有已启用、未启用和象限。一个术语和它的含义占一行 (描述列表)，`text-sm`，含义用 `text-muted`；图例只跟着标记走，不管列表怎么排版。
+  - 在列表里，网站上有的话，是否启用和象限跟在四个标记位置后面，各占一列。
+- **图例**，放在规定列表上方，同 Ruff 的规则列表一样：列表里一行带的每种标记，照列表里的样子画出来，后面跟着它的词，再用一行说明它的含义，按标记位置的顺序：每种状态、默认开启和默认关闭、指令和审查；然后是 one-of 的默认选项，网站上有的话，还有已启用、未启用和象限。一个术语和它的含义占一行 (描述列表)，`text-sm`，术语用 `weight-medium`，含义用 `text-muted`；下面一行说明四个位置和它们的顺序。
 - **筛选器**，做到 Ruff 规则列表那个程度为止：不做条件组合。收起时是一个按钮：`funnel` (`icon-md`)、「筛选」二字，读者改动了某些字段、与默认筛选不同时，再加一个徽标显示这样的字段有几个 (`radius-full`，`bg-selected` 上的 `accent`)；默认筛选不显示徽标。打开时是按钮下方的弹出层，宽 `width-popover` (窄屏上与栏同宽)，每个字段一组复选框：状态、默认开关 (开、关)、用途、领域 (按深度缩进)，有多个规定源时加象限。每组先是名字，然后是「全选」和「不选」两个普通按钮。同一字段里，规定要有一个勾上的值；不同字段之间，每个字段都要满足；所有值都勾上的字段不起筛选作用。勾上或取消一个领域时，它下面的领域跟着变。各组下面是「恢复默认筛选」，回到默认筛选，即地址里不带筛选时列表的样子；要看全部状态，读者在状态组里点「全选」。改动立即生效并写进地址，筛选后的列表可以直接链接；没有「应用」按钮。按 Escape、点击外面或焦点移出时关闭。不带脚本的网站 (本地网站就是) 在弹出层里显示同样的几组，用一个主按钮应用。本地网站眼下与此不同：它的复选框靠样式表立即生效，没有主按钮；它的几组是规定源的类别、用途，以及另外显示的未启用的规定和已被取代或已废止的规定；状态、默认开关和领域这三组，「全选」和「不选」，以及徽标，它都还没有 (见[现状](#status))。
-- **规定树。** 节点的层级靠字号、字重和色条区分 ([字体](#type))，不靠缩进：第一层的领域是一个标题，上方留 `space-8`；第二层的领域缩进一级 (`space-4`)，起始一侧有一条 `2px` 的 `border-strong` 色条，贯穿它下面的规定；更深的领域不再缩进，色条用 `border-subtle`。一个领域的规定与它的标题左边对齐。挂在另一条规定下的规定不再缩进，而是在标号前加 `corner-down-right` (`icon-sm`，`text-faint`) 表示。每条规定占一行：标号在固定宽度的一列里，用 `text-muted`；标题超出一行时以省略号截断；tag 在右边。整行是一个链接：hover 时整行填上 `bg-hover`、`radius-sm`，标题变成 `accent`；获得焦点时焦点框围住整行。
-- **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`，padding `space-3`) 装着它的选项，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)，跟在 one-of 的标号和标题后面。每个选项是一行，与规定树里的一样，行首是 `circle`；默认选项行首是 `accent` 的 `circle-dot`，它的 tag Default option / 「默认选项」用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
+- **规定表**，像 ESLint 的规则列表那样排成一张表：先是表头，然后一行一条规定，共三列：标号 (`width-label`，`text-muted`，向末端对齐)、标题 (超出一行时以省略号截断) 和标记；表头写前两列的名字，`text-sm`、`weight-medium`、`text-muted`，下面一条 `border-strong` 的线。每一行至少有一个点击区域那么高，下面一条 `border-subtle` 的细线，宽屏上各行一样高。挂在另一条规定下的规定不缩进，而是在标题前加 `corner-down-right` (`icon-sm`，`text-faint`) 表示。整行是一个链接：hover 时整行填上 `bg-hover`，标题变成 `accent`；按下时填上 `bg-active`，标题和标号都改用 `text`；获得焦点时焦点框围住整行。领域不单占一行，而是它的规定上方的一条分组行，横贯整张表的一条底色：第一层的领域用 `bg-active`，更深的用 `bg-panel-hover`；领域的标号在标号那一列，后面是它所在的各层领域组成的路径，中间用 `text-muted` 的 `chevron-right` 隔开 (`Documentation › Design`)，全都用 `text` 和 `weight-bold`；整个路径是到领域页面的链接，指针下加下划线，因为 `accent` 在这条底色上会低于 4.5；读屏软件读到的链接名是标号和用逗号隔开的各层领域。最近的领域与前一条显示的规定不同的地方，以及每一页的顶上，都显示分组行，所以列表从下级领域回到上级领域时，会再出现一次上级领域的分组行。表头吸在窗口顶上 (窄屏时在顶栏下面)，每条分组行吸在表头下面，直到下一条分组行把它盖住，这样屏幕上那些行属于哪个领域总写得出来；只有最近那个领域的分组行吸顶，因为它的路径已经写出了上面的各层。窄屏上标题需要几行就占几行，表头和分组行只占一行，一行的标号、标题前的图标和标记都与标题的第一行对齐。
+- **one-of。** 一个框 (`1px` 的 `border-strong`，`radius-md`) 围住它自己的那一行和各选项的行，各列与表格对齐，框的上边线上有一个标签 One of / 「择一」(`text-xs`、`weight-medium`、`text-muted`，底色与所在表面相同，边线在它两侧断开)；这个框是一个分组 (`role="group"`)，由这个标签给读屏软件命名 (`aria-labelledby`)，所以读屏软件会把框里的行读作「择一」。它自己那一行的标题用 `weight-medium`。每个选项是一行，与表里的一样，标题前是 `text-muted` 的 `circle`；默认选项的标题前是 `accent` 的 `circle-dot`，标题后跟着它的 tag Default option / 「默认选项」，用 `accent`，前面有 `check`，所以默认选项在形状上也区分得出，不只靠颜色。选项都关闭的 one-of，框用 `border-subtle`。
 - **弹出层** (筛选器的面板、长度的说明、在正文上方展开的条款下规定)：`bg-panel`，`1px` 的 `border-subtle`，`radius-md`，`shadow-popover`，padding `space-3 space-4`，出现在打开它的控件下方。带控件的弹出层靠点击、Enter 或 Space 打开和关闭，控件的 `aria-expanded` 和 `aria-controls` 表明是否打开、打开的是什么；打开后焦点移进去，关闭时回到控件上。只做说明的弹出层 (长度的说明) 也可以在 hover 时打开，延迟与提示气泡相同。按 Escape 或点击外面都会关闭。打开时在 `duration-base` 内从 `scale(0.95)` 和透明进场，关闭用 `duration-fast`，两者都用 `ease-out` ([动效](#motion))。
 - **侧边栏。** 照 Tailwind CSS 文档的侧边栏做 ([出处](#sources))，配色和字体用本文的。`bg-panel`，边上一条 `1px` 的 `border-subtle`，分组之间隔 `space-4`。分组名：图标 (`icon-md`) 加名字，`text-md`、`weight-bold`、`text`。分组下的页面沿一条细线排列，细线是 `1px` 的 `border-subtle`，从图标中线的正下方开始。页面：`text-md`、`weight-regular`、`text-muted`，padding `space-1 space-2`，文字与分组名对齐，压在细线上有一条 `2px` 的短线，平时透明。一行 (分组或页面) 在指针下：`bg-panel-hover`，`radius-sm`，靠细线的一侧不圆；页面还会变成 `text`，短线变成 `border-strong`。按下：`bg-active`。当前页：短线和文字都用 `accent`，文字 `weight-medium`，不加底色。没有页面的分组是当前项时，没有细线可标，就用 `bg-selected` 底，文字用 `accent`。当前页列在某个分组下面时，只标出这一页，不标分组。页面加载时，当前页不在侧边栏的可见范围内，侧边栏就滚到能看见它。可以折叠的分组在这一行末尾有一个普通按钮，收起时显示 `chevron-right`，展开时 `chevron-down`，转向用 `duration-base`；这个按钮和语言切换按钮都标明自己的列表是否展开 (`aria-expanded`、`aria-controls`)。
   - 右侧的目录：`text-sm`，标题用 `text-muted`；各个标题像侧边栏里的页面一样沿一条细线排列，`text-muted`，低一级的标题缩进 `space-4`，短线仍压在细线上。指针下：`text`，短线 `border-strong`。读者正在读的那个标题：短线和文字用 `accent`，`weight-bold`。它随滚动变化，所以这些标记立即切换，不加过渡。
@@ -255,19 +266,17 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 ## <a id="in-the-code"></a>代码实现
 
 - **token。** 本文的全部 token 定义在一份样式表 `crates/statute/assets/tokens.css` 里，每个是一个 CSS 自定义属性，名字是 token 名加前缀 `--t-` (`--t-text`、`--t-space-4`)；有了前缀，就不会与主题自己的属性混在一起，主题里就有一个取值不同的 `--space-1`。颜色只写一次，两个值一起写成 `light-dark(<light>, <dark>)`，随页面的 `color-scheme` 取值：跟随系统设置，页面根元素带 `data-theme` 时按读者的选择。英文和中文取值不同的 token 在 `:root:lang(zh)` 下重新设定，`target` 在 `pointer: coarse` 下重新设定。这份文件放在 crate 里，是为了让 `statute` 能用 `include_str!` 把它编进本地网站，同时照样能发布：发布的包不能引用 crate 目录以外的文件。公开网站从那里挂载它 (`web/hugo.toml`)。
-- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`controls.css` (各处的原生控件)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表和 tag)、`filter.css` (列表上方的图例、筛选器和每页条数，它们的标记在 `web/layouts/_partials/rules/`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。本地网站自己的样式表是 `crates/statute/src/site.css`，`statute` 把它接在 `tokens.css` 后面写进每个页面；复选框照 `controls.css` 的画法画，公开网站其余几份样式表是给主题的标记用的，它一概不取。
+- **样式表。** 公开网站的样式表在 `web/assets/styles/`，页面的每个部分一份，改不同的部分就改不同的文件：`site.css` (主题变量、链接、焦点框、图标、侧边栏、目录、顶栏)、`controls.css` (各处的原生控件)、`constitution.css`、`design.css` (设计文档和单条规定的页面)、`rules-list.css` (规定列表、它的标记和 tag)、`filter.css` (列表上方的图例、筛选器和每页条数，它们的标记在 `web/layouts/_partials/rules/`)。Hugo 按 `web/assets/styles/index.yaml` 的顺序，把它们接在主题的样式表和 `tokens.css` 后面合成一个文件。本地网站自己的样式表是 `crates/statute/src/site.css`，`statute` 把它接在 `tokens.css` 后面写进每个页面；复选框照 `controls.css` 的画法画，公开网站其余几份样式表是给主题的标记用的，它一概不取。
 - **图标。** SVG 文件在 `crates/statute/assets/icons/`，每个来源一个目录，`lucide/` 和 `octicons/`，与发布版里的一样、不做改动，各目录里放着许可，版本号写在它的 `README.md` 里。页面按名字引入图标，`partial "icon.html" "lucide:funnel"`，把文件里的 SVG 压成一行内联进来，带上 class `icon`，并对读屏软件隐藏；这个 class 设定线宽 `icon-stroke` 和大小，大小默认 `icon-sm`，组件要求时改成 `icon-md`。会转向的箭头用 `chevron-right` 转四分之一圈，转过去就是 `chevron-down`。本地网站用同样的办法内联它要的那几个文件，借 `include_str!` 编进 `statute`。
 - **脚本。** 逻辑超过几行的脚本 (目前是规定列表和它的筛选器，以及侧边栏和抽屉) 用 TypeScript 写，放在 `web/assets/ts/`，不依赖页面的逻辑 (筛选的勾选和地址) 单独放一个文件。每个脚本由 Hugo 的 `js.Build` (Hugo 自带的 esbuild) 打包，不用 Node，不用 npm 包；目标是 `es2018`，压缩，页面像别的脚本一样把它内联在 head 里。不生成 source map，因为脚本很小，源码就在仓库里。短小的脚本仍是 `web/assets/` 里的 JavaScript，由 Hugo 压缩。2026-10-15 用 Hugo 0.167.0 核实：`js.Build` 去掉类型和只导入类型的 import，把文件之间的 import 打包到一起，把 `?.` 和 `??` 降级到目标版本，遇到语法错误时构建失败。
 - **类型和测试。** esbuild 不检查类型：有类型错误照样构建，构建照样通过。机器上和 CI 上都没有 `tsc`，装它要用 Node 和一个网站别处用不到的 npm 包，所以目前没有任何工具检查类型，由审查方读。行为改在构建出的页面上测：`tools/site` 的一个测试用虚构的规定构建网站，在 headless Chrome 里依次带着一组地址打开列表，读 Chrome 留下的页面 (`--dump-dom`)；没有 Chrome 时跳过，CI 里不跳过。`--dump-dom` 发不出点击和按键，这些用同样的办法手工检查：在页面的副本里加一个发出它们的脚本。
 
 ## <a id="status"></a>现状
 
-公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的抽屉)；只在精确指针上用 hover；点击区域的大小；[组件](#components) 一节的侧边栏、目录和抽屉；原生控件；字体、正文字号和栏宽，以及断点；筛选器和图例，筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮、条款下规定的按钮、侧边栏分组和语言切换的按钮、顶栏按钮上的 `aria-expanded` 与 `aria-controls`。本地网站上已经实现的：全部 token，样式表里的值都写 token 名；[组件](#components) 一节里的 tag、图例、领域树和 one-of；筛选器的按钮和弹出层；复选框；只在精确指针上用 hover，点击区域的大小，焦点框，以及筛选弹出层的动效。尚未实现的，以及各自取代什么：
+公开网站上已经实现的：全部 token，在 `tokens.css` 里；样式表里的颜色、字号、字重、间距、圆角、阴影、时长和缓动都写 token 名，下面尚未实现的部分除外；[图标](#icons) 一节表里现有页面用得到的图标；[动效](#motion) 一节的动效，连同减弱动效，用在现在会动的地方 (长度说明的弹出层、箭头、锚点目标的闪烁、窄屏上的抽屉)；只在精确指针上用 hover；点击区域的大小；[组件](#components) 一节的侧边栏、目录和抽屉；原生控件；字体、正文字号和栏宽，以及断点；筛选器、图例、带标记的规定表及其吸顶的分组行和表头、one-of；筛选和页码写进地址，不靠脚本也能读的页面，等宽数字，以及长度说明按钮、条款下规定的按钮、侧边栏分组和语言切换的按钮、顶栏按钮上的 `aria-expanded` 与 `aria-controls`。本地网站上已经实现的：全部 token，样式表里的值都写 token 名；[组件](#components) 一节里的 one-of；筛选器的按钮和弹出层；复选框；只在精确指针上用 hover，点击区域的大小，焦点框，以及筛选弹出层的动效。尚未实现的，以及各自取代什么：
 
-- 新的 tag 取代状态、默认开关、是否启用和象限现在一模一样的方框。
-- 新的规定树取代按深度缩进的做法，挂在规定下的规定也包括在内。
-- 列表现在已经把 one-of 画成一个框 ([静态网站](static-site.md))；框线上的标签取代标题前的前缀「择一：」(英文「One of:」)，选项前的圆圈和[组件](#components) 一节里的 tag 取代现在标出默认选项的那个普通 tag。
-- 上面三项实现之前，`rules-list.css` 里还直接写着一些字号和间距，列表的翻页链接用的是字符 ‹ 和 ›。
+- 公开网站上，规定页面上的 tag，以及列表里的是否启用和象限，都是一模一样的方框；[组件](#components) 一节里的 tag 取代它们。选项都关闭的 one-of，框仍用 `border-strong`。
+- 本地网站把规定排成一棵领域树，每个领域是一个标题，字号和字重表示层级，更深的一层缩进并带色条；每条规定的事实是行尾的 tag，状态是胶囊，另有说明这些 tag 的图例。[组件](#components) 一节里的规定表、标记、tag 和图例也要在那里取代它们。
 - 本地网站上，筛选器里状态、默认开关和领域这三组，每组的「全选」和「不选」，按钮上的徽标，按 Escape 或点击外面时关闭；以及应用筛选的主按钮，眼下由立即生效的复选框代替。它的弹出层一下子关上，只能再点一次按钮来关。它的页面不加载字体，正文用本机的衬线字体。
 
 ## <a id="open-questions"></a>待定问题

@@ -63,6 +63,9 @@
   --t-space-8: 2rem;
   --t-space-12: 3rem;
   --t-width-popover: 28rem;
+  --t-width-label: 3.2em;
+  --t-width-mark: 1.1em;
+  --t-size-dot: 0.6em;
   --t-radius-sm: 0.25rem;
   --t-radius-md: 0.5rem;
   --t-radius-full: 9999px;
