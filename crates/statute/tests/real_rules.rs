@@ -1,16 +1,34 @@
 //! The rules and the constitution of this repository pass statute's
 //! checks, and a rule set enabling every domain as a pack, and naming
-//! one child of each one-of, resolves, locks and makes the local site.
+//! one child of each one-of the defaults do not choose already, resolves,
+//! locks and makes the local site.
 
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use statute::node::{Kind, Status};
+use statute::node::{Kind, Status, Switch};
 use statute::project::Project;
 use statute::source::Source;
 
 fn repo() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+/// Whether a domain or a one-of is on in a rule set that lists no domain:
+/// a domain by its own `default` under a parent that is on, or as the
+/// chosen option of a one-of that is on; a one-of when its parent is on.
+fn on_by_default(source: &Source, id: u64) -> bool {
+    let node = &source.nodes[&id];
+    let parent = node.parent.map(|p| &source.nodes[&p]);
+    match (node.kind, parent) {
+        (Kind::OneOf, Some(p)) => on_by_default(source, p.id),
+        (Kind::Domain, Some(p)) if p.kind == Kind::OneOf => {
+            on_by_default(source, p.id) && p.default_child == Some(id)
+        }
+        (Kind::Domain, Some(p)) => node.default == Some(Switch::On) && on_by_default(source, p.id),
+        (Kind::Domain, None) => node.default == Some(Switch::On),
+        _ => false,
+    }
 }
 
 #[test]
@@ -45,7 +63,15 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
             *c = (*c).min(n.id);
         }
     }
-    let named: Vec<String> = chosen.values().map(|id| format!("\"R{id}\"")).collect();
+    // A child the defaults already choose is not named again: the rule set
+    // would be told to take it out.
+    let named: Vec<String> = chosen
+        .iter()
+        .filter(|&(&one_of, &child)| {
+            !(on_by_default(&source, one_of) && source.nodes[&one_of].default_child == Some(child))
+        })
+        .map(|(_, id)| format!("\"R{id}\""))
+        .collect();
     let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("real-rules");
     std::fs::create_dir_all(&dir).unwrap();
     let path = repo().canonicalize().unwrap();
