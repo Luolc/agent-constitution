@@ -1,0 +1,21 @@
+id = 196
+slug = "writing"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+
+[title]
+en = "Writing and communication"
+zh = "写作与沟通"
+
+[applicability]
+en = '''
+Covers how agents put proposals, questions and steps to people, which language each kind of text is written in, and how text that people read is written. Enable it in a repository where agents talk with people or write text that people read; one whose agents only run batch work that nobody reads need not.
+'''
+zh = '''
+管 agent 怎样向人提出提案、问题和要人做的步骤，各类文字用什么语言写，以及写给人读的文字怎么写。agent 与人对话或者写给人读的文字的仓库启用；agent 只跑无人阅读的批处理的仓库不必启用。
+'''
+
+[translations]
+zh = "4dfa1fc04007f32c975d7ea7e8cb8438beda8f61bc59662e0ed09a999f972126"

@@ -1,0 +1,42 @@
+id = 197
+slug = "restate-key-parameters"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["asking"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Write out each key parameter of a proposal or a question"
+zh = "执行类提案与提问逐项写出关键参数"
+
+[text.statement]
+en = "In a proposal to carry out an action and in a question to a person, write out each key parameter of the action, such as an amount, a count, a date, a target machine or a SHA, with its value."
+zh = "执行类的提案和向人提问时，金额、数量、日期、目标机器、SHA 这类关键参数逐项写出取值。"
+
+[text.reason]
+en = '''
+With each key parameter written out, the person need not look back at what they said earlier, and catches a misheard number or a wrong target on the spot ({@constitution:asking}).
+'''
+zh = '''
+关键参数逐项写出来，人不必回头翻自己说过什么，也能当场发现听错的数字或目标 ({@constitution:asking})。
+'''
+
+[text.verification]
+en = '''
+A proposal to carry out an action is one to spend money, change a machine, change data, merge or publish. Each key parameter of the action is written with its own value; "as above" or "same as before" does not stand for one.
+
+Violated when a proposal to carry out an action, or a message asking a person, leaves a key parameter of the action without its value written out.
+'''
+zh = '''
+执行类的提案指要动钱、动机器、改数据、合并或发布的提案。这一动作的每个关键参数单独写出取值，不用「如上」「同前」代替。
+
+执行类的提案或问人的消息里，有关键参数没有写出取值的，即为违反本规定。
+'''
+
+[translations]
+zh = "c09a3cf87c8d0dc0b9135d9e5af013f2aa502debcfa97f39ba1102ad81b1bb27"

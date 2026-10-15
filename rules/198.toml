@@ -1,0 +1,42 @@
+id = 198
+slug = "steps-for-a-person"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 196
+authority = ["asking"]
+constitution = ">=1"
+level = "user"
+check = "review"
+
+[title]
+en = "Write steps for a person so they can be followed as written"
+zh = "交给人做的步骤写到能照着做"
+
+[text.statement]
+en = "In steps for a person to carry out, name the machine and the interface of each step, give one action per step, write commands that run as copied, give each step its sign of completion, and give a default wherever one can be given instead of leaving the choice to the person on the spot."
+zh = "交给人执行的步骤，写明在哪台机器、哪个界面做，一次一个动作，命令能直接复制粘贴，每步带完成判据；能给默认值的就给默认值，不让人现场决定。"
+
+[text.reason]
+en = '''
+While a person follows steps, their attention is what costs most ({@constitution:asking}). A missing machine or interface leaves them to guess; several actions in one step leave them unsure where they stopped when one fails; without a sign of completion they cannot tell whether a step worked.
+'''
+zh = '''
+人照着步骤做的时候，注意力最贵 ({@constitution:asking})。少写一台机器、一个界面，人就得自己猜；一步塞几个动作，做到一半出错不知道停在哪；没有完成判据，做完了也不知道成没成。
+'''
+
+[text.verification]
+en = '''
+Each step names the machine (by its name) and the interface (which terminal, web page or settings page); it holds one action; the command to type is in a code block that runs as copied, with no placeholder for the person to fill in unless only the person knows the value; it says what the person sees once the step is done. Where the person has to choose, a default is given.
+
+Violated when a step for a person lacks its machine or interface, holds several actions, has a command the person must rewrite before it runs, has no sign of completion, or leaves to the person on the spot a choice that could have had a default.
+'''
+zh = '''
+每一步都写明：在哪台机器 (写出机器名)、哪个界面 (哪个终端、哪个网页、哪个设置页)；只有一个动作；要敲的命令放在代码块里，复制下来就能跑，不需要人替换占位符，除非这个值只有人知道；做完之后看到什么算做成。需要人选择的地方给出默认值。
+
+给人执行的步骤里，有一步没写机器或界面、塞了几个动作、命令要人改写才能跑、没有完成判据，或者把可以给默认值的选择留给人现场决定的，即为违反本规定。
+'''
+
+[translations]
+zh = "dc89a212b0d17337e200ffe1546e6cd6de11907b9c4990adff870be2c08dd622"

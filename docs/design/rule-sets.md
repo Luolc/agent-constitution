@@ -47,12 +47,18 @@ required, says whether the repository is public, and each source but
 `R` says `public` of itself, and may have `scope`, `"global"` by
 default or `"local"`
 ([Four kinds of source](rule-sources.md#four-kinds-of-source)). A public
-repository names its private sources in `statute.private.toml`,
-which git ignores, inherits `statute.toml` through
-`base = "statute.toml"` and has its own lock file,
-`statute.private.lock`. It compiles to `.statute/AGENTS.full.md`, the
+repository names its private sources in a private rule set,
+`private.toml` in git's own directory, shared by every worktree of the
+clone, which inherits the worktree's `statute.toml` without naming it
+and has its own lock file, `private.lock`. That lock file pins only the
+private layer's own sources, each by its address, branch or tag and
+commit; the two layers together are resolved in memory in each
+worktree, from its `statute.lock` and `private.lock`, and never written
+down. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file
-([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)).
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository);
+today still `statute.private.toml` and a lock file of both layers,
+next to `statute.toml`).
 [Rule configuration](rule-config.md) adds the directory of the local
 rules, parameters and default switches, not built yet.
 
@@ -258,12 +264,28 @@ joined by hyphens, which the rule set chooses. `L` and `local` are
 reserved for the repository's own rules (below), and `ac`, the
 first-party source's earlier name, fails with a note to name it `R`.
 A source may also be a directory on disk, `R = { path = "." }`,
-relative to the rule set's directory: a repository that holds its own
-rules, as this one does, names itself this way. Its rules are in
-`rules/` below that directory and its constitution in
-`constitution/<edition>/`. A source may be a git repository as well,
-cloned into the user's statute directory and read at the commit the
-lock file pins ([Git sources](global-configuration.md#git-sources)).
+relative to the rule set's directory: a repository that publishes
+rules, as this one does, names itself this way. A source's rules are in
+`rules/` at its top, or in the directory `rules-dir` names, relative
+to that top, and its constitution in `constitution/<edition>/`:
+
+```toml
+[sources]
+team = { git = "https://example.test/our-team/tools.git", branch = "main", rules-dir = "agent/rules", public = true }
+```
+
+`rules-dir` is for a repository that publishes rules beside other
+things and keeps them elsewhere; its parameters' declarations,
+`params.toml`, are in the same directory
+([Parameters](rule-config.md#parameters)). An absolute path, a path
+with `..` and one into `.statute/` fail: a source is read only
+within itself, and `.statute/rules/` holds a repository's rules for
+itself, which no other repository may use
+([Four kinds of source](rule-sources.md#four-kinds-of-source)).
+`rules-dir` is not built yet.
+
+A source may be a git repository as well, cloned into statute's cache
+directory and read at the commit the lock file pins ([Git sources](global-configuration.md#git-sources)).
 Sources every rule set of a user may use, and the
 first-party source's default address, come from the global
 configuration, which a rule set's own `[sources]` overrides by name
@@ -274,9 +296,10 @@ a rule set that uses only those may leave `[sources]` out.
 reference can be read as another kind:
 
 - a first-party rule: `R` and the ID, `R42`;
-- a local rule, one in the `rules/` directory next to the rule set,
-  that is, of the repository that holds it: the ID alone, `12`; `L12`
-  and `local:12` mean the same;
+- a local rule, one in the repository's own `.statute/rules/`
+  ([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
+  that is, of the repository that holds the rule set: the ID alone,
+  `12`; `L12` and `local:12` mean the same;
 - a rule of another source: its short name, a colon and the ID,
   `team:7`.
 
@@ -289,9 +312,11 @@ written, and the commands that add one write `R42`, `12` or `team:7`.
 
 When the first-party source is the rule set's own directory,
 `R = { path = "." }`, as in this repo, its `rules/` are the
-first-party rules. They are written and shown as `R12`, and a local
-reference to one, such as `12`, fails with a note to write `R12`, so
-that one file never has two names.
+first-party rules, written and shown as `R12`, and this repo's own
+rules are apart from them in `.statute/rules/`. When `local-rules`
+names the rules directory of a source on disk, those rules stay the
+source's: a local reference to one, such as `12`, fails with a note
+to write `R12`, so that one file never has two names.
 
 The short name of another source means something only inside the file
 that defines it, so two rule sets may use `team` for different

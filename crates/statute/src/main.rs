@@ -109,6 +109,13 @@ enum Command {
         #[command(subcommand)]
         action: SourceAction,
     },
+    /// Check a directory of rule files as the first-party source's
+    /// `rules/`, with every check that needs no rule set; exits 1 on an
+    /// error.
+    Validate {
+        /// The directory of the rule files, as `rules`.
+        dir: std::path::PathBuf,
+    },
     /// Resolve statute.toml again, say how the result differs from
     /// statute.lock, and write statute.lock.
     Upgrade {
@@ -188,6 +195,7 @@ fn main() -> ExitCode {
         ),
         Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
         Command::Site => site(root),
+        Command::Validate { dir } => validate(&dir),
         Command::Constitution { action } => statute::constitution::cli::run(action).map_err(|_| ()),
         Command::Source {
             action:
@@ -262,6 +270,25 @@ fn print(diags: &Diagnostics) {
     for d in &diags.0 {
         eprintln!("{d}");
     }
+}
+
+/// `validate`: reads the rule files of `dir` as the first-party source,
+/// `R`, and prints every finding; fails when one is an error.
+fn validate(dir: &Path) -> Result<(), ()> {
+    let label = dir.to_string_lossy();
+    let label = label.trim_end_matches('/');
+    let (mut source, mut diags) = statute::source::Source::load(dir, label);
+    source.name = manifest::FIRST_PARTY.to_owned();
+    source.public = true;
+    let sources = statute::source::Sources::new(vec![source]);
+    sources.check(&mut diags);
+    print(&diags);
+    if diags.has_errors() {
+        return Err(());
+    }
+    let count = sources.iter().map(|s| s.nodes.len()).sum::<usize>();
+    println!("{label}: {count} nodes, no errors");
+    Ok(())
 }
 
 /// Loads the project, and its private layer when `statute.private.toml`
