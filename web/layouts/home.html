@@ -29,8 +29,7 @@
 <li class="length">
   {{- i18n "length" (dict "characters" (lang.FormatNumberCustom 0 $agentLength.characters) "words" (lang.FormatNumberCustom 0 $agentLength.words)) }} · {{ with $agentTokens }}{{ i18n "tokens" (dict "tokens" (lang.FormatNumberCustom 0 .)) }}{{ else }}{{ i18n "no-tokens" }}{{ end -}}
 <span class="count-info"><button type="button" class="count-button" aria-expanded="false" aria-controls="count-popup" aria-label="{{ i18n "count-info" }}">
-  {{- /* An info icon: a thin ring around an `i`. */ -}}
-  <svg viewBox="0 0 16 16" width="1em" height="1em" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="8" cy="5" r=".9" fill="currentColor"/><path d="M8 7.25v4.25" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+  {{- partial "icon.html" "lucide:info" }}</button>
 <span class="count-popup" id="count-popup">
   {{- /**/ -}}
   <span class="count-summary">{{ i18n "count-summary" }}</span>

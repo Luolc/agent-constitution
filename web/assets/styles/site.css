@@ -1,0 +1,293 @@
+/* What every page shares, laid onto the hugo-book theme: its variables
+   from the design tokens (tokens.css), the fonts, the links, the focus
+   ring, the icons (layouts/_partials/icon.html), the sidebar, the table
+   of contents and the top bar of a narrow screen. Every value is a token
+   of docs/design/frontend.md, but for the exceptions it allows. The fonts
+   (EB Garamond for English, Noto Serif SC for Chinese, SIL Open Font
+   License 1.1) are loaded in layouts/_partials/docs/inject/head.html. A
+   hover style stands under `(hover: hover) and (pointer: fine)`, so that
+   a tap leaves none behind. */
+
+/* hugo-book takes its colors and sizes from these. The page spans the
+   window: the sidebar at the left edge, the text centered in the rest. */
+:root, :root[data-theme] {
+  --container-max-width: none;
+  --body-background: var(--t-bg-page);
+  --body-font-color: var(--t-text);
+  --body-font-weight: var(--t-weight-regular);
+  --color-link: var(--t-accent);
+  --color-visited-link: var(--t-accent);
+  --gray-100: var(--t-bg-panel);
+  --gray-200: var(--t-bg-hover);
+  --gray-500: var(--t-text-muted);
+  --icon-filter: none;
+}
+body { font-family: var(--t-font); }
+
+/* Smooth scrolling to an anchor is motion the reader may have turned
+   off. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* The focus ring, the same on every control, from the keyboard only. */
+:focus-visible,
+input.toggle:focus-visible + label,
+label:has(input.toggle:focus-visible) {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 2px;
+}
+
+/* Icons: outlined in the color of their text, set on the middle of the
+   line; GitHub's mark, which is filled, takes the color too. */
+.icon {
+  flex: none;
+  width: var(--t-icon-sm);
+  height: var(--t-icon-sm);
+  stroke-width: var(--t-icon-stroke);
+  vertical-align: middle;
+}
+svg.icon:not([fill="none"]) { fill: currentColor; }
+
+/* Every link in the text and in the popovers is underlined: the text
+   color with a light underline, both turning to the accent color under
+   the pointer. The theme's heading self-links are left out. The table of
+   contents and the top bar of a narrow screen are known by where they
+   stand and are not underlined, but under the pointer or the keyboard's
+   focus. The sidebar's links are rows (below). */
+:is(.constitution, .design) a[href]:not(.anchor),
+:is(.book-toc, .book-header) a[href] {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--t-border-subtle);
+  text-underline-offset: .18em;
+  transition-property: color, text-decoration-color;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
+}
+:is(.book-toc, .book-header) a[href]:not(:focus-visible) { text-decoration-line: none; }
+@media (hover: hover) and (pointer: fine) {
+  :is(.constitution, .design) a[href]:not(.anchor):hover,
+  :is(.book-toc, .book-header) a[href]:hover {
+    color: var(--t-accent);
+    text-decoration-line: underline;
+    text-decoration-color: currentColor;
+  }
+}
+/* The theme dims a link of its navigation under the pointer, on every
+   device; the rows below change their background instead. */
+nav ul a:is([href], [role=button]) { transition: none; }
+nav ul a:is([href], [role=button]):hover { opacity: 1; }
+
+/* Room on both sides of the text on small screens, where the column fills
+   the page, growing with the window (the `vw` term) between two
+   tokens. */
+.book-page { padding-inline: clamp(var(--t-space-4), 5vw, var(--t-space-12)); }
+/* The theme pads the page on wide screens; keep the sidebar flush with the
+   window's top and left edges. */
+@media screen and (min-width: 90rem) {
+  main.container { padding-top: 0; padding-inline-start: 0; }
+}
+
+/* The sidebar, on the panel's color with a hairline along its edge, its
+   text the size of a control's. The column carries it down the whole
+   page; its content scrolls on its own. Under the site's title, the link
+   to the source, then the language switch with the color switch at the
+   end of its row, then the groups: each a row of its icon and its name in
+   bold, its pages under it, their text in line with the group's name.
+   Each page is a row: the panel's hover color under the pointer, darker
+   while pressed, and the current page on the selected color, in the
+   accent color and heavier, so that it does not show by color alone. A
+   group that folds has its chevron at the end, turned a quarter when
+   open. */
+.book-menu { font-size: var(--t-font-size-base); }
+.book-menu-content { font-size: var(--t-text-sm); }
+.book-menu, .book-menu .book-menu-content { background: var(--t-bg-panel); }
+.book-menu { border-inline-end: 1px solid var(--t-border-subtle); }
+.book-menu .source-link {
+  display: flex;
+  align-items: center;
+  gap: var(--t-space-2);
+  min-block-size: var(--t-target);
+  margin: var(--t-space-6) 0 var(--t-space-4);
+  padding-inline: var(--t-space-2);
+  color: var(--t-text-muted);
+  text-decoration: none;
+}
+.book-menu .source-link .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+.book-menu nav ul { line-height: var(--t-line-height-ui); }
+.book-menu nav > ul > li + li { margin-top: var(--t-space-1); }
+.book-menu nav ul ul { padding-inline-start: calc(var(--t-icon-md) + var(--t-space-2)); }
+.book-menu nav :is(a, label) {
+  align-items: center;
+  gap: var(--t-space-2);
+  min-block-size: var(--t-target);
+  padding: var(--t-space-1) var(--t-space-2);
+  border-radius: var(--t-radius-sm);
+  font-size: var(--t-text-md);
+  font-weight: var(--t-weight-regular);
+  color: var(--t-text);
+  text-decoration: none;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+/* A group that folds is a label holding its link and its chevron: the
+   label is the row, the link fills it. */
+.book-menu nav label { padding: 0; }
+.book-menu nav label > a { min-block-size: 0; }
+.book-menu nav label > .icon:last-child {
+  width: var(--t-icon-md);
+  height: var(--t-icon-md);
+  margin-inline-end: var(--t-space-2);
+  cursor: pointer;
+  transition: transform var(--t-duration-base) var(--t-ease-out);
+}
+.book-menu nav input.toggle:checked + label > .icon:last-child { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) {
+  .book-menu nav label > .icon:last-child { transition: none; }
+}
+.book-menu a.menu-group { font-weight: var(--t-weight-bold); }
+.book-menu a.menu-group .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+@media (hover: hover) and (pointer: fine) {
+  .book-menu nav label:hover,
+  .book-menu nav a[href]:hover,
+  .book-menu nav a[role=button]:hover { background-color: var(--t-bg-panel-hover); }
+  .book-menu nav label:hover > a { background-color: transparent; }
+  .book-menu .source-link:hover { color: var(--t-text); }
+}
+.book-menu nav a[href]:active { background-color: var(--t-bg-active); }
+.book-menu nav a.active {
+  background-color: var(--t-bg-selected);
+  color: var(--t-accent);
+  font-weight: var(--t-weight-medium);
+}
+.book-menu nav a.menu-group.active { font-weight: var(--t-weight-bold); }
+/* A group whose current page is listed under it marks that page alone. */
+.book-menu nav li:has(> ul a.active) > :is(a, label > a).active {
+  background-color: transparent;
+  color: var(--t-text);
+}
+.book-menu nav a.active:active { color: var(--t-text); }
+/* The language switch fills its row, the color switch at its end. */
+.book-menu .menu-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--t-space-2);
+  margin-bottom: var(--t-space-4);
+}
+.book-menu .menu-row .book-languages { flex: 1; margin: 0; }
+.book-menu .book-languages ul { padding-inline-start: calc(var(--t-icon-md) + var(--t-space-2)); }
+.book-menu .book-languages .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+
+/* The color switch, a quiet button that shows the icon of the current
+   setting. */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--t-target);
+  min-block-size: var(--t-target);
+  padding: var(--t-space-1);
+  color: var(--t-text);
+  background: none;
+  border: none;
+  border-radius: var(--t-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--t-duration-fast) var(--t-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover { background-color: var(--t-bg-panel-hover); }
+}
+.theme-toggle:active { background-color: var(--t-bg-active); }
+.theme-toggle > span { display: none; }
+.theme-toggle .icon { display: block; width: var(--t-icon-md); height: var(--t-icon-md); }
+:root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .auto,
+:root[data-theme="light"] .theme-toggle .light,
+:root[data-theme="dark"] .theme-toggle .dark { display: block; }
+
+/* The table of contents at the right: the headings of the page, the size
+   of a control's text, under a muted heading. Set apart from the text as
+   a column of its own: muted, along a hairline. The heading the reader
+   is in (assets/toc-current.js) is marked by a bar over the hairline and
+   bold, in the accent color. On a narrow screen the theme hides it
+   behind the button at the right of the top bar, which opens it above
+   the text. */
+.book-toc { font-size: var(--t-font-size-base); }
+.book-toc-content { font-size: var(--t-text-sm); }
+.book-toc nav > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-inline-start: 1px solid var(--t-border-subtle);
+}
+.book-toc nav a[href] {
+  margin-inline-start: -1px;
+  padding-inline-start: var(--t-space-3);
+  border-inline-start: 2px solid transparent;
+  color: var(--t-text-muted);
+}
+.book-toc nav a[aria-current] {
+  border-color: currentColor;
+  color: var(--t-accent);
+  font-weight: var(--t-weight-bold);
+}
+.book-toc .toc-heading {
+  margin: 0 0 var(--t-space-2);
+  color: var(--t-text-muted);
+  font-size: var(--t-text-sm);
+  letter-spacing: .05em;
+}
+/* Block, so that the asterisk sits in the line; closer than the theme
+   sets its lists, as one list of a dozen short lines. */
+.book-toc nav a { display: block; padding-block: var(--t-space-1); }
+/* The rules' table of contents indents a heading by its level. */
+.book-toc li[style] { padding-inline-start: calc(var(--level, 0) * var(--t-space-4)); }
+
+/* The top bar of a narrow screen: its two buttons, the sidebar's and the
+   table of contents', each as large as a target. */
+.book-header label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--t-target);
+  min-block-size: var(--t-target);
+  cursor: pointer;
+}
+.book-header label .icon { width: var(--t-icon-md); height: var(--t-icon-md); }
+/* The sidebar and the table of contents slide in from the edge on a
+   narrow screen; under reduced motion they appear in place. */
+.book-menu-content,
+.book-toc-content {
+  transition-duration: var(--t-duration-base);
+  transition-timing-function: var(--t-ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-menu-content,
+  .book-toc-content { transition-property: opacity, visibility; }
+}
+/* Between the theme's breakpoint (56rem) and 70rem the table of contents
+   would leave the text under about 65 characters a line in English: it
+   goes behind the theme's button, which floats at the top right, the
+   sidebar staying, and opens over the text at the right edge. Below 56rem
+   the theme hides the sidebar too. */
+@media screen and (56rem < width <= 70rem) {
+  .book-header {
+    display: block;
+    position: fixed;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: 2;
+    padding: var(--t-space-2);
+    background: var(--t-bg-page);
+    border-end-start-radius: var(--t-radius-md);
+  }
+  .book-header :is(label[for="menu-control"], .book-brand) { display: none; }
+  .book-toc { display: none; flex: none; }
+  body:has(#toc-control:checked) .book-toc { display: block; }
+  .book-toc .book-toc-content {
+    inset-inline-end: 0;
+    padding-top: var(--t-space-12);
+    background: var(--t-bg-page);
+    border-inline-start: 1px solid var(--t-border-subtle);
+    box-shadow: var(--t-shadow-popover);
+  }
+}

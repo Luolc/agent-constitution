@@ -355,17 +355,18 @@ screenshots (Screenshots, below). The workflow
   pages and the table of contents at the right. The sidebar lists the
   pages, not the articles, in groups named in `web/hugo.toml`'s menus:
   each group a top-level entry, its name in bold after an icon of its own
-  from Octicons (`params.BookIcon`, a file in `web/assets/icons/`), its
-  pages as children. There are three groups: the constitution, the home
-  page, with the scales (`law`); the rules, their list, with a checklist
-  (`checklist`) and no pages below it, so the group itself is marked as
-  the current page on the list and on each rule's page; and the design,
-  its README's page, with an open book (`book`), its files below it as the
+  from Lucide (`params.BookIcon`, named as
+  [Frontend](frontend.md#in-the-code) says), its pages as children. There
+  are three groups: the constitution, the home page, with the scales
+  (`scale`); the rules, their list, with a checklist (`list-checks`) and
+  no pages below it, so the group itself is marked as the current page
+  on the list and on each rule's page; and the design, its README's
+  page, with an open book (`book-open`), its files below it as the
   content adapter lists them (Design, above). The design group folds
   (`collapse` in its menu params): it is closed on every page but the
   design's own, where it is open with the current page marked. It uses
-  the theme's checkbox, label
-  and chevron from its file tree; the chevron points right when closed and
+  the theme's checkbox and label from its file tree, with Lucide's
+  chevron; the chevron points right when closed and
   down when open, and the keyboard toggles it. The constitution group does
   not fold. Under the constitution are its editions, newest first:
   the content adapter adds each page's entry to the menu, named from
@@ -396,7 +397,7 @@ screenshots (Screenshots, below). The workflow
   color theme at the right end of the language switch's row, and the
   fonts. The color switch is one button that cycles through following the
   system, light and dark, as Docusaurus's does; it shows the current
-  setting by an Octicons icon (`device-desktop`, `sun`, `moon`), and its
+  setting by a Lucide icon (`monitor`, `sun`, `moon`), and its
   title and accessible name give the setting and the next one, from
   `web/i18n`. The choice is kept in `localStorage` and set in `<head>`
   before the page is drawn. A submodule keeps the theme's files out of
@@ -409,18 +410,21 @@ screenshots (Screenshots, below). The workflow
   `#terms`, `#terms.principal`, the same in both languages and in the
   Markdown. A citation is a reference link to it. `:target` flashes the
   element an anchor starts.
-- Style: `web/assets/styles/custom.css`, loaded by the theme after its own.
-  Its first part uses only the page's own markup and moves to another
-  generator as is; the last part maps it onto hugo-book's variables.
+- Style: the style sheets of `web/assets/styles/`, one for each part of
+  the pages, joined after the theme's own and the design tokens
+  ([Frontend](frontend.md#in-the-code)). `constitution.css` uses only
+  the page's own markup and the tokens and moves to another generator as
+  is; `site.css` maps the tokens onto hugo-book's variables.
   Centered article headings, bold section and item numbers (bold in the
   Markdown), English text ragged right and Chinese justified, a print
   style without link decoration. Every link in the text, under the title
   and in the popup is underlined like the citations: the text color with
   a light underline in the color of the rules, both turning to the accent
-  color under the pointer. The navigation (the sidebar, the table of
-  contents and the top bar of a narrow screen) is not underlined, but is
-  under the pointer or the keyboard's focus. The sidebar marks the
-  current page in the accent color. The table of contents is set apart
+  color under the pointer. The table of contents and the top bar of a
+  narrow screen are not underlined, but are under the pointer or the
+  keyboard's focus; the sidebar's links are rows, which
+  [Frontend](frontend.md#components) describes, the current page marked
+  by its background, color and weight. The table of contents is set apart
   from the text, muted along a thin rule; its current article is bold, in
   the accent color, with a bar over the rule, so it does not rest on the
   color alone. The
@@ -437,9 +441,8 @@ screenshots (Screenshots, below). The workflow
   theme hides it too. The column is centered between the sidebar and the
   table of contents. Fonts: EB Garamond and Noto
   Serif SC (SIL Open Font License 1.1) from Google Fonts as variable
-  fonts, falling back to local serif fonts. The colors are one palette
-  block, light and dark; contrast of text on the page and the sidebar is
-  above WCAG AA in both, the values are in the style sheet.
+  fonts, falling back to local serif fonts. The colors are the tokens of
+  [Frontend](frontend.md#color), which gives their contrast.
 - The few Chinese strings of the site itself (`web/i18n/zh.yaml`, which
   holds the labels and the popup text, and the language label and menu
   names in `hugo.toml`) are outside limae's reach.

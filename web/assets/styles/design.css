@@ -1,0 +1,55 @@
+/* The design and the rules' pages: documents in the constitution's
+   fonts, size and column (constitution.css), with the theme's bullets,
+   tables and code blocks and their headings at the left. The title is the
+   constitution's size; a Chinese page without a translation yet says so
+   under it, muted between hairlines. Table cells start at the top, as the
+   rows are paragraphs side by side, and the tables are set a little
+   smaller than the text. */
+.design h1 {
+  font-size: var(--t-text-2xl);
+  font-weight: var(--t-weight-bold);
+  margin: 1.2em 0 .6em;
+}
+.design :is(h2, h3) { font-weight: var(--t-weight-bold); margin-top: 2em; }
+.design h2 { font-size: var(--t-text-lg); }
+.design h3 { font-size: var(--t-text-md); }
+.design :is(h1, h2, h3) { text-wrap: balance; }
+.design :is(p, li) { text-wrap: pretty; }
+.design strong { font-weight: var(--t-weight-bold); }
+.design code { font-size: var(--t-text-sm); }
+.design table { font-size: var(--t-text-sm); line-height: var(--t-line-height-ui); }
+.design td { vertical-align: top; }
+.design .untranslated {
+  border-block: 1px solid var(--t-border-subtle);
+  padding: var(--t-space-2) var(--t-space-4);
+  color: var(--t-text-muted);
+}
+.design [id] { scroll-margin-top: var(--t-space-4); }
+
+/* The page of one rule: its label muted before its title, its notes
+   between hairlines as on an untranslated design page, the statement a
+   little larger, the relations and metadata in two columns, a parameter's
+   value marked in the text. */
+.rules h1 .rule-label { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
+.rules .rule-note {
+  border-block: 1px solid var(--t-border-subtle);
+  padding: var(--t-space-2) var(--t-space-4);
+  color: var(--t-text-muted);
+}
+.rules .statement { font-size: var(--t-text-lg); }
+.rules dl.rule-meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--t-space-1) var(--t-space-4);
+  line-height: var(--t-line-height-ui);
+}
+.rules dl.rule-meta :is(dt, dd) { margin: 0; }
+.rules dl.rule-meta dt { color: var(--t-text-muted); font-weight: inherit; }
+.rules a.param-value {
+  color: inherit;
+  text-decoration: underline dotted var(--t-accent);
+  text-underline-offset: .2em;
+  background: var(--t-bg-selected);
+  border-radius: var(--t-radius-sm);
+  padding: 0 var(--t-space-1);
+}

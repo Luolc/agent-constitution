@@ -123,5 +123,6 @@ The text of the constitution, the rules and the skills (`constitution/`,
 `rules/`, `skills/`) is licensed under
 [CC BY 4.0](LICENSE-CC-BY-4.0). Everything else, including the code under
 `tools/` and `crates/`, is licensed under [Apache-2.0](LICENSE). The
-website's theme (`web/themes/hugo-book`, a submodule) and the icons from
-Octicons keep their own MIT licenses.
+website's theme (`web/themes/hugo-book`, a submodule) and GitHub's mark
+from Octicons keep their own MIT licenses, and the icons from Lucide their
+ISC license (`crates/statute/assets/icons/`).

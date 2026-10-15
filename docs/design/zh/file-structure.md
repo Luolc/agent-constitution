@@ -1,4 +1,4 @@
-<!-- en-sha256: 2469015a3c33fe8b13e9ecfa0a43751b3856d5f9cf31f663d540c0197923ef08 -->
+<!-- en-sha256: 127826e3b7eaea12b121d6f987db34e5cc043ec712173f3a3362893252e76c52 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -26,6 +26,8 @@ constitution/
 crates/                   Rust workspace 的各个 crate，每个一个目录    A
   statute/                statute 二进制，正在开发                     A
     src/constitution/     宪法的构建                                   A
+    assets/               两个网站的页面共用的设计 token 和图标
+                          (frontend.md)                                A
 docs/
   design/                 本设计，一个主题一个文件，
                           由 README.md 索引                            A

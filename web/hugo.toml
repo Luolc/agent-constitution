@@ -35,13 +35,13 @@ enableRobotsTXT = false
     countWords = false
 
 # The sidebar lists the site's pages in groups, each a top-level entry
-# with the group's name in bold and an icon from assets/icons (BookIcon),
-# its pages as children. The first group, the constitution, links the
-# home page; under it, its editions newest first, each entry
-# added by content/_content.gotmpl from its index.toml. Its
-# version for agents is not listed, as it is not meant for people to read,
-# and is linked from the home page. The icon is the scales of Octicons'
-# `law` (MIT license), as is GitHub's mark beside the source link.
+# with the group's name in bold and an icon (BookIcon, named as
+# layouts/_partials/icon.html takes it), its pages as children. The first
+# group, the constitution, links the home page; under it, its editions
+# newest first, each entry added by content/_content.gotmpl from its
+# index.toml. Its version for agents is not listed, as it is not meant for
+# people to read, and is linked from the home page. The icon is Lucide's
+# `scale`.
 [[languages.en.menus.before]]
   identifier = "constitution"
   name = "Constitution"
@@ -49,7 +49,7 @@ enableRobotsTXT = false
   weight = 1
   [languages.en.menus.before.params]
     class = "menu-group"
-    BookIcon = "law"
+    BookIcon = "lucide:scale"
 [[languages.zh.menus.before]]
   identifier = "constitution"
   name = "宪法"
@@ -57,10 +57,9 @@ enableRobotsTXT = false
   weight = 1
   [languages.zh.menus.before.params]
     class = "menu-group"
-    BookIcon = "law"
+    BookIcon = "lucide:scale"
 # The second group, the rules, links their list, rules/, made by
-# content/rules/_content.gotmpl. The icon is Octicons' `checklist` (MIT
-# license).
+# content/rules/_content.gotmpl. The icon is Lucide's `list-checks`.
 [[languages.en.menus.before]]
   identifier = "rules"
   name = "Rules"
@@ -68,7 +67,7 @@ enableRobotsTXT = false
   weight = 2
   [languages.en.menus.before.params]
     class = "menu-group"
-    BookIcon = "checklist"
+    BookIcon = "lucide:list-checks"
 [[languages.zh.menus.before]]
   identifier = "rules"
   name = "规定"
@@ -76,10 +75,10 @@ enableRobotsTXT = false
   weight = 2
   [languages.zh.menus.before.params]
     class = "menu-group"
-    BookIcon = "checklist"
+    BookIcon = "lucide:list-checks"
 # The third group, the design, links its README; under it, its files in
 # the README's order, each entry added by content/design/_content.gotmpl.
-# The icon is the open book of Octicons' `book` (MIT license).
+# The icon is Lucide's `book-open`.
 [[languages.en.menus.before]]
   identifier = "design"
   name = "Design"
@@ -88,7 +87,7 @@ enableRobotsTXT = false
   [languages.en.menus.before.params]
     class = "menu-group"
     collapse = true
-    BookIcon = "book"
+    BookIcon = "lucide:book-open"
 [[languages.zh.menus.before]]
   identifier = "design"
   name = "设计"
@@ -97,7 +96,7 @@ enableRobotsTXT = false
   [languages.zh.menus.before.params]
     class = "menu-group"
     collapse = true
-    BookIcon = "book"
+    BookIcon = "lucide:book-open"
 
 # The content is only this repo's own built constitution and design; raw
 # HTML is needed for their anchors (<a id="...">) and the asterisks
@@ -159,6 +158,19 @@ enableRobotsTXT = false
   source = "../docs/design"
   target = "assets/design"
   files = ["*.md", "zh/*.md"]
+# The design tokens and the icons, from crates/statute/assets/, where the
+# local site of `statute site` can include them too
+# (docs/design/frontend.md): tokens.css among the style sheets
+# (assets/styles/index.yaml) and the icons as icons/<source>/<name>.svg,
+# which layouts/_partials/icon.html includes.
+[[module.mounts]]
+  source = "../crates/statute/assets"
+  target = "assets/styles"
+  files = ["tokens.css"]
+[[module.mounts]]
+  source = "../crates/statute/assets/icons"
+  target = "assets/icons"
+  files = ["*/*.svg"]
 [[module.mounts]]
   source = "data"
   target = "data"
