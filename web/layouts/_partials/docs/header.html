@@ -1,0 +1,18 @@
+{{- /* hugo-book's top bar of a narrow screen, its buttons' icons Lucide's
+  (layouts/_partials/icon.html): `menu` for the sidebar and
+  `table-of-contents` for the table of contents. */ -}}
+<div class="flex align-center justify-between gap">
+  <input type="checkbox" class="toggle" id="menu-control" />
+  <label for="menu-control" aria-label="{{ partial "docs/text/i18n" "Menu" }}">
+    {{- partial "icon.html" "lucide:menu" -}}
+  </label>
+
+  {{ partial "docs/brand" . }}
+
+  {{ if .Param "BookToC" | default true }}
+  <input type="checkbox" class="toggle" id="toc-control" />
+  <label for="toc-control" aria-label="{{ partial "docs/text/i18n" "Table of Contents" }}">
+    {{- partial "icon.html" "lucide:table-of-contents" -}}
+  </label>
+  {{ else }}<div></div>{{ end }}
+</div>

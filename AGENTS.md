@@ -171,15 +171,17 @@ when the two disagree.
   Python checkers below, `cargo-fmt` (`cargo fmt --check`, when a Rust
   file or manifest changes), `statute-validate` (below, when `rules/`,
   `constitution/` or the crates change), the constitution build check
-  (below, when `constitution/` or the crates change), the tests of each
-  member, `check-design-translation`, `lint-zh-sources` and limae on
-  every Markdown file of the repo except `web/themes/`. A limae false
+  (below, when `constitution/` or the crates change),
+  `check-design-translation`, `lint-zh-sources` and limae on
+  every Markdown file of the repo except `web/themes/`, each taking a
+  second or so. A limae false
   positive on a line is passed over with a `<!-- limae-disable-next-line
   <rule> -->` comment above it, not by switching the rule off.
-- The Python checkers, configured in `pyproject.toml`, each a commit hook:
-  `uv run ruff check .`, `uv run ruff format --check .` (`uv run ruff
-  format .` to apply), `uv run pydoclint --config pyproject.toml --quiet
-  tools` and `uv run basedpyright`, each on both members.
+- The Python checkers, configured in `pyproject.toml`, each on both
+  members: `uv run ruff check .`, `uv run ruff format --check .` (`uv run
+  ruff format .` to apply) and `uv run pydoclint --config pyproject.toml
+  --quiet tools`, each a commit hook, and `uv run basedpyright`, which
+  takes longer and runs in CI only.
 - The Rust checks, run from the repo root with the toolchain of
   `rust-toolchain.toml`: `cargo fmt --check` (the `cargo-fmt` hook; `cargo
   fmt` to apply), `cargo clippy --all-targets --locked -- -D warnings`,
@@ -206,9 +208,12 @@ when the two disagree.
   older format may live on as a node whose `slug` is its ID), unless the
   base's numbering is not compared (a draft base, say), which it notes.
 - `uv run python -m unittest discover -s tools/<member>/tests`, with
-  `<member>` `site` or `checks`: the tests of one member; the
-  hooks run each member's tests when it or a member it depends on
-  changes.
+  `<member>` `site` or `checks`: the tests of one member, which run in
+  CI, not as a commit hook.
+- Before a push, besides the hooks: `uv run basedpyright` when `tools/`,
+  `pyproject.toml` or `uv.lock` changes, and the tests of each member
+  the change touches, or that depends on what it touches (the site uses
+  `statute` and `web/`).
 - `cargo run --locked --quiet -p statute -- constitution build`: rebuilds
   the generated files after a change to the constitution sources; it
   reads no rule. With `--check` it writes nothing and fails on an error
@@ -286,8 +291,9 @@ version of the `uv-lock` hook's rev and syncs (`uv sync --locked
 of `rust-toolchain.toml` (`rustup toolchain install --no-self-update`), runs
 `uv run pre-commit run --all-files` with the gitleaks hook skipped, so
 `uv-lock`, the Python checkers, `cargo-fmt`, `statute validate rules`, the
-constitution build check,
-the tests and both limae checks run there too, then runs clippy, the tests
+constitution build check and both limae checks run there too, then three
+steps of their own, `Python type check` (`basedpyright`), `Tests of
+tools/site` and `Tests of tools/checks`, then runs clippy, the tests
 and the publish dry run of the Rust workspace, writes the rules' data with
 `site-rules`, counts the tokens (without a
 credential, so they stay uncounted), builds the static site with the pinned

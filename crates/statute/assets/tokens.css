@@ -1,0 +1,107 @@
+/* The design tokens of docs/design/frontend.md, one custom property
+   each, `--t-` and the token's name: the one place where the pages'
+   colors, sizes, weights, spaces, radii, shadows, durations and easing
+   are written. Each color names its light and its dark value with
+   light-dark(), which follows `color-scheme`: the system's setting, or
+   the reader's choice where the page sets `data-theme` on its root. */
+
+:root { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+:root {
+  /* Color. */
+  --t-bg-page: light-dark(#dde6d5, #1e2520);
+  --t-bg-panel: light-dark(#d1dcc8, #252d27);
+  --t-bg-hover: light-dark(#c7d0bf, #343b35);
+  --t-bg-panel-hover: light-dark(#bcc7b4, #3a423b);
+  --t-bg-active: light-dark(#b2bdaa, #444c45);
+  --t-bg-selected: light-dark(#c5c5b0, #3e3e33);
+  --t-bg-target: light-dark(#e3d79c, #4a4a2a);
+  --t-text: light-dark(#23301f, #d3dccf);
+  --t-text-muted: light-dark(#4b5946, #9cab98);
+  --t-text-faint: light-dark(#5a6754, #839080);
+  --t-accent: light-dark(#7d3a1e, #dba37f);
+  --t-accent-hover: light-dark(#6b381e, #d9ae8f);
+  --t-text-on-accent: light-dark(#dde6d5, #1e2520);
+  --t-border-subtle: light-dark(#b5c4aa, #38453a);
+  --t-border-strong: light-dark(#9ca695, #5d655d);
+  --t-status-active: light-dark(#245a20, #9fd39a);
+  --t-status-active-bg: light-dark(#c3d2bc, #303d31);
+  --t-status-trial: light-dark(#66460a, #e2c07a);
+  --t-status-trial-bg: light-dark(#ccd0b9, #393b2d);
+  --t-status-draft: light-dark(#4b5946, #9cab98);
+  --t-status-draft-bg: light-dark(#c9d2c1, #303831);
+  --t-quadrant-global-public: light-dark(#acc8df, #274160);
+  --t-quadrant-global-private: light-dark(#e4d098, #5e491a);
+  --t-quadrant-local-public: light-dark(#a5dcb1, #1f5533);
+  --t-quadrant-local-private: light-dark(#cdbadf, #473360);
+
+  /* Type: the font and the sizes of the text, English here and Chinese
+     below; every other size relative to the text's. */
+  --t-font: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
+  --t-font-size-base: clamp(1.125rem, 0.645vw + 0.686rem, 1.375rem);
+  --t-measure: 36em;
+  --t-line-height-text: 1.65;
+  --t-line-height-ui: 1.4;
+  --t-text-xs: 0.75em;
+  --t-text-sm: 0.875em;
+  --t-text-md: 1em;
+  --t-text-lg: 1.25em;
+  --t-text-xl: 1.5em;
+  --t-text-2xl: 1.75em;
+  --t-weight-regular: 450;
+  --t-weight-medium: 600;
+  --t-weight-bold: 750;
+
+  /* Space, radius and shadow. */
+  --t-space-1: 0.25rem;
+  --t-space-2: 0.5rem;
+  --t-space-3: 0.75rem;
+  --t-space-4: 1rem;
+  --t-space-6: 1.5rem;
+  --t-space-8: 2rem;
+  --t-space-12: 3rem;
+  --t-radius-sm: 0.25rem;
+  --t-radius-md: 0.5rem;
+  --t-radius-full: 9999px;
+  --t-shadow-raised:
+    0 1px 1px light-dark(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.25)),
+    0 1px 3px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.30));
+  --t-shadow-popover:
+    0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.30)),
+    0 0.25rem 0.9rem light-dark(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.45));
+
+  /* Icons. */
+  --t-icon-sm: 1em;
+  --t-icon-md: 1.25rem;
+  --t-icon-stroke: 1.75;
+
+  /* Motion. */
+  --t-duration-fast: 120ms;
+  --t-duration-base: 200ms;
+  --t-duration-flash: 2000ms;
+  --t-delay-tip: 300ms;
+  --t-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* The least size of what can be clicked, larger under a coarse
+     pointer. */
+  --t-target: 24px;
+}
+
+/* Noto Serif SC is lighter than EB Garamond at the same weight. */
+:root:lang(zh) {
+  --t-font: "EB Garamond", "Noto Serif SC", "Noto Serif CJK SC",
+    "Source Han Serif SC", "Songti SC", SimSun, serif;
+  --t-font-size-base: clamp(1rem, 0.548vw + 0.583rem, 1.17rem);
+  --t-measure: 40em;
+  --t-line-height-text: 1.9;
+  --t-line-height-ui: 1.5;
+  --t-weight-regular: 500;
+  --t-weight-medium: 650;
+  --t-weight-bold: 800;
+}
+
+@media (pointer: coarse) {
+  :root { --t-target: 44px; }
+}

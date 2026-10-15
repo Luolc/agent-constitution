@@ -46,6 +46,8 @@ crates/                   the Rust workspace's crates, one directory
                           each                                         A
   statute/                the statute binary, under development        A
     src/constitution/     the constitution build                       A
+    assets/               the design tokens and the icons the sites'
+                          pages share (frontend.md)                    A
 docs/
   design/                 this design, one file per topic, indexed
                           by README.md                                 A
@@ -90,8 +92,8 @@ fixtures/
 cases/<id>.md             decided cases                                C
 proposals/                reserved for the adoption pipeline           D
 web/                      the static site's Hugo project: hugo.toml,
-                          content adapter, layouts, style sheet,
-                          script, i18n                                 A
+                          content adapter, layouts, style sheets,
+                          scripts, i18n                                A
   themes/hugo-book/       the theme, a git submodule at a pinned
                           commit                                       A
 site/                     built static site, not committed             A

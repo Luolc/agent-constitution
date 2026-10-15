@@ -75,4 +75,4 @@ cargo test --locked              # statute 的测试
 
 ## 许可
 
-宪法、规定和 skill 的文字 (`constitution/`、`rules/`、`skills/`) 采用 [CC BY 4.0](LICENSE-CC-BY-4.0) 许可。其余部分，包括 `tools/` 和 `crates/` 下的代码，采用 [Apache-2.0](LICENSE) 许可。网站的主题 (`web/themes/hugo-book`，一个子模块) 和取自 Octicons 的图标沿用各自的 MIT 许可。
+宪法、规定和 skill 的文字 (`constitution/`、`rules/`、`skills/`) 采用 [CC BY 4.0](LICENSE-CC-BY-4.0) 许可。其余部分，包括 `tools/` 和 `crates/` 下的代码，采用 [Apache-2.0](LICENSE) 许可。网站的主题 (`web/themes/hugo-book`，一个子模块) 和取自 Octicons 的 GitHub 标志沿用各自的 MIT 许可，取自 Lucide 的图标沿用它的 ISC 许可 (`crates/statute/assets/icons/`)。
