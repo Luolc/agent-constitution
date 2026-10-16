@@ -209,7 +209,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R50 Have a repository's commit hooks scan the staged changes for credentials at every commit.
 - R291 Keep a credential out of every message, log, command line and other output, and never pass one from one agent to another, by any channel.
 - R292 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
-- R294 Let a credential's value reach a program only through an environment variable or a file.
+- R295 Let a credential's value reach a program only through an environment variable, a file or a way the secret manager itself provides of injecting it into the program.
 - R299 Divide the credentials in the secret manager among its vaults by the service or use they serve, and keep in each vault only the credentials of its one service or use.
 - R300 Grant each service account access only to the vaults that its use needs.
 - R301 Grant a service account read-only access to a vault, and write access only where its use must write to that vault.
