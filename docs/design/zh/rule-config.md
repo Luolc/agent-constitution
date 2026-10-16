@@ -1,4 +1,4 @@
-<!-- en-sha256: 24aa0dfec4a3c287ff276db79107235b509f894d19c226a378337adf9dc05e48 -->
+<!-- en-sha256: 2f061c05114bfab12b60bd6828983d50972ad844186498994bb482515c003ab6 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
@@ -198,7 +198,7 @@ default = "on"
 
 - 取 `on` 或 `off`。one-of 的子节点没有 `default`；由 one-of 指定其中一个作为默认 (见下)。
 - 带 `overrides` 的规定也没有 `default`：只有规定清单启用它时它才进来，进来后顶替被覆盖的规定 ([覆盖](rule-sources.md#overrides))；被覆盖的规定是 one-of 的选项时，它自己再写一个开关，就会与 one-of 的默认相矛盾。
-- 只适用于部分仓库或部分工作方式的领域是 `off`，比如 Fleet 只适用于在多个 agent 之间分工的工作：规定清单开启它之前，它的规定一条也不进来。子领域的 `default` 在它的领域开启之后才起作用。
+- 只适用于部分仓库或部分工作方式的领域是 `off`，比如 fleet 这个领域只适用于在多个 agent 之间分工的工作：规定清单开启它之前，它的规定一条也不进来。子领域的 `default` 在它的领域开启之后才起作用。
 - 一条规定只有属于最通用、放在哪里都最不容易出错的那一类时才是 `on`。依赖某个人的偏好或环境 (共用的机器、一个审查方、某种 CI 服务、某个工具) 的规定是 `off`。
 - 规定源的默认值开启的规定必须能单独解析，statute 会检查这一点。一条仍有效 (既没被取代也没被废止) 的规定，自己的 `default` 是 `on`，上面每个领域都是 `on`，途经的每个 one-of 的默认都是通往它的那个选项，它就是按默认启用的。这样的规定依赖的同一规定源里的每条规定，也必须按默认启用；依赖一个 one-of 算作满足。
 
