@@ -1,0 +1,48 @@
+id = 308
+slug = "no-empty-variables-in-destructive-targets"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 13
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Build no target path of a destructive command from a part that may be empty"
+zh = "破坏性命令的目标路径不由可能为空的部分拼成"
+
+[text.statement]
+en = "Never let a command that deletes, overwrites or empties files take a target path built from a variable or a command's output that may be empty or unset: write the path literally, or have the command first check that each such part of it is set and not empty, and stop when one is not."
+zh = "删除、覆盖或清空文件的命令，目标路径不能由可能为空或未设置的变量或命令输出拼成：要么把路径照字面写出来，要么让命令先检查路径里每个这样的部分都已设置且不为空，有一个不满足就停下。"
+
+[text.reason]
+en = '''
+An empty or unset variable, or a command whose output is empty, drops out of a path without an error: `<dir>/<name>` becomes `<dir>/`, and `<root>/<name>` with both empty becomes `/`, the root of the file system. A recursive delete of that path removes far more than was meant, and cannot be undone. Agents pursue goals only by legitimate means, never by destructive ones ({@constitution:decency.legitimate-means}), and a command whose target can widen this way, unseen, is destructive by its shape whatever its author meant.
+'''
+zh = '''
+变量为空或未设置时，或者命令的输出为空时，它会从路径里消失而不报错：`<dir>/<name>` 变成 `<dir>/`，`<root>/<name>` 两个都为空时变成 `/`，也就是文件系统的根目录。对这样的路径递归删除，删掉的远比本意多，而且无法撤销。agent 只用正当手段达成目标，绝不用破坏性的手段 ({@constitution:decency.legitimate-means})；一条目标会这样悄悄扩大的命令，不论作者本意如何，它的写法本身就是破坏性的。
+'''
+
+[text.verification]
+en = '''
+A command that deletes, overwrites or empties files is one such as a delete, recursive or not, a move or copy onto an existing path, a write that truncates a file, a sync that deletes what the source lacks, or the cleaning of a directory, whether it runs in a shell, in a script or as a call in a program's code. The parts of a target path are the variables and the command outputs, such as command substitutions or the results of calls, that it is built from, directly or through another variable: a variable whose value is built from other parts brings them into the path too, so a check of that variable alone does not cover them. A part may be empty or unset unless the same command or script gave it a value that is not empty, written literally, before the path is built; a command's output, an argument, an environment variable and a value read from a file may all be empty.
+
+Checks that meet this rule include, in a POSIX shell, writing the variable in the path as `${VAR:?}`, running `[ -n "$VAR" ] || exit 1` before the command, or putting a command substitution into a variable first and checking that, as in `n=$(…); [ -n "$n" ] || exit 1`, and in any language, checking that the resolved target lies under the root expected for it and is not that root itself. `set -u` alone does not meet it, since it stops on an unset variable but not on an empty one.
+
+Violated when an agent runs or writes such a command whose target path is built from a part that may be empty or unset and that no check before the command stops on.
+'''
+zh = '''
+删除、覆盖或清空文件的命令，指删除 (递归或不递归)、移动或复制到一个已有的路径上、截断文件的写入、把源端没有的东西删掉的同步，以及清空一个目录这类命令，不论它在 shell 里运行、写在脚本里，还是程序代码里的一次调用。目标路径的部分，指它直接或经由别的变量用到的变量和命令输出，例如命令替换或者调用的返回值：一个变量的值由别的部分拼成的，那些部分也算进路径里，只检查这个变量覆盖不到它们。部分在拼路径之前，同一条命令或同一个脚本已经给它赋了照字面写出、不为空的值的，才算不会为空；命令的输出、参数、环境变量和从文件里读到的值，都可能为空。
+
+满足本规定的检查包括：在 POSIX shell 里，把路径中的变量写成 `${VAR:?}`，在命令之前先跑 `[ -n "$VAR" ] || exit 1`，或者先把命令替换放进一个变量、再检查这个变量，例如 `n=$(…); [ -n "$n" ] || exit 1`；在任何语言里，检查解析出的目标位于为它预期的根目录之下、而且不是这个根目录本身。只用 `set -u` 不满足本规定：它遇到未设置的变量会停下，遇到空变量不会。
+
+agent 运行或者写下这样的命令，目标路径由可能为空或未设置的部分拼成，而命令之前没有任何检查会因此停下的，即为违反本规定。
+'''
+
+[translations]
+zh = "9ab38ef6b1900246d03a5e5729a2c0be024e710a66945657555b515eb6449434"
