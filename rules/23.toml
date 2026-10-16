@@ -1,8 +1,9 @@
 id = 23
 slug = "credential-working-check"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 292
 lang = "en"
 parent = 265
 default = "on"

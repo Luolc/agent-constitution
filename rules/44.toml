@@ -1,8 +1,9 @@
 id = 44
 slug = "credential-out-of-output"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 291
 lang = "en"
 parent = 265
 default = "on"

@@ -1,8 +1,9 @@
 id = 279
 slug = "credential-value-route"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 294
 lang = "en"
 parent = 265
 default = "on"
