@@ -126,7 +126,7 @@ error prints the new hash; each `{@rule:<id>}` names a rule of the
 source that exists and is not repealed; a node in force, neither
 superseded nor repealed, names no superseded or repealed node of the
 source in a `{@rule:<id>}` of its original texts, its `parent`,
-`requires` or `conflicts`, and the error names the rules that supersede
+`requires`, `conflicts` or a one-of's `default`, and the error names the rules that supersede
 it, while a superseded or repealed node keeps what it names; the defaults of the source
 resolve on their own ([Default switches](rule-config.md#default-switches)),
 and the warnings of

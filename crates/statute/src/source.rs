@@ -166,8 +166,8 @@ impl Source {
 
     /// An error for each node of this source that a node in force names
     /// while it is superseded or repealed, in its original texts'
-    /// `{@rule:<id>}`, its `parent`, `requires` or `conflicts`, naming what
-    /// supersedes it. `statute validate` runs it on the source it checks,
+    /// `{@rule:<id>}`, its `parent`, `requires`, `conflicts` or a one-of's
+    /// `default`, naming what supersedes it. `statute validate` runs it on the source it checks,
     /// not a rule set on the sources it reads, which their own authors
     /// validate. References to another source are not followed.
     pub fn check_retired_references(&self, diags: &mut Diagnostics) {
@@ -192,9 +192,16 @@ impl Source {
                     }
                     Ok(String::new())
                 });
+                // The per-source checks already fail a citation of a
+                // repealed rule.
+                cited.retain(|&id| self.get(id).is_none_or(|t| t.status != Status::Repealed));
                 named.extend(cited.into_iter().map(|id| (format!("[{field}] cites"), id)));
             }
             named.extend(node.parent.map(|id| ("`parent` names".to_owned(), id)));
+            named.extend(
+                node.default_child
+                    .map(|id| ("`default` names".to_owned(), id)),
+            );
             if let Some(rule) = &node.rule {
                 for (field, list) in [("requires", &rule.requires), ("conflicts", &rule.conflicts)]
                 {

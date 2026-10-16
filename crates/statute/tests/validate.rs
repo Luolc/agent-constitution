@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, param, rule};
+use common::{domain, edit, one_of, option, param, rule};
 
 struct Run {
     code: i32,
@@ -241,6 +241,57 @@ fn a_node_in_force_names_no_retired_rule() {
     let dir = rules(
         "retired-successor",
         &[domain(1), superseded, cites(4), rule(4, 1, "")],
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    // A citation of a repealed rule is the per-source checks' error alone.
+    let dir = rules(
+        "retired-repealed-citation",
+        &[domain(1), cites(5), repealed.clone()],
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let errors: Vec<&str> = run
+        .stderr
+        .lines()
+        .filter(|l| l.contains(": error: "))
+        .collect();
+    assert_eq!(errors.len(), 1, "{}", run.stderr);
+    assert!(
+        errors[0].ends_with(
+            "rules/3.toml: error: [text.statement] cites `{@rule:5}`, which is repealed"
+        ),
+        "{}",
+        run.stderr
+    );
+    // A one-of whose `default` is a superseded option, then its successor.
+    let options = || {
+        vec![
+            domain(1),
+            edit(
+                option(8, 7, "superseded-by = 9"),
+                "status = \"draft\"",
+                "status = \"superseded\"",
+            ),
+            option(9, 7, ""),
+        ]
+    };
+    let dir = rules(
+        "retired-default",
+        &[options(), vec![one_of(7, 1, 8)]].concat(),
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(
+        run.stderr.contains(
+            "rules/7.toml: error: `default` names rule 8, which is superseded by 9; a node in force names only nodes in force"
+        ),
+        "{}",
+        run.stderr
+    );
+    let dir = rules(
+        "retired-default-successor",
+        &[options(), vec![one_of(7, 1, 9)]].concat(),
     );
     let run = validate(&dir);
     assert_eq!(run.code, 0, "{}", run.stderr);
