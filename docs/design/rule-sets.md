@@ -51,9 +51,9 @@ default or `"local"`
 repository names its private sources in a private rule set,
 `private.toml` in git's own directory, shared by every worktree of the
 clone, which inherits the worktree's `statute.toml` without naming it
-and has its own lock file, `private.lock`. That lock file pins only the
-private layer's own sources, each by its address, branch or tag and
-commit; the two layers together are resolved in memory in each
+and has a lock file, `private.lock`, for each worktree. That lock file
+pins only the private layer's own sources, each by its address, branch
+or tag and commit; the two layers together are resolved in memory in each
 worktree, from its `statute.lock` and `private.lock`, and never written
 down. It compiles to `.statute/AGENTS.full.md`, the
 public and private rules in one file

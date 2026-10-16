@@ -546,6 +546,101 @@ fn a_private_global_source_joins_the_private_layer_of_a_public_repository() {
     );
 }
 
+/// Each worktree of a clone locks the private layer for itself: a linked
+/// worktree starts from the main worktree's lock file and writes its own
+/// in its git directory, and the main worktree's lock file stays as it
+/// was until the main worktree locks.
+#[test]
+fn a_worktree_locks_the_private_layer_for_itself() {
+    let w = world("worktree-lock");
+    let (me_work, me) = source(&w.at, "me", &[domain(1), rule(4, 1, "")]);
+    w.configure(&format!(
+        "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
+    ));
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["add", "--private", "me:4"]));
+    ok(&w.run(&["lock"]));
+    git(&w.repo, &["add", "."]);
+    git(
+        &w.repo,
+        &[
+            "-c",
+            "user.name=Example",
+            "-c",
+            "user.email=example@example.test",
+            "commit",
+            "-q",
+            "-m",
+            "rule set",
+        ],
+    );
+    let tree = w.at.join("tree");
+    git(
+        &w.repo,
+        &[
+            "worktree",
+            "add",
+            "-q",
+            "-b",
+            "other",
+            tree.to_str().unwrap(),
+        ],
+    );
+    let tree_lock = w.repo.join(".git/worktrees/tree/statute/private.lock");
+    let old = git(&me_work, &["rev-parse", "HEAD"]);
+    let new = change(
+        &me_work,
+        edit(rule(4, 1, ""), "Do the thing 4.", "Do the new thing 4."),
+    );
+    let main_lock = read(&w.repo, PRIVATE_LOCK);
+    assert!(main_lock.contains(&old), "{main_lock}");
+    // Without a lock file of its own, the worktree reads the main
+    // worktree's.
+    ok(&statute(&w.home, &tree, &["compile"]));
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("Do the thing 4."));
+    assert!(!tree_lock.exists());
+    // `upgrade` in the worktree writes its own lock file alone.
+    let run = statute(&w.home, &tree, &["upgrade"]);
+    ok(&run);
+    assert_eq!(read(&w.repo, PRIVATE_LOCK), main_lock);
+    assert!(
+        run.stdout
+            .contains(&format!("wrote {}: ", tree_lock.display())),
+        "{}",
+        run.stdout
+    );
+    let own = std::fs::read_to_string(&tree_lock).unwrap();
+    assert!(own.contains(&new) && !own.contains(&old), "{own}");
+    ok(&statute(&w.home, &tree, &["compile"]));
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("Do the new thing 4."));
+    ok(&w.run(&["compile"]));
+    assert!(read(&w.repo, ".statute/AGENTS.full.md").contains("Do the thing 4."));
+    // A source the worktree adds to the shared rule set leaves the main
+    // worktree's lock file stale, which its compile says.
+    w.on_disk("you", 5);
+    ok(&statute(
+        &w.home,
+        &tree,
+        &["source", "add", "you", "../you", "--private"],
+    ));
+    assert_eq!(read(&w.repo, PRIVATE_LOCK), main_lock);
+    fails(&w.run(&["compile"]), "run `statute lock` first");
+    // `upgrade` in the main worktree updates the main worktree's lock file.
+    ok(&w.run(&["upgrade"]));
+    let upgraded = read(&w.repo, PRIVATE_LOCK);
+    assert!(
+        upgraded.contains(&new) && upgraded.contains("name = \"you\""),
+        "{upgraded}"
+    );
+    ok(&w.run(&["compile"]));
+    assert!(read(&w.repo, ".statute/AGENTS.full.md").contains("Do the new thing 4."));
+}
+
 /// The full chain of the design: a global configuration with a private
 /// source, a public repository with rules of its own and a private local
 /// source, and its site with the four quadrants.

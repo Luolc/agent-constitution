@@ -472,12 +472,16 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
 
 /// The full text of the private layer of a public repository: the
 /// `AGENTS.md` of `both`, which holds both layers over `public`, after checking `statute.lock` against
-/// `public` and the private lock file in `dir` against `both`
+/// `public` and the private lock file of `dir` against `both`
 /// (`docs/design/rule-sources.md`, Private rules in a public repository).
 /// Without a private rule set, `both` is `public` and `dir` is `None`:
 /// the text then differs only in the person's own values.
 /// Fails as `compile` does.
-pub fn full_text(public: &Project, both: &Project, dir: Option<&Path>) -> Result<String, String> {
+pub fn full_text(
+    public: &Project,
+    both: &Project,
+    dir: Option<&private::Dir>,
+) -> Result<String, String> {
     check_lock(
         &public.root.join(lock::FILE),
         lock::FILE,
@@ -485,7 +489,7 @@ pub fn full_text(public: &Project, both: &Project, dir: Option<&Path>) -> Result
         crate::manifest::FILE,
     )?;
     if let Some(dir) = dir {
-        let path = dir.join(private::LOCK);
+        let path = dir.read_lock();
         check_lock(
             &path,
             &path.display().to_string(),

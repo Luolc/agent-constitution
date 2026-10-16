@@ -1,4 +1,4 @@
-<!-- en-sha256: 84751bfa895b916143286deccbaa5a2d95b2b74de0d628a6aa7308e9e67f46ac -->
+<!-- en-sha256: 41b063b79c2986520c78e075fd20a4cf245aea89de738dac7e9de880688b8892 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -100,10 +100,12 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
   ```text
   $(git rev-parse --git-path common/statute)/
     private.toml          私有规定清单
-    private.lock          它的锁文件
+    private.lock          主 worktree 的锁文件
+  $(git rev-parse --git-path statute)/
+    private.lock          linked worktree 自己的锁文件
   ```
 
-  在一个 clone 里，这个路径就是 `.git/common/statute/`，主检出和每个 linked worktree 都一样。私有规定清单以 statute 运行所在 worktree 的 `statute.toml` 为基础，按[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的方式继承它，再加上规定源，并开启或关掉规定：
+  在一个 clone 里，前一个路径就是 `.git/common/statute/`，主检出和每个 linked worktree 都一样；后一个在 linked worktree 里是 `.git/worktrees/<name>/statute/`。私有规定清单以 statute 运行所在 worktree 的 `statute.toml` 为基础，按[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里说的方式继承它，再加上规定源，并开启或关掉规定：
 
   ```toml
   rules = ["me:4", "here:2"]
@@ -116,11 +118,11 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
   它可以像 `statute.toml` 那样列 `packs`，根可以是两层中任何一个规定源的节点，这样私有规定源新加的规定会跟着启用；规定包也可以启用公开规定，这时只有私有层启用它们，和它列出的规定一样。它没有 `[compile]`，因为它的输出位置是固定的 (见下文)；也没有 `base`，因为它的基础总是命令运行处的那份 `statute.toml`。其中的 `path` 要么是绝对路径，要么以 `~/` 开头；写相对路径会报错，因为这个文件供所有 worktree 共用，相对路径从每个 worktree 出发会指到不同的地方。`statute source add` 写的是绝对路径。它的规定源不能与 `statute.toml` 的重名，它的每个列表也不能与 `statute.toml` 的同名列表重复。它也可以列 `exclude`，只在私有输出里关掉默认值或 `statute.toml` 开启的节点 (见[规定清单里](rule-config.md#in-the-rule-set))。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。不在 git 仓库里就没有私有层，带 `--private` 的命令会失败。`statute add --private` 和 `statute remove --private` 修改它，先在同一目录写一个临时文件，再改名替换。
 
 - 这个私有层只改变私有输出。它可以在那里关掉公开层的规定，或者重新开启 `statute.toml` 排除的规定，但不能覆盖公开层的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。它关掉的规定不出现在全文里，所以只读全文的 agent 不再有这条规定；Grok 还读 `AGENTS.md` (见下文)，仍然有它。
-- 它有自己的锁文件 `private.lock`，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。这样所有 worktree 读私有规定源时用的是同一批 commit，而公开层各自以自己分支锁定的为准；如果锁文件把两层一起锁定，又由不同分支上的 worktree 共用，那它在除一个以外的所有 worktree 里都是过期的。
-- git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
+- 它有锁文件 `private.lock`，每个 worktree 一份，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它；每条命令只写它所在 worktree 的那份锁文件，不碰别的。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。linked worktree 还没有自己的锁文件时，读主 worktree 的那份，所以新 worktree 从主 worktree 锁定的 commit 起步；在一个 worktree 里跑 `statute upgrade`，只移动这个 worktree 的私有规定源。私有规定清单仍是共用的，所以在一个 worktree 里改了它的规定源 (`statute source add`，或者手改)，别的 worktree 的锁文件就过期了：它们的 `statute compile` 会失败，并提示运行 `statute lock`，`compile --private-only` 什么都不写，也这样提示。只改清单里的列表，比如 `statute add --private`，别的 worktree 的锁文件仍是最新的，因为锁文件不记规定。
+- git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件都不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
 - 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute-checks.toml` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有层关掉的公开规定，它的 skill 和检查留在提交的文件里，`statute check` 不运行它的检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
 
-放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
+放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单，同时各自保留自己的锁文件。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录，`git worktree remove` 会连同 worktree 一起删掉它。锁文件如果由所有 worktree 共用，在任何一个 worktree 里跑的命令都会改掉其他 worktree 读的 commit，几个任务同时重新锁定时还会互相覆盖。主 worktree 的锁文件仍放在私有规定清单旁边，linked worktree 有自己的锁文件之前建的 clone 本来就有这份，所以哪个 clone 都不用挪文件。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
 
 **名字仍叫 `private`。** `local` 在 statute 里已经指一种范围 (`scope = "local"`、`L12` 和本地的两类规定源)，所以像别的工具给一台机器自己的设置起名那样叫 `statute.local.toml`，会被读成本地规定的配置。这两个文件的特点是不能公开，`private` 说的正是这一点。
 
@@ -159,7 +161,7 @@ Codex 读一个项目的指令文件，从仓库根目录到工作目录的各�
 
 有 `CLAUDE.local.md` 时，Claude Code 也不加载任何子目录里的 `AGENTS.md`：工作目录在那个子目录时启动不加载，碰到那里的文件时也不加载，而没有 `CLAUDE.local.md` 时这两种情况它都会加载。子目录的规定对它就丢了，除非模型碰巧自己去读那个文件。所以有私有输出的仓库把这类规定写进规定清单，不放在子目录的 `AGENTS.md` 里。编译私有层时，`statute compile` 遇到 git 跟踪的、在 `statute.toml` 所在目录 (通常就是仓库顶层，也是写软链的地方) 之下的 `AGENTS.md`，逐个给出 warning，说明 Claude Code 不加载它，其中的规定应当并入规定清单。statute 不把它们的内容编进全文。
 
-**新的 worktree。** 私有规定清单、它的锁文件和 `.git/info/exclude` 由一个 clone 的各个 worktree 共用，但私有输出和两个软链是某一个工作区的文件，而 `git worktree add` 只检出 git 跟踪的文件。这些文件由 git 的 `post-checkout` 钩子写出。git 在 `git worktree add` 之后 (除非带 `--no-checkout`)、每次用 `git switch` 或 `git checkout` 切换分支之后运行它，运行位置是工作区的顶层 (githooks(5))；钩子放在 common 目录里，所以一个钩子对这个 clone 的所有 worktree 都生效。钩子只运行一条命令，`statute compile --private-only`：
+**新的 worktree。** 私有规定清单、主 worktree 的锁文件 (新 worktree 在自己锁定之前读它) 和 `.git/info/exclude` 由一个 clone 的各个 worktree 共用，但私有输出和两个软链是某一个工作区的文件，而 `git worktree add` 只检出 git 跟踪的文件。这些文件由 git 的 `post-checkout` 钩子写出。git 在 `git worktree add` 之后 (除非带 `--no-checkout`)、每次用 `git switch` 或 `git checkout` 切换分支之后运行它，运行位置是工作区的顶层 (githooks(5))；钩子放在 common 目录里，所以一个钩子对这个 clone 的所有 worktree 都生效。钩子只运行一条命令，`statute compile --private-only`：
 
 ```sh
 #!/bin/sh
@@ -178,7 +180,7 @@ statute compile --private-only; exit 0
 两个钩子的路径是 `git rev-parse --git-path hooks/post-checkout` 和 `git rev-parse --git-path hooks/post-merge` 打印的那两个，它们会遵循 `core.hooksPath`；钩子文件归某个钩子管理工具管的仓库，把这两行加在那里，pre-commit 也能安装这两类钩子。statute 不安装钩子，由用户在每个 clone 里装一次。`--private-only`：
 
 - 只写 `.statute/.gitignore`、`.statute/AGENTS.full.md` 和两个软链，从不写 `AGENTS.md`、skill 或 `statute-checks.toml`；
-- 读这个 worktree 的 `statute.toml` 和 `statute.lock`，以及私有规定清单和它的锁文件，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
+- 读这个 worktree 的 `statute.toml`、`statute.lock` 和私有锁文件，以及私有规定清单，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
 - 没有 `statute.toml`、仓库是私有的 (`public = false`)，或者既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，什么都不做，不出声，退出码为 0；
 - 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
 

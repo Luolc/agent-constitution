@@ -1,7 +1,8 @@
 //! The private layer of a public repository, end to end: a git repository
 //! with the first-party source `R`, its own rules and a private global
 //! source `me`, through `init`, `add`, `lock`, `compile` and `check`, and
-//! the worktrees of one clone sharing the private rule set.
+//! the worktrees of one clone sharing the private rule set, each with a
+//! lock file of its own.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -40,6 +41,28 @@ fn common(dir: &Path) -> PathBuf {
         )
         .trim_end(),
     )
+}
+
+/// The private lock file the work tree `dir` writes: next to the private
+/// rule set in the main worktree, in its own git directory in a linked
+/// one.
+fn own_lock(dir: &Path) -> PathBuf {
+    if dir.join(".git").is_dir() {
+        common(dir).join("private.lock")
+    } else {
+        PathBuf::from(
+            git_out(
+                dir,
+                &[
+                    "rev-parse",
+                    "--path-format=absolute",
+                    "--git-path",
+                    "statute/private.lock",
+                ],
+            )
+            .trim_end(),
+        )
+    }
 }
 
 fn write(dir: &Path, path: &str, text: &str) {
@@ -224,7 +247,7 @@ fn set_up_from(dir: &Path, at: &Path) {
     assert!(
         run.stdout.contains(&format!(
             "wrote {}: 3 rules enabled, 1 of them by the private layer",
-            common(dir).join("private.lock").display()
+            own_lock(dir).display()
         )),
         "{}",
         run.stdout
@@ -695,21 +718,28 @@ fn worktrees_share_the_private_rule_set() {
             tree.to_str().unwrap(),
         ],
     );
-    // One private rule set and lock file for both, in the clone's
-    // directory.
+    // One private rule set for both, in the clone's directory; each its
+    // own lock file.
     assert_eq!(common(&tree), dir.join(".git/common/statute"));
+    assert_eq!(
+        own_lock(&tree),
+        dir.join(".git/worktrees/shared-tree/statute/private.lock")
+    );
     let lock = read_private(&dir, "private.lock");
     // The other branch enables R6 as well; its lock files are written,
-    // and the private one stays as it was.
+    // and the private one holds the same sources.
     let run = statute(&tree, &["add", "R6"]);
     ok(&run);
     assert!(
-        run.stdout
-            .contains("private.lock: 4 rules enabled, 1 of them by the private layer"),
+        run.stdout.contains(&format!(
+            "wrote {}: 4 rules enabled, 1 of them by the private layer",
+            own_lock(&tree).display()
+        )),
         "{}",
         run.stdout
     );
-    assert_eq!(read_private(&tree, "private.lock"), lock);
+    assert_eq!(std::fs::read_to_string(own_lock(&tree)).unwrap(), lock);
+    assert_eq!(read_private(&dir, "private.lock"), lock);
     assert_ne!(read(&tree, "statute.toml"), read(&dir, "statute.toml"));
     // Each worktree compiles its own branch with the private layer, and
     // neither finds the private lock file stale.

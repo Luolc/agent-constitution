@@ -8,13 +8,17 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// The private layer's rule set and lock file, in `dir`.
+/// The private layer's rule set and lock file.
 pub const MANIFEST: &str = "private.toml";
 pub const LOCK: &str = "private.lock";
 
 /// Where the private rule set lives, as `git rev-parse --git-path` takes
 /// it: below `common/`, which git shares between the worktrees of a clone.
 const GIT_PATH: &str = "common/statute";
+
+/// Where a linked worktree keeps its own lock file, as `git rev-parse
+/// --git-path` takes it: in the worktree's own git directory.
+const WORKTREE_GIT_PATH: &str = "statute";
 
 /// The directory of the private output and the full text in it: the
 /// public rules and the private ones.
@@ -31,35 +35,83 @@ pub const GITIGNORE: &str = "# written by statute\n/AGENTS.full.md\n/site/\n";
 /// `AGENTS.override.md` in place of `AGENTS.md`.
 pub const LINKS: [&str; 2] = ["CLAUDE.local.md", "AGENTS.override.md"];
 
-/// The directory of the private rule set and its lock file for the work
-/// tree at `root`, the same from every worktree of a clone: `None`
+/// Where the private layer of one work tree is kept: the rule set, which
+/// every worktree of a clone shares, and the work tree's own lock file,
+/// so that locking in one worktree leaves the others' commits as they
+/// were. The main worktree's lock file sits next to the rule set.
+#[derive(Debug, Clone)]
+pub struct Dir {
+    shared: PathBuf,
+    lock: PathBuf,
+}
+
+impl Dir {
+    /// The private rule set, the same for every worktree.
+    pub fn manifest(&self) -> PathBuf {
+        self.shared.join(MANIFEST)
+    }
+
+    /// The lock file this work tree writes.
+    pub fn lock(&self) -> &Path {
+        &self.lock
+    }
+
+    /// The lock file this work tree reads: its own, or, in a linked
+    /// worktree that has not locked yet, the main worktree's.
+    pub fn read_lock(&self) -> PathBuf {
+        if self.lock.exists() {
+            self.lock.clone()
+        } else {
+            self.shared.join(LOCK)
+        }
+    }
+}
+
+/// Where the private layer of the work tree at `root` is kept: `None`
 /// outside a git repository, where there is no private layer; an error
 /// when git cannot tell.
-pub fn dir(root: &Path) -> Result<Option<PathBuf>, String> {
+pub fn dir(root: &Path) -> Result<Option<Dir>, String> {
     let out = Command::new("git")
         .arg("-C")
         .arg(root)
         .args([
             "rev-parse",
             "--path-format=absolute",
+            "--git-dir",
+            "--git-common-dir",
             "--git-path",
             GIT_PATH,
+            "--git-path",
+            WORKTREE_GIT_PATH,
         ])
         .env("LC_ALL", "C")
         .output()
         .map_err(|e| format!("cannot run git, which says where the private rule set is: {e}"))?;
     let stderr = String::from_utf8_lossy(&out.stderr);
-    if out.status.success() {
-        let path = String::from_utf8_lossy(&out.stdout);
-        Ok(Some(PathBuf::from(path.trim_end_matches(['\n', '\r']))))
-    } else if stderr.starts_with("fatal: not a git repository") {
-        Ok(None)
-    } else {
-        Err(format!(
-            "git cannot tell where the private rule set is: {}",
-            stderr.trim()
-        ))
+    if !out.status.success() {
+        return if stderr.starts_with("fatal: not a git repository") {
+            Ok(None)
+        } else {
+            Err(format!(
+                "git cannot tell where the private rule set is: {}",
+                stderr.trim()
+            ))
+        };
     }
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let lines: Vec<&str> = stdout.lines().collect();
+    let [git_dir, common_dir, shared, own] = lines[..] else {
+        return Err(format!(
+            "git cannot tell where the private rule set is: `git rev-parse` printed {stdout:?}"
+        ));
+    };
+    let shared = PathBuf::from(shared);
+    let lock = if git_dir == common_dir {
+        shared.join(LOCK)
+    } else {
+        Path::new(own).join(LOCK)
+    };
+    Ok(Some(Dir { shared, lock }))
 }
 
 /// What a command that needs the private rule set says outside a git
