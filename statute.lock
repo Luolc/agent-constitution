@@ -1419,15 +1419,15 @@ by = "default"
 [[rules]]
 rule = "R305"
 revision = 1
-sha256 = "024f667a6f013b60335daaca0597b603efb08660612f2c4f02468d776a3fe1e7"
-original-sha256 = "9f92514b0c4f20d7fa449e3c0ea108b9d4700ea804d4df6219dfb51c29681bbc"
+sha256 = "3c81c1c8af612d89accc7729813ca66e8db2cf1c29ea9f534535fcf71ec87275"
+original-sha256 = "4d99d85d2e6570e0c1e7362003bb12a2186b2e1871949e97bf1dbddcb5f601d1"
 by = "default"
 
 [[rules]]
 rule = "R306"
 revision = 1
-sha256 = "e2747bed8a102678307fab22e729613d9ed7d39207ffc3ed9a9ebf8fe530136f"
-original-sha256 = "067156ef7a84eda8d97c8c3af57f7cdf65a3abafb90d22685b7a59c8a9cfc94f"
+sha256 = "598630de18a660fcfccff2920047086658f2554550c3fbd64fffa8ba2ffd43e6"
+original-sha256 = "12019c138659c39e67da9d9e187b9f3f4536766590d8615b6e802e7708bbaf3d"
 by = "default"
 
 [[rules]]
