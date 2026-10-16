@@ -98,10 +98,15 @@ ID = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 MARK = re.compile(
   r"\{@(?:(constitution|rule):)?(" + ID + r"(?:\." + ID + r")?)\}"
 )
+# The name of a source written before its rules' IDs with no colon: one
+# or two capital letters, as `R` in `R12` and `P` in `P7`.
+LETTERS = r"[A-Z]{1,2}"
 # A citation of a rule of another source, as `requires` names it:
-# `{@rule:R12}`, `{@rule:team:7}`.
-OTHER_RULE = re.compile(r"\{@rule:(R[1-9][0-9]*|" + ID + r":[1-9][0-9]*)\}")
-FIRST_PARTY_REF = re.compile(r"R[1-9][0-9]*")
+# `{@rule:R12}`, `{@rule:P7}`, `{@rule:team:7}`.
+OTHER_RULE = re.compile(
+  r"\{@rule:(" + LETTERS + r"[1-9][0-9]*|" + ID + r":[1-9][0-9]*)\}"
+)
+LETTERS_REF = re.compile(r"(" + LETTERS + r")([1-9][0-9]*)")
 # A placeholder, `{$language.docs}`, and a Markdown code span, in which
 # one is no Markdown but stays literal.
 PLACEHOLDER = re.compile(r"\{\$(" + ID + r"\." + ID + r")\}")
@@ -271,18 +276,6 @@ def export(path: Path) -> dict[str, Any] | None:
   return json.loads(run.stdout) if run.returncode == 0 else None
 
 
-def first_party(value: object) -> bool:
-  """Tell whether a value names a first-party rule, as `R12` does.
-
-  Args:
-    value: a value of a node's file.
-
-  Returns:
-    True when it does.
-  """
-  return isinstance(value, str) and FIRST_PARTY_REF.fullmatch(value) is not None
-
-
 @dataclass(frozen=True)
 class Param:
   """One parameter of a source, as `statute export` gives it.
@@ -342,9 +335,12 @@ def rule_label(node_id: int, source: str = FIRST_PARTY) -> str:
     source: the name of its source.
 
   Returns:
-    The label: `R12` for this repo's, `team:12` for another source's.
+    The label: `R12` for this repo's, `P12` or `team:12` for another
+    source's.
   """
-  return f"R{node_id}" if source == FIRST_PARTY else f"{source}:{node_id}"
+  if re.fullmatch(LETTERS, source):
+    return f"{source}{node_id}"
+  return f"{source}:{node_id}"
 
 
 def page_key(node_id: int, source: str = FIRST_PARTY) -> str:
@@ -364,13 +360,13 @@ def other_ref(ref: str) -> tuple[str, int]:
   """Return the source and ID a reference to a node of another source names.
 
   Args:
-    ref: `R12` or `team:12`.
+    ref: `R12`, `P12` or `team:12`.
 
   Returns:
     The source's name and the node's ID.
   """
-  if first_party(ref):
-    return FIRST_PARTY, int(ref[1:])
+  if m := LETTERS_REF.fullmatch(ref):
+    return m.group(1), int(m.group(2))
   name, node_id = ref.split(":")
   return name, int(node_id)
 

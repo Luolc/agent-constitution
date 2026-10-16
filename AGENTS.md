@@ -284,6 +284,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R289 Move a trial rule to `active` only once a principal has said explicitly that it may move.
 - R290 Make what a rule requires, and the condition under which it applies, rest only on checks, counts, records and other mechanisms that already run, never on one that is still to be built.
 - R293 When a rule tells an agent to stop, pause, wait or not start some work, say in its statement what the agent does to move the work on: a route it takes itself, or what it asks of whom.
+- R298 Write the English title of a domain in the title case of The Chicago Manual of Style, keeping each product name in the form its owner writes it.
 - L6 Keep each rule, one-of and domain of the first-party source in `rules/<id>.toml`, named by its ID without zero padding, and never delete one or reuse its ID: a rule that goes is superseded or repealed.
 - L7 In a first-party rule, cite a rule as `{@rule:<id>}` and the constitution as `{@constitution:<id>}`, and in the constitution cite without a prefix; never cite a rule by its slug.
 - R129 Put each worktree of a repository at `<root>/<repo>/<slug>/`, under the root the jurisdiction designates for worktrees, never inside a repository's directory.

@@ -1,6 +1,6 @@
 id = 281
 slug = "change-batching"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 273
 default = "on"
 
 [title]
-en = "Change batching"
+en = "Change Batching"
 zh = "改动分批"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "b24bb88df8ca74cf0b63fd6cb3839c2a698fc2df3da127b966331b857af413c7"
+zh = "070d538740aabe39ed5bdf2bfbb9df1c8fe744718e14fe02961b10cf28330b9e"

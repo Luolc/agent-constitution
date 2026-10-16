@@ -164,7 +164,7 @@ enum SourceAction {
     /// private and the repository public, or with --global in the global
     /// configuration; and update the lock file when there is one.
     Add {
-        /// The source's short name, as in `team:7`.
+        /// The source's short name, as in `team:7` or `P7`.
         name: String,
         /// A git address, or a directory on disk (with --global, a clone).
         address: String,

@@ -1,0 +1,44 @@
+id = 298
+slug = "domain-titles-in-title-case"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+default = "on"
+authority = ["decidable-provisions"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Write the English title of a domain in Chicago title case"
+zh = "domain 的英文标题用 Chicago 标题式大小写"
+
+[text.statement]
+en = "Write the English title of a domain in the title case of The Chicago Manual of Style, keeping each product name in the form its owner writes it."
+zh = "domain 的英文标题按《芝加哥格式手册》(The Chicago Manual of Style) 的标题式大小写来写，产品名保持它的所有者自己的写法。"
+
+[text.reason]
+en = '''
+Domain titles are the headings of the rule tree: the compiled instructions, the site and the path in a page's title show them side by side, those of every source a rule set draws on among them, so they read as one set only when they share one style. Title case marks a domain title as a heading and sets it apart from the titles of rules, which are sentences. Chicago is the style people know from the titles of papers and news, and its word lists leave a reviewer one answer for each word ({@constitution:decidable-provisions}).
+'''
+zh = '''
+domain 的标题是规定树的各级标题：编译出的指令、站点、页面标题里的路径都把它们并排列出，规则集用到的各个来源的 domain 都在其中，只有风格一致，读起来才是一套。标题式大小写让 domain 的标题一看就是标题，与规定的标题 (都是句子) 分开。Chicago 是大家在论文和新闻标题里常见的写法，它对每类词怎么写都有明确的规定，审查方对每个词都只有一个答案 ({@constitution:decidable-provisions})。
+'''
+
+[text.verification]
+en = '''
+Under Chicago title case, the first and the last word of the title start with a capital letter, and so does every other word except these, which are lowercase: the articles a, an and the; the coordinating conjunctions and, but, or, nor, for, so and yet; prepositions used as prepositions, whatever their length, such as of, in, on, to, with, from, into and between (a preposition used as an adverb or an adjective, as in Set Up, is capitalized); to in an infinitive; and as. An acronym, such as CI, keeps its capitals. A product name keeps the form its owner gives it, wherever it stands in the title: fednet and fleet stay lowercase even as the first word, and Claude Code stays as it is written.
+
+Violated when a change adds a domain, or changes the English title of one, and the English title it leaves capitalizes one of the lowercase words above where it is neither the first nor the last word, leaves any other word lowercase except a product name its owner writes so, or writes a product name otherwise than its owner does.
+'''
+zh = '''
+按 Chicago 标题式大小写，标题的第一个词和最后一个词首字母大写，其余的词除下面这些外也都首字母大写；下面这些词小写：冠词 a、an、the；并列连词 and、but、or、nor、for、so、yet；用作介词的介词，不论多长，例如 of、in、on、to、with、from、into、between (介词用作副词或形容词时首字母大写，例如 Set Up)；不定式里的 to；以及 as。缩写词 (例如 CI) 保留它的大写。产品名不论在标题的什么位置，都保持它的所有者给它的写法：fednet 和 fleet 即使在开头也小写，Claude Code 照原样写。
+
+变更新增 domain 或改动 domain 的英文标题后，英文标题把上面列出的小写词 (不在开头或结尾时) 写成了首字母大写，把其他词 (所有者本来就小写的产品名除外) 写成了小写，或者产品名的写法与它的所有者不同的，即为违反本规定。
+'''
+
+[translations]
+zh = "bca82a1ee187a0f70f437df788fc346849e2bda8d4e495e4cad2f2d6f5dc9f93"

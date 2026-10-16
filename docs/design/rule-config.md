@@ -419,9 +419,9 @@ default = "on"
   rule is an option of a one-of, a switch of its own would contradict
   the one-of's default.
 - A domain is `off` when it is for some repositories or some ways of
-  working only, as Fleet is for work divided among agents: none of its
-  rules comes in until a rule set turns it on. A subdomain's `default`
-  applies once its domain is on.
+  working only, as the fleet domain is for work divided among agents:
+  none of its rules comes in until a rule set turns it on. A
+  subdomain's `default` applies once its domain is on.
 - A rule is `on` only when it is among the most general and the least
   likely to be wrong anywhere. A rule that depends on one person's
   preference or on the environment (a shared machine, a reviewer, a
