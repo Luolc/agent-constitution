@@ -259,8 +259,13 @@ publishes the constitution and the general rules. A rule set declares
 it as it declares any other source, with the tag, branch or path to
 read, or leaves it to the global configuration and the built-in
 default, the first-party repository's `main` branch
-([Global configuration and git sources](global-configuration.md#the-global-configuration)). Every other source has a short name of lowercase words
-joined by hyphens, which the rule set chooses. `L` and `local` are
+([Global configuration and git sources](global-configuration.md#the-global-configuration)). Every other source has a short name the rule
+set chooses, of one of two forms: lowercase words joined by hyphens,
+such as `team`, or one or two capital letters, such as `P`. A name of
+three capital letters or more fails. The limit of two letters is the
+project owner's choice: references in capital letters stay as short as the codes of a
+linter such as Ruff (`E501`), and two letters leave room for more
+sources than the alphabet has letters. `L` and `local` are
 reserved for the repository's own rules (below), and `ac`, the
 first-party source's earlier name, fails with a note to name it `R`.
 A source may also be a directory on disk, `R = { path = "." }`,
@@ -300,14 +305,21 @@ reference can be read as another kind:
   that is, of the repository that holds the rule set: the ID alone,
   `12`; `L12` and `local:12` mean the same;
 - a rule of another source: its short name, a colon and the ID,
-  `team:7`.
+  `team:7`; for a source named in capital letters, the letters and the
+  ID with no colon, `P7`.
+
+A reference with no colon is read as the capital letters before the
+first digit and the ID after them, so `RL12` is rule 12 of source
+`RL`, not a first-party or a local rule. `P:7` fails with a note to
+write `P7`, and `team7` is no reference.
 
 statute names a rule in one form wherever it shows one: in its
 messages, in `statute explain`, in the lock file and in the compiled
-`AGENTS.md`. That form is `R42`, `L12` or `team:7`: a local rule is
-shown as `L12`, so that it never reads like `R12`. The site lists the
+`AGENTS.md`. That form is `R42`, `L12`, `P7` or `team:7`: a local rule
+is shown as `L12`, so that it never reads like `R12`. The site lists the
 first-party rules alone, as `R42`. A rule set keeps each entry as
-written, and the commands that add one write `R42`, `12` or `team:7`.
+written, and the commands that add one write `R42`, `12`, `P7` or
+`team:7`.
 
 When the first-party source is the rule set's own directory,
 `R = { path = "." }`, as in this repo, its `rules/` are the
@@ -330,8 +342,9 @@ same address.
 **References in a rule.** In a rule's own file, a number in `requires`
 or `conflicts` and a citation `{@rule:<id>}` in its text name a rule
 of the same source. A rule names a rule of another source in
-`requires` or `conflicts` as `"R12"` or `"team:7"`, and in its text as
-`{@rule:R12}` or `{@rule:team:7}`, with the names of its own source's
+`requires` or `conflicts` as `"R12"`, `"P7"` or `"team:7"`, and in its
+text as `{@rule:R12}`, `{@rule:P7}` or `{@rule:team:7}`, with the names
+of its own source's
 `[sources]` table; statute resolves them with the rule set's names so
 far. A rule of the first-party source
 names another first-party rule by its number alone; for `"R12"` there,

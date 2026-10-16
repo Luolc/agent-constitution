@@ -949,7 +949,7 @@ impl Checker<'_> {
                             self.diags.error(
                                 &file,
                                 format!(
-                                    "[{field}] cites `{{@{c}}}`, which names no rule; write its number, as `{{@rule:12}}`, or `R12` or `team:7` for a rule of another source"
+                                    "[{field}] cites `{{@{c}}}`, which names no rule; write its number, as `{{@rule:12}}`, or `R12`, `P7` or `team:7` for a rule of another source"
                                 ),
                             );
                             continue;

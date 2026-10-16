@@ -7,7 +7,7 @@ source a rule set draws on, which may cite which, how a rule set
 replaces one rule with its own (an override), how domains nest, and how
 the hand-written guide is moved into rules and retired. It builds on
 [Rule system](rule-system.md): the reference forms (`R42`, `L12`,
-`team:7`) are those of [Sources and references](rule-sets.md#sources-and-references),
+`P7`, `team:7`) are those of [Sources and references](rule-sets.md#sources-and-references),
 and the tree, one-ofs and packs those of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).
 The other parts of the design that this one changes already describe it,

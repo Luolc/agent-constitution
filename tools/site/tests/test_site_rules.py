@@ -245,6 +245,14 @@ class SiteRulesTest(unittest.TestCase):
       )
       self.assertEqual(nodes[3]["groups"][0]["label"], "R1")
     self.assertEqual(site_rules.rule_label(12), "R12")
+    self.assertEqual(site_rules.rule_label(12, "P"), "P12")
+    self.assertEqual(site_rules.rule_label(12, "team"), "team:12")
+
+  def test_other_ref(self):
+    self.assertEqual(site_rules.other_ref("R12"), ("R", 12))
+    self.assertEqual(site_rules.other_ref("P7"), ("P", 7))
+    self.assertEqual(site_rules.other_ref("RL7"), ("RL", 7))
+    self.assertEqual(site_rules.other_ref("team:7"), ("team", 7))
 
   def test_authority_keeps_the_narrowest(self):
     """Rule 3 names `one` and `one-a`, under it; rule 5 names `one` alone."""

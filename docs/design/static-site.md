@@ -156,9 +156,11 @@ screenshots (Screenshots, below). The workflow
   names this repo's rule 12, as `requires` writes it
   ([Rule sources](rule-sources.md)); their nodes follow this repo's,
   source by source in the order of the quadrants (global public, global
-  private, local public, local private), each labeled `<name>:<id>`
-  (`team:7`), and a node of another source that a node names, in a field
-  or a citation (`{@rule:R12}`, `{@rule:team:7}`), links to its page.
+  private, local public, local private), each labeled as statute shows
+  it, `<name>:<id>` (`team:7`), or `<name><id>` (`P7`) for a source
+  named in capital letters, and a node of another source that a node
+  names, in a field or a citation (`{@rule:R12}`, `{@rule:P7}`,
+  `{@rule:team:7}`), links to its page.
   Each node holds its source and the source's quadrant; with more than
   one source, its groups start with its source. With `--enabled
   <statute.lock>`, once for each, each rule says whether one of those

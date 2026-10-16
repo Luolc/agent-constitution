@@ -40,7 +40,7 @@ enabled rules. The edition, revision and source the file rests on are in
 flat list. Each enabled
 rule is one item, `- <reference> <statement>`, such as
 `- R22 Keep a credential out of every message.`: the rule's reference
-as statute shows it (`R42`, `L12`, `team:7`), a space, and its
+as statute shows it (`R42`, `L12`, `P7`, `team:7`), a space, and its
 statement, a line after the first indented by two spaces to continue
 the item. Nothing else goes in: no title, reason or verification of a
 rule, no domain, subdomain or one-of, neither its title nor its
@@ -228,7 +228,7 @@ sources, as many as
 when that is a source's rules directory, as with `local-rules = "rules"`
 and `R = { path = "." }`, they are that source's, and a local reference
 fails with a note to write `R12`. A rule names a rule of another source in
-`requires`, `conflicts` and `{@rule:...}` as `R12` or `team:7`, with
+`requires`, `conflicts` and `{@rule:...}` as `R12`, `P7` or `team:7`, with
 the names of the rule set's `[sources]`: a source's own `[sources]`
 table ([Sources and references](rule-sets.md#sources-and-references))
 is not read yet. Of [Rule sources](rule-sources.md), `public` is built,
