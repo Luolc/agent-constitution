@@ -21,11 +21,10 @@ assets="$2"
 out="$3"
 
 # The tag goes into the download URLs, so it has to be a release tag.
-if [[ ! $tag =~ ^statute-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+if [[ ! $tag =~ ^statute-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "$0: \`$tag\` is not a statute-v<major>.<minor>.<patch> tag" >&2
   exit 1
 fi
-version="${BASH_REMATCH[1]}"
 
 # A missing or malformed sidecar stops the run here, not in a user's
 # `brew install`.
@@ -51,10 +50,9 @@ linux_intel="$(digest x86_64-unknown-linux-musl)"
 
 base="https://github.com/Luolc/agent-constitution/releases/download/$tag"
 
-# `version` is declared: Homebrew scans GitHub Release URLs for a version only
-# when the tag is `v<version>` or `<version>`, and from
-# `statute-x86_64-apple-darwin` it would read `64-apple-darwin`.
-# tools/check_formula_version.sh asserts what Homebrew reads.
+# No `version` line: Homebrew scans the version out of the download URL, and
+# `brew audit --strict` rejects a declaration that repeats it. What it scans
+# is asserted by tools/check_formula_version.sh.
 #
 # The test runs `statute validate` on a valid and on a broken rules
 # directory, so a binary that starts but checks nothing fails it.
@@ -64,7 +62,6 @@ cat >"$out" <<FORMULA
 class Statute < Formula
   desc "Compile a constitution and rules into instruction files for coding agents"
   homepage "https://github.com/Luolc/agent-constitution"
-  version "$version"
   license "Apache-2.0"
 
   on_macos do
