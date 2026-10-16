@@ -1,6 +1,6 @@
 id = 259
 slug = "public-repo-no-private-details-or-scopes"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -37,7 +37,7 @@ Not to be written there:
 - private resources: the names and addresses of machines, hosts and internal services, ports, paths in a secret store, account names, items of a private issue tracker, and chat channels and threads;
 - private repositories, by name or address; one is referred to by its role, for example "the private overlay";
 - agent instances and sessions: the names or IDs of particular agents, of the jobs and sessions they run in, and of their terminal panes;
-- the names of the scopes that the tool starting agents runs them in, such as a scope of fleet;
+- the names of the scopes that the tool starting agents runs them in, such as a scope of Agent Fleet;
 - an agent's usage and quota readings, and the model and effort it ran with.
 
 May be written: role names (author, reviewer, lead); the names of public projects and tools; the public identity of the repository's owner (account, name, commit author) and the public addresses the project itself publishes, such as its repository URL and its site; and made-up values such as `example.test` domains and the documentation address ranges. A credential is kept out by {@rule:291}, personal information by {@constitution:personal-info}.
@@ -56,7 +56,7 @@ zh = '''
 - 私有资源：机器、主机和内部服务的名字与地址，端口，密钥管理器里的路径，账号名，私有 issue 跟踪系统里的条目，聊天频道和会话线程；
 - 私有仓库的名字或地址；提到私有仓库时用它的角色指代，例如「私有 overlay」；
 - agent 实例和会话：具体某个 agent 的名字或 ID，它所在的 job 和会话的名字或 ID，以及它的终端 pane 的名字或 ID；
-- 起 agent 的工具运行 agent 所在的 scope 的名字，例如 fleet 的 scope；
+- 起 agent 的工具运行 agent 所在的 scope 的名字，例如 Agent Fleet 的 scope；
 - agent 的用量和额度读数，以及它运行时用的型号和 effort。
 
 可以写的：角色名 (作者、审查方、lead)；公开项目和工具的名字；仓库所有者公开的身份 (账号、名字、commit 作者)，以及项目自己公开的地址，例如它的仓库 URL 和网站；虚构的值，例如 `example.test` 域名和文档专用的地址段。凭证由 {@rule:291} 管，个人信息由 {@constitution:personal-info} 管。
@@ -69,4 +69,4 @@ zh = '''
 '''
 
 [translations]
-zh = "c3ef2ccfcfeec288d4e71b87ffbeee97eef05cab808e0da05b3dd3a930648364"
+zh = "792a181a69a10cf0a6add53efa433f89fd466c4d20b391327c7ae2a7300508ae"

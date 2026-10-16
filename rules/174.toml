@@ -1,6 +1,6 @@
 id = 174
 slug = "channel-names-by-prefix"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -21,10 +21,10 @@ zh = "单个仓库的 Slack channel 用 scope 的仓库前缀加仓库名命名�
 
 [text.reason]
 en = '''
-fleet decides by a channel's name which repository or initiative a thread belongs to: a channel named with the repository prefix maps to that repository's main checkout, one named with the initiative prefix to the initiative's checkout. In a channel named otherwise, a thread starts no agent, and the principals' questions there reach none.
+Agent Fleet decides by a channel's name which repository or initiative a thread belongs to: a channel named with the repository prefix maps to that repository's main checkout, one named with the initiative prefix to the initiative's checkout. In a channel named otherwise, a thread starts no agent, and the principals' questions there reach none.
 '''
 zh = '''
-fleet 靠 channel 的名字决定一个线程归哪个仓库或哪个 initiative：用仓库前缀命名的 channel 对应该仓库的主检出，用 initiative 前缀命名的对应该 initiative 的检出。名字不按约定，线程就不会起 agent，委托人在里面提的事也没有 agent 接。
+Agent Fleet 靠 channel 的名字决定一个线程归哪个仓库或哪个 initiative：用仓库前缀命名的 channel 对应该仓库的主检出，用 initiative 前缀命名的对应该 initiative 的检出。名字不按约定，线程就不会起 agent，委托人在里面提的事也没有 agent 接。
 '''
 
 [text.verification]
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "24c709eeed02f1603e55ba603ace5dcb2046a90e8923f39ba1f635582e4b254e"
+zh = "08dccd0ca9bb02a548a03aa7ffa1382372d1f26b7a5ced0beb1ee23a41f0abef"

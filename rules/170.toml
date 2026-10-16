@@ -1,6 +1,6 @@
 id = 170
 slug = "research-worker-read-only"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "A research worker only reads"
 zh = "调研 worker 只读"
 
 [text.statement]
-en = "Where work is divided among agents the way fleet does, as a research worker, change no repository."
-zh = "在像 fleet 那样在 agent 之间分工的法域里，作为调研 worker，不改任何仓库。"
+en = "Where work is divided among agents the way Agent Fleet does, as a research worker, change no repository."
+zh = "在像 Agent Fleet 那样在 agent 之间分工的法域里，作为调研 worker，不改任何仓库。"
 
 [text.reason]
 en = '''
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-This rule is for the jurisdictions of {@rule:28}. A research worker is a worker whose task is to find something out and report it. It writes its result as `research-<topic>-<date>.md` in the directory for its files outside any worktree (with fleet, `$FLEET_SCRATCH`), and commits and pushes nothing.
+This rule is for the jurisdictions of {@rule:28}. A research worker is a worker whose task is to find something out and report it. It writes its result as `research-<topic>-<date>.md` in the directory for its files outside any worktree (with Agent Fleet, `$FLEET_SCRATCH`), and commits and pushes nothing.
 
 Violated when a research worker changes any repository.
 '''
 zh = '''
-本规定适用于{@rule:28}所说的法域。调研 worker 指任务是查清某件事并报告结论的 worker。它把结果写成 `research-<topic>-<date>.md`，放在它存放 worktree 之外文件的目录里 (用 fleet 时是 `$FLEET_SCRATCH`)，不 commit、不 push。
+本规定适用于{@rule:28}所说的法域。调研 worker 指任务是查清某件事并报告结论的 worker。它把结果写成 `research-<topic>-<date>.md`，放在它存放 worktree 之外文件的目录里 (用 Agent Fleet 时是 `$FLEET_SCRATCH`)，不 commit、不 push。
 
 调研 worker 改了任何仓库的，即为违反本规定。
 '''
 
 [translations]
-zh = "695cc4f0e024f6ed00383bf705ce0f74766b72b324b511d871e984c2c99e401a"
+zh = "b6bda40ed824411995ed029df2abbb37204bc6961e9432ca5718bdc51b01ad88"

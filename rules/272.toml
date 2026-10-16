@@ -1,6 +1,6 @@
 id = 272
 slug = "work"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -12,11 +12,11 @@ zh = "工作"
 
 [applicability]
 en = '''
-How work is taken up and divided: picking the next authorized work, tickets that record each attempt, and work divided among agents the way fleet does. Its subdomains are off by default; enable each where that way of working is in use.
+How work is taken up and divided: picking the next authorized work, tickets that record each attempt, and work divided among agents the way Agent Fleet does. Its subdomains are off by default; enable each where that way of working is in use.
 '''
 zh = '''
-工作怎么承接、怎么分派：自己找下一件授权的工作，用工单记录每次尝试，按 fleet 的方式在多个 agent 之间分工。子 domain 默认关，用到哪种方式就打开哪个。
+工作怎么承接、怎么分派：自己找下一件授权的工作，用工单记录每次尝试，按 Agent Fleet 的方式在多个 agent 之间分工。子 domain 默认关，用到哪种方式就打开哪个。
 '''
 
 [translations]
-zh = "40bdc95d5e5df52fbe6915b632dad720a063b7f0b8de76e73c8a0d2a98886709"
+zh = "7044d860c75cdadb396a68f8f7757b9bfb0675e3e6ad5555ec651c9231f3d07a"
