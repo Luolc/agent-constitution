@@ -1,4 +1,4 @@
-<!-- en-sha256: 022180b41ec7c18c652b3f287847ade6dca550c70c6b1bb6bcb7f81065a5722c -->
+<!-- en-sha256: 3fa78d0396a0d1daaebf44a159e4377d9a305896ba512ce2f91d503bf7f51c84 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -13,7 +13,7 @@
 
 `AGENTS.md` 只收录 `uses` 含 `instructions` 的启用规定 ([规定用在哪里](rule-config.md#where-a-rule-is-used))；参数实现之后，每个占位符都换成它的取值 ([参数](rule-config.md#parameters))。
 
-`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，另外两样写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，否则不写。`AGENTS.md` 依次包含：一行说明文件是生成的注释，`compile` 靠它区分自己写的文件和手写的文件；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。文件依据的宪法的版、修订号和规定源记在 `statute.lock` 里，不写进文件。
+`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，skill 写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，连同它记下的 statute 版本，否则不写；只有版本不同时，报错写明两个版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。`AGENTS.md` 依次包含：一行说明文件是生成的注释，`compile` 靠它区分自己写的文件和手写的文件；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。文件依据的宪法的版、修订号和规定源记在 `statute.lock` 里，不写进文件。
 
 `AGENTS.md` 是给 agent 读的，私有全文 `.statute/AGENTS.full.md` 也是，两者构建方式相同，永远是一个平铺的列表。每条启用的规定是一项，写成 `- <引用> <要求>`，例如 `- R22 Keep a credential out of every message.`：先是 statute 显示的这条规定的引用 (`R42`、`L12`、`P7`、`team:7`)，一个空格，然后是它的要求；要求有多行时，第一行之后的每行缩进两个空格，接着这一项写。别的一概不写：没有规定的标题、理由和核验方法，没有领域、子领域和 one-of，既不写它们的标题，也不写 applicability，也没有锚点和链接。节点之间的关系和设置，即 `requires`、`conflicts`、one-of、`overrides`、默认开关、`uses` 和 `parent`，都是元信息：statute 在锁定和编译时检查它们，规定清单编译通过之后，它们的作用就尽到了，不写进文件。标题、理由、核验方法和领域的 applicability 是给人看的，放在网站上 (见下)；审查方从 `statute check` 拿到规定的理由和核验方法。引用保留在每一项的开头，审查发现和引用都靠它指明是哪条规定。
 
@@ -21,12 +21,13 @@
 
 在 `AGENTS.md` 所在的目录里，`statute compile` 还会写：
 
-- 启用的规定需要的每个 skill ([规定与 skill](rule-format.md#rules-and-skills))：把规定所在规定源里的 `skills/<name>/` (本仓库自己的规定取仓库顶层的 `skills/`；但若某个规定源就是这个目录，如 `R = { path = "." }`，这些 skill 归该规定源，本仓库自己的规定没有 skill) 整个复制到 `.agents/skills/<name>/` (需要的两个 skill 同名、来自两个规定源时，命令失败)，加一个文件 `.statute-generated`，再建一个指向这份副本的软链 `.claude/skills/<name>`，目标写成相对路径 `../../.agents/skills/<name>`。每个 skill 各有一个软链，不给整个目录建一个，也不只链 `SKILL.md`；Claude Code 只从 `.claude/skills/` 读仓库的 skill (2026-10-14 读取)。只有 Unix 系统上才建软链：在别的系统上，规定清单需要 skill 时命令失败。skill 里只能有目录和普通文件；
-- `statute-checks.toml`：编译它的 statute 的版本，写成 `statute = "<version>"`，规定用到的内置检查就在这个二进制里；然后每条 `check = "command"` 的启用规定一张 `[[commands]]` 表，按 ID 排序，写明它的 `rule` (`"R42"`)、`run` 和 `tools`。这个文件随 statute 的版本变化。它放在仓库顶层，不放进 `.statute/`：它要提交，CI 要读，改动它时要和生成它的 `AGENTS.md` 放在一起审。
+- 启用的规定需要的每个 skill ([规定与 skill](rule-format.md#rules-and-skills))：把规定所在规定源里的 `skills/<name>/` (本仓库自己的规定取仓库顶层的 `skills/`；但若某个规定源就是这个目录，如 `R = { path = "." }`，这些 skill 归该规定源，本仓库自己的规定没有 skill) 整个复制到 `.agents/skills/<name>/` (需要的两个 skill 同名、来自两个规定源时，命令失败)，加一个文件 `.statute-generated`，再建一个指向这份副本的软链 `.claude/skills/<name>`，目标写成相对路径 `../../.agents/skills/<name>`。每个 skill 各有一个软链，不给整个目录建一个，也不只链 `SKILL.md`；Claude Code 只从 `.claude/skills/` 读仓库的 skill (2026-10-14 读取)。只有 Unix 系统上才建软链：在别的系统上，规定清单需要 skill 时命令失败。skill 里只能有目录和普通文件。
 
-每个文件开头都有一行注释，说明是 statute 写的 (`AGENTS.md` 里是 `<!-- ... -->`，`statute-checks.toml` 里是 `# ...`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
+statute 的版本和检查的命令记在锁文件里，CI 从那里读 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。0.1.18 之前的 statute 把它们单独写进 `AGENTS.md` 旁边的 `statute-checks.toml`；这个文件以 statute 的那行注释开头时，`statute compile` 会删掉它，没有那行注释的不动。
 
-`statute compile --check` 什么都不写。它只编译公开层，凡是 `statute compile` 会改动的地方都逐个列出并失败：内容不同或缺失的 `AGENTS.md`、`statute-checks.toml`，skill 副本里与源不同、缺失或源里没有的文件，不是 statute 写的副本或软链，以及带 `.statute-generated`、但规定清单已经不需要的 skill 目录。git 忽略的私有输出既不编译也不比较，所以私有层加载失败也不会让它失败。和 `compile` 一样，`statute.lock` 不是 `statute lock` 此刻会写出的内容时它也失败。本仓库把它作为提交钩子运行，CI 也跑这些钩子。
+`AGENTS.md` 开头有一行注释，说明是 statute 写的 (`<!-- ... -->`)。命令动手写之前，先查一遍要写的每个位置；只要有一处放着不是它写的东西 (没有那行开头的文件、没有 `.statute-generated` 的 skill 目录、不是它所建软链的 `.claude/skills/<name>`)，就什么都不写，命令失败。要写 skill 时，`.agents/skills` 和 `.claude/skills` 必须是普通目录，或者不存在：仓库把整个 `.claude/skills` 链到 `../.agents/skills` 时命令失败，并指出这个软链，因为 statute 是每个 skill 各建一个软链。带 `.statute-generated`、但规定清单已经不需要的 skill 目录会被删掉，连同它的软链；`.agents/skills/` 和 `.claude/skills/` 里的其他东西都不动。同样的输入编译出逐字节相同的结果，软链也一样。这些文件不是一次性写完的：中途出错 (比如磁盘满了) 可能留下一部分产物，再运行一次命令就能补完。写入顺序保证了这一点：skill 的 `.statute-generated` 先于它的文件写，软链先于它的目录删，`AGENTS.md` 最后写。
+
+`statute compile --check` 什么都不写。它只编译公开层，凡是 `statute compile` 会改动的地方都逐个列出并失败：内容不同或缺失的 `AGENTS.md`，它会删掉的 `statute-checks.toml`，skill 副本里与源不同、缺失或源里没有的文件，不是 statute 写的副本或软链，以及带 `.statute-generated`、但规定清单已经不需要的 skill 目录。git 忽略的私有输出既不编译也不比较，所以私有层加载失败也不会让它失败。和 `compile` 一样，`statute.lock` 不是 `statute lock` 此刻会写出的内容时它也失败。本仓库把它作为提交钩子运行，CI 也跑这些钩子。
 
 写出的 `AGENTS.md` 旁边 (不给 `--output` 时就是仓库顶层) 有 `CLAUDE.md` 时，不论是普通文件还是指向 `AGENTS.md` 的软链，每次 `statute compile` 都给出 warning，有没有私有层都一样。warning 问要不要删掉它，并用几句短话说明原因：没有 `CLAUDE.md` 时 Claude Code 自己会读 `AGENTS.md` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，monorepo 一段)，所以不需要 `CLAUDE.md` 指向它；有私有输出时，`CLAUDE.local.md` 用全文代替 `AGENTS.md` 给 Claude Code 读，Claude Code 还会再读 `CLAUDE.md`，它的内容就叠在规定之上，指向 `AGENTS.md` 的软链会让公开规定读两遍 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，没有私有层时 warning 不说这一句；迁移时 ([statute-migrate](../../../skills/statute-migrate/SKILL.md)，第 e 步)，普通文件的 `CLAUDE.md` 改名为旧版副本，指向 `AGENTS.md` 的软链不改名，只问用户要不要删。statute 既不删它，也不改名。尚未实现：warning 仍说迁移时两种都会改名。
 

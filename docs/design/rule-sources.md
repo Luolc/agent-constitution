@@ -270,7 +270,7 @@ with `public = true`:
   ignored or when git cannot tell.
 - The skills and the `check = "command"` checks of the rules only the
   private layer enables are left out of the committed files,
-  `.agents/skills/` and `statute-checks.toml`
+  `.agents/skills/` and `statute.lock`
   ([Compilation and the site](statute-command.md#compilation-and-the-site));
   `statute check` runs those checks all the same. Those of a public
   rule the private layer turns off stay in the committed files, and
@@ -441,7 +441,7 @@ does not install the hooks: the user does, once per clone.
 `--private-only`:
 
 - writes only `.statute/.gitignore`, `.statute/AGENTS.full.md` and the
-  two links, never `AGENTS.md`, the skills or `statute-checks.toml`;
+  two links, never `AGENTS.md` or the skills;
 - reads `statute.toml` and `statute.lock` of the worktree, the
   private rule set and the worktree's private lock file, and needs no
   network: a git

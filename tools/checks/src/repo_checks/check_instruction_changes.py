@@ -4,7 +4,10 @@ The change is `git diff <base>...HEAD`: what HEAD changed since it left the
 base. A rename counts as a deletion of the old path and an addition of the
 new one. Each changed path is an instruction file, a generated file or
 another file, by the tables below; a change with both instruction files and
-other files fails, generated files not counted. Instruction files only,
+other files fails, generated files not counted. With this repo's tables,
+the top statute.lock is generated when its TOML differs from the base's
+only in the entries statute writes from its own version and the rules'
+checks, ENTRIES, and an instruction file otherwise. Instruction files only,
 other files only, or nothing, passes. docs/design/checkers.md says what
 this proves and how another repo runs it.
 
@@ -16,6 +19,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tomllib
 
 from repo_checks import git_env
 
@@ -23,8 +27,9 @@ from repo_checks import git_env
 # instructions, skills, subagents, commands, hooks or permissions, in any
 # directory; and statute's files at the top of the repo: what it compiles
 # AGENTS.md from, the rule set, its lock file and .statute/ (the local
-# rules and the ignore file), and the checks file it writes beside them,
-# with the legacy copies of the hand-written files it replaces.
+# rules and the ignore file), and the checks file statute before 0.1.18
+# wrote beside them, with the legacy copies of the hand-written files it
+# replaces.
 GENERIC = [
   r"(.*/)?AGENTS\.md",
   r"(.*/)?CLAUDE\.md",
@@ -52,13 +57,14 @@ REPO = [
 ]
 # Generated files: CI proves they equal a build of the sources with the
 # tools, so they go with whichever side changed them. A path here is not an
-# instruction file even when GENERIC lists it. statute-checks.toml is one:
-# `statute compile --check` proves it equals a compile of the rule set, and
-# it changes with statute's version, which the tools set. The AGENTS.md
-# at the top is another: the same check proves it, and it changes with how
-# statute renders the rule set as well as with the rule set; this repo's
-# rule L28, in place of R46, counts it so. Another repo declares them with
-# --generated once its CI runs that check.
+# instruction file even when GENERIC lists it. The AGENTS.md at the top is
+# one: `statute compile --check` proves it equals a compile of the rule set,
+# and it changes with how statute renders the rule set as well as with the
+# rule set; this repo's rule L31, in place of R46, counts it so. Another
+# repo declares it with --generated once its CI runs that check.
+# statute-checks.toml is another, as this repo's rule L27 provides: statute
+# wrote it before the lock file recorded its version and the checks, and
+# now deletes it.
 GENERATED = [
   r"constitution/[^/]+/generated/constitution\.[^/]+\.md",
   r"statute-checks\.toml",
@@ -77,6 +83,65 @@ def matches(path: str, patterns: list[str]) -> bool:
     True when a pattern matches.
   """
   return any(re.fullmatch(p, path) for p in patterns)
+
+
+# The top-level keys of statute.lock that statute writes from its own
+# version and the rules' checks rather than from the rule set and the
+# sources; `statute compile --check` proves them, and the version changes
+# with the tools. A change to the lock file in nothing else is generated in
+# this repo, as its rule L31 provides; another repo's lock file stays an
+# instruction file.
+LOCK = "statute.lock"
+ENTRIES = ("statute", "commands")
+
+
+def git(root: str, *args: str) -> str | None:
+  """Run git in `root` and return what it prints.
+
+  Args:
+    root: The repository.
+    *args: The arguments of git.
+
+  Returns:
+    The standard output, or None when git fails.
+  """
+  result = subprocess.run(
+    ["git", "-C", root, *args],
+    capture_output=True,
+    text=True,
+    env=git_env.clean(),
+  )
+  return result.stdout if result.returncode == 0 else None
+
+
+def entries_only(root: str, base: str) -> bool:
+  """Tell whether the lock file changed in nothing but ENTRIES.
+
+  Args:
+    root: The repository.
+    base: The git ref HEAD is compared with.
+
+  Returns:
+    True when the lock file is TOML at the merge base of `base` and HEAD
+    and at HEAD, and the same at both with ENTRIES left out; False when
+    git or the parse fails, so that nothing passes as generated unproven.
+  """
+  merge_base = git(root, "merge-base", base, "HEAD")
+  if merge_base is None:
+    return False
+  tables = []
+  for rev in (merge_base.strip(), "HEAD"):
+    text = git(root, "show", f"{rev}:{LOCK}")
+    if text is None:
+      return False
+    try:
+      table = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+      return False
+    for key in ENTRIES:
+      table.pop(key, None)
+    tables.append(table)
+  return tables[0] == tables[1]
 
 
 def changed(root: str, base: str) -> list[tuple[str, str]] | None:
@@ -155,6 +220,7 @@ def main(argv: list[str] | None = None) -> int:
     kind = (
       "generated"
       if matches(path, generated)
+      or (not own and path == LOCK and entries_only(args.root, args.base))
       else "instruction"
       if matches(path, instructions)
       else "other"

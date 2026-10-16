@@ -1,5 +1,7 @@
 # Written by statute from statute.toml; do not edit by hand.
 
+statute = "0.1.18"
+
 [constitution]
 path = "."
 edition = "2026-10"

@@ -63,7 +63,8 @@ rules, parameters and default switches, which it marks where they are
 not built yet.
 
 The lock file is TOML, written by statute and never edited by hand. It
-records the constitution (its repository, edition, revision and commit),
+records the version of statute that wrote it, the constitution (its
+repository, edition, revision and commit),
 each source (its short name, address, the branch or tag it follows,
 commit and, but for `R`, `public`;
 [Git sources](global-configuration.md#git-sources)), and each enabled rule,
@@ -71,9 +72,11 @@ whether chosen directly or brought in by a requirement (its reference,
 written as the rule set writes it, `R42` or `team:7`, and `L12` for a
 local rule; its revision; the SHA-256 of its file; and the SHA-256 of
 the rule without its translations, which a changed translation leaves as
-it was):
+it was), and the commands of the checks (below):
 
 ```toml
+statute = "<version>"
+
 [constitution]
 git = "https://github.com/Luolc/agent-constitution"
 edition = "2026-10"
@@ -97,7 +100,39 @@ rule = "R42"
 revision = 1
 sha256 = "<SHA-256 of rules/42.toml>"
 original-sha256 = "<SHA-256 of rule 42 without its translations>"
+
+[[commands]]
+rule = "R42"
+run = "<command>"
+tools = ["<tool>"]
 ```
+
+`statute` is the first key, on a line of its own, so that CI reads the
+version of statute to install from the lock file with one line, such as
+`sed -n 's/^statute = "\(.*\)"$/\1/p' statute.lock`; the built-in checks
+the rules use are in that binary. A `[[commands]]` table follows the
+rules for each enabled rule with `check = "command"`, ordered by ID, with
+its `rule`, `run` and `tools` ([Checks](rule-checks.md#checks)),
+and the lock file has none when no enabled rule has such a check. So the
+same rule set and sources give the same lock file with the same version
+of statute, and a new version rewrites its first line.
+
+The version is the one that wrote the lock file, and a repository's CI
+installs that version ([Releases and versions](amendments-and-releases.md#releases-and-versions)).
+`compile` and `compile --check` need the lock file to be what `statute
+lock` writes now, the version included: a lock file of another version
+fails, naming both. A lock file written before statute 0.1.18 has neither
+entry, and fails too; `statute lock` and `statute upgrade` write both,
+`upgrade` showing the version it records or the version it moves from.
+
+So a repository moves to a new version of statute in one change, which
+runs `statute lock` and `statute compile` with it and commits the new
+lock file beside the CI step that installs it. This repository's own
+checks run statute built from its source, so a change that raises the
+crate's version must rewrite the first line of `statute.lock` in the same
+change: this repository's rule L31 counts a change to the lock file in
+nothing but `statute` and `commands` as generated, so that it goes with
+the code; any other change to the lock file stays an instruction change.
 
 One field, `rule`, names the rule in the same form everywhere else, in
 place of a source and an ID in two fields, so that a line of the lock

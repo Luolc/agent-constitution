@@ -19,10 +19,9 @@ AGENTS.legacy.md          the former hand-written AGENTS.md, kept
                           until a person says to delete it             A
 statute.toml              the rule set: the constitution, the domains
                           and rules this repo takes, its parameters    A
-statute.lock              the pinned rules and their hashes, written
-                          by statute                                   A
-statute-checks.toml       the checks file, written by statute beside
-                          statute.toml                                 A
+statute.lock              the pinned rules and their hashes, the
+                          version of statute and the commands of the
+                          checks, written by statute                   A
 .statute/
   .gitignore              written by statute before its first generated
                           file, so that a new clone ignores the files
