@@ -109,6 +109,30 @@ keeps the edition in force and a draft of the next one is settled by
   commits nothing when the formula is unchanged. A dispatch runs every
   step but that commit for the tag in its input `tag`, and writes no tap.
   The job's failure leaves crates.io and the Release as they are.
+- The same tag also publishes `statute` to PyPI, as wheels that hold the
+  Release's binaries as they are and install them as the command
+  `statute` (`uv add --dev statute`, `pip install statute`): each Linux
+  target has a manylinux and a musllinux wheel with the same musl binary
+  in them, each macOS target one wheel, and there is no Windows wheel. A
+  wheel's version is the tag's. The job `pypi-wheels`, which holds no
+  token that can publish, downloads the Release's assets, builds the six
+  wheels with `tools/build_pypi_wheels.sh`, and runs
+  `tools/check_pypi_wheels.sh`: the binary in each wheel has the sha256 of
+  the one in its Release tarball, both printed, and the wheels are exactly
+  the six expected. It then runs `twine check --strict`, installs the
+  x86_64 Linux wheel and checks that `statute --version` prints the tag's
+  version. The job `publish-pypi` runs after it and after crates.io, in
+  the environment `release`, and is the only job of the two with the OIDC
+  token: PyPI trusts this repo's `release.yml` in that environment
+  (Trusted Publishing), so the repo holds no PyPI token either. Before the
+  first upload, a person registers that workflow and environment as a
+  pending publisher of the project `statute` on PyPI. Before it uploads,
+  `tools/pypi_upload_set.sh` drops each wheel PyPI already holds with the
+  same sha256 and stops on one PyPI holds with another, so a run that
+  failed part-way through the upload can be rerun. A dispatch builds and
+  checks the wheels of the tag in its input `tag` from that tag's Release
+  and keeps them as a workflow artifact, uploading nothing. No job asks PyPI for a token only to check the publisher: for a
+  pending publisher, PyPI creates the project when it mints the token.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.
