@@ -1,6 +1,6 @@
 id = 304
 slug = "local-device-reads-through-unlock"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -13,31 +13,31 @@ check = "none"
 
 [title]
 en = "On a local device, read through a route that a person unlocks"
-zh = "本地设备上，经人解锁的途径读"
+zh = "本地设备上，经人解锁的途径读取"
 
 [text.statement]
-en = "On a local device, a machine that a person sits at and works on directly, such as a laptop, read the secret manager, except in an unattended task there, only through a route that a person unlocks, such as a fingerprint or a security key, never through a service account's token."
-zh = "在本地设备 (人坐在跟前直接操作的机器，例如笔记本电脑) 上，除那里无人值守的任务外，agent 读密钥管理器只经人解锁的途径 (例如指纹或 security key)，不用 service account 的 token。"
+en = "On a local device, outside its unattended tasks, read the secret manager only through a route that a person unlocks, never through a service account's token."
+zh = "在本地设备上，除无人值守的任务外，只经人解锁的途径读取密钥管理器，不用 service account 的 token。"
 
 [text.reason]
 en = '''
-On a local device the person sits at it, at hand to unlock each read, so no token is needed there, and every read waits for that person. A token kept on it could be read by anything the person runs.
+A person uses a local device directly and can unlock each read there, so no token is needed, and each read waits for that person. A token kept on the device could be read by anything the person runs on it.
 '''
 zh = '''
-本地设备有人坐在跟前，可以逐次解锁，用不着 token，每次读取都要等这个人。放在这台设备上的 token，这个人运行的任何东西都可能读到。
+本地设备由人直接使用，人可以逐次解锁读取，用不着 token，每次读取也都要等这个人。token 放在这台设备上，人在上面运行的任何程序都可能读到它。
 '''
 
 [text.verification]
 en = '''
-A local device is a machine that a person sits at and works on directly; any other machine is a remote machine ({@rule:305}). A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app. Which machines are local devices and which route is used on each is set in the jurisdiction. The unattended tasks on a local device read as {@rule:305} and {@rule:306} say.
+A local device is a machine that a person uses directly rather than over a network; every other machine is a remote machine. A development machine that people work on over a network, for example, is a remote machine. A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app, unlocked with a fingerprint or a security key. Unattended tasks are as {@rule:305} defines them. Which machines are local devices and which route is used on each is set in the jurisdiction. The unattended tasks on a local device read as {@rule:305} and {@rule:306} say.
 
 Violated when an agent on a local device, other than an unattended task there, reads the secret manager through a service account's token or by any other route that no person unlocks.
 '''
 zh = '''
-本地设备，指人坐在跟前直接操作的机器；其他机器都是远程机器 ({@rule:305})。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务怎么读，见 {@rule:305} 和 {@rule:306}。
+本地设备，指人直接使用、而非经网络远程操作的机器；其他机器都是远程机器。例如，人经网络连上去工作的开发机是远程机器。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成，用指纹或 security key 解锁。无人值守的任务的定义见 {@rule:305}。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务怎么读取，见 {@rule:305} 和 {@rule:306}。
 
-本地设备上无人值守的任务以外的 agent 经 service account 的 token，或者经别的不需要人解锁的途径读密钥管理器的，即为违反本规定。
+本地设备上无人值守的任务以外的 agent 经 service account 的 token，或者经别的不需要人解锁的途径读取密钥管理器的，即为违反本规定。
 '''
 
 [translations]
-zh = "359cc6a62867494e33a3746c2485c1ed7a1bb14e679d5cbfc859a8d6c5a02efc"
+zh = "87b6e72db5171c7e56bfd78b12e48f832e7ef57e69a1e3b8c1500e1788c66fc6"

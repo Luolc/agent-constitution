@@ -1,8 +1,8 @@
 id = 36
 slug = "no-credential-values"
-revision = 9
+revision = 10
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 265
 default = "on"

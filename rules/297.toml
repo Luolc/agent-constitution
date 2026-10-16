@@ -1,8 +1,8 @@
 id = 297
 slug = "public-push-self-check"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 296
 authority = ["sensitive-info", "must-ask.irreversible-effects"]
