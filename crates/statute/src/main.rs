@@ -2086,7 +2086,7 @@ fn source_add(
         let lock_path = at.lock();
         write_both(
             (&path, &file),
-            (&lock_path, &lock_path.display().to_string()),
+            (lock_path, &lock_path.display().to_string()),
             original.as_deref(),
             &changed,
             &lock::render_private(&public_project, &both),
@@ -2098,7 +2098,7 @@ fn source_add(
                 .map(|s| s.place())
                 .unwrap_or_default()
         );
-        print_private_locked(&lock_path, &public_project, &both);
+        print_private_locked(lock_path, &public_project, &both);
     } else {
         let (project, diags) = Project::with_manifest(root, &changed, &env);
         print(&diags);
