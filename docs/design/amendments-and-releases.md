@@ -80,7 +80,8 @@ keeps the edition in force and a draft of the next one is settled by
   the repo; a job of its own, which builds nothing, creates the Release
   when the tag has none and uploads the assets. There is no install
   script; a CI job or a person installs a version with the commands
-  below, with `version` set to the version (such as `0.1.16`) and `target`
+  below, with `version` set to the version (such as `0.1.17`, the first
+  version with binaries) and `target`
   to one of the four targets:
 
   ```sh

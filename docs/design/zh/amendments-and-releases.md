@@ -1,4 +1,4 @@
-<!-- en-sha256: d35cee8167a24fe30c4b6938fd720ba90368308d4fc38d1bb9d4c51929f49c6f -->
+<!-- en-sha256: 46f7785e8abe1693123e5acbe71256f41c4f92c2eb22a25634d09dd399af3cda -->
 # 修正案与发布
 
 ## <a id="approving-an-amendment"></a>批准修正案
@@ -22,7 +22,7 @@
 - `crates/` 下的 crate 发布到 crates.io，各自的版本写在自己的 `Cargo.toml` 里；发布一个 crate 也是一次发布。`statute` 0.0.1 是当初占住这个名字的占位版本。
 - crate 的版本与仓库的版本各自独立，所以 crate 的 tag 带上 crate 的名字：推送 `statute-v<version>` 就是发布这一版的 `statute`，与上面的发布 tag 守同样的规矩。发布由 `.github/workflows/release.yml` 完成。这个 workflow 不持有 crates.io 的 token：crates.io 信任本仓在 GitHub environment `release` 里运行的 `release.yml` (Trusted Publishing)，job 用自己的 OIDC token 换一个短期的 crates.io token。这个 environment 只接受 `statute-v*` 形式的 tag。
 - 发布之前，由一个单独的 job 运行 `check-release-tag`，它不在这个 environment 里，也拿不到 OIDC token；它通过了，负责发布的 job 才运行，所以检查用到的任何工具都拿不到这个 token。检查依次分三步，前一步通过才做下一步，哪一步不通过就停下：tag 等于 `statute-v` 加上 `crates/statute/Cargo.toml` 里的版本，manifest 里读不出版本也算不通过；打 tag 的提交在 `main` 上；这个提交由 push 触发的那次 `ci.yml` 运行已经结束，并且第一次就是 `success`。所以 tag 要等这次运行结束后再推；推早了检查不通过，等 CI 运行通过后重跑这个 workflow。
-- 同一个 tag 还会在它的 GitHub Release 上挂出预编译的 `statute` 二进制，覆盖 `x86_64-unknown-linux-musl`、`aarch64-unknown-linux-musl`、`x86_64-apple-darwin` 与 `aarch64-apple-darwin`：每个 target 一个 asset `statute-<target>.tar.gz`，二进制在压缩包的顶层，旁边附一个 `sha256sum` 格式的 `statute-<target>.sha256`。Linux 的二进制静态链接 musl，在 glibc 的系统上也能跑。二进制要等 `check-release-tag` 通过才构建，构建它们的 job 既没有 OIDC token，也没有能写仓库的 token；另有一个不构建任何东西的 job，在 tag 还没有 Release 时建一个，再上传这些 asset。没有安装脚本；CI job 或者人用下面的命令装某一版，`version` 设为版本号 (比如 `0.1.16`)，`target` 设为四个 target 之一：
+- 同一个 tag 还会在它的 GitHub Release 上挂出预编译的 `statute` 二进制，覆盖 `x86_64-unknown-linux-musl`、`aarch64-unknown-linux-musl`、`x86_64-apple-darwin` 与 `aarch64-apple-darwin`：每个 target 一个 asset `statute-<target>.tar.gz`，二进制在压缩包的顶层，旁边附一个 `sha256sum` 格式的 `statute-<target>.sha256`。Linux 的二进制静态链接 musl，在 glibc 的系统上也能跑。二进制要等 `check-release-tag` 通过才构建，构建它们的 job 既没有 OIDC token，也没有能写仓库的 token；另有一个不构建任何东西的 job，在 tag 还没有 Release 时建一个，再上传这些 asset。没有安装脚本；CI job 或者人用下面的命令装某一版，`version` 设为版本号 (比如 `0.1.17`，它是第一个带二进制的版本)，`target` 设为四个 target 之一：
 
   ```sh
   base=https://github.com/Luolc/agent-constitution/releases/download/statute-v$version
