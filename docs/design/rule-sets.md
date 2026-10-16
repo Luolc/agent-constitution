@@ -262,10 +262,9 @@ default, the first-party repository's `main` branch
 ([Global configuration and git sources](global-configuration.md#the-global-configuration)). Every other source has a short name the rule
 set chooses, of one of two forms: lowercase words joined by hyphens,
 such as `team`, or one or two capital letters, such as `P`. A name of
-three capital letters or more fails. The limit of two letters is the
-project owner's choice: references in capital letters stay as short as the codes of a
-linter such as Ruff (`E501`), and two letters leave room for more
-sources than the alphabet has letters. `L` and `local` are
+three capital letters or more fails. The form follows linter codes
+such as Ruff's `E501`; the limit of two letters is the project owner's
+choice: two letters are enough, and references stay short. `L` and `local` are
 reserved for the repository's own rules (below), and `ac`, the
 first-party source's earlier name, fails with a note to name it `R`.
 A source may also be a directory on disk, `R = { path = "." }`,
