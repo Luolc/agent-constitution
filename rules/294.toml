@@ -1,0 +1,43 @@
+id = 294
+slug = "credential-value-route-env-or-file"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 265
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Pass a credential to a program only through the environment or a file"
+zh = "凭证只经环境变量或文件交给程序"
+
+[text.statement]
+en = "Let a credential's value reach a program only through an environment variable or a file."
+zh = "凭证的值只经环境变量或文件交给程序。"
+
+[text.reason]
+en = '''
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}). A command line can be seen by other processes on the machine and is kept in shell history and logs, so a value passed as an argument leaks.
+'''
+zh = '''
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})。命令行能被同一台机器上的其他进程看到，还会留在 shell 历史和日志里，作为参数传递的值因此会泄露。
+'''
+
+[text.verification]
+en = '''
+Splitting, trimming or otherwise changing the value happens inside the program that uses it, not in the shell. Keeping the value out of every message, log and output is {@rule:291}.
+
+Violated when a credential's value reaches a program by any route other than an environment variable or a file, such as a command-line argument, or is split or trimmed in the shell.
+'''
+zh = '''
+需要拆分、截取或者以其他方式处理凭证的值的，在使用它的程序内部完成，不在 shell 里做。凭证的值不进任何消息、日志和输出，由 {@rule:291} 管。
+
+凭证的值经环境变量或文件以外的途径 (例如命令行参数) 交给程序，或者在 shell 里被拆分、截取的，即为违反本规定。
+'''
+
+[translations]
+zh = "cd5aae00422c350a4572fec572a0d335bbd7744af63e2bdae0916d3b67b53d4f"

@@ -2,7 +2,8 @@ id = 23
 slug = "credential-working-check"
 revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 292
 lang = "en"
 parent = 265
 default = "on"
@@ -29,14 +30,18 @@ zh = '''
 
 [text.verification]
 en = '''
-The call is the smallest one that needs the credential and changes nothing, made by the program that will use the credential. The report gives only the outcome: success, or the kind of error. Where no read-only call exists, the agent makes no other call in its place and checks no other way.
+The call is the smallest one that needs the credential and changes nothing, made by the program that will use the credential. The report gives only the outcome: success, or the kind of error.
+
+Exception: when no read-only call exists, the agent makes no other call in its place; it stops and reports the gap to a principal.
 
 When unsure whether a call is read-only, treat it as not read-only.
 
 Violated when an agent confirms that a credential works by a call that is not read-only or not made by the program that uses it, reports more than the outcome, or checks some other way where no read-only call exists.
 '''
 zh = '''
-调用选需要这项凭证、又不改动任何东西的最小的那一个，由将来使用凭证的程序发出。报告只给结果：成功，或者是哪一类错误。没有可用的只读调用的，agent 不改用别的调用，也不改用别的办法检查。
+调用选需要这项凭证、又不改动任何东西的最小的那一个，由将来使用凭证的程序发出。报告只给结果：成功，或者是哪一类错误。
+
+例外：没有可用的只读调用的，agent 不改用别的调用，而是停下来，把缺口报告给委托人。
 
 不确定某个调用是否只读的，按非只读处理。
 
@@ -44,4 +49,4 @@ agent 用非只读的调用、或者不是由使用凭证的程序发出的调�
 '''
 
 [translations]
-zh = "297a25a4ef79cd67ec2b9db791456d5823db1e37def6ca3f87acc8fa8d5be73c"
+zh = "1334c25d402c3fabb0b328ed13e254fa0b849ba13753c64215101cc00490dba4"

@@ -1,6 +1,6 @@
 id = 22
 slug = "credential-presence-check"
-revision = 5
+revision = 6
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,14 +29,14 @@ zh = '''
 
 [text.verification]
 en = '''
-The test prints whether the credential is set, and its length where that helps, never the value. The report says that presence was checked, not that the credential works; that is checked as {@rule:23} describes.
+The test prints whether the credential is set, and its length where that helps, never the value. The report says that presence was checked, not that the credential works; that is checked as {@rule:292} describes.
 
 When unsure whether a way of testing could print the value, use one that plainly cannot.
 
 Violated when a presence test prints any part of the value, or its report claims more than presence or does not say that only presence was checked.
 '''
 zh = '''
-检查只打印凭证是否已设置，必要时再打印长度，不打印值。报告写明检查的是凭证是否存在，不说凭证可用；凭证是否可用按{@rule:23}检查。
+检查只打印凭证是否已设置，必要时再打印长度，不打印值。报告写明检查的是凭证是否存在，不说凭证可用；凭证是否可用按{@rule:292}检查。
 
 不确定某种检查写法是否会打印出值的，换一种明显不会打印的写法。
 
@@ -44,4 +44,4 @@ zh = '''
 '''
 
 [translations]
-zh = "4be47570c746ea150eb1c2720765e1abf2f3ac0109156699e4dca776ec242143"
+zh = "4e6fdeeb1de68e3b3f49f41af62836cb6031e4efeffd8264597560afee9b1cd6"
