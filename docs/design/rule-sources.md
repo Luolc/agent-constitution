@@ -288,9 +288,10 @@ worktree, while a path git does not know, such as
 by every worktree would let a command in any of them move the commits
 all the others read, and jobs that lock in parallel would overwrite
 each other's. The main worktree's lock file stays beside the private
-rule set, where a clone made before linked worktrees had their own
-already has it, so no clone needs a file moved. A file in the work tree does not come with `git worktree add`, which checks out only what git
-tracks, so each new worktree would need a copy that then drifts. A
+rule set, where every existing clone already has it, so no clone needs
+a file moved. A file in the work tree does not come with
+`git worktree add`, which checks out only what git tracks, so each new
+worktree would need a copy that then drifts. A
 directory in the home directory keyed by the repository's path would
 also be shared, but it is orphaned when the clone moves or is deleted,
 and needs an encoding of paths into names; one keyed by the remote's

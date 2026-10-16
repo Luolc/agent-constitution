@@ -1,4 +1,4 @@
-<!-- en-sha256: 41b063b79c2986520c78e075fd20a4cf245aea89de738dac7e9de880688b8892 -->
+<!-- en-sha256: c529c7b379cec922f516e6b31f54fe6cc8fb386761d93c3fc078a1bc7fd908ed -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -122,7 +122,7 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
 - git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件都不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
 - 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute-checks.toml` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有层关掉的公开规定，它的 skill 和检查留在提交的文件里，`statute check` 不运行它的检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
 
-放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单，同时各自保留自己的锁文件。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录，`git worktree remove` 会连同 worktree 一起删掉它。锁文件如果由所有 worktree 共用，在任何一个 worktree 里跑的命令都会改掉其他 worktree 读的 commit，几个任务同时重新锁定时还会互相覆盖。主 worktree 的锁文件仍放在私有规定清单旁边，linked worktree 有自己的锁文件之前建的 clone 本来就有这份，所以哪个 clone 都不用挪文件。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
+放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单，同时各自保留自己的锁文件。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录，`git worktree remove` 会连同 worktree 一起删掉它。锁文件如果由所有 worktree 共用，在任何一个 worktree 里跑的命令都会改掉其他 worktree 读的 commit，几个任务同时重新锁定时还会互相覆盖。主 worktree 的锁文件仍放在私有规定清单旁边，每个已有的 clone 本来就有这份，所以哪个 clone 都不用挪文件。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
 
 **名字仍叫 `private`。** `local` 在 statute 里已经指一种范围 (`scope = "local"`、`L12` 和本地的两类规定源)，所以像别的工具给一台机器自己的设置起名那样叫 `statute.local.toml`，会被读成本地规定的配置。这两个文件的特点是不能公开，`private` 说的正是这一点。
 
