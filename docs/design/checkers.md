@@ -8,7 +8,7 @@ position. What each one proves, and what it does not:
 | Checker | Proves | Does not prove |
 | --- | --- | --- |
 | Constitution (`statute constitution build --check`) | Each constitution source has the format and the name in [Source formats](source-formats.md) and [The constitution](constitution.md); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation of the constitution resolves to a provision that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
-| Rules (`statute validate rules`) | Each rule file has the format of [Rule file format](rule-format.md#rule-file-format), the tree the shape of [No rule under a rule](rule-config.md#no-rule-under-a-rule), every reference a target of the right kind, every translation the original's hash and citations, and the defaults resolve on their own; each rule's status agrees with the constitution's, and every citation of the constitution and every `authority` entry resolves to a provision that is not repealed; with `--base`, no node of the base is gone or no longer repealed or superseded (below) | That a rule says what it should, or that two rules that nobody marked as conflicting work together |
+| Rules (`statute validate rules`) | Each rule file has the format of [Rule file format](rule-format.md#rule-file-format), the tree the shape of [No rule under a rule](rule-config.md#no-rule-under-a-rule), every reference a target of the right kind, every translation the original's hash and citations, and the defaults resolve on their own; each rule's status agrees with the constitution's, and every citation of the constitution and every `authority` entry resolves to a provision that is not repealed; no node in force names a superseded or repealed rule of the source; with `--base`, no node of the base is gone or no longer repealed or superseded, and a node changed beyond its translations has a higher revision than the base's (below) | That a rule says what it should, or that two rules that nobody marked as conflicting work together |
 | Compiled output (`statute compile --check`) | `AGENTS.md`, `statute-checks.toml` and the skills' copies and links are what `statute compile` writes from `statute.toml` and `statute.lock` now, and no skill directory statute wrote is left that the rule set no longer needs; `statute.lock` is what `statute lock` would write now | Anything about the private output, which git ignores and the check neither compiles nor compares |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Release tag (`check-release-tag`, in `release.yml` before publishing) | The tag is `statute-v` followed by the version of `crates/statute/Cargo.toml`, and that version can be read; the tagged commit is `main` or an ancestor of it; that commit has exactly one run of `ci.yml` triggered by a push to `main`, and it completed with `success` on its first attempt | That the commit is the one a person approved for release, or that crates.io accepts the upload |
@@ -98,7 +98,14 @@ article) is not an error, but draws a warning for each such pair,
 numbering is compared: a node of the base still exists, and stays
 repealed or superseded once it was; a rule of a base from before the
 rule tree, named by a word, lives on as the node whose `slug` is that
-word ([The command and the first version](statute-command.md#the-command-and-the-first-version)).
+word ([The command and the first version](statute-command.md#the-command-and-the-first-version));
+and a node whose hash without its translations differs from the
+base's, its original or any other field changed, its status included,
+has a revision above the base's ([IDs and revisions](rule-format.md#ids-and-revisions)),
+`rules/<id>.toml:<line>: error: rule <id> changed beyond its
+translations since base <ref>, where its revision was <n>; raise its
+revision to <n+1>`. A node that is new since the base, or whose base
+file no longer reads as a node, is not compared.
 
 Everything else of the rule files is checked by `statute validate
 rules` ([The command and the first version](statute-command.md#the-command-and-the-first-version)),
@@ -116,7 +123,11 @@ and nothing redundant; each language of a text cites what the original
 cites, every translated language has every text and a hash in
 `[translations]` that is the original's now, and when one is not, the
 error prints the new hash; each `{@rule:<id>}` names a rule of the
-source that exists and is not repealed; the defaults of the source
+source that exists and is not repealed; a node in force, neither
+superseded nor repealed, names no superseded or repealed node of the
+source in a `{@rule:<id>}` of its original texts, its `parent`,
+`requires`, `conflicts` or a one-of's `default`, and the error names the rules that supersede
+it, while a superseded or repealed node keeps what it names; the defaults of the source
 resolve on their own ([Default switches](rule-config.md#default-switches)),
 and the warnings of
 [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs).

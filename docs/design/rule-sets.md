@@ -486,6 +486,9 @@ The build checks these constraints:
 - A rule in force that requires a superseded or repealed rule draws a
   warning, which names the successors when there are any. A rule that is
   itself superseded or repealed requires nothing any more, and draws none.
+  In the source `statute validate` checks, it is also an error, as is
+  any other way a node in force names a superseded or repealed node
+  ([Checkers](checkers.md#checkers)).
 
 **Missing requirements are added.** When a rule set enables a rule
 without one it requires, statute adds the missing rule, as a package

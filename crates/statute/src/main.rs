@@ -345,6 +345,7 @@ fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
     let sources = statute::source::Sources::new(vec![source]);
     sources.check(&mut diags);
     let first = sources.iter().next().expect("one source");
+    first.check_retired_references(&mut diags);
     let notes = statute::constitution::rules::validate(dir, first, base, &mut diags);
     print(&diags);
     for note in notes {

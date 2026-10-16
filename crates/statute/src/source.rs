@@ -164,6 +164,76 @@ impl Source {
         self.nodes.get(&id)
     }
 
+    /// An error for each node of this source that a node in force names
+    /// while it is superseded or repealed, in its original texts'
+    /// `{@rule:<id>}`, its `parent`, `requires`, `conflicts` or a one-of's
+    /// `default`, naming what supersedes it. `statute validate` runs it on the source it checks,
+    /// not a rule set on the sources it reads, which their own authors
+    /// validate. References to another source are not followed.
+    pub fn check_retired_references(&self, diags: &mut Diagnostics) {
+        for node in self.nodes.values().filter(|n| !retired(n)) {
+            let mut named: Vec<(String, Id)> = Vec::new();
+            let mut texts = vec![("title", &node.title)];
+            texts.extend(node.applicability.iter().map(|a| ("applicability", a)));
+            if let Some(rule) = &node.rule {
+                texts.extend([
+                    ("text.statement", &rule.statement),
+                    ("text.reason", &rule.reason),
+                    ("text.verification", &rule.verification),
+                ]);
+            }
+            for (field, text) in texts {
+                let mut cited = BTreeSet::new();
+                let _ = cite::replace(text.get(&node.lang).map_or("", String::as_str), |c| {
+                    if let Citation::Rule(r) = c
+                        && let Some(Ref::Local(id)) = node::cited_ref(r)
+                    {
+                        cited.insert(id);
+                    }
+                    Ok(String::new())
+                });
+                // The per-source checks already fail a citation of a
+                // repealed rule.
+                cited.retain(|&id| self.get(id).is_none_or(|t| t.status != Status::Repealed));
+                named.extend(cited.into_iter().map(|id| (format!("[{field}] cites"), id)));
+            }
+            named.extend(node.parent.map(|id| ("`parent` names".to_owned(), id)));
+            named.extend(
+                node.default_child
+                    .map(|id| ("`default` names".to_owned(), id)),
+            );
+            if let Some(rule) = &node.rule {
+                for (field, list) in [("requires", &rule.requires), ("conflicts", &rule.conflicts)]
+                {
+                    for r in list {
+                        if let Ref::Local(id) = r {
+                            named.push((format!("`{field}` names"), *id));
+                        }
+                    }
+                }
+            }
+            for (how, id) in named {
+                let Some(target) = self.get(id).filter(|t| retired(t)) else {
+                    continue;
+                };
+                let what = match target.superseded_by.as_slice() {
+                    [] => "repealed".to_owned(),
+                    next => {
+                        let next: Vec<String> = next.iter().map(Id::to_string).collect();
+                        format!("superseded by {}", next.join(", "))
+                    }
+                };
+                diags.error(
+                    self.file(node.id),
+                    format!(
+                        "{how} {} {id}, which is {what}; a node in force names only nodes in force",
+                        target.kind.name()
+                    ),
+                );
+            }
+        }
+    }
+
     /// The nodes a node leads to directly: for a rule, the nodes of this
     /// source it requires. Missing nodes are left out.
     pub fn edges(&self, id: Id) -> Vec<Id> {
