@@ -39,6 +39,7 @@ fn repo(name: &str, manifest: &str, nodes: &[(u64, String)]) -> PathBuf {
     std::fs::create_dir_all(dir.join("constitution/2026-10")).unwrap();
     std::fs::write(dir.join("statute.toml"), manifest).unwrap();
     std::fs::write(dir.join("constitution/2026-10/index.toml"), INDEX).unwrap();
+    common::provisions(&dir.join("constitution/2026-10"));
     for (id, text) in nodes {
         std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
     }
@@ -983,6 +984,7 @@ fn init_picks_the_edition() {
         "edition = \"2027-04\"\nrevision = \"1\"\n",
     )
     .unwrap();
+    common::provisions(&dir.join("constitution/2027-04"));
     // A directory without an index.toml is not an edition.
     std::fs::create_dir_all(dir.join("constitution/notes")).unwrap();
     let run = statute(&dir, &["init", "--source", ".", "--private"]);

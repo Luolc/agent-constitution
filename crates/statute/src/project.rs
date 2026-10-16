@@ -7,8 +7,11 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+use crate::cite::Labels;
+use crate::constitution::rules::Provisions;
 use crate::diag::Diagnostics;
 use crate::manifest::{self, Declared, Key, LOCAL, Layers, Manifest, SourceSpec};
+use crate::node::Status;
 use crate::param::Setting;
 use crate::private;
 use crate::resolve::{self, Resolution};
@@ -386,11 +389,24 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
+        let edition_dir = source_root.join("constitution").join(&manifest.edition);
+        let lang = manifest.lang.clone();
+        let cite = |resolution: &Resolution, diags: &mut Diagnostics| {
+            check_citations(
+                &edition_dir,
+                &index_name,
+                &lang,
+                &sources,
+                resolution,
+                diags,
+            );
+        };
         if let Some(public) = public {
-            fit_global(&sources, &mut manifest, number, public);
+            fit_global(&sources, &mut manifest, number, public, &cite);
         }
         let resolution = resolve::resolve(&sources, &manifest, number, &mut diags);
         let values = crate::param::settle(&sources, &manifest, &resolution, &mut diags);
+        cite(&resolution, &mut diags);
         if diags.has_errors() {
             return (None, diags);
         }
@@ -406,17 +422,23 @@ impl Project {
     }
 }
 
-/// Why the private layer `manifest` fails to resolve over `public`, the
-/// public layer's resolution: its first error, or a rule it enables that
-/// overrides a rule of the public layer; `None` when it resolves.
+/// What checks a resolution's citations of the constitution.
+type Cite<'a> = dyn Fn(&Resolution, &mut Diagnostics) + 'a;
+
+/// Why the private layer `manifest` fails to load over `public`, the
+/// public layer's resolution: its first error in resolving or in what
+/// `cite` checks, or a rule it enables that overrides a rule of the
+/// public layer; `None` when it loads.
 fn fails(
     sources: &Sources,
     manifest: &Manifest,
     number: u64,
     public: &Resolution,
+    cite: &Cite,
 ) -> Option<String> {
     let mut diags = Diagnostics::default();
     let res = resolve::resolve(sources, manifest, number, &mut diags);
+    cite(&res, &mut diags);
     if let Some(e) = diags.errors().next() {
         return Some(e.message.clone());
     }
@@ -433,8 +455,14 @@ fn fails(
 /// repository's own choices, such as what `statute.toml` excludes, come
 /// before the person's. Nothing is left out when the layer fails without
 /// those entries too, for that failure is the private rule set's own.
-fn fit_global(sources: &Sources, manifest: &mut Manifest, number: u64, public: &Resolution) {
-    if manifest.from_global.is_empty() || fails(sources, manifest, number, public).is_none() {
+fn fit_global(
+    sources: &Sources,
+    manifest: &mut Manifest,
+    number: u64,
+    public: &Resolution,
+    cite: &Cite,
+) {
+    if manifest.from_global.is_empty() || fails(sources, manifest, number, public, cite).is_none() {
         return;
     }
     let given = manifest.from_global.clone();
@@ -446,7 +474,7 @@ fn fit_global(sources: &Sources, manifest: &mut Manifest, number: u64, public: &
         m
     };
     let full = manifest.clone();
-    if fails(sources, &without(&full, &given), number, public).is_some() {
+    if fails(sources, &without(&full, &given), number, public, cite).is_some() {
         return;
     }
     let mut kept: Vec<Key> = Vec::new();
@@ -456,7 +484,7 @@ fn fit_global(sources: &Sources, manifest: &mut Manifest, number: u64, public: &
             .filter(|k| *k != key && !kept.contains(k))
             .cloned()
             .collect();
-        match fails(sources, &without(&full, &rest), number, public) {
+        match fails(sources, &without(&full, &rest), number, public, cite) {
             None => kept.push(key.clone()),
             Some(why) => manifest.left_out.push(format!(
                 "the global configuration's `{key}` is left out here: {why}"
@@ -469,6 +497,45 @@ fn fit_global(sources: &Sources, manifest: &mut Manifest, number: u64, public: &
     manifest.packs = left.packs;
     manifest.domains = left.domains;
     manifest.from_global = kept;
+}
+
+/// Checks what the repository's own nodes, all but the repealed, and the
+/// enabled rules of the other sources cite of the constitution, whose
+/// edition directory is `edition_dir` and `index.toml` is named
+/// `index_name`: each `authority` entry and `{@constitution:...}` citation
+/// names a provision of it that is not repealed, as `statute validate`
+/// checks a source beside its constitution.
+fn check_citations(
+    edition_dir: &Path,
+    index_name: &str,
+    lang: &str,
+    sources: &Sources,
+    resolution: &Resolution,
+    diags: &mut Diagnostics,
+) {
+    let labels = match Labels::load(&edition_dir.join("articles"), lang) {
+        Ok(labels) => labels,
+        Err(e) => {
+            diags.error(
+                index_name,
+                format!("{e}, so what the rules cite of the constitution is not checked"),
+            );
+            return;
+        }
+    };
+    let provisions = Provisions::of_labels(&labels);
+    for (key, n) in sources.nodes() {
+        let own = sources.source(&key.source).is_some_and(|s| s.local);
+        if n.status == Status::Repealed || !(own || resolution.enabled.contains_key(&key)) {
+            continue;
+        }
+        for (_, message) in provisions.findings(n) {
+            diags.error(
+                sources.file(&key),
+                format!("{} {key}: {message}", n.kind.name()),
+            );
+        }
+    }
 }
 
 /// Whether the node a finding names first, after its kind, is in `off`

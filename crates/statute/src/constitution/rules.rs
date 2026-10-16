@@ -18,6 +18,7 @@ use toml::{Table, Value};
 use super::base::{self, Gate, Unreadable};
 use super::read::parse;
 use super::{CONSTITUTION, Doc, Errors, Sources, citations, load};
+use crate::cite::Labels;
 use crate::diag::Diagnostics;
 use crate::node::{self, Id, Node, Status};
 use crate::source::{PARAMS, Source};
@@ -124,18 +125,8 @@ impl<'a> Rules<'a> {
     /// constitution and `authority`, and the warning on an `authority`
     /// naming a provision and one above it.
     fn check(&self, src: &Sources, diags: &mut Diagnostics) {
-        let provisions = src.provisions();
-        let repealed = src.repealed();
+        let provisions = Provisions::new(src);
         let ancestors = src.ancestors();
-        let problem = |target: &str, written: &str| {
-            if !provisions.contains(target) {
-                Some(format!("undefined {written}"))
-            } else if repealed.contains(target) {
-                Some(format!("repealed {written}"))
-            } else {
-                None
-            }
-        };
         for (&id, n) in &self.source.nodes {
             // A rule may stay draft once the constitution is active; a
             // section may not, and that is the constitution's to check.
@@ -152,28 +143,10 @@ impl<'a> Rules<'a> {
             if n.status == Status::Repealed {
                 continue;
             }
-            for text in texts(n) {
-                for cited in citations(text) {
-                    if let Some(target) = cited.strip_prefix("constitution:")
-                        && let Some(found) = problem(target, &cited)
-                    {
-                        diags.error(
-                            self.at(id, &[&format!("{{@{cited}}}")]),
-                            format!("cites {found}"),
-                        );
-                    }
-                }
+            for (needle, message) in provisions.findings(n) {
+                diags.error(self.at(id, &[&needle]), message);
             }
             let authority = n.rule.as_ref().map_or(&[][..], |r| &r.authority[..]);
-            // An entry with a namespace fails the node's own format check.
-            for a in authority.iter().filter(|a| !a.contains(':')) {
-                if let Some(found) = problem(a, a) {
-                    diags.error(
-                        self.at(id, &["authority ="]),
-                        format!("authority cites {found}"),
-                    );
-                }
-            }
             if n.status == Status::Superseded {
                 continue;
             }
@@ -297,6 +270,67 @@ impl<'a> Rules<'a> {
             }
         }
         Ok(None)
+    }
+}
+
+/// The provisions of one edition, to check what a node cites of them.
+pub(crate) struct Provisions {
+    all: BTreeSet<String>,
+    repealed: BTreeSet<String>,
+}
+
+impl Provisions {
+    pub(crate) fn new(src: &Sources) -> Provisions {
+        Provisions {
+            all: src.provisions(),
+            repealed: src.repealed(),
+        }
+    }
+
+    /// The provisions `labels` were read for.
+    pub(crate) fn of_labels(labels: &Labels) -> Provisions {
+        let all: BTreeSet<String> = labels.iter().map(|(id, _)| id.to_owned()).collect();
+        let repealed = all
+            .iter()
+            .filter(|id| labels.repealed(id))
+            .cloned()
+            .collect();
+        Provisions { all, repealed }
+    }
+
+    /// What is wrong with citing `target`, written `written`.
+    fn problem(&self, target: &str, written: &str) -> Option<String> {
+        if !self.all.contains(target) {
+            Some(format!("undefined {written}"))
+        } else if self.repealed.contains(target) {
+            Some(format!("repealed {written}"))
+        } else {
+            None
+        }
+    }
+
+    /// Each `{@constitution:...}` citation in the texts of `n` and each
+    /// `authority` entry that names a provision missing or repealed, as
+    /// the text of its file to find its line by and the message.
+    pub(crate) fn findings(&self, n: &Node) -> Vec<(String, String)> {
+        let mut out = Vec::new();
+        for text in texts(n) {
+            for cited in citations(text) {
+                if let Some(target) = cited.strip_prefix("constitution:")
+                    && let Some(found) = self.problem(target, &cited)
+                {
+                    out.push((format!("{{@{cited}}}"), format!("cites {found}")));
+                }
+            }
+        }
+        let authority = n.rule.as_ref().map_or(&[][..], |r| &r.authority[..]);
+        // An entry with a namespace fails the node's own format check.
+        for a in authority.iter().filter(|a| !a.contains(':')) {
+            if let Some(found) = self.problem(a, a) {
+                out.push(("authority =".to_owned(), format!("authority cites {found}")));
+            }
+        }
+        out
     }
 }
 

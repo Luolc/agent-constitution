@@ -153,7 +153,9 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   that `statute.toml` excludes is left out there, and so is one that
   would make the private layer fail, such as a rule that requires one
   `statute.toml` excludes, a rule that overrides one of the public
-  layer, or an entry of the wrong kind, such as a rule in `domains`.
+  layer, a rule that cites a provision the repository's constitution
+  lacks or has repealed, or an entry of the wrong kind, such as a rule
+  in `domains`.
   `statute compile` names each such entry and the reason in a note.
   statute tries the entries in the order written and keeps each one
   that fits with those kept before it; when the private layer fails

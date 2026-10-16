@@ -72,6 +72,7 @@ fn source(at: &Path, name: &str, nodes: &[(u64, String)]) -> (PathBuf, String) {
     git(&work, &["config", "user.email", "test@example.test"]);
     git(&work, &["config", "user.name", "Test"]);
     write(&work, "constitution/2026-10/index.toml", INDEX);
+    common::provisions(&work.join("constitution/2026-10"));
     write(
         &work,
         "constitution/2026-10/generated/constitution.en.agent.md",
@@ -705,6 +706,7 @@ fn site_of_the_first_party_source_with_a_global_private_source() {
         "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
     ));
     write(&w.repo, "constitution/2026-10/index.toml", INDEX);
+    common::provisions(&w.repo.join("constitution/2026-10"));
     write(
         &w.repo,
         "constitution/2026-10/generated/constitution.en.agent.md",
@@ -1038,9 +1040,9 @@ fn the_global_configuration_names_the_source_of_each_entry() {
 }
 
 /// What `statute.toml` chose comes before the global configuration: an
-/// entry it excludes, one that requires what it excludes and one that
-/// overrides a rule it enables are left out with a note, and the rest
-/// stay.
+/// entry it excludes, one that requires what it excludes, one that
+/// overrides a rule it enables and one that cites what its constitution
+/// lacks are left out with a note, and the rest stay.
 #[test]
 fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
     let w = world("enables-exclude");
@@ -1053,12 +1055,20 @@ fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
             rule(5, 1, "requires = [4]"),
             rule(6, 1, ""),
             overriding(7, "R2"),
+            edit(
+                rule(8, 1, ""),
+                "authority = [\"simplicity\"]",
+                "authority = [\"nowhere\"]",
+            ),
         ],
     );
     w.configure(&format!(
         "team = {{ git = \"{team}\", branch = \"main\", public = true }}"
     ));
-    configure_top(&w, "rules = [\"team:5\", \"team:6\", \"team:7\", \"R2\"]\n");
+    configure_top(
+        &w,
+        "rules = [\"team:5\", \"team:6\", \"team:7\", \"team:8\", \"R2\"]\n",
+    );
     ok(&w.run(&["init", "--public"]));
     let path = w.repo.join("statute.toml");
     let text = std::fs::read_to_string(&path).unwrap();
@@ -1092,9 +1102,16 @@ fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
         "{}",
         run.stderr
     );
+    assert!(
+        run.stderr
+            .contains("statute: note: the global configuration's `team:8` is left out here: "),
+        "{}",
+        run.stderr
+    );
     let full = read(&w.repo, ".statute/AGENTS.full.md");
     assert!(full.contains("Do the thing 2."), "{full}");
     assert!(!full.contains("Do the thing 5."), "{full}");
+    assert!(!full.contains("Do the thing 8."), "{full}");
     assert!(!full.contains("Do the thing 7."), "{full}");
     assert!(!full.contains("Do the thing 6."), "{full}");
     ok(&w.run(&["compile", "--private-only"]));

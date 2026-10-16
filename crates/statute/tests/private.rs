@@ -99,6 +99,7 @@ fn repo(name: &str) -> PathBuf {
     std::fs::create_dir_all(&dir).unwrap();
     git(&dir, &["init", "-q"]);
     write(&dir, "r/constitution/2026-10/index.toml", INDEX);
+    common::provisions(&dir.join("r/constitution/2026-10"));
     write(
         &dir,
         "r/constitution/2026-10/generated/constitution.en.agent.md",
