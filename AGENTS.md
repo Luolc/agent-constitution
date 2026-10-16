@@ -210,12 +210,15 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R291 Keep a credential out of every message, log, command line and other output, and never pass one from one agent to another, by any channel.
 - R292 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
 - R295 Let a credential's value reach a program only through an environment variable, a file or a way the secret manager itself provides of injecting it into the program.
-- R139 On a development machine, read the secret manager only through that machine's own service account, and read general credentials, those that people put in the secret manager for agents to use, from the general tier, the part of the secret manager kept for them, read-only.
-- R140 Store a credential that a program generates at runtime (the OAuth token that `claude setup-token` generates, for example) in the runtime tier, the part of the secret manager kept for credentials that programs generate.
-- R141 Let a credential in the service tier, the part of the secret manager kept for the credentials of services, be read only by the service account of the service it belongs to, and keep it out of every login shell.
-- R142 Read the meta credentials in the meta tier, the part of the secret manager kept for credentials that give access to other credentials (the tokens of service accounts, SSH keys), only through an interactive route that a person unlocks, and open the tier to no service account.
-- R143 On an attended machine, read the secret manager through the interactive route that a person unlocks, writing each reference with the vault its item is in, and give a service account only to the unattended scheduled tasks there, one that reads only the general tier, the part of the secret manager that holds the credentials people put there for agents to use, and whose token goes into those tasks alone, never into a login shell.
-- R144 Reference no vault that a person keeps for their own use, except a vault that a principal sets aside for agents.
+- R299 Divide the credentials in the secret manager among its vaults by the service or use they serve, and keep in each vault only the credentials of its one service or use.
+- R300 Grant each service account access only to the vaults that its use needs.
+- R301 Grant a service account read-only access to a vault, and write access only where its use must write to that vault.
+- R302 Give each machine and each service that reads the secret manager through a service account a service account of its own, shared with no other machine or service.
+- R303 Read and reference only vaults that a principal sets aside for agents, never a vault that a person keeps for their own use.
+- R304 On a local device, a machine that a person sits at and works on directly, such as a laptop, read the secret manager, except in an unattended task there, only through a route that a person unlocks, such as a fingerprint or a security key, never through a service account's token.
+- R305 Give a service account's token only to unattended tasks, such as scheduled tasks and services, and to remote machines, those that no person sits at to work on directly, such as servers and development machines.
+- R306 On a local device, let a service account's token reach only the environment of the unattended tasks there, never a login shell.
+- R307 Keep credentials that give access to other credentials, such as the tokens of service accounts and SSH private keys, out of every vault that a service account can access.
 - R259 In a public repository's files, commit messages, pull requests, comments and reviews, write nothing that identifies or locates a private resource, a private repository, an agent instance or session, or the scope it runs in, and nothing about an agent's usage, quota, model or effort.
 - R52 Before you push to a public repository, have a reviewer read the diff, the commit messages and the pull request text for private material, and push only the head that reviewer passed.
 - L8 Commit no instruction file compiled from a real person's rule set; the compiled outputs committed here are this repository's own `AGENTS.md` and outputs built from made-up rule sets.

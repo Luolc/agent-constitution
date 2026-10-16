@@ -1,0 +1,43 @@
+id = 301
+slug = "service-account-write-only-where-needed"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Grant a service account write access only where its use must write"
+zh = "service account 只在必须写的地方有写权限"
+
+[text.statement]
+en = "Grant a service account read-only access to a vault, and write access only where its use must write to that vault."
+zh = "service account 对 vault 的权限设成只读；只有它的用途必须往那个 vault 写时，才给写权限。"
+
+[text.reason]
+en = '''
+Write access lets a leaked token change or replace the credentials that others rely on, not only read them. Most uses only read; only those that store what they generate, such as a token a program makes at runtime, must write.
+'''
+zh = '''
+有了写权限，泄露的 token 不只能读，还能改掉或换掉别人依赖的凭证。多数用途只读；只有要存放自己生成的东西的用途 (例如程序运行时生成的 token) 才必须写。
+'''
+
+[text.verification]
+en = '''
+A use must write to a vault when it stores there a credential it generates or renews.
+
+Violated when a service account has write access to a vault that its use need not write to.
+'''
+zh = '''
+用途必须往某个 vault 写，指它要把自己生成或更新的凭据存进那里。
+
+某个 service account 对它的用途不必往里写的 vault 有写权限的，即为违反本规定。
+'''
+
+[translations]
+zh = "cb9c68f55a99f24634218c8e54abd2c35efb6debbe08d3b425cf4400b17a0bd5"

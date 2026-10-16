@@ -1,8 +1,9 @@
 id = 139
 slug = "development-machine-reads-through-its-service-account"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [300, 301, 302]
 lang = "en"
 parent = 137
 default = "on"

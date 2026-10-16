@@ -18,7 +18,7 @@ domains = [
   # The owner's environment, public rules that hold no private value; the private layer
   # adds what is private: machines and their directories,
   "R127",
-  # the tiers of the secret manager,
+  # the vaults of the secret manager and who reads them by which route,
   "R137",
   # test accounts, logins and usage quotas,
   "R145",

@@ -1,8 +1,9 @@
 id = 144
 slug = "no-personal-vaults"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 303
 lang = "en"
 parent = 137
 default = "on"
