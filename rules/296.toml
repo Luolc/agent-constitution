@@ -1,0 +1,15 @@
+id = 296
+slug = "public-push-check"
+revision = 1
+kind = "one-of"
+status = "trial"
+lang = "en"
+parent = 266
+default = 297
+
+[title]
+en = "Who checks what goes to a public repository before the push"
+zh = "向公开仓库 push 之前，由谁检查要推送的内容"
+
+[translations]
+zh = "a0ce6d96a19a668bd00411d608af4b5010c08802c6d2fa779261d3de63f0c21b"
