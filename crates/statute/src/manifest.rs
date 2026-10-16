@@ -35,7 +35,7 @@ pub enum Origin {
     FirstParty,
     /// `12`, `L12` or `local:12`: the rule set's own repository.
     Local,
-    /// `team:7`, a source `[sources]` names.
+    /// `team:7` or `P7`, a source `[sources]` names.
     Named(String),
 }
 
@@ -49,14 +49,21 @@ pub struct RuleRef {
 
 /// How rule `id` of the source named `name` in `[sources]` is shown:
 /// `R42` for the first-party source, `L12` for the repository's own
-/// rules, `team:7` for another, `42` when the source has no name, as when
+/// rules, `P7` for another whose name is capital letters, `team:7` for
+/// one whose name is a word, `42` when the source has no name, as when
 /// the rules of a directory are checked alone.
 pub fn show(name: &str, id: Id) -> String {
     match name {
-        FIRST_PARTY | LOCAL => format!("{name}{id}"),
         "" => id.to_string(),
+        _ if is_letters(name) => format!("{name}{id}"),
         _ => format!("{name}:{id}"),
     }
+}
+
+/// Whether a source's name is one or two capital letters, as `R` and
+/// `P` are, which its references write before the ID with no colon.
+pub fn is_letters(name: &str) -> bool {
+    (1..=2).contains(&name.len()) && name.bytes().all(|b| b.is_ascii_uppercase())
 }
 
 /// A node of a rule set: the name of its source, `L` for the
@@ -86,7 +93,7 @@ impl Key {
     }
 
     /// The key a reference names when its source is the one its form
-    /// says: `R42`, `L12` and `team:7` as written.
+    /// says: `R42`, `L12`, `P7` and `team:7` as written.
     pub fn of(r: &RuleRef) -> Key {
         let source = match &r.origin {
             Origin::FirstParty => FIRST_PARTY,
@@ -138,10 +145,18 @@ impl RuleRef {
     pub fn parse(text: &str) -> Result<RuleRef, String> {
         let at = |origin| move |id| RuleRef { origin, id };
         let parsed = match text.split_once(':') {
-            None => number(text)
-                .map(at(Origin::Local))
-                .or_else(|| number(text.strip_prefix(FIRST_PARTY)?).map(at(Origin::FirstParty)))
-                .or_else(|| number(text.strip_prefix(LOCAL)?).map(at(Origin::Local))),
+            None => {
+                let (name, id) =
+                    text.split_at(text.find(|c: char| c.is_ascii_digit()).unwrap_or(0));
+                match (name, number(id)) {
+                    ("" | LOCAL, Some(id)) => Some(at(Origin::Local)(id)),
+                    (FIRST_PARTY, Some(id)) => Some(at(Origin::FirstParty)(id)),
+                    (_, Some(id)) if is_letters(name) => {
+                        Some(at(Origin::Named(name.to_owned()))(id))
+                    }
+                    _ => None,
+                }
+            }
             Some((name, id)) => {
                 let id = number(id);
                 match (name, id) {
@@ -149,6 +164,11 @@ impl RuleRef {
                     (FIRST_PARTY | "ac", Some(id)) => {
                         return Err(format!(
                             "`{text}`: the first-party source's rules are written `{FIRST_PARTY}{id}`"
+                        ));
+                    }
+                    (_, Some(id)) if is_letters(name) => {
+                        return Err(format!(
+                            "`{text}`: the rules of a source named in capital letters are written with no colon, `{name}{id}`"
                         ));
                     }
                     (_, Some(id)) if node::is_slug(name) => {
@@ -160,7 +180,7 @@ impl RuleRef {
         };
         parsed.ok_or_else(|| {
             format!(
-                "`{text}` is not a reference; write `{FIRST_PARTY}42` for a first-party rule, `42` for one of this repository's own rules, or `<source>:42`"
+                "`{text}` is not a reference; write `{FIRST_PARTY}42` for a first-party rule, `42` for one of this repository's own rules, `P42` for one of a source named in one or two capital letters, or `<source>:42` for one of a source named in lowercase words"
             )
         })
     }
@@ -171,7 +191,7 @@ impl std::fmt::Display for RuleRef {
         match &self.origin {
             Origin::FirstParty => write!(f, "{FIRST_PARTY}{}", self.id),
             Origin::Local => write!(f, "{LOCAL}{}", self.id),
-            Origin::Named(name) => write!(f, "{name}:{}", self.id),
+            Origin::Named(name) => f.write_str(&show(name, self.id)),
         }
     }
 }
@@ -584,9 +604,9 @@ fn read_sources(
             errors.push(format!("[sources] {why}"));
             continue;
         }
-        if name != FIRST_PARTY && !node::is_slug(name) {
+        if !is_letters(name) && !node::is_slug(name) {
             errors.push(format!(
-                "[sources] `{name}`: a source's short name is `{FIRST_PARTY}`, for the first-party source, or lowercase words joined by hyphens, as in `team`"
+                "[sources] `{name}`: a source's short name is one or two capital letters, as in `{FIRST_PARTY}` for the first-party source or `P`, or lowercase words joined by hyphens, as in `team`"
             ));
             continue;
         }
@@ -1180,6 +1200,11 @@ lang = "en"
         parses("L12", Origin::Local, 12);
         parses("local:12", Origin::Local, 12);
         parses("team:7", Origin::Named("team".into()), 7);
+        parses("P17", Origin::Named("P".into()), 17);
+        // A two-letter name that starts with `R` or `L` is a source of
+        // its own, not the first-party or the local rules.
+        parses("RL12", Origin::Named("RL".into()), 12);
+        parses("LR12", Origin::Named("LR".into()), 12);
         for (text, needle) in [
             ("ac:3", "written `R3`"),
             ("R:3", "written `R3`"),
@@ -1187,6 +1212,10 @@ lang = "en"
             ("r3", "is not a reference"),
             ("L", "is not a reference"),
             ("Team:7", "is not a reference"),
+            ("P:17", "written with no colon, `P17`"),
+            ("RL:12", "written with no colon, `RL12`"),
+            ("ABC1", "is not a reference"),
+            ("team7", "is not a reference"),
         ] {
             let e = RuleRef::parse(text).unwrap_err();
             assert!(e.contains(needle), "{text}: {e}");
@@ -1195,7 +1224,7 @@ lang = "en"
 
     #[test]
     fn references_show_with_their_prefix() {
-        for text in ["R3", "L12", "team:7"] {
+        for text in ["R3", "L12", "team:7", "P17", "RL12"] {
             assert_eq!(RuleRef::parse(text).unwrap().to_string(), text);
             assert_eq!(Key::of(&RuleRef::parse(text).unwrap()).to_string(), text);
         }
@@ -1203,6 +1232,7 @@ lang = "en"
         assert_eq!(show("R", 3), "R3");
         assert_eq!(show("team", 7), "team:7");
         assert_eq!(show("L", 12), "L12");
+        assert_eq!(show("P", 17), "P17");
     }
 
     #[test]
@@ -1212,11 +1242,12 @@ lang = "en"
             Key::new("team", 2),
             Key::new("R", 9),
             Key::new("me", 5),
+            Key::new("P", 4),
             Key::new("R", 3),
         ];
         keys.sort();
         let shown: Vec<String> = keys.iter().map(Key::to_string).collect();
-        assert_eq!(shown, ["R3", "R9", "me:5", "team:2", "L1"]);
+        assert_eq!(shown, ["R3", "R9", "P4", "me:5", "team:2", "L1"]);
     }
 
     #[test]
@@ -1265,10 +1296,12 @@ lang = "en"
                 &format!("[sources] `{name}` stands for this repository's own rules"),
             );
         }
-        fails_with(
-            &GOOD.replace("R = {", "Team = {"),
-            "[sources] `Team`: a source's short name is `R`",
-        );
+        for name in ["Team", "ABC"] {
+            fails_with(
+                &GOOD.replace("R = {", &format!("{name} = {{")),
+                &format!("[sources] `{name}`: a source's short name is one or two capital letters"),
+            );
+        }
         // A third-party source with a valid name is read, its rules
         // written with it.
         let m = Manifest::parse(
@@ -1280,6 +1313,17 @@ lang = "en"
         )
         .unwrap();
         assert_eq!(m.rules, [Key::new("team", 42), Key::new("team", 7)]);
+        // So is one named in capital letters, its rules written with no
+        // colon.
+        let m = Manifest::parse(
+            &GOOD
+                .replace("R = {", "P = {")
+                .replace("source = \"R\"", "source = \"P\"")
+                .replace("\"R", "\"P")
+                .replace("path = \".\" }", "path = \".\", public = false }"),
+        )
+        .unwrap();
+        assert_eq!(m.rules, [Key::new("P", 42), Key::new("P", 7)]);
     }
 
     #[test]

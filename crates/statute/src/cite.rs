@@ -148,7 +148,7 @@ pub fn replace(
 /// `rule:7`, `constitution:leaks` or `must-ask.capital`, as the
 /// constitution's build reads a citation: IDs of lowercase words joined by
 /// hyphens, at most one dot. A rule of another source is cited as
-/// `requires` names it: `rule:R12`, `rule:team:7`.
+/// `requires` names it: `rule:R12`, `rule:P7`, `rule:team:7`.
 fn parse(inner: &str) -> Option<Citation<'_>> {
     if let Some(rule) = inner.strip_prefix("rule:")
         && crate::node::cited_ref(rule).is_some()

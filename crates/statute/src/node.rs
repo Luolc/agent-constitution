@@ -85,7 +85,8 @@ impl Default for Uses {
 }
 
 /// An entry of `requires` or `conflicts`: a number names a node of the
-/// same source, a string `"<source>:<id>"` one of another source.
+/// same source, a string `"R<id>"`, `"P<id>"` or `"<source>:<id>"` one of
+/// another source.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Ref {
     Local(Id),
@@ -287,7 +288,7 @@ fn parse_ref(raw: RawRef) -> Result<Ref, String> {
                     id,
                 }) => Ok(Ref::Foreign { source, id }),
                 _ => Err(format!(
-                    "`{s}` is not a reference: write a number for a node of this source, `\"{FIRST_PARTY}<id>\"` for a first-party rule, or `\"<source>:<id>\"` for one of another source"
+                    "`{s}` is not a reference: write a number for a node of this source, `\"{FIRST_PARTY}<id>\"` for a first-party rule, `\"P<id>\"` for one of a source named in one or two capital letters, or `\"<source>:<id>\"` for one of a source named in lowercase words"
                 )),
             }
         }
@@ -798,7 +799,8 @@ fn check_languages(
 }
 
 /// The reference a citation `{@rule:<text>}` makes: `12` a node of the
-/// same source, `R12` or `team:7` one of another, as `requires` writes it.
+/// same source, `R12`, `P7` or `team:7` one of another, as `requires`
+/// writes it.
 pub fn cited_ref(text: &str) -> Option<Ref> {
     if text.bytes().all(|b| b.is_ascii_digit()) {
         return id_from_file_name(&format!("{text}.toml")).map(Ref::Local);

@@ -195,7 +195,8 @@ The fields:
 - `requires` (optional): the rules or one-ofs that enabling this rule
   requires. A node of the same source is written as a number, one of
   another source as a string of the source's short name, a colon and the
-  ID (`"team:7"`), the name coming from the source's `[sources]` table
+  ID (`"team:7"`), or, for a source named in capital letters, of the
+  letters and the ID (`"P7"`), the name coming from the source's `[sources]` table
   ([Sources and references](rule-sets.md#sources-and-references)).
 - `conflicts` (optional): the rules this rule cannot be used with,
   written like `requires` and on one side only

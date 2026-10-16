@@ -1,4 +1,4 @@
-<!-- en-sha256: 8b216c1c9c922fee1b76292392a55980250e822ad32879befcec573f6988a46a -->
+<!-- en-sha256: 1d565f5d4eaaca2b0beb3d0cb00f2670f7480f243703e81cf0ab967e562447fd -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -121,7 +121,7 @@ it.
 - `lang`：这条规定写成时用的语言，即原文的语言，写成语言代码，如 `"en"` 或 `"zh"`。
 - `parent`：同一规定源里父节点的 ID：规定的是一个领域或一个 one-of，从不是规定；one-of 的是一个领域。规定的 parent 也可以是另一个规定源的领域或子领域，写法与 `requires` 相同 (`"team:3"`)。每条规定和每个 one-of 都有 parent，带 `overrides` 的规定除外；领域没有，作为子领域时则是一个领域，在同一规定源里，或者在另一个规定源里，写法与 `requires` 相同 (见[子领域](rule-sources.md#subdomains))，作为选项时则是一个 one-of。one-of 的选项要么全是规定，要么全是领域，领域可以嵌套任意多层 (见[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule))。这些 statute 都会检查。
 - `overrides` (可选，只有规定有)：这条规定在启用它的规定清单里所顶替的另一个规定源的规定，写法与 `requires` 相同 (`"R200"`)；带它的规定没有 `parent` (见[覆盖](rule-sources.md#overrides))。
-- `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
+- `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名是大写字母的规定源则写成字母加 ID (`"P7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
 - `conflicts` (可选)：不能与这条规定一起用的规定，写法同 `requires`，只写在一边 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))。
 - `authority`：这条规定所细化的宪法条文的 ID，写法与宪法引用自身时相同，不带命名空间 (`"simplicity"`、`"must-ask.capital"`)。这是字段的值，不是正文里的 `{@...}` 引用，所以 [ID](source-formats.md#ids) 要求规定的引用带命名空间，这一条不适用于它；规定正文里的引用照旧带命名空间 (`{@constitution:simplicity}`)。
 - `constitution`：这条规定兼容的宪法修订号，写成 Python 的版本说明符 (`">=1"`、`">=1,<4"`；见[从规定追溯到宪法](#tracing-rules-to-the-constitution))。

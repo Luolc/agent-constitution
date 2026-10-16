@@ -200,6 +200,29 @@ fn the_sources_lock_and_compile_together() {
 }
 
 #[test]
+fn a_source_named_in_capital_letters_is_written_with_no_colon() {
+    let dir = repo(
+        "letters",
+        &manifest(false, "\"P4\", \"5\"").replace("me = {", "P = {"),
+        &[(
+            "rules",
+            edit(
+                rule(5, 1, "requires = [\"P4\"]"),
+                "Do the thing 5.",
+                "Do the thing 5, after {@rule:P4}.",
+            ),
+        )],
+    );
+    ok(&statute(&dir, &["lock"]));
+    let lock = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+    assert!(lock.contains("rule = \"P4\"\n"), "{lock}");
+    ok(&statute(&dir, &["compile"]));
+    let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    assert!(out.contains("\n- P4 "), "{out}");
+    assert!(out.contains("Do the thing 5, after P4.\n"), "{out}");
+}
+
+#[test]
 fn add_and_remove_name_each_source() {
     let dir = repo("add", &manifest(false, ""), &[]);
     ok(&statute(&dir, &["add", "me:4"]));

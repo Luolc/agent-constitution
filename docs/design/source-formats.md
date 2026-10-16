@@ -69,7 +69,7 @@ section. A rule always names the namespace: `{@constitution:leaks}`,
 `{@constitution:must-ask.capital}`, `{@rule:3}`; the colon
 says which body of text, the dot where in it. A rule of the same source
 is cited by its number, `{@rule:3}`, and one of another source as
-`requires` names it, `{@rule:R12}` or `{@rule:team:7}`
+`requires` names it, `{@rule:R12}`, `{@rule:P7}` or `{@rule:team:7}`
 ([Sources and references](rule-sets.md#sources-and-references)). The build renders a
 citation of the constitution as the number the provision has in that
 language (see [Numbering](constitution.md#numbering)); the generated text shows numbers only, never IDs. A
