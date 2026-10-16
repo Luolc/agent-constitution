@@ -1,6 +1,6 @@
 id = 8
 slug = "compiled-outputs-committed"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -25,7 +25,7 @@ A person's compiled file holds their own rules and values, which belong to them 
 
 [text.verification]
 en = '''
-This repository's own compiled files are `AGENTS.md`, the installed skills and `statute-checks.toml` that `statute compile` writes beside `statute.toml`.
+This repository's own compiled files are `AGENTS.md` and the installed skills that `statute compile` writes beside `statute.toml`.
 
 Violated when a change commits an instruction file compiled from a rule set other than this repository's own or a made-up one.
 '''

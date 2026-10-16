@@ -1,6 +1,6 @@
 id = 27
 slug = "instruction-paths-statute-inputs"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -20,12 +20,12 @@ en = "Count `statute.toml`, `statute.lock`, every file under `.statute/` and eve
 
 [text.reason]
 en = '''
-The listed files decide or record what the compiled `AGENTS.md` holds, so a change to them changes the instructions ({@constitution:separate-instruction-changes}). `statute-checks.toml` only renders them, and the commit hook and CI (`statute compile --check`) fail a change whose copy differs from a recompile, so it cannot carry a meaning of its own. A change that raises the version of statute must recompile it, and could not otherwise pass the hook.
+The listed files decide or record what the compiled `AGENTS.md` holds, so a change to them changes the instructions ({@constitution:separate-instruction-changes}). `statute-checks.toml`, which statute before 0.1.18 wrote with its version and the commands of the checks, decides nothing: statute now records those in the lock file and deletes this file, and the commit hook and CI (`statute compile --check`) fail while a copy statute wrote is left, so the only change left to it is its deletion, which goes with whichever side makes it.
 '''
 
 [text.verification]
 en = '''
-`uv run check-instruction-changes --base origin/main` fails a change that mixes instruction files with other files, and CI runs it on every pull request. `statute compile --check` shows that `statute-checks.toml` equals a recompile.
+`uv run check-instruction-changes --base origin/main` fails a change that mixes instruction files with other files, and CI runs it on every pull request. `statute compile --check` fails while a `statute-checks.toml` that statute wrote is left.
 
 Violated when a change mixes one of the listed files with files that are not instruction files.
 '''
