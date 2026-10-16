@@ -1,8 +1,8 @@
 id = 52
 slug = "public-push-pre-review"
-revision = 8
+revision = 9
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 296
 authority = ["sensitive-info", "must-ask.irreversible-effects", "independent-review"]

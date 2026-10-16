@@ -1,8 +1,8 @@
 id = 259
 slug = "public-repo-no-private-details-or-scopes"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 266
 default = "on"
