@@ -1,6 +1,6 @@
 id = 126
 slug = "private-source-only-for-private-assets"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -30,7 +30,7 @@ zh = '''
 
 [text.verification]
 en = '''
-A private asset is what {@rule:51} keeps out of a public repository: for example a host name, an account, the name of a private repository, a path in a secret store, the name of an agent. That rule, not this one, keeps private assets out of a public source.
+A private asset is what {@rule:259} keeps out of a public repository: for example a host name, an account, the name of a private repository, a path in a secret store, the name of an agent. That rule, not this one, keeps private assets out of a public source.
 
 The test: take the private assets out of the requirement and see what is left.
 
@@ -43,7 +43,7 @@ When the test does not settle whether a part of a requirement goes into a public
 Violated when a change adds or rewrites a rule so that a private source holds a part of a requirement that the test, or a principal's answer, puts into a public source.
 '''
 zh = '''
-私有资产，指 {@rule:51} 不许写进公开仓库的那些内容：比如主机名、账号、私有仓库的名字、密钥库里的路径、agent 的名字。把私有资产挡在公开来源之外的是那条规定，不是本规定。
+私有资产，指 {@rule:259} 不许写进公开仓库的那些内容：比如主机名、账号、私有仓库的名字、密钥库里的路径、agent 的名字。把私有资产挡在公开来源之外的是那条规定，不是本规定。
 
 判据：把私有资产从这项要求里去掉，看还剩下什么。
 
@@ -57,4 +57,4 @@ zh = '''
 '''
 
 [translations]
-zh = "9ed598f702f34fe75e034b91399120285326aa04bd3f5493644925311ea74eb7"
+zh = "86021da63cac2edc3f19a207a51d25c5b2863a635719717efaf2c95438217f88"
