@@ -5,7 +5,7 @@
    one bar of segments, the checked one on the selected color in the
    accent color; and each rule's statement in its row. The checked
    button decides, through :has(), so that the control works without
-   scripts too: Title shows the titles alone, Statement shows the
+   scripts too: Short title shows the titles alone, Statement shows the
    statement of each row that has one in place of its title. A one-of's
    own row has no statement and keeps its title. */
 .rules .rules-view {

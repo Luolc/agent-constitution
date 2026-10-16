@@ -304,7 +304,7 @@ What replaces today's icons:
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
 | The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
-| A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
+| A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-x` |
 | None | A rule's uses in the list and the legend: instructions, review | `scroll-text`, `scan-eye` |
 | None | Between the domains of a group row's path | `chevron-right` |
 | None | Closing a popover | `x` |
@@ -408,7 +408,7 @@ turned off (disabled), where it has these.
   - Status: `circle-check` for Active in `status-active`,
     `flask-conical` for Trial in `status-trial`, `pencil` for Draft in
     `status-draft`, `arrow-right-left` for Superseded and
-    `circle-slash` for Repealed in `text-muted`.
+    `circle-x` for Repealed in `text-muted`.
   - Uses: `scroll-text` for instructions and `scan-eye` for review, in
     `text-muted`.
   - Marks do not react to the pointer; the row does.
@@ -499,9 +499,9 @@ turned off (disabled), where it has these.
   controls: what each row of the table of rules shows. A segmented
   control under its name, Show / 「显示」, then two segments in one box
   (`1px` of `border-strong`, `radius-sm`), parted by `1px` of
-  `border-subtle`: Title / 「标题」, the default; Statement / 「要求」.
-  They are radio buttons of one group, a `fieldset` named by its
-  `legend`, so the arrow keys move between them and Tab enters and
+  `border-subtle`: Short title / 「短标题」, the default; Statement /
+  「要求」. They are radio buttons of one group, a `fieldset` named by
+  its `legend`, so the arrow keys move between them and Tab enters and
   leaves the group; each segment is the
   button's label, `text-sm`, padding `space-1 space-3`, at least a
   target tall, the button itself not drawn. At rest `text`; under the pointer

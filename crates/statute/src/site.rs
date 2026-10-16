@@ -176,7 +176,7 @@ fn words(lang: &str) -> Words {
             one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
             view: "显示",
-            views: ["标题", "要求"],
+            views: ["短标题", "要求"],
             columns: ["编号", "规定"],
             fields: ["状态", "默认", "用途", "领域", "象限", "规定清单"],
             all: "全选",
@@ -239,7 +239,7 @@ fn words(lang: &str) -> Words {
             one_of_meaning: "the rule set takes exactly one option",
             another_option: "Another option",
             view: "Show",
-            views: ["Title", "Statement"],
+            views: ["Short title", "Statement"],
             columns: ["ID", "Rule"],
             fields: [
                 "Status", "Default", "Uses", "Domain", "Quadrant", "Rule set",
@@ -315,7 +315,7 @@ const CHEVRON_RIGHT: &str = include_str!("../assets/icons/lucide/chevron-right.s
 const CIRCLE: &str = include_str!("../assets/icons/lucide/circle.svg");
 const CIRCLE_CHECK: &str = include_str!("../assets/icons/lucide/circle-check.svg");
 const CIRCLE_DOT: &str = include_str!("../assets/icons/lucide/circle-dot.svg");
-const CIRCLE_SLASH: &str = include_str!("../assets/icons/lucide/circle-slash.svg");
+const CIRCLE_X: &str = include_str!("../assets/icons/lucide/circle-x.svg");
 const CORNER_DOWN_RIGHT: &str = include_str!("../assets/icons/lucide/corner-down-right.svg");
 const FLASK_CONICAL: &str = include_str!("../assets/icons/lucide/flask-conical.svg");
 const LANGUAGES: &str = include_str!("../assets/icons/lucide/languages.svg");
@@ -1065,7 +1065,7 @@ fn status_icon(s: Status) -> String {
         Status::Trial => FLASK_CONICAL,
         Status::Draft => PENCIL,
         Status::Superseded => ARROW_RIGHT_LEFT,
-        Status::Repealed => CIRCLE_SLASH,
+        Status::Repealed => CIRCLE_X,
     };
     format!(
         "<span class=\"mark status-{}\">{}</span>",

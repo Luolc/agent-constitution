@@ -972,7 +972,10 @@ fn site_shows_statements_in_three_views() {
     // Two radio buttons, the title checked; the style sheet hides the
     // statements or the titles by them, and the script keeps the choice
     // in the address.
-    for (page, names) in [(&index, ["Title", "Statement"]), (&zh, ["标题", "要求"])] {
+    for (page, names) in [
+        (&index, ["Short title", "Statement"]),
+        (&zh, ["短标题", "要求"]),
+    ] {
         assert_eq!(page.matches("name=\"view\"").count(), 2);
         for (i, (view, name)) in ["title", "statement"].iter().zip(names).enumerate() {
             let checked = if i == 0 { " checked" } else { "" };
