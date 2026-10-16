@@ -35,9 +35,10 @@ rules = [
   "R280",
   # The generated constitution goes with the sources it was rebuilt from.
   "R47",
-  # Here the code is the compiler of AGENTS.md: the root AGENTS.md goes with the side
-  # that changed it, in place of R280.
-  "L28",
+  # Here the code is the compiler of AGENTS.md and writes statute's own entries in the
+  # lock file: the root AGENTS.md and those entries go with the side that changed them,
+  # in place of R280.
+  "L31",
   # A change that needs new instructions waits until they are merged.
   "R48",
   # CI runs check-instruction-changes on every pull request.
