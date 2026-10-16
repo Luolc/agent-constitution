@@ -209,7 +209,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R50 Have a repository's commit hooks scan the staged changes for credentials at every commit.
 - R291 Keep a credential out of every message, log, command line and other output, and never pass one from one agent to another, by any channel.
 - R292 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
-- R294 Let a credential's value reach a program only through an environment variable or a file.
+- R295 Let a credential's value reach a program only through an environment variable, a file or a way the secret manager itself provides of injecting it into the program.
 - R139 On a development machine, read the secret manager only through that machine's own service account, and read general credentials, those that people put in the secret manager for agents to use, from the general tier, the part of the secret manager kept for them, read-only.
 - R140 Store a credential that a program generates at runtime (the OAuth token that `claude setup-token` generates, for example) in the runtime tier, the part of the secret manager kept for credentials that programs generate.
 - R141 Let a credential in the service tier, the part of the secret manager kept for the credentials of services, be read only by the service account of the service it belongs to, and keep it out of every login shell.

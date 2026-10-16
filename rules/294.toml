@@ -1,8 +1,9 @@
 id = 294
 slug = "credential-value-route-env-or-file"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 295
 lang = "en"
 parent = 265
 default = "on"
