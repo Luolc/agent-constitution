@@ -149,12 +149,20 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   the commit read, one that `statute.toml` or `private.toml` lists
   already, and one that `private.toml` excludes. An entry that the
   defaults enable already draws no warning.
-- Otherwise an entry counts as one of `private.toml`: it turns on
-  again what `statute.toml` excludes, and an entry of the wrong kind,
-  such as a rule in `domains`, fails. A clone that should not have an
-  entry excludes it in its `private.toml`; the configuration has no
-  `exclude`, since what the person wants nowhere is left out of its
-  lists.
+- The repository's own choices come before the person's: an entry
+  that `statute.toml` excludes is left out there, and so is one that
+  would make the private layer fail, such as a rule that requires one
+  `statute.toml` excludes, a rule that overrides one of the public
+  layer, or an entry of the wrong kind, such as a rule in `domains`.
+  `statute compile` names each such entry and the reason in a note.
+  statute tries the entries in the order written and keeps each one
+  that fits with those kept before it; when the private layer fails
+  without any entry of the configuration too, the failure is
+  `private.toml`'s own, and nothing is left out. So the configuration
+  never makes `lock` or `compile` fail in a repository.
+- A clone that should not have an entry excludes it in its
+  `private.toml`; the configuration has no `exclude`, since what the
+  person wants nowhere is left out of its lists.
 - With no `private.toml`, the layer has no `private.lock` either: a
   private source of the configuration is read at the newest commit of
   its branch or tag, fetched as for a source no lock file records, and
@@ -163,8 +171,9 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 - A private repository (`public = false`) has no private output, so
   the entries are not used there, and `statute compile` says so in a
   note.
-- `statute explain` says of a rule the configuration lists that it is
-  listed in `rules` of the global configuration. `statute add` and
+- `statute explain` says of a rule the configuration turns on that its
+  entry is listed in `rules`, `packs` or `domains` of the global
+  configuration. `statute add` and
   `statute remove` do not write to the configuration; the person edits
   it.
 
