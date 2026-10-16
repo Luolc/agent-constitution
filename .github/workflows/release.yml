@@ -24,7 +24,7 @@ on:
     inputs:
       tag:
         # No default: a default would go stale without anyone noticing.
-        description: "Existing statute-v<version> tag whose Homebrew formula to render and test"
+        description: "Existing statute-v<version> tag to rehearse the release jobs with"
         required: true
         type: string
 
