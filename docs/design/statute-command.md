@@ -391,19 +391,20 @@ file. It prints the path of `index.html`.
   `exclude` turns off is marked left out, under a group row that
   names its source and domains; a one-of is a box that holds its
   options, the default marked. All of them are on the one page. A rule's
-  row also holds its statement, under its title, a size smaller and
-  muted, in the page's language or, marked as not translated, in the
-  rule's own, its placeholders filled as for nodes' pages (below). A
-  switch beside the filter shows the title and the statement, the title
-  alone, or the statement alone in the title's place, the first by
-  default; radio buttons and the style sheet do it. The script writes
+  row also holds its statement, in the page's language or, marked as
+  not translated, in the rule's own, its placeholders filled as for
+  nodes' pages (below). A switch beside the filter shows the title, by
+  default, or the statement in the title's place; radio buttons and the
+  style sheet do it. The script writes
   the choice into the address as `view=title` or `view=statement`, and
   nothing for the default, so that back and forward return to it, and
   keeps it for the next index opened. The address decides the view, and
   one without `view` shows the default; only when the index opens at
   such an address does it show the view kept, and write it into that
-  address. The filter has a menu of check boxes per field: the status,
-  superseded and repealed left out by default; the defaults; the use;
+  address. An index opened at an address with an unknown `view` shows
+  the default and leaves the view out of the address. The filter has a
+  menu of check boxes per field: the status, superseded and repealed
+  left out by default; the defaults; the use;
   the domain; the kind of source; and whether this rule set enables the
   rule. The style sheet applies the boxes at once, so the filter works
   without the script, a domain's box then holding only the rules right

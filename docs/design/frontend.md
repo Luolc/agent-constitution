@@ -198,7 +198,7 @@ its weight and its band ([Components](#components)):
 | A one-of's own row in its box | `text-md` | `weight-medium` | `text` |
 | A rule's row | `text-md` | `weight-regular` | `text` |
 | A rule's label (`R13`) | the size of its row | the weight of its row | `text-muted`, tabular figures, aligned to the end |
-| A rule's statement, under its title | `text-sm` | `weight-regular` | `text-muted`; `text-md` in `text` when it stands alone, in place of the title |
+| A rule's statement, in place of its title | `text-md` | `weight-regular` | `text` |
 | The head of the table | `text-sm` | `weight-medium` | `text-muted`, on `bg-panel` |
 
 ## Space, radius and shadow
@@ -304,7 +304,7 @@ What replaces today's icons:
 | The theme's chevron | A group that folds, the language switch | `chevron-right`, `chevron-down` |
 | The theme's `translate` | The language switch, and a text not in the page's language | `languages` |
 | The theme's `menu` and `toc` | The buttons of a narrow screen's top bar | `menu`, `table-of-contents` |
-| A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-slash` |
+| A status's word in a tag | A rule's status in the list and the legend: active, trial, draft, superseded, repealed | `circle-check`, `flask-conical`, `pencil`, `arrow-right-left`, `circle-x` |
 | None | A rule's uses in the list and the legend: instructions, review | `scroll-text`, `scan-eye` |
 | None | Between the domains of a group row's path | `chevron-right` |
 | None | Closing a popover | `x` |
@@ -408,7 +408,7 @@ turned off (disabled), where it has these.
   - Status: `circle-check` for Active in `status-active`,
     `flask-conical` for Trial in `status-trial`, `pencil` for Draft in
     `status-draft`, `arrow-right-left` for Superseded and
-    `circle-slash` for Repealed in `text-muted`.
+    `circle-x` for Repealed in `text-muted`.
   - Uses: `scroll-text` for instructions and `scan-eye` for review, in
     `text-muted`.
   - Marks do not react to the pointer; the row does.
@@ -497,18 +497,19 @@ turned off (disabled), where it has these.
   right in that domain; the script adds the rest.
 - **The view of the list**, after the search in the row of the
   controls: what each row of the table of rules shows. A segmented
-  control under its name, Show / 「显示」, then three segments in one box
+  control under its name, Show / 「显示」, then two segments in one box
   (`1px` of `border-strong`, `radius-sm`), parted by `1px` of
-  `border-subtle`: Title and statement / 「标题和要求」, the default;
-  Title / 「标题」; Statement / 「要求」. They are radio buttons of one
-  group, a `fieldset` named by its `legend`, so the arrow keys move
-  between them and Tab enters and leaves the group; each segment is the
+  `border-subtle`: Short title / 「短标题」, the default; Statement /
+  「要求」. They are radio buttons of one group, a `fieldset` named by
+  its `legend`, so the arrow keys move between them and Tab enters and
+  leaves the group; each segment is the
   button's label, `text-sm`, padding `space-1 space-3`, at least a
   target tall, the button itself not drawn. At rest `text`; under the pointer
   `bg-hover`; pressed `bg-active` with `text`; chosen `bg-selected` with
   its text in `accent` and `weight-medium`; focus the ring around the
   segment. The rows change at once. The choice is in the address as
-  `view`, `title` or `statement`, left out for the default; arriving
+  `view=statement`, left out for the default, and an address with an
+  unknown `view` shows the default and is rewritten without it; arriving
   at an address without it, the reader's last choice, kept in the
   browser, applies and is written into the address, and back and
   forward return to the view of their address, the default where it has
@@ -529,12 +530,11 @@ turned off (disabled), where it has these.
   row is the link: hover fills it with `bg-hover` and turns the title
   to `accent`, active fills it with `bg-active` and turns the title,
   the label and the statement to `text`; focus puts the ring around the
-  row. Under its title a rule's row shows its statement, as the view of
-  the list says: wrapped, never cut, lined up with the title's text,
-  after the icon before it; the row is then as tall as it needs, its
-  label, its icon and its marks on the title's first line. With the
-  statement alone, it takes the title's place, as large and dark as a
-  title, and turns to `accent` under the pointer; a one-of's own row,
+  row. In the Statement view a rule's row shows its statement in its
+  title's place, as large and dark as a title, wrapped, never cut,
+  after the icon before the title, turning to `accent` under the
+  pointer; the row is then as tall as it needs, its label, its icon and
+  its marks on the statement's first line. A one-of's own row,
   which has no statement, keeps its title, and an option's Default
   option stays on its first line. A domain is not a row of
   its own but a group row over its rules, a band across the table:

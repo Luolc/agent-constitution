@@ -1,16 +1,17 @@
 // What the rows of the list of the rules show
 // (layouts/_partials/rules/view.html): the value of the address's
-// `view` (both, title or statement), else the one the reader chose
-// last, kept in localStorage, else both. The style sheet does the
-// showing from the checked radio button; this checks it, and writes a
-// change into the address as an entry of the history, leaving out both,
-// the default, so that back and forward return to the view as it was.
+// `view` (title or statement), else the one the reader chose last,
+// kept in localStorage, else title. The style sheet does the showing
+// from the checked radio button; this checks it, and writes a change
+// into the address as an entry of the history, leaving out title, the
+// default, so that back and forward return to the view as it was.
 // The address is rewritten in place to say what the page shows: a view
 // taken from localStorage is written into it, the default and an
-// unknown view are left out. The other parameters
-// of the address are kept. Inlined in <head>.
+// unknown view are left out. The other parameters of the address are
+// kept. Inlined in <head>.
 
-const VIEWS = ["both", "title", "statement"];
+const VIEWS = ["title", "statement"];
+const DEFAULT = "title";
 const KEY = "rules-view";
 
 // The view saved, or null where storage is blocked or holds no view.
@@ -37,7 +38,7 @@ function address(view: string): string {
     .slice(1)
     .split("&")
     .filter((param) => param && !param.startsWith("view="));
-  if (view !== "both") params.push(`view=${view}`);
+  if (view !== DEFAULT) params.push(`view=${view}`);
   return `${location.pathname}${params.length ? `?${params.join("&")}` : ""}${location.hash}`;
 }
 
@@ -50,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const load = (stored: boolean): void => {
     const given = new URLSearchParams(location.search).get("view");
-    let view = given && VIEWS.includes(given) ? given : "both";
+    let view = given && VIEWS.includes(given) ? given : DEFAULT;
     if (!given && stored) {
       const last = saved();
       if (last && VIEWS.includes(last)) view = last;

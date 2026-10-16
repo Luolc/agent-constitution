@@ -36,7 +36,7 @@
   font-size: var(--t-text-xs);
   font-weight: var(--t-weight-medium);
 }
-.rules .rules-find input { min-inline-size: 0; inline-size: 12.5rem; max-inline-size: 100%; box-sizing: border-box; line-height: inherit; }
+.rules .rules-find input { min-inline-size: 0; inline-size: 14rem; max-inline-size: 100%; box-sizing: border-box; line-height: inherit; }
 .rules .rules-filter {
   display: flex;
   flex-wrap: wrap;

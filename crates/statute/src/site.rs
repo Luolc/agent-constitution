@@ -96,10 +96,10 @@ struct Words {
     /// In the legend, what a one-of is, and an option not its default.
     one_of_meaning: &'static str,
     another_option: &'static str,
-    /// The switch between the views of the rows, and each view: title
-    /// and statement, title, statement.
+    /// The switch between the views of the rows, and each view: title,
+    /// statement.
     view: &'static str,
-    views: [&'static str; 3],
+    views: [&'static str; 2],
     /// The head of a table: the label and the rule.
     columns: [&'static str; 2],
     /// The menus of the filter, in the order of `FIELDS`.
@@ -176,7 +176,7 @@ fn words(lang: &str) -> Words {
             one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
             view: "显示",
-            views: ["标题和要求", "标题", "要求"],
+            views: ["短标题", "要求"],
             columns: ["编号", "规定"],
             fields: ["状态", "默认", "用途", "领域", "象限", "规定清单"],
             all: "全选",
@@ -185,7 +185,7 @@ fn words(lang: &str) -> Words {
             none: "不选",
             search: "搜索领域",
             find: "搜索",
-            find_placeholder: "编号、标题或要求",
+            find_placeholder: "编号、短标题或要求",
             clear: "清除筛选",
             shown: "{} 条规定",
             no_match: "没有符合筛选的规定。",
@@ -239,7 +239,7 @@ fn words(lang: &str) -> Words {
             one_of_meaning: "the rule set takes exactly one option",
             another_option: "Another option",
             view: "Show",
-            views: ["Title and statement", "Title", "Statement"],
+            views: ["Short title", "Statement"],
             columns: ["ID", "Rule"],
             fields: [
                 "Status", "Default", "Uses", "Domain", "Quadrant", "Rule set",
@@ -250,7 +250,7 @@ fn words(lang: &str) -> Words {
             none: "None",
             search: "Search domains",
             find: "Search",
-            find_placeholder: "ID, title or statement",
+            find_placeholder: "ID, short title or statement",
             clear: "Clear filters",
             shown: "{} rules",
             no_match: "No rule matches the filter.",
@@ -315,7 +315,7 @@ const CHEVRON_RIGHT: &str = include_str!("../assets/icons/lucide/chevron-right.s
 const CIRCLE: &str = include_str!("../assets/icons/lucide/circle.svg");
 const CIRCLE_CHECK: &str = include_str!("../assets/icons/lucide/circle-check.svg");
 const CIRCLE_DOT: &str = include_str!("../assets/icons/lucide/circle-dot.svg");
-const CIRCLE_SLASH: &str = include_str!("../assets/icons/lucide/circle-slash.svg");
+const CIRCLE_X: &str = include_str!("../assets/icons/lucide/circle-x.svg");
 const CORNER_DOWN_RIGHT: &str = include_str!("../assets/icons/lucide/corner-down-right.svg");
 const FLASK_CONICAL: &str = include_str!("../assets/icons/lucide/flask-conical.svg");
 const LANGUAGES: &str = include_str!("../assets/icons/lucide/languages.svg");
@@ -588,8 +588,8 @@ const STATUSES: [Status; 5] = [
 ];
 
 /// The ways the index shows a rule, its value in the address and the
-/// radio button's: its title and statement, its title, its statement.
-const VIEWS: [&str; 3] = ["both", "title", "statement"];
+/// radio button's: its title, its statement.
+const VIEWS: [&str; 2] = ["title", "statement"];
 
 /// A row of the index: a rule or a one-of, with its options, and the
 /// domains above it, outermost first; `under` when its parent is a rule.
@@ -1065,7 +1065,7 @@ fn status_icon(s: Status) -> String {
         Status::Trial => FLASK_CONICAL,
         Status::Draft => PENCIL,
         Status::Superseded => ARROW_RIGHT_LEFT,
-        Status::Repealed => CIRCLE_SLASH,
+        Status::Repealed => CIRCLE_X,
     };
     format!(
         "<span class=\"mark status-{}\">{}</span>",
@@ -1095,7 +1095,7 @@ struct Value {
     depth: usize,
 }
 
-/// The controls above the tables: the switch between the three views,
+/// The controls above the tables: the switch between the two views,
 /// then a menu of check boxes per field of the filter, and the style
 /// sheet that hides the rows a clear box leaves out, so that the filter
 /// works without the script.

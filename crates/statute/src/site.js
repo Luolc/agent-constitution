@@ -9,7 +9,9 @@
 // `view=title` or `view=statement`. Back and forward return to what the
 // address says, an address without `view` showing the default view; but
 // when the index opens at such an address, it shows the view kept from
-// the last choice and writes it into that address.
+// the last choice and writes it into that address, and when it opens at
+// an address with an unknown view, it shows the default and leaves the
+// view out of the address.
 //
 // Each menu says what it chooses, has All and None, and closes on
 // Escape, a click outside it or another menu opening; checking or
@@ -88,7 +90,7 @@
     if (!view && first) view = kept(VIEW);
     const shown = views.find((v) => v.value === view) ?? views[0];
     if (shown) shown.checked = true;
-    if (first && shown && shown !== views[0] && !query.has("view")) save(false);
+    if (first && shown && (query.has("view") ? shown.value !== view : shown !== views[0])) save(false);
   };
 
   // Writes what each menu chooses, hides what the search leaves out and

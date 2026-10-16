@@ -407,9 +407,9 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 
 /* A rule's row: the title's link covers the row; under the pointer the
    row fills with `bg-hover` and the title turns to `accent`. The title
-   keeps to one line, cut with an ellipsis, its whole text on hover; the
-   statement under it, a size smaller and muted, wraps. The label, the
-   icon before the title, the marks and the last column keep to the
+   keeps to one line, cut with an ellipsis, its whole text on hover; in
+   the Statement view the statement takes its place, wrapped. The label,
+   the icon before the title, the marks and the last column keep to the
    first line. A link in the statement or the last column stands above
    the row's. */
 .entry {
@@ -440,14 +440,13 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 }
 .entry:active { background-color: var(--t-bg-active); }
 .entry:active :is(.rule-text, .ref) { color: var(--t-text); }
-.statement > * { font-size: var(--t-text-sm); line-height: var(--t-line-height-ui); color: var(--t-text-muted); }
+.statement > * { font-size: var(--t-text-md); line-height: var(--t-line-height-ui); }
 .statement :is(p, ul) { margin: 0; }
 .statement > * + * { margin-block-start: var(--t-space-1); }
 .statement ul { padding-inline-start: var(--t-space-6); }
 .statement code { font-size: var(--t-text-md); }
 .statement > .untranslated { float: inline-start; block-size: calc(1em * var(--t-line-height-ui)); margin-inline-end: var(--t-space-1); }
 body:has(#view-title:checked) .entry .statement { display: none; }
-body:has(#view-statement:checked) .entry .statement > * { font-size: var(--t-text-md); color: var(--t-text); }
 
 /* The marks: four places of `width-mark`, each mark in the middle of
    its place: whether the defaults enable the node, a dot of `accent` or

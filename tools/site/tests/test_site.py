@@ -383,8 +383,8 @@ class SiteTest(unittest.TestCase):
       " Instructions : goes into the agent's instructions Review : a reviewer"
       " checks it One of the rule set takes exactly one option Default option"
       " Another option Row end default, status, instructions, review, in this"
-      " order; empty where a rule has none Search Show Title and statement"
-      " Title Statement Status Status All None Active Trial Draft Superseded"
+      " order; empty where a rule has none Search Show Short title Statement"
+      " Status Status All None Active Trial Draft Superseded"
       " Repealed Default Default All None On by default Off by default Uses"
       " Uses All None Instructions Review Domain Domain All None R1 Group 1"
       " Clear filters ID Rule R1 Group 1 One of R2 Group 2 R3 Rule 3 Default"
@@ -686,11 +686,12 @@ class SiteTest(unittest.TestCase):
     reports, once the page has settled, the view checked, the address's
     query and whether a statement and a title with one are displayed:
     each view, the default and an unknown one, which the address then
-    leaves out, a view saved by the reader on a first visit, which is
-    then written into the address after the filter, its commas as they
-    are, a change to the filter, which keeps the view in the address,
-    and back from a chosen view to the address without one, which is the
-    default whatever was saved. Skipped without Chrome, except in CI.
+    leaves out, as it does the `both` of older addresses and a saved
+    `both`, a view saved by the reader on a first visit, which is then
+    written into the address after the filter, its commas as they are, a
+    change to the filter, which keeps the view in the address, and back
+    from a chosen view to the address without one, which is the default
+    whatever was saved. Skipped without Chrome, except in CI.
     """
     chrome = site_screenshots.find_chrome()
     if chrome is None and not os.environ.get("CI"):
@@ -731,50 +732,33 @@ class SiteTest(unittest.TestCase):
       " setTimeout(r, 100); });"
     )
     saved = "<script>localStorage.setItem('rules-view', 'statement');</script>"
-    title = "<script>localStorage.setItem('rules-view', 'title');</script>"
+    both = "<script>localStorage.setItem('rules-view', 'both');</script>"
     filtered = "?status=active,trial,draft"
+    title = ["title", "", "none", "block"]
+    statement = ["statement", "?view=statement", "block", "none"]
     with tempfile.TemporaryDirectory() as tmp:
       for n, (query, head, script, expected) in enumerate(
         (
-          ("", "", settle, ["both", "", "block", "block"]),
-          (
-            "?view=title",
-            "",
-            settle,
-            ["title", "?view=title", "none", "block"],
-          ),
+          ("", "", settle, title),
+          ("?view=title", "", settle, title),
+          ("?view=statement", "", settle, statement),
+          ("?view=other", "", settle, title),
+          ("", saved, settle, statement),
+          ("?view=title", saved, settle, title),
+          ("", "", back, title),
+          ("?view=both", "", settle, title),
+          ("", both, settle, title),
           (
             "?view=statement",
             "",
-            settle,
-            ["statement", "?view=statement", "block", "none"],
-          ),
-          ("?view=other", "", settle, ["both", "", "block", "block"]),
-          (
-            "",
-            saved,
-            settle,
-            ["statement", "?view=statement", "block", "none"],
-          ),
-          (
-            "?view=title",
-            saved,
-            settle,
-            ["title", "?view=title", "none", "block"],
-          ),
-          ("", "", back, ["both", "", "block", "block"]),
-          ("?view=both", "", settle, ["both", "", "block", "block"]),
-          (
-            "?view=title",
-            "",
             draft,
-            ["title", f"{filtered}&view=title", "none", "block"],
+            ["statement", f"{filtered}&view=statement", "block", "none"],
           ),
           (
             filtered,
-            title,
+            saved,
             settle,
-            ["title", f"{filtered}&view=title", "none", "block"],
+            ["statement", f"{filtered}&view=statement", "block", "none"],
           ),
         )
       ):
