@@ -1,8 +1,9 @@
 id = 129
 slug = "worktrees-root"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 309
 lang = "en"
 parent = 127
 default = "on"

@@ -140,3 +140,68 @@ zh = "放各仓库主检出的目录"
 
 [parameter.translations]
 zh = "f70d27bf52afe0b10f9d3291505d2d0b0fd6359a1b415fc9793ecf0ece27ccf6"
+
+[[parameter]]
+name = "dirs.worktrees"
+type = "string"
+scope = "personal"
+default = "~/worktrees"
+
+[parameter.title]
+en = "Directory that holds the worktrees of repositories"
+zh = "放各仓库 worktree 的目录"
+
+[parameter.translations]
+zh = "5240d041f03bc6816703d1fa46bf4a6e11b4293cb7feca2fc3ca30f0f5cbab17"
+
+[[parameter]]
+name = "dirs.scratch"
+type = "string"
+scope = "personal"
+default = "~/agent-scratch"
+
+[parameter.title]
+en = "Directory that holds the files handed between agents"
+zh = "放 agent 之间交接的文件的目录"
+
+[parameter.translations]
+zh = "2018423c82a95d4474f41322cba682e0737c332d531a4c2ba17d8a103396ec10"
+
+[[parameter]]
+name = "dirs.data"
+type = "string"
+scope = "personal"
+default = "~/local-data"
+
+[parameter.title]
+en = "Directory that holds the large local data of repositories"
+zh = "放各仓库本地大数据的目录"
+
+[parameter.translations]
+zh = "0c96dfa38348497862a2b269c47f86f1c5bd51064e212b4a7122f18d09e120f1"
+
+[[parameter]]
+name = "dirs.third-party"
+type = "string"
+scope = "personal"
+default = "~/third-party"
+
+[parameter.title]
+en = "Directory that holds clones of third-party sources"
+zh = "放第三方源码 clone 的目录"
+
+[parameter.translations]
+zh = "5442a4c7325c2c2dc5bc8339c39caa9cf3cbb5c1b98f018f2a80603923a800a6"
+
+[[parameter]]
+name = "dirs.initiatives"
+type = "string"
+scope = "personal"
+default = "~/initiatives"
+
+[parameter.title]
+en = "Directory that holds the checkouts of the initiatives' repositories"
+zh = "放各 initiative 仓库检出的目录"
+
+[parameter.translations]
+zh = "a9fe4dfcf2f00b7cc8a74176ef93a8a2008ff697486345fed85b85b42e1ac5f2"

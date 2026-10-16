@@ -1,8 +1,9 @@
 id = 221
 slug = "third-party-root-only-others"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 313
 lang = "en"
 parent = 127
 default = "on"

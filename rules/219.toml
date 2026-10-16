@@ -1,11 +1,11 @@
 id = 219
 slug = "data-pointers-with-sha256"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
-default = "on"
+default = "off"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "user"
@@ -17,8 +17,8 @@ en = "Commit only pointers and SHA-256 for large data"
 zh = "大数据在仓库里只提交指针与 SHA-256"
 
 [text.statement]
-en = "Commit no large data file to a repository; commit only a pointer to it in the data directory ({@rule:131}), with its SHA-256."
-zh = "大数据文件不提交进仓库，只提交指向数据目录 ({@rule:131}) 里那份数据的指针及其 SHA-256。"
+en = "Commit no large data file to a repository; commit only a pointer to it in the data directory ({@rule:311}), with its SHA-256."
+zh = "大数据文件不提交进仓库，只提交指向数据目录 ({@rule:311}) 里那份数据的指针及其 SHA-256。"
 
 [text.reason]
 en = '''
@@ -37,4 +37,4 @@ zh = '''
 '''
 
 [translations]
-zh = "8c1c61dca09d37664a6496c69c14abe8ec18c38f03996b3b23577e10fcd304c7"
+zh = "bc4d36d95f95372deab9ef7e43510b2eaddfff071715cb0d8d82795cd67ddb61"
