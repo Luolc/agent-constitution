@@ -67,9 +67,17 @@ The format, the rule tree, packs and the review loop are in
 
 `statute` is the rule system's command, in Rust, in
 [`crates/statute`](crates/statute/). It is under development: it reads
-this repo's rules from a clone it keeps in `~/.cache/statute/`, and on
-crates.io, 0.0.1 is a placeholder that held the name; the command starts
-with 0.1.0. Build it from a clone:
+this repo's rules from a clone it keeps in `~/.cache/statute/`. On macOS
+or Linux, Homebrew installs the prebuilt binary of the latest release:
+
+```sh
+brew install luolc/tap/statute
+```
+
+Each release also publishes it to crates.io, from 0.1.0 on (0.0.1 there is
+a placeholder that held the name), and attaches the prebuilt binaries to
+its GitHub Release; [Releases and versions](docs/design/amendments-and-releases.md#releases-and-versions)
+shows how to install one of them by hand. Or build it from a clone:
 
 ```sh
 git clone https://github.com/Luolc/agent-constitution.git
