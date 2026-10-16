@@ -9,6 +9,15 @@ use std::process::Command;
 mod common;
 use common::{domain, edit, rule, set_default};
 
+/// A rule of `parent` 1's source that overrides `target`.
+fn overriding(id: u64, target: &str) -> (u64, String) {
+    edit(
+        rule(id, 1, ""),
+        "parent = 1\ndefault = \"off\"",
+        &format!("overrides = \"{target}\""),
+    )
+}
+
 const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 
 /// The private rule set and its lock file of a repository made with
@@ -1028,9 +1037,10 @@ fn the_global_configuration_names_the_source_of_each_entry() {
     );
 }
 
-/// What `statute.toml` excludes comes before the global configuration:
-/// an entry it excludes, or one that requires what it excludes, is left
-/// out with a note, and the rest stay.
+/// What `statute.toml` chose comes before the global configuration: an
+/// entry it excludes, one that requires what it excludes and one that
+/// overrides a rule it enables are left out with a note, and the rest
+/// stay.
 #[test]
 fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
     let w = world("enables-exclude");
@@ -1042,15 +1052,17 @@ fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
             rule(4, 1, ""),
             rule(5, 1, "requires = [4]"),
             rule(6, 1, ""),
+            overriding(7, "R2"),
         ],
     );
     w.configure(&format!(
         "team = {{ git = \"{team}\", branch = \"main\", public = true }}"
     ));
-    configure_top(&w, "rules = [\"team:5\", \"team:6\", \"R2\"]\n");
+    configure_top(&w, "rules = [\"team:5\", \"team:6\", \"team:7\", \"R2\"]\n");
     ok(&w.run(&["init", "--public"]));
     let path = w.repo.join("statute.toml");
     let text = std::fs::read_to_string(&path).unwrap();
+    let text = text.replace("rules = []", "rules = [\"R2\"]");
     std::fs::write(&path, format!("exclude = [\"team:4\", \"team:6\"]\n{text}")).unwrap();
     write(
         &w.repo,
@@ -1073,9 +1085,52 @@ fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
         "{}",
         run.stderr
     );
+    assert!(
+        run.stderr.contains(
+            "statute: note: the global configuration's `team:7` is left out here: team:7 would override R2, a rule of the public layer"
+        ),
+        "{}",
+        run.stderr
+    );
     let full = read(&w.repo, ".statute/AGENTS.full.md");
     assert!(full.contains("Do the thing 2."), "{full}");
     assert!(!full.contains("Do the thing 5."), "{full}");
+    assert!(!full.contains("Do the thing 7."), "{full}");
     assert!(!full.contains("Do the thing 6."), "{full}");
     ok(&w.run(&["compile", "--private-only"]));
+}
+
+/// `explain` names the global configuration for a rule its `domains` or
+/// `packs` turned on.
+#[test]
+fn explain_names_the_global_domains_and_packs() {
+    let w = world("enables-explain");
+    change(&w.r, set_default(rule(2, 1, ""), "\"on\""));
+    let (_, me) = source(&w.at, "me", &[domain(1), rule(4, 1, "")]);
+    w.configure(&format!(
+        "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
+    ));
+    configure_top(&w, "domains = [\"R1\"]\npacks = [\"me:1\"]\n");
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["lock"]));
+    ok(&w.run(&["compile"]));
+    let run = w.run(&["explain", "R2"]);
+    assert!(
+        run.stdout
+            .contains(", listed in `domains` of the global configuration\n"),
+        "{}",
+        run.stdout
+    );
+    let run = w.run(&["explain", "me:4"]);
+    assert!(
+        run.stdout
+            .contains(", listed in `packs` of the global configuration\n"),
+        "{}",
+        run.stdout
+    );
 }
