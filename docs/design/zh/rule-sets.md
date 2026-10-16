@@ -1,4 +1,4 @@
-<!-- en-sha256: 6e5add52be319950b1e93c77378ebecc2eb67871e70f0d9fbf12c67dd9da09b6 -->
+<!-- en-sha256: a0ae211160369c539da9458a035dcafbf4a896a98e24e3ec8fcebd92831f44c5 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -64,7 +64,7 @@ tools = ["<tool>"]
 
 这个版本是写出锁文件的那一版，仓库的 CI 装的就是它 ([发布与版本](amendments-and-releases.md#releases-and-versions))。`compile` 和 `compile --check` 要求锁文件是 `statute lock` 此刻会写出的内容，版本也算在内：别的版本写的锁文件会失败，并写明两个版本。0.1.18 之前的 statute 写的锁文件两项都没有，同样失败；`statute lock` 和 `statute upgrade` 会把两项写上，`upgrade` 还会显示记下的版本或从哪一版升上来。
 
-所以仓库换用新版 statute，是用新版运行 `statute lock` 和 `statute compile`，再由 CI 装这一版。锁文件是指令文件、要与其他文件分开改的仓库 (多数仓库如此)，读版本的 CI 步骤另成一个变更，排在提交新锁文件的变更之前或之后。本仓自己的检查用从源码构建的 statute 运行，所以提高 crate 版本的变更必须在同一个变更里改写 `statute.lock` 里的 `statute` 行：本仓规定 L31 把只改了 `statute` 和 `commands` 的锁文件改动算作生成文件，让它随代码走；对锁文件的其他改动仍是指令改动。
+所以仓库换用新版 statute，是用新版运行 `statute lock` 和 `statute compile`，再由 CI 装这一版。锁文件是指令文件、要与其他文件分开改的仓库 (多数仓库如此)，读版本的 CI 步骤另成一个变更，排在提交新锁文件的变更之前，在那之前回退读旧文件。本仓自己的检查用从源码构建的 statute 运行，所以提高 crate 版本的变更必须在同一个变更里改写 `statute.lock` 里的 `statute` 行：本仓规定 L31 把只改了 `statute` 和 `commands` 的锁文件改动算作生成文件，让它随代码走；对锁文件的其他改动仍是指令改动。
 
 规定只用一个字段 `rule` 来写，写法与别处相同，不再拆成规定源和 ID 两个字段，这样按规定清单和提示信息里的写法就能在锁文件里搜到那一行。旧格式的锁文件用 `source` 和 `id` 两个字段写规定，`upgrade` 遇到它会报错，提示运行 `statute lock` 重新写一份。被某条启用的规定覆盖的规定仍保留它那一行，多一个字段 `overridden-by = "L3"`，写明直接覆盖它的是哪条规定 (在一条覆盖链上就是下一环)，这样 `upgrade` 仍会显示它的修改 (见[覆盖](rule-sources.md#overrides))。只因覆盖才带进来、别的都没有启用它的规定，也有自己的一行。
 

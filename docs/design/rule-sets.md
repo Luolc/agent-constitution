@@ -130,8 +130,8 @@ So a repository moves to a new version of statute by running
 `statute lock` and `statute compile` with it, and CI installs that
 version. Where the lock file is an instruction file kept apart from
 other files, as in most repositories, the CI step that reads the version
-goes in a change of its own, before or after the one that commits the
-new lock file. This repository's own
+goes in a change of its own, before the one that commits the new lock
+file, and falls back to the old file until then. This repository's own
 checks run statute built from its source, so a change that raises the
 crate's version must rewrite the `statute` line of `statute.lock` in the same
 change: this repository's rule L31 counts a change to the lock file in
