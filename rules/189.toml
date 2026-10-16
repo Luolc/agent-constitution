@@ -1,6 +1,6 @@
 id = 189
 slug = "slack-only-with-thread-key"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -21,23 +21,23 @@ zh = "转告委托人的同意时，只转告委托人在 Slack 消息里说的�
 
 [text.reason]
 en = '''
-A relayed yes counts only once the acting agent has verified it against a record it can check for itself and that only the principal could have left ({@constitution:explicit-yes.verification}). Where agents reach Slack through fednet, that record is the principal's Slack message, which the acting agent can read through fednet. {@rule:38} asks for a reference to the original message; how it is verified is set by the rules ({@constitution:explicit-yes.rules}), and this rule sets the form of the reference.
+A relayed yes counts only once the acting agent has verified it against a record it can check for itself and that only the principal could have left ({@constitution:explicit-yes.verification}). Where agents reach Slack through FedNet, that record is the principal's Slack message, which the acting agent can read through FedNet. {@rule:38} asks for a reference to the original message; how it is verified is set by the rules ({@constitution:explicit-yes.rules}), and this rule sets the form of the reference.
 '''
 zh = '''
-转告的同意，只有执行的 agent 依据它自己能查验、而且只有委托人本人才能留下的记录核实之后才算数 ({@constitution:explicit-yes.verification})。在 agent 经 fednet 接入 Slack 的环境里，这样的记录就是委托人在 Slack 里发的消息，执行的 agent 经 fednet 读得到。{@rule:38} 要求转告时附上原消息的引用；怎样核实由规定确定 ({@constitution:explicit-yes.rules})，本规定写明引用的格式。
+转告的同意，只有执行的 agent 依据它自己能查验、而且只有委托人本人才能留下的记录核实之后才算数 ({@constitution:explicit-yes.verification})。在 agent 经 FedNet 接入 Slack 的环境里，这样的记录就是委托人在 Slack 里发的消息，执行的 agent 经 FedNet 读得到。{@rule:38} 要求转告时附上原消息的引用；怎样核实由规定确定 ({@constitution:explicit-yes.rules})，本规定写明引用的格式。
 '''
 
 [text.verification]
 en = '''
-The reference is these two values, the thread key and the `ts`, copied as they are from the output of the command that read the message. A summary or a quotation of the message is not a reference. The relaying agent sends both even when it expects the receiving agent to find the thread itself, since the receiving agent may have no way to look it up: a lead or a worker that fleet starts, for one, cannot look up the key of the thread its task came from.
+The reference is these two values, the thread key and the `ts`, copied as they are from the output of the command that read the message. A summary or a quotation of the message is not a reference. The relaying agent sends both even when it expects the receiving agent to find the thread itself, since the receiving agent may have no way to look it up: a lead or a worker that Agent Fleet starts, for one, cannot look up the key of the thread its task came from.
 
 Violated when an agent relays as the principal's yes anything other than what the principal said in a Slack message, or relays a yes without the thread key or the `ts`.
 '''
 zh = '''
-引用就是这两个值：thread key 与 `ts`，从读到那条消息的命令输出里原样取。对原消息的概述或者摘引不构成引用。即使转告方以为接收的 agent 自己找得到线程，也照样带上这两个值，因为接收的 agent 可能无从查找：比如 fleet 起的 lead 或 worker，自己就查不到它的任务来自哪个线程的 key。
+引用就是这两个值：thread key 与 `ts`，从读到那条消息的命令输出里原样取。对原消息的概述或者摘引不构成引用。即使转告方以为接收的 agent 自己找得到线程，也照样带上这两个值，因为接收的 agent 可能无从查找：比如 Agent Fleet 起的 lead 或 worker，自己就查不到它的任务来自哪个线程的 key。
 
 agent 把委托人在 Slack 消息里说的话以外的内容当作委托人的同意转告，或者转告同意时缺了 thread key 或 `ts` 的，即为违反本规定。
 '''
 
 [translations]
-zh = "91724dd614482b7c5df6090cad92bf73ede3f163249c0b89c29674243f7327ca"
+zh = "bf724c25ae4743029b8947191f0a2b45a9581cc731572ce69ddc0206009f9380"
