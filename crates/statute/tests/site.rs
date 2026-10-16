@@ -47,6 +47,7 @@ fn repo(name: &str, r: &str) -> PathBuf {
     std::fs::create_dir_all(&dir).unwrap();
     git(&dir, &["init", "-q"]);
     write(&dir, &format!("{r}constitution/2026-10/index.toml"), INDEX);
+    common::provisions(&dir.join(format!("{r}constitution/2026-10")));
     write(
         &dir,
         &format!("{r}constitution/2026-10/articles/04-authority/article.toml"),
@@ -426,6 +427,7 @@ fn site_outside_a_git_repository_writes_the_pages() {
         .join("no-git");
     let _ = std::fs::remove_dir_all(&dir);
     write(&dir, "constitution/2026-10/index.toml", INDEX);
+    common::provisions(&dir.join("constitution/2026-10"));
     write(
         &dir,
         "constitution/2026-10/articles/04-authority/article.toml",

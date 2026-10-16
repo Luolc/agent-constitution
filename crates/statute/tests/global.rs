@@ -63,6 +63,7 @@ fn source(at: &Path, name: &str, nodes: &[(u64, String)]) -> (PathBuf, String) {
     git(&work, &["config", "user.email", "test@example.test"]);
     git(&work, &["config", "user.name", "Test"]);
     write(&work, "constitution/2026-10/index.toml", INDEX);
+    common::provisions(&work.join("constitution/2026-10"));
     write(
         &work,
         "constitution/2026-10/generated/constitution.en.agent.md",
@@ -696,6 +697,7 @@ fn site_of_the_first_party_source_with_a_global_private_source() {
         "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
     ));
     write(&w.repo, "constitution/2026-10/index.toml", INDEX);
+    common::provisions(&w.repo.join("constitution/2026-10"));
     write(
         &w.repo,
         "constitution/2026-10/generated/constitution.en.agent.md",

@@ -7,8 +7,11 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+use crate::cite::Labels;
+use crate::constitution::rules::Provisions;
 use crate::diag::Diagnostics;
 use crate::manifest::{self, Key, LOCAL, Layers, Manifest, SourceSpec};
+use crate::node::Status;
 use crate::param::Setting;
 use crate::private;
 use crate::resolve::{self, Resolution};
@@ -351,6 +354,14 @@ impl Project {
         }
         let resolution = resolve::resolve(&sources, &manifest, number, &mut diags);
         let values = crate::param::settle(&sources, &manifest, &resolution, &mut diags);
+        check_citations(
+            &source_root.join("constitution").join(&manifest.edition),
+            &index_name,
+            &manifest.lang,
+            &sources,
+            &resolution,
+            &mut diags,
+        );
         if diags.has_errors() {
             return (None, diags);
         }
@@ -363,6 +374,45 @@ impl Project {
             values,
         };
         (Some(project), diags)
+    }
+}
+
+/// Checks what the repository's own nodes, all but the repealed, and the
+/// enabled rules of the other sources cite of the constitution, whose
+/// edition directory is `edition_dir` and `index.toml` is named
+/// `index_name`: each `authority` entry and `{@constitution:...}` citation
+/// names a provision of it that is not repealed, as `statute validate`
+/// checks a source beside its constitution.
+fn check_citations(
+    edition_dir: &Path,
+    index_name: &str,
+    lang: &str,
+    sources: &Sources,
+    resolution: &Resolution,
+    diags: &mut Diagnostics,
+) {
+    let labels = match Labels::load(&edition_dir.join("articles"), lang) {
+        Ok(labels) => labels,
+        Err(e) => {
+            diags.error(
+                index_name,
+                format!("{e}, so what the rules cite of the constitution is not checked"),
+            );
+            return;
+        }
+    };
+    let provisions = Provisions::of_labels(&labels);
+    for (key, n) in sources.nodes() {
+        let own = sources.source(&key.source).is_some_and(|s| s.local);
+        if n.status == Status::Repealed || !(own || resolution.enabled.contains_key(&key)) {
+            continue;
+        }
+        for (_, message) in provisions.findings(n) {
+            diags.error(
+                sources.file(&key),
+                format!("{} {key}: {message}", n.kind.name()),
+            );
+        }
     }
 }
 

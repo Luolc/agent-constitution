@@ -69,6 +69,7 @@ fn repo(name: &str, manifest: &str, more: &[(&str, (u64, String))]) -> PathBuf {
     let _ = std::fs::remove_dir_all(&dir);
     write(&dir, "statute.toml", manifest);
     write(&dir, "r/constitution/2026-10/index.toml", INDEX);
+    common::provisions(&dir.join("r/constitution/2026-10"));
     write(
         &dir,
         "r/constitution/2026-10/generated/constitution.en.agent.md",

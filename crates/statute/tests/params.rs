@@ -312,6 +312,7 @@ fn repo(name: &str, public: bool, extra: &str) -> PathBuf {
     let work = dir.join("work");
     git(&work, &["init", "-q"]);
     write(&work, "r/constitution/2026-10/index.toml", INDEX);
+    common::provisions(&work.join("r/constitution/2026-10"));
     write(
         &work,
         "r/constitution/2026-10/generated/constitution.en.agent.md",

@@ -177,6 +177,7 @@ fn world(name: &str) -> World {
     std::fs::create_dir_all(&w.repo).unwrap();
     w.git(&["init", "-q", "-b", "main"]);
     write(&w.repo, "r/constitution/2026-10/index.toml", INDEX);
+    common::provisions(&w.repo.join("r/constitution/2026-10"));
     write(
         &w.repo,
         "r/constitution/2026-10/generated/constitution.en.agent.md",

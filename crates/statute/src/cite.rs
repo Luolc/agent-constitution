@@ -2,13 +2,20 @@
 //! (`docs/design/source-formats.md`, IDs), and the labels of the
 //! constitution's provisions they render as.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 /// The label of every article, section and item of one edition, by
 /// citation, as the constitution's version for agents writes them:
-/// `Art. IV §1(2)` for `principals.competent`.
-pub struct Labels(BTreeMap<String, String>);
+/// `Art. IV §1(2)` for `principals.competent`, and which of them are
+/// repealed.
+pub struct Labels {
+    labels: BTreeMap<String, String>,
+    /// As the constitution's build counts them: an article with
+    /// `repealed`, a section and an item with `status = "repealed"`, and
+    /// every item of a repealed section.
+    repealed: BTreeSet<String>,
+}
 
 impl Labels {
     /// Reads the numbers from the edition's sources, `articles` its
@@ -19,17 +26,27 @@ impl Labels {
     pub fn load(articles: &Path, lang: &str) -> Result<Labels, String> {
         let lng = crate::constitution::lang::language_or_default(lang);
         let mut labels = BTreeMap::new();
+        let mut repealed = BTreeSet::new();
+        let read = |file: &Path| -> Result<toml::Table, String> {
+            let text = std::fs::read_to_string(file)
+                .map_err(|e| format!("cannot read {}: {e}", file.display()))?;
+            toml::from_str(&text).map_err(|e| format!("cannot parse {}: {e}", file.display()))
+        };
+        let is_repealed =
+            |t: &toml::Table| t.get("status").and_then(|v| v.as_str()) == Some("repealed");
         for (article_number, article_id, dir) in named(articles, false)? {
             let (n, s) = number(&article_number).map_err(|e| format!("{}: {e}", dir.display()))?;
             let article = lng.article_label(n, &s);
+            let file = dir.join("article.toml");
+            if file.exists() && read(&file)?.contains_key("repealed") {
+                repealed.insert(article_id.clone());
+            }
             for (section_number, section_id, file) in named(&dir, true)? {
                 let (n, s) =
                     number(&section_number).map_err(|e| format!("{}: {e}", file.display()))?;
                 let section = lng.section_label(&article, n, &s);
-                let text = std::fs::read_to_string(&file)
-                    .map_err(|e| format!("cannot read {}: {e}", file.display()))?;
-                let doc: toml::Table = toml::from_str(&text)
-                    .map_err(|e| format!("cannot parse {}: {e}", file.display()))?;
+                let doc = read(&file)?;
+                let section_repealed = is_repealed(&doc);
                 for item in doc
                     .get("items")
                     .and_then(|i| i.as_array())
@@ -45,25 +62,34 @@ impl Labels {
                     };
                     let (n, s) =
                         number(item_number).map_err(|e| format!("{}: {e}", file.display()))?;
-                    labels.insert(
-                        format!("{section_id}.{id}"),
-                        lng.item_label(&section, n, &s),
-                    );
+                    let cite = format!("{section_id}.{id}");
+                    if section_repealed || item.as_table().is_some_and(is_repealed) {
+                        repealed.insert(cite.clone());
+                    }
+                    labels.insert(cite, lng.item_label(&section, n, &s));
+                }
+                if section_repealed {
+                    repealed.insert(section_id.clone());
                 }
                 labels.insert(section_id, section);
             }
             labels.insert(article_id, article);
         }
-        Ok(Labels(labels))
+        Ok(Labels { labels, repealed })
     }
 
     pub fn get(&self, id: &str) -> Option<&str> {
-        self.0.get(id).map(String::as_str)
+        self.labels.get(id).map(String::as_str)
+    }
+
+    /// Whether the provision cited as `id` is repealed.
+    pub fn repealed(&self, id: &str) -> bool {
+        self.repealed.contains(id)
     }
 
     /// Every citation with its label, in order of citation.
     pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.0
+        self.labels
             .iter()
             .map(|(id, label)| (id.as_str(), label.as_str()))
     }

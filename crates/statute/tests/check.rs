@@ -91,6 +91,7 @@ fn repo_at(name: &str, sub: &str, rules: &str, command: &str) -> PathBuf {
     git(&top, &["init", "-q"]);
     let dir = top.join(sub);
     write(&dir, "constitution/2026-10/index.toml", INDEX);
+    common::provisions(&dir.join("constitution/2026-10"));
     write(
         &dir,
         "statute.toml",
@@ -349,7 +350,7 @@ fn r46_agrees_with_check_instruction_changes() {
         (
             "generated-with-sources",
             &[
-                "constitution/2026-10/articles/01-a/article.toml",
+                "constitution/2026-10/articles/04-authority/article.toml",
                 "constitution/2026-10/generated/constitution.en.md",
             ],
         ),

@@ -29,6 +29,7 @@ fn repo(name: &str, manifest: &str, rules: &[(u64, String)], index: &str) -> Pat
     std::fs::create_dir_all(dir.join("constitution/2026-10")).unwrap();
     std::fs::write(dir.join("statute.toml"), manifest).unwrap();
     std::fs::write(dir.join("constitution/2026-10/index.toml"), index).unwrap();
+    common::provisions(&dir.join("constitution/2026-10"));
     for (id, text) in rules {
         std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
     }
@@ -126,6 +127,7 @@ fn a_source_elsewhere_is_named_by_its_path() {
     std::fs::create_dir_all(src.join("rules")).unwrap();
     std::fs::create_dir_all(src.join("constitution/2026-10")).unwrap();
     std::fs::write(src.join("constitution/2026-10/index.toml"), INDEX).unwrap();
+    common::provisions(&src.join("constitution/2026-10"));
     let mut nodes = rules();
     nodes[2] = edit(nodes[2].clone(), "parent = 1", "parent = 9");
     for (id, text) in &nodes {
@@ -139,5 +141,59 @@ fn a_source_elsewhere_is_named_by_its_path() {
     fails(
         &dir,
         "their-rules/rules/3.toml: error: parent 9 does not exist",
+    );
+}
+
+#[test]
+fn authority_must_name_a_provision_of_the_edition() {
+    let mut nodes = rules();
+    nodes[1] = edit(
+        nodes[1].clone(),
+        "[\"simplicity\"]",
+        "[\"no-such-provision\"]",
+    );
+    fails(
+        &repo("authority-undefined", MANIFEST, &nodes, INDEX),
+        "rules/2.toml: error: rule R2: authority cites undefined no-such-provision",
+    );
+}
+
+#[test]
+fn authority_must_not_name_a_repealed_provision() {
+    let mut nodes = rules();
+    nodes[1] = edit(nodes[1].clone(), "[\"simplicity\"]", "[\"gone\"]");
+    let dir = repo("authority-repealed", MANIFEST, &nodes, INDEX);
+    std::fs::write(
+        dir.join("constitution/2026-10/articles/03-purpose/05-gone.toml"),
+        "id = \"gone\"\nstatus = \"repealed\"\n",
+    )
+    .unwrap();
+    fails(
+        &dir,
+        "rules/2.toml: error: rule R2: authority cites repealed gone",
+    );
+}
+
+#[test]
+fn every_own_rule_is_checked_and_only_the_enabled_rules_of_a_source() {
+    let unknown = |id, parent| {
+        edit(
+            rule(id, parent, ""),
+            "[\"simplicity\"]",
+            "[\"no-such-provision\"]",
+        )
+    };
+    let mut nodes = rules();
+    nodes.push(unknown(4, 1));
+    let dir = repo("authority-scope", MANIFEST, &nodes, INDEX);
+    let (project, diags) = Project::load(&dir, &Default::default());
+    assert!(project.is_some(), "{:#?}", diags.0);
+    let own = dir.join(".statute/rules");
+    std::fs::create_dir_all(&own).unwrap();
+    let (_, text) = edit(unknown(5, 1), "parent = 1", "parent = \"R1\"");
+    std::fs::write(own.join("5.toml"), text).unwrap();
+    fails(
+        &dir,
+        ".statute/rules/5.toml: error: rule L5: authority cites undefined no-such-provision",
     );
 }
