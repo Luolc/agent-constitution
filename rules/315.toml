@@ -1,0 +1,52 @@
+id = 315
+slug = "shell-destructive-target-checked"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 283
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Check every part of a destructive shell command's target path before the command"
+zh = "shell 里破坏性命令的目标路径，每个部分都先检查再执行"
+
+[text.statement]
+en = "Before a shell command that deletes, overwrites or empties files, such as `rm`, `find … -delete`, a `>` redirection, `mv` or `cp` onto an existing file or `rsync --delete`, check that each variable and command substitution its target path is built from, directly or through another variable, is set and not empty, as `${VAR:?}` or `[ -n \"$VAR\" ] || exit 1` does, and stop when one is not; `set -u` alone is no such check."
+zh = "shell 里删除、覆盖或清空文件的命令，例如 `rm`、`find … -delete`、`>` 重定向、`mv` 或 `cp` 覆盖已有文件、`rsync --delete`，执行之前要检查目标路径直接或经由别的变量用到的每个变量和命令替换都已设置且不为空，例如用 `${VAR:?}` 或 `[ -n \"$VAR\" ] || exit 1`，有一个不满足就停下；只靠 `set -u` 不算这样的检查。"
+
+[text.reason]
+en = '''
+In a shell, an empty or unset variable, or a command substitution whose output is empty, drops out of a path without an error: `"$dir/$name"` becomes `$dir/`, and with both empty it becomes `/`, the root of the file system. `rm -rf` on that path removes far more than was meant, and cannot be undone. Agents pursue goals only by legitimate means, never by destructive ones ({@constitution:decency.legitimate-means}), and a command whose target can widen this way, unseen, is destructive by its shape whatever its author meant. `set -u` stops on an unset variable but not on an empty one, nor on an empty command substitution, so it leaves the commonest case open.
+'''
+zh = '''
+在 shell 里，变量为空或未设置时，或者命令替换的输出为空时，它会从路径里消失而不报错：`"$dir/$name"` 变成 `$dir/`，两个都为空时变成 `/`，也就是文件系统的根目录。对这样的路径跑 `rm -rf`，删掉的远比本意多，而且无法撤销。agent 只用正当手段达成目标，绝不用破坏性的手段 ({@constitution:decency.legitimate-means})；一条目标会这样悄悄扩大的命令，不论作者本意如何，它的写法本身就是破坏性的。`set -u` 遇到未设置的变量会停下，遇到空变量和输出为空的命令替换都不会，最常见的情况它恰好管不到。
+'''
+
+[text.verification]
+en = '''
+The commands covered are those that delete, overwrite or empty files, run through a shell: on a command line, in a shell script, or in a step that another file hands to a shell, such as a CI step or a Makefile recipe. They include `rm` with or without `-r` or `-f`, `find` with `-delete` or with `-exec rm`, a `>` redirection or `truncate`, `mv`, `cp` or `ln -f` onto an existing file, `rsync --delete` and `git clean`. The target path is each path such a command deletes, overwrites or empties: the operands of `rm`, the directory `find` starts from, the file of a redirection, the destination of `mv`, `cp` and `rsync`.
+
+The parts of a target path are the variables, positional parameters and command substitutions, such as `$(basename "$p")`, it is built from, directly or through another variable. A variable whose value is built from other parts brings them into the path too, so a check of that variable alone does not cover them: after `d="${S:?}/$(…)"; [ -n "$d" ]`, the target `$d` can still be `$S/`. A part needs no check only when the same command or script gave it a value that is not empty, written literally, before the path is built; a command's output, a positional parameter, an environment variable and a value read with `read` or from a file may all be empty.
+
+Checks that meet this rule: writing the part in the path as `${VAR:?}`; running `[ -n "$VAR" ] || exit 1` before the command; putting a command substitution into a variable first and checking that, as in `n=$(basename "$p"); [ -n "$n" ] || exit 1; rm -rf "${D:?}/$n"`; and, with the root itself checked, asserting that the resolved target lies under the root expected for it and is not that root, as in `case "$t" in "${root:?}"/?*) ;; *) exit 1 ;; esac`. `set -u` alone does not meet it, nor does `set -e`.
+
+Violated when an agent runs or writes such a command whose target path is built from a part that may be empty or unset and that no check before the command stops on.
+'''
+zh = '''
+本规定管的，是经 shell 运行、会删除、覆盖或清空文件的命令：在命令行上跑的，写在 shell 脚本里的，或者由别的文件交给 shell 执行的，例如 CI 的一个步骤或 Makefile 的 recipe。包括带或不带 `-r`、`-f` 的 `rm`，带 `-delete` 或 `-exec rm` 的 `find`，`>` 重定向与 `truncate`，覆盖已有文件的 `mv`、`cp` 与 `ln -f`，`rsync --delete`，以及 `git clean`。目标路径指这样的命令删除、覆盖或清空的每个路径：`rm` 的操作数，`find` 起始的目录，重定向写入的文件，`mv`、`cp` 与 `rsync` 的目的地。
+
+目标路径的部分，指它直接或经由别的变量用到的变量、位置参数和命令替换，例如 `$(basename "$p")`。一个变量的值由别的部分拼成的，那些部分也算进路径里，只检查这个变量覆盖不到它们：`d="${S:?}/$(…)"; [ -n "$d" ]` 之后，目标 `$d` 仍可能是 `$S/`。部分在拼路径之前，同一条命令或同一个脚本已经给它赋了照字面写出、不为空的值的，才不需要检查；命令的输出、位置参数、环境变量，以及用 `read` 或从文件里读到的值，都可能为空。
+
+满足本规定的检查有：把路径中的部分写成 `${VAR:?}`；在命令之前先跑 `[ -n "$VAR" ] || exit 1`；先把命令替换放进一个变量、再检查这个变量，例如 `n=$(basename "$p"); [ -n "$n" ] || exit 1; rm -rf "${D:?}/$n"`；以及在检查过根目录本身之后，断言解析出的目标位于为它预期的根目录之下、而且不是这个根目录，例如 `case "$t" in "${root:?}"/?*) ;; *) exit 1 ;; esac`。只用 `set -u` 不满足本规定，`set -e` 也不满足。
+
+agent 运行或者写下这样的命令，目标路径由可能为空或未设置的部分拼成，而命令之前没有任何检查会因此停下的，即为违反本规定。
+'''
+
+[translations]
+zh = "d5fa99223034d464652568179999239853ac02fd192f15029cdecfdc61f49a6d"

@@ -202,7 +202,6 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 # Rules
 
 - R282 When a guard blocks you and no reviewed route is open to you, tell whoever delegated the work, an agent or a person, what blocks you, and ask for a way forward.
-- R308 Never let a command that deletes, overwrites or empties files take a target path built from a variable or a command's output that may be empty or unset: write the path literally, or have the command first check that each such part of it is set and not empty, and stop when one is not.
 - R22 To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status.
 - R36 Never ask for, read or repeat a credential's value.
 - R37 When a credential shows up where it should not, stop using it, never quote, copy or try it, and at once tell a principal responsible for it which credential it is, where it appeared and that it needs rotating, without its value.
@@ -431,3 +430,4 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - L28 Change instruction files in a change of their own, never together with changes to other files, and count the `AGENTS.md` at the root of this repository, which this repository's statute compiles and `statute compile --check` in CI proves equal to a recompile, as a generated file (R47), not as an instruction file (for example, a change to statute's code commits it together with that code), while a change to `statute.toml`, `statute.lock`, `.statute/`, `rules/` or the sources of the constitution stays a change to instructions.
 - L27 Count `statute.toml`, `statute.lock`, every file under `.statute/` and every `*.legacy.md` as instruction files of this repository too, and count `statute-checks.toml` as a generated file (R47), not as an instruction file.
 - R285 Write a text that you pass to a command through a shell, when it runs over more than one line or holds `$`, a backtick, a backslash, a quote or `!`, into a file with a quoted heredoc first, and pass the file to the command.
+- R315 Before a shell command that deletes, overwrites or empties files, such as `rm`, `find … -delete`, a `>` redirection, `mv` or `cp` onto an existing file or `rsync --delete`, check that each variable and command substitution its target path is built from, directly or through another variable, is set and not empty, as `${VAR:?}` or `[ -n "$VAR" ] || exit 1` does, and stop when one is not; `set -u` alone is no such check.
