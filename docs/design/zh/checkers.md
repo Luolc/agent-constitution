@@ -1,4 +1,4 @@
-<!-- en-sha256: 233ea0821a5d10274e595afe54e4050a8619b98d4418a6587b84cdb40708b746 -->
+<!-- en-sha256: df3ea9cd07de2a7542206e5fa7acff68544df629ce1667696f4aa65affd74fe6 -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -75,7 +75,7 @@ fixtures/behavior/redline/<name>/   stage C
 - 行为 fixture (以后再做) 给真实的 agent 一个场景，评判它做了什么。它们记录 harness、模型和设置、运行次数以及每次失败的情况；通过一次，也不当作保证来报告。
 - happy fixture 和红线 fixture 分开放，这样一个安全情形的修复如果破坏了日常工作，就会表现为一个失败的 happy fixture。
 - 每个 fixture 至少绑定一个宪法或规定的 ID，写法与规定中的引用一样带命名空间；ID 解析不了的 fixture，检查程序会拒绝。
-- 发布之前，所有 fixture 都要跑，happy 和红线全部，这是第 26 号规定 (`fixture-runs`) 的要求。静态 fixture 在本仓的 CI 里跑。行为 fixture (有了以后) 需要安装好的 harness 和模型凭证，本仓的 CI 没有这些；它们在私有一侧跑，发布需要有在打 tag 的那个提交上跑过的记录。
+- 计划中，尚未建成：发布之前，所有 fixture 都要跑，happy 和红线全部。第 26 号规定 (`fixture-runs`) 原先要求这一点，现已废止，因为它依赖的 fixture 机制还没建；机制建好时再写新的规定。静态 fixture 在本仓的 CI 里跑。行为 fixture (有了以后) 需要安装好的 harness 和模型凭证，本仓的 CI 没有这些；它们在私有一侧跑，发布需要有在打 tag 的那个提交上跑过的记录。
 - fixture 和其他文件一样遵守宪法：只用虚构的数据 (`example.test` 域名、文档用地址段、虚构的名字)，没有真实凭证，没有私有词。私有词扫描覆盖 `fixtures/`。
 
 待人决定：红线 fixture 放在哪里。推荐：与它测试的文本放在一起，绑定到那段文本的 ID。
