@@ -1,8 +1,8 @@
 id = 25
 slug = "fixtures-for-both-outcomes"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "repealed"
 lang = "en"
 parent = 277
 default = "off"
