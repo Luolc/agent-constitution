@@ -1,13 +1,13 @@
-# Fleet and migration
+# Agent Fleet and migration
 
-## Relation to fleet
+## Relation to Agent Fleet
 
 The toolchain is plain commands over files: it reads sources and an overlay,
 writes an output and a manifest, and exits with a status. It does not call
-fleet, read fleet's state or depend on how fleet starts agents. Fleet (and
-any other orchestrator) consumes the output the way any harness does. The
-only fleet-specific file is `.fleet/config.json`, which tells fleet where
-this repo's issues live.
+Agent Fleet, read Agent Fleet's state or depend on how Agent Fleet starts
+agents. Agent Fleet (and any other orchestrator) consumes the output the way
+any harness does. The only file specific to Agent Fleet is
+`.fleet/config.json`, which tells Agent Fleet where this repo's issues live.
 
 ## Migrating from the current hand-written guide
 
