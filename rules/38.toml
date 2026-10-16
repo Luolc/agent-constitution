@@ -1,8 +1,9 @@
 id = 38
 slug = "relayed-yes-reference"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 319
 lang = "en"
 parent = 269
 default = "on"

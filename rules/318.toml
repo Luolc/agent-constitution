@@ -1,12 +1,12 @@
 id = 318
 slug = "fednet-client-socket"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 188
 default = "off"
-requires = [190]
+requires = [322]
 authority = ["explicit-yes.verification", "explicit-yes.rules"]
 constitution = ">=1"
 level = "user"
@@ -17,24 +17,24 @@ en = "Read a thread through the FedNet client's socket `{$fednet.client-socket}`
 zh = "经 FedNet client 的 socket `{$fednet.client-socket}` 读线程"
 
 [text.statement]
-en = "When you open a relayed yes's original message as {@rule:190} asks, run `fednet client read-thread -socket {$fednet.client-socket} -json <CHANNEL/TS>`, with the thread key you were sent."
-zh = "按 {@rule:190} 打开转告的同意的原消息时，运行 `fednet client read-thread -socket {$fednet.client-socket} -json <CHANNEL/TS>`，thread key 用收到的那个。"
+en = "When you open a Slack message relayed as a yes as {@rule:322} asks, run `fednet client read-thread -socket {$fednet.client-socket} -json <CHANNEL/TS>`, with the thread key you were sent."
+zh = "按 {@rule:322} 打开作为同意转告的 Slack 消息时，运行 `fednet client read-thread -socket {$fednet.client-socket} -json <CHANNEL/TS>`，thread key 用收到的那个。"
 
 [text.reason]
 en = '''
-{@rule:190} has the acting agent read the original message through the FedNet client on its machine ({@constitution:explicit-yes.verification}), and the client listens on a socket whose path the machine's setup chooses; the command has no default for it. This rule names the path, so an agent can run the command as written. Through another socket the agent reads nothing of what the hub took from Slack.
+{@rule:322} has the acting agent read the message through the FedNet client on its machine ({@constitution:explicit-yes.verification}), and the client listens on a socket whose path the machine's setup chooses; the command has no default for it. This rule names the path, so an agent can run the command as written. Through another socket the agent reads nothing of what the hub took from Slack.
 '''
 zh = '''
-{@rule:190} 要求执行的 agent 经本机的 FedNet client 读原消息 ({@constitution:explicit-yes.verification})，client 监听的 socket 路径由机器的配置决定，命令本身没有默认值。本规定写明这个路径，agent 照着就能运行命令。用别的 socket，读不到 hub 从 Slack 取来的正文。
+{@rule:322} 要求执行的 agent 经本机的 FedNet client 读消息 ({@constitution:explicit-yes.verification})，client 监听的 socket 路径由机器的配置决定，命令本身没有默认值。本规定写明这个路径，agent 照着就能运行命令。用别的 socket，读不到 hub 从 Slack 取来的正文。
 '''
 
 [text.verification]
 en = '''
-Violated when an agent acts on a relayed yes and read its original message through a socket other than `{$fednet.client-socket}`.
+Violated when an agent acts on a yes relayed from a Slack message and read the message through a socket other than `{$fednet.client-socket}`.
 '''
 zh = '''
-agent 凭转告的同意行事，而读原消息时用的 socket 不是 `{$fednet.client-socket}` 的，即为违反本规定。
+agent 凭 Slack 消息转告的同意行事，而读消息时用的 socket 不是 `{$fednet.client-socket}` 的，即为违反本规定。
 '''
 
 [translations]
-zh = "3cbaf61fc76dd89815af5d9f0928d6daf6a52453033869f04532c14ce3e763ec"
+zh = "fc32a167c81b4ec79c5a8862919b56ef8bcbc736d55bb21df011980e9d168390"

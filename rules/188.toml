@@ -1,6 +1,6 @@
 id = 188
 slug = "fednet"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "FedNet"
 
 [applicability]
 en = '''
-Covers what holds only where agents read and write a principal's Slack through FedNet: how a yes the principal gave in Slack is relayed, read and checked. Enable it where agents reach the principal's Slack through FedNet; where none does, leave it off.
+Covers what holds only where agents read and write a principal's Slack through FedNet: how a yes the principal gave in Slack, in a message or on a question card, is relayed, read and checked. Enable it where agents reach the principal's Slack through FedNet; where none does, leave it off.
 '''
 zh = '''
-管只在 agent 经 FedNet 读写委托人的 Slack 时才成立的做法：委托人在 Slack 里给的同意怎样转告、怎样读取、怎样核对。agent 经 FedNet 接入委托人的 Slack 的环境启用；没有 agent 这样做的，不启用。
+管只在 agent 经 FedNet 读写委托人的 Slack 时才成立的做法：委托人在 Slack 里用消息或者在问题卡片上给的同意怎样转告、怎样读取、怎样核对。agent 经 FedNet 接入委托人的 Slack 的环境启用；没有 agent 这样做的，不启用。
 '''
 
 [translations]
-zh = "e484836da62e2855b48eae838e0623f1425e5ce82f2ffca0251d36a0fe9bdc4e"
+zh = "dfe2169438042703905f856e4e6f7ad253575d8543bb06351094b31f29423e6d"

@@ -1,8 +1,9 @@
 id = 190
 slug = "verify-with-read-thread"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 322
 lang = "en"
 parent = 188
 default = "on"
