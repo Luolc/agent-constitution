@@ -454,10 +454,13 @@ either when they disagreed. For the same reason, a public rule that
 full text alone.
 
 **Known issue, not settled: `exclude` and a contradicting private
-rule.** Nothing stops `private.toml` from turning a public rule off
-with `exclude` and turning on a private rule that contradicts it. The
-build allows this today, and it does not detect a contradiction between
-two rules in any case. Grok then reads both, the public rule through
+rule.** `private.toml` can turn a public rule off with `exclude` and
+turn on a private rule that contradicts it, unless an enabled rule
+requires the public rule, which the build refuses. The build allows the
+pair today. It checks only the `conflicts` that rules declare, and the
+excluded public rule is not in force in the private layer, so even a
+declared conflict with it is not reported; it reads no other
+contradiction. Grok then reads both, the public rule through
 `AGENTS.md` and the private one through the full text, which is the
 disagreement the ban on overrides above is meant to prevent. What the
 private rule lacks is what an [override](#overrides) keeps: the public
