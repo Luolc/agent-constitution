@@ -17,7 +17,7 @@ zh = "确认凭证已就位，只看它是否存在"
 
 [text.statement]
 en = "To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status."
-zh = "要确认凭证已经就位，只检查它是否存在，必要时再检查长度，也只报告这一状态。"
+zh = "要确认凭证已经就位，只检查它是否存在，必要时再检查长度，只报告这一状态。"
 
 [text.reason]
 en = '''

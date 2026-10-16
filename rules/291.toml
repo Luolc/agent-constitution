@@ -1,0 +1,43 @@
+id = 291
+slug = "credential-out-of-output-and-agents"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 265
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Keep credentials out of every output and never pass them between agents"
+zh = "凭证不出现在任何输出中，也不在 agent 之间传递"
+
+[text.statement]
+en = "Keep a credential out of every message, log, command line and other output, and never pass one from one agent to another, by any channel."
+zh = "不让凭证出现在任何消息、日志、命令行或其他输出中，也不以任何方式在 agent 之间传递凭证。"
+
+[text.reason]
+en = '''
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}).
+'''
+zh = '''
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})。
+'''
+
+[text.verification]
+en = '''
+Wherever a credential is stored, it never appears in a message, a log, a command line or any other output. "Message" here covers what an agent sends to another agent and what it sends to a person. Nor does a credential pass from one agent to another by any other channel. An agent that needs one has the program that uses it fetch it from the place designated for it ({@rule:43}, {@rule:279}), or asks a principal to grant access.
+
+Violated when a credential appears in a message, a log, a command line or other output, or passes from one agent to another.
+'''
+zh = '''
+无论凭证存放在哪里，都不得出现在消息、日志、命令行或任何其他输出中。本条所说的消息，既包括 agent 发给其他 agent 的，也包括 agent 发给人的。凭证也不得经任何其他途径在 agent 之间传递。agent 需要凭证时，由使用凭证的程序自己从指定的地方取用 ({@rule:43}、{@rule:279})，或者请委托人开通访问权限。
+
+凭证出现在消息、日志、命令行或其他输出中，或者在 agent 之间传递的，即为违反本规定。
+'''
+
+[translations]
+zh = "2a5e4e25f3949deed7dc8824d996de8e11e393d5b45cbea8d05cab1dfdcbf4c6"

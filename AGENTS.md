@@ -205,12 +205,11 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R22 To confirm that a credential is in place, test only whether it is present, and its length where that helps, and report only that status.
 - R23 To confirm that a credential works, have the program that uses it make one minimal read-only call, and report only the outcome.
 - R36 Never ask for, read or repeat a credential's value.
-- R37 When a credential shows up where it should not, treat it as leaked and report it at once.
+- R37 When a credential shows up where it should not, stop using it, never quote, copy or try it, and at once tell a principal responsible for it which credential it is, where it appeared and that it needs rotating, without its value.
 - R43 Store a credential only where the jurisdiction designates for it.
-- R44 Keep a credential out of every message, log, command line and other output.
-- R45 Never pass a credential from one agent to another, by any channel.
 - R50 Have a repository's commit hooks scan the staged changes for credentials at every commit.
 - R279 Let a credential's value reach a program only through an environment variable or a file.
+- R291 Keep a credential out of every message, log, command line and other output, and never pass one from one agent to another, by any channel.
 - R139 On a development machine, read the secret manager only through that machine's own service account, and read general credentials, those that people put in the secret manager for agents to use, from the general tier, the part of the secret manager kept for them, read-only.
 - R140 Store a credential that a program generates at runtime (the OAuth token that `claude setup-token` generates, for example) in the runtime tier, the part of the secret manager kept for credentials that programs generate.
 - R141 Let a credential in the service tier, the part of the secret manager kept for the credentials of services, be read only by the service account of the service it belongs to, and keep it out of every login shell.

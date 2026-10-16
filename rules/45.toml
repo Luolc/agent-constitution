@@ -1,8 +1,9 @@
 id = 45
 slug = "credential-not-between-agents"
-revision = 6
+revision = 7
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 291
 lang = "en"
 parent = 265
 default = "on"

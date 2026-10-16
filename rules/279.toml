@@ -1,6 +1,6 @@
 id = 279
 slug = "credential-value-route"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-Splitting, trimming or otherwise changing the value happens inside the program that uses it, not in the shell. When the work cannot be done without passing the value another way, the agent stops and reports the gap to a principal. Keeping the value out of every message, log and output is {@rule:44}.
+Splitting, trimming or otherwise changing the value happens inside the program that uses it, not in the shell. Keeping the value out of every message, log and output is {@rule:291}.
 
 Violated when a credential's value reaches a program by any route other than an environment variable or a file, such as a command-line argument, or is split or trimmed in the shell.
 '''
 zh = '''
-需要拆分、截取或者以其他方式处理凭证的值的，在使用它的程序内部完成，不在 shell 里做。不经别的途径传递凭证的值就无法完成工作的，agent 停下来，把缺口报告给委托人。凭证的值不进任何消息、日志和输出，由 {@rule:44} 管。
+需要拆分、截取或者以其他方式处理凭证的值的，在使用它的程序内部完成，不在 shell 里做。凭证的值不进任何消息、日志和输出，由 {@rule:291} 管。
 
 凭证的值经环境变量或文件以外的途径 (例如命令行参数) 交给程序，或者在 shell 里被拆分、截取的，即为违反本规定。
 '''
 
 [translations]
-zh = "1383335b2b9a389025fcca407d65973e636c37a98e30e3c5c7e39c3240d5ffe3"
+zh = "cd5aae00422c350a4572fec572a0d335bbd7744af63e2bdae0916d3b67b53d4f"

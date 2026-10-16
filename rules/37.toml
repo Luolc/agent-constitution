@@ -1,6 +1,6 @@
 id = 37
 slug = "credential-leak-report"
-revision = 6
+revision = 7
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -12,12 +12,12 @@ level = "project"
 check = "none"
 
 [title]
-en = "Treat a credential out of place as leaked and report it at once"
-zh = "凭证出现在不该出现的地方，按泄露处理并立即报告"
+en = "Stop using a credential out of place and report it for rotation at once"
+zh = "凭证出现在不该出现的地方，停用并立即报告轮换"
 
 [text.statement]
-en = "When a credential shows up where it should not, treat it as leaked and report it at once."
-zh = "凭证出现在不该出现的地方时，按已经泄露处理，并立即报告。"
+en = "When a credential shows up where it should not, stop using it, never quote, copy or try it, and at once tell a principal responsible for it which credential it is, where it appeared and that it needs rotating, without its value."
+zh = "凭证出现在不该出现的地方时，停止使用它，不引用、不复制、不试用，并立即告知对它负责的委托人是哪一项凭证、在哪里出现、需要轮换，通知里不出现它的值。"
 
 [text.reason]
 en = '''
@@ -29,19 +29,19 @@ zh = '''
 
 [text.verification]
 en = '''
-Where it should not be includes a file, an output, a message and the agent's own context. The agent stops using the credential, does not quote, copy or try it, and at once tells a principal responsible for it which credential it is, where it appeared and that it needs rotating, without the value. The notice goes to a person; an agent that cannot reach a principal directly sends it through the agent that talks with principals ({@rule:115}).
+Where it should not be includes a file, an output, a message and the agent's own context. The notice goes to a person; an agent that cannot reach a principal directly sends it through the agent that talks with principals ({@rule:115}).
 
 When unsure whether something is a credential, handle it as one.
 
-Violated when an agent uses, quotes, copies or tries such a credential, or does not report it at once.
+Violated when an agent uses, quotes, copies or tries such a credential, or does not tell a principal at once which credential it is, where it appeared and that it needs rotating, or puts its value in the notice.
 '''
 zh = '''
-不该出现的地方包括文件、输出、消息，以及 agent 自己的上下文。agent 停止使用这项凭证，不引用、不复制、不试用，并立即告知对它负责的委托人是哪一项凭证、在哪里出现、需要轮换，通知里不出现凭证的值。通知要送到人那里；agent 不能直接联系委托人的，经与委托人对话的 agent ({@rule:115}) 转达。
+不该出现的地方包括文件、输出、消息，以及 agent 自己的上下文。通知要送到人那里；agent 不能直接联系委托人的，经与委托人对话的 agent ({@rule:115}) 转达。
 
 不确定某段内容是否属于凭证的，按凭证处理。
 
-agent 对这样的凭证继续使用、引用、复制、试用，或者没有立即报告的，即为违反本规定。
+agent 对这样的凭证继续使用、引用、复制、试用，或者没有立即告知委托人是哪一项凭证、在哪里出现、需要轮换，或者在通知里写出凭证的值的，即为违反本规定。
 '''
 
 [translations]
-zh = "88a714df5486c9a655ffd77ec262d3c087ec2848b8a5e50c2ef157ae1622f4cf"
+zh = "1e94d278fc591c36bd47d0a30b33983e97271c2bd662f35253f7b27b26420718"
