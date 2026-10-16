@@ -8,8 +8,12 @@
 # Before any job that publishes, the job `check` runs check-release-tag:
 # the tag against the manifest, that the commit is on main, and that its
 # CI run on main succeeded on the first attempt.
-# Run by hand (workflow_dispatch), the workflow only builds the binaries
-# and keeps them as workflow artifacts; it publishes nothing.
+# The job `homebrew` then writes Formula/statute.rb in the tap
+# Luolc/homebrew-tap, pointing at the tarballs of the Release, so that
+# `brew install luolc/tap/statute` installs them.
+# Run by hand (workflow_dispatch) with an existing tag, the workflow builds
+# the binaries and keeps them as workflow artifacts, and renders, audits,
+# installs and tests that tag's formula; it publishes nothing.
 
 name: Release
 
@@ -17,6 +21,12 @@ on:
   push:
     tags: ["statute-v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        # No default: a default would go stale without anyone noticing.
+        description: "Existing statute-v<version> tag whose Homebrew formula to render and test"
+        required: true
+        type: string
 
 concurrency:
   group: release-${{ github.ref }}
@@ -170,3 +180,79 @@ jobs:
               --notes "statute ${TAG#statute-v}: https://crates.io/crates/statute/${TAG#statute-v}"
           fi
           gh release upload "$TAG" assets/* --clobber
+
+  # The formula is rendered by tools/render_homebrew_formula.sh from the
+  # Release's checksums; Homebrew downloads the Release tarballs and compiles
+  # nothing. Only the tag push writes the tap, with HOMEBREW_TAP_TOKEN, a
+  # repository secret outside the environment `release` so that a dispatch
+  # can run the steps before it. Its failure leaves crates.io and the Release
+  # as they are. The macOS runner ships Homebrew and tests the
+  # aarch64-apple-darwin tarball; the other three are covered by their
+  # digests.
+  homebrew:
+    needs: release
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success') }}
+    runs-on: macos-15
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the Release checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release download "$TAG" --pattern 'statute-*.sha256' --dir assets
+
+      - name: Render the formula
+        run: tools/render_homebrew_formula.sh "$TAG" assets statute.rb
+
+      # Through a local tap, the path a user's install takes, rather than a
+      # formula file handed to brew.
+      - name: Put the formula in a local tap
+        run: |
+          set -euo pipefail
+          brew tap-new --no-git luolc/local
+          cp statute.rb "$(brew --repository luolc/local)/Formula/statute.rb"
+
+      - name: Check the formula's version
+        run: tools/check_formula_version.sh "$TAG" luolc/local/statute
+
+      - name: brew audit
+        run: brew audit --strict luolc/local/statute
+
+      - name: brew install and brew test
+        run: |
+          set -euo pipefail
+          brew install luolc/local/statute
+          brew test luolc/local/statute
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'push'
+        with:
+          repository: Luolc/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      # A rerun finds the formula already there and commits nothing.
+      - name: Commit the formula to the tap
+        if: github.event_name == 'push'
+        working-directory: tap
+        run: |
+          set -euo pipefail
+          mkdir -p Formula
+          cp ../statute.rb Formula/statute.rb
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/statute.rb
+          if git diff --cached --quiet; then
+            echo "formula: already at $TAG, nothing to commit"
+          else
+            git commit -q -m "statute $TAG"
+            git push origin HEAD:main
+            echo "formula: pushed statute $TAG"
+          fi
