@@ -265,8 +265,9 @@ A parameter's `scope` says who sets it:
 - **`personal`**: what concerns only the person an agent works for,
   wherever the agent works: today the language in which an agent
   writes to that person, the language of the work items it writes
-  for them, whose tracker serves every repository of the person, and
-  the directory where the person keeps their main checkouts.
+  for them, whose tracker serves every repository of the person, the
+  directories the person keeps on their machines, and the release,
+  CI runner and FedNet socket of their setup (below).
   `statute.toml` gives the repository's value, and
   [the global configuration](global-configuration.md#the-global-configuration)
   and the private rule set may each set the person's own, which the
@@ -350,7 +351,28 @@ configuration or the private rule set gives them to the private
 output; in a private repository, which has no private output,
 `statute.toml` sets them.
 
-The sixteen parameters are declared in `rules/params.toml`. The table
+**The release, the runner and the socket.** R135, R212 and R190 each
+leave one value of a person's setup to the rule set: the Linux release
+of the machines and test containers, the label of the Linux runners
+the CI service hosts, and the socket of the FedNet client on the
+machine. Each is a `string` parameter of scope `personal`, with a
+default that names nobody's setup, used by a rule that is off by
+default and requires the rule it fills in:
+
+| Name | Default | Used by | Fills in |
+| --- | --- | --- | --- |
+| `linux.container-image` | `debian:13` | R316 (domain R127) | R135 |
+| `ci.linux-runner-label` | `ubuntu-22.04` | R317 (domain R276) | R212 |
+| `fednet.client-socket` | `/run/fednet/client.sock` | R318 (domain R188) | R190 |
+
+One value names both the machines' release and the containers' base
+image, its name and tag, so the two cannot disagree. R135, R212 and
+R190 are not superseded, since what they require holds without the
+value: a rule set that enables them and not the new rules keeps them
+and says nothing about the value. A person sets the values as for the
+directories.
+
+The nineteen parameters are declared in `rules/params.toml`. The table
 `work-items` and the key `language.work-items` do not collide: one is
 a table of the rule set, the other a key in the table `language`.
 
