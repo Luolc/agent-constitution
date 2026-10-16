@@ -1027,3 +1027,55 @@ fn the_global_configuration_names_the_source_of_each_entry() {
         "`rules`: `L3` is a rule of a repository's own",
     );
 }
+
+/// What `statute.toml` excludes comes before the global configuration:
+/// an entry it excludes, or one that requires what it excludes, is left
+/// out with a note, and the rest stay.
+#[test]
+fn the_global_configuration_gives_way_to_what_the_rule_set_excludes() {
+    let w = world("enables-exclude");
+    let (_, team) = source(
+        &w.at,
+        "team",
+        &[
+            domain(1),
+            rule(4, 1, ""),
+            rule(5, 1, "requires = [4]"),
+            rule(6, 1, ""),
+        ],
+    );
+    w.configure(&format!(
+        "team = {{ git = \"{team}\", branch = \"main\", public = true }}"
+    ));
+    configure_top(&w, "rules = [\"team:5\", \"team:6\", \"R2\"]\n");
+    ok(&w.run(&["init", "--public"]));
+    let path = w.repo.join("statute.toml");
+    let text = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path, format!("exclude = [\"team:4\", \"team:6\"]\n{text}")).unwrap();
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["lock"]));
+    let run = w.run(&["compile"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains(
+            "statute: note: the global configuration's `team:6` is left out here: statute.toml excludes it"
+        ),
+        "{}",
+        run.stderr
+    );
+    assert!(
+        run.stderr
+            .contains("statute: note: the global configuration's `team:5` is left out here: "),
+        "{}",
+        run.stderr
+    );
+    let full = read(&w.repo, ".statute/AGENTS.full.md");
+    assert!(full.contains("Do the thing 2."), "{full}");
+    assert!(!full.contains("Do the thing 5."), "{full}");
+    assert!(!full.contains("Do the thing 6."), "{full}");
+    ok(&w.run(&["compile", "--private-only"]));
+}

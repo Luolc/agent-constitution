@@ -105,7 +105,8 @@ impl Project {
                 return (None, diags);
             }
         };
-        let (project, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
+        let (project, mut diags) =
+            Project::from_manifest(root, manifest, diags, env, &locked, None);
         // Where there is a private rule set, the private layer may enable
         // the rule, and its own pass tells.
         if let Some(project) = &project
@@ -201,7 +202,14 @@ impl Project {
             .filter(|k| !project.manifest.exclude.contains(k))
             .cloned()
             .collect();
-        let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
+        let (combined, mut diags) = Project::from_manifest(
+            root,
+            manifest,
+            diags,
+            env,
+            &locked,
+            Some(&project.resolution),
+        );
         diags.0.retain(|d| !given.0.contains(d));
         // A finding about an entry of `rules`, `packs`, `domains` or
         // `exclude`, or about a node that what the private rule set
@@ -275,13 +283,15 @@ impl Project {
     }
 
     /// The project of a rule set read already, its findings added to
-    /// `diags`.
+    /// `diags`; `public`, the public layer's resolution, for a private
+    /// layer.
     fn from_manifest(
         root: &Path,
         mut manifest: Manifest,
         mut diags: Diagnostics,
         env: &Env,
         locked: &[SourceSpec],
+        public: Option<&Resolution>,
     ) -> (Option<Project>, Diagnostics) {
         for spec in &mut manifest.sources {
             if let Err(e) = pick_commit(spec, locked, env) {
@@ -376,6 +386,9 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
+        if let Some(public) = public {
+            fit_global(&sources, &mut manifest, number, public);
+        }
         let resolution = resolve::resolve(&sources, &manifest, number, &mut diags);
         let values = crate::param::settle(&sources, &manifest, &resolution, &mut diags);
         if diags.has_errors() {
@@ -391,6 +404,71 @@ impl Project {
         };
         (Some(project), diags)
     }
+}
+
+/// Why the private layer `manifest` fails to resolve over `public`, the
+/// public layer's resolution: its first error, or a rule it enables that
+/// overrides a rule of the public layer; `None` when it resolves.
+fn fails(
+    sources: &Sources,
+    manifest: &Manifest,
+    number: u64,
+    public: &Resolution,
+) -> Option<String> {
+    let mut diags = Diagnostics::default();
+    let res = resolve::resolve(sources, manifest, number, &mut diags);
+    if let Some(e) = diags.errors().next() {
+        return Some(e.message.clone());
+    }
+    res.overridden
+        .iter()
+        .find(|(target, by)| {
+            public.enabled.contains_key(*target) && !public.enabled.contains_key(*by)
+        })
+        .map(|(target, by)| format!("{by} would override {target}, a rule of the public layer"))
+}
+
+/// Leaves out of the private layer `manifest` each entry of the global
+/// configuration that makes it fail, in order, with a note: the
+/// repository's own choices, such as what `statute.toml` excludes, come
+/// before the person's. Nothing is left out when the layer fails without
+/// those entries too, for that failure is the private rule set's own.
+fn fit_global(sources: &Sources, manifest: &mut Manifest, number: u64, public: &Resolution) {
+    if manifest.from_global.is_empty() || fails(sources, manifest, number, public).is_none() {
+        return;
+    }
+    let given = manifest.from_global.clone();
+    let without = |m: &Manifest, drop: &[Key]| {
+        let mut m = m.clone();
+        for list in [&mut m.rules, &mut m.packs, &mut m.domains] {
+            list.retain(|k| !drop.contains(k));
+        }
+        m
+    };
+    let full = manifest.clone();
+    if fails(sources, &without(&full, &given), number, public).is_some() {
+        return;
+    }
+    let mut kept: Vec<Key> = Vec::new();
+    for key in &given {
+        let rest: Vec<Key> = given
+            .iter()
+            .filter(|k| *k != key && !kept.contains(k))
+            .cloned()
+            .collect();
+        match fails(sources, &without(&full, &rest), number, public) {
+            None => kept.push(key.clone()),
+            Some(why) => manifest.left_out.push(format!(
+                "the global configuration's `{key}` is left out here: {why}"
+            )),
+        }
+    }
+    let dropped: Vec<Key> = given.into_iter().filter(|k| !kept.contains(k)).collect();
+    let left = without(manifest, &dropped);
+    manifest.rules = left.rules;
+    manifest.packs = left.packs;
+    manifest.domains = left.domains;
+    manifest.from_global = kept;
 }
 
 /// Whether the node a finding names first, after its kind, is in `off`

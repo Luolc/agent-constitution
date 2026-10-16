@@ -396,6 +396,9 @@ pub struct Manifest {
     /// The entries of `rules`, `packs` and `domains` that the global
     /// configuration added to the private layer.
     pub from_global: Vec<Key>,
+    /// Why each entry of the global configuration that does not fit this
+    /// rule set was left out, one note each.
+    pub left_out: Vec<String>,
     /// Those of the private rule set, in the private layer.
     pub private_values: BTreeMap<String, String>,
 }
@@ -1035,6 +1038,7 @@ impl Manifest {
             global_values: layers.values.clone(),
             global_enables: layers.enables.clone(),
             from_global: Vec::new(),
+            left_out: Vec::new(),
             private_values: BTreeMap::new(),
         })
     }
@@ -1148,9 +1152,11 @@ impl Manifest {
         }
         // The global configuration's entries come last: one that names a
         // source this repository lacks, that a layer lists already or
-        // that the private rule set excludes is left out.
+        // that the private rule set excludes is left out, and so, with a
+        // note, is one that statute.toml excludes.
         let mut lists = [rules, packs, domains];
         let mut from_global = Vec::new();
+        let mut left_out = Vec::new();
         let enables = &self.global_enables;
         for (i, entries) in [&enables.rules, &enables.packs, &enables.domains]
             .into_iter()
@@ -1170,7 +1176,11 @@ impl Manifest {
                     .chain(lists.iter().flatten())
                     .chain(&exclude)
                     .any(|k| *k == key);
-                if !listed {
+                if !listed && self.exclude.contains(&key) {
+                    left_out.push(format!(
+                        "the global configuration's `{entry}` is left out here: {FILE} excludes it"
+                    ));
+                } else if !listed {
                     lists[i].push(key.clone());
                     from_global.push(key);
                 }
@@ -1203,6 +1213,7 @@ impl Manifest {
             reopened,
             private_values,
             from_global,
+            left_out,
             ..self.clone()
         })
     }

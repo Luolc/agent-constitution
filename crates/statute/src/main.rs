@@ -474,6 +474,9 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     .transpose()
     .map_err(|e| eprintln!("statute: error: {e}"))?;
     let has_full = full.is_some();
+    for note in private.iter().flat_map(|p| &p.both.manifest.left_out) {
+        eprintln!("statute: note: {note}");
+    }
     if !project.manifest.public {
         unused_personal(&project);
         if !project.manifest.global_enables.is_empty() {
@@ -1524,6 +1527,16 @@ fn explain_defaults(root: &Path) -> Result<(), ()> {
     Ok(())
 }
 
+/// `, listed in `<field>` of the global configuration` when the global
+/// configuration added `key` to the private layer; else nothing.
+fn global(project: &Project, key: &Key, field: &str) -> String {
+    if project.manifest.from_global.contains(key) {
+        format!(", listed in `{field}` of the global configuration")
+    } else {
+        String::new()
+    }
+}
+
 /// Writes why `key` is enabled, one line per reason, and under each rule
 /// that brought it in, why that rule is enabled, down to the rules chosen
 /// directly.
@@ -1546,13 +1559,21 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
                 continue;
             }
             Reason::Pack(root) => {
-                out.push_str(&format!("{indent}- in pack {}\n", label(sources, root)));
+                out.push_str(&format!(
+                    "{indent}- in pack {}{}\n",
+                    label(sources, root),
+                    global(project, root, "packs")
+                ));
                 continue;
             }
             Reason::Default => {
                 let domain = sources.parent(key).map(|d| label(sources, &d));
+                let listed = sources
+                    .parent(key)
+                    .map(|d| global(project, &d, "domains"))
+                    .unwrap_or_default();
                 out.push_str(&format!(
-                    "{indent}- on by default, and its domain {} is on\n",
+                    "{indent}- on by default, and its domain {} is on{listed}\n",
                     domain.unwrap_or_default()
                 ));
                 continue;
