@@ -1,13 +1,13 @@
 id = 96
 slug = "rule-writing"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
 default = "off"
 
 [title]
-en = "Writing rules"
+en = "Writing Rules"
 zh = "写规定"
 
 [applicability]
@@ -19,4 +19,4 @@ zh = '''
 '''
 
 [translations]
-zh = "e61988d869a9d7c05f1bdd6ea520994e8d35385857460e74b4c60d6d1a00ca6a"
+zh = "06185d11db50a3aaaaaa3802a6ca005890c80f2bef0d46561ba6ed6c91dea352"

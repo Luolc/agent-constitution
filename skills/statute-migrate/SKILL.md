@@ -103,7 +103,7 @@ for departures only.
   whose environment it lacks (no CI, no reviewer, no shared machine)
   or that contradicts how it works on purpose.
 - A domain or rule `off` by default that it needs: Fleet when agents
-  divide work there, Writing rules (R96) when agents write or change
+  divide work there, Writing Rules (R96) when agents write or change
   rules there, which a repository with local rules does (step d).
 - A one-of whose default child is not how the repository works.
 
@@ -159,7 +159,7 @@ repository's output only, and no other repository can name them. A
 repository may be both; this step writes only its own rules. Say
 which is which when you show the person the rules.
 
-- Write them as the rules of domain R96 (Writing rules) require: one
+- Write them as the rules of domain R96 (Writing Rules) require: one
   requirement per rule, worded so that a reviewer can decide it,
   self-contained, citing in `authority` the most specific provisions
   it refines, and new rules as trial rules. Their file format is that

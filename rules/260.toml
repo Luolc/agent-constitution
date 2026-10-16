@@ -1,6 +1,6 @@
 id = 260
 slug = "readings"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 15
 default = "on"
 
 [title]
-en = "Readings and claims"
+en = "Readings and Claims"
 zh = "读数与主张"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "b1e21e5bd9819e7dd9871ee40df681581cfd068dbcc36efe918ddb14d60008a7"
+zh = "c670db8db67f5a84c6644df649d48ce34c92a69a62c101197919d05f8b2a7a24"

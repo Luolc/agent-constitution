@@ -1,6 +1,6 @@
 id = 276
 slug = "ci-and-releases"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 273
 default = "on"
 
 [title]
-en = "CI and releases"
+en = "CI and Releases"
 zh = "CI 与发版"
 
 [applicability]
@@ -20,4 +20,4 @@ push 之前与 CI 里跑哪些检查，CI 的结果怎么读、怎么引用，ru
 '''
 
 [translations]
-zh = "92684041096298cd266fa6659924d68d0ba442cebdd00c2b8653e4bc7fbe2a7b"
+zh = "2f466136e4e6cce1a27dc4ff24eaf2cbed66334c81a79277e0681f68ae2a072f"

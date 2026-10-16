@@ -1,6 +1,6 @@
 id = 271
 slug = "shared-record"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 14
 default = "on"
 
 [title]
-en = "Shared record"
+en = "Shared Record"
 zh = "共享记录"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "fcce1102ed34e0a520e590160fc509be50892833d938a780f6511b25051c44e8"
+zh = "8cf23ec569a23ce4a5df01ccf732990792aa0f73fd03d763f5863db22471d498"

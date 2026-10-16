@@ -1,6 +1,6 @@
 id = 266
 slug = "private-material"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 13
 default = "on"
 
 [title]
-en = "Private material"
+en = "Private Material"
 zh = "私有材料"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "b349fc81813686b1c608ef69affec8ca20d297d5afc60628830eabc2f196a59d"
+zh = "ab6c396d0a2b14f0d2cb009c360ca64984f8ed6889fa9c0e91f7be58b2b0d42f"

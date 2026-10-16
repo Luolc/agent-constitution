@@ -1,6 +1,6 @@
 id = 270
 slug = "talking-with-people"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 14
 default = "on"
 
 [title]
-en = "Talking with people"
+en = "Talking with People"
 zh = "与人沟通"
 
 [applicability]
@@ -20,4 +20,4 @@ agent 写给人的内容：用什么语言，关键参数与操作步骤怎么�
 '''
 
 [translations]
-zh = "1eea7acae19a88d9b3a71281725120be41d8b8fa90d77a08513bbec9bf83c8e4"
+zh = "b72b50a643ed93cecdb7892f4ebe8357248b591d87f1750d5402210991cd9002"

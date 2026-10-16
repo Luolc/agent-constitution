@@ -1,6 +1,6 @@
 id = 145
 slug = "accounts"
-revision = 3
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 149
 default = "off"
 
 [title]
-en = "Accounts and logins"
+en = "Accounts and Logins"
 zh = "账号与登录态"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "c59c15075fcfee9be2fbf72b5f870eed4d68e720321ea1eb13f9c8da194d0424"
+zh = "dc9a7d8bceeb0902bdced7e43282b5e6008b1d6b045c3cddc35fafa25e1c31db"
