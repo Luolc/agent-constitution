@@ -19,7 +19,7 @@ use std::path::Path;
 use regex::RegexSet;
 
 use super::{Context, Finding, Outcome, Report, git};
-use crate::compile::{CHECKS, FILE as AGENTS_MD, Output};
+use crate::compile::{FILE as AGENTS_MD, Output};
 use crate::manifest::FILE as RULE_SET;
 
 /// Instruction files in any repository: what an agent harness reads as
@@ -41,8 +41,8 @@ const GENERIC: &[&str] = &[
 /// statute's files beside the rule set, relative to its directory: the
 /// rule set, its lock file and `.statute/`, with the local rules, which
 /// the instructions are compiled from, and `statute-checks.toml`, which
-/// counts as generated only while it equals the compile (`Classes`). The
-/// lock file is no generated file:
+/// statute before 0.1.18 wrote and now deletes. The lock file is no
+/// generated file:
 /// it pins the commit of each git source, and `statute upgrade` moves a
 /// source to newer rules by rewriting the lock file alone, which
 /// `statute compile --check` accepts.
@@ -77,12 +77,12 @@ pub struct Classes {
     /// The rule set's directory relative to the top, with a trailing
     /// `/`; empty at the top.
     prefix: String,
-    /// The files statute compiles beside the rule set, `AGENTS.md` and
-    /// `statute-checks.toml`, that equal what it compiles from the public
-    /// layer now, relative to the top. Rule 47 takes a generated file to
-    /// be one shown to equal its build, so only these are generated; one
-    /// that differs (edited by hand, not recompiled, or statute cannot
-    /// compile) stays an instruction file.
+    /// The file statute compiles beside the rule set, `AGENTS.md`, when it
+    /// equals what statute compiles from the public layer now, relative to
+    /// the top. Rule 47 takes a generated file to be one shown to equal its
+    /// build, so only it is generated; one that differs (edited by hand,
+    /// not recompiled, or statute cannot compile) stays an instruction
+    /// file.
     compiled: Vec<String>,
 }
 
@@ -98,12 +98,11 @@ impl Classes {
             .filter(|p| !p.is_empty())
             .map_or_else(String::new, |p| format!("{p}/"));
         let compiled = output
-            .into_iter()
-            .flat_map(|out| [(AGENTS_MD, &out.agents_md), (CHECKS, &out.checks)])
-            .filter(|(name, text)| {
-                std::fs::read(root.join(name)).is_ok_and(|t| t == text.as_bytes())
+            .filter(|out| {
+                std::fs::read(root.join(AGENTS_MD)).is_ok_and(|t| t == out.agents_md.as_bytes())
             })
-            .map(|(name, _)| format!("{prefix}{name}"))
+            .map(|_| format!("{prefix}{AGENTS_MD}"))
+            .into_iter()
             .collect();
         Classes { prefix, compiled }
     }
@@ -133,10 +132,9 @@ impl Classes {
         path.strip_prefix(&self.prefix)
     }
 
-    /// Whether `path` is a file statute compiles beside the rule set.
+    /// Whether `path` is the file statute compiles beside the rule set.
     fn compiles(&self, path: &str) -> bool {
-        self.beside(path)
-            .is_some_and(|p| p == AGENTS_MD || p == CHECKS)
+        self.beside(path) == Some(AGENTS_MD)
     }
 }
 

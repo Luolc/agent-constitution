@@ -1,4 +1,4 @@
-<!-- en-sha256: 3bd3d45205cdd345b743545e5682da629a70bce844dba8ab2d80d8697f956f47 -->
+<!-- en-sha256: 02fcb603d60b74fceb1a21f1fd19c26f5a89b62b34e4927c4dedba785fea6983 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -13,8 +13,8 @@ AGENTS.md                 在本仓工作的 agent 读的指令文件，由 stat
                           按 statute.toml 编出，不手改                 A
 AGENTS.legacy.md          原来手写的 AGENTS.md，留到用户说删为止       A
 statute.toml              规定清单：宪法、本仓采用的领域和规定、参数   A
-statute.lock              钉住的规定及其哈希，由 statute 写出          A
-statute-checks.toml       检查文件，由 statute 写在 statute.toml 旁    A
+statute.lock              钉住的规定及其哈希、statute 的版本和检查的
+                          命令，由 statute 写出                        A
 .statute/
   .gitignore              statute 在写出第一个生成文件前写它，
                           新 clone 因此忽略 statute 在 .statute/ 里
