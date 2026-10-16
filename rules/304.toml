@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A local device is a machine that a person uses directly rather than over a network; every other machine is a remote machine. A development machine that people work on over a network, for example, is a remote machine. A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app, unlocked with a fingerprint or a security key. Unattended tasks are as {@rule:305} defines them. Which machines are local devices and which route is used on each is set in the jurisdiction. The unattended tasks on a local device read as {@rule:305} and {@rule:306} say.
+A local device is a machine that a person uses directly; every other machine, one that people use only over a network, is a remote machine. A development machine that people work on over a network, for example, is a remote machine. A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app, unlocked with a fingerprint or a security key. Which machines are local devices and which route is used on each is set in the jurisdiction. The unattended tasks on a local device, as {@rule:305} defines them, read as {@rule:305} and {@rule:306} say.
 
 Violated when an agent on a local device, other than an unattended task there, reads the secret manager through a service account's token or by any other route that no person unlocks.
 '''
 zh = '''
-本地设备，指人直接使用、而非经网络远程操作的机器；其他机器都是远程机器。例如，人经网络连上去工作的开发机是远程机器。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成，用指纹或 security key 解锁。无人值守的任务的定义见 {@rule:305}。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务怎么读取，见 {@rule:305} 和 {@rule:306}。
+本地设备，指人直接操作的机器；其他机器，也就是人只经网络操作的机器，都是远程机器。例如，人经网络连上去工作的开发机是远程机器。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成，用指纹或 security key 解锁。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务 (定义见 {@rule:305}) 怎么读取，见 {@rule:305} 和 {@rule:306}。
 
 本地设备上无人值守的任务以外的 agent 经 service account 的 token，或者经别的不需要人解锁的途径读取密钥管理器的，即为违反本规定。
 '''
 
 [translations]
-zh = "87b6e72db5171c7e56bfd78b12e48f832e7ef57e69a1e3b8c1500e1788c66fc6"
+zh = "31c7262f9521b4af28c967994466b559afbd648d5a66eb790bec2a508087998d"
