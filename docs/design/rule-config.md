@@ -325,19 +325,32 @@ scope `repo` name them, each with a common name as its default:
 | `work-items.status-done` | `Done` | the status of an attempt that ended as done |
 | `work-items.status-abandoned` | `Abandoned` | the status of an attempt that was given up |
 
-**The directory of main checkouts.** Where a person keeps the main
-checkouts of their repositories is theirs, the same on every machine
-they work on, so one `string` parameter of scope `personal` names it:
-`dirs.main-checkouts`, `~/src` by default. R287 and R288, in the
-domain R127 (`machine`), use it; both are off by default, so a rule
-set that does not turn them on says nothing about the directory. A
-person who wants them turns them on in their own layer and sets the
-value: in a public
-repository, the global configuration or the private rule set gives it
-to the private output; in a private repository, which has no private
-output, `statute.toml` sets it.
+**Directories.** Where a person keeps the main checkouts of their
+repositories, their worktrees and the other directories that agents
+use on a machine is theirs, the same on every machine they work on, so
+each directory is a `string` parameter of scope `personal`, with a
+neutral default that names nobody's setup:
 
-The eleven parameters are declared in `rules/params.toml`. The table
+| Name | Default | Used by |
+| --- | --- | --- |
+| `dirs.main-checkouts` | `~/src` | R287, R288 |
+| `dirs.worktrees` | `~/worktrees` | R309 |
+| `dirs.scratch` | `~/agent-scratch` | R310 |
+| `dirs.data` | `~/local-data` | R311 |
+| `dirs.third-party` | `~/third-party` | R312, R313 |
+| `dirs.initiatives` | `~/initiatives` | R314 |
+
+R314 is in the domain R161 (`fleet-cli`), the others in the domain
+R127 (`machine`). The rules that use these parameters are off by
+default, and so are R217 to R220, which rest on the scratch and data
+directories, so a rule set that does not turn them on says nothing
+about the directories. A person who wants them turns them on in their
+own layer and sets the values: in a public repository, the global
+configuration or the private rule set gives them to the private
+output; in a private repository, which has no private output,
+`statute.toml` sets them.
+
+The sixteen parameters are declared in `rules/params.toml`. The table
 `work-items` and the key `language.work-items` do not collide: one is
 a table of the rule set, the other a key in the table `language`.
 
