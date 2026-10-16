@@ -313,13 +313,13 @@ repealed or superseded still is, and a node changed beyond its
 translations has a higher revision than at the base; it skips the comparison, with the
 note, where check 7 does, and without a `constitution/` beside `<dir>`
 it fails. These findings are `rules/7.toml:12: error: <message>`.
-`--base <git-ref>` compares with the tip of `<git-ref>`, not with the
-point where the branch left it, so a branch behind it shows the nodes
-changed there as its own changes; merge the base into the branch before
-running it locally. CI compares the merge commit with its first parent,
-which this does not affect.
 This repo runs `statute validate rules` as a commit hook, and CI runs
-it with `--base` too.
+it with `--base` too. `--base <git-ref>` compares with the tip of
+`<git-ref>`, not with the point where the branch left it, so a branch
+behind it shows the nodes changed there as its own changes; merge the
+base into the branch before running it locally. On a pull request, CI
+compares the merge commit with its first parent, which this does not
+affect, and on a push to `main`, the commit before the push.
 
 **`constitution build`** checks the sources of the one edition under
 `constitution/` and writes the full version and the version for agents
