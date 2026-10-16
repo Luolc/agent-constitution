@@ -2,17 +2,15 @@
 //! and the site) into `AGENTS.md`, the constitution's version for agents
 //! and then the enabled rules along the parent tree, with the citations in
 //! their text rendered; and, next to it, the skills the enabled rules
-//! need and the checks to install.
+//! need.
 
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
-use serde::Serialize;
-
 use crate::cite::{self, Citation, Labels};
 use crate::lock;
 use crate::manifest::Key;
-use crate::node::{self, Check, Kind, Node, Text};
+use crate::node::{self, Kind, Node, Text};
 use crate::param;
 use crate::private;
 use crate::project::Project;
@@ -26,14 +24,15 @@ pub const FILE: &str = "AGENTS.md";
 pub const GENERATED: &str =
     "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->";
 
-/// The first line of the other file `compile` writes, as a TOML
-/// comment, and the content of the marker in a skill directory.
+/// The content of the marker in a skill directory, and the first line of
+/// `OLD_CHECKS`.
 pub const GENERATED_HASH: &str =
     "# Written by statute from statute.toml and statute.lock; do not edit by hand.";
 
-/// The check binary's version and the external commands of the enabled
-/// rules, next to `AGENTS.md`.
-pub const CHECKS: &str = "statute-checks.toml";
+/// The file next to `AGENTS.md` that statute before 0.1.18 wrote with its
+/// version and the commands of the checks, which the lock file now
+/// records; `compile` deletes it when statute wrote it.
+pub const OLD_CHECKS: &str = "statute-checks.toml";
 
 /// Where the skills go, below the directory of `AGENTS.md`.
 pub const SKILLS: &str = ".agents/skills";
@@ -47,23 +46,9 @@ pub const MARKER: &str = ".statute-generated";
 /// Everything `compile` writes, before it is written.
 pub struct Output {
     pub agents_md: String,
-    pub checks: String,
     /// The skills to install, sorted by name: the name and the skill's
     /// directory in the source.
     pub skills: Vec<(String, PathBuf)>,
-}
-
-#[derive(Serialize)]
-struct Checks<'a> {
-    statute: &'a str,
-    commands: Vec<Command<'a>>,
-}
-
-#[derive(Serialize)]
-struct Command<'a> {
-    rule: String,
-    run: &'a str,
-    tools: &'a [String],
 }
 
 /// The words the output adds around the rules, in one language.
@@ -180,49 +165,23 @@ pub fn compile(project: &Project) -> Result<Output, String> {
         }
     }
     skills.sort();
-    let commands = project
-        .resolution
-        .enabled
-        .keys()
-        .filter_map(
-            |key| match &project.sources.get(key)?.rule.as_ref()?.check {
-                Check::Command { run, tools } => Some(Command {
-                    rule: key.to_string(),
-                    run,
-                    tools,
-                }),
-                _ => None,
-            },
-        )
-        .collect();
-    let checks = toml::to_string(&Checks {
-        statute: env!("CARGO_PKG_VERSION"),
-        commands,
-    })
-    .map_err(|e| format!("cannot write {CHECKS}: {e}"))?;
-    Ok(Output {
-        agents_md,
-        checks: format!("{GENERATED_HASH}\n\n{checks}"),
-        skills,
-    })
+    Ok(Output { agents_md, skills })
 }
 
-/// Writes the output: `AGENTS.md` to `agents_md`, the rest next to it,
-/// each skill as a copy in `.agents/skills/<name>` with a link to it,
+/// Writes the output: `AGENTS.md` to `agents_md` and, next to it, each
+/// skill as a copy in `.agents/skills/<name>` with a link to it,
 /// `.claude/skills/<name>`, since Claude Code reads only that directory.
 /// Checks every place first, and writes nothing when one holds something
 /// statute did not write, or when `.agents/skills` or `.claude/skills` is
 /// not a plain directory while a skill is to be written. A skill directory
-/// statute wrote that is no longer needed is removed, with its link. An
-/// error midway can leave part of the output; the next run finishes it.
-/// Links need a Unix system; elsewhere a rule set with a skill fails.
-/// Returns what was written.
-pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> {
+/// statute wrote that is no longer needed is removed, with its link, and
+/// so is an `OLD_CHECKS` statute wrote. An error midway can leave part of
+/// the output; the next run finishes it. Links need a Unix system;
+/// elsewhere a rule set with a skill fails. Returns what was written and
+/// what was removed.
+pub fn write(output: &Output, agents_md: &Path) -> Result<Written, String> {
     let dir = agents_md.parent().unwrap_or(Path::new(""));
-    let files = [
-        (agents_md.to_path_buf(), &output.agents_md, GENERATED),
-        (dir.join(CHECKS), &output.checks, GENERATED_HASH),
-    ];
+    let files = [(agents_md.to_path_buf(), &output.agents_md, GENERATED)];
     let refuse = |path: &Path| {
         Err(format!(
             "{}: not written by statute, so it is left as it is and nothing is written; write elsewhere with --output, or move it away first",
@@ -230,12 +189,7 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
         ))
     };
     for (path, _, marker) in &files {
-        let Ok(meta) = path.symlink_metadata() else {
-            continue;
-        };
-        let generated = meta.is_file()
-            && std::fs::read(path).is_ok_and(|t| t.starts_with(format!("{marker}\n").as_bytes()));
-        if !generated {
+        if path.symlink_metadata().is_ok() && !generated_file(path, marker) {
             return refuse(path);
         }
     }
@@ -275,6 +229,7 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
 
     let fail = |path: &Path, e: std::io::Error| format!("{}: cannot write: {e}", path.display());
     let mut written = Vec::new();
+    let mut removed = Vec::new();
     // In an order that a run stopped by an error can be repeated from:
     // each skill's marker before its files, a link removed before its
     // directory, and the `AGENTS.md` last.
@@ -320,11 +275,28 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
         }
         written.push(link);
     }
+    let old = dir.join(OLD_CHECKS);
+    if generated_file(&old, GENERATED_HASH) {
+        std::fs::remove_file(&old).map_err(|e| fail(&old, e))?;
+        removed.push(old);
+    }
     for (path, text, _) in files.into_iter().rev() {
         std::fs::write(&path, text).map_err(|e| fail(&path, e))?;
         written.push(path);
     }
-    Ok(written)
+    Ok(Written { written, removed })
+}
+
+/// What `write` wrote and what it removed.
+pub struct Written {
+    pub written: Vec<PathBuf>,
+    pub removed: Vec<PathBuf>,
+}
+
+/// Whether `path` is a regular file whose first line is `marker`.
+fn generated_file(path: &Path, marker: &str) -> bool {
+    path.symlink_metadata().is_ok_and(|m| m.is_file())
+        && std::fs::read(path).is_ok_and(|t| t.starts_with(format!("{marker}\n").as_bytes()))
 }
 
 /// What `write` would change for `output`, with `AGENTS.md` at
@@ -334,8 +306,8 @@ pub fn write(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> 
 /// that is not one statute wrote, and a link that is not the skill's;
 /// `.agents/skills` or `.claude/skills` when it is not a plain directory
 /// while a skill is to be written; and each skill directory statute
-/// wrote that is no longer needed. Fails when a skill's source cannot be
-/// read.
+/// wrote that is no longer needed, and an `OLD_CHECKS` statute wrote.
+/// Fails when a skill's source cannot be read.
 pub fn differences(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, String> {
     let same = |path: &Path, text: &[u8]| {
         path.symlink_metadata().is_ok_and(|m| m.is_file())
@@ -343,13 +315,11 @@ pub fn differences(output: &Output, agents_md: &Path) -> Result<Vec<PathBuf>, St
     };
     let dir = agents_md.parent().unwrap_or(Path::new(""));
     let mut differ = Vec::new();
-    for (path, text) in [
-        (agents_md.to_path_buf(), &output.agents_md),
-        (dir.join(CHECKS), &output.checks),
-    ] {
-        if !same(&path, text.as_bytes()) {
-            differ.push(path);
-        }
+    if !same(agents_md, output.agents_md.as_bytes()) {
+        differ.push(agents_md.to_path_buf());
+    }
+    if generated_file(&dir.join(OLD_CHECKS), GENERATED_HASH) {
+        differ.push(dir.join(OLD_CHECKS));
     }
     let (skills, links) = (dir.join(SKILLS), dir.join(LINKS));
     if !output.skills.is_empty() {
@@ -511,10 +481,22 @@ pub fn personal_differs(project: &Project) -> bool {
 }
 
 /// Fails unless the lock file at `path`, shown as `shown`, holds
-/// `current`, what the rule set `set` and the rules give now.
+/// `current`, what the rule set `set` and the rules give now, the version
+/// of statute that wrote it included.
 fn check_lock(path: &Path, shown: &str, current: &str, set: &str) -> Result<(), String> {
     match std::fs::read_to_string(path) {
         Ok(text) if text == current => Ok(()),
+        Ok(text)
+            if let Some(other) = lock::read(&text)
+                .ok()
+                .and_then(|l| l.statute)
+                .filter(|v| v != lock::VERSION) =>
+        {
+            Err(format!(
+                "{shown} was written by statute {other}, and this is statute {}; run statute {other}, or `statute lock` to write it with this one",
+                lock::VERSION
+            ))
+        }
         Ok(_) => Err(format!(
             "{shown} is not what {set} and the rules give now; run `statute lock` first"
         )),

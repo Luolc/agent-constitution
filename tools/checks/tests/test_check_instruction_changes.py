@@ -203,6 +203,29 @@ class Change(unittest.TestCase):
         self.change(*names)
         self.assertEqual(self.run_check()[0], code)
 
+  def test_lock_file_changed_only_in_statute_entries_goes_with_either_side(
+    self,
+  ):
+    lock = 'statute = "{}"\n\n[constitution]\nedition = "{}"\n{}'
+    command = '\n[[commands]]\nrule = "R5"\nrun = "./check.sh"\ntools = []\n'
+    self.write("statute.lock", lock.format("0.1.17", "2026-10", ""))
+    self.commit("lock")
+    self.git("tag", "-f", "base")
+    for name, text, code in [
+      ("version", lock.format("0.1.18", "2026-10", ""), 0),
+      ("commands", lock.format("0.1.17", "2026-10", command), 0),
+      ("beyond", lock.format("0.1.18", "2026-11", ""), 1),
+      ("not toml", "changed\n", 1),
+    ]:
+      with self.subTest(name):
+        self.git("reset", "-q", "--hard", "base")
+        self.write("statute.lock", text)
+        self.change("crates/statute/Cargo.toml")
+        code_out = self.run_check()
+        self.assertEqual(code_out[0], code, code_out[1])
+        group = "instruction" if code else "generated"
+        self.assertIn(f"{group} files:\n  M statute.lock\n", code_out[1])
+
   def test_compiled_agents_file_goes_with_either_side(self):
     for names, code in [
       (["AGENTS.md", "crates/statute/src/compile.rs"], 0),
@@ -213,14 +236,6 @@ class Change(unittest.TestCase):
         self.git("reset", "-q", "--hard", "base")
         self.change(*names)
         self.assertEqual(self.run_check()[0], code)
-
-  def test_checks_file_counts_as_instructions_unless_declared(self):
-    self.change("statute-checks.toml", "crates/statute/Cargo.toml")
-    own = ("--instructions", r"policy/.+")
-    self.assertEqual(self.run_check(*own)[0], 1)
-    self.assertEqual(
-      self.run_check(*own, "--generated", r"statute-checks\.toml")[0], 0
-    )
 
   def test_statute_paths_count_with_repo_declared_patterns(self):
     self.change("statute.toml", "docs/design/README.md")

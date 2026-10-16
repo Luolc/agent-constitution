@@ -9,7 +9,7 @@ position. What each one proves, and what it does not:
 | --- | --- | --- |
 | Constitution (`statute constitution build --check`) | Each constitution source has the format and the name in [Source formats](source-formats.md) and [The constitution](constitution.md); each ID is well formed and unique in its namespace; numbers are unique in their scope; the languages of each text cite the same IDs; every citation of the constitution resolves to a provision that is not repealed, the constitution citing only itself; the committed outputs equal a fresh build; with `--base`, the edition is an active base's or a later one, and in the base's edition nothing numbered in the base has disappeared, changed number or moved; with `--base` and whatever the base's status, within one edition, and from a draft base whatever edition each names, the revision is greater than the base's if the constitution text changed and equal to it if not | That the two languages mean the same thing, or that a change to one language was carried to the other |
 | Rules (`statute validate rules`) | Each rule file has the format of [Rule file format](rule-format.md#rule-file-format), the tree the shape of [No rule under a rule](rule-config.md#no-rule-under-a-rule), every reference a target of the right kind, every translation the original's hash and citations, and the defaults resolve on their own; each rule's status agrees with the constitution's, and every citation of the constitution and every `authority` entry resolves to a provision that is not repealed; no node in force names a superseded or repealed rule of the source; with `--base`, no node of the base is gone or no longer repealed or superseded, and a node changed beyond its translations has a higher revision than the base's (below) | That a rule says what it should, or that two rules that nobody marked as conflicting work together |
-| Compiled output (`statute compile --check`) | `AGENTS.md`, `statute-checks.toml` and the skills' copies and links are what `statute compile` writes from `statute.toml` and `statute.lock` now, and no skill directory statute wrote is left that the rule set no longer needs; `statute.lock` is what `statute lock` would write now | Anything about the private output, which git ignores and the check neither compiles nor compares |
+| Compiled output (`statute compile --check`) | `AGENTS.md` and the skills' copies and links are what `statute compile` writes from `statute.toml` and `statute.lock` now, and no skill directory statute wrote that the rule set no longer needs, nor a `statute-checks.toml` statute wrote before 0.1.18, is left; `statute.lock`, with the version of statute and the commands of the checks, is what `statute lock` would write now | Anything about the private output, which git ignores and the check neither compiles nor compares |
 | Instruction-only changes (`check-instruction-changes --base`) | The files a change touches since its base are all instruction files or all other files, generated files not counted; a rename counts as its old and its new path | That the path table is complete: a file an agent reads as instructions but the table does not list passes as an other file. That a generated file changed only in rendering when a tools change regenerated it; the reviewer checks that |
 | Release tag (`check-release-tag`, in `release.yml` before publishing) | The tag is `statute-v` followed by the version of `crates/statute/Cargo.toml`, and that version can be read; the tagged commit is `main` or an ancestor of it; that commit has exactly one run of `ci.yml` triggered by a push to `main`, and it completed with `success` on its first attempt | That the commit is the one a person approved for release, or that crates.io accepts the upload |
 | Static site (`hugo-0.167.0 --panicOnWarning`, then `check-site-anchors`) | Hugo builds all pages without a warning, every relative link of the design to a design file leads to its page and none leads out of the repo; on every page each in-page link `#id` has an element with that id, each link to another page of the site (relative, or from the site's root when it starts with `/`) leads to a file of the site and, with a fragment, to an element with that id on that page, no id appears twice, and no list marker shows as literal text (`- §`, `- 第`) | That the pages look right, or that the fonts load |
@@ -183,19 +183,23 @@ part (the constitution, rule and skill sources) and this repo's generated
 files. The generic part has what an agent harness reads in any directory
 and, at the top of the repo, statute's files: `statute.toml`,
 `statute.lock` and `.statute/`, which it compiles the instruction file
-from; `statute-checks.toml`, which `statute compile` writes beside the
-rule set; and the legacy copies `<name>.legacy.md` in any directory
+from; and the legacy copies `<name>.legacy.md` in any directory
 (the Files table of [statute-migrate](../../skills/statute-migrate/SKILL.md)).
 A generated file goes with whichever side changed it: with the
 constitution sources it is an amendment, alone with the tools it is a
 tools change. This repo's generated files are the built constitution,
-`statute-checks.toml` and the `AGENTS.md` at the top of the repo, which
-the generic part also lists: generated counts first, since `statute
-compile --check` proves each is a compile of the rule set, and each
-changes with statute as well as with the rule set (`statute-checks.toml`
-with its version, `AGENTS.md` with how it renders the rules), as this
-repo's rule L28 provides in place of R46. An `AGENTS.md` in a
-subdirectory stays an instruction file. The
+the `AGENTS.md` at the top of the repo, which the generic part also
+lists, and `statute-checks.toml`, which statute wrote before 0.1.18 and
+now deletes, as this repo's rule L27 provides. Generated counts first
+for the `AGENTS.md`, since `statute compile --check` proves it is a
+compile of the rule set, and it changes with how statute renders the
+rules as well as with the rule set, as this repo's rule L31 provides in
+place of R46. The top `statute.lock` is generated too when its TOML
+differs from the base's (at the merge base) only in `statute` and
+`commands`, the entries statute writes from its own version and the
+rules' checks, which `statute compile --check` proves as well; any other
+change to it is an instruction change. An `AGENTS.md` or `statute.lock`
+in a subdirectory stays an instruction file. The
 script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
 off), lists both groups when they mix, and on a pass names the
 generated files, for the reviewer. CI runs
@@ -212,9 +216,9 @@ The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
 either option replaces this repo's own part and generated files.
-`statute-checks.toml` and the top `AGENTS.md` stay instruction files
-there until the repo declares them with `--generated`, once its CI runs
-`statute compile --check`. statute's built-in check of rule 46 needs no
+The top `AGENTS.md` stays an instruction file there until the repo
+declares it with `--generated`, once its CI runs `statute compile
+--check`. statute's built-in check of rule 46 needs no
 such declaration: it tells statute's files apart by itself, and where it
 differs from the script is in [Rule checks and review](rule-checks.md#checks).
 

@@ -491,9 +491,19 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     if full.is_some() {
         private::ready(root).map_err(|e| eprintln!("statute: error: {e}"))?;
     }
-    let mut written = statute::compile::write(&out, &path).map_err(|e| {
+    let statute::compile::Written {
+        mut written,
+        removed,
+    } = statute::compile::write(&out, &path).map_err(|e| {
         eprintln!("statute: error: {e}");
     })?;
+    for path in removed {
+        println!(
+            "removed {}: {} records statute's version and the commands of the checks now",
+            path.display(),
+            lock::FILE
+        );
+    }
     if let Some(full) = full {
         written.extend(private::write(root, &full).map_err(|e| eprintln!("statute: error: {e}"))?);
     }
@@ -1071,6 +1081,15 @@ fn report_changes(old: &lock::Locked, project: &Project) {
         any = true;
         println!("{text}");
     };
+    if old.statute != new.statute {
+        line(match &old.statute {
+            Some(was) => format!("statute: {was} -> {}", lock::VERSION),
+            None => format!(
+                "statute: {} recorded, with the commands of the checks",
+                lock::VERSION
+            ),
+        });
+    }
     if old.edition != new.edition {
         line(format!(
             "constitution: edition {} -> {}",

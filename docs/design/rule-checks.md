@@ -127,19 +127,25 @@ not run rule 50's check. The built-in checks:
   The lock file is one because it pins each git source's commit, and
   `statute upgrade` moves a source to newer rules by rewriting the lock
   file alone, which `statute compile --check` accepts. The `AGENTS.md`
-  and `statute-checks.toml` that statute compiles beside the rule set
-  are generated files only while each equals what statute compiles from
-  the public layer now, which is what rule 47 asks of a generated file;
-  edited by hand, not recompiled, or when statute cannot compile, each
-  is an instruction file, so a hand edit mixed with other files is a
-  violation whether or not the repository's CI runs `statute compile
-  --check`. A change of generated files alone, such as a recompile for a
-  new version of statute, mixes nothing. The note names the generated
-  files the change touches, for the reviewer of rule 47. Here the
-  script differs: in this repository it counts the top `AGENTS.md` and
-  `statute-checks.toml` as generated always, by its rules L28 and L27,
-  since its CI runs `statute compile --check`, and it knows statute's
-  files only at the top of the repository. Files of agent tools the
+  that statute compiles beside the rule set is a generated file only
+  while it equals what statute compiles from the public layer now, which
+  is what rule 47 asks of a generated file, and the lock file only when
+  statute compiles, which needs it to equal what `statute lock` writes
+  now, and its TOML differs from the base's (at the merge base) only in
+  `statute` and `commands`, which statute writes from its own version and
+  the rules' checks; edited by hand, not recompiled, changed beyond those
+  entries, or when statute cannot compile, each is an instruction file,
+  so a hand edit mixed with other files is a violation whether or not the
+  repository's CI runs `statute compile --check`. The
+  `statute-checks.toml` that statute before 0.1.18 wrote beside the rule
+  set, and now deletes, is a generated file. A change of generated files
+  alone, such as a recompile and relock for a new version of statute,
+  mixes nothing. The note names the generated files the change touches,
+  for the reviewer of rule 47. Here the script differs: in this
+  repository it counts the top `AGENTS.md` as generated always, and the
+  top `statute.lock` whenever its TOML differs only in those entries, by
+  its rule L31, since its CI runs `statute compile --check`, and it knows
+  statute's files only at the top of the repository. Files of agent tools the
   tables do not name, sources of instructions outside them, and paths a
   repository declares in its `AGENTS.md` are left to the reviewer, and
   without `--base` there is no change to check;
