@@ -1,6 +1,6 @@
 id = 13
 slug = "security"
-revision = 7
+revision = 8
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -12,11 +12,11 @@ zh = "安全"
 
 [applicability]
 en = '''
-Hard limits that keep harm out: credentials, the guards an agent meets, private material and shared machines. Enable it wherever agents work.
+Hard limits that keep harm out: credentials, the guards an agent meets, private material, shared machines and the targets of destructive commands. Enable it wherever agents work.
 '''
 zh = '''
-防止造成伤害的硬约束：凭证、agent 遇到的守卫、私有材料与共享机器。凡有 agent 工作的地方都要启用。
+防止造成伤害的硬约束：凭证、agent 遇到的守卫、私有材料、共享机器与破坏性命令的目标。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "ce34f5220cae9405fd66d261c0322a90211016f75312046b3e823c3a5e2b5f5d"
+zh = "3d394e1a322c7de7c3fed6e9e2f54b65b6ffcadb6aa2a892035f96a5f72cef0a"
