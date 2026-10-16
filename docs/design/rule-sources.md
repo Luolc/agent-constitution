@@ -550,12 +550,15 @@ and then made:
 2. Another agent reviews that record against the constitution and the
    rules in force, and its verdict goes into the same record. What the
    author runs is exactly what was reviewed (Art. VII §3).
-3. When a rule the change enables declares a relaxation that needs a
-   competent principal's approval on the change that adds it
-   (Art. IX §1), such as a private rule that moves releases of the
-   project out of Art. V §1, that principal approves this change, and
-   the same record holds the yes; a relayed yes counts only as R38 to
-   R40 provide, with its reference and checks in the record.
+3. A competent principal approves this change, and the same record
+   holds the yes, when the change enables a rule that declares a
+   relaxation needing a principal's approval on the change that adds
+   it (Art. IX §1(2) or (3)), such as a private rule that moves
+   releases of the project out of Art. V §1, or when it turns off,
+   with `statute remove --private`, a rule that is a guard
+   (Art. II §5), which loosens that guard (Art. V §1(6)). A relayed
+   yes counts only as R38 to R40 provide, with its reference and
+   checks in the record.
 4. The author runs the commands, and pastes the resulting
    `private.toml` and `private.lock` into the record, where the
    reviewer checks that `private.toml` is the version it passed.
