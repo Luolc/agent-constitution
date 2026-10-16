@@ -159,7 +159,10 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   that fits with those kept before it; when the private layer fails
   without any entry of the configuration too, the failure is
   `private.toml`'s own, and nothing is left out. So the configuration
-  never makes `lock` or `compile` fail in a repository.
+  never makes `lock` or `compile` fail in a repository. What
+  `statute.toml` excludes is matched by the entry itself: a rule
+  under a domain it excludes still turns on, as it would if
+  `statute.toml` listed it in `rules`.
 - A clone that should not have an entry excludes it in its
   `private.toml`; the configuration has no `exclude`, since what the
   person wants nowhere is left out of its lists.
