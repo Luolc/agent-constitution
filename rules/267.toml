@@ -1,6 +1,6 @@
 id = 267
 slug = "shared-machines"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 13
 default = "on"
 
 [title]
-en = "Shared machines"
+en = "Shared Machines"
 zh = "共享机器"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "e9470a3298ffb16e84ad68ce99efa2fa154b7502de808b4f8f4a47955a091a94"
+zh = "71a90f4058c0712f3e18badd5abd71384b77524982138c4771693bb9a7a8442a"

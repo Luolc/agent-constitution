@@ -1,13 +1,13 @@
 id = 127
 slug = "machine"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
 default = "off"
 
 [title]
-en = "Machines and working directories"
+en = "Machines and Working Directories"
 zh = "机器与工作目录"
 
 [applicability]
@@ -19,4 +19,4 @@ zh = '''
 '''
 
 [translations]
-zh = "4dccc8e5e449b63fe6e4eef4bab1a9f29e942e2ae5886fd3125d80cd3ed201b5"
+zh = "c9bc8eed6283ef7d0211e97becb953c6d73b3f0c331e49239a07541fa28518f8"
