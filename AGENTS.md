@@ -216,7 +216,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R302 Give each machine and each service that reads the secret manager through a service account a service account of its own, shared with no other machine or service.
 - R303 Read and reference only vaults that a principal sets aside for agents, never a vault that a person keeps for their own use.
 - R304 On a local device, a machine that a person sits at and works on directly, such as a laptop, read the secret manager, except in an unattended task there, only through a route that a person unlocks, such as a fingerprint or a security key, never through a service account's token.
-- R305 Give a service account's token only to unattended tasks, such as scheduled tasks and services, and to remote machines, those that people and agents reach only over the network, such as servers and development machines.
+- R305 Give a service account's token only to unattended tasks, such as scheduled tasks and services, and to remote machines, those that no person sits at to work on directly, such as servers and development machines.
 - R306 On a local device, let a service account's token reach only the environment of the unattended tasks there, never a login shell.
 - R307 Keep credentials that give access to other credentials, such as the tokens of service accounts and SSH private keys, out of every vault that a service account can access.
 - R259 In a public repository's files, commit messages, pull requests, comments and reviews, write nothing that identifies or locates a private resource, a private repository, an agent instance or session, or the scope it runs in, and nothing about an agent's usage, quota, model or effort.

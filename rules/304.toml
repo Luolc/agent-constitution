@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A local device is a machine that a person sits at and works on directly; a machine that people and agents reach only over the network, such as a server, is a remote machine ({@rule:305}). A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app. Which machines are local devices and which route is used on each is set in the jurisdiction. The unattended tasks on a local device read as {@rule:305} and {@rule:306} say.
+A local device is a machine that a person sits at and works on directly; any other machine is a remote machine ({@rule:305}). A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app. Which machines are local devices and which route is used on each is set in the jurisdiction. The unattended tasks on a local device read as {@rule:305} and {@rule:306} say.
 
 Violated when an agent on a local device, other than an unattended task there, reads the secret manager through a service account's token or by any other route that no person unlocks.
 '''
 zh = '''
-本地设备，指人坐在跟前直接操作的机器；人和 agent 只经网络访问的机器 (例如服务器) 是远程机器 ({@rule:305})。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务怎么读，见 {@rule:305} 和 {@rule:306}。
+本地设备，指人坐在跟前直接操作的机器；其他机器都是远程机器 ({@rule:305})。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务怎么读，见 {@rule:305} 和 {@rule:306}。
 
 本地设备上无人值守的任务以外的 agent 经 service account 的 token，或者经别的不需要人解锁的途径读密钥管理器的，即为违反本规定。
 '''
 
 [translations]
-zh = "8747c8263d13a580b9e31cde1a670f2bbbefc1a43cfaef0e62d036d4ada6d1bc"
+zh = "359cc6a62867494e33a3746c2485c1ed7a1bb14e679d5cbfc859a8d6c5a02efc"
