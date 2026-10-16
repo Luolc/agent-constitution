@@ -304,8 +304,10 @@ its inputs and its expected result.
 - Every fixture binds to at least one constitution or rule ID, written
   with its namespace as a rule cites it, and the checker rejects a fixture
   whose IDs do not resolve.
-- Before a release, every fixture runs, all happy and all redline, as
-  rule 26 (`fixture-runs`) requires. Static fixtures run in this
+- Planned, not built: before a release, every fixture runs, all happy and all
+  redline. Rule 26 (`fixture-runs`) required this and is repealed, because the
+  fixture mechanism it rests on is not built; a new rule is written when the
+  mechanism is. Static fixtures run in this
   repo's CI. Behavior fixtures (once they exist) need installed harnesses and
   model credentials, which this repo's CI does not have; they run on the
   private side, and a release needs the record of that run at the commit being
