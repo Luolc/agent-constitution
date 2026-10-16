@@ -1,0 +1,54 @@
+id = 297
+slug = "public-push-self-check"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 296
+authority = ["sensitive-info", "must-ask.irreversible-effects"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Check what goes to a public repository yourself before the push"
+zh = "向公开仓库 push 之前，自己检查要推送的内容"
+
+[text.statement]
+en = "Before you push to a public repository, read the diff, the commit messages and the pull request text yourself for private material, and push only the head you read, opening the pull request with the text you read."
+zh = "向公开仓库 push 之前，自己读一遍 diff、commit message 和 pull request 的文字，查有没有私有内容，只 push 自己读过的那个 head，并用读过的那份文字开 pull request。"
+
+[text.reason]
+en = '''
+A credential or private detail pushed to a public repository leaks ({@constitution:sensitive-info}) and cannot be withdrawn ({@constitution:must-ask.irreversible-effects}), so it has to be caught before the push. In many setups the agent that writes the change is also the one that pushes it, with no second agent to hand the texts to; this rule holds there too, and makes the check an explicit step before each push rather than something left to the moment. An author tends to miss what they wrote themselves, so where another party can read the texts first, a review by them catches more ({@rule:52}).
+'''
+zh = '''
+推送到公开仓库的凭证或私有细节就泄露了 ({@constitution:sensitive-info})，而且无法撤回 ({@constitution:must-ask.irreversible-effects})，所以必须在 push 之前发现。很多环境里写改动的 agent 也就是 push 它的 agent，没有第二个 agent 可以把文本交过去；本规定在那里同样适用，把检查定成每次 push 之前一个明确的步骤，而不是临时想起来才做。作者往往看不出自己写的问题，所以有另一方能先读这些文本的地方，由另一方预审能发现更多 ({@rule:52})。
+'''
+
+[text.verification]
+en = '''
+Before each push to any branch of a public repository ({@rule:259}), the agent that pushes writes out three texts and reads them itself:
+
+- the diff of the branch against the branch it will merge into;
+- the message of every commit to be pushed;
+- the title and body of the pull request as they will be posted.
+
+It reads them for what {@rule:259} keeps out of a public repository, for credentials ({@rule:291}) and for personal information ({@constitution:personal-info}), removes what it finds, and notes the head commit it read. It pushes only that head and opens the pull request with that text. After any change to the head or the text, it reads them again before the next push.
+
+Violated when an agent pushes to a public repository a head whose three texts it did not read after the last change to them, or opens a pull request there with a title or body that it did not read.
+'''
+zh = '''
+每次向公开仓库 ({@rule:259}) 的任何分支 push 之前，push 的 agent 写出三份文本，自己读一遍：
+
+- 这个分支相对于它要合入的分支的 diff；
+- 每个要推送的 commit 的 message；
+- pull request 将要发出的标题和正文。
+
+它在其中查找 {@rule:259} 不许写进公开仓库的内容、凭证 ({@rule:291}) 和个人信息 ({@constitution:personal-info})，把找到的删掉，并记下它读的是哪个 head commit。它只 push 那个 head，并用那份文字开 pull request。head 或文字改过之后，下一次 push 之前重新读一遍。
+
+agent 向公开仓库 push 的 head，在三份文本最后一次改动之后没有被它读过的，或者在那里开 pull request 时用了它没有读过的标题或正文的，即为违反本规定。
+'''
+
+[translations]
+zh = "aa3acb4727cc67f2327035d487a1bb566b4e9b7cf96762842bf16141ac1f2622"
