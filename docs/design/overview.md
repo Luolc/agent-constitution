@@ -30,7 +30,7 @@ Non-goals:
   below says what it cannot prove.
 - Building the feedback pipeline (events, proposals, automatic adoption) now.
   This document only reserves its places and interfaces.
-- Depending on any orchestrator. See "[Relation to fleet](fleet-and-migration.md#relation-to-fleet)".
+- Depending on any orchestrator. See "[Relation to Agent Fleet](fleet-and-migration.md#relation-to-agent-fleet)".
 
 ## Two layers
 

@@ -1,9 +1,9 @@
-<!-- en-sha256: 49fa878e25aed7b00ffbb474955399299397be28b630362601c9e02406d8038d -->
-# fleet 与迁移
+<!-- en-sha256: c63dd04444641c2d6e18d3757d77f388c01fa4e27b9aa4370c880f125ba72ab4 -->
+# Agent Fleet 与迁移
 
-## <a id="relation-to-fleet"></a>与 fleet 的关系
+## <a id="relation-to-agent-fleet"></a>与 Agent Fleet 的关系
 
-工具链只是一组处理文件的普通命令：读入源文件和 overlay，写出输出文件和 manifest，再以一个状态码退出。它不调用 fleet，不读 fleet 的状态，也不依赖 fleet 怎样启动 agent。fleet (以及其他任何编排工具) 像任何 harness 一样使用这份输出。与 fleet 相关的文件只有 `.fleet/config.json`，它告诉 fleet 本仓的 issue 在哪里。
+工具链只是一组处理文件的普通命令：读入源文件和 overlay，写出输出文件和 manifest，再以一个状态码退出。它不调用 Agent Fleet，不读 Agent Fleet 的状态，也不依赖 Agent Fleet 怎样启动 agent。Agent Fleet (以及其他任何编排工具) 像任何 harness 一样使用这份输出。与 Agent Fleet 相关的文件只有 `.fleet/config.json`，它告诉 Agent Fleet 本仓的 issue 在哪里。
 
 ## <a id="migrating-from-the-current-hand-written-guide"></a>从现有的手写的指南迁移
 

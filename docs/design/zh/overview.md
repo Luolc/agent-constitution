@@ -1,4 +1,4 @@
-<!-- en-sha256: 626645463ba994cea3a7cc90103d88ea27abca1009236b85310af35e1b80d21a -->
+<!-- en-sha256: 179634b2d1f2c1559b06209a6314b5013afaeb9a72da168dc0ad21464195b29f -->
 # 概览
 
 ## <a id="goals-and-non-goals"></a>目标与非目标
@@ -16,7 +16,7 @@
 - 存放为真实用户编译出的产物。真实的输出在用户那一侧构建，从不提交到本仓。
 - 在运行时强制执行任何东西。这件事由权限、分支保护和 harness 设置来做；本仓只产出文字、检查文字。下面每个检查程序都写明了它证明不了什么。
 - 现在就搭建反馈流水线 (事件、提案、自动采纳)。本文档只为它预留位置和接口。
-- 依赖任何编排工具。见「[与 fleet 的关系](fleet-and-migration.md#relation-to-fleet)」。
+- 依赖任何编排工具。见「[与 Agent Fleet 的关系](fleet-and-migration.md#relation-to-agent-fleet)」。
 
 ## <a id="two-layers"></a>两层结构
 

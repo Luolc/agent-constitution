@@ -46,8 +46,8 @@ The compiler is a deterministic concatenation, no model involved:
 
 Roles: there is one output for everyone. The core has no role sections. The
 overlay contributes, as a private rule, the one or two sentences that tell
-an agent how to tell whether it runs under fleet or under another way of
-working, and which skill, if any, that way of working reads.
+an agent how to tell whether it runs under Agent Fleet or under another way
+of working, and which skill, if any, that way of working reads.
 
 Wiring on the private side, as currently planned (how the content is
 installed is not decided yet): the overlay's apply step fetches the pinned core

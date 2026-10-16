@@ -1,4 +1,4 @@
-<!-- en-sha256: db80d99867e28e3a1f6c4255a1b131a2f75bebc703a5d9d3ef14807c5d31585d -->
+<!-- en-sha256: 3bd3d45205cdd345b743545e5682da629a70bce844dba8ab2d80d8697f956f47 -->
 # 文件结构
 
 各阶段沿用本仓起步时的计划：A 是宪法和本设计，B 是结构化的源文件和确定性的编译，C 是反馈与提案 (只观察)，D 是限定范围的自动采纳。C 和 D 的目录只预留，不创建。
@@ -95,7 +95,7 @@ Cargo.lock                Rust workspace 的锁文件，由 cargo 写出       A
 rust-toolchain.toml       Rust 工具链的版本，本地和 CI 里的 rustup
                           都读它                                       A
 .python-version           uv 运行 tools/ 所用的 Python 次版本号        A
-.fleet/config.json        给 fleet 用的 issue 跟踪元数据；
+.fleet/config.json        给 Agent Fleet 用的 issue 跟踪元数据；
                           工具链从不读它                               A
 ```
 
