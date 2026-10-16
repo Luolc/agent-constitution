@@ -154,7 +154,7 @@ fn authority_must_name_a_provision_of_the_edition() {
     );
     fails(
         &repo("authority-undefined", MANIFEST, &nodes, INDEX),
-        "rules/2.toml: error: rule R2: authority cites undefined no-such-provision",
+        "rules/2.toml:8: error: rule R2: authority cites undefined no-such-provision",
     );
 }
 
@@ -170,7 +170,7 @@ fn authority_must_not_name_a_repealed_provision() {
     .unwrap();
     fails(
         &dir,
-        "rules/2.toml: error: rule R2: authority cites repealed gone",
+        "rules/2.toml:8: error: rule R2: authority cites repealed gone",
     );
 }
 
@@ -194,6 +194,47 @@ fn every_own_rule_is_checked_and_only_the_enabled_rules_of_a_source() {
     std::fs::write(own.join("5.toml"), text).unwrap();
     fails(
         &dir,
-        ".statute/rules/5.toml: error: rule L5: authority cites undefined no-such-provision",
+        ".statute/rules/5.toml:8: error: rule L5: authority cites undefined no-such-provision",
+    );
+}
+
+#[test]
+fn a_citation_in_two_languages_is_named_once_at_its_line() {
+    let citing = |id: &str| {
+        let statement = format!("Do {{@constitution:{id}}}.");
+        let hash = statute::node::original_hash(&[
+            "Rule 2",
+            &statement,
+            "Because.\n",
+            "Violated when the thing is not done.",
+        ]);
+        let mut r = rule(2, 1, "");
+        for (en, zh) in [
+            ("en = \"Rule 2\"", "规定 2".to_owned()),
+            (
+                "en = \"Do the thing 2.\"",
+                format!("做 {{@constitution:{id}}}。"),
+            ),
+            ("Because.\n'''", "因为。".to_owned()),
+            (
+                "en = \"Violated when the thing is not done.\"",
+                "没做即为违反。".to_owned(),
+            ),
+        ] {
+            r = edit(r, en, &format!("{en}\nzh = \"{zh}\""));
+        }
+        let r = edit(r, "Do the thing 2.", &statement);
+        (2, format!("{}\n[translations]\nzh = \"{hash}\"\n", r.1))
+    };
+    let mut nodes = rules();
+    nodes[1] = citing("simplicity");
+    let dir = repo("cites-in-two-languages", MANIFEST, &nodes, INDEX);
+    let (project, diags) = Project::load(&dir, &Default::default());
+    assert!(diags.0.is_empty(), "{:#?}", diags.0);
+    assert!(project.is_some());
+    nodes[1] = citing("nobody.here");
+    fails(
+        &repo("cites-nothing-in-two-languages", MANIFEST, &nodes, INDEX),
+        "rules/2.toml:19: error: rule R2: cites undefined constitution:nobody.here",
     );
 }

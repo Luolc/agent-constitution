@@ -311,15 +311,19 @@ impl Provisions {
 
     /// Each `{@constitution:...}` citation in the texts of `n` and each
     /// `authority` entry that names a provision missing or repealed, as
-    /// the text of its file to find its line by and the message.
+    /// the text of its file to find its line by and the message, each
+    /// once however many texts repeat it.
     pub(crate) fn findings(&self, n: &Node) -> Vec<(String, String)> {
-        let mut out = Vec::new();
+        let mut out: Vec<(String, String)> = Vec::new();
         for text in texts(n) {
             for cited in citations(text) {
                 if let Some(target) = cited.strip_prefix("constitution:")
                     && let Some(found) = self.problem(target, &cited)
                 {
-                    out.push((format!("{{@{cited}}}"), format!("cites {found}")));
+                    let finding = (format!("{{@{cited}}}"), format!("cites {found}"));
+                    if !out.contains(&finding) {
+                        out.push(finding);
+                    }
                 }
             }
         }
@@ -332,6 +336,18 @@ impl Provisions {
         }
         out
     }
+}
+
+/// `rules/7.toml:12`: `shown`, the name of the file at `path`, and the
+/// first line of it holding `needle`, as a finding of `statute validate`
+/// names it.
+pub(crate) fn at(path: &Path, shown: &str, needle: &str) -> String {
+    let doc = Doc {
+        path: PathBuf::from(shown),
+        data: Table::new(),
+        text: std::fs::read_to_string(path).unwrap_or_default(),
+    };
+    format!("{shown}:{}", doc.line(&[needle]))
 }
 
 /// The texts of a node, in the order of its file: the title, a domain's
