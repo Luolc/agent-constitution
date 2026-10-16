@@ -69,6 +69,31 @@ keeps the edition in force and a draft of the next one is settled by
   of `ci.yml` completed with `success` on its first attempt. So the tag
   goes on after that run has finished; when it was pushed earlier, the
   check fails, and the workflow is rerun once the CI run has passed.
+- The same tag also attaches a prebuilt `statute` binary to its GitHub
+  Release, for `x86_64-unknown-linux-musl`, `aarch64-unknown-linux-musl`,
+  `x86_64-apple-darwin` and `aarch64-apple-darwin`: each target is an asset
+  `statute-<target>.tar.gz` with the binary at its top level, beside a
+  sidecar `statute-<target>.sha256` in `sha256sum` format. The Linux
+  binaries are statically linked against musl and also run on glibc
+  systems. The binaries are built only after `check-release-tag` passed,
+  in jobs that hold neither the OIDC token nor a token that can write to
+  the repo; a job of its own, which builds nothing, creates the Release
+  when the tag has none and uploads the assets. There is no install
+  script; a CI job or a person installs a version with the commands
+  below, with `version` set to the version (such as `0.1.16`) and `target`
+  to one of the four targets:
+
+  ```sh
+  base=https://github.com/Luolc/agent-constitution/releases/download/statute-v$version
+  curl -fsSLO "$base/statute-$target.tar.gz" -O "$base/statute-$target.sha256"
+  sha256sum --check --strict "statute-$target.sha256"
+  tar -xzf "statute-$target.tar.gz" statute
+  ```
+
+  On macOS, `shasum -a 256 --check` stands in for `sha256sum --check`.
+  Running the workflow by hand (`workflow_dispatch`) builds the four
+  binaries and keeps them as workflow artifacts, without the check and
+  without publishing anything.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.

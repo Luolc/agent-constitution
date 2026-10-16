@@ -1,17 +1,22 @@
-# Publishes the statute crate to crates.io when a tag statute-v<version> is
-# pushed (docs/design/amendments-and-releases.md). crates.io trusts this
-# workflow and the environment `release` (Trusted Publishing): the job
-# trades its OIDC token for a short-lived crates.io token, so the repo holds
-# no crates.io secret. The environment admits only statute-v* tags.
-# Before the job that publishes, the job `check` runs check-release-tag:
+# Releases statute when a tag statute-v<version> is pushed
+# (docs/design/amendments-and-releases.md): publishes the crate to
+# crates.io, and attaches a prebuilt binary for each target to the tag's
+# GitHub Release. crates.io trusts this workflow and the environment
+# `release` (Trusted Publishing): the job `publish` trades its OIDC token
+# for a short-lived crates.io token, so the repo holds no crates.io secret.
+# The environment admits only statute-v* tags.
+# Before any job that publishes, the job `check` runs check-release-tag:
 # the tag against the manifest, that the commit is on main, and that its
 # CI run on main succeeded on the first attempt.
+# Run by hand (workflow_dispatch), the workflow only builds the binaries
+# and keeps them as workflow artifacts; it publishes nothing.
 
 name: Release
 
 on:
   push:
     tags: ["statute-v*"]
+  workflow_dispatch:
 
 concurrency:
   group: release-${{ github.ref }}
@@ -24,6 +29,7 @@ jobs:
   # id-token: write, so that none of the tools uv installs can ask for the
   # OIDC token crates.io trusts.
   check:
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -48,6 +54,7 @@ jobs:
         run: uv run --frozen check-release-tag --tag "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY"
 
   publish:
+    if: github.event_name == 'push'
     needs: check
     runs-on: ubuntu-24.04
     environment: release
@@ -67,3 +74,99 @@ jobs:
       - run: cargo publish --locked -p statute
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+  # The binaries are built without a write token: the build runs the build
+  # scripts of every dependency, so only the job `release` below, which
+  # compiles nothing, may write to the Release. Linux builds are static
+  # musl, which runs on glibc systems too; the dependency tree has no
+  # OpenSSL or other C library to link.
+  build:
+    needs: check
+    # On a dispatch `check` is skipped, and `needs` alone would skip this
+    # job too.
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.check.result == 'success') }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-24.04
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-24.04
+          - target: x86_64-apple-darwin
+            os: macos-15
+          - target: aarch64-apple-darwin
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the Rust toolchain
+        run: rustup toolchain install --no-self-update
+
+      # The musl linkers; the macOS runner links both apple targets itself.
+      - uses: taiki-e/setup-cross-toolchain-action@12b7ad4acfa95a1476779d6c06699b96ec1691f8 # v1.42.0
+        if: runner.os == 'Linux'
+        with:
+          target: ${{ matrix.target }}
+
+      # Writes statute-<target>.tar.gz and statute-<target>.sha256 in the
+      # workspace. dry-run: build and pack only, without a token.
+      - uses: taiki-e/upload-rust-binary-action@f0d45ae91ee7b8ee928de7a9d04d893a08bcbec6 # v1.30.2
+        with:
+          bin: statute
+          package: statute
+          locked: true
+          target: ${{ matrix.target }}
+          checksum: sha256
+          dry-run: true
+          dry-run-intended: true
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: statute-${{ matrix.target }}
+          path: |
+            statute-${{ matrix.target }}.tar.gz
+            statute-${{ matrix.target }}.sha256
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push'
+    needs: [check, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # create the Release and upload its assets
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: statute-*
+          path: assets
+          merge-multiple: true
+
+      # Four targets, two files each; every tarball matches its sidecar.
+      - name: Check the assets
+        working-directory: assets
+        run: |
+          set -eu
+          set -- *
+          [ "$#" -eq 8 ]
+          for sum in *.sha256; do sha256sum --check --strict "$sum"; done
+
+      # --verify-tag: never create the tag when it is missing. A Release
+      # left by an earlier run is reused, and --clobber replaces its assets,
+      # so the job can be rerun.
+      - name: Attach the binaries to the Release
+        run: |
+          set -eu
+          if ! gh release view "$TAG" >/dev/null; then
+            gh release create "$TAG" --verify-tag --title "$TAG" \
+              --notes "statute ${TAG#statute-v}: https://crates.io/crates/statute/${TAG#statute-v}"
+          fi
+          gh release upload "$TAG" assets/* --clobber
