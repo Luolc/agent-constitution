@@ -1,8 +1,9 @@
 id = 308
 slug = "no-empty-variables-in-destructive-targets"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 315
 lang = "en"
 parent = 13
 default = "on"
