@@ -1,11 +1,11 @@
 id = 217
 slug = "dated-scratch-files"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
-default = "on"
+default = "off"
 authority = ["evidence.grounds"]
 constitution = ">=1"
 level = "user"
@@ -16,8 +16,8 @@ en = "Give each file in the scratch directory a date in its name"
 zh = "scratch 目录里的文件名带日期"
 
 [text.statement]
-en = "Give each file you put in a scratch directory ({@rule:130}) a date in its name."
-zh = "放进 scratch 目录 ({@rule:130}) 的每个文件，文件名都带日期。"
+en = "Give each file you put in a scratch directory ({@rule:310}) a date in its name."
+zh = "放进 scratch 目录 ({@rule:310}) 的每个文件，文件名都带日期。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ scratch 目录里的文件名不带日期的，即为违反本规定。
 '''
 
 [translations]
-zh = "81ea5337f9eda69bff35c82944718a40246f7313dfe565dd279adf2e40225f40"
+zh = "4b4105036130f83eb32969b6edba926188fdf2197667945d9f852754c74efe56"

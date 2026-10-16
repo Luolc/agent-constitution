@@ -1,8 +1,9 @@
 id = 132
 slug = "third-party-sources-root"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 312
 lang = "en"
 parent = 127
 default = "on"

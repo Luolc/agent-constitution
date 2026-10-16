@@ -1,6 +1,6 @@
 id = 173
 slug = "charter-in-initiative-repository"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The initiative's repository is the one whose checkout is in the scope's initiatives directory under the initiative's name ({@rule:162}); the initiative's thread agents work there, and direct messages use the scope's general initiative. How the repository is named is set by the layers below.
+The initiative's repository is the one whose checkout is in the scope's initiatives directory under the initiative's name ({@rule:314}); the initiative's thread agents work there, and direct messages use the scope's general initiative. How the repository is named is set by the layers below.
 
 Violated when the charter of a joint project is written elsewhere.
 '''
 zh = '''
-initiative 的仓库，指在 scope 的 initiatives 目录下以 initiative 名字检出的那个仓库 ({@rule:162})；该 initiative 的 thread agent 在那里工作，私信用 scope 的通用 initiative。仓库怎么命名，由下层规定定。
+initiative 的仓库，指在 scope 的 initiatives 目录下以 initiative 名字检出的那个仓库 ({@rule:314})；该 initiative 的 thread agent 在那里工作，私信用 scope 的通用 initiative。仓库怎么命名，由下层规定定。
 
 联合项目的章程写在了别处的，即为违反本规定。
 '''
 
 [translations]
-zh = "7ab83e35d61c06db60be4289807a26044fc597e03e8f71a0132ff90af8666aea"
+zh = "5aa3edd58758f2251be645b36c3695bfb0079c1f50558caedffa4f8561b5f575"

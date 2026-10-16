@@ -1,0 +1,43 @@
+id = 313
+slug = "third-party-dir-only-others"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+default = "off"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Keep nothing but others' sources in the directory for third-party sources"
+zh = "第三方源码目录下只放别人的源码"
+
+[text.statement]
+en = "Keep nothing but others' sources under `{$dirs.third-party}`."
+zh = "`{$dirs.third-party}` 下只放别人的源码。"
+
+[text.reason]
+en = '''
+Your own reports or findings put among others' sources mix with their code and get lost ({@constitution:simplicity}).
+'''
+zh = '''
+自己的调研报告、findings 放进别人的源码中间，就和别人的代码混在一起，也找不到了 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+Your own output (research reports, findings) goes to the scratch directory ({@rule:310}).
+
+Violated when `{$dirs.third-party}` holds your own output.
+'''
+zh = '''
+自己的产物 (调研报告、findings) 放在 scratch 目录 ({@rule:310})。
+
+`{$dirs.third-party}` 下放了自己的产物的，即为违反本规定。
+'''
+
+[translations]
+zh = "5ecf76abec7dd092f7d1e3d82d9c6143081d6a01d9f020b3c4baae4363d3bd1e"
