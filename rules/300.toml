@@ -1,0 +1,43 @@
+id = 300
+slug = "service-account-only-needed-vaults"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Grant a service account only the vaults its use needs"
+zh = "service account 只能访问它的用途必需的 vault"
+
+[text.statement]
+en = "Grant each service account access only to the vaults that its use needs."
+zh = "每个 service account 只授予它的用途必需的那些 vault 的访问权限。"
+
+[text.reason]
+en = '''
+A service account's token reads with no person there to unlock each read, so whoever holds it reads everything it can reach. Granting it only the vaults its use needs bounds what a leaked token exposes.
+'''
+zh = '''
+service account 的 token 读取时没有人逐次解锁，谁拿到它，就能读到它能访问的全部内容。只授予它的用途必需的 vault，token 泄露时暴露的范围也就到此为止。
+'''
+
+[text.verification]
+en = '''
+The use of a service account is the machine, service or task it is given to ({@rule:302}), and the vaults that use needs are those that hold a credential it reads or a place it must write to ({@rule:301}).
+
+Violated when a service account has access to a vault that its use does not need.
+'''
+zh = '''
+service account 的用途，指分给它的那台机器、那个服务或那些任务 ({@rule:302})；这个用途必需的 vault，指放着它要读的凭证、或者它必须往里写的那些 vault ({@rule:301})。
+
+某个 service account 能访问它的用途并不需要的 vault 的，即为违反本规定。
+'''
+
+[translations]
+zh = "50f1fc9ab82ced738efcf6339735c46d8806106151342811377f9ba62418b446"

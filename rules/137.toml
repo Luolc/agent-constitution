@@ -1,6 +1,6 @@
 id = 137
 slug = "credential-secret-manager"
-revision = 3
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "密钥管理器"
 
 [applicability]
 en = '''
-Keeps credentials in a secret manager in tiers by sensitivity, and says who reads or writes each tier, and by which route. Enable it where credentials are kept in a secret manager and agents or unattended tasks read them; where only people fetch credentials, by hand, it need not be enabled.
+Keeps credentials in a secret manager in vaults divided by use, grants each service account only what its use needs, keeps agents to the vaults set aside for them, and says by which route a machine that a person works at and an unattended task each read it. Enable it where credentials are kept in a secret manager and agents or unattended tasks read them; where only people fetch credentials, by hand, it need not be enabled.
 '''
 zh = '''
-管凭证在密钥管理器里按敏感程度分层存放，以及每一层由谁、经什么途径读写。凭证存放在密钥管理器里、并且有 agent 或无人值守的任务要读取凭证的地方启用；凭证只由人手动取用的，不必启用。
+管凭证在密钥管理器里按用途分 vault 存放，每个 service account 只授予它的用途必需的权限，agent 只碰专为它们留出的 vault，以及人日常操作的机器和无人值守的任务各经什么途径读取。凭证存放在密钥管理器里、并且有 agent 或无人值守的任务要读取凭证的地方启用；凭证只由人手动取用的，不必启用。
 '''
 
 [translations]
-zh = "ba797eb5004b09b9aefde063a306206941df54dc381c7b8c6b4f270afd594aad"
+zh = "bfd72bad9a87278765ffc31a1224df96ad5a99381d1687db3101af7d28b5bb9a"

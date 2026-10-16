@@ -1,0 +1,43 @@
+id = 304
+slug = "attended-machine-reads-through-unlock"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "On a machine a person works at, read through a route that a person unlocks"
+zh = "人日常操作的机器上，经人解锁的途径读"
+
+[text.statement]
+en = "On a machine that a person works at day to day, read the secret manager only through a route that a person unlocks, such as a fingerprint or a security key, never through a service account's token."
+zh = "在人日常操作的机器上，agent 读密钥管理器只经人解锁的途径 (例如指纹或 security key)，不用 service account 的 token。"
+
+[text.reason]
+en = '''
+On such a machine a person is at hand to unlock each read, so no token is needed there, and every read waits for that person. A token kept on it could be read by anything the person runs.
+'''
+zh = '''
+这样的机器上有人在旁边逐次解锁，用不着 token，每次读取都要等这个人。放在这台机器上的 token，这个人运行的任何东西都可能读到。
+'''
+
+[text.verification]
+en = '''
+A machine that a person works at day to day is one where a person is at hand to unlock reads of the secret manager. A route that a person unlocks is one where each read waits for a person to unlock it, such as the desktop integration of a secret manager's app. Which machines these are and which route is used on each is set in the jurisdiction. The unattended tasks on such a machine read as {@rule:305} and {@rule:306} say.
+
+Violated when an agent on such a machine reads the secret manager through a service account's token or by any other route that no person unlocks.
+'''
+zh = '''
+人日常操作的机器，指有人在旁、可以逐次解锁密钥管理器读取的机器。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成。哪些机器是这样的机器、各用哪条途径，由法域规定。这类机器上无人值守的任务怎么读，见 {@rule:305} 和 {@rule:306}。
+
+这类机器上的 agent 经 service account 的 token，或者经别的不需要人解锁的途径读密钥管理器的，即为违反本规定。
+'''
+
+[translations]
+zh = "b3790887513e58c25f303cdfc1f99ca72789dea58c3b7c357d11a2ba60a403b8"

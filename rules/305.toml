@@ -1,0 +1,43 @@
+id = 305
+slug = "service-account-tokens-only-unattended"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Give a service account's token only to unattended tasks"
+zh = "service account 的 token 只给无人值守的任务"
+
+[text.statement]
+en = "Give a service account's token only to unattended tasks, those that run with no person there to unlock a read, such as scheduled tasks, services and the agents of a development machine."
+zh = "service account 的 token 只给无人值守的任务，即运行时没有人在旁解锁读取的任务，例如定时任务、服务和开发机上的 agent。"
+
+[text.reason]
+en = '''
+An unattended task has no person to unlock its reads, and a service account is how it reads at all. Where a person is there to unlock, reads go through them ({@rule:304}), and a token would only add something to leak.
+'''
+zh = '''
+无人值守的任务没有人替它解锁，只能经 service account 读。有人在旁可以解锁的地方，读取经人解锁 ({@rule:304})，再放一个 token 只是多了一样会泄露的东西。
+'''
+
+[text.verification]
+en = '''
+A development machine is one that agents work on unattended, with no person there to unlock each read; its agents count as unattended tasks. Which tasks are unattended, and which service account each uses ({@rule:302}), is set in the jurisdiction.
+
+Violated when a service account's token is set up for a task that a person attends, such as an agent on a machine a person works at, or for a person's own use.
+'''
+zh = '''
+开发机，指 agent 在上面无人值守地工作、没有人逐次解锁读取的机器；开发机上的 agent 算无人值守的任务。哪些任务无人值守、各用哪个 service account ({@rule:302})，由法域规定。
+
+service account 的 token 被配给了有人在旁的任务 (例如人日常操作的机器上的 agent)，或者配给人自己使用的，即为违反本规定。
+'''
+
+[translations]
+zh = "727ee015e1018ff5b1270b558f438aff4dc54b0441148af182230aed4d6d79cd"

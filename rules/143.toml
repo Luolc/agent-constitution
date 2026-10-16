@@ -1,8 +1,9 @@
 id = 143
 slug = "attended-machine-reads-interactively"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [304, 305, 306]
 lang = "en"
 parent = 137
 default = "on"

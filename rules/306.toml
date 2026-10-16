@@ -1,0 +1,43 @@
+id = 306
+slug = "service-account-token-only-into-its-tasks"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Inject a service account's token only into its tasks, never into a person's login shell"
+zh = "service account 的 token 只注入它的任务，不进人登录用的 shell"
+
+[text.statement]
+en = "Let a service account's token reach only the environment of the unattended tasks it is given to, never a shell that a person logs in to."
+zh = "service account 的 token 只注入分给它的那些无人值守任务的环境，不进人登录用的 shell。"
+
+[text.reason]
+en = '''
+In a person's login shell the token reaches everything the person runs there, and reads that should wait for the person ({@rule:304}) go through the token instead. Injected into its tasks alone, it can leak only through them.
+'''
+zh = '''
+token 进了人登录用的 shell，这个人在里面运行的一切都拿得到它，本该等人解锁的读取 ({@rule:304}) 也就改经 token 进行了。只注入它的任务，泄露的途径就只剩这些任务。
+'''
+
+[text.verification]
+en = '''
+A shell that a person logs in to is the shell a person gets on logging in to a machine, together with its startup files and every process started from it. On a development machine the token may be in the environment of the agents there, which are its unattended tasks ({@rule:305}), but not in the shell a person gets on logging in to that machine.
+
+Violated when a service account's token is set in a login shell's startup files or environment, or reaches the environment of a task other than those it is given to.
+'''
+zh = '''
+人登录用的 shell，指人登录一台机器后得到的 shell，连同它的启动文件和从它启动的所有进程。开发机上的 token 可以进那里 agent 的环境 (它们是那里的无人值守任务，{@rule:305})，但不进人登录这台机器时得到的 shell。
+
+service account 的 token 写进了登录 shell 的启动文件或环境，或者进了分给它的任务以外的任务的环境的，即为违反本规定。
+'''
+
+[translations]
+zh = "34526918f77a1d546b4dbc60e132d2ddeb1ec4102bf08d0252e71c6cc53fe1eb"
