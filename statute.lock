@@ -160,9 +160,9 @@ by = "default"
 
 [[rules]]
 rule = "R52"
-revision = 7
-sha256 = "dfffbdc12616c2c0cf1f40d9ee3976dacc490c2c7bb951a827c58b168e9c8e65"
-original-sha256 = "a08c13b8f357145a2816bb95a705869e789e1908c1a9facdc4e0b35ed182aedc"
+revision = 8
+sha256 = "ba6a9daea2b626a2639cb4bf83efdc9490f28bf593512d9f9c1547ccbd7ae2b0"
+original-sha256 = "d18692d4cf4d417b682b603a9d9edbe23032f5f81eaf9fdc638f9e35be692036"
 
 [[rules]]
 rule = "R53"
