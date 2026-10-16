@@ -53,7 +53,7 @@ for wheel in "${wheels[@]}"; do
   if [[ -z $remote_sha ]]; then
     printf '%s: not on PyPI, to be uploaded\n' "$name"
   elif [[ $remote_sha == "$local_sha" ]]; then
-    printf '%s: on PyPI with the same sha256 %s, dropped\n' "$name" "$local_sha"
+    printf '%s: on PyPI with the same sha256 %s, to be dropped\n' "$name" "$local_sha"
     drop+=("$wheel")
   else
     fail "$name is on PyPI with sha256 $remote_sha, this build has $local_sha"
@@ -61,4 +61,5 @@ for wheel in "${wheels[@]}"; do
 done
 for wheel in "${drop[@]}"; do
   rm -- "$wheel"
+  printf '%s: dropped\n' "$(basename "$wheel")"
 done

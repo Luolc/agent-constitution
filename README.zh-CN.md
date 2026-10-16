@@ -46,13 +46,6 @@ git clone https://github.com/Luolc/agent-constitution.git
 cargo install --path agent-constitution/crates/statute
 ```
 
-从 0.1.18 起，statute 也发到 PyPI，wheel 里是 Linux 与 macOS 的预编译二进制：
-
-```sh
-uv add --dev statute # 或者 pip install statute
-uv run statute --version
-```
-
 然后每台机器做一次全局初始化，再在 agent 工作的那个仓库里初始化：
 
 ```sh
