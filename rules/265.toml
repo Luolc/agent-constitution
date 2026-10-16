@@ -1,8 +1,8 @@
 id = 265
 slug = "credentials"
-revision = 1
+revision = 2
 kind = "domain"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 13
 default = "on"

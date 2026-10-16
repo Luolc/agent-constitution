@@ -1,6 +1,6 @@
 id = 305
 slug = "service-account-tokens-only-unattended-or-remote"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -13,31 +13,31 @@ check = "none"
 
 [title]
 en = "Give a service account's token only to unattended tasks and remote machines"
-zh = "service account 的 token 只给无人值守的任务和远程机器"
+zh = "service account 的 token 只配给无人值守的任务和远程机器"
 
 [text.statement]
-en = "Give a service account's token only to unattended tasks, such as scheduled tasks and services, and to remote machines, those that no person sits at to work on directly, such as servers and development machines."
-zh = "service account 的 token 只给无人值守的任务 (例如定时任务和服务) 和远程机器 (没有人坐在跟前直接操作的机器，例如服务器和开发机)。"
+en = "Give a service account's token only to unattended tasks and to remote machines."
+zh = "service account 的 token 只配给无人值守的任务和远程机器。"
 
 [text.reason]
 en = '''
-No person sits at a remote machine or attends an unattended task to unlock its reads, and a service account is how they read at all. On a local device the person there unlocks reads ({@rule:304}), and a token would only add something to leak.
+On a remote machine and in an unattended task no person is present to unlock each read, so a service account is the only way they can read. On a local device a person unlocks reads ({@rule:304}), and a token there would only be one more thing to leak.
 '''
 zh = '''
-远程机器跟前没有人，无人值守的任务也没有人在旁，没人替它们解锁，只能经 service account 读。本地设备上读取由跟前的人解锁 ({@rule:304})，再放一个 token 只是多了一样会泄露的东西。
+远程机器上和无人值守的任务里，没有人在场逐次解锁，只能经 service account 读取。本地设备上的读取由人解锁 ({@rule:304})，再放一个 token 只是多了一样会泄露的东西。
 '''
 
 [text.verification]
 en = '''
-An unattended task is one that runs with no person there to unlock its reads. A machine that a person sits at and works on directly is a local device ({@rule:304}). Which machines are remote, which tasks are unattended, and which service account each uses ({@rule:302}), is set in the jurisdiction. On a local device, the token goes only to the unattended tasks there ({@rule:306}). A token on a remote machine is set up for that machine, not for a person: when it reaches the shell a person gets on logging in to that machine, it is not given to the person for their own use.
+An unattended task is one that runs with no person present to unlock its reads, such as a scheduled task or a service. Local devices and remote machines are as {@rule:304} defines them. Which machines are remote, which tasks are unattended, and which service account each uses ({@rule:302}), is set in the jurisdiction. On a local device, the token goes only to the unattended tasks there ({@rule:306}). A token on a remote machine is set up for that machine, not for a person: when it reaches the shell a person gets on logging in to that machine, it is not given to the person for their own use.
 
 Violated when a service account's token is set up for an agent or other task on a local device that is not an unattended task there, or for a person's own use.
 '''
 zh = '''
-无人值守的任务，指运行时没有人在旁替它解锁读取的任务。人坐在跟前直接操作的机器是本地设备 ({@rule:304})。哪些机器是远程机器、哪些任务无人值守、各用哪个 service account ({@rule:302})，由法域规定。在本地设备上，token 只给那里无人值守的任务 ({@rule:306})。远程机器上的 token 是配给这台机器的，不是配给人的：它进了人登录这台机器时得到的 shell，不算配给人自己使用。
+无人值守的任务，指运行时没有人在场替它解锁读取的任务，例如定时任务和服务。本地设备与远程机器的定义见 {@rule:304}。哪些机器是远程机器、哪些任务无人值守、各用哪个 service account ({@rule:302})，由法域规定。在本地设备上，token 只配给那里无人值守的任务 ({@rule:306})。远程机器上的 token 是配给这台机器的，不是配给人的：它进了人登录这台机器时得到的 shell，不算配给人自己使用。
 
 service account 的 token 被配给了本地设备上无人值守的任务以外的 agent 或其他任务，或者配给人自己使用的，即为违反本规定。
 '''
 
 [translations]
-zh = "c3bf735bcf5ee3c1492f5492784215911b08956e37fce0a42e0fb219935b10b7"
+zh = "fd2a166509e0ee8b31b6bac449d7ecea05eb3f87b8351e28a47fd4a780503814"
