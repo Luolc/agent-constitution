@@ -1,0 +1,47 @@
+id = 295
+slug = "credential-value-route-injection"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 265
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Pass a credential to a program only through the environment, a file or the secret manager's injection"
+zh = "凭证只经环境变量、文件或密钥管理器的注入交给程序"
+
+[text.statement]
+en = "Let a credential's value reach a program only through an environment variable, a file or a way the secret manager itself provides of injecting it into the program."
+zh = "凭证的值只经环境变量、文件，或者密钥管理器自己提供的、把凭证注入程序的方式交给程序。"
+
+[text.reason]
+en = '''
+A credential is protected strictly and kept from leaking ({@constitution:sensitive-info}). A command line can be seen by other processes on the machine and is kept in shell history and logs, so a value passed as an argument leaks. A secret manager's own injection hands the value over through the environment or a file as well, and keeps it out of shell variables and command lines on the way.
+'''
+zh = '''
+凭证要严格保护，防止泄露 ({@constitution:sensitive-info})。命令行能被同一台机器上的其他进程看到，还会留在 shell 历史和日志里，作为参数传递的值因此会泄露。密钥管理器自己的注入同样经环境变量或文件交出凭证的值，途中也不让它进 shell 变量和命令行。
+'''
+
+[text.verification]
+en = '''
+A secret manager's own injection is a command or integration it provides that puts the value in the environment of the program it starts or in a file, never on that program's command line, such as 1Password's `op run`, which resolves the secret references and starts the program with their values in its environment variables. `op run` itself passes the value through the environment, so it does not conflict with passing it by an environment variable; what it adds is that the value never sits in a shell variable or on a command line.
+
+Splitting, trimming or otherwise changing the value happens inside the program that uses it, not in the shell. Keeping the value out of every message, log and output is {@rule:291}.
+
+Violated when a credential's value reaches a program by any route other than an environment variable, a file or the secret manager's own injection, such as a command-line argument, whichever program puts it there, or is split or trimmed in the shell.
+'''
+zh = '''
+密钥管理器自己的注入，指它提供的、把凭证的值放进由它启动的程序的环境变量或者文件 (而不放上那个程序的命令行) 的命令或集成，例如 1Password 的 `op run`：它解析密钥引用，把解析出的值放进环境变量再启动程序。`op run` 本身就是经环境变量传值，与经环境变量交给程序不冲突；它的好处在于值不经过 shell 变量，也不出现在命令行上。
+
+需要拆分、截取或者以其他方式处理凭证的值的，在使用它的程序内部完成，不在 shell 里做。凭证的值不进任何消息、日志和输出，由 {@rule:291} 管。
+
+凭证的值经环境变量、文件或密钥管理器自己的注入以外的途径交给程序 (例如命令行参数，不论是哪个程序放上去的)，或者在 shell 里被拆分、截取的，即为违反本规定。
+'''
+
+[translations]
+zh = "67e63180c910be2d2b86d73d2f30defd3a42af61c55e0fd0f6111f18d79ebfd6"
