@@ -1246,7 +1246,7 @@ rule = "R280"
 revision = 1
 sha256 = "0080659227fa4f79369355260e9be610799680142d3279645ad2da746e04817b"
 original-sha256 = "cc3df2c44b751639ebc8e1e31cdf2c69419236dec0126aee101a798897df1382"
-overridden-by = "L28"
+overridden-by = "L31"
 
 [[rules]]
 rule = "R282"
@@ -1522,12 +1522,6 @@ original-sha256 = "804d810eee95dcc57865a9e8a9c7cb65b05a92bf7aec7eb74ada8e5e0789d
 by = "default"
 
 [[rules]]
-rule = "L28"
-revision = 2
-sha256 = "a91bf0f3bc795f7991bbbcb3499d6035db266293d0057fb01d3e2cc9ba579687"
-original-sha256 = "31bef041ce6823e3d5e80f90f193ef179fb6d3155e145c288a64c9e8f994df82"
-
-[[rules]]
 rule = "L29"
 revision = 1
 sha256 = "e7edc5db106ff3992139001cb74478e8421afdee3017e213bdb3d6d0bd1fa113"
@@ -1540,6 +1534,12 @@ revision = 1
 sha256 = "f0f8f2f387695bb35509e0e64fa1e6ded23d812d7db8f05de2465646c6f2600d"
 original-sha256 = "ec9b165242301c42f1b3aa75bc5ec67d9b3a6877c9915b69290b033b6429557c"
 by = "default"
+
+[[rules]]
+rule = "L31"
+revision = 1
+sha256 = "6afce26fe72f7d05d89ed5a7bc57052aabf04e756056052f96f42a6bdadb3693"
+original-sha256 = "42aef115957ddd24a3670b29bf33f982cfbbd07d2718840faabecf53b6f20b05"
 
 [[parameters]]
 name = "language.code-comments"
