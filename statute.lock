@@ -1447,8 +1447,8 @@ by = "default"
 [[rules]]
 rule = "R308"
 revision = 1
-sha256 = "640573db6ded474b13b0734fe266659a2304387f541d8ce3ad8f2435a2d459fb"
-original-sha256 = "07d16e1e06599f1a1f7cc942d5534a9f3c82df61b124a39e46b68be4abec579d"
+sha256 = "f63ebbf4a00bb16c49ce67c7de93485a6f0219ba352f0a0a062d5db151185613"
+original-sha256 = "0fed456ef8dd2c3c51d35569db927ec1464cf0c04772c3d4470c9c1f5ae52fd9"
 by = "default"
 
 [[rules]]
