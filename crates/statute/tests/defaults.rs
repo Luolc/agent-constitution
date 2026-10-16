@@ -251,6 +251,7 @@ fn repo(name: &str, extra: &str) -> PathBuf {
         "edition = \"2026-10\"\nrevision = \"1\"\n",
     )
     .unwrap();
+    common::provisions(&dir.join("constitution/2026-10"));
     for (id, text) in tree_files() {
         std::fs::write(dir.join(format!("rules/{id}.toml")), text).unwrap();
     }

@@ -110,3 +110,17 @@ pub fn param(name: &str, kind: &str, scope: &str, default: &str) -> String {
         "[[parameter]]\nname = \"{name}\"\n{kind}\nscope = \"{scope}\"\ndefault = \"{default}\"\n\n[parameter.title]\nen = \"The {name}\"\n\n"
     )
 }
+
+/// Writes under the edition directory `edition` the provisions the
+/// fixtures cite in `authority`: `simplicity`, as [`rule`] does, a
+/// section, and `alpha`, an article.
+pub fn provisions(edition: &std::path::Path) {
+    let articles = edition.join("articles");
+    std::fs::create_dir_all(articles.join("01-alpha")).unwrap();
+    std::fs::create_dir_all(articles.join("03-purpose")).unwrap();
+    std::fs::write(
+        articles.join("03-purpose/04-simplicity.toml"),
+        "id = \"simplicity\"\n",
+    )
+    .unwrap();
+}

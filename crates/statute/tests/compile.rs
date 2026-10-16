@@ -60,6 +60,7 @@ fn repo(name: &str, manifest: &str) -> PathBuf {
     let generated = dir.join("constitution/2026-10/generated");
     std::fs::create_dir_all(&generated).unwrap();
     std::fs::write(dir.join("constitution/2026-10/index.toml"), INDEX).unwrap();
+    common::provisions(&dir.join("constitution/2026-10"));
     std::fs::write(generated.join("constitution.en.agent.md"), CONSTITUTION_EN).unwrap();
     std::fs::write(generated.join("constitution.zh.agent.md"), CONSTITUTION_ZH).unwrap();
     let articles = dir.join("constitution/2026-10/articles");
@@ -507,8 +508,8 @@ fn a_citation_of_nothing_fails_and_names_where_it_is() {
         ),
         (
             "{@constitution:principals.nobody}",
-            "compile",
-            "rules/2.toml: statement: cites `{@constitution:principals.nobody}`, which is not in edition 2026-10 of the constitution",
+            "lock",
+            "rules/2.toml: error: rule R2: cites undefined constitution:principals.nobody",
         ),
         (
             "{@principals}",
