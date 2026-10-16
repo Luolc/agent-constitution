@@ -1,4 +1,4 @@
-<!-- en-sha256: 46f7785e8abe1693123e5acbe71256f41c4f92c2eb22a25634d09dd399af3cda -->
+<!-- en-sha256: 00702cf98b46ad21f6f32267fb8670e04646664ef97a0387a11272ad1dd3f190 -->
 # 修正案与发布
 
 ## <a id="approving-an-amendment"></a>批准修正案
@@ -32,4 +32,5 @@
   ```
 
   在 macOS 上用 `shasum -a 256 --check` 代替 `sha256sum --check`。手动运行这个 workflow (`workflow_dispatch`) 只构建四个二进制，作为 workflow artifact 保留，不跑检查，也不发布任何东西。
+- 同一个 tag 还会把 `statute` 发到 PyPI：wheel 里原样装着 Release 的二进制，装好后就是 `statute` 命令 (`uv add --dev statute`、`pip install statute`)。每个 Linux target 出 manylinux 与 musllinux 两个 wheel，里面是同一个 musl 二进制；每个 macOS target 一个 wheel；没有 Windows 的 wheel。wheel 的版本取 tag 的。`pypi-wheels` 这个 job 没有能发布的 token，它下载 Release 的 asset，用 `tools/build_pypi_wheels.sh` 打出六个 wheel，再跑 `tools/check_pypi_wheels.sh`：每个 wheel 里二进制的 sha256 与它的 Release 压缩包里那份相同，两个值都打出来，并且 wheel 正好是预期的那六个。之后它跑 `twine check --strict`，装上 x86_64 Linux 的 wheel，核对 `statute --version` 打出的是 tag 的版本。`publish-pypi` 在它和 crates.io 之后跑，在 environment `release` 里，是这两个 job 里唯一拿 OIDC token 的：PyPI 信任本仓在这个 environment 里运行的 `release.yml` (Trusted Publishing)，所以仓库里也没有 PyPI 的 token。第一次上传之前，要由人在 PyPI 上把这个 workflow 和 environment 登记为项目 `statute` 的 pending publisher。上传之前，`tools/pypi_upload_set.sh` 去掉 PyPI 上已有、sha256 相同的 wheel，遇到 PyPI 上同名而 sha256 不同的就停下，所以上传中途失败的 run 可以重跑。手动运行这个 workflow 并给一个已有的 tag (input `tag`)，会从那个 tag 的 Release 打出并检查它的 wheel，作为 workflow artifact 保留，不上传。没有哪个 job 只为检查 publisher 而向 PyPI 要 token：对 pending publisher，PyPI 在发 token 的那一刻就建出项目。
 - overlay 固定一个 tag 及其提交 SHA，两者对不上就拒绝构建。它换用新版本，要在 overlay 里提一次变更，在那里审查。

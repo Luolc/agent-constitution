@@ -8,8 +8,11 @@
 # Before any job that publishes, the job `check` runs check-release-tag:
 # the tag against the manifest, that the commit is on main, and that its
 # CI run on main succeeded on the first attempt.
-# Run by hand (workflow_dispatch), the workflow only builds the binaries
-# and keeps them as workflow artifacts; it publishes nothing.
+# The job `pypi-wheels` then packs the Release's binaries into PyPI
+# wheels, and `publish-pypi` uploads them, trusted by PyPI in the same way.
+# Run by hand (workflow_dispatch) with an existing tag, the workflow builds
+# the binaries and keeps them as workflow artifacts, and builds, checks and
+# installs that tag's wheels; it publishes nothing.
 
 name: Release
 
@@ -17,6 +20,12 @@ on:
   push:
     tags: ["statute-v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        # No default: a default would go stale without anyone noticing.
+        description: "Existing statute-v<version> tag to rehearse the release jobs with"
+        required: true
+        type: string
 
 concurrency:
   group: release-${{ github.ref }}
@@ -170,3 +179,99 @@ jobs:
               --notes "statute ${TAG#statute-v}: https://crates.io/crates/statute/${TAG#statute-v}"
           fi
           gh release upload "$TAG" assets/* --clobber
+
+  # The wheels hold the Release's binaries as they are; nothing is compiled
+  # here. On a dispatch they are built from the Release of the tag given,
+  # not from this run's `build`, and kept as an artifact.
+  pypi-wheels:
+    needs: release
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # For `uvx wheel` and `uvx twine`.
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.0"
+
+      # tools/build_pypi_wheels.sh reads the metadata with `cargo metadata`.
+      - name: Install the Rust toolchain
+        run: rustup toolchain install --no-self-update
+
+      - name: Download the Release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release download "$TAG" --pattern 'statute-*' --dir assets
+
+      - name: Build the wheels
+        run: tools/build_pypi_wheels.sh "$TAG" assets dist
+
+      # sha256 of the binary in each wheel against that of the Release
+      # tarball that passed its sidecar, both printed.
+      - name: Check that the wheels carry the Release binaries
+        run: tools/check_pypi_wheels.sh "$TAG" assets dist
+
+      - name: twine check
+        run: uvx --from 'twine==6.1.0' twine check --strict dist/*.whl
+
+      # The runner is x86_64 Linux, so that wheel can be installed and run.
+      - name: Install and run the x86_64 Linux wheel
+        run: |
+          set -euo pipefail
+          wheel=(dist/statute-*-manylinux*_x86_64*.whl)
+          [ "${#wheel[@]}" -eq 1 ]
+          printed=$(uvx --no-cache --from "${wheel[0]}" statute --version)
+          printf '%s\n' "$printed"
+          [ "$printed" = "statute ${TAG#statute-v}" ]
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pypi-wheels
+          path: dist
+          if-no-files-found: error
+
+  # PyPI trusts this workflow in the environment `release`. Only this job
+  # holds id-token: write, and it runs no tool uv installs. It comes after
+  # crates.io, so a version on PyPI is one crates.io took. A rerun after a
+  # partial upload (`gh run rerun --failed`) skips the wheels PyPI already
+  # holds with the same bytes, and stops on a name PyPI holds with others.
+  publish-pypi:
+    if: github.event_name == 'push'
+    needs: [publish, pypi-wheels]
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # the OIDC token PyPI trades for an upload token
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pypi-wheels
+          path: dist
+
+      - name: Drop the wheels PyPI already holds
+        id: remaining
+        run: |
+          set -euo pipefail
+          tools/pypi_upload_set.sh statute "${GITHUB_REF_NAME#statute-v}" dist
+          # nullglob: with every wheel dropped the count is 0, not 1.
+          shopt -s nullglob
+          remaining=(dist/*.whl)
+          echo "count=${#remaining[@]}" >>"$GITHUB_OUTPUT"
+
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        if: steps.remaining.outputs.count != '0'
+        with:
+          packages-dir: dist

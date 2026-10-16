@@ -76,6 +76,14 @@ git clone https://github.com/Luolc/agent-constitution.git
 cargo install --path agent-constitution/crates/statute
 ```
 
+From 0.1.18 on, statute is also on PyPI, as wheels that hold the prebuilt
+binary for Linux and macOS:
+
+```sh
+uv add --dev statute # or: pip install statute
+uv run statute --version
+```
+
 Then, once per machine and in the repository the agents work in:
 
 ```sh
