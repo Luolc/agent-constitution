@@ -1,4 +1,4 @@
-<!-- en-sha256: c4cf404d346269ad25c31afe5452c36cd8cb962695eb4b65ce9be59a016dfc49 -->
+<!-- en-sha256: 3bafb22f58068bb5e606b0910b0dc6f0b9dd972375750a42545e56485f53be9d -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -7,6 +7,7 @@
 
 - [statute 的目录](#the-statute-directories)
 - [全局配置](#the-global-configuration)
+- [全局配置开启什么](#what-the-configuration-turns-on)
 - [一个名字指哪个规定源](#which-source-a-name-means)
 - [git 规定源](#git-sources)
 - [添加规定源](#adding-a-source)
@@ -43,11 +44,32 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 - 每个规定源都是 git 规定源：`git` 加 `branch` 或 `tag`，和规定清单里一样 ([git 规定源](#git-sources))。提交进仓库的锁文件按地址和提交记录 git 规定源，每台机器都能重新读到；某台机器上的一个目录只能按它现在的样子读，所以它留在用 `path` 写它的那份规定清单里。
 - 在 `git` 和 `branch` 或 `tag` 旁边写 `clone = "<dir>"`，就用用户自己维护的一份克隆，不用 `repos/` 下的。这时 statute 不克隆，也不往里拉取：它读 `refs/remotes/origin/<branch>` 或那个 tag 的提交，也就是用户上一次拉取留下的样子；那份克隆的 `origin` 不是 `git` 写的地址时报错。目录开头的 `~` 指家目录。
 - 除 `R` 以外，每个规定源都必须写 `public`，和规定清单里一样；没有 `scope`，因为全局配置里的规定源按定义就是全局的 ([四类规定源](rule-sources.md#four-kinds-of-source))。
-- 全局配置登记规定源，不启用任何规定：每份规定清单照旧列出自己用的规定和规定包，这样单看提交进仓库的规定清单和锁文件，就知道这个仓库编译出的输出里有什么。全局配置里的规定源，每份规定清单都可以按名字使用，就像规定清单自己写了它一样。全局配置里还可以写这个人自己的 `personal` 参数取值，比如回复用的语言，只有私有输出用它，提交的文件从不用；在这里写 `repo` 参数的取值，给一个警告并忽略 ([设定取值](rule-config.md#setting-a-value))。
+- 单看提交进仓库的规定清单和锁文件，就知道这个仓库提交的输出里有什么：每份规定清单照旧列出自己用的规定和规定包，全局配置里的东西都不进提交的文件。全局配置里的规定源，每份规定清单都可以按名字使用，就像规定清单自己写了它一样。
+- 与人有关的东西只进私有输出：全局配置开启的规定、规定包和领域 ([全局配置开启什么](#what-the-configuration-turns-on))，以及这个人自己的 `personal` 参数取值，比如回复用的语言；在这里写 `repo` 参数的取值，给一个警告并忽略 ([设定取值](rule-config.md#setting-a-value))。
 
 **内置默认**是 statute 自己知道的唯一一个规定源：`R = { git = "https://github.com/Luolc/agent-constitution", branch = "main" }`。第一方规定源还没有给规定发布带 tag 的版本；发布以后，默认跟踪最新的 tag。
 
 **全局规定源进哪一层。** 全局配置里的公开规定源进 `statute.toml` 的规定清单。私有的，在私有仓库 (`public = false`) 里同样进 `statute.toml`；在公开仓库里只进私有规定清单的私有层 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))：公开仓库提交的文件里从不出现它。在公开的 `statute.toml` 里启用私有规定源的规定会报错，并给出两条路：在私有层里启用它，`statute add --private me:4`；或者不用它。
+
+## <a id="what-the-configuration-turns-on"></a>全局配置开启什么
+
+顶层的 `rules`、`packs` 和 `domains` 写在第一个表之前，为这个人的所有仓库开启规定：
+
+```toml
+rules = ["R57", "me:4"]
+domains = ["R12"]
+
+[sources]
+me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
+```
+
+- 每一项的写法和规定清单里一样 ([规定源与引用](rule-sets.md#sources-and-references))，并且要写明规定源：写仓库自己的规定 (`L12`、`12`) 会报错，因为各个仓库自己的规定互不相同。
+- 在公开仓库里，这些项加入私有层 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，就像私有规定清单在自己的项之后列出了它们一样，不论有没有 `private.toml`。全局配置开启了任何东西，`statute compile` 就写私有输出，`statute compile --private-only` 也写。这些项不记进任何锁文件，`statute.lock` 和 `private.lock` 都不记：statute 每次编译私有输出时读它们，和读个人取值一样 ([设定取值](rule-config.md#setting-a-value))。
+- 全局配置服务所有仓库，所以某一项在某个仓库里用不上时，在那里略过，不报任何问题：规定清单没有这一项的规定源，规定源在读取的提交里没有这个节点，`statute.toml` 或 `private.toml` 已经列了它，或者 `private.toml` 关掉了它。默认已经启用的项也不给警告。
+- 除此之外，一项按 `private.toml` 里的一项算：`statute.toml` 用 `exclude` 关掉的，它会重新打开；类型不对的项，比如写在 `domains` 里的规定，会报错。某个 clone 不该有某一项，就在它的 `private.toml` 里 `exclude` 掉；全局配置没有 `exclude`，这个人哪里都不要的，不写进列表就是了。
+- 没有 `private.toml` 时，这一层也没有 `private.lock`：全局配置里的私有规定源，读它跟随的分支或标签的最新提交，像没有锁文件记录的规定源那样先 fetch；`compile --private-only` 不 fetch，读 statute 缓存里它的那个提交。
+- 私有仓库 (`public = false`) 没有私有输出，所以这些项在那里不起作用，`statute compile` 用一条 note 说明这一点。
+- 对全局配置列出的规定，`statute explain` 会说它列在全局配置的 `rules` 里。`statute add` 和 `statute remove` 不写全局配置，由这个人自己编辑。
 
 ## <a id="which-source-a-name-means"></a>一个名字指哪个规定源
 

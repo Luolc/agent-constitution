@@ -429,8 +429,9 @@ does not install the hooks: the user does, once per clone.
   ([The statute directories](global-configuration.md#the-statute-directories)),
   and nothing is fetched;
 - does nothing and exits 0, silently, when there is no `statute.toml`,
-  the repository is private (`public = false`) or there is no private
-  rule set;
+  the repository is private (`public = false`), or there is no private
+  rule set, the global configuration turns nothing on and no person's
+  own value differs from the committed one;
 - otherwise writes nothing, prints an error that names the cause and
   the command to run, and exits 1, whenever the plain `statute compile`
   would fail or need the network: a lock file that is stale, a commit

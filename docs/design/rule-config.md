@@ -17,7 +17,8 @@ builds on
 [the global configuration](global-configuration.md#the-global-configuration)
 in the user's configuration directory, `$XDG_CONFIG_HOME/statute/config.toml`
 (`~/.config/statute/config.toml` by default), which names
-sources for every rule set of the user and enables no rule.
+sources for every rule set of the user and turns rules on in its
+private output alone.
 
 The aim behind all three: a repository that adopts statute gets a
 small set of the most general rules, which are unlikely to be wrong
@@ -371,8 +372,9 @@ own values of the `personal` parameters, and is otherwise the same:
 with no value of the person's own, the two files say the same. In a
 public repository, a `personal` value that differs from the committed
 one makes `statute compile` write the private output even when there
-is no private rule set, and `statute compile --private-only` writes it
-then too. A private repository (`public = false`) has no private
+is no private rule set, as does a rule the global configuration turns
+on ([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)),
+and `statute compile --private-only` writes it then too. A private repository (`public = false`) has no private
 output, so a person's own value there is not used, and
 `statute compile` says so in a note, naming the parameter.
 
@@ -551,11 +553,10 @@ packs = ["R96"]
   writes it to its `exclude`.
 
   The file belongs to one clone, so a person who turns on the same
-  domains in several repositories lists them in the `private.toml` of
-  each; the global configuration turns on none, and one place that
-  does it for every repository of the person belongs to the personal
-  layer of [Where it lives](rule-sets.md#rule-sets-and-the-lock-file),
-  which is not designed yet. Whether `private.toml` may pick another
+  domains in every repository lists them once in the global
+  configuration instead
+  ([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)).
+  Whether `private.toml` may pick another
   option of a one-of than `statute.toml` picks is one of the
   [Open questions](rule-system.md#open-questions).
 
@@ -577,7 +578,8 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 ```
 
 `defaults` is a key of a rule set's source entry only: in the global
-configuration it fails, since that file enables no rule.
+configuration it fails, since a source named there brings no
+defaults.
 
 `statute init` writes no `rules`, `domains` or `exclude`: the new rule
 set has the first-party defaults.
