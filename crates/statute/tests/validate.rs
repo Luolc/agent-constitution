@@ -168,3 +168,80 @@ fn a_repealed_rule_may_cite_what_is_gone() {
     let run = validate(&dir);
     assert_eq!(run.code, 0, "{}", run.stderr);
 }
+
+/// A node in force that names a superseded or repealed rule fails, with
+/// what supersedes it; naming the successor passes, and so does a
+/// superseded rule that still names it.
+#[test]
+fn a_node_in_force_names_no_retired_rule() {
+    let superseded = edit(
+        rule(2, 1, "superseded-by = 4"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    );
+    let repealed = edit(
+        rule(5, 1, ""),
+        "status = \"draft\"",
+        "status = \"repealed\"",
+    );
+    let retired_domain = edit(domain(6), "status = \"active\"", "status = \"repealed\"");
+    let cites = |id: u64| {
+        edit(
+            rule(3, 1, ""),
+            "Do the thing 3.",
+            &format!("Do the thing 3, after {{@rule:{id}}}."),
+        )
+    };
+    for (name, node, needle) in [
+        (
+            "citation",
+            cites(2),
+            "rules/3.toml: error: [text.statement] cites rule 2, which is superseded by 4; a node in force names only nodes in force",
+        ),
+        (
+            "requires",
+            rule(3, 1, "requires = [2]"),
+            "rules/3.toml: error: `requires` names rule 2, which is superseded by 4;",
+        ),
+        (
+            "conflicts",
+            rule(3, 1, "conflicts = [5]"),
+            "rules/3.toml: error: `conflicts` names rule 5, which is repealed;",
+        ),
+        (
+            "parent",
+            rule(3, 6, ""),
+            "rules/3.toml: error: `parent` names domain 6, which is repealed;",
+        ),
+    ] {
+        let nodes = |three| {
+            vec![
+                domain(1),
+                superseded.clone(),
+                three,
+                rule(4, 1, ""),
+                repealed.clone(),
+                retired_domain.clone(),
+            ]
+        };
+        let dir = rules(&format!("retired-{name}"), &nodes(node.clone()));
+        let run = validate(&dir);
+        assert_eq!(run.code, 1, "{name}: {}", run.stdout);
+        assert!(run.stderr.contains(needle), "{name}: {}", run.stderr);
+        // Superseded itself, rule 3 names what it named before.
+        let frozen = edit(
+            edit(node, "status = \"draft\"", "status = \"superseded\""),
+            "revision = 1",
+            "revision = 1\nsuperseded-by = 4",
+        );
+        let dir = rules(&format!("retired-{name}-frozen"), &nodes(frozen));
+        let run = validate(&dir);
+        assert_eq!(run.code, 0, "{name}: {}", run.stderr);
+    }
+    let dir = rules(
+        "retired-successor",
+        &[domain(1), superseded, cites(4), rule(4, 1, "")],
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+}

@@ -419,6 +419,7 @@ fn superseded_stays_superseded() {
         "status = \"active\"",
     );
     tree.edit("rules/11.toml", "superseded-by = 10\n", "");
+    tree.edit("rules/11.toml", "revision = 1", "revision = 2");
     tree.assert_fails(
         &["--base", "HEAD"],
         &[
@@ -443,10 +444,58 @@ fn repealed_stays_repealed() {
         "status = \"repealed\"",
         "status = \"active\"",
     );
+    tree.edit("rules/10.toml", "revision = 1", "revision = 2");
     tree.assert_fails(
         &["--base", "HEAD"],
         &["rules/10.toml:4: error: rule 10 was repealed at base HEAD and is no longer"],
     );
+}
+
+#[test]
+fn a_change_beyond_the_translations_raises_the_revision() {
+    let tree = Tree::new("base-revision-text");
+    tree.commit_base();
+    tree.edit("rules/10.toml", "is not done.", "is left undone.");
+    tree.assert_fails(
+        &["--base", "HEAD"],
+        &["rules/10.toml:2: error: rule 10 changed beyond its translations since base HEAD, where its revision was 1; raise its revision to 2"],
+    );
+    tree.edit("rules/10.toml", "revision = 1", "revision = 2");
+    tree.assert_passes(&["--base", "HEAD"]);
+}
+
+#[test]
+fn superseding_raises_the_revision() {
+    let tree = Tree::new("base-revision-superseded");
+    let eleven = edit(rule(11, 2, ""), "status = \"draft\"", "status = \"active\"");
+    tree.node(edit(eleven, "\"simplicity\"", "\"alpha\""));
+    tree.commit_base();
+    tree.edit(
+        "rules/11.toml",
+        "status = \"active\"",
+        "status = \"superseded\"\nsuperseded-by = 10",
+    );
+    tree.assert_fails(
+        &["--base", "HEAD"],
+        &["rules/11.toml:2: error: rule 11 changed beyond its translations since base HEAD, where its revision was 1; raise its revision to 2"],
+    );
+    tree.edit("rules/11.toml", "revision = 1", "revision = 2");
+    tree.assert_passes(&["--base", "HEAD"]);
+}
+
+#[test]
+fn a_translation_alone_keeps_the_revision() {
+    let tree = Tree::new("base-revision-translation");
+    tree.commit_base();
+    let hash = statute::node::original_hash(&["Domain 2"]);
+    tree.edit(
+        "rules/2.toml",
+        "en = \"Domain 2\"\n",
+        &format!("en = \"Domain 2\"\nzh = \"领域 2\"\n\n[translations]\nzh = \"{hash}\"\n"),
+    );
+    tree.assert_passes(&["--base", "HEAD"]);
+    tree.edit("rules/2.toml", "zh = \"领域 2\"", "zh = \"领域二\"");
+    tree.assert_passes(&["--base", "HEAD"]);
 }
 
 #[test]
@@ -463,7 +512,7 @@ fn older_rule_lives_on_under_its_slug() {
     tree.edit(
         "rules/10.toml",
         "revision = 1",
-        "slug = \"rule\"\nrevision = 1",
+        "slug = \"rule\"\nrevision = 2",
     );
     tree.assert_passes(&["--base", "HEAD"]);
 }
