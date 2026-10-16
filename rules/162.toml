@@ -1,8 +1,9 @@
 id = 162
 slug = "cross-repo-job-in-initiative-checkout"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 314
 lang = "en"
 parent = 161
 default = "on"

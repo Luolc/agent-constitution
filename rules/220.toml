@@ -1,11 +1,11 @@
 id = 220
 slug = "data-directory-described"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
 parent = 127
-default = "on"
+default = "off"
 authority = ["simplicity"]
 constitution = ">=1"
 level = "user"
@@ -17,8 +17,8 @@ en = "Say in the repository's instructions what its data directory holds and whe
 zh = "仓库的说明写明数据目录放什么、什么时候清"
 
 [text.statement]
-en = "When a repository has a data directory ({@rule:131}), say in its instructions what that directory holds and when it is cleared."
-zh = "仓库有数据目录 ({@rule:131}) 的，在仓库的说明里写明这个目录放什么、什么时候清。"
+en = "When a repository has a data directory ({@rule:311}), say in its instructions what that directory holds and when it is cleared."
+zh = "仓库有数据目录 ({@rule:311}) 的，在仓库的说明里写明这个目录放什么、什么时候清。"
 
 [text.reason]
 en = '''
@@ -41,4 +41,4 @@ zh = '''
 '''
 
 [translations]
-zh = "2a9d705ddab6a43a85eb8b509f1fc7c8d260258020ce7e931a96e1971ed440d0"
+zh = "592e627c5462535cc6996b0307c98035e014293dfdc3829eda032e16dff85055"

@@ -547,34 +547,6 @@ original-sha256 = "f1bd025aa0ee4063b8c68449768dd36f06d33cb56714db1296b78362afdae
 by = "default"
 
 [[rules]]
-rule = "R129"
-revision = 3
-sha256 = "2499242c6dcf512aca25b5d43370682e2699f04d0d8f391155c62c80a1bda525"
-original-sha256 = "c5c1885529dc25f538d588a9bbd4121a2db0623777ee8ce8731e4de9abb79f8e"
-by = "default"
-
-[[rules]]
-rule = "R130"
-revision = 2
-sha256 = "1120434588648961c1633d3b2b00ed64ab0e3988c4a0640e86fc6820bfede554"
-original-sha256 = "8a423a02893b4df700601fdf277c8df080166ed6cafb5c9a93107716e2b8d44b"
-by = "default"
-
-[[rules]]
-rule = "R131"
-revision = 2
-sha256 = "b47b8626d9250b36fdf1cf0daa6423f6eb32573c367e894ae1be8ff33c6a77a5"
-original-sha256 = "13c548030c18bda4519ffb4410f2c0c3803d484bd56a22cbd0451204ea086cd1"
-by = "default"
-
-[[rules]]
-rule = "R132"
-revision = 3
-sha256 = "5620ba9dfb5446abf14eb16758a015828511dba1840417c58fd8826499ac8b7a"
-original-sha256 = "6b1b7d5028f4537c35076cff2a628a3ad986d46e74db8888e206db46802b4cc4"
-by = "default"
-
-[[rules]]
 rule = "R133"
 revision = 2
 sha256 = "ba3d9e02818431a9c717c68671226f7391a13f9b20644b327042456fd242afe0"
@@ -680,13 +652,6 @@ original-sha256 = "28385a9fa02d808c6abf3c9a1ddd20dab2e7dc7d6f7fb625da491ab50339d
 by = "default"
 
 [[rules]]
-rule = "R162"
-revision = 3
-sha256 = "cbc42b8e79a4fe2fc500e9e4818108e606ef3943c922fdc169927f8d76ac97f7"
-original-sha256 = "050b3d36301b4977a28143e3144cb8b87cf27f5c13e8c5bcf835b35e03e9ee75"
-by = "default"
-
-[[rules]]
 rule = "R163"
 revision = 3
 sha256 = "ab3594d4042b391ee3d0a3cb7d9d436983d63f2ed13b47dee709fc1692228d03"
@@ -758,9 +723,9 @@ by = "default"
 
 [[rules]]
 rule = "R173"
-revision = 2
-sha256 = "4935dcb32f6f4fb2cd2e991f26d60c0545728e47a13c09c0cb4ed6ca88e04683"
-original-sha256 = "ca1493d418f4eccd0fe2a0ea07eb1eb12d5d0cb4dd250468db2a2466bb6a6de3"
+revision = 3
+sha256 = "2a1e1c939d7382254b009df843708e283233ab14ffdbb01899a7bc8969f2da7d"
+original-sha256 = "572b8c89acc992075bde5e3d80ddce33b9f695669a793d1b3d5a1f8a1f49adf1"
 by = "default"
 
 [[rules]]
@@ -995,41 +960,6 @@ rule = "R215"
 revision = 2
 sha256 = "d281f86a90f7b1db473073795791bc67459422788506d59b7c829b023f673fce"
 original-sha256 = "2e8862256cec1e0816c382a7aeffbffe107dfe713fb8ece3bf53c2ec2794c560"
-by = "default"
-
-[[rules]]
-rule = "R217"
-revision = 2
-sha256 = "8fb68bd3224c4a29b1956da9d0c3ed21673ec355bdf4a92eea2e5432cf3d8ee0"
-original-sha256 = "22e6f054d98b4c1a96a4cbe92ebe8835e45ddca52959369f233891851d0afae3"
-by = "default"
-
-[[rules]]
-rule = "R218"
-revision = 2
-sha256 = "4ec7d255249c900df2ea1f51f0aa7ccdb602d06fd0c46646d10c06b45d786942"
-original-sha256 = "fcc62e93e9221bfff46d186bc756977d787643c772afa1b343360a4082a0e8c5"
-by = "default"
-
-[[rules]]
-rule = "R219"
-revision = 2
-sha256 = "3a4d272a6fb2d268aba3c1cdbbe5507bc384bacb351c1866f1be9fa7dbe390ae"
-original-sha256 = "c7cebc782c87fe41f17b68d911932cd82dde5ac3e148157e8575eaf25de5c585"
-by = "default"
-
-[[rules]]
-rule = "R220"
-revision = 2
-sha256 = "c42a72c11ce94922dca22d82485ad838b8578f29a51c157fb5ca341b9e55d893"
-original-sha256 = "acdc9c8c05bd2dcfa54da22a0a46997aa5087f8b166d050a1fb520c3146c7a5b"
-by = "default"
-
-[[rules]]
-rule = "R221"
-revision = 2
-sha256 = "fd2b92ceee558caa9ff5eadd6cdc10483faf142415afdcc33994e140b29ae719"
-original-sha256 = "6e79b45ddb86c17487b19e388fd933c665b96a064fc7f5c0c8c891f75e42dfc7"
 by = "default"
 
 [[rules]]

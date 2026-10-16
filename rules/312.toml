@@ -1,0 +1,43 @@
+id = 312
+slug = "third-party-sources-dir"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+default = "off"
+authority = ["simplicity"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Clone third-party sources to `<owner>/<repo>` under the directory for them"
+zh = "第三方源码 clone 到第三方源码目录下的 `<owner>/<repo>`"
+
+[text.statement]
+en = "Clone third-party sources to `{$dirs.third-party}/<owner>/<repo>/`."
+zh = "第三方源码的 clone 放在 `{$dirs.third-party}/<owner>/<repo>/`。"
+
+[text.reason]
+en = '''
+Others' sources cloned into the directory for main checkouts ({@rule:288}) mix with your own repositories; with `<owner>` in the path, two repositories of the same name do not collide ({@constitution:simplicity}).
+'''
+zh = '''
+别人的源码放进主检出目录 ({@rule:288})，就和自己的仓库混在一起；路径带上 `<owner>`，同名的仓库也不会冲突 ({@constitution:simplicity})。
+'''
+
+[text.verification]
+en = '''
+The directory holds two levels of directories, `<owner>/<repo>`.
+
+Violated when a clone of third-party sources is kept elsewhere than in `{$dirs.third-party}/<owner>/<repo>/`.
+'''
+zh = '''
+这个目录下是两级目录 `<owner>/<repo>`。
+
+第三方源码的 clone 放在 `{$dirs.third-party}/<owner>/<repo>/` 以外的，即为违反本规定。
+'''
+
+[translations]
+zh = "f2b1976abab40d17a80262068088576359a323da821a2df8e977845e6bd8f42b"
