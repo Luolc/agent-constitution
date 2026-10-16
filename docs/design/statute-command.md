@@ -24,8 +24,11 @@ once parameters are built, each placeholder is replaced by its value
 ([Parameters](rule-config.md#parameters)).
 
 `statute compile` writes the `AGENTS.md` next to `statute.toml`, or to
-another file with `--output`, and the other two next to it (below),
-and only when the lock file is what `statute lock` would write now. The
+another file with `--output`, and the skills next to it (below),
+and only when the lock file is what `statute lock` would write now, the
+version of statute it records included; when only that version differs,
+the error names both
+([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)). The
 `AGENTS.md` holds, in
 this order: a comment that the file is generated, which `compile` reads to
 tell its own file from one written by hand; the constitution's version
@@ -97,18 +100,17 @@ In the directory of the `AGENTS.md`, `statute compile` also writes:
   alone; Claude Code reads a repository's skills only from
   `.claude/skills/` (read 2026-10-14). Links are made only on a Unix
   system: elsewhere, a rule set that needs a skill fails the command. A
-  skill may hold only directories and regular files;
-- `statute-checks.toml`: the version of the statute that compiled it,
-  as `statute = "<version>"`, the binary whose built-in checks the
-  rules use, and one `[[commands]]` table per enabled rule with
-  `check = "command"`, ordered by ID, with its `rule` (`"R42"`),
-  `run` and `tools`. The file changes with statute's version. It stays
-  at the top of the repository rather than in `.statute/`: it is
-  committed, CI reads it, and a change to it is reviewed beside the
-  `AGENTS.md` it comes from.
+  skill may hold only directories and regular files.
 
-Each file starts with a comment that statute wrote it (`<!-- ... -->`
-in the `AGENTS.md`, `# ...` in `statute-checks.toml`). Before writing
+The version of statute and the commands of the checks, which CI reads,
+are in the lock file ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)).
+statute before 0.1.18 wrote them to a file of their own,
+`statute-checks.toml`, next to the `AGENTS.md`; `statute compile` deletes
+that file when it starts with statute's comment, and leaves one without
+it alone.
+
+The `AGENTS.md` starts with a comment that statute wrote it
+(`<!-- ... -->`). Before writing
 anything, the command checks every place it would write, and when one holds
 something it did not write (a file without that first line, a skill
 directory without `.statute-generated`, a `.claude/skills/<name>` that
@@ -128,8 +130,8 @@ before its directory, and the `AGENTS.md` is written last.
 
 `statute compile --check` writes nothing. It compiles the public layer
 and fails, naming each place, wherever `statute compile` would change
-something: an `AGENTS.md` or `statute-checks.toml` that differs or is
-missing, a file of a skill's copy that differs from the source, is
+something: an `AGENTS.md` that differs or is missing, a
+`statute-checks.toml` it would delete, a file of a skill's copy that differs from the source, is
 missing or is not in the source, a copy or a link that is not statute's,
 and a skill directory with `.statute-generated` that the rule set no
 longer needs. The private output, which git ignores, is neither compiled

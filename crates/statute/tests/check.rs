@@ -269,9 +269,8 @@ fn r46_statute_files_are_instruction_files() {
     }
 }
 
-/// `AGENTS.md` and `statute-checks.toml` that equal what statute compiles
-/// now are generated, and go with the tools; beside a rule set in a
-/// directory too.
+/// An `AGENTS.md` that equals what statute compiles now is generated, and
+/// goes with the tools; beside a rule set in a directory too.
 #[test]
 fn r46_compiled_files_go_with_the_side_that_changed_them() {
     for sub in ["", "sub"] {
@@ -299,39 +298,86 @@ fn r46_compiled_files_go_with_the_side_that_changed_them() {
         };
         assert!(
             l.contains(&format!(
-                "generated files: M {}, A {}, which the reviewer checks",
-                at("AGENTS.md"),
-                at("statute-checks.toml")
+                "generated files: M {}, which the reviewer checks",
+                at("AGENTS.md")
             )),
             "{sub}: {l}"
         );
-        // Edited by hand, each compiled file is an instruction file again.
-        for file in ["AGENTS.md", "statute-checks.toml"] {
-            git(&dir, &["tag", "-f", "compiled"]);
-            change(&dir, &[file, "tools/build.py"]);
-            let run = statute(&dir, &["check", "--base", "compiled"], None);
-            assert_eq!(run.code, 1, "{sub} {file}: {}", run.stdout);
-            assert!(
-                run.stdout.contains(&format!(
-                    "M {}: an instruction file, not what statute compiles now, in the same change",
-                    at(file)
-                )),
-                "{sub} {file}: {}",
-                run.stdout
-            );
-            git(&dir, &["checkout", "-q", "compiled", "--", "."]);
-            git(&dir, &["commit", "-qm", "undo"]);
-        }
+        // Edited by hand, the compiled file is an instruction file again.
+        git(&dir, &["tag", "-f", "compiled"]);
+        change(&dir, &["AGENTS.md", "tools/build.py"]);
+        let run = statute(&dir, &["check", "--base", "compiled"], None);
+        assert_eq!(run.code, 1, "{sub}: {}", run.stdout);
+        assert!(
+            run.stdout.contains(&format!(
+                "M {}: an instruction file, not what statute compiles now, in the same change",
+                at("AGENTS.md")
+            )),
+            "{sub}: {}",
+            run.stdout
+        );
+    }
+}
+
+/// A lock file that changed in nothing but the version of statute, beside
+/// tools, is an instruction file in the same change for rule 46, as in
+/// any repository; only this repository's rule L31 counts it as
+/// generated, in `check-instruction-changes`. So is the deletion of the
+/// checks file an earlier statute wrote.
+#[test]
+fn r46_a_lock_file_changed_only_in_its_version_stays_an_instruction_file() {
+    let version = format!("statute = \"{}\"", env!("CARGO_PKG_VERSION"));
+    let dir = repo("r46-lock-version", "\"R46\"", "true");
+    std::fs::remove_file(dir.join("AGENTS.md")).unwrap();
+    let compile = statute(&dir, &["compile"], None);
+    assert_eq!(compile.code, 0, "{}", compile.stderr);
+    // The base as an earlier statute left it.
+    let lock = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+    assert!(lock.contains(&version), "{lock}");
+    write(
+        &dir,
+        "statute.lock",
+        &lock.replace(&version, "statute = \"0.0.1\""),
+    );
+    let old = format!(
+        "{}\n\nstatute = \"0.0.1\"\ncommands = []\n",
+        statute::compile::GENERATED_HASH
+    );
+    write(&dir, "statute-checks.toml", &old);
+    git(&dir, &["add", "-A"]);
+    git(&dir, &["commit", "-qm", "old"]);
+    git(&dir, &["tag", "old"]);
+    let relock = statute(&dir, &["lock"], None);
+    assert_eq!(relock.code, 0, "{}", relock.stderr);
+    let compile = statute(&dir, &["compile"], None);
+    assert_eq!(compile.code, 0, "{}", compile.stderr);
+    assert!(!dir.join("statute-checks.toml").exists());
+    change(&dir, &["tools/build.py"]);
+    let run = statute(&dir, &["check", "--base", "old"], None);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    for file in ["statute.lock", "statute-checks.toml"] {
+        let status = if file == "statute.lock" { "M" } else { "D" };
+        assert!(
+            run.stdout.contains(&format!(
+                "{status} {file}: an instruction file, in the same change"
+            )),
+            "{file}: {}",
+            run.stdout
+        );
     }
 }
 
 /// The same changes, judged by statute's rule 46 and by this repository's
 /// `check-instruction-changes`: a violation exactly where the Python check
 /// exits 1. The cases leave out where the two differ by design: the
-/// script always counts the top `AGENTS.md` and `statute-checks.toml` as
-/// generated, as this repository's rules L28 and L27 provide, while
-/// statute does only while they equal its compile (the hand-edited
-/// `AGENTS.md` of `r46_mixed_change_is_a_violation`); and the script
+/// script, with this repository's tables, counts the top `AGENTS.md` as
+/// generated always and the top `statute.lock` when its TOML differs only
+/// in `statute` and `commands`, as this repository's rule L31 provides,
+/// and `statute-checks.toml` always, as its rule L27 provides, while
+/// statute's check, which holds for any repository, counts the
+/// `AGENTS.md` only while it equals its compile (the hand-edited
+/// `AGENTS.md` of `r46_mixed_change_is_a_violation`) and the other two
+/// as instruction files; and the script
 /// knows statute's files only at the top of the repository.
 #[test]
 fn r46_agrees_with_check_instruction_changes() {
@@ -369,7 +415,6 @@ fn r46_agrees_with_check_instruction_changes() {
         ),
         ("lookalike", &["AGENTS.md.bak", "tools/build.py"]),
         ("statute-toml", &["statute.toml", "tools/build.py"]),
-        ("statute-lock", &["statute.lock", "tools/build.py"]),
         ("statute-local", &[".statute/notes.md", "tools/build.py"]),
         ("legacy", &["docs/CLAUDE.legacy.md", "tools/build.py"]),
     ];

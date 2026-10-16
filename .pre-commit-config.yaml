@@ -80,8 +80,9 @@ repos:
         files: ^(constitution/|crates/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)
         pass_filenames: false
       # This repo's compiled output: --check writes nothing and requires
-      # AGENTS.md, statute-checks.toml and the skills statute copies and
-      # links to match a fresh compile of statute.toml and statute.lock.
+      # AGENTS.md and the skills statute copies and links to match a fresh
+      # compile of statute.toml and statute.lock, and no
+      # statute-checks.toml that an earlier statute wrote to be left.
       # The private output, which git ignores, is not compared.
       - id: statute-compile
         name: statute compile check

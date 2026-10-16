@@ -106,6 +106,8 @@ fn lock_writes_the_lock_file() {
     let expected = format!(
         r#"# Written by statute from statute.toml; do not edit by hand.
 
+statute = "{}"
+
 [constitution]
 path = "."
 edition = "2026-10"
@@ -127,6 +129,7 @@ revision = 1
 sha256 = "{}"
 original-sha256 = "{}"
 "#,
+        env!("CARGO_PKG_VERSION"),
         sha256(&dir, "rules/2.toml"),
         original_sha256(&dir, "rules/2.toml"),
         sha256(&dir, "rules/3.toml"),

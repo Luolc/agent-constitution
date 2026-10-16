@@ -729,7 +729,7 @@ fn a_skill_naming_a_missing_rule_fails() {
 }
 
 #[test]
-fn the_checks_are_written_next_to_agents_md() {
+fn the_lock_file_records_the_version_and_the_checks() {
     let dir = repo("checks", &manifest(""));
     // Rule 5 (enabled) and rule 6 (not) run a command; rule 3 is reviewed.
     for (id, parent) in [(5, 4), (6, 4)] {
@@ -745,22 +745,151 @@ fn the_checks_are_written_next_to_agents_md() {
     }
     std::fs::create_dir_all(dir.join("sub")).unwrap();
     ok(&statute(&dir, &["lock"]));
-    ok(&statute(&dir, &["compile", "--output", "sub/out.md"]));
-    let checks = std::fs::read_to_string(dir.join("sub/statute-checks.toml")).unwrap();
+    let lock = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+    // The version on a line of its own, the only one CI's `sed` matches.
+    let version = format!("\nstatute = \"{}\"\n", env!("CARGO_PKG_VERSION"));
+    assert!(lock.contains(&version), "{lock}");
     assert_eq!(
-        checks,
-        format!(
-            "{}\n\nstatute = \"{}\"\n\n[[commands]]\nrule = \"R5\"\nrun = \"./check-5.sh --strict\"\ntools = [\"uv\", \"go\"]\n",
-            statute::compile::GENERATED_HASH,
-            env!("CARGO_PKG_VERSION")
-        )
+        lock.lines().filter(|l| l.starts_with("statute = ")).count(),
+        1,
+        "{lock}"
     );
-    assert!(!dir.join("statute-checks.toml").exists());
-    // Without a command, the list is empty.
+    assert!(
+        lock.ends_with(
+            "\n[[commands]]\nrule = \"R5\"\nrun = \"./check-5.sh --strict\"\ntools = [\"uv\", \"go\"]\n"
+        ),
+        "{lock}"
+    );
+    ok(&statute(&dir, &["compile", "--output", "sub/out.md"]));
+    assert!(!dir.join("sub/statute-checks.toml").exists());
+    // Without a command, the lock file has no list.
     let dir = repo("checks-none", &manifest(""));
     compiled(&dir);
-    let checks = std::fs::read_to_string(dir.join("statute-checks.toml")).unwrap();
-    assert!(checks.ends_with("\ncommands = []\n"), "{checks}");
+    let lock = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+    assert!(lock.contains(&version), "{lock}");
+    assert!(!lock.contains("commands"), "{lock}");
+    assert!(!dir.join("statute-checks.toml").exists());
+}
+
+/// The lock file of `dir` with the line of its version replaced by
+/// `line`, which is empty for a lock file of a statute before 0.1.18.
+fn with_version(dir: &Path, line: &str) {
+    let path = dir.join("statute.lock");
+    let text = std::fs::read_to_string(&path).unwrap();
+    let ours = format!("statute = \"{}\"\n\n", env!("CARGO_PKG_VERSION"));
+    assert!(text.contains(&ours), "{text}");
+    std::fs::write(&path, text.replacen(&ours, line, 1)).unwrap();
+}
+
+#[test]
+fn lock_and_upgrade_turn_an_old_lock_file_into_the_new_format() {
+    for command in ["lock", "upgrade"] {
+        let dir = repo(&format!("old-lock-{command}"), &manifest(""));
+        ok(&statute(&dir, &["lock"]));
+        let new = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+        with_version(&dir, "");
+        let run = statute(&dir, &["compile", "--output", "out.md"]);
+        assert_eq!(run.code, 1);
+        assert!(
+            run.stderr.contains(
+                "statute.lock is not what statute.toml and the rules give now; run `statute lock` first"
+            ),
+            "{}",
+            run.stderr
+        );
+        let run = statute(&dir, &[command]);
+        ok(&run);
+        if command == "upgrade" {
+            assert!(
+                run.stdout.contains(&format!(
+                    "statute: {} recorded, with the commands of the checks",
+                    env!("CARGO_PKG_VERSION")
+                )),
+                "{}",
+                run.stdout
+            );
+        }
+        assert_eq!(
+            std::fs::read_to_string(dir.join("statute.lock")).unwrap(),
+            new
+        );
+        ok(&statute(&dir, &["compile", "--output", "out.md"]));
+    }
+}
+
+#[test]
+fn compile_needs_the_lock_file_of_this_statute() {
+    let version = env!("CARGO_PKG_VERSION");
+    for other in ["0.0.1", "99.0.0"] {
+        let dir = repo(&format!("lock-version-{other}"), &manifest(""));
+        ok(&statute(&dir, &["lock"]));
+        with_version(&dir, &format!("statute = \"{other}\"\n\n"));
+        for args in [
+            &["compile", "--output", "out.md"][..],
+            &["compile", "--output", "out.md", "--check"][..],
+        ] {
+            let run = statute(&dir, args);
+            assert_eq!(run.code, 1, "{other}: {}", run.stdout);
+            assert!(
+                run.stderr.contains(&format!(
+                    "statute.lock was written by statute {other}, and this is statute {version}; run statute {other}, or `statute lock` to write it with this one"
+                )),
+                "{other}: {}",
+                run.stderr
+            );
+        }
+        let run = statute(&dir, &["upgrade"]);
+        ok(&run);
+        assert!(
+            run.stdout
+                .contains(&format!("statute: {other} -> {version}")),
+            "{}",
+            run.stdout
+        );
+        ok(&statute(&dir, &["compile", "--output", "out.md"]));
+    }
+}
+
+#[test]
+fn compile_removes_the_old_checks_file_it_wrote_and_leaves_a_hand_written_one() {
+    let dir = repo("old-checks", &manifest(""));
+    compiled(&dir);
+    let old = dir.join("statute-checks.toml");
+    std::fs::write(
+        &old,
+        format!(
+            "{}\n\nstatute = \"0.1.17\"\ncommands = []\n",
+            statute::compile::GENERATED_HASH
+        ),
+    )
+    .unwrap();
+    let run = statute(&dir, &["compile", "--output", "out.md", "--check"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr
+            .contains("statute-checks.toml: error: not what `statute compile` writes; run it"),
+        "{}",
+        run.stderr
+    );
+    let run = statute(&dir, &["compile", "--output", "out.md"]);
+    ok(&run);
+    assert!(
+        run.stdout.contains("removed statute-checks.toml: statute.lock records statute's version and the commands of the checks now"),
+        "{}",
+        run.stdout
+    );
+    assert!(!old.exists());
+    ok(&statute(
+        &dir,
+        &["compile", "--output", "out.md", "--check"],
+    ));
+    std::fs::write(&old, "mine\n").unwrap();
+    ok(&statute(&dir, &["compile", "--output", "out.md"]));
+    ok(&statute(
+        &dir,
+        &["compile", "--output", "out.md", "--check"],
+    ));
+    assert_eq!(std::fs::read_to_string(&old).unwrap(), "mine\n");
 }
 
 #[cfg(unix)]
@@ -875,12 +1004,7 @@ fn compile_writes_nothing_where_something_is_not_its_own() {
     const NOT_OURS: &str = "not written by statute, so it is left as it is and nothing is written";
     const NOT_A_DIRECTORY: &str = "not a directory but a link or a file, so nothing is written; statute writes one link per skill in .claude/skills";
     type Place = fn(&Path);
-    let cases: [(&str, Place, &str); 6] = [
-        (
-            "checks-file",
-            |d| std::fs::write(d.join("statute-checks.toml"), "mine\n").unwrap(),
-            NOT_OURS,
-        ),
+    let cases: [(&str, Place, &str); 5] = [
         (
             "skill-directory",
             |d| {

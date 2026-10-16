@@ -1,7 +1,8 @@
-//! The lock file, `statute.lock`: the constitution, the sources and every
-//! enabled rule, pinned (`docs/design/rule-sets.md`, Rule sets and the
-//! lock file). Written by statute, never by hand; the same rule set and
-//! sources always give the same bytes.
+//! The lock file, `statute.lock`: the version of statute that wrote it,
+//! the constitution, the sources and every enabled rule, pinned, and the
+//! commands of the enabled rules' checks (`docs/design/rule-sets.md`, Rule
+//! sets and the lock file). Written by statute, never by hand; the same
+//! rule set and sources always give the same bytes with the same statute.
 
 use std::collections::BTreeMap;
 
@@ -10,14 +11,21 @@ use serde::{Deserialize, Serialize};
 use crate::manifest::{
     self, Declared, FIRST_PARTY, Follow, Git, Key, RULES_DIR, RuleRef, SourceSpec,
 };
+use crate::node::Check;
 use crate::project::Project;
 
 pub const FILE: &str = "statute.lock";
 
 const HEADER: &str = "# Written by statute from statute.toml; do not edit by hand.\n\n";
 
+/// The version of statute that writes the lock file.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(Serialize)]
 struct Lock<'a> {
+    /// First, on a line of its own, so that CI can read the version to
+    /// install with one `sed` or `grep`.
+    statute: &'a str,
     constitution: Constitution<'a>,
     sources: Vec<Source<'a>>,
     rules: Vec<Rule<'a>>,
@@ -26,6 +34,17 @@ struct Lock<'a> {
     /// file and the outputs).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     parameters: Vec<Parameter<'a>>,
+    /// The external commands of the enabled rules' checks, which CI runs
+    /// beside statute's own.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    commands: Vec<Command<'a>>,
+}
+
+#[derive(Serialize)]
+struct Command<'a> {
+    rule: String,
+    run: &'a str,
+    tools: &'a [String],
 }
 
 #[derive(Serialize)]
@@ -121,6 +140,7 @@ pub fn render(project: &Project) -> String {
     let m = &project.manifest;
     let chosen = project.resolution.chosen();
     let lock = Lock {
+        statute: VERSION,
         constitution: Constitution {
             at: pin(m.constitution_spec(), false),
             edition: &m.edition,
@@ -157,6 +177,21 @@ pub fn render(project: &Project) -> String {
                 name,
                 value: &s.value,
             })
+            .collect(),
+        commands: project
+            .resolution
+            .enabled
+            .keys()
+            .filter_map(
+                |key| match &project.sources.get(key)?.rule.as_ref()?.check {
+                    Check::Command { run, tools } => Some(Command {
+                        rule: key.to_string(),
+                        run,
+                        tools,
+                    }),
+                    _ => None,
+                },
+            )
             .collect(),
     };
     let body = toml::to_string(&lock).expect("the lock file holds only strings and integers");
@@ -209,6 +244,9 @@ pub fn render_private(public: &Project, both: &Project) -> String {
 /// What a lock file pins, as `upgrade` compares it with a new resolution.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Locked {
+    /// The version of statute that wrote it; missing in a lock file
+    /// written before it was recorded.
+    pub statute: Option<String>,
     pub edition: String,
     pub revision: String,
     pub rules: BTreeMap<Key, LockedRule>,
@@ -240,6 +278,7 @@ impl LockedRule {
 
 #[derive(Deserialize)]
 struct RawLock {
+    statute: Option<String>,
     constitution: RawConstitution,
     #[serde(default)]
     rules: Vec<RawRule>,
@@ -274,6 +313,7 @@ struct RawRule {
 pub fn read(text: &str) -> Result<Locked, String> {
     let raw: RawLock = toml::from_str(text).map_err(|e| e.to_string().trim_end().to_owned())?;
     Ok(Locked {
+        statute: raw.statute,
         edition: raw.constitution.edition,
         revision: raw.constitution.revision,
         rules: raw
@@ -303,6 +343,7 @@ pub fn read(text: &str) -> Result<Locked, String> {
 /// it.
 pub fn current(project: &Project) -> Locked {
     Locked {
+        statute: Some(VERSION.to_owned()),
         edition: project.manifest.edition.clone(),
         revision: project.revision.clone(),
         rules: project
