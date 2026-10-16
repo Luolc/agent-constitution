@@ -1,6 +1,6 @@
 id = 212
 slug = "pin-hosted-runner-release"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A label that names a fixed release is one that the CI service keeps on one release of the system, such as `ubuntu-<version>` of GitHub Actions; which release is the jurisdiction's choice. Self-hosted runners and runners of a system other than Linux are not covered.
+A label that names a fixed release is one that the CI service keeps on one release of the system, such as `ubuntu-<version>` of GitHub Actions; which release is the jurisdiction's choice, and {@rule:317}, where it is on, names the label. Self-hosted runners and runners of a system other than Linux are not covered.
 
 Violated when a CI workflow of the repository sets a Linux runner that the CI service hosts, a value in a matrix included, to a label that does not name a fixed release.
 '''
 zh = '''
-指明固定版本的标签，指 CI 服务始终对应系统同一个版本的标签，例如 GitHub Actions 的 `ubuntu-<version>`；选哪个版本由法域定。自托管 runner 与 Linux 以外系统的 runner 不在此列。
+指明固定版本的标签，指 CI 服务始终对应系统同一个版本的标签，例如 GitHub Actions 的 `ubuntu-<version>`；选哪个版本由法域定，打开了 {@rule:317} 的，由它写明标签。自托管 runner 与 Linux 以外系统的 runner 不在此列。
 
 仓库的 CI workflow 里，CI 服务托管的 Linux runner (包括 matrix 里的取值) 用的标签没有指明固定版本的，即为违反本规定。
 '''
 
 [translations]
-zh = "27d3593a76f7e1956a5cdade60901937e21ae5de4a94c23c22e3bbd25997c143"
+zh = "3eb2da453ad3ab581ca9f0ecd858579d6dd31daee09f25bba2d1f2f60c6d118e"
