@@ -8,12 +8,15 @@
    under the top bar of a narrow screen. */
 .rules .rules-intro { color: var(--t-text-muted); }
 /* The list's page is a table, not text to read on: with no table of
-   contents beside it, its column fills the page beside the sidebar, a
-   small margin on each side, and all it holds, the intro too, is that
-   wide. */
+   contents beside it, its column fills the page beside the sidebar,
+   within the page's own margins (site.css), and all it holds, the
+   intro too, is that wide. A narrow screen, where the sidebar is
+   folded away, gives the table all but a small margin. */
 .rules.rules-index { max-width: none; }
 main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
-.book-page:has(.rules-index) { padding-inline: var(--t-space-4); }
+@media screen and (width <= 56rem) {
+  .book-page:has(.rules-index) { padding-inline: var(--t-space-4); }
+}
 .rules .rules-params { margin-top: calc(-1 * var(--t-space-2)); }
 .rules .rules-none { color: var(--t-text-muted); }
 

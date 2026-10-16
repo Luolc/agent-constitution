@@ -1,6 +1,6 @@
 id = 192
 slug = "voice-input"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 270
 default = "on"
 
 [title]
-en = "Voice input"
+en = "Voice Input"
 zh = "语音输入"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "bc0696be204f52fe4c4f025a8510ac84cc5d82fa03ab6ccee21bab683f2736ce"
+zh = "d25707d890f43586a567bb11486aba1b8048cb2e8548cc3b3126f9971398967a"

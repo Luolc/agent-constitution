@@ -1,6 +1,6 @@
 id = 137
 slug = "credential-secret-manager"
-revision = 3
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 265
 default = "off"
 
 [title]
-en = "Secret manager"
+en = "Secret Manager"
 zh = "密钥管理器"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "ba797eb5004b09b9aefde063a306206941df54dc381c7b8c6b4f270afd594aad"
+zh = "278d40cf8d886ceefa1d29571c0b55a24b1bb17583956319fdac493e35000728"

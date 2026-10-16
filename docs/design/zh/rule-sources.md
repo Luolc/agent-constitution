@@ -1,4 +1,4 @@
-<!-- en-sha256: 185f30d01314779d4bf3ffcfceb159a879fa235dbf11129d142ced767b946c0e -->
+<!-- en-sha256: e4f572223395d9b5546461e1d4d4840ffd1379bf7d3085b21605f2c72d951132 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -184,7 +184,9 @@ statute compile --private-only; exit 0
 
 软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
-私有规定从不与公开规定矛盾，因为私有层不覆盖任何公开规定 (见上文)：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。同样的原因，`private.toml` 的 `exclude` 关掉的公开规定，仍经 `AGENTS.md` 到达 Grok；私有层只对只读全文的 agent 关掉它。
+私有层不覆盖任何公开规定 (见上文)，这样私有规定就不会在 Grok 同时读两份文件时顶替公开规定的位置：Grok 在全文之外还单独读公开规定，而追加读两份文件的 agent，在两份不一致时并不稳定地偏向哪一份。同样的原因，`private.toml` 的 `exclude` 关掉的公开规定，仍经 `AGENTS.md` 到达 Grok；私有层只对只读全文的 agent 关掉它。
+
+**已知问题，尚未定：`exclude` 加一条矛盾的私有规定。** `private.toml` 可以用 `exclude` 关掉一条公开规定，再启用一条与它矛盾的私有规定；只有当某条已启用的规定依赖那条公开规定时，构建才拒绝。这样的组合目前构建是允许的。构建只检查规定声明的 `conflicts`，而被关掉的公开规定在私有层里不生效，所以即使声明过冲突也不会报；别的矛盾它都读不出来。这时 Grok 两条都会读到：公开的那条经 `AGENTS.md`，私有的那条经全文，也就是上面禁止覆盖所要防止的不一致。这条私有规定缺少[覆盖](#overrides) 才保留的东西：公开规定在规定树里的位置、对那条规定的依赖仍算满足，以及公开规定变动时 `statute upgrade` 的提醒。行为暂时保持现状；是禁止这样的组合、检测它还是留着不管，尚未定。
 
 各家 agent 的行为是 2026-10-14 在非交互模式下测的，版本是 Claude Code 2.1.296、Codex 0.159.3 和 Grok 1.0.50，每次运行都关掉了 Grok 的 folder trust 检查 (不关的话，Grok 在非交互模式下不加载任何项目指令)；Pi 1.2.0 每种情况跑了一次；Codex 的 `project_doc_max_bytes` 依据它的文档和源码。在一个小任务的几次运行里，兜底那一行写成 `@` 路径时，Codex 和 Grok 各两次都读了它指向的文件，Claude Code 则当作导入加载了它；换成同一类、但措辞与 statute 写的不同的一行 (路径写在反引号里，没有 `@`) 时，在别的都没加载全文的情况下，Claude Code 两次都读了全文，每次都是模型自己去读的。每次运行时用户自己的指令文件和 skill 都在，它们本身也催 agent 去找指令。布局本身用一份代替全文的文件测过：
 
@@ -229,6 +231,8 @@ overrides = "R200"
 ```text
 error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), a rule `private.toml` enables overrides no rule of the public layer
 ```
+
+用 `exclude` 关掉一条公开规定、再启用一条与它矛盾的私有规定，不算覆盖，构建也不拦 (见[已知问题](#private-rules-in-a-public-repository))。
 
 在私有层内部，一条规定可以覆盖任何只由私有层启用、级别更低的规定，因为两者都编译进私有输出；在公开层内部，一条规定可以覆盖级别更低的公开规定。两者都与私有仓库一样。公开层的规定也可以覆盖只由私有层启用的规定：公开输出里，覆盖方编在目标本该出现的位置，并带下文那条「没有别的规定启用目标」的警告；私有输出里，覆盖方顶替目标。
 

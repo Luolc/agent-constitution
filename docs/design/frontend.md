@@ -558,8 +558,10 @@ turned off (disabled), where it has these.
   up with the title's first line. The table is not text to read on, so
   its line has no measure: on the list's page, which has no table of
   contents, the table, the legend and the row of the filter fill the
-  page beside the sidebar, with `space-4` on each side and no greatest
-  width, and the intro above them is as wide. A word too long for its
+  page beside the sidebar, within the margins of the other pages,
+  which grow with the window up to `space-12`, and with no greatest
+  width, and the intro above them is as wide; on a narrow screen, where
+  the sidebar is folded away, the margins are `space-4`. A word too long for its
   row, such as a path in code in a statement, breaks anywhere rather
   than run past the screen's edge. The
   label's column and the marks' are as wide as their tokens make them,
@@ -595,7 +597,7 @@ turned off (disabled), where it has these.
     pages keep their line of the path, which starts at the index.
   - The title of a node's page, in the browser's tab and in a shared
     link (`og:title`): its label, then the titles of the path joined by
-    ` › ` (`R137 Security › Credentials › Secret manager`). Past 70 characters the
+    ` › ` (`R137 Security › Credentials › Secret Manager`). Past 70 characters the
     titles above its parent are left out from the farthest, an ellipsis
     in their place (`R22 … › Credentials › Confirm a credential is in
     place by its presence only`); the parent's title and the node's own

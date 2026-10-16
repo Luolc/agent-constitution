@@ -1417,6 +1417,13 @@ original-sha256 = "b8f0d437e67b699fb65cf46e7dc7dcab98c081f3e94e4ebc58c6680a85637
 by = "default"
 
 [[rules]]
+rule = "R298"
+revision = 1
+sha256 = "8b4f7ac0baf918aca70b356337462dc73713a1315cafccf75f0867069f9804fe"
+original-sha256 = "8aebe5228822d4e53aaedab28747a98db81ef7036d2e22133b062ae19a3600a9"
+by = "default"
+
+[[rules]]
 rule = "L1"
 revision = 1
 sha256 = "746d642f7628e9197a6e0c896225f7ce18121ece944bb858c37496b4593d7708"
