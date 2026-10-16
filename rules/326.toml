@@ -1,0 +1,23 @@
+id = 326
+slug = "github"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 273
+default = "off"
+
+[title]
+en = "GitHub"
+zh = "GitHub"
+
+[applicability]
+en = '''
+Covers how agents act on GitHub where they have an account of their own there, apart from the account of the person who owns the repositories: which identity an act goes through, and when the owner's is used. Enable it where agents work on GitHub through such an account; where they have none, or the repositories are hosted elsewhere, it is not needed.
+'''
+zh = '''
+管 agent 在 GitHub 上有自己的账号 (与仓库所有者本人的账号分开) 时怎么操作：一个操作用哪个身份做，什么时候用所有者的身份。agent 通过这样的账号在 GitHub 上工作的地方启用；agent 没有这样的账号，或者仓库不托管在 GitHub 上的，不必启用。
+'''
+
+[translations]
+zh = "594c7254d3c8bee428a8cbbe01eae3913a7b1a879b1f63a87e9b1f7fbd7e6249"

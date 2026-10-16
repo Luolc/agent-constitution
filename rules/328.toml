@@ -1,0 +1,43 @@
+id = 328
+slug = "github-owner-identity-for-one-command"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 326
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Act on GitHub as the owner only for the one command that does the act"
+zh = "以所有者身份操作 GitHub，只限做这件事的那一条命令"
+
+[text.statement]
+en = "When you act on GitHub as the owner of the repositories, use the owner's identity only for the one command that does the act, and run every command before and after it through the account set up for agents."
+zh = "以仓库所有者的身份操作 GitHub 时，所有者的身份只用于做这件事的那一条命令，之前和之后的命令一律通过专为 agent 设的账号执行。"
+
+[text.reason]
+en = '''
+A switch of identity that stays in effect lets every later command, the agent's own and those of other agents that share the login, run with the owner's permissions without anyone having decided that they should ({@constitution:sensitive-info}). Limited to one command, the owner's identity reaches only the act it was used for.
+'''
+zh = '''
+身份切换后如果一直有效，之后的每一条命令，包括这个 agent 自己的和共用这份登录态的其他 agent 的，都会带着所有者的权限执行，而没有任何人决定过要这样 ({@constitution:sensitive-info})。只用于一条命令，所有者的身份就只用在那一件事上。
+'''
+
+[text.verification]
+en = '''
+Changing the account a tool uses by default and changing it back afterwards does not meet this rule: in between, every command run with that tool, by any agent, runs as the owner.
+
+Violated when a command other than the one that does the act runs as the owner, or when the owner's identity is left as the identity a tool uses by default.
+'''
+zh = '''
+先改掉工具默认使用的账号、事后再改回来，不符合本规定：在此期间，任何 agent 用这个工具执行的每一条命令都以所有者的身份执行。
+
+除做这件事的那一条命令以外，还有别的命令以所有者身份执行的，或者把所有者的身份留作工具默认使用的身份的，即为违反本规定。
+'''
+
+[translations]
+zh = "6491f2e8c06e83aaa9e4668f874b154fb2de8d1ce556dcf4676c0b05dd149126"
