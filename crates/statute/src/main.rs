@@ -365,28 +365,28 @@ fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
 }
 
 /// The private layer of a public repository over the public project:
-/// the directory of its rule set and the project with both layers.
+/// where its rule set and lock file are and the project with both layers.
 struct Private {
-    dir: PathBuf,
+    dir: private::Dir,
     both: Project,
 }
 
 impl Private {
-    /// The directory of the private rule set when there is one; a layer
-    /// of the global configuration's entries alone has neither it nor a
-    /// lock file.
-    fn rule_set(&self) -> Option<&Path> {
-        has_private_rule_set(&self.dir).then_some(self.dir.as_path())
+    /// Where the private rule set is when there is one; a layer of the
+    /// global configuration's entries alone has neither it nor a lock
+    /// file.
+    fn rule_set(&self) -> Option<&private::Dir> {
+        has_private_rule_set(&self.dir).then_some(&self.dir)
     }
 }
 
-fn has_private_rule_set(dir: &Path) -> bool {
-    dir.join(private::MANIFEST).exists()
+fn has_private_rule_set(dir: &private::Dir) -> bool {
+    dir.manifest().exists()
 }
 
-/// The directory of the private rule set, [`private::dir`]: `None`
-/// outside a git repository.
-fn private_dir(root: &Path) -> Result<Option<PathBuf>, ()> {
+/// Where the private rule set is, [`private::dir`]: `None` outside a git
+/// repository.
+fn private_dir(root: &Path) -> Result<Option<private::Dir>, ()> {
     private::dir(root).map_err(|e| eprintln!("statute: error: {e}"))
 }
 
@@ -409,11 +409,11 @@ fn load_layers(root: &Path, env: &Env) -> Result<(Project, Option<Private>), ()>
 
 /// Writes the private lock file of the private layer over `public`.
 fn write_private_lock(public: &Project, private: &Private) -> Result<(), ()> {
-    let path = private.dir.join(private::LOCK);
-    private::replace(&path, &lock::render_private(public, &private.both)).map_err(|e| {
+    let path = private.dir.lock();
+    private::replace(path, &lock::render_private(public, &private.both)).map_err(|e| {
         eprintln!("{}: error: cannot write: {e}", path.display());
     })?;
-    print_private_locked(&path, public, &private.both);
+    print_private_locked(path, public, &private.both);
     Ok(())
 }
 
@@ -621,9 +621,7 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let full = if has_private || global {
         let (both, more) = Project::load_private(&project, &diags, &env, &dir);
         match both {
-            Some(both) => {
-                statute::compile::full_text(&project, &both, has_private.then_some(&*dir))
-            }
+            Some(both) => statute::compile::full_text(&project, &both, has_private.then_some(&dir)),
             None if more.has_errors() => return Err(errors(&more)),
             None => return Err(one(format!("{} did not load", private::MANIFEST))),
         }
@@ -1662,7 +1660,7 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         None
     };
     let (path, lock_path) = match &dir {
-        Some(dir) => (dir.join(private::MANIFEST), dir.join(private::LOCK)),
+        Some(dir) => (dir.manifest(), dir.lock().to_owned()),
         None => (root.join(manifest::FILE), root.join(lock::FILE)),
     };
     let (file, lock_file) = match &dir {
@@ -1847,7 +1845,13 @@ fn write_both(
         .parent()
         .map_or(Ok(()), std::fs::create_dir_all)
         .map_err(|e| (manifest_file, e))
-        .and_then(|()| std::fs::write(&lock_tmp, lock_text).map_err(|e| (lock_file, e)))
+        .and_then(|()| {
+            lock_path
+                .parent()
+                .map_or(Ok(()), std::fs::create_dir_all)
+                .and_then(|()| std::fs::write(&lock_tmp, lock_text))
+                .map_err(|e| (lock_file, e))
+        })
         .and_then(|()| std::fs::write(&manifest_tmp, changed).map_err(|e| (manifest_file, e)))
         .and_then(|()| {
             std::fs::rename(&manifest_tmp, manifest_path).map_err(|e| (manifest_file, e))
@@ -2012,7 +2016,7 @@ fn source_add(
                     .map_err(|e| fail(format!("{address}: {e}")))?;
                 entry.insert("path", absolute.to_string_lossy().as_ref().into());
             }
-            let path = at.join(private::MANIFEST);
+            let path = at.manifest();
             private_at = Some(at);
             (path.display().to_string(), path)
         } else {
@@ -2079,7 +2083,7 @@ fn source_add(
         let (both, diags) = Project::with_private(&public_project, &given, &changed, &env, at);
         print(&diags);
         let both = both.ok_or_else(|| eprintln!("statute: {file} is left unchanged"))?;
-        let lock_path = at.join(private::LOCK);
+        let lock_path = at.lock();
         write_both(
             (&path, &file),
             (&lock_path, &lock_path.display().to_string()),

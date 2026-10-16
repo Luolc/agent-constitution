@@ -128,7 +128,7 @@ impl Project {
     }
 
     /// The private layer of the public `project`, read from the private
-    /// rule set in `dir` ([`private::dir`]), with the public rule set:
+    /// rule set of `dir` ([`private::dir`]), with the public rule set:
     /// `None` and no finding when there is no such file and the global
     /// configuration turns nothing on, else a layer of its entries
     /// alone. It fails when a
@@ -139,10 +139,10 @@ impl Project {
         project: &Project,
         given: &Diagnostics,
         env: &Env,
-        dir: &Path,
+        dir: &private::Dir,
     ) -> (Option<Project>, Diagnostics) {
         let mut diags = Diagnostics::default();
-        let path = dir.join(private::MANIFEST);
+        let path = dir.manifest();
         match std::fs::read_to_string(&path) {
             Ok(text) => Project::with_private(project, given, &text, env, dir),
             // What the global configuration turns on makes a private
@@ -170,12 +170,12 @@ impl Project {
         given: &Diagnostics,
         text: &str,
         env: &Env,
-        dir: &Path,
+        dir: &private::Dir,
     ) -> (Option<Project>, Diagnostics) {
         let root = &project.root;
         let mut diags = Diagnostics::default();
-        let shown = dir.join(private::MANIFEST).display().to_string();
-        let path = dir.join(private::LOCK);
+        let shown = dir.manifest().display().to_string();
+        let path = dir.read_lock();
         let Some(own) = locked_sources(&path, &path.display().to_string(), env, &mut diags) else {
             return (None, diags);
         };
@@ -573,7 +573,7 @@ fn turned_off_by(message: &str, sources: &Sources, off: &[Key]) -> bool {
 
 /// Whether the work tree at `root` has a private rule set.
 fn has_private_rule_set(root: &Path) -> bool {
-    private::dir(root).is_ok_and(|dir| dir.is_some_and(|d| d.join(private::MANIFEST).is_file()))
+    private::dir(root).is_ok_and(|dir| dir.is_some_and(|d| d.manifest().is_file()))
 }
 
 /// The git sources the lock file at `path`, named `shown` in messages,

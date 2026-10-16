@@ -1,4 +1,4 @@
-<!-- en-sha256: dd752112bd4cb4fe728f2b953226c86df0d9651379d60991a04574ca467bf2e9 -->
+<!-- en-sha256: 4cecdd43a9d2f77793e4782afff765bc5034de09bc206514fb9dd1bbe44d879a -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -23,7 +23,7 @@ lang = "en"
 
 规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。one-of 的选项是规定时，选它就是把它写进 `rules`，这里是 `R51`；是领域时，通过 `domains` 选 ([规定清单里](rule-config.md#in-the-rule-set))。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个选项启用。`[compile]` 里的 `lang` 指定编译出的 `AGENTS.md` 用哪种语言写，默认 `en`。文件收录每条规定的哪些部分不是一项设置：只有它的引用和要求 ([编译与网站](statute-command.md#compilation-and-the-site))；`[compile]` 以前的键 `agents-md` 写了会让构建失败，并说明这一点。
 
-[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，有自己的锁文件 `private.lock`。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，哪些还没有实现，它在相应处标明。
+[规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，锁文件 `private.lock` 则每个 worktree 一份。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，哪些还没有实现，它在相应处标明。
 
 锁文件是 TOML，由 statute 写出，从不手改。它记下宪法 (仓库、版、修订号和提交)、每个规定源 (短名、地址、跟踪的分支或 tag、提交，以及 `R` 以外的 `public`；见 [git 规定源](global-configuration.md#git-sources))，以及每条启用的规定，不论是直接选用的还是因依赖带进来的 (它的引用，写法与规定清单相同，如 `R42` 或 `team:7`，本地规定写成 `L12`；它的修订号；文件的 SHA-256；以及去掉译文之后的规定的 SHA-256，只改译文时它不变)：
 

@@ -187,11 +187,15 @@ with `public = true`:
   ```text
   $(git rev-parse --git-path common/statute)/
     private.toml          the private rule set
-    private.lock          its lock file
+    private.lock          the main worktree's lock file
+  $(git rev-parse --git-path statute)/
+    private.lock          a linked worktree's lock file
   ```
 
-  In a clone that is `.git/common/statute/`, from the main checkout
-  and from each linked worktree alike. The private rule set builds on
+  In a clone the first is `.git/common/statute/`, from the main
+  checkout and from each linked worktree alike, and the second, in a
+  linked worktree, is `.git/worktrees/<name>/statute/`. The private
+  rule set builds on
   the `statute.toml` of the worktree statute runs in, which it inherits
   as [Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)
   describes, adds sources, and turns rules on or off:
@@ -234,21 +238,28 @@ with `public = true`:
   off is left out of the full text, so an agent that reads the full
   text alone no longer has it; Grok, which reads `AGENTS.md` as well
   (below), still has it.
-- It has its own lock file, `private.lock`, which pins the private
-  layer's own sources and nothing else: each as `statute.lock` records a
-  source, a git source by its address, its branch or tag and the commit,
-  with `public` and `scope`. It records no rule and nothing of the
+- It has a lock file, `private.lock`, one for each worktree, which
+  pins the private layer's own sources and nothing else: each as
+  `statute.lock` records a source, a git source by its address, its
+  branch or tag and the commit, with `public` and `scope`. It records no rule and nothing of the
   public layer. `statute lock` writes it with `statute.lock`, and the
   commands that change the private rule set or its sources write it
-  again. The two layers together are resolved in memory each time a
-  command needs them, from the `statute.lock` of the worktree and
-  `private.lock`, and that resolution is never written down. So every
-  worktree reads the private sources at the same commits, while each
-  reads the public layer its own branch pins; a lock file of both
-  layers together, shared by worktrees on different branches, would be
-  stale in all but one of them.
+  again; each writes the lock file of the worktree it runs in, and no
+  other. The two layers together are resolved in memory each time a
+  command needs them, from the `statute.lock` and the `private.lock`
+  of the worktree, and that resolution is never written down. A linked
+  worktree with no lock file of its own reads the main worktree's, so
+  a new worktree starts from the commits the main worktree pins, and
+  `statute upgrade` in one worktree moves the private sources of that
+  worktree alone. The rule set stays shared, so a command in one
+  worktree that changes its sources, `statute source add` or an edit
+  by hand, leaves the lock files of the others stale: their
+  `statute compile` fails with a note to run `statute lock`, and
+  `compile --private-only` writes nothing and says the same. A change
+  to its lists alone, such as `statute add --private`, leaves the
+  other worktrees' lock files current, since none records a rule.
 - git never tracks a file in its own directory, so the private rule set
-  and its lock file cannot be committed, and need no `.gitignore` and no
+  and its lock files cannot be committed, and need no `.gitignore` and no
   check. What the private layer writes in the work tree is the private
   output under `.statute/` and two links at the top (below); before
   writing the file under `.statute/`, statute checks with
@@ -267,12 +278,18 @@ with `public = true`:
   skills are installed is an open question.
 
 The place in git's directory is chosen so that every worktree of a
-clone shares one private rule set. git shares everything under
-`common/` of its common directory between the worktrees of a clone
-(gitrepository-layout(5)), and `git rev-parse --git-path common/...`
-names that place from any worktree, where a path git does not know,
-such as `--git-path statute`, would name a directory of each worktree
-alone. A file in the work tree does not come with `git worktree add`, which checks out only what git
+clone shares one private rule set, and each keeps its own lock file.
+git shares everything under `common/` of its common directory between
+the worktrees of a clone (gitrepository-layout(5)), and
+`git rev-parse --git-path common/...` names that place from any
+worktree, while a path git does not know, such as
+`--git-path statute`, names a directory of each worktree alone, which
+`git worktree remove` deletes with the worktree. A lock file shared
+by every worktree would let a command in any of them move the commits
+all the others read, and jobs that lock in parallel would overwrite
+each other's. The main worktree's lock file stays beside the private
+rule set, where a clone made before linked worktrees had their own
+already has it, so no clone needs a file moved. A file in the work tree does not come with `git worktree add`, which checks out only what git
 tracks, so each new worktree would need a copy that then drifts. A
 directory in the home directory keyed by the repository's path would
 also be shared, but it is orphaned when the clone moves or is deleted,
@@ -381,7 +398,8 @@ Claude Code does not load it and that its rules belong in the rule
 set. statute does not compile their content into
 the full text.
 
-**A new worktree.** The private rule set, its lock file and
+**A new worktree.** The private rule set, the main worktree's lock
+file, which a new worktree reads until it locks, and
 `.git/info/exclude` are shared by the worktrees of a clone, but the
 private output and the two links are files of one work tree, and
 `git worktree add` checks out only what git tracks. A git
@@ -423,8 +441,9 @@ does not install the hooks: the user does, once per clone.
 
 - writes only `.statute/.gitignore`, `.statute/AGENTS.full.md` and the
   two links, never `AGENTS.md`, the skills or `statute-checks.toml`;
-- reads `statute.toml` and `statute.lock` of the worktree and the
-  private rule set and its lock file, and needs no network: a git
+- reads `statute.toml` and `statute.lock` of the worktree, the
+  private rule set and the worktree's private lock file, and needs no
+  network: a git
   source is read from statute's cache
   ([The statute directories](global-configuration.md#the-statute-directories)),
   and nothing is fetched;
