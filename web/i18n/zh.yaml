@@ -102,7 +102,6 @@ status-draft: "草案"
 status-superseded: "已取代"
 status-repealed: "已废止"
 rules-view: "显示"
-rules-view-both: "标题和要求"
 rules-view-title: "标题"
 rules-view-statement: "要求"
 # 规定源的象限、规定是否启用，站点有多个规定源或一套规定集时才显示

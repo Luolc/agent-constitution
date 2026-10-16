@@ -96,10 +96,10 @@ struct Words {
     /// In the legend, what a one-of is, and an option not its default.
     one_of_meaning: &'static str,
     another_option: &'static str,
-    /// The switch between the views of the rows, and each view: title
-    /// and statement, title, statement.
+    /// The switch between the views of the rows, and each view: title,
+    /// statement.
     view: &'static str,
-    views: [&'static str; 3],
+    views: [&'static str; 2],
     /// The head of a table: the label and the rule.
     columns: [&'static str; 2],
     /// The menus of the filter, in the order of `FIELDS`.
@@ -176,7 +176,7 @@ fn words(lang: &str) -> Words {
             one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
             view: "显示",
-            views: ["标题和要求", "标题", "要求"],
+            views: ["标题", "要求"],
             columns: ["编号", "规定"],
             fields: ["状态", "默认", "用途", "领域", "象限", "规定清单"],
             all: "全选",
@@ -239,7 +239,7 @@ fn words(lang: &str) -> Words {
             one_of_meaning: "the rule set takes exactly one option",
             another_option: "Another option",
             view: "Show",
-            views: ["Title and statement", "Title", "Statement"],
+            views: ["Title", "Statement"],
             columns: ["ID", "Rule"],
             fields: [
                 "Status", "Default", "Uses", "Domain", "Quadrant", "Rule set",
@@ -588,8 +588,8 @@ const STATUSES: [Status; 5] = [
 ];
 
 /// The ways the index shows a rule, its value in the address and the
-/// radio button's: its title and statement, its title, its statement.
-const VIEWS: [&str; 3] = ["both", "title", "statement"];
+/// radio button's: its title, its statement.
+const VIEWS: [&str; 2] = ["title", "statement"];
 
 /// A row of the index: a rule or a one-of, with its options, and the
 /// domains above it, outermost first; `under` when its parent is a rule.
@@ -1095,7 +1095,7 @@ struct Value {
     depth: usize,
 }
 
-/// The controls above the tables: the switch between the three views,
+/// The controls above the tables: the switch between the two views,
 /// then a menu of check boxes per field of the filter, and the style
 /// sheet that hides the rows a clear box leaves out, so that the filter
 /// works without the script.

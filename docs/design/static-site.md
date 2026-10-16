@@ -182,7 +182,7 @@ screenshots (Screenshots, below). The workflow
   of another source: the ID, not the `slug`, since the ID never changes.
   The list (`web/layouts/rules/section.html`) is a table under a head,
   one row a rule, along the tree: each rule's label, its title, cut to
-  the row by the style sheet, under it its statement, and its marks,
+  the row by the style sheet, or its statement, and its marks,
   linked to its page: whether the source's defaults enable it (on or
   off, as `statute export` reckons it), its status, and its `uses`, each an icon or a dot in
   a place of its own ([Frontend](frontend.md#components)); then, with
@@ -240,12 +240,13 @@ screenshots (Screenshots, below). The workflow
   other value; superseded, repealed and draft rules are in the list but
   not checked. In the row, after the search, a segmented
   control sets what each row shows ([Frontend](frontend.md#components)):
-  its title and statement, by default, its title alone, or its
-  statement alone; the style sheet shows the rows as its checked radio
-  button says, so it works without scripts too, and each statement is
-  in the page in every view. `web/assets/ts/rules-view.ts` checks the
-  view the address names, `?view=title` or `?view=statement`, an address
-  without `view` showing the default; on arrival at an address without
+  its title, by default, or its statement in the title's place; the
+  style sheet shows the rows as its checked radio button says, so it
+  works without scripts too, and each statement is in the page in both
+  views. `web/assets/ts/rules-view.ts` checks the view the address
+  names, `?view=title` or `?view=statement`, an address without `view`
+  or with an unknown one showing the default and rewritten without it;
+  on arrival at an address without
   it, the view the reader chose last, kept in the browser's
   `localStorage`, applies and is written into the address. A change of
   view adds an entry to the history, and back and forward return to the

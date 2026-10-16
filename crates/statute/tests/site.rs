@@ -969,14 +969,12 @@ fn site_shows_statements_in_three_views() {
         r7.contains("<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"),
         "{r7}"
     );
-    // Three radio buttons, the title and the statement checked; the
-    // style sheet hides the statements or the titles by them, and the
-    // script keeps the choice in the address.
-    for (page, names) in [
-        (&index, ["Title and statement", "Title", "Statement"]),
-        (&zh, ["标题和要求", "标题", "要求"]),
-    ] {
-        for (i, (view, name)) in ["both", "title", "statement"].iter().zip(names).enumerate() {
+    // Two radio buttons, the title checked; the style sheet hides the
+    // statements or the titles by them, and the script keeps the choice
+    // in the address.
+    for (page, names) in [(&index, ["Title", "Statement"]), (&zh, ["标题", "要求"])] {
+        assert_eq!(page.matches("name=\"view\"").count(), 2);
+        for (i, (view, name)) in ["title", "statement"].iter().zip(names).enumerate() {
             let checked = if i == 0 { " checked" } else { "" };
             let radio = format!(
                 "<input type=\"radio\" name=\"view\" id=\"view-{view}\" value=\"{view}\"{checked}><label for=\"view-{view}\">{name}</label>"
@@ -1042,7 +1040,8 @@ fn probe_run(chrome: &Path, dir: &Path, page: &Path, query: &str) -> String {
 /// The view in the address, in headless Chrome, which runs the index's
 /// script: an address without a view shows the default, also on the way
 /// back to it; an index opened at such an address shows the view kept
-/// and writes it in; an address's own view wins. A script added to the
+/// and writes it in; an address's own view wins, and an unknown one
+/// shows the default and leaves the address. A script added to the
 /// page records what it shows on `<body data-probe>`. Skipped without
 /// Chrome, except in CI.
 #[test]
@@ -1059,7 +1058,7 @@ const done = (r) => document.body.setAttribute("data-probe", r.join(" "));
 addEventListener("load", () => {
   const r = [shown(), location.search || "-"];
   if (location.hash !== "#click") return done(r);
-  document.querySelector("label[for='view-title']").click();
+  document.querySelector("label[for='view-statement']").click();
   r.push(shown(), location.search || "-");
   addEventListener("popstate", () => done([...r, shown(), location.search || "-"]), { once: true });
   history.back();
@@ -1068,18 +1067,21 @@ addEventListener("load", () => {
     let page = dir.join("probe.html");
     std::fs::write(&page, index.replace("</body>", probe)).unwrap();
     let run = |query: &str| probe_run(&chrome, &dir, &page, query);
-    // A fresh profile: the default; a click writes Title into the
+    // A fresh profile: the default; a click writes Statement into the
     // address, and back returns to the address without a view, and so to
-    // the default, though Title is kept.
+    // the default, though Statement is kept.
     assert_eq!(
         run("?x=1#click"),
-        "both ?x=1 title ?x=1&view=title both ?x=1"
+        "title ?x=1 statement ?x=1&view=statement title ?x=1"
     );
     // Opened again at an address without a view: the view kept, written
     // into the address.
-    assert_eq!(run("?x=1"), "title ?x=1&view=title");
+    assert_eq!(run("?x=1"), "statement ?x=1&view=statement");
     // An address with a view: that view.
-    assert_eq!(run("?view=statement"), "statement ?view=statement");
+    assert_eq!(run("?view=title"), "title ?view=title");
+    // An address with an unknown view, such as the `both` of an older
+    // index: the default, the view left out of the address.
+    assert_eq!(run("?x=1&view=both"), "title ?x=1");
 }
 
 /// The filter, the search and the legend, in headless Chrome, which runs

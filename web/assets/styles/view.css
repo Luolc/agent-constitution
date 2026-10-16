@@ -1,15 +1,13 @@
 /* What the rows of the list of the rules show
    (layouts/_partials/rules/view.html), as docs/design/frontend.md
    (Components) draws it: a segmented control in the row of the
-   controls (filter.css), under its name, three radio buttons drawn as
-   one bar of segments, the checked one on the
-   selected color in the accent color; and each rule's statement in its
-   row, under its title, a size smaller and muted, lined up with the
-   title's text. The checked button decides, through :has(), so that the
-   control works without scripts too: Title hides the statements,
-   Statement hides the titles of the rows that have one, its statement
-   then the row's main line. A one-of's own row has no statement and
-   keeps its title. */
+   controls (filter.css), under its name, two radio buttons drawn as
+   one bar of segments, the checked one on the selected color in the
+   accent color; and each rule's statement in its row. The checked
+   button decides, through :has(), so that the control works without
+   scripts too: Title shows the titles alone, Statement shows the
+   statement of each row that has one in place of its title. A one-of's
+   own row has no statement and keeps its title. */
 .rules .rules-view {
   display: flex;
   flex-direction: column;
@@ -69,59 +67,35 @@
 /* Pressed, `accent` would fall under 4.5 on `bg-active`. */
 .rules .rules-view label:active { color: var(--t-text); background: var(--t-bg-active); }
 
-/* A statement in its row. A title with one is a grid: the statement on
-   the line under the title's text, in its column, after the icon before
-   it when there is one; an option's default tag stays after its title,
-   the last column taking the space the statement does not leave to it.
-   The row then aligns on its first line, as on a narrow screen
-   (rules-list.css). */
-.rules .rule-title:has(> .rule-statement) {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  row-gap: 0;
-}
-.rules .rule-title:has(> .icon + .rule-text + .rule-statement) { grid-template-columns: auto minmax(0, 1fr); }
-.rules .rule-statement {
-  grid-column: -2 / -1;
-  color: var(--t-text-muted);
-  font-size: var(--t-text-sm);
+/* A statement in its row, shown only in the Statement view: in its
+   title's place, as large and dark as a title, wrapped, never cut,
+   after the icon before the title when there is one; an option's
+   default tag stays after it, on its first line. The row then aligns on
+   its first line, as on a narrow screen (rules-list.css). */
+.rules .rule-statement { display: none; }
+.rules:has(.rules-view input[value="statement"]:checked) .rule-title:has(> .rule-statement) > .rule-text { display: none; }
+.rules:has(.rules-view input[value="statement"]:checked) .rule-statement {
+  display: block;
+  min-inline-size: 0;
   line-height: var(--t-line-height-ui);
   white-space: normal;
 }
-.rules .one-of-options .rule-title:has(> .rule-statement) {
-  grid-template-columns: auto minmax(0, max-content) auto minmax(0, 1fr);
-}
-.rules .one-of-options .rule-statement { grid-column: 2 / -1; }
-.rules .rule-entry:has(.rule-statement) {
+.rules:has(.rules-view input[value="statement"]:checked) .one-of-options .rule-statement { grid-row: 1; grid-column: 2; }
+.rules:has(.rules-view input[value="statement"]:checked) .one-of-options .rule-title:has(> .rule-statement) > .rule-default-option { align-self: first baseline; }
+.rules:has(.rules-view input[value="statement"]:checked) .rule-entry:has(.rule-statement) {
   align-items: start;
   padding-block: calc((var(--rules-row) - 1lh) / 2);
 }
-.rules .rule-entry:has(.rule-statement) > :is(.rule-title, .rule-marks) { min-block-size: 1lh; }
+.rules:has(.rules-view input[value="statement"]:checked) .rule-entry:has(.rule-statement) > :is(.rule-title, .rule-marks) { min-block-size: 1lh; }
+@media (hover: hover) and (pointer: fine) {
+  .rules a.rule-entry[href]:hover .rule-statement { color: var(--t-accent); }
+}
 .rules a.rule-entry[href]:active .rule-statement { color: var(--t-text); }
 
-/* Title: no statement. */
-.rules:has(.rules-view input[value="title"]:checked) .rule-statement { display: none; }
-/* Statement: the statement in the title's place, the row's main line. */
-.rules:has(.rules-view input[value="statement"]:checked) .rule-title:has(> .rule-statement) > .rule-text { display: none; }
-.rules:has(.rules-view input[value="statement"]:checked) .rule-statement {
-  grid-row: 1;
-  color: var(--t-text);
-  font-size: var(--t-text-md);
-}
-.rules:has(.rules-view input[value="statement"]:checked) .one-of-options .rule-statement { grid-column: 2; }
-@media (hover: hover) and (pointer: fine) {
-  .rules:has(.rules-view input[value="statement"]:checked) a.rule-entry[href]:hover .rule-statement { color: var(--t-accent); }
-}
-
-/* A narrow screen: an option's statement under its title, as its tag
-   is (rules-list.css); the control takes its own row, as the search
-   does (filter.css), its segments sharing it, a long word wrapping in
-   its segment. */
+/* A narrow screen: the control takes its own row, as the search does
+   (filter.css), its segments sharing it, a long word wrapping in its
+   segment. */
 @media screen and (width <= 48rem) {
-  .rules .one-of-options .rule-title:has(> .rule-statement) { grid-template-columns: auto minmax(0, 1fr); }
-  .rules .one-of-options .rule-statement { grid-column: 2; }
   .rules .rules-view { flex-basis: 100%; }
   .rules .rules-view label { flex: 1 1 0; justify-content: center; padding: var(--t-space-1) var(--t-space-2); text-align: center; }
 }
-/* An option's default tag stays on its row's first line. */
-.rules .one-of-options .rule-title:has(> .rule-statement) > .rule-default-option { align-self: first baseline; }

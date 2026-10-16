@@ -108,7 +108,6 @@ status-draft: "Draft"
 status-superseded: "Superseded"
 status-repealed: "Repealed"
 rules-view: "Show"
-rules-view-both: "Title and statement"
 rules-view-title: "Title"
 rules-view-statement: "Statement"
 # The quadrant of a rule's source and whether the rule set enables the
