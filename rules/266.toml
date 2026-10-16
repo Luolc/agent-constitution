@@ -1,6 +1,6 @@
 id = 266
 slug = "private-material"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "私有材料"
 
 [applicability]
 en = '''
-What a public repository may hold and which personal information may be kept as it is: no private resources, scopes or details of agents in public text, and a review before a push. Enable it wherever agents work; its rules about public repositories bind only in public ones.
+What a public repository may hold and which personal information may be kept as it is: no private resources, scopes or details of agents in public text, and a check before a push. Enable it wherever agents work; its rules about public repositories bind only in public ones.
 '''
 zh = '''
-公开仓库里能放什么、哪些个人信息能原样保留：公开的文字里不写私有资源、scope 和 agent 的细节，push 之前先审。凡有 agent 工作的地方都要启用；其中管公开仓库的规定只在公开仓库里起作用。
+公开仓库里能放什么、哪些个人信息能原样保留：公开的文字里不写私有资源、scope 和 agent 的细节，push 之前先检查。凡有 agent 工作的地方都要启用；其中管公开仓库的规定只在公开仓库里起作用。
 '''
 
 [translations]
-zh = "ab6c396d0a2b14f0d2cb009c360ca64984f8ed6889fa9c0e91f7be58b2b0d42f"
+zh = "e7a5f7227a31599187228344f1e4fa318047441c04154b1498a4b7d1812aa743"
