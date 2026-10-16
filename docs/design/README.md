@@ -37,8 +37,8 @@ the whole design.
   load verification and the reserved feedback loop.
 - [Amendments and releases](amendments-and-releases.md): approving an
   amendment, releases and versions.
-- [Fleet and migration](fleet-and-migration.md): relation to fleet and
-  migrating from the hand-written guide.
+- [Agent Fleet and migration](fleet-and-migration.md): relation to Agent
+  Fleet and migrating from the hand-written guide.
 - [Rule system](rule-system.md): the rule system (numbered rules,
   sources and references, rule sets and lock files, dependencies, checks
   and the review loop), built so far in part at the repository level,

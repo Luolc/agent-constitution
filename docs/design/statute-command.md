@@ -314,7 +314,12 @@ translations has a higher revision than at the base; it skips the comparison, wi
 note, where check 7 does, and without a `constitution/` beside `<dir>`
 it fails. These findings are `rules/7.toml:12: error: <message>`.
 This repo runs `statute validate rules` as a commit hook, and CI runs
-it with `--base` too.
+it with `--base` too. `--base <git-ref>` compares with the tip of
+`<git-ref>`, not with the point where the branch left it, so a branch
+behind it shows the nodes changed there as its own changes; merge the
+base into the branch before running it locally. On a pull request, CI
+compares the merge commit with its first parent, which this does not
+affect, and on a push to `main`, the commit before the push.
 
 **`constitution build`** checks the sources of the one edition under
 `constitution/` and writes the full version and the version for agents
@@ -397,8 +402,9 @@ file. It prints the path of `index.html`.
   one without `view` shows the default; only when the index opens at
   such an address does it show the view kept, and write it into that
   address. An index opened at an address with an unknown `view` shows
-  the default and leaves the view out of the address. The filter has a menu of check boxes per field: the status,
-  superseded and repealed left out by default; the defaults; the use;
+  the default and leaves the view out of the address. The filter has a
+  menu of check boxes per field: the status, superseded and repealed
+  left out by default; the defaults; the use;
   the domain; the kind of source; and whether this rule set enables the
   rule. The style sheet applies the boxes at once, so the filter works
   without the script, a domain's box then holding only the rules right

@@ -113,7 +113,7 @@ Cargo.lock                the Rust workspace's lock file, written by
 rust-toolchain.toml       the Rust toolchain version, read by rustup
                           locally and in CI                            A
 .python-version           the Python minor version uv runs tools/ on   A
-.fleet/config.json        issue-tracker metadata for fleet; the
+.fleet/config.json        issue-tracker metadata for Agent Fleet; the
                           toolchain never reads it                     A
 ```
 
