@@ -16,6 +16,17 @@ Questions for the person are collected in one place
 ([Questions](#questions)); ask them together, at most five at a time,
 each with its default, and go on with what they do not block.
 
+**A private rule in a public repository** is enabled only in the
+private rule set, with `statute add --private <rule>`, both during the
+migration and whenever one is enabled after it. Never copy it into the
+local rules directory as a rule of the repository's own: the copy
+publishes what the private rule keeps private and drifts from its
+source. No pull request carries a change to the private rule set;
+before you run the command, have the change reviewed, and approved
+where a rule it enables needs that, as
+[Enabling a private rule](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-sources.md#enabling-a-private-rule)
+says.
+
 ## Files
 
 Every path the skill uses is in this table, and the text below names
@@ -177,7 +188,8 @@ which is which when you show the person the rules.
   until the person answers (Q5).
 - In a public repository, name the private source in the private rule
   set, never in the rule set, and list there the private rules it
-  enables (`statute add --private`).
+  enables (`statute add --private`), reviewed as the note at the top
+  says.
 - When a practice of the repository cannot hold together with a public
   rule that a private rule requires, `exclude` in the rule set cannot
   take the public rule out while the private rule is enabled: the
