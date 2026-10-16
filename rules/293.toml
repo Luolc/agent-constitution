@@ -1,0 +1,44 @@
+id = 293
+slug = "say-how-halted-work-moves-on"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+default = "on"
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "When a rule halts work, say how the work moves on"
+zh = "规定让工作停下时，写明工作怎么往下走"
+
+[text.statement]
+en = "When a rule tells an agent to stop, pause, wait or not start some work, say in its statement what the agent does to move the work on: a route it takes itself, or what it asks of whom."
+zh = "规定让 agent 停下、暂停、等待或不开始某项工作时，要在它的要求里写明 agent 怎么让工作往下走：自己改走哪条路，或者向谁要什么。"
+
+[text.reason]
+en = '''
+An agent keeps the work moving ({@constitution:automation-first.keep-moving}), and where safety or the limits of authority stop an action, only that action stops and the rest of the work goes on ({@constitution:safety-before-speed}). A rule that says only "stop" leaves the agent with stalled work and nothing it may do about it, while what would unblock it, a decision, a route or an access, is usually known to whoever wrote the rule. {@rule:282} is a rule written this way: when a guard blocks an agent and no reviewed route is open, it asks whoever delegated the work for a way forward instead of stopping there.
+'''
+zh = '''
+agent 要让工作往下走 ({@constitution:automation-first.keep-moving})；安全或权限的界限拦住某个动作时，停下的只是这个动作，其余的工作照常进行 ({@constitution:safety-before-speed})。一条规定只说「停下」，agent 就守着停住的工作，什么也做不了；而能让它继续的东西 (一个决定、一条路、一项权限)，写规定的一方通常是知道的。{@rule:282} 就是这样写的：防护机制拦住 agent、又没有审查过的路可走时，它向派活的一方要一个往下走的办法，而不是停在那里。
+'''
+
+[text.verification]
+en = '''
+A rule halts work when its statement tells an agent to stop, pause or wait, to start no work, or to leave some work undone until something happens. A rule that only forbids an act, as in "do not run this command", halts no work: the agent does the work some other way. The way forward is an act that lets the work go on: a route the agent takes itself, or a request to a named party, such as whoever delegated the work or a principal, for what would let it go on, such as a decision, a route or an access. A report that asks for nothing is not a way forward.
+
+Violated when a change adds or rewrites a rule whose statement halts work without saying the way forward.
+'''
+zh = '''
+规定的要求让 agent 停下、暂停或等待，不开始任何工作，或者在某件事发生之前把某项工作搁着不做，这条规定就让工作停下了。只禁止某个动作的规定 (例如「不要跑这条命令」) 不让工作停下：agent 换别的办法做这项工作。往下走的办法，是让工作能继续的一个动作：agent 自己走的一条路，或者向一个点了名的一方 (例如派活的一方或委托人) 要能让工作继续的东西，例如一个决定、一条路或一项权限。只报告、什么也不要的，不算往下走的办法。
+
+变更新增或改写的规定，要求让工作停下，却没写往下走的办法的，即为违反本规定。
+'''
+
+[translations]
+zh = "c2b4d9ef88113350396f8515dae4460a5adb0c6187baef0ddbca56f625b49ee1"
