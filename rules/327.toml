@@ -6,7 +6,7 @@ status = "trial"
 lang = "en"
 parent = 326
 default = "on"
-authority = ["sensitive-info", "guards"]
+authority = ["sensitive-info", "guards.access"]
 constitution = ">=1"
 level = "user"
 check = "none"
@@ -21,23 +21,23 @@ zh = "在 GitHub 上，通过专为 agent 设的账号操作；只有该账号�
 
 [text.reason]
 en = '''
-The owner's identity grants every permission over the repositories, the ones that guard them included, while the agents' account holds only what the agents' work needs ({@constitution:sensitive-info}). Most of what that account cannot do changes who may do what, such as branch protection and collaborators, and these are guards ({@constitution:guards}): going through the owner for them is the route the act is meant to take, with the yes it needs, not a way around the account's limits. Any other act through the owner's identity carries more access than the work needs, and leaves the agents' acts indistinguishable from the owner's in GitHub's history.
+The owner's identity grants every permission over the repositories, the ones that guard them included, while the agents' account holds only what the agents' work needs ({@constitution:sensitive-info}). Most of what that account cannot do changes who may do what, such as branch protection and collaborators, and these are guards ({@constitution:guards.access}): going through the owner for them is the route the act is meant to take, with the yes it needs, not a way around the account's limits. Any other act through the owner's identity carries more access than the work needs, and leaves the agents' acts indistinguishable from the owner's in GitHub's history.
 '''
 zh = '''
-所有者的身份对仓库拥有全部权限，连守护仓库的那些权限也在内，而 agent 的账号只有 agent 的工作需要的权限 ({@constitution:sensitive-info})。该账号做不了的事，大多会改变谁能做什么，例如分支保护和协作者，这些属于防护机制 ({@constitution:guards})：这类操作经所有者去做，取得它需要的同意，是这类操作本该走的途径，而不是绕开账号的限制。除此之外以所有者身份做的操作，所带的权限超出工作所需，还会让 GitHub 的历史里分不清哪些是 agent 做的、哪些是所有者本人做的。
+所有者的身份对仓库拥有全部权限，连守护仓库的那些权限也在内，而 agent 的账号只有 agent 的工作需要的权限 ({@constitution:sensitive-info})。该账号做不了的事，大多会改变谁能做什么，例如分支保护和协作者，这些属于防护机制 ({@constitution:guards.access})：这类操作经所有者去做，取得它需要的同意，是这类操作本该走的途径，而不是绕开账号的限制。除此之外以所有者身份做的操作，所带的权限超出工作所需，还会让 GitHub 的历史里分不清哪些是 agent 做的、哪些是所有者本人做的。
 '''
 
 [text.verification]
 en = '''
-The owner is the person whose GitHub account owns the repositories, or the organization they are in. An act as the owner is any request to GitHub made with the owner's credentials, whatever tool sends it. Acting as the owner is acting on the owner's account, and it needs the yes {@rule:34} requires, besides whatever yes the act needs on its own.
+The owner is the person whose GitHub account owns the repositories, or the organization they are in. An act as the owner is any request to GitHub made with the owner's credentials, whatever tool sends it. When an act as the owner may be taken at all is for {@rule:330}.
 
 Violated when an agent acts on GitHub as the owner for an act that the agents' account has permission for, or for an act that is neither administrative nor one a principal asked explicitly to have done as the owner.
 '''
 zh = '''
-所有者指其 GitHub 账号拥有这些仓库 (或这些仓库所在组织) 的人。以所有者身份操作，指用所有者的凭证向 GitHub 发出的任何请求，不论用哪个工具发出。以所有者身份操作就是操作所有者的账户，需要取得 {@rule:34} 要求的同意，操作本身另需的同意也照旧要取得。
+所有者指其 GitHub 账号拥有这些仓库 (或这些仓库所在组织) 的人。以所有者身份操作，指用所有者的凭证向 GitHub 发出的任何请求，不论用哪个工具发出。以所有者身份操作要先取得什么同意，由 {@rule:330} 规定。
 
 agent 以所有者身份做了 agent 的账号有权限做的操作，或者做了既非管理操作、也不是委托人明确要求以所有者身份做的事的，即为违反本规定。
 '''
 
 [translations]
-zh = "b30b8730114cb526557e7a968dcd9b9bc7caa4454df11f139e05503acc93b175"
+zh = "27a7c136e23018aad576971d6365d7472801e1f240c826684d32c225f36194e9"

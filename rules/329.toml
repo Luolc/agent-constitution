@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The route, where there is one, is given by the layers below this rule, such as a jurisdiction's private rules or a project's instructions; this rule names none. Where none is given, {@rule:282} applies. Taking the route is acting as the owner, under {@rule:327} and {@rule:328}.
+The route, where there is one, is given by the layers below this rule, such as a jurisdiction's private rules or a project's instructions; this rule names none. Where none is given, {@rule:282} applies. Taking the route is acting as the owner, under {@rule:327}, {@rule:328} and {@rule:330}.
 
 Violated when an agent says that an act on GitHub can only be done by a person, or leaves it to a person to do by hand, while the rules and instructions it works under give a route to do it as the owner that the agent did not check for or did not propose.
 '''
 zh = '''
-这条途径如果有，由本规定以下的层级给出，例如法域的私有规定或项目的指令；本规定不指定任何途径。没有给出途径的，适用 {@rule:282}。走这条途径就是以所有者身份操作，受 {@rule:327} 与 {@rule:328} 约束。
+这条途径如果有，由本规定以下的层级给出，例如法域的私有规定或项目的指令；本规定不指定任何途径。没有给出途径的，适用 {@rule:282}。走这条途径就是以所有者身份操作，受 {@rule:327}、{@rule:328} 与 {@rule:330} 约束。
 
 agent 自己遵守的规定和指令给出了以所有者身份执行的途径，agent 却没有去查或没有提出，而说 GitHub 上的某个操作只能由人来做，或者把它留给人亲手去做的，即为违反本规定。
 '''
 
 [translations]
-zh = "02521d70ee5b75a1ef5e21631dd0bbbb2d94737cb0d3f577e92131ec21405e78"
+zh = "d7ee3ea663bb1f735e1bb64a243e1c1d12f30e3fef24b9d910b4bf50b881afce"
