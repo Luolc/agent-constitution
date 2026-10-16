@@ -524,6 +524,45 @@ Where it lives); until then they reach a repository
 this way, their source named once in the global configuration
 ([Global configuration and git sources](global-configuration.md)).
 
+### Enabling a private rule
+
+A public repository enables a rule of a private source in its private
+rule set: `statute add --private <rule>` lists the rule there, and the
+source is named there too, as this section describes above. It never
+copies the rule into its own rules. A copy writes one fact in two places
+(Art. VIII §5), keeps the text of the revision it was copied from while
+the private source moves on, and publishes in the repository's
+committed files the private assets the rule rests on. A rule with no
+private asset in it belongs in a public source (R126), moved there
+through that source's review, where every repository that needs it can
+enable it; a copy in one repository is not that move.
+
+`private.toml` binds the agents that work in the clone, so a change to
+it is a change to instructions, proposed and reviewed as a change of its
+own (Art. X §4, R42). git never tracks it, so no pull request can carry the
+change, and none of it goes into the public repository's pull requests,
+which name no private resource (R259). The change is recorded, reviewed
+and then made:
+
+1. The author writes into a private record of the work, such as its
+   work item, the commands it will run and `private.toml` before and
+   after them.
+2. Another agent reviews that record against the constitution and the
+   rules in force, and its verdict goes into the same record. What the
+   author runs is exactly what was reviewed (Art. VII §3).
+3. When a rule the change enables declares a relaxation that needs a
+   competent principal's approval on the change that adds it
+   (Art. IX §1), such as a private rule that moves releases of the
+   project out of Art. V §1, that principal approves this change, and
+   the same record holds the yes; a relayed yes counts only as R38 to
+   R40 provide, with its reference and checks in the record.
+4. The author runs the commands, and pastes the resulting
+   `private.toml` and `private.lock` into the record, where the
+   reviewer checks that `private.toml` is the version it passed.
+
+Work that the newly enabled rule governs, such as a release it allows,
+starts only after the last step (Art. X §4).
+
 ## Overrides
 
 A rule set may put a rule of its own in place of a rule of another
