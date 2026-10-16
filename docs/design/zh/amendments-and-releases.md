@@ -1,4 +1,4 @@
-<!-- en-sha256: 46f7785e8abe1693123e5acbe71256f41c4f92c2eb22a25634d09dd399af3cda -->
+<!-- en-sha256: 7c026052730769e271a8360b8f50c8ed2bb4341598c5995ef5d80166c39a624e -->
 # 修正案与发布
 
 ## <a id="approving-an-amendment"></a>批准修正案
@@ -31,5 +31,6 @@
   tar -xzf "statute-$target.tar.gz" statute
   ```
 
-  在 macOS 上用 `shasum -a 256 --check` 代替 `sha256sum --check`。手动运行这个 workflow (`workflow_dispatch`) 只构建四个二进制，作为 workflow artifact 保留，不跑检查，也不发布任何东西。
+  在 macOS 上用 `shasum -a 256 --check` 代替 `sha256sum --check`。手动运行这个 workflow (`workflow_dispatch`，必须填 input `tag`，即一个已有的 `statute-v*` tag，没有默认值) 构建四个二进制，作为 workflow artifact 保留，不跑检查，也不发布任何东西。
+- 同一个 tag 还把 Homebrew formula `Formula/statute.rb` 写进 tap `Luolc/homebrew-tap`，使 `brew install luolc/tap/statute` 装上 Release 里的二进制。Release 的资产齐了之后，一个跑在 macOS 上的 job 用 `tools/render_homebrew_formula.sh` 从四个 `.sha256` 文件渲染 formula：它指向 Release 的 tarball，Homebrew 不编译任何东西。这个 job 把 formula 放进一个本地 tap，用 `tools/check_formula_version.sh` 核对 Homebrew 读到的版本就是 tag 的版本，再跑 `brew audit --strict`、`brew install` 和 `brew test`。只有 tag push 时，它才用仓库级 secret `HOMEBREW_TAP_TOKEN` 把 formula 提交到 tap 的 `main`；formula 没变就不提交。dispatch 对 input `tag` 里的那个 tag 跑除这次提交之外的每一步，不写 tap。这个 job 失败时，crates.io 和 Release 都保持原样。
 - overlay 固定一个 tag 及其提交 SHA，两者对不上就拒绝构建。它换用新版本，要在 overlay 里提一次变更，在那里审查。

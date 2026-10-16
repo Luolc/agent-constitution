@@ -92,9 +92,23 @@ keeps the edition in force and a draft of the next one is settled by
   ```
 
   On macOS, `shasum -a 256 --check` stands in for `sha256sum --check`.
-  Running the workflow by hand (`workflow_dispatch`) builds the four
-  binaries and keeps them as workflow artifacts, without the check and
+  Running the workflow by hand (`workflow_dispatch`, with the required
+  input `tag`, an existing `statute-v*` tag, and no default) builds the
+  four binaries and keeps them as workflow artifacts, without the check and
   without publishing anything.
+- The same tag also writes the Homebrew formula `Formula/statute.rb` to
+  the tap `Luolc/homebrew-tap`, so that `brew install luolc/tap/statute`
+  installs the Release binary. After the Release has its assets, a job on
+  macOS renders the formula with `tools/render_homebrew_formula.sh` from
+  the four `.sha256` sidecars: it points at the Release tarballs, and
+  Homebrew compiles nothing. The job puts the formula in a local tap,
+  checks with `tools/check_formula_version.sh` that the version Homebrew
+  reads is the tag's, and runs `brew audit --strict`, `brew install` and
+  `brew test`. Only on a tag push does it then commit the formula to the
+  tap's `main`, with the repository secret `HOMEBREW_TAP_TOKEN`, and it
+  commits nothing when the formula is unchanged. A dispatch runs every
+  step but that commit for the tag in its input `tag`, and writes no tap.
+  The job's failure leaves crates.io and the Release as they are.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.
