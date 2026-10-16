@@ -1,8 +1,8 @@
 id = 306
 slug = "local-device-token-only-into-unattended-tasks"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 137
 default = "on"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A local device is a machine that a person sits at and works on directly ({@rule:304}). A login shell is the shell that a person or an agent gets on logging in to a machine, together with its startup files and every process started from it. On a remote machine ({@rule:305}) this rule does not limit which shell the token reaches.
+Local devices are as {@rule:304} defines them. A login shell is the shell that a person or an agent gets on logging in to a machine, together with its startup files and every process started from it. On a remote machine ({@rule:305}) this rule does not limit which shell the token reaches.
 
 Violated when, on a local device, a service account's token is set in a login shell's startup files or environment, or reaches the environment of a process other than the unattended tasks it is given to.
 '''
 zh = '''
-本地设备，指人坐在跟前直接操作的机器 ({@rule:304})。登录 shell，指人或 agent 登录一台机器后得到的 shell，连同它的启动文件和从它启动的所有进程。在远程机器上 ({@rule:305})，本规定不限制 token 进哪个 shell。
+本地设备的定义见 {@rule:304}。登录 shell，指人或 agent 登录一台机器后得到的 shell，连同它的启动文件和从它启动的所有进程。在远程机器上 ({@rule:305})，本规定不限制 token 进哪个 shell。
 
 在本地设备上，service account 的 token 写进了登录 shell 的启动文件或环境，或者进了分给它的无人值守任务以外的进程的环境的，即为违反本规定。
 '''
 
 [translations]
-zh = "0e8be487ef292b2cdda0393c916e54e1083f71844a5b5106fd39a65a7fb2572b"
+zh = "7e86094c71871b02deee682291336deb8404882b5a694d1c0200796ea7389057"
