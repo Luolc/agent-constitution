@@ -183,23 +183,25 @@ part (the constitution, rule and skill sources) and this repo's generated
 files. The generic part has what an agent harness reads in any directory
 and, at the top of the repo, statute's files: `statute.toml`,
 `statute.lock` and `.statute/`, which it compiles the instruction file
-from; and the legacy copies `<name>.legacy.md` in any directory
+from; `statute-checks.toml`, which statute before 0.1.18 wrote beside the
+rule set and now deletes; and the legacy copies `<name>.legacy.md` in any directory
 (the Files table of [statute-migrate](../../skills/statute-migrate/SKILL.md)).
 A generated file goes with whichever side changed it: with the
 constitution sources it is an amendment, alone with the tools it is a
 tools change. This repo's generated files are the built constitution,
-the `AGENTS.md` at the top of the repo, which the generic part also
-lists, and `statute-checks.toml`, which statute wrote before 0.1.18 and
-now deletes, as this repo's rule L27 provides. Generated counts first
-for the `AGENTS.md`, since `statute compile --check` proves it is a
-compile of the rule set, and it changes with how statute renders the
+`statute-checks.toml` and the `AGENTS.md` at the top of the repo, which
+the generic part also lists: generated counts first. `statute-checks.toml`
+is generated as this repo's rule L27 provides: its only change left is its
+deletion. The `AGENTS.md` is, since `statute compile --check` proves it is
+a compile of the rule set, and it changes with how statute renders the
 rules as well as with the rule set, as this repo's rule L31 provides in
 place of R46. The top `statute.lock` is generated too when its TOML
 differs from the base's (at the merge base) only in `statute` and
 `commands`, the entries statute writes from its own version and the
-rules' checks, which `statute compile --check` proves as well; any other
-change to it is an instruction change. An `AGENTS.md` or `statute.lock`
-in a subdirectory stays an instruction file. The
+rules' checks, which `statute compile --check` proves as well, again as
+L31 provides; any other change to it is an instruction change. An
+`AGENTS.md` or `statute.lock` in a subdirectory stays an instruction
+file. The
 script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
 off), lists both groups when they mix, and on a pass names the
 generated files, for the reviewer. CI runs
@@ -215,10 +217,11 @@ neither uv nor this workspace. The generic part always applies.
 The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
 <regex>`, one per path, and its generated files as `--generated <regex>`;
-either option replaces this repo's own part and generated files.
-The top `AGENTS.md` stays an instruction file there until the repo
-declares it with `--generated`, once its CI runs `statute compile
---check`. statute's built-in check of rule 46 needs no
+either option replaces this repo's own part and generated files, and
+with them the exception for `statute.lock`, which stays an instruction
+file there. `statute-checks.toml` and the top `AGENTS.md` stay
+instruction files there until the repo declares them with
+`--generated`, once its CI runs `statute compile --check`. statute's built-in check of rule 46 needs no
 such declaration: it tells statute's files apart by itself, and where it
 differs from the script is in [Rule checks and review](rule-checks.md#checks).
 

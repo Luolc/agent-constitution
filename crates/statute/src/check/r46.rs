@@ -19,8 +19,7 @@ use std::path::Path;
 use regex::RegexSet;
 
 use super::{Context, Finding, Outcome, Report, git};
-use crate::compile::{FILE as AGENTS_MD, OLD_CHECKS, Output};
-use crate::lock::FILE as LOCK;
+use crate::compile::{FILE as AGENTS_MD, Output};
 use crate::manifest::FILE as RULE_SET;
 
 /// Instruction files in any repository: what an agent harness reads as
@@ -41,12 +40,18 @@ const GENERIC: &[&str] = &[
 
 /// statute's files beside the rule set, relative to its directory: the
 /// rule set, its lock file and `.statute/`, with the local rules, which
-/// the instructions are compiled from. The lock file is no generated file:
+/// the instructions are compiled from, and `statute-checks.toml`, which
+/// statute before 0.1.18 wrote and now deletes. The lock file is no
+/// generated file:
 /// it pins the commit of each git source, and `statute upgrade` moves a
 /// source to newer rules by rewriting the lock file alone, which
-/// `statute compile --check` accepts. Only a change to it in nothing but
-/// `ENTRIES` counts as generated (`Classes`).
-const STATUTE: &[&str] = &[r"statute\.toml", r"statute\.lock", r"\.statute/.+"];
+/// `statute compile --check` accepts.
+const STATUTE: &[&str] = &[
+    r"statute\.toml",
+    r"statute\.lock",
+    r"\.statute/.+",
+    r"statute-checks\.toml",
+];
 
 /// This repository's own instruction files: the constitution, rule and
 /// skill sources.
@@ -72,34 +77,19 @@ pub struct Classes {
     /// The rule set's directory relative to the top, with a trailing
     /// `/`; empty at the top.
     prefix: String,
-    /// The generated files beside the rule set, relative to the top: the
-    /// `AGENTS.md` statute compiles there, when it equals what statute
-    /// compiles from the public layer now; the lock file, when statute
-    /// compiles, which needs it to equal what `statute lock` writes now,
-    /// and the change alters nothing in it but `ENTRIES`; and
-    /// `OLD_CHECKS`, which statute no longer writes but deletes. Rule 47
-    /// takes a generated file to be one shown to equal its build, so only
-    /// these are generated; an `AGENTS.md` or a lock file that differs
-    /// (edited by hand, not recompiled, changed beyond `ENTRIES`, or
-    /// statute cannot compile) stays an instruction file.
+    /// The file statute compiles beside the rule set, `AGENTS.md`, when it
+    /// equals what statute compiles from the public layer now, relative to
+    /// the top. Rule 47 takes a generated file to be one shown to equal its
+    /// build, so only it is generated; one that differs (edited by hand,
+    /// not recompiled, or statute cannot compile) stays an instruction
+    /// file.
     compiled: Vec<String>,
 }
 
-/// The keys of the lock file that statute writes from its own version and
-/// the rules' checks rather than from the rule set and the sources.
-const ENTRIES: &[&str] = &["statute", "commands"];
-
 impl Classes {
     /// The classes for the rule set at `root`, in the repository whose
-    /// top is `top`, with `output` what statute compiles there now;
-    /// `entries_only` tells whether the change to the lock file at a path
-    /// relative to the top alters nothing but `ENTRIES`.
-    pub fn new(
-        root: &Path,
-        top: &Path,
-        output: Option<&Output>,
-        entries_only: impl Fn(&str) -> bool,
-    ) -> Self {
+    /// top is `top`, with `output` what statute compiles there now.
+    pub fn new(root: &Path, top: &Path, output: Option<&Output>) -> Self {
         let canonical = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
         let prefix = canonical(root)
             .strip_prefix(canonical(top))
@@ -107,16 +97,13 @@ impl Classes {
             .ok()
             .filter(|p| !p.is_empty())
             .map_or_else(String::new, |p| format!("{p}/"));
-        let mut compiled = vec![format!("{prefix}{OLD_CHECKS}")];
-        if let Some(out) = output {
-            if std::fs::read(root.join(AGENTS_MD)).is_ok_and(|t| t == out.agents_md.as_bytes()) {
-                compiled.push(format!("{prefix}{AGENTS_MD}"));
-            }
-            let lock = format!("{prefix}{LOCK}");
-            if entries_only(&lock) {
-                compiled.push(lock);
-            }
-        }
+        let compiled = output
+            .filter(|out| {
+                std::fs::read(root.join(AGENTS_MD)).is_ok_and(|t| t == out.agents_md.as_bytes())
+            })
+            .map(|_| format!("{prefix}{AGENTS_MD}"))
+            .into_iter()
+            .collect();
         Classes { prefix, compiled }
     }
 
@@ -144,34 +131,10 @@ impl Classes {
     fn beside<'p>(&self, path: &'p str) -> Option<&'p str> {
         path.strip_prefix(&self.prefix)
     }
-}
 
-/// Whether the file at `path`, relative to the top, is TOML at the merge
-/// base of `base` and HEAD and at HEAD, and the same at both with
-/// `ENTRIES` left out; false when git or the parse fails, so that nothing
-/// passes as generated unproven.
-fn entries_only(ctx: &Context, base: &str, path: &str) -> bool {
-    let out = |args: &[&str]| {
-        git(ctx.root)
-            .args(args)
-            .output()
-            .ok()
-            .filter(|o| o.status.success())
-            .and_then(|o| String::from_utf8(o.stdout).ok())
-    };
-    let Some(merge_base) = out(&["merge-base", base, "HEAD"]) else {
-        return false;
-    };
-    let table = |rev: &str| {
-        let mut table: toml::Table = out(&["show", &format!("{rev}:{path}")])?.parse().ok()?;
-        for key in ENTRIES {
-            table.remove(*key);
-        }
-        Some(table)
-    };
-    match (table(merge_base.trim_end()), table("HEAD")) {
-        (Some(was), Some(is)) => was == is,
-        _ => false,
+    /// Whether `path` is the file statute compiles beside the rule set.
+    fn compiles(&self, path: &str) -> bool {
+        self.beside(path) == Some(AGENTS_MD)
     }
 }
 
@@ -222,9 +185,7 @@ pub fn check(ctx: &Context, migration: bool) -> Report {
     };
     let text = String::from_utf8_lossy(&out);
     let fields: Vec<&str> = text.split('\0').filter(|f| !f.is_empty()).collect();
-    let classes = Classes::new(ctx.root, &ctx.top(), ctx.compiled, |path| {
-        entries_only(ctx, base, path)
-    });
+    let classes = Classes::new(ctx.root, &ctx.top(), ctx.compiled);
     let mut instruction = Vec::new();
     let mut generated = Vec::new();
     let mut other = Vec::new();
@@ -234,11 +195,7 @@ pub fn check(ctx: &Context, migration: bool) -> Report {
         adds_rule_set |= *status == "A" && classes.beside(path) == Some(RULE_SET);
         let line = format!("{status} {path}");
         match classes.kind(path) {
-            Kind::Instruction if classes.beside(path) == Some(LOCK) => instruction.push((
-                line,
-                "an instruction file, changed beyond `statute` and `commands` or not what statute locks now, in the same change",
-            )),
-            Kind::Instruction if classes.beside(path) == Some(AGENTS_MD) => instruction.push((
+            Kind::Instruction if classes.compiles(path) => instruction.push((
                 line,
                 "an instruction file, not what statute compiles now, in the same change",
             )),

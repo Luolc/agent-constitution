@@ -4,10 +4,10 @@ The change is `git diff <base>...HEAD`: what HEAD changed since it left the
 base. A rename counts as a deletion of the old path and an addition of the
 new one. Each changed path is an instruction file, a generated file or
 another file, by the tables below; a change with both instruction files and
-other files fails, generated files not counted. The top statute.lock is
-generated when its TOML differs from the base's only in the entries
-statute writes from its own version and the rules' checks, ENTRIES, and an
-instruction file otherwise. Instruction files only,
+other files fails, generated files not counted. With this repo's tables,
+the top statute.lock is generated when its TOML differs from the base's
+only in the entries statute writes from its own version and the rules'
+checks, ENTRIES, and an instruction file otherwise. Instruction files only,
 other files only, or nothing, passes. docs/design/checkers.md says what
 this proves and how another repo runs it.
 
@@ -27,8 +27,9 @@ from repo_checks import git_env
 # instructions, skills, subagents, commands, hooks or permissions, in any
 # directory; and statute's files at the top of the repo: what it compiles
 # AGENTS.md from, the rule set, its lock file and .statute/ (the local
-# rules and the ignore file), with the legacy copies of the hand-written
-# files it replaces.
+# rules and the ignore file), and the checks file statute before 0.1.18
+# wrote beside them, with the legacy copies of the hand-written files it
+# replaces.
 GENERIC = [
   r"(.*/)?AGENTS\.md",
   r"(.*/)?CLAUDE\.md",
@@ -41,6 +42,7 @@ GENERIC = [
   r"(.*/)?\.codex/.+",
   r"statute\.toml",
   r"statute\.lock",
+  r"statute-checks\.toml",
   r"\.statute/.+",
   r"(.*/)?[^/]+\.legacy\.md",
 ]
@@ -86,8 +88,9 @@ def matches(path: str, patterns: list[str]) -> bool:
 # The top-level keys of statute.lock that statute writes from its own
 # version and the rules' checks rather than from the rule set and the
 # sources; `statute compile --check` proves them, and the version changes
-# with the tools. A change to the lock file in nothing else is generated,
-# as this repo's rule L31 provides.
+# with the tools. A change to the lock file in nothing else is generated in
+# this repo, as its rule L31 provides; another repo's lock file stays an
+# instruction file.
 LOCK = "statute.lock"
 ENTRIES = ("statute", "commands")
 
@@ -217,7 +220,7 @@ def main(argv: list[str] | None = None) -> int:
     kind = (
       "generated"
       if matches(path, generated)
-      or (path == LOCK and entries_only(args.root, args.base))
+      or (not own and path == LOCK and entries_only(args.root, args.base))
       else "instruction"
       if matches(path, instructions)
       else "other"

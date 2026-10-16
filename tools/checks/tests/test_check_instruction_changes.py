@@ -226,6 +226,24 @@ class Change(unittest.TestCase):
         group = "instruction" if code else "generated"
         self.assertIn(f"{group} files:\n  M statute.lock\n", code_out[1])
 
+  def test_lock_file_stays_instructions_with_repo_declared_patterns(self):
+    lock = 'statute = "{}"\n\n[constitution]\nedition = "2026-10"\n'
+    self.write("statute.lock", lock.format("0.1.17"))
+    self.commit("lock")
+    self.git("tag", "-f", "base")
+    self.write("statute.lock", lock.format("0.1.18"))
+    self.change("crates/statute/Cargo.toml")
+    self.assertEqual(self.run_check()[0], 0)
+    self.assertEqual(self.run_check("--instructions", r"policy/.+")[0], 1)
+
+  def test_checks_file_counts_as_instructions_unless_declared(self):
+    self.change("statute-checks.toml", "crates/statute/Cargo.toml")
+    own = ("--instructions", r"policy/.+")
+    self.assertEqual(self.run_check(*own)[0], 1)
+    self.assertEqual(
+      self.run_check(*own, "--generated", r"statute-checks\.toml")[0], 0
+    )
+
   def test_compiled_agents_file_goes_with_either_side(self):
     for names, code in [
       (["AGENTS.md", "crates/statute/src/compile.rs"], 0),
