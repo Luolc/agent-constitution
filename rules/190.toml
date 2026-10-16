@@ -1,6 +1,6 @@
 id = 190
 slug = "verify-with-read-thread"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The yes counts only when all three checks of {@rule:39} hold on the message this command returns. When the message with that `ts` is not in the output, or the command fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). FedNet's output does not show whether a message was edited (read 2026-10-14), so the third check, that the yes still stands, rests on the text as read at the moment of acting.
+The yes counts only when all three checks of {@rule:39} hold on the message this command returns. When the message with that `ts` is not in the output, or the command fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). FedNet's output does not show whether a message was edited (read 2026-10-14), so the third check, that the yes still stands, rests on the text as read at the moment of acting. Which socket the client listens on is the machine's setup; {@rule:318}, where it is on, names it.
 
 Violated when an agent acts on a relayed yes without having itself read, through this command, the message with that `ts`.
 '''
 zh = '''
-{@rule:39} 的三点在这条命令返回的消息上都通过核对，同意才成立。输出里没有 `ts` 为那个值的消息，或者命令失败的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。FedNet 的输出看不出消息是否改过 (2026-10-14 读到的)，所以第三点 (同意是否仍然有效) 只能凭执行那一刻读到的正文判断。
+{@rule:39} 的三点在这条命令返回的消息上都通过核对，同意才成立。输出里没有 `ts` 为那个值的消息，或者命令失败的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。FedNet 的输出看不出消息是否改过 (2026-10-14 读到的)，所以第三点 (同意是否仍然有效) 只能凭执行那一刻读到的正文判断。client 监听哪个 socket 由机器的配置决定，打开了 {@rule:318} 的，由它写明。
 
 agent 凭转告的同意行事，而没有亲自用这条命令读到 `ts` 为那个值的消息的，即为违反本规定。
 '''
 
 [translations]
-zh = "8792aebc9497e478847235a9f0966956e93af641df2c3ed746db2950bc298e04"
+zh = "f6891df7314972e3cfeb32189574127237d670db5561631d08b29d93c59075f3"

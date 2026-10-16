@@ -1,6 +1,6 @@
 id = 127
 slug = "machine"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -12,11 +12,11 @@ zh = "机器与工作目录"
 
 [applicability]
 en = '''
-Where agents on a machine keep main checkouts, worktrees, files handed between agents, data, third-party sources and temporary files, which Linux release machines and test containers run, and what to do before leaving a machine. The directories are parameters, and the rules that place things in them are off by default: a rule set turns them on and sets the directories. The jurisdiction designates the release, for example in a rule of a lower layer. Enable it where agents work on machines kept beyond one task; an agent that runs only in a one-off sandbox or in CI need not.
+Where agents on a machine keep main checkouts, worktrees, files handed between agents, data, third-party sources and temporary files, which Linux release machines and test containers run, and what to do before leaving a machine. The directories are parameters, and the rules that place things in them are off by default: a rule set turns them on and sets the directories. The jurisdiction designates the release, for example by turning on {@rule:316}, which names it as a parameter and is off by default too. Enable it where agents work on machines kept beyond one task; an agent that runs only in a one-off sandbox or in CI need not.
 '''
 zh = '''
-管 agent 在机器上把主检出、worktree、agent 之间交接的文件、数据、第三方源码和临时文件放在哪里，Linux 机器与测试容器用哪个发行版本，以及离开一台机器之前要做什么。各个目录是参数，往这些目录里放东西的规定默认关闭，由规定集打开并设定目录。发行版本由法域指定，例如写在下层的规定里。agent 在不止用于一项任务的机器上工作的，就要启用；只在一次性的沙箱或 CI 里运行的 agent 不必启用。
+管 agent 在机器上把主检出、worktree、agent 之间交接的文件、数据、第三方源码和临时文件放在哪里，Linux 机器与测试容器用哪个发行版本，以及离开一台机器之前要做什么。各个目录是参数，往这些目录里放东西的规定默认关闭，由规定集打开并设定目录。发行版本由法域指定，例如打开 {@rule:316}，它以参数写明版本，也默认关闭。agent 在不止用于一项任务的机器上工作的，就要启用；只在一次性的沙箱或 CI 里运行的 agent 不必启用。
 '''
 
 [translations]
-zh = "b05a95f001ebd9554e48557e62a9fca25d1e446a861ebabd2cdb2f2b812ad43d"
+zh = "751daac45395f54eb06606b775b2d1b02cebfe32735cb0c34cbd2c16dc2a6b7c"

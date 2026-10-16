@@ -205,3 +205,42 @@ zh = "放各 initiative 仓库检出的目录"
 
 [parameter.translations]
 zh = "a9fe4dfcf2f00b7cc8a74176ef93a8a2008ff697486345fed85b85b42e1ac5f2"
+
+[[parameter]]
+name = "linux.container-image"
+type = "string"
+scope = "personal"
+default = "debian:13"
+
+[parameter.title]
+en = "Image, name and tag, whose Linux release the machines run and test containers are based on"
+zh = "Linux 机器装其发行版本、测试容器以之为基础镜像的镜像 (名字与 tag)"
+
+[parameter.translations]
+zh = "24127b352e85e4536e1d84c5c2a1d46825a03df29aae7c1ab3be076e487ac0d4"
+
+[[parameter]]
+name = "ci.linux-runner-label"
+type = "string"
+scope = "personal"
+default = "ubuntu-22.04"
+
+[parameter.title]
+en = "Label of the Linux runners the CI service hosts"
+zh = "CI 服务托管的 Linux runner 的标签"
+
+[parameter.translations]
+zh = "0628e7b9aca2b8028a33b232b6ba32e02d862ccdac96b9971e087cc3d5fb26b5"
+
+[[parameter]]
+name = "fednet.client-socket"
+type = "string"
+scope = "personal"
+default = "/run/fednet/client.sock"
+
+[parameter.title]
+en = "Socket of the FedNet client on the machine"
+zh = "本机 FedNet client 的 socket"
+
+[parameter.translations]
+zh = "7fc795e9ce6e87f86582a0747209371e1aeffe192972b5c0860b90586adbb7cb"

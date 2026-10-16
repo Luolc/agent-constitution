@@ -1,0 +1,45 @@
+id = 316
+slug = "linux-release-image"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 127
+default = "off"
+requires = [135]
+authority = ["simplicity"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Run the release of one set image on Linux machines and as test containers' base image"
+zh = "Linux 机器装指定镜像的发行版本，测试容器以这个镜像为基础镜像"
+
+[text.statement]
+en = "Run on the Linux machines (development machines, servers) the Linux release of the image `{$linux.container-image}`, and base test containers on that image."
+zh = "Linux 机器 (开发机、服务器) 装镜像 `{$linux.container-image}` 的 Linux 发行版本，测试容器以这个镜像为基础镜像。"
+
+[text.reason]
+en = '''
+{@rule:135} has every Linux machine and test container run one pinned release, and leaves the release to the rule set; this rule names it. One value names both, the image's name and tag, so the machines and the containers cannot drift apart ({@constitution:simplicity}). The value is a person's own: the release runs on the machines they work on, the same in every repository.
+'''
+zh = '''
+{@rule:135} 要求所有 Linux 机器和测试容器用同一个钉死的发行版本，版本留给规定集定；本规定写明是哪一个。机器和容器都由同一个值 (镜像的名字和 tag) 确定，两者不会走岔 ({@constitution:simplicity})。这个值是个人的：发行版本装在本人工作的机器上，各个仓库都一样。
+'''
+
+[text.verification]
+en = '''
+The tag may be followed by a digest (`{$linux.container-image}@sha256:…`). Moving to another release is a change of this value, which only whoever sets the value decides; an agent that sees a reason to move proposes it to that person instead of moving.
+
+Violated when a Linux machine runs another release than that of `{$linux.container-image}`, or a test container's base image is not `{$linux.container-image}`.
+'''
+zh = '''
+tag 后面可以再钉 digest (`{$linux.container-image}@sha256:…`)。换成别的发行版本就是改这个值，只由设定这个值的人决定；agent 觉得该换时，向这个人提议，不自己换。
+
+Linux 机器装的不是 `{$linux.container-image}` 的发行版本，或者测试容器的基础镜像不是 `{$linux.container-image}` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "efe75e30490bec4002a4f62a2859d70912764a1556953b10e7f0a58eec0cb37e"
