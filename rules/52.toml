@@ -1,6 +1,6 @@
 id = 52
 slug = "public-push-pre-review"
-revision = 7
+revision = 8
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -28,27 +28,27 @@ zh = '''
 
 [text.verification]
 en = '''
-Before each push to any branch of a public repository ({@rule:51}), the author writes out three texts and gives them to a reviewer, another party than the author:
+Before each push to any branch of a public repository ({@rule:259}), the author writes out three texts and gives them to a reviewer, another party than the author:
 
 - the diff of the branch against the branch it will merge into;
 - the message of every commit to be pushed;
 - the title and body of the pull request as they will be posted.
 
-The reviewer reads them for what {@rule:51} keeps out of a public repository, for credentials ({@rule:291}) and for personal information ({@constitution:personal-info}), and answers either that they pass, naming the head commit it read, or with the leaks it found. The author pushes only that head and opens the pull request with that text. After any change to the head or the text, the review is done again before the next push.
+The reviewer reads them for what {@rule:259} keeps out of a public repository, for credentials ({@rule:291}) and for personal information ({@constitution:personal-info}), and answers either that they pass, naming the head commit it read, or with the leaks it found. The author pushes only that head and opens the pull request with that text. After any change to the head or the text, the review is done again before the next push.
 
 Violated when an agent pushes to a public repository a head that no reviewer passed, or opens a pull request there with a title or body that the reviewer did not read.
 '''
 zh = '''
-每次向公开仓库 ({@rule:51}) 的任何分支 push 之前，作者写出三份文本，交给作者以外的另一方，即审查方：
+每次向公开仓库 ({@rule:259}) 的任何分支 push 之前，作者写出三份文本，交给作者以外的另一方，即审查方：
 
 - 这个分支相对于它要合入的分支的 diff；
 - 每个要推送的 commit 的 message；
 - pull request 将要发出的标题和正文。
 
-审查方在其中查找 {@rule:51} 不许写进公开仓库的内容、凭证 ({@rule:291}) 和个人信息 ({@constitution:personal-info})，然后答复：通过的，写明它读的是哪个 head commit；不通过的，列出发现的泄露项。作者只 push 那个 head，并用那份文字开 pull request。head 或文字改过之后，下一次 push 之前重新预审。
+审查方在其中查找 {@rule:259} 不许写进公开仓库的内容、凭证 ({@rule:291}) 和个人信息 ({@constitution:personal-info})，然后答复：通过的，写明它读的是哪个 head commit；不通过的，列出发现的泄露项。作者只 push 那个 head，并用那份文字开 pull request。head 或文字改过之后，下一次 push 之前重新预审。
 
 agent 向公开仓库 push 了没有经审查方通过的 head，或者在那里开 pull request 时用了审查方没有读过的标题或正文的，即为违反本规定。
 '''
 
 [translations]
-zh = "5990ab2082827b2d3fbf7953eae4dc66139b2880928a28ab5518735be9140e09"
+zh = "fb687b698ff2049cf7ebdee58c9a33b9a977da861f7be02f7020491965a6d221"
