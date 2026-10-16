@@ -1,6 +1,6 @@
 id = 164
 slug = "one-task-per-lock-file"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "Let one task at a time change a repository's lock file"
 zh = "同一时刻只让一个任务改仓库的锁文件"
 
 [text.statement]
-en = "Where work is divided among agents the way fleet does, let only one task at a time change a repository's dependency lock file."
-zh = "在像 fleet 那样在 agent 之间分工的法域里，同一个仓库的依赖锁文件，同一时刻只许一个任务修改。"
+en = "Where work is divided among agents the way Agent Fleet does, let only one task at a time change a repository's dependency lock file."
+zh = "在像 Agent Fleet 那样在 agent 之间分工的法域里，同一个仓库的依赖锁文件，同一时刻只许一个任务修改。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "8925b65a5b838d8588e9d4f845aac32cc73462226a657cfb492816346527ed35"
+zh = "8a239ab05ca1d96314d3c53f6a1ca4adf292f07657c76d3192dca3ebd12b1bec"

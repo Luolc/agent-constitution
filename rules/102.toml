@@ -1,6 +1,6 @@
 id = 102
 slug = "tool-specific-rule-under-tool-domain"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The test: take the tool's name out of the rule and ask whether it can still be decided. If it can, the rule is general: it sits under no tool's domain, and a tool appears in it only as an example, marked as one, so that the requirement holds with the example removed. If it cannot, the requirement belongs to the tool (the commit hooks of Git, the division of work of fleet): the rule sits under that tool's domain and names the tool. Commits, branches, pushes, merges and pull requests are general concepts of version control and code hosting, not one tool.
+The test: take the tool's name out of the rule and ask whether it can still be decided. If it can, the rule is general: it sits under no tool's domain, and a tool appears in it only as an example, marked as one, so that the requirement holds with the example removed. If it cannot, the requirement belongs to the tool (the commit hooks of Git, the division of work of Agent Fleet): the rule sits under that tool's domain and names the tool. Commits, branches, pushes, merges and pull requests are general concepts of version control and code hosting, not one tool.
 
 Violated when a change adds or rewrites a rule that fails this test: a rule whose requirement belongs to a tool outside that tool's domain, or a general rule that depends on a tool or sits under a tool's domain.
 '''
 zh = '''
-判据：把工具名从规定里拿掉，看它还能不能判定。能判定，就是通用规定：不挂在任何工具的 domain 下，工具在其中只能作为例子出现，并注明是例子，去掉例子要求照样成立。不能判定，要求就属于这个工具 (比如 Git 的 commit hook，fleet 的分工)：规定挂在这个工具的 domain 下，并点名这个工具。commit、分支、push、合并和 pull request 是版本控制与代码托管的通用概念，不算某一个工具。
+判据：把工具名从规定里拿掉，看它还能不能判定。能判定，就是通用规定：不挂在任何工具的 domain 下，工具在其中只能作为例子出现，并注明是例子，去掉例子要求照样成立。不能判定，要求就属于这个工具 (比如 Git 的 commit hook，Agent Fleet 的分工)：规定挂在这个工具的 domain 下，并点名这个工具。commit、分支、push、合并和 pull request 是版本控制与代码托管的通用概念，不算某一个工具。
 
 变更新增或改写的规定不符合这个判据的，即为违反本规定：要求属于某个工具的规定不在这个工具的 domain 下，或者通用规定依赖某个工具、挂在某个工具的 domain 下。
 '''
 
 [translations]
-zh = "33dc842c091bd72217e8540e3045eba6da199041055311169706913e8a3c3bb2"
+zh = "0924be85e11378410933df6632983a7f7c8f0f7dfcebdf0d2116c08477c32477"

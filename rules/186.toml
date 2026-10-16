@@ -1,6 +1,6 @@
 id = 186
 slug = "take-and-release-by-command"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The command is the one the rules or the project's instructions that apply name for this. When a tool that starts agents takes and releases their work items for them, as fleet does, an agent it started does not run the command itself.
+The command is the one the rules or the project's instructions that apply name for this. When a tool that starts agents takes and releases their work items for them, as Agent Fleet does, an agent it started does not run the command itself.
 
 Violated when an agent takes or releases a work item by any other means than that command, such as changing its status or writing a claim comment by hand.
 '''
 zh = '''
-这个命令，指适用的规定或项目指令为此指定的命令。起 agent 的工具替它起的 agent 领取与释放工作项的 (fleet 就是这样)，被起的 agent 不自己跑这个命令。
+这个命令，指适用的规定或项目指令为此指定的命令。起 agent 的工具替它起的 agent 领取与释放工作项的 (Agent Fleet 就是这样)，被起的 agent 不自己跑这个命令。
 
 agent 用这个命令以外的方式 (比如手改状态、手写领取的评论) 领取或释放工作项的，即为违反本规定。
 '''
 
 [translations]
-zh = "8086f2c7ccd94c2457b5acba8b3b6ff246026cb10f13f9dbc8042ca774c1c955"
+zh = "92772a5ae743dce296126741506e56df5d708ea4399aed3be4608ce714a50f50"

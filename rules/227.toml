@@ -1,6 +1,6 @@
 id = 227
 slug = "research-worker-no-reviewer"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "Give a research worker no reviewer"
 zh = "不给调研 worker 配审查方"
 
 [text.statement]
-en = "Where work is divided among agents the way fleet does, as the agent responsible for a job, give a research worker no reviewer."
-zh = "在像 fleet 那样在 agent 之间分工的法域里，作为负责一项工作的 agent，不给调研 worker 配审查方。"
+en = "Where work is divided among agents the way Agent Fleet does, as the agent responsible for a job, give a research worker no reviewer."
+zh = "在像 Agent Fleet 那样在 agent 之间分工的法域里，作为负责一项工作的 agent，不给调研 worker 配审查方。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "c5958331f3709db5d2746cbf2404393eab5598bf5b25e2ea96179ef09896fd1e"
+zh = "5f8042d1ecf0ba1abcf469bbbc5660b5761d300195a0f3a34a200313639aed70"
