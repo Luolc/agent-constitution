@@ -1,6 +1,6 @@
 id = 274
 slug = "pull-requests"
-revision = 1
+revision = 2
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,7 +8,7 @@ parent = 273
 default = "on"
 
 [title]
-en = "Pull requests"
+en = "Pull Requests"
 zh = "Pull request"
 
 [applicability]
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "cfd3debde33a2336642781a86c20ca61fe9e4ba8e295d0d0f807ef6dc7ca0193"
+zh = "c2214d94dda8121b9c1e620ad3f4871eca36d3ededae5bbc7098b25a58ea2cf9"

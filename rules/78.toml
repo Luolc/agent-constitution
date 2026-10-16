@@ -1,6 +1,6 @@
 id = 78
 slug = "fleet"
-revision = 5
+revision = 6
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -8,8 +8,8 @@ parent = 272
 default = "off"
 
 [title]
-en = "Fleet"
-zh = "Fleet"
+en = "fleet"
+zh = "fleet"
 
 [applicability]
 en = '''
@@ -20,4 +20,4 @@ zh = '''
 '''
 
 [translations]
-zh = "93ecc6d614c66ef3aa6a31bed8f57f4854b3b39d6a6fab050ed6a1cb595bf808"
+zh = "60da379c6e43d954cbf90060b9d369b423d3781b2317fa7da164b7594ee6e3e2"
