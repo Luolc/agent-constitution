@@ -102,7 +102,7 @@ for departures only.
 - A rule `on` by default that the repository must not have: a rule
   whose environment it lacks (no CI, no reviewer, no shared machine)
   or that contradicts how it works on purpose.
-- A domain or rule `off` by default that it needs: Fleet when agents
+- A domain or rule `off` by default that it needs: fleet (R78) when agents
   divide work there, Writing Rules (R96) when agents write or change
   rules there, which a repository with local rules does (step d).
 - A one-of whose default child is not how the repository works.
