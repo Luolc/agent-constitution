@@ -234,7 +234,13 @@ table ([Sources and references](rule-sets.md#sources-and-references))
 is not read yet. Of [Rule sources](rule-sources.md), `public` is built,
 with which rules may cite which in `requires`, `conflicts`,
 `overrides`, `parent` and `{@rule:...}`, and the check of `public` against GitHub
-([Checks](rule-checks.md#checks)). Overrides are built, with `scope`
+([Checks](rule-checks.md#checks)). Loading a rule set, as every command
+that reads one does, checks that each `authority` entry and each
+`{@constitution:...}` citation of the repository's own nodes not
+repealed, and of the enabled rules of the other sources, names a
+provision of the edition that exists and is not repealed, as `validate`
+does beside the constitution; each finding names the rule and its line,
+`rules/7.toml:12`. Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's or a domain's `parent`
 in another source, and the private layer with its lock file in git's
 directory, its output, `.statute/.gitignore` and

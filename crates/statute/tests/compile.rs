@@ -509,7 +509,7 @@ fn a_citation_of_nothing_fails_and_names_where_it_is() {
         (
             "{@constitution:principals.nobody}",
             "lock",
-            "rules/2.toml: error: rule R2: cites undefined constitution:principals.nobody",
+            "rules/2.toml:18: error: rule R2: cites undefined constitution:principals.nobody",
         ),
         (
             "{@principals}",

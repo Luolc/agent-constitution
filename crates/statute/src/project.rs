@@ -8,10 +8,10 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 use crate::cite::Labels;
-use crate::constitution::rules::Provisions;
+use crate::constitution::rules::{self, Provisions};
 use crate::diag::Diagnostics;
 use crate::manifest::{self, Declared, Key, LOCAL, Layers, Manifest, SourceSpec};
-use crate::node::Status;
+use crate::node::{self, Status};
 use crate::param::Setting;
 use crate::private;
 use crate::resolve::{self, Resolution};
@@ -305,11 +305,12 @@ impl Project {
             return (None, diags);
         }
         let mut list = Vec::new();
+        // Where each source's rules are read from, by its name.
+        let mut dirs = BTreeMap::new();
         for spec in &manifest.sources {
-            let (mut source, more) = Source::load(
-                &root.join(&spec.path).join(&spec.rules_dir),
-                &spec.shown(&spec.rules_dir),
-            );
+            let dir = root.join(&spec.path).join(&spec.rules_dir);
+            let (mut source, more) = Source::load(&dir, &spec.shown(&spec.rules_dir));
+            dirs.insert(spec.name.clone(), dir);
             diags.0.extend(more.0);
             source.name = spec.name.clone();
             source.path = spec.path.clone();
@@ -323,6 +324,7 @@ impl Project {
             let (mut source, more) = Source::load(&root.join(local_rules), local_rules);
             diags.0.extend(more.0);
             source.name = LOCAL.to_owned();
+            dirs.insert(LOCAL.to_owned(), root.join(local_rules));
             source.path = ".".to_owned();
             source.public = manifest.public;
             source.local = true;
@@ -397,6 +399,7 @@ impl Project {
                 &index_name,
                 &lang,
                 &sources,
+                &dirs,
                 resolution,
                 diags,
             );
@@ -504,12 +507,14 @@ fn fit_global(
 /// edition directory is `edition_dir` and `index.toml` is named
 /// `index_name`: each `authority` entry and `{@constitution:...}` citation
 /// names a provision of it that is not repealed, as `statute validate`
-/// checks a source beside its constitution.
+/// checks a source beside its constitution, with each finding at its line
+/// of the node's file in `dirs`, the directory of each source by name.
 fn check_citations(
     edition_dir: &Path,
     index_name: &str,
     lang: &str,
     sources: &Sources,
+    dirs: &BTreeMap<String, PathBuf>,
     resolution: &Resolution,
     diags: &mut Diagnostics,
 ) {
@@ -529,9 +534,13 @@ fn check_citations(
         if n.status == Status::Repealed || !(own || resolution.enabled.contains_key(&key)) {
             continue;
         }
-        for (_, message) in provisions.findings(n) {
+        let file = dirs
+            .get(&key.source)
+            .map(|d| d.join(node::file_name(key.id)))
+            .unwrap_or_default();
+        for (needle, message) in provisions.findings(n) {
             diags.error(
-                sources.file(&key),
+                rules::at(&file, &sources.file(&key), &needle),
                 format!("{} {key}: {message}", n.kind.name()),
             );
         }
