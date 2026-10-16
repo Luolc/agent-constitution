@@ -68,7 +68,7 @@ rules = [
   "R205",
   # check is the required status check, and a merge waits for it.
   "R211",
-  # CI runners are pinned to a fixed Ubuntu release (L17).
+  # CI runners are pinned to a fixed Ubuntu or macOS release (L30).
   "R212",
   # Tests cover the happy path, the set boundaries and the bugs that occurred.
   "R84",

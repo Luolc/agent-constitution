@@ -1,0 +1,29 @@
+id = 30
+slug = "ci-pins-by-os"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = "R276"
+default = "on"
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Pin runners to Ubuntu 24.04 or macOS 15 and actions by commit SHA"
+
+[text.statement]
+en = "In `.github/workflows/`, run every Linux job on `ubuntu-24.04` and every macOS job on `macos-15`, and pin every action to a commit SHA."
+
+[text.reason]
+en = '''
+A moving runner label or action tag changes what CI runs without a change in this repository.
+'''
+
+[text.verification]
+en = '''
+Violated when a workflow names a runner label other than `ubuntu-24.04` and `macos-15`, or an action by a tag or a branch.
+'''
