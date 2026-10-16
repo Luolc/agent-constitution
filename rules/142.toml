@@ -1,8 +1,9 @@
 id = 142
 slug = "meta-tier-read-only-through-unlocked-route"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 307
 lang = "en"
 parent = 137
 default = "on"

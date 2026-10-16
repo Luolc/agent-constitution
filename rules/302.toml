@@ -1,0 +1,43 @@
+id = 302
+slug = "own-service-account-per-machine-and-service"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Give each machine and each service a service account of its own"
+zh = "每台机器、每个服务各用自己的 service account"
+
+[text.statement]
+en = "Give each machine and each service that reads the secret manager through a service account a service account of its own, shared with no other machine or service."
+zh = "经 service account 读密钥管理器的每台机器、每个服务，各用一个自己的 service account，不与别的机器或服务共用。"
+
+[text.reason]
+en = '''
+With one service account each, what each machine or service can reach is set by its own grants ({@rule:300}); when one is compromised, only its service account needs rotating, and the others keep working.
+'''
+zh = '''
+各用一个 service account，每台机器、每个服务能访问什么，就由它自己的授权决定 ({@rule:300})；哪一个出了问题，只需轮换它那一个 service account，其余的照常工作。
+'''
+
+[text.verification]
+en = '''
+Which machines and services read the secret manager through a service account, and which service account each uses, is set in the jurisdiction.
+
+Violated when two machines or services use the same service account, or the token of one machine's or service's service account is used on another.
+'''
+zh = '''
+哪些机器和服务经 service account 读密钥管理器、各用哪个 service account，由法域规定。
+
+两台机器或两个服务共用同一个 service account，或者某台机器、某个服务的 service account 的 token 被拿到别处使用的，即为违反本规定。
+'''
+
+[translations]
+zh = "6a40366f42fa4e5e0a07719bdc1d39eab313ba541fe4556c12add743e50713a0"

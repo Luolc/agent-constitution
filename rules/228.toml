@@ -1,6 +1,6 @@
 id = 228
 slug = "hand-in-with-fleet-done"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "Hand in an attempt with `fleet done` once nothing is left"
 zh = "没有剩下的事了才用 `fleet done` 交"
 
 [text.statement]
-en = "As a worker that fleet started, judge the outcome of your attempt yourself and hand it in with `fleet done`, or `fleet done --abandon` when you stop short of the goal, and not while your pull request still waits for a review or a merge."
-zh = "作为 fleet 起的 worker，自己判断这次尝试的结局，用 `fleet done` 交，没达到目标时用 `fleet done --abandon` 交；PR 还在等审查或合并时不交。"
+en = "As a worker that Agent Fleet started, judge the outcome of your attempt yourself and hand it in with `fleet done`, or `fleet done --abandon` when you stop short of the goal, and not while your pull request still waits for a review or a merge."
+zh = "作为 Agent Fleet 起的 worker，自己判断这次尝试的结局，用 `fleet done` 交，没达到目标时用 `fleet done --abandon` 交；PR 还在等审查或合并时不交。"
 
 [text.reason]
 en = '''
@@ -40,4 +40,4 @@ worker 在 PR 还在等审查或合并时运行了 `fleet done`，或者没达�
 '''
 
 [translations]
-zh = "7878b8615c2ef01bcf255daef012f2b9feed05c68d234ffd0195b4bd5a7408e8"
+zh = "cedafde8e3850935c6a45fd6eedc4f47ac8b9b7bed3d787a6e90609d6e6531f7"

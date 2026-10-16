@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 mod common;
-use common::{domain, edit, param, rule};
+use common::{domain, edit, one_of, option, param, rule};
 
 struct Run {
     code: i32,
@@ -165,6 +165,134 @@ fn a_repealed_rule_may_cite_what_is_gone() {
         "Do the thing 3, after {@rule:2} and {@rule:99}.",
     ));
     let dir = rules("repealed", &[domain(1), repeal(rule(2, 1, "")), citing]);
+    let run = validate(&dir);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+}
+
+/// A node in force that names a superseded or repealed rule fails, with
+/// what supersedes it; naming the successor passes, and so does a
+/// superseded rule that still names it.
+#[test]
+fn a_node_in_force_names_no_retired_rule() {
+    let superseded = edit(
+        rule(2, 1, "superseded-by = 4"),
+        "status = \"draft\"",
+        "status = \"superseded\"",
+    );
+    let repealed = edit(
+        rule(5, 1, ""),
+        "status = \"draft\"",
+        "status = \"repealed\"",
+    );
+    let retired_domain = edit(domain(6), "status = \"active\"", "status = \"repealed\"");
+    let cites = |id: u64| {
+        edit(
+            rule(3, 1, ""),
+            "Do the thing 3.",
+            &format!("Do the thing 3, after {{@rule:{id}}}."),
+        )
+    };
+    for (name, node, needle) in [
+        (
+            "citation",
+            cites(2),
+            "rules/3.toml: error: [text.statement] cites rule 2, which is superseded by 4; a node in force names only nodes in force",
+        ),
+        (
+            "requires",
+            rule(3, 1, "requires = [2]"),
+            "rules/3.toml: error: `requires` names rule 2, which is superseded by 4;",
+        ),
+        (
+            "conflicts",
+            rule(3, 1, "conflicts = [5]"),
+            "rules/3.toml: error: `conflicts` names rule 5, which is repealed;",
+        ),
+        (
+            "parent",
+            rule(3, 6, ""),
+            "rules/3.toml: error: `parent` names domain 6, which is repealed;",
+        ),
+    ] {
+        let nodes = |three| {
+            vec![
+                domain(1),
+                superseded.clone(),
+                three,
+                rule(4, 1, ""),
+                repealed.clone(),
+                retired_domain.clone(),
+            ]
+        };
+        let dir = rules(&format!("retired-{name}"), &nodes(node.clone()));
+        let run = validate(&dir);
+        assert_eq!(run.code, 1, "{name}: {}", run.stdout);
+        assert!(run.stderr.contains(needle), "{name}: {}", run.stderr);
+        // Superseded itself, rule 3 names what it named before.
+        let frozen = edit(
+            edit(node, "status = \"draft\"", "status = \"superseded\""),
+            "revision = 1",
+            "revision = 1\nsuperseded-by = 4",
+        );
+        let dir = rules(&format!("retired-{name}-frozen"), &nodes(frozen));
+        let run = validate(&dir);
+        assert_eq!(run.code, 0, "{name}: {}", run.stderr);
+    }
+    let dir = rules(
+        "retired-successor",
+        &[domain(1), superseded, cites(4), rule(4, 1, "")],
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    // A citation of a repealed rule is the per-source checks' error alone.
+    let dir = rules(
+        "retired-repealed-citation",
+        &[domain(1), cites(5), repealed.clone()],
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    let errors: Vec<&str> = run
+        .stderr
+        .lines()
+        .filter(|l| l.contains(": error: "))
+        .collect();
+    assert_eq!(errors.len(), 1, "{}", run.stderr);
+    assert!(
+        errors[0].ends_with(
+            "rules/3.toml: error: [text.statement] cites `{@rule:5}`, which is repealed"
+        ),
+        "{}",
+        run.stderr
+    );
+    // A one-of whose `default` is a superseded option, then its successor.
+    let options = || {
+        vec![
+            domain(1),
+            edit(
+                option(8, 7, "superseded-by = 9"),
+                "status = \"draft\"",
+                "status = \"superseded\"",
+            ),
+            option(9, 7, ""),
+        ]
+    };
+    let dir = rules(
+        "retired-default",
+        &[options(), vec![one_of(7, 1, 8)]].concat(),
+    );
+    let run = validate(&dir);
+    assert_eq!(run.code, 1, "{}", run.stdout);
+    assert!(
+        run.stderr.contains(
+            "rules/7.toml: error: `default` names rule 8, which is superseded by 9; a node in force names only nodes in force"
+        ),
+        "{}",
+        run.stderr
+    );
+    let dir = rules(
+        "retired-default-successor",
+        &[options(), vec![one_of(7, 1, 9)]].concat(),
+    );
     let run = validate(&dir);
     assert_eq!(run.code, 0, "{}", run.stderr);
 }

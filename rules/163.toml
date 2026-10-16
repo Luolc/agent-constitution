@@ -1,6 +1,6 @@
 id = 163
 slug = "watch-worker-follows-watch-prompt"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-This rule covers the workers whose `FLEET_PARENT` is `watch`. Such a worker asks and finishes as its watch's prompt and its built-in prompt say; when its task is done it ends its turn, and fleet closes its tab on its next run. {@rule:171} does not apply to it.
+This rule covers the workers whose `FLEET_PARENT` is `watch`. Such a worker asks and finishes as its watch's prompt and its built-in prompt say; when its task is done it ends its turn, and Agent Fleet closes its tab on its next run. {@rule:171} does not apply to it.
 
 Violated when such a worker runs `fleet done` or does work outside its watch's prompt.
 '''
 zh = '''
-本规定只管 `FLEET_PARENT` 为 `watch` 的 worker。这种 worker 问人与收尾都按 watch 的 prompt 和它的内置 prompt 做；任务做完就结束这一轮，fleet 下次运行时关掉它的 tab。{@rule:171}对它不适用。
+本规定只管 `FLEET_PARENT` 为 `watch` 的 worker。这种 worker 问人与收尾都按 watch 的 prompt 和它的内置 prompt 做；任务做完就结束这一轮，Agent Fleet 下次运行时关掉它的 tab。{@rule:171}对它不适用。
 
 这种 worker 运行了 `fleet done`，或者做了 watch 的 prompt 之外的工作的，即为违反本规定。
 '''
 
 [translations]
-zh = "4c014e57ee0f5c086700c3c4089baace36ce930c3654750349f510817801967a"
+zh = "c76c6db1ac2b7e27968ecdad32d0eba97bf09611f055f61e8c1cd93af2d9e08d"

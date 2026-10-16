@@ -1,6 +1,6 @@
 id = 171
 slug = "worker-report-contents"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,8 +16,8 @@ en = "Write a complete worker report"
 zh = "worker report 写全"
 
 [text.statement]
-en = "Where work is divided among agents the way fleet does, as a worker, give in your report what you did, its effect, why the task is done or abandoned, its metrics, the pull request number, the approved SHA, the merge commit, the checks run and the attempt number of the CI run, and for each follow-up left who takes it and when."
-zh = "在像 fleet 那样在 agent 之间分工的法域里，作为 worker，report 里写明做了什么、效果、为何判 done 或 abandoned、指标，以及 PR 号、approved SHA、合并 commit、跑过的检查与 CI run 的 attempt 序号，还有留下的每条 follow-up 由谁接、何时触发。"
+en = "Where work is divided among agents the way Agent Fleet does, as a worker, give in your report what you did, its effect, why the task is done or abandoned, its metrics, the pull request number, the approved SHA, the merge commit, the checks run and the attempt number of the CI run, and for each follow-up left who takes it and when."
+zh = "在像 Agent Fleet 那样在 agent 之间分工的法域里，作为 worker，report 里写明做了什么、效果、为何判 done 或 abandoned、指标，以及 PR 号、approved SHA、合并 commit、跑过的检查与 CI run 的 attempt 序号，还有留下的每条 follow-up 由谁接、何时触发。"
 
 [text.reason]
 en = '''
@@ -29,15 +29,15 @@ report 是负责这项工作的 agent 决定下一步的依据，也可能成为
 
 [text.verification]
 en = '''
-This rule is for the jurisdictions of {@rule:28}. The report is the one a worker hands to the agent responsible for its job when it finishes (with fleet, through `fleet done`). A task without a pull request writes "none" for the pull request number, the approved SHA and the merge commit, and says why. Pull request numbers, SHAs, URLs and numbers are copied from the output of the command that established them. Knowledge and decisions that must outlive the job go into a repository through a pull request, and the report links to them. A worker with no agent responsible for its job, such as one that `fleet watch` starts, is not bound by this rule.
+This rule is for the jurisdictions of {@rule:28}. The report is the one a worker hands to the agent responsible for its job when it finishes (with Agent Fleet, through `fleet done`). A task without a pull request writes "none" for the pull request number, the approved SHA and the merge commit, and says why. Pull request numbers, SHAs, URLs and numbers are copied from the output of the command that established them. Knowledge and decisions that must outlive the job go into a repository through a pull request, and the report links to them. A worker with no agent responsible for its job, such as one that `fleet watch` starts, is not bound by this rule.
 
 Violated when a worker's report lacks any item above.
 '''
 zh = '''
-本规定适用于{@rule:28}所说的法域。report 指 worker 收尾时交给负责这项工作的 agent 的那份 (用 fleet 时经 `fleet done` 交)。没有 PR 的任务，PR 号、approved SHA 与合并 commit 写「无」并说明原因。PR 号、SHA、URL 与数字取自确立它的那条命令的输出。要活过这项工作的知识和决定经 PR 进仓库，report 里链过去。没有负责其工作的 agent 的 worker，例如 `fleet watch` 起的 worker，不受本规定约束。
+本规定适用于{@rule:28}所说的法域。report 指 worker 收尾时交给负责这项工作的 agent 的那份 (用 Agent Fleet 时经 `fleet done` 交)。没有 PR 的任务，PR 号、approved SHA 与合并 commit 写「无」并说明原因。PR 号、SHA、URL 与数字取自确立它的那条命令的输出。要活过这项工作的知识和决定经 PR 进仓库，report 里链过去。没有负责其工作的 agent 的 worker，例如 `fleet watch` 起的 worker，不受本规定约束。
 
 worker 的 report 缺了上面任何一项的，即为违反本规定。
 '''
 
 [translations]
-zh = "b4841fc3492ec734db96e0225771889c48f669d10359e3b8e4786f68d57b8e6e"
+zh = "6852e2b26d1a6c87438a6e1833df9bd0b27837881e380c7a7e3fffd02235ef59"

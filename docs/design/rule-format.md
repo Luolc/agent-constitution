@@ -59,7 +59,9 @@ a translation changes neither (Languages, in
 [Rule file format](#rule-file-format)). The
 lock file records, beside the SHA-256 of each rule's file, the SHA-256 of
 the rule without its translations, so that statute can tell the two
-apart ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)).
+apart ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)). `statute validate --base` uses the same
+hash: a node whose hash differs from the base's needs a revision above
+the base's ([Checkers](checkers.md#checkers)).
 
 ## Rule file format
 

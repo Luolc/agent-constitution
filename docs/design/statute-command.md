@@ -295,7 +295,9 @@ first-party source, with its parameters in `params.toml`, and runs
 every check that needs no rule set ([Checkers](checkers.md#checkers)):
 the format of each node and parameter, the tree, the targets of its
 references, the translations, citations and placeholders, and the
-defaults. Each finding goes to standard error on a
+defaults; and, of this one source alone, that no node in force names a
+superseded or repealed node of it, which a rule set reading a source
+does not check. Each finding goes to standard error on a
 line of its own; an error makes it exit with status 1, and a clean run
 prints one line to standard output with the number of nodes. When
 `<dir>` has a `constitution/` beside it, it also reads that constitution
@@ -307,7 +309,8 @@ error, and its own errors are left to `constitution build`. With
 `--base <git-ref>` it also runs the rules part of check 7: when the
 numbering is compared, every node of the base still exists, a rule of
 the older format as the node whose slug is its name, and what was
-repealed or superseded still is; it skips the comparison, with the
+repealed or superseded still is, and a node changed beyond its
+translations has a higher revision than at the base; it skips the comparison, with the
 note, where check 7 does, and without a `constitution/` beside `<dir>`
 it fails. These findings are `rules/7.toml:12: error: <message>`.
 This repo runs `statute validate rules` as a commit hook, and CI runs

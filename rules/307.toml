@@ -1,0 +1,43 @@
+id = 307
+slug = "meta-credentials-out-of-service-account-vaults"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Keep credentials that give access to other credentials out of every vault a service account can access"
+zh = "能取得其他凭证的凭据不放进 service account 能访问的 vault"
+
+[text.statement]
+en = "Keep credentials that give access to other credentials, such as the tokens of service accounts and SSH private keys, out of every vault that a service account can access."
+zh = "能取得其他凭证的凭据 (例如各 service account 的 token、SSH 私钥)，不放进任何 service account 能访问的 vault。"
+
+[text.reason]
+en = '''
+With such credentials out of reach of every service account, a leaked service account token does not lead to the tokens of the others, nor to the keys of machines.
+'''
+zh = '''
+这类凭据任何 service account 都碰不到，一个 service account 的 token 泄露了，也拿不到别的 service account 的 token，拿不到机器的钥匙。
+'''
+
+[text.verification]
+en = '''
+A credential gives access to other credentials when holding it lets one read the secret manager or log in to a machine where credentials are kept, as the token of a service account or an SSH private key does. Where such credentials are kept instead is set in the jurisdiction.
+
+Violated when such a credential is stored in a vault that a service account has access to.
+'''
+zh = '''
+一个凭据能取得其他凭证，指拿着它就能读密钥管理器，或者能登录存放着凭证的机器，例如 service account 的 token 或 SSH 私钥。这类凭据改放在哪里，由法域规定。
+
+这类凭据存进了某个 service account 能访问的 vault 的，即为违反本规定。
+'''
+
+[translations]
+zh = "bf3e6e0293615c6566e9bdf4fad73f836087cf8a663c5d6dc469353bcb3e6d7a"

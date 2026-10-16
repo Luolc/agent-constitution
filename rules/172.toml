@@ -1,6 +1,6 @@
 id = 172
 slug = "fleet-owns-work-orders"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -12,19 +12,19 @@ level = "project"
 check = "none"
 
 [title]
-en = "fleet claims and releases a worker's work order"
-zh = "worker 的工单由 fleet 领取和释放"
+en = "Agent Fleet claims and releases a worker's work order"
+zh = "worker 的工单由 Agent Fleet 领取和释放"
 
 [text.statement]
-en = "As a worker that fleet started, never claim or release your own work order yourself."
-zh = "作为 fleet 起的 worker，不自己领取或释放自己的工单。"
+en = "As a worker that Agent Fleet started, never claim or release your own work order yourself."
+zh = "作为 Agent Fleet 起的 worker，不自己领取或释放自己的工单。"
 
 [text.reason]
 en = '''
-When fleet starts a worker, it creates and claims the work order for it, and `fleet done` writes the report, releases the work order and tells the lead in one step; a worker that claims or releases the work order itself puts fleet's records out of step, and who answers for the work order is no longer clear ({@constitution:accountable-agent}).
+When Agent Fleet starts a worker, it creates and claims the work order for it, and `fleet done` writes the report, releases the work order and tells the lead in one step; a worker that claims or releases the work order itself puts Agent Fleet's records out of step, and who answers for the work order is no longer clear ({@constitution:accountable-agent}).
 '''
 zh = '''
-fleet 起 worker 时替它建好、领好工单，`fleet done` 一次做完写 report、释放工单、通知 lead 三件事；worker 自己领取或释放，会和 fleet 的记录对不上，工单该由谁负责也就说不清了 ({@constitution:accountable-agent})。
+Agent Fleet 起 worker 时替它建好、领好工单，`fleet done` 一次做完写 report、释放工单、通知 lead 三件事；worker 自己领取或释放，会和 Agent Fleet 的记录对不上，工单该由谁负责也就说不清了 ({@constitution:accountable-agent})。
 '''
 
 [text.verification]
@@ -40,4 +40,4 @@ worker 对自己的工单运行了这样的命令的，即为违反本规定。
 '''
 
 [translations]
-zh = "49f12abf419c40478b7986cad242aa446050a564e7c07608700741cc2a759ac1"
+zh = "1e79f1b824e3fb7e261cda67d03081ce90f3f22d17a720f8a00eaec4e32ba90e"

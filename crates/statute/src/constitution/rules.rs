@@ -3,7 +3,8 @@
 //! each `{@constitution:...}` citation and each `authority` entry names a
 //! provision that is not repealed, with a warning on an `authority` that
 //! names a provision and one above it; and against a base commit, every
-//! node of the base still exists and stays repealed or superseded.
+//! node of the base still exists and stays repealed or superseded, and
+//! one changed beyond its translations has a higher revision.
 //!
 //! `statute validate <dir>` runs these when `constitution/` is beside
 //! `<dir>`. Each finding names its file and line, `rules/7.toml:12`, with
@@ -194,7 +195,8 @@ impl<'a> Rules<'a> {
     /// The rules part of check 7, when the numbering is compared: every
     /// node of the base still exists, a rule of the older format, named
     /// by a word, as the node whose slug is that word; what was repealed
-    /// or superseded still is. The note when it is skipped.
+    /// or superseded still is; a node whose hash without its translations
+    /// moved has a revision above the base's. The note when it is skipped.
     fn check_base(
         &self,
         root: &Path,
@@ -258,6 +260,23 @@ impl<'a> Rules<'a> {
                             ),
                         );
                     }
+                }
+                // A base node that no longer reads as a node, of an older
+                // format, is not compared.
+                if let Some(was) = node::parse(&shown, text.as_bytes(), &mut Diagnostics::default())
+                    && was.original_sha256 != now.original_sha256
+                    && now.revision <= was.revision
+                {
+                    diags.error(
+                        self.at(now.id, &["revision ="]),
+                        format!(
+                            "{} {} changed beyond its translations since base {reference}, where its revision was {}; raise its revision to {}",
+                            now.kind.name(),
+                            now.id,
+                            was.revision,
+                            was.revision + 1
+                        ),
+                    );
                 }
                 continue;
             }

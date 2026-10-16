@@ -1,0 +1,43 @@
+id = 299
+slug = "vault-per-use"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 137
+default = "on"
+authority = ["sensitive-info"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Keep in each vault only the credentials of one service or use"
+zh = "每个 vault 只放一个服务或用途的凭证"
+
+[text.statement]
+en = "Divide the credentials in the secret manager among its vaults by the service or use they serve, and keep in each vault only the credentials of its one service or use."
+zh = "密钥管理器里的凭证按所服务的服务或用途分进不同的 vault，每个 vault 只放它那一个服务或用途的凭证。"
+
+[text.reason]
+en = '''
+Access is granted a vault at a time. When a vault holds only what one use needs, whoever is granted it for that use gets nothing else, and a leak through it reaches only that use.
+'''
+zh = '''
+访问权限是按 vault 授予的。一个 vault 只放一种用途要用的东西，为这个用途拿到它的一方就拿不到别的，经它发生的泄露也只波及这一种用途。
+'''
+
+[text.verification]
+en = '''
+A vault is a part of the secret manager that access is granted on as a whole; some secret managers call it a vault, others a folder or a project. A use is a service, or a kind of work such as agents on development machines reading the credentials people put there for them, or programs storing the credentials they generate. Which uses there are and which vault serves each is set in the jurisdiction.
+
+Violated when a vault holds a credential of a service or use other than the one it is kept for.
+'''
+zh = '''
+vault，指密钥管理器里按整体授予访问权限的部分；有的密钥管理器叫 vault，有的叫文件夹或项目。用途，指一个服务，或者一类工作，例如开发机上的 agent 读人放进去给它们用的凭证，或者程序存放自己生成的凭据。有哪些用途、各由哪个 vault 服务，由法域规定。
+
+某个 vault 里放了它所服务的服务或用途以外的凭证的，即为违反本规定。
+'''
+
+[translations]
+zh = "fe4bb1a8bf649d6d8b79ed705a1975039c2e9ae3f112fd5c6a272b484a9ad643"

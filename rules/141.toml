@@ -1,8 +1,9 @@
 id = 141
 slug = "service-tier-read-by-own-service-account"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [299, 300, 302]
 lang = "en"
 parent = 137
 default = "on"
