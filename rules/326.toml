@@ -1,0 +1,23 @@
+id = 326
+slug = "github"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 273
+default = "off"
+
+[title]
+en = "GitHub"
+zh = "GitHub"
+
+[applicability]
+en = '''
+Covers what holds only where agents work on GitHub; for now, which identity an act goes through where agents have an account of their own there, apart from the account of the person who owns the repositories, and when the owner's is used. Enable it where agents work on GitHub; where the repositories are hosted elsewhere, it is not needed.
+'''
+zh = '''
+管只在 agent 在 GitHub 上工作时才成立的做法；目前是 agent 在 GitHub 上有自己的账号 (与仓库所有者本人的账号分开) 时，一个操作用哪个身份做，什么时候用所有者的身份。agent 在 GitHub 上工作的地方启用；仓库不托管在 GitHub 上的，不必启用。
+'''
+
+[translations]
+zh = "d1a67edd04352cd564ca2ba4b7c4bd8eb26f648add67b31b9a8799e23efcd72b"
