@@ -403,7 +403,8 @@ pub fn resolve(
                 Some(_)
                     if field == "domains"
                         && sw.on_by_default(key)
-                        && !manifest.reopened.contains(key) =>
+                        && !manifest.reopened.contains(key)
+                        && !manifest.from_global.contains(key) =>
                 {
                     diags.warning(
                     file,
@@ -455,7 +456,10 @@ pub fn resolve(
                             label(sources, key)
                         ),
                     );
-                } else if sw.enables(key) && !manifest.reopened.contains(key) {
+                } else if sw.enables(key)
+                    && !manifest.reopened.contains(key)
+                    && !manifest.from_global.contains(key)
+                {
                     diags.warning(
                         file,
                         format!(

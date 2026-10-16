@@ -13,6 +13,7 @@ and [Rule sources](rule-sources.md).
 
 - [The statute directories](#the-statute-directories)
 - [The global configuration](#the-global-configuration)
+- [What the configuration turns on](#what-the-configuration-turns-on)
 - [Which source a name means](#which-source-a-name-means)
 - [Git sources](#git-sources)
 - [Adding a source](#adding-a-source)
@@ -88,15 +89,17 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 - `public` is required on every source but `R`, as in a rule set; there
   is no `scope`, since a source of the global configuration is global
   by definition ([Four kinds of source](rule-sources.md#four-kinds-of-source)).
-- The configuration names sources and enables no rule: each rule
-  set lists the rules and packs it uses, as before, so that the
-  committed rule set and lock file alone say what a repository's
-  compiled output holds. A source of the global configuration is
-  available to every rule set by its name, as if the rule set named it.
-  The configuration may also hold the person's own values of the
-  `personal` parameters, such as the language replies are written in,
-  which only the private output takes, never the committed files; a
-  value of a `repo` parameter there draws a warning and is ignored
+- The committed rule set and lock file alone say what a repository's
+  committed output holds: each rule set lists the rules and packs it
+  uses, as before, and nothing in the configuration reaches the
+  committed files. A source of the global configuration is available
+  to every rule set by its name, as if the rule set named it.
+- What concerns the person reaches only the private output: the
+  rules, packs and domains the configuration turns on
+  ([What the configuration turns on](#what-the-configuration-turns-on)),
+  and the person's own values of the `personal` parameters, such as
+  the language replies are written in; a value of a `repo` parameter
+  there draws a warning and is ignored
   ([Setting a value](rule-config.md#setting-a-value)).
 
 **The built-in default** is the one source statute knows by itself:
@@ -113,6 +116,71 @@ the committed files of a public repository never name it. Enabling a rule
 of a private source in a public `statute.toml` fails, naming two ways:
 enable it in the private layer, `statute add --private me:4`, or leave
 it out.
+
+## What the configuration turns on
+
+Top-level `rules`, `packs` and `domains`, above the first table, turn
+rules on for every repository of the person:
+
+```toml
+rules = ["R57", "me:4"]
+domains = ["R12"]
+
+[sources]
+me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
+```
+
+- An entry is written as in a rule set
+  ([Sources and references](rule-sets.md#sources-and-references)),
+  and names its source: an entry of a repository's own rules (`L12`,
+  `12`) fails, since those differ from one repository to the next.
+- In a public repository, the entries join the private layer
+  ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository))
+  as if its private rule set listed them after its own, whether or not
+  there is a `private.toml`. `statute compile` writes the private
+  output when the configuration turns anything on, and so does
+  `statute compile --private-only`. No lock file records the entries,
+  neither `statute.lock` nor `private.lock`: statute reads them each
+  time it compiles the private output, as it reads a person's own
+  values ([Setting a value](rule-config.md#setting-a-value)).
+- The configuration serves every repository, so an entry that does
+  not fit one is left out there, with no finding: one whose source the
+  rule set does not have, one whose node that source does not have at
+  the commit read, one that `statute.toml` or `private.toml` lists
+  already, and one that `private.toml` excludes. An entry that the
+  defaults enable already draws no warning.
+- The repository's own choices come before the person's: an entry
+  that `statute.toml` excludes is left out there, and so is one that
+  would make the private layer fail, such as a rule that requires one
+  `statute.toml` excludes, a rule that overrides one of the public
+  layer, a rule that cites a provision the repository's constitution
+  lacks or has repealed, or an entry of the wrong kind, such as a rule
+  in `domains`.
+  `statute compile` names each such entry and the reason in a note.
+  statute tries the entries in the order written and keeps each one
+  that fits with those kept before it; when the private layer fails
+  without any entry of the configuration too, the failure is
+  `private.toml`'s own, and nothing is left out. So the configuration
+  never makes `lock` or `compile` fail in a repository. What
+  `statute.toml` excludes is matched by the entry itself: a rule
+  under a domain it excludes still turns on, as it would if
+  `statute.toml` listed it in `rules`.
+- A clone that should not have an entry excludes it in its
+  `private.toml`; the configuration has no `exclude`, since what the
+  person wants nowhere is left out of its lists.
+- With no `private.toml`, the layer has no `private.lock` either: a
+  private source of the configuration is read at the newest commit of
+  its branch or tag, fetched as for a source no lock file records, and
+  `compile --private-only`, which fetches nothing, reads the commit
+  that statute's cache holds for it.
+- A private repository (`public = false`) has no private output, so
+  the entries are not used there, and `statute compile` says so in a
+  note.
+- `statute explain` says of a rule the configuration turns on that its
+  entry is listed in `rules`, `packs` or `domains` of the global
+  configuration. `statute add` and
+  `statute remove` do not write to the configuration; the person edits
+  it.
 
 ## Which source a name means
 

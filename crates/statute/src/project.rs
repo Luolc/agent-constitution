@@ -10,7 +10,7 @@ use serde::Deserialize;
 use crate::cite::Labels;
 use crate::constitution::rules::Provisions;
 use crate::diag::Diagnostics;
-use crate::manifest::{self, Key, LOCAL, Layers, Manifest, SourceSpec};
+use crate::manifest::{self, Declared, Key, LOCAL, Layers, Manifest, SourceSpec};
 use crate::node::Status;
 use crate::param::Setting;
 use crate::private;
@@ -108,7 +108,8 @@ impl Project {
                 return (None, diags);
             }
         };
-        let (project, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
+        let (project, mut diags) =
+            Project::from_manifest(root, manifest, diags, env, &locked, None);
         // Where there is a private rule set, the private layer may enable
         // the rule, and its own pass tells.
         if let Some(project) = &project
@@ -128,7 +129,9 @@ impl Project {
 
     /// The private layer of the public `project`, read from the private
     /// rule set in `dir` ([`private::dir`]), with the public rule set:
-    /// `None` and no finding when there is no such file. It fails when a
+    /// `None` and no finding when there is no such file and the global
+    /// configuration turns nothing on, else a layer of its entries
+    /// alone. It fails when a
     /// rule that only it enables overrides one that the public rule set
     /// enables (`docs/design/rule-sources.md`, Overrides). Its findings
     /// leave out those of `given`, the public rule set's.
@@ -142,6 +145,15 @@ impl Project {
         let path = dir.join(private::MANIFEST);
         match std::fs::read_to_string(&path) {
             Ok(text) => Project::with_private(project, given, &text, env, dir),
+            // What the global configuration turns on makes a private
+            // layer of its own.
+            Err(e)
+                if e.kind() == std::io::ErrorKind::NotFound
+                    && project.manifest.public
+                    && !project.manifest.global_enables.is_empty() =>
+            {
+                Project::with_private(project, given, "", env, dir)
+            }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => (None, diags),
             Err(e) => {
                 diags.error(path.display().to_string(), format!("cannot read: {e}"));
@@ -193,7 +205,14 @@ impl Project {
             .filter(|k| !project.manifest.exclude.contains(k))
             .cloned()
             .collect();
-        let (combined, mut diags) = Project::from_manifest(root, manifest, diags, env, &locked);
+        let (combined, mut diags) = Project::from_manifest(
+            root,
+            manifest,
+            diags,
+            env,
+            &locked,
+            Some(&project.resolution),
+        );
         diags.0.retain(|d| !given.0.contains(d));
         // A finding about an entry of `rules`, `packs`, `domains` or
         // `exclude`, or about a node that what the private rule set
@@ -267,13 +286,15 @@ impl Project {
     }
 
     /// The project of a rule set read already, its findings added to
-    /// `diags`.
+    /// `diags`; `public`, the public layer's resolution, for a private
+    /// layer.
     fn from_manifest(
         root: &Path,
         mut manifest: Manifest,
         mut diags: Diagnostics,
         env: &Env,
         locked: &[SourceSpec],
+        public: Option<&Resolution>,
     ) -> (Option<Project>, Diagnostics) {
         for spec in &mut manifest.sources {
             if let Err(e) = pick_commit(spec, locked, env) {
@@ -309,6 +330,22 @@ impl Project {
         }
         let sources = Sources::new(list);
         sources.check(&mut diags);
+        // The global configuration serves every repository, whose sources
+        // may lack a node it names.
+        let absent: Vec<Key> = manifest
+            .from_global
+            .iter()
+            .filter(|k| sources.get(k).is_none())
+            .cloned()
+            .collect();
+        for list in [
+            &mut manifest.rules,
+            &mut manifest.packs,
+            &mut manifest.domains,
+            &mut manifest.from_global,
+        ] {
+            list.retain(|k| !absent.contains(k));
+        }
 
         let spec = manifest.constitution_spec();
         let source_root = root.join(&spec.path);
@@ -352,16 +389,24 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
+        let edition_dir = source_root.join("constitution").join(&manifest.edition);
+        let lang = manifest.lang.clone();
+        let cite = |resolution: &Resolution, diags: &mut Diagnostics| {
+            check_citations(
+                &edition_dir,
+                &index_name,
+                &lang,
+                &sources,
+                resolution,
+                diags,
+            );
+        };
+        if let Some(public) = public {
+            fit_global(&sources, &mut manifest, number, public, &cite);
+        }
         let resolution = resolve::resolve(&sources, &manifest, number, &mut diags);
         let values = crate::param::settle(&sources, &manifest, &resolution, &mut diags);
-        check_citations(
-            &source_root.join("constitution").join(&manifest.edition),
-            &index_name,
-            &manifest.lang,
-            &sources,
-            &resolution,
-            &mut diags,
-        );
+        cite(&resolution, &mut diags);
         if diags.has_errors() {
             return (None, diags);
         }
@@ -375,6 +420,83 @@ impl Project {
         };
         (Some(project), diags)
     }
+}
+
+/// What checks a resolution's citations of the constitution.
+type Cite<'a> = dyn Fn(&Resolution, &mut Diagnostics) + 'a;
+
+/// Why the private layer `manifest` fails to load over `public`, the
+/// public layer's resolution: its first error in resolving or in what
+/// `cite` checks, or a rule it enables that overrides a rule of the
+/// public layer; `None` when it loads.
+fn fails(
+    sources: &Sources,
+    manifest: &Manifest,
+    number: u64,
+    public: &Resolution,
+    cite: &Cite,
+) -> Option<String> {
+    let mut diags = Diagnostics::default();
+    let res = resolve::resolve(sources, manifest, number, &mut diags);
+    cite(&res, &mut diags);
+    if let Some(e) = diags.errors().next() {
+        return Some(e.message.clone());
+    }
+    res.overridden
+        .iter()
+        .find(|(target, by)| {
+            public.enabled.contains_key(*target) && !public.enabled.contains_key(*by)
+        })
+        .map(|(target, by)| format!("{by} would override {target}, a rule of the public layer"))
+}
+
+/// Leaves out of the private layer `manifest` each entry of the global
+/// configuration that makes it fail, in order, with a note: the
+/// repository's own choices, such as what `statute.toml` excludes, come
+/// before the person's. Nothing is left out when the layer fails without
+/// those entries too, for that failure is the private rule set's own.
+fn fit_global(
+    sources: &Sources,
+    manifest: &mut Manifest,
+    number: u64,
+    public: &Resolution,
+    cite: &Cite,
+) {
+    if manifest.from_global.is_empty() || fails(sources, manifest, number, public, cite).is_none() {
+        return;
+    }
+    let given = manifest.from_global.clone();
+    let without = |m: &Manifest, drop: &[Key]| {
+        let mut m = m.clone();
+        for list in [&mut m.rules, &mut m.packs, &mut m.domains] {
+            list.retain(|k| !drop.contains(k));
+        }
+        m
+    };
+    let full = manifest.clone();
+    if fails(sources, &without(&full, &given), number, public, cite).is_some() {
+        return;
+    }
+    let mut kept: Vec<Key> = Vec::new();
+    for key in &given {
+        let rest: Vec<Key> = given
+            .iter()
+            .filter(|k| *k != key && !kept.contains(k))
+            .cloned()
+            .collect();
+        match fails(sources, &without(&full, &rest), number, public, cite) {
+            None => kept.push(key.clone()),
+            Some(why) => manifest.left_out.push(format!(
+                "the global configuration's `{key}` is left out here: {why}"
+            )),
+        }
+    }
+    let dropped: Vec<Key> = given.into_iter().filter(|k| !kept.contains(k)).collect();
+    let left = without(manifest, &dropped);
+    manifest.rules = left.rules;
+    manifest.packs = left.packs;
+    manifest.domains = left.domains;
+    manifest.from_global = kept;
 }
 
 /// Checks what the repository's own nodes, all but the repealed, and the
@@ -495,6 +617,7 @@ fn pick_commit(spec: &mut SourceSpec, locked: &[SourceSpec], env: &Env) -> Resul
     if env.offline {
         return match commit {
             Some(commit) => crate::global::cached(spec, &commit),
+            None if spec.declared == Declared::Global => crate::global::cached_newest(spec),
             None => Err(format!(
                 "source `{}`: the lock file records no commit of it, and nothing is fetched; run `statute lock`",
                 spec.name
