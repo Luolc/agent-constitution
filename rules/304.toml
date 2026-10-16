@@ -34,7 +34,7 @@ A local device is a machine that a person uses directly; every other machine, on
 Violated when an agent on a local device, other than an unattended task there, reads the secret manager through a service account's token or by any other route that no person unlocks.
 '''
 zh = '''
-本地设备，指人直接操作的机器；其他机器，也就是人只经网络操作的机器，都是远程机器。例如，人经网络连上去工作的开发机是远程机器。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成，用指纹或 security key 解锁。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务 (定义见 {@rule:305}) 怎么读取，见 {@rule:305} 和 {@rule:306}。
+本地设备，指人直接使用的机器；其他机器，也就是人只经网络使用的机器，都是远程机器。例如，人经网络连上去工作的开发机是远程机器。人解锁的途径，指每次读取都要等人解锁的途径，例如密钥管理器应用的桌面集成，用指纹或 security key 解锁。哪些机器是本地设备、各用哪条途径，由法域规定。本地设备上无人值守的任务 (定义见 {@rule:305}) 怎么读取，见 {@rule:305} 和 {@rule:306}。
 
 本地设备上无人值守的任务以外的 agent 经 service account 的 token，或者经别的不需要人解锁的途径读取密钥管理器的，即为违反本规定。
 '''
