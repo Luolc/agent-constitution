@@ -21,10 +21,10 @@ zh = "凭 FedNet 问题卡片转告的同意行事之前，自己运行 `fednet 
 
 [text.reason]
 en = '''
-{@rule:320} asks the acting agent to open the original record itself, through access of its own, and check who made it, what it says and that it still stands ({@constitution:explicit-yes.verification}); how it is verified is set by the rules ({@constitution:explicit-yes.rules}). Where agents reach Slack through FedNet, this command is that access for a card: the FedNet hub writes a card's `answer` only when it handles a press it received from Slack over the connection it opens to Slack itself, with a token no client holds, and no request a client sends can change it. The question and its options are the ones the hub posted to Slack, so they are what the principal saw when they chose.
+{@rule:320} asks the acting agent to open the original record itself, through access of its own, and check who made it, what it says and that it still stands ({@constitution:explicit-yes.verification}); how it is verified is set by the rules ({@constitution:explicit-yes.rules}). Where agents reach Slack through FedNet, this command is that access for a card: the FedNet hub writes a card's `answer` only when it handles a press it received from Slack over the connection it opens to Slack itself, with a token no client holds, and no request a client sends can change it. The question and its options are the ones the hub posted to Slack, so they are what the principal saw when they chose, and the hub never changes a card's question or options after it is posted.
 '''
 zh = '''
-{@rule:320} 要求执行的 agent 用自己的访问途径亲自打开原始记录，核对记录是谁留下的、说了什么，以及同意是否仍然有效 ({@constitution:explicit-yes.verification})；怎样核实由规定确定 ({@constitution:explicit-yes.rules})。在 agent 经 FedNet 接入 Slack 的环境里，对卡片来说，这条命令就是这一访问途径：FedNet hub 只在处理它从 Slack 收到的点击时写入卡片的 `answer`，这些点击经 hub 自己开到 Slack 的连接送来，用的 token 不在任何 client 手里；client 发来的任何请求都改不了它。问题和选项就是 hub 发到 Slack 的那些，所以就是委托人作选择时看到的内容。
+{@rule:320} 要求执行的 agent 用自己的访问途径亲自打开原始记录，核对记录是谁留下的、说了什么，以及同意是否仍然有效 ({@constitution:explicit-yes.verification})；怎样核实由规定确定 ({@constitution:explicit-yes.rules})。在 agent 经 FedNet 接入 Slack 的环境里，对卡片来说，这条命令就是这一访问途径：FedNet hub 只在处理它从 Slack 收到的点击时写入卡片的 `answer`，这些点击经 hub 自己开到 Slack 的连接送来，用的 token 不在任何 client 手里；client 发来的任何请求都改不了它。问题和选项就是 hub 发到 Slack 的那些，所以就是委托人作选择时看到的内容；卡片发出之后，hub 不再改动它的问题和选项。
 '''
 
 [text.verification]
@@ -52,4 +52,4 @@ agent 凭 FedNet 卡片转告的同意行事，而没有亲自用这条命令读
 '''
 
 [translations]
-zh = "163d7ea1d7274de70854c5e24b61652f64511b3e0cbb0824a94d6d90387cff4c"
+zh = "926a236b73346bf2418554a62bfce59eb8525d89cd58b3cfacc7ded2d6c35b79"

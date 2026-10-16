@@ -29,14 +29,14 @@ zh = '''
 
 [text.verification]
 en = '''
-The reference is copied as it is from the output of the command that read the record: for a message, the thread key and the `ts`; for a card, its ID, the one `fednet client read-answer` takes. A summary or a quotation of the record is not a reference, and neither is who answered a card or when, which the relaying agent may send beside the ID. The relaying agent sends the reference even when it expects the receiving agent to find the record itself, since the receiving agent may have no way to look it up: a lead or a worker that Agent Fleet starts, for one, cannot look up the key of the thread its task came from.
+The reference is copied as it is from FedNet's output: for a message, the thread key and the `ts`, from the output of the command that read the message; for a card, its ID as FedNet printed it, the one `fednet client read-answer` takes. A summary or a quotation of the record is not a reference, and neither is who answered a card or when, which the relaying agent may send beside the ID. The relaying agent sends the reference even when it expects the receiving agent to find the record itself, since the receiving agent may have no way to look it up: a lead or a worker that Agent Fleet starts, for one, cannot look up the key of the thread its task came from.
 
 An answer to a card that an agent keeps or reports elsewhere, such as in Agent Fleet's ledger or in a message that passes the answer on, is not the principal's yes: agents can write those. Only the record that FedNet reads back counts.
 
 Violated when an agent relays as the principal's yes anything other than what the principal said in a Slack message or answered on a FedNet question card, or relays a message's yes without the thread key or the `ts`, or a card's yes without the card's ID.
 '''
 zh = '''
-引用从读到那份记录的命令输出里原样取：消息是 thread key 与 `ts`；卡片是它的 ID，即 `fednet client read-answer` 接受的那个。对记录的概述或者摘引不构成引用；卡片是谁回答的、什么时候回答的，转告方可以与 ID 一起带上，但它们也不构成引用。即使转告方以为接收的 agent 自己找得到记录，也照样带上引用，因为接收的 agent 可能无从查找：比如 Agent Fleet 起的 lead 或 worker，自己就查不到它的任务来自哪个线程的 key。
+引用从 FedNet 的输出里原样取：消息是 thread key 与 `ts`，取自读到那条消息的命令输出；卡片是 FedNet 打出的卡片 ID，即 `fednet client read-answer` 接受的那个。对记录的概述或者摘引不构成引用；卡片是谁回答的、什么时候回答的，转告方可以与 ID 一起带上，但它们也不构成引用。即使转告方以为接收的 agent 自己找得到记录，也照样带上引用，因为接收的 agent 可能无从查找：比如 Agent Fleet 起的 lead 或 worker，自己就查不到它的任务来自哪个线程的 key。
 
 agent 在别处保存或者转述的卡片回答，比如 Agent Fleet 账本里的回答，或者转述回答的消息，都不是委托人的同意：这些 agent 都写得进去。只有 FedNet 读回的记录才算。
 
@@ -44,4 +44,4 @@ agent 把委托人在 Slack 消息里说的话、在 FedNet 问题卡片上的�
 '''
 
 [translations]
-zh = "d5acc5d7ad8acf5e682e789d31b9e84a20127964c031a4613596ff7ebce5d461"
+zh = "5d3e0bd2e93a33c58a5097db0f646aead5031eaa0474fb7ed55d458f4f872a46"
