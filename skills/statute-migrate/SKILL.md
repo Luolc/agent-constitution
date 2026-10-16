@@ -409,16 +409,16 @@ reads the version from the lock file with
 `statute-checks.toml`.
 
 The lock file is still an instruction file in your repository (rule
-R280 counts it as one), so the upgrade usually goes in three pull requests, each
-merged before the next starts:
+R280 counts it as one), so the upgrade usually goes in three pull
+requests, each merged before the next starts:
 
 1. CI reads the version from `statute.lock` and, when that line is not
    there yet, falls back to `statute-checks.toml`. Nothing else
    changes, and CI stays green on the old lock file.
-2. With the new statute, `statute upgrade` (or `statute lock` and
-   `statute compile`) rewrites the lock file and the compiled files,
-   and the stale `statute-checks.toml` is deleted. This is the
-   instruction change.
+2. With the new statute, `statute upgrade` (or `statute lock`) rewrites
+   the lock file, then `statute compile` rewrites the compiled files and
+   deletes the stale `statute-checks.toml`. This is the instruction
+   change.
 3. The fallback to `statute-checks.toml` leaves CI.
 
 Acceptance, per pull request:
