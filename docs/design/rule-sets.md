@@ -236,9 +236,10 @@ user-level files, and each repository pins its own versions and upgrades
 on its own schedule. The first version builds the repository level only
 ([The command and the first version](statute-command.md#the-command-and-the-first-version)).
 The cache of the sources and a global configuration that names
-sources for every repository are designed in
-[Global configuration and git sources](global-configuration.md); the
-personal layer of rules is not.
+sources for every repository and turns rules on in the private output
+of each are designed in
+[Global configuration and git sources](global-configuration.md); a
+rule's default level is not.
 
 ## Sources and references
 

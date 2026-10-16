@@ -343,6 +343,28 @@ pub fn cached(spec: &mut SourceSpec, locked: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// As `cached`, for a git source no lock file records, as one of the
+/// global configuration's private sources is where there is no private
+/// lock file: at the commit that what it follows names in the clone
+/// statute reads, without the network.
+pub fn cached_newest(spec: &mut SourceSpec) -> Result<(), String> {
+    let Some(git) = &spec.git else {
+        return Ok(());
+    };
+    let err = |e: String| format!("source `{}` ({}): {e}", spec.name, git.address);
+    let dir = cache_dir().ok_or_else(|| err("the system reports no home directory".to_owned()))?;
+    let (repo, own) = match &git.clone {
+        Some(clone) => (expand(clone), false),
+        None => (clone_dir(&dir, &git.address), true),
+    };
+    let commit = head(&repo, &git.follow, own).map_err(|e| {
+        err(format!(
+            "no lock file records a commit of it, and nothing is fetched: {e}"
+        ))
+    })?;
+    cached(spec, &commit)
+}
+
 /// The branch the remote's `HEAD` names in the bare clone of `address`,
 /// cloned when missing.
 pub fn default_branch(address: &str) -> Result<String, String> {

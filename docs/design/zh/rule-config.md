@@ -1,7 +1,7 @@
-<!-- en-sha256: 68a980b04942c005a965ba0e1b7bd5ae9aab36bcc003841badbfdbf40cc4b862 -->
+<!-- en-sha256: 17e0b2231ae13ae2077d2d959eadde71e90e237e124a2024a001548eb2323de9 -->
 # 规定配置
 
-状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，不启用任何规定。
+状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
 
 三样东西的目的相同：采用 statute 的仓库拿到的是一小套最通用、放在哪里都不太会出错的规定，其余的按需开启；只关乎某个人或某种环境的东西，是仓库设定的一个值或开启的一条规定，而不是要它去掉的一条规定。
 
@@ -170,7 +170,7 @@ value = "zh"
 
 **编译出的 `AGENTS.md`** 用取值替换占位符，不加任何标记：语言写成它在文件所用语言里的名称 (`Chinese`、`中文`)，字符串照写。规定的要求读起来就像取值本来就写在规定里。
 
-**私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。在公开仓库里，某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，`statute compile --private-only` 这时同样会写。私有仓库 (`public = false`) 没有私有输出，所以那里个人的取值不起作用，`statute compile` 用一条 note 说明这一点，并指出是哪个参数。
+**私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。在公开仓库里，某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，全局配置开启了规定时也一样 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))，`statute compile --private-only` 这时同样会写。私有仓库 (`public = false`) 没有私有输出，所以那里个人的取值不起作用，`statute compile` 用一条 note 说明这一点，并指出是哪个参数。
 
 **`statute explain <name>`** 说明取值、它从哪里来 (`statute.toml`、默认值；`personal` 参数还可能来自私有规定清单或全局配置，两个取值不同时都列出)，以及哪些启用的规定在用它。
 
@@ -247,7 +247,7 @@ packs = ["R96"]
 
   `statute add --private` 写进 `private.toml` 的 `rules` 或 `domains`，先把这一项从它的 `exclude` 里去掉；`statute remove --private` 从它的列表里去掉一项，默认值或 `statute.toml` 仍然开启这条规定或这个领域时，把它写进它的 `exclude`。
 
-  这个文件属于一个 clone，所以一个人要在几个仓库里开启同样的领域，就在每个仓库的 `private.toml` 里各列一遍；全局配置不开启任何规定，一处为这个人的所有仓库开启规定的地方属于[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 里「放在哪里」一段说的个人层，还没有设计。`private.toml` 能否选与 `statute.toml` 不同的 one-of 选项，是[待决问题](rule-system.md#open-questions) 之一。
+  这个文件属于一个 clone，所以一个人要在所有仓库里开启同样的领域，就改在全局配置里列一遍 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))。`private.toml` 能否选与 `statute.toml` 不同的 one-of 选项，是[待决问题](rule-system.md#open-questions) 之一。
 
 **取谁的默认值。** 规定清单取第一方规定源 `R` 的默认值，不论 `R` 从哪里来；也取它自己的 `[sources]` 写了的每个规定源的默认值，即 `statute.toml` 里写的，私有层则是 `private.toml` 里写的，后者的默认值只对私有层算数。仓库自己的规定 `L` 也算这样的规定源：它们的 `default` 与第一方规定的一样算数。只有全局配置登记的规定源不带进任何默认规定；要用它的规定就逐条列出，或者在规定清单里写上这个规定源，取它的默认值。否则，往全局配置里加一个规定源，就会在每个仓库里开启规定，而这些仓库的规定清单里没有任何一处写明。规定源条目写 `defaults = false`，就不取这个规定源的任何默认值：
 
@@ -256,7 +256,7 @@ packs = ["R96"]
 team = { git = "https://example.test/our-team/rules.git", branch = "main", public = true, defaults = false }
 ```
 
-`defaults` 只是规定清单里规定源条目的键：写在全局配置里会报错，因为全局配置不启用任何规定。
+`defaults` 只是规定清单里规定源条目的键：写在全局配置里会报错，因为全局配置登记的规定源不带默认。
 
 `statute init` 不写 `rules`、`domains` 或 `exclude`：新的规定清单就是第一方的默认值。
 
