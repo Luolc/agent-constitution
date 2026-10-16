@@ -21,9 +21,10 @@ private rule set, with `statute add --private <rule>`, both during the
 migration and whenever one is enabled after it. Never copy it into the
 local rules directory as a rule of the repository's own: the copy
 publishes what the private rule keeps private and drifts from its
-source. No pull request carries a change to the private rule set;
-before you run the command, have the change reviewed, and approved
-where a rule it enables needs that, as
+source. No pull request carries a change to the private rule set, by
+`statute add --private` or `statute remove --private`; before you run
+either, have the change reviewed, and approved by a principal where it
+enables a rule that needs that or turns off a rule that is a guard, as
 [Enabling a private rule](https://github.com/Luolc/agent-constitution/blob/main/docs/design/rule-sources.md#enabling-a-private-rule)
 says.
 
