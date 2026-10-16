@@ -1,6 +1,6 @@
 id = 259
 slug = "public-repo-no-private-details-or-scopes"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -40,7 +40,7 @@ Not to be written there:
 - the names of the scopes that the tool starting agents runs them in, such as a scope of fleet;
 - an agent's usage and quota readings, and the model and effort it ran with.
 
-May be written: role names (author, reviewer, lead); the names of public projects and tools; the public identity of the repository's owner (account, name, commit author) and the public addresses the project itself publishes, such as its repository URL and its site; and made-up values such as `example.test` domains and the documentation address ranges. A credential is kept out by {@rule:44}, personal information by {@constitution:personal-info}.
+May be written: role names (author, reviewer, lead); the names of public projects and tools; the public identity of the repository's owner (account, name, commit author) and the public addresses the project itself publishes, such as its repository URL and its site; and made-up values such as `example.test` domains and the documentation address ranges. A credential is kept out by {@rule:291}, personal information by {@constitution:personal-info}.
 
 A principal's yes under {@rule:34} does not lift this rule. What a principal has made public, for example a repository whose host now shows it as public, is no longer private.
 
@@ -59,7 +59,7 @@ zh = '''
 - 起 agent 的工具运行 agent 所在的 scope 的名字，例如 fleet 的 scope；
 - agent 的用量和额度读数，以及它运行时用的型号和 effort。
 
-可以写的：角色名 (作者、审查方、lead)；公开项目和工具的名字；仓库所有者公开的身份 (账号、名字、commit 作者)，以及项目自己公开的地址，例如它的仓库 URL 和网站；虚构的值，例如 `example.test` 域名和文档专用的地址段。凭证由 {@rule:44} 管，个人信息由 {@constitution:personal-info} 管。
+可以写的：角色名 (作者、审查方、lead)；公开项目和工具的名字；仓库所有者公开的身份 (账号、名字、commit 作者)，以及项目自己公开的地址，例如它的仓库 URL 和网站；虚构的值，例如 `example.test` 域名和文档专用的地址段。凭证由 {@rule:291} 管，个人信息由 {@constitution:personal-info} 管。
 
 委托人依照 {@rule:34} 给出的同意，不免除本规定。委托人已经公开的内容，例如托管服务上已显示为公开的仓库，不再属于私有。
 
@@ -69,4 +69,4 @@ zh = '''
 '''
 
 [translations]
-zh = "1f9e0a0bc9cc9c608951553ba8e7345d905918bfb94d3073f01f211762bc6a50"
+zh = "c3ef2ccfcfeec288d4e71b87ffbeee97eef05cab808e0da05b3dd3a930648364"

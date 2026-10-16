@@ -1,6 +1,6 @@
 id = 36
 slug = "no-credential-values"
-revision = 7
+revision = 8
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,14 +29,14 @@ zh = '''
 
 [text.verification]
 en = '''
-An agent asks no one for a credential's value, neither a person nor another agent, and the value does not enter its context, its messages, a log or any output. When work needs a credential, the program that uses it fetches it ({@rule:45}, {@rule:279}), or the agent asks a principal to put it in the designated place.
+An agent asks no one for a credential's value, neither a person nor another agent, and the value does not enter its context, its messages, a log or any output. When work needs a credential, the program that uses it fetches it ({@rule:291}, {@rule:294}), or the agent asks a principal to put it in the designated place.
 
 When unsure whether something is a credential, handle it as one.
 
 Violated when an agent asks for, reads or repeats a credential's value.
 '''
 zh = '''
-agent 不向任何人索取凭证的值，无论对方是人还是其他 agent；凭证的值也不进入它的上下文、消息、日志或任何输出。工作需要凭证时，由使用凭证的程序自己取用 ({@rule:45}、{@rule:279})，或者请委托人把凭证放到指定的地方。
+agent 不向任何人索取凭证的值，无论对方是人还是其他 agent；凭证的值也不进入它的上下文、消息、日志或任何输出。工作需要凭证时，由使用凭证的程序自己取用 ({@rule:291}、{@rule:294})，或者请委托人把凭证放到指定的地方。
 
 不确定某段内容是否属于凭证的，按凭证处理。
 
@@ -44,4 +44,4 @@ agent 索取、读取或复述凭证的值的，即为违反本规定。
 '''
 
 [translations]
-zh = "6c2d0e86125df1b15ae9296f657a235c20faf5ae1b4257df79e60fabec4dcac4"
+zh = "ab6842ae3e8a665202633d409fd33eeb7ed41d43bd2baab7f41013610ab5393b"
