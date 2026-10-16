@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A use must write to a vault when it stores there a credential it generates or renews, and has nowhere else designated for it.
+A use must write to a vault when it stores there a credential it generates or renews.
 
-Violated when a service account has write access to a vault that its use does not write to.
+Violated when a service account has write access to a vault that its use need not write to.
 '''
 zh = '''
-用途必须往某个 vault 写，指它要把自己生成或更新的凭据存进那里，而且没有别的地方专门留给它。
+用途必须往某个 vault 写，指它要把自己生成或更新的凭据存进那里。
 
-某个 service account 对它的用途并不往里写的 vault 有写权限的，即为违反本规定。
+某个 service account 对它的用途不必往里写的 vault 有写权限的，即为违反本规定。
 '''
 
 [translations]
-zh = "afed34d77a90bccc9db40652bbfd390538eb288de07ee05958616450240166d7"
+zh = "cb9c68f55a99f24634218c8e54abd2c35efb6debbe08d3b425cf4400b17a0bd5"
