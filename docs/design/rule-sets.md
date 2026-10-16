@@ -107,8 +107,9 @@ run = "<command>"
 tools = ["<tool>"]
 ```
 
-`statute` is the first key after the header comment, on a line of its own, so that CI reads the
-version of statute to install from the lock file with one line, such as
+`statute` is the first key after the header comment, on a line of its
+own, so that CI reads the version of statute to install from the lock
+file with one line, such as
 `sed -n 's/^statute = "\(.*\)"$/\1/p' statute.lock`; the built-in checks
 the rules use are in that binary. A `[[commands]]` table follows the
 rules for each enabled rule with `check = "command"`, ordered by ID, with
@@ -125,9 +126,12 @@ fails, naming both. A lock file written before statute 0.1.18 has neither
 entry, and fails too; `statute lock` and `statute upgrade` write both,
 `upgrade` showing the version it records or the version it moves from.
 
-So a repository moves to a new version of statute in one change, which
-runs `statute lock` and `statute compile` with it and commits the new
-lock file beside the CI step that installs it. This repository's own
+So a repository moves to a new version of statute by running
+`statute lock` and `statute compile` with it, and CI installs that
+version. Where the lock file is an instruction file kept apart from
+other files, as in most repositories, the CI step that reads the version
+goes in a change of its own, before or after the one that commits the
+new lock file. This repository's own
 checks run statute built from its source, so a change that raises the
 crate's version must rewrite the `statute` line of `statute.lock` in the same
 change: this repository's rule L31 counts a change to the lock file in
