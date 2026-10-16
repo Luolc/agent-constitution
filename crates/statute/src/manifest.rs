@@ -310,9 +310,29 @@ pub struct Layers {
     pub global: Vec<SourceSpec>,
     /// The parameter values of the global configuration, by name.
     pub values: BTreeMap<String, String>,
+    /// What the global configuration turns on.
+    pub enables: Enables,
     pub locked: Vec<SourceSpec>,
     /// Whether `R` is the built-in default when nothing names it.
     pub built_in: bool,
+}
+
+/// The references the global configuration lists in `rules`, `packs` and
+/// `domains`, as written: each rule set reads them against its own
+/// sources, for its private output alone
+/// (`docs/design/global-configuration.md`, What the configuration turns
+/// on).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Enables {
+    pub rules: Vec<String>,
+    pub packs: Vec<String>,
+    pub domains: Vec<String>,
+}
+
+impl Enables {
+    pub fn is_empty(&self) -> bool {
+        self.rules.is_empty() && self.packs.is_empty() && self.domains.is_empty()
+    }
 }
 
 /// `R` as statute knows it by itself.
@@ -371,6 +391,11 @@ pub struct Manifest {
     pub values: BTreeMap<String, String>,
     /// Those of the global configuration.
     pub global_values: BTreeMap<String, String>,
+    /// What the global configuration turns on.
+    pub global_enables: Enables,
+    /// The entries of `rules`, `packs` and `domains` that the global
+    /// configuration added to the private layer.
+    pub from_global: Vec<Key>,
     /// Those of the private rule set, in the private layer.
     pub private_values: BTreeMap<String, String>,
 }
@@ -509,9 +534,51 @@ fn misplaced(sources: &mut BTreeMap<String, toml::Value>, errors: &mut Vec<Strin
 #[derive(Deserialize)]
 struct RawConfig {
     #[serde(default)]
-    sources: BTreeMap<String, RawSource>,
+    rules: Vec<String>,
+    #[serde(default)]
+    packs: Vec<String>,
+    #[serde(default)]
+    domains: Vec<String>,
+    #[serde(default)]
+    sources: BTreeMap<String, toml::Value>,
     #[serde(flatten)]
     rest: BTreeMap<String, toml::Value>,
+}
+
+/// What the global configuration turns on, from its text; every problem
+/// found is returned. A reference names its source, since the rules of
+/// each repository's own differ.
+pub fn config_enables(text: &str) -> Result<Enables, Vec<String>> {
+    let raw: RawConfig =
+        toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
+    let mut errors = Vec::new();
+    for (field, list) in [
+        ("rules", &raw.rules),
+        ("packs", &raw.packs),
+        ("domains", &raw.domains),
+    ] {
+        let mut seen = Vec::new();
+        for entry in list {
+            match RuleRef::parse(entry) {
+                Err(e) => errors.push(format!("`{field}`: {e}")),
+                Ok(r) if r.origin == Origin::Local => errors.push(format!(
+                    "`{field}`: `{entry}` is a rule of a repository's own, which differ from one repository to the next; name a source, as in \"R42\" or \"team:7\""
+                )),
+                Ok(r) if seen.contains(&r) => {
+                    errors.push(format!("`{field}` lists `{entry}` twice"))
+                }
+                Ok(r) => seen.push(r),
+            }
+        }
+    }
+    if !errors.is_empty() {
+        return Err(errors);
+    }
+    Ok(Enables {
+        rules: raw.rules,
+        packs: raw.packs,
+        domains: raw.domains,
+    })
 }
 
 /// The parameter values of the global configuration, from its text, by
@@ -531,11 +598,24 @@ pub fn config_values(text: &str) -> Result<BTreeMap<String, String>, Vec<String>
 /// The sources of the global configuration, from its text; every problem
 /// found is returned.
 pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
-    let raw: RawConfig =
+    let mut raw: RawConfig =
         toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
     let mut errors = Vec::new();
+    misplaced(&mut raw.sources, &mut errors);
     values(raw.rest, &mut errors);
-    for (name, s) in &raw.sources {
+    let mut on = BTreeMap::new();
+    for (name, value) in raw.sources {
+        match value.try_into::<RawSource>() {
+            Ok(s) => {
+                on.insert(name, s);
+            }
+            Err(e) => errors.push(format!(
+                "[sources] `{name}`: {}",
+                e.to_string().trim_end().trim_end_matches('.')
+            )),
+        }
+    }
+    for (name, s) in &on {
         if s.scope.is_some() {
             errors.push(format!(
                 "[sources] `{name}`: a source of the global configuration is global; remove `scope`"
@@ -543,7 +623,7 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
         }
         if s.defaults.is_some() {
             errors.push(format!(
-                "[sources] `{name}`: the global configuration enables no rule, so its sources bring no defaults; remove `defaults`, and write `defaults = false` in a rule set's entry for the source instead"
+                "[sources] `{name}`: a source of the global configuration brings no defaults; remove `defaults`, and write `defaults = false` in a rule set's entry for the source instead"
             ));
         }
         if s.git.is_none() {
@@ -555,7 +635,7 @@ pub fn read_config(text: &str) -> Result<Vec<SourceSpec>, Vec<String>> {
     if !errors.is_empty() {
         return Err(errors);
     }
-    let mut sources = read_sources(&raw.sources, None, Declared::Global, &mut errors);
+    let mut sources = read_sources(&on, None, Declared::Global, &mut errors);
     if !errors.is_empty() {
         return Err(errors);
     }
@@ -953,6 +1033,8 @@ impl Manifest {
             lang,
             values,
             global_values: layers.values.clone(),
+            global_enables: layers.enables.clone(),
+            from_global: Vec::new(),
             private_values: BTreeMap::new(),
         })
     }
@@ -1064,6 +1146,37 @@ impl Manifest {
         if !errors.is_empty() {
             return Err(errors);
         }
+        // The global configuration's entries come last: one that names a
+        // source this repository lacks, that a layer lists already or
+        // that the private rule set excludes is left out.
+        let mut lists = [rules, packs, domains];
+        let mut from_global = Vec::new();
+        let enables = &self.global_enables;
+        for (i, entries) in [&enables.rules, &enables.packs, &enables.domains]
+            .into_iter()
+            .enumerate()
+        {
+            for entry in entries {
+                let Ok(key) =
+                    RuleRef::parse(entry).and_then(|r| key_in(&sources, &self.local_rules, &r))
+                else {
+                    continue;
+                };
+                let listed = self
+                    .rules
+                    .iter()
+                    .chain(&self.packs)
+                    .chain(&self.domains)
+                    .chain(lists.iter().flatten())
+                    .chain(&exclude)
+                    .any(|k| *k == key);
+                if !listed {
+                    lists[i].push(key.clone());
+                    from_global.push(key);
+                }
+            }
+        }
+        let [rules, packs, domains] = lists;
         // What the private layer turns off leaves the lists of
         // statute.toml, and what it turns on leaves its `exclude`.
         let reopened: Vec<Key> = self
@@ -1089,6 +1202,7 @@ impl Manifest {
             exclude: merge(&self.exclude, &reopened, exclude),
             reopened,
             private_values,
+            from_global,
             ..self.clone()
         })
     }
@@ -1510,6 +1624,11 @@ lang = "en"
         )
         .unwrap();
         assert!(m.spec("rules").is_none());
+        let errors = read_config("[sources]\nrules = [\"R2\"]\n").unwrap_err();
+        assert!(
+            errors[0].starts_with("[sources] `rules`: written after the `[sources]` header"),
+            "{errors:#?}"
+        );
         let base = Manifest::parse(&GOOD.replace("public = false", "public = true")).unwrap();
         let errors = base
             .with_private("[sources]\nteam = { path = \"/srv/team\" }\nexclude = [\"R7\"]\n")

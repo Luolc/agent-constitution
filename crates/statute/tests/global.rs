@@ -938,6 +938,92 @@ fn only_the_rule_sets_own_sources_bring_their_defaults() {
     w.configure("other = { path = \"other\", public = true, defaults = false }");
     fails(
         &w.run(&["lock"]),
-        "the global configuration enables no rule, so its sources bring no defaults",
+        "a source of the global configuration brings no defaults",
+    );
+}
+
+/// Sets the top-level keys `lines` of the global configuration, above
+/// its tables.
+fn configure_top(w: &World, lines: &str) {
+    let path = w.home.join(".config/statute/config.toml");
+    let text = std::fs::read_to_string(&path).unwrap();
+    std::fs::write(&path, format!("{lines}\n{text}")).unwrap();
+}
+
+/// What the global configuration turns on reaches the private output of
+/// a public repository alone, with no private rule set and no lock file;
+/// an entry the repository's sources lack is left out.
+#[test]
+fn the_global_configuration_turns_rules_on_for_the_private_output() {
+    let w = world("enables");
+    let (_, me) = source(&w.at, "me", &[domain(1), rule(4, 1, "")]);
+    w.configure(&format!(
+        "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
+    ));
+    configure_top(
+        &w,
+        "rules = [\"R2\", \"R9\", \"team:3\", \"me:4\"]\ndomains = [\"R1\"]\n",
+    );
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["lock"]));
+    assert!(!w.repo.join(PRIVATE_LOCK).exists());
+    let run = w.run(&["compile"]);
+    ok(&run);
+    assert!(!run.stderr.contains("warning"), "{}", run.stderr);
+    let public = read(&w.repo, "AGENTS.md");
+    assert!(!public.contains("Do the thing 2."), "{public}");
+    let full = read(&w.repo, ".statute/AGENTS.full.md");
+    assert!(full.contains("Do the thing 2."), "{full}");
+    assert!(full.contains("Do the thing 4."), "{full}");
+    assert!(!w.repo.join(PRIVATE_LOCK).exists());
+    let run = w.run(&["explain", "R2"]);
+    assert!(
+        run.stdout
+            .contains("- listed in `rules` of the global configuration\n"),
+        "{}",
+        run.stdout
+    );
+    // A new worktree's hook writes it too, from the cache.
+    std::fs::remove_file(w.repo.join(".statute/AGENTS.full.md")).unwrap();
+    ok(&w.run(&["compile", "--private-only"]));
+    assert!(read(&w.repo, ".statute/AGENTS.full.md").contains("Do the thing 4."));
+    // The private rule set excludes what it does not want here.
+    write(&w.repo, PRIVATE, "exclude = [\"me:4\"]\n");
+    ok(&w.run(&["lock"]));
+    ok(&w.run(&["compile"]));
+    let full = read(&w.repo, ".statute/AGENTS.full.md");
+    assert!(!full.contains("Do the thing 4."), "{full}");
+    assert!(full.contains("Do the thing 2."), "{full}");
+}
+
+#[test]
+fn a_private_repository_says_the_global_configuration_turns_on_nothing() {
+    let w = world("enables-private");
+    configure_top(&w, "rules = [\"R2\"]\n");
+    ok(&w.run(&["init", "--private"]));
+    ok(&w.run(&["lock"]));
+    let run = w.run(&["compile"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains("statute: note: the global configuration turns on rules, packs or domains, and this repository is private"),
+        "{}",
+        run.stderr
+    );
+    assert!(!read(&w.repo, "AGENTS.md").contains("Do the thing 2."));
+    assert!(!w.repo.join(".statute/AGENTS.full.md").exists());
+}
+
+#[test]
+fn the_global_configuration_names_the_source_of_each_entry() {
+    let w = world("enables-local");
+    configure_top(&w, "rules = [\"L3\"]\n");
+    fails(
+        &w.run(&["lock"]),
+        "`rules`: `L3` is a rule of a repository's own",
     );
 }

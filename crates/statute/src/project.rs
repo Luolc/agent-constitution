@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 use crate::diag::Diagnostics;
-use crate::manifest::{self, Key, LOCAL, Layers, Manifest, SourceSpec};
+use crate::manifest::{self, Declared, Key, LOCAL, Layers, Manifest, SourceSpec};
 use crate::param::Setting;
 use crate::private;
 use crate::resolve::{self, Resolution};
@@ -125,7 +125,9 @@ impl Project {
 
     /// The private layer of the public `project`, read from the private
     /// rule set in `dir` ([`private::dir`]), with the public rule set:
-    /// `None` and no finding when there is no such file. It fails when a
+    /// `None` and no finding when there is no such file and the global
+    /// configuration turns nothing on, else a layer of its entries
+    /// alone. It fails when a
     /// rule that only it enables overrides one that the public rule set
     /// enables (`docs/design/rule-sources.md`, Overrides). Its findings
     /// leave out those of `given`, the public rule set's.
@@ -139,6 +141,15 @@ impl Project {
         let path = dir.join(private::MANIFEST);
         match std::fs::read_to_string(&path) {
             Ok(text) => Project::with_private(project, given, &text, env, dir),
+            // What the global configuration turns on makes a private
+            // layer of its own.
+            Err(e)
+                if e.kind() == std::io::ErrorKind::NotFound
+                    && project.manifest.public
+                    && !project.manifest.global_enables.is_empty() =>
+            {
+                Project::with_private(project, given, "", env, dir)
+            }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => (None, diags),
             Err(e) => {
                 diags.error(path.display().to_string(), format!("cannot read: {e}"));
@@ -306,6 +317,22 @@ impl Project {
         }
         let sources = Sources::new(list);
         sources.check(&mut diags);
+        // The global configuration serves every repository, whose sources
+        // may lack a node it names.
+        let absent: Vec<Key> = manifest
+            .from_global
+            .iter()
+            .filter(|k| sources.get(k).is_none())
+            .cloned()
+            .collect();
+        for list in [
+            &mut manifest.rules,
+            &mut manifest.packs,
+            &mut manifest.domains,
+            &mut manifest.from_global,
+        ] {
+            list.retain(|k| !absent.contains(k));
+        }
 
         let spec = manifest.constitution_spec();
         let source_root = root.join(&spec.path);
@@ -445,6 +472,7 @@ fn pick_commit(spec: &mut SourceSpec, locked: &[SourceSpec], env: &Env) -> Resul
     if env.offline {
         return match commit {
             Some(commit) => crate::global::cached(spec, &commit),
+            None if spec.declared == Declared::Global => crate::global::cached_newest(spec),
             None => Err(format!(
                 "source `{}`: the lock file records no commit of it, and nothing is fetched; run `statute lock`",
                 spec.name

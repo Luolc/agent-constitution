@@ -307,12 +307,17 @@ fn read_env(mode: Mode) -> Result<Env, Vec<String>> {
     };
     let shown = statute::global::shown_config();
     match std::fs::read_to_string(&path) {
-        Ok(text) => match manifest::read_config(&text)
-            .and_then(|sources| Ok((sources, manifest::config_values(&text)?)))
-        {
-            Ok((sources, values)) => {
+        Ok(text) => match manifest::read_config(&text).and_then(|sources| {
+            Ok((
+                sources,
+                manifest::config_values(&text)?,
+                manifest::config_enables(&text)?,
+            ))
+        }) {
+            Ok((sources, values, enables)) => {
                 env.layers.global = sources;
                 env.layers.values = values;
+                env.layers.enables = enables;
             }
             Err(errors) => {
                 return Err(errors
@@ -364,6 +369,19 @@ fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
 struct Private {
     dir: PathBuf,
     both: Project,
+}
+
+impl Private {
+    /// The directory of the private rule set when there is one; a layer
+    /// of the global configuration's entries alone has neither it nor a
+    /// lock file.
+    fn rule_set(&self) -> Option<&Path> {
+        has_private_rule_set(&self.dir).then_some(self.dir.as_path())
+    }
+}
+
+fn has_private_rule_set(dir: &Path) -> bool {
+    dir.join(private::MANIFEST).exists()
 }
 
 /// The directory of the private rule set, [`private::dir`]: `None`
@@ -428,7 +446,10 @@ fn private_ready(root: &Path, public: &Project, env: &Env) -> Result<Option<Priv
 /// Writes the private lock file of `private`, from `private_ready`, when
 /// there is a private layer.
 fn relock_private(public: &Project, private: Option<&Private>) -> Result<(), ()> {
-    private.map_or(Ok(()), |private| write_private_lock(public, private))
+    match private {
+        Some(private) if private.rule_set().is_some() => write_private_lock(public, private),
+        _ => Ok(()),
+    }
 }
 
 fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
@@ -444,7 +465,7 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
     // The private output is made in full before anything is written.
     let full = match &private {
-        Some(p) => Some(statute::compile::full_text(&project, &p.both, Some(&p.dir))),
+        Some(p) => Some(statute::compile::full_text(&project, &p.both, p.rule_set())),
         None if project.manifest.public && statute::compile::personal_differs(&project) => {
             Some(statute::compile::full_text(&project, &project, None))
         }
@@ -455,6 +476,11 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let has_full = full.is_some();
     if !project.manifest.public {
         unused_personal(&project);
+        if !project.manifest.global_enables.is_empty() {
+            eprintln!(
+                "statute: note: the global configuration turns on rules, packs or domains, and this repository is private (`public = false`), with no private output; AGENTS.md has none of them"
+            );
+        }
     }
     let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
     // `.statute/.gitignore` is the first file written, once nothing is
@@ -579,19 +605,22 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let errors =
         |diags: &Diagnostics| -> Vec<String> { diags.errors().map(ToString::to_string).collect() };
     let (project, diags) = Project::load(root, &env);
-    let has_private = dir.join(private::MANIFEST).exists();
-    // Without a private rule set, only a person's own value could call
-    // for the private output, and a rule set that does not load has none
-    // to tell.
+    let has_private = has_private_rule_set(&dir);
+    let global = !env.layers.enables.is_empty();
+    // Without a private rule set or what the global configuration turns
+    // on, only a person's own value could call for the private output,
+    // and a rule set that does not load has none to tell.
     let project = match project {
         Some(project) => project,
-        None if has_private => return Err(errors(&diags)),
+        None if has_private || global => return Err(errors(&diags)),
         None => return Ok(Vec::new()),
     };
-    let full = if has_private {
+    let full = if has_private || global {
         let (both, more) = Project::load_private(&project, &diags, &env, &dir);
         match both {
-            Some(both) => statute::compile::full_text(&project, &both, Some(&dir)),
+            Some(both) => {
+                statute::compile::full_text(&project, &both, has_private.then_some(&*dir))
+            }
             None if more.has_errors() => return Err(errors(&more)),
             None => return Err(one(format!("{} did not load", private::MANIFEST))),
         }
@@ -1506,6 +1535,12 @@ fn reasons(project: &Project, key: &Key, depth: usize, path: &mut Vec<Key>, out:
     };
     for reason in set {
         let by = match reason {
+            Reason::Direct if project.manifest.from_global.contains(key) => {
+                out.push_str(&format!(
+                    "{indent}- listed in `rules` of the global configuration\n"
+                ));
+                continue;
+            }
             Reason::Direct => {
                 out.push_str(&format!("{indent}- listed in `rules`\n"));
                 continue;
