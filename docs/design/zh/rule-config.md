@@ -1,4 +1,4 @@
-<!-- en-sha256: 1b0e910b230a8119684042bec107984ffc64616b8eb414ff131f67486fa0be11 -->
+<!-- en-sha256: 144c324379648a287dc0657e6df0538ad11af00496f01a9bda7b69d8e060dc14 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
@@ -250,7 +250,7 @@ default = 81
 ```toml
 rules = ["R57", "R62"]
 domains = ["R78"]
-exclude = ["R83", "R66"]
+exclude = ["R83", "R337"]
 packs = ["R96"]
 ```
 
@@ -285,7 +285,7 @@ team = { git = "https://example.test/our-team/rules.git", branch = "main", publi
 
 **锁文件**与现在一样记下每条启用的规定。只因默认值而启用的规定，在它那一行加 `by = "default"`，这样锁文件能说明哪些规定不是选进来的，`upgrade` 也能列出因 `default` 改动而进来或退出的规定。
 
-**`statute explain <rule>`** 对一条规定或一个领域，说明它是否默认开启，以及规定清单为什么有它或没有它：「R44 默认开启，它的领域 R13 也开启」；「R66 默认开启，被 `exclude` 关掉」；「R78 默认关闭；`statute add R78` 开启它」。对 one-of，它指出默认的选项，规定清单选了别的选项时也指出选的是哪个。`statute explain --defaults` 为规定清单打出三张列表：它保留的默认开启的规定、它关掉的默认开启的规定、它开启的默认关闭的规定。
+**`statute explain <rule>`** 对一条规定或一个领域，说明它是否默认开启，以及规定清单为什么有它或没有它：「R44 默认开启，它的领域 R13 也开启」；「R337 默认开启，被 `exclude` 关掉」；「R78 默认关闭；`statute add R78` 开启它」。对 one-of，它指出默认的选项，规定清单选了别的选项时也指出选的是哪个。`statute explain --defaults` 为规定清单打出三张列表：它保留的默认开启的规定、它关掉的默认开启的规定、它开启的默认关闭的规定。
 
 **编译出的 `AGENTS.md`** 不变：它收录启用的规定，不论它们怎么进来的。
 
