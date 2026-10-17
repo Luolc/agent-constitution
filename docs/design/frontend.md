@@ -414,8 +414,9 @@ turned off (disabled), where it has these.
   - Uses: `scroll-text` for instructions and `scan-eye` for review, in
     `text-muted`.
   - Marks do not react to the pointer; the row does.
-- **Tags.** Small, `text-xs`, `line-height-ui`, one line, never wrapped,
-  for the facts a row's four places do not hold and on a rule's page:
+- **Tags.** Small, `text-xs`, `line-height-ui`, one line, never wrapped
+  but for a slug wider than the line, which wraps, for the facts a row's
+  four places do not hold and on a rule's page:
   - Whether a node is on by default, on its page: the dot of the
     marks before the word, in `text-muted`.
   - Enabled by the rule set: `check` (`icon-sm`) before the word, in
@@ -428,15 +429,21 @@ turned off (disabled), where it has these.
     language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
+- **A rule's page.** A word wider than the line, such as a path in code
+  in its title or text, breaks anywhere inside it rather than run past
+  the screen's edge.
 - **A parameter's value**, wherever a placeholder's value is marked (a
   rule's text and title, the list, the rules under a provision on the
   constitution's pages): the value on `bg-selected` with `radius-sm` and
   `space-1` of padding at each side, a dotted underline in `accent`,
-  never broken across lines, and `space-1` after it `sliders-horizontal`
-  (`icon-sm`) in `accent`, drawn as a mask. In a row of the list it is
-  on `bg-active` while the row is under the pointer and on `bg-selected`
-  while the row is pressed, so that it stays apart from the row's
-  background. Its tip, a popover that only explains, says in the
+  and `space-1` after it `sliders-horizontal` (`icon-sm`) in `accent`,
+  drawn as a mask. The value and its icon are one block, moved whole to
+  the next line rather than broken across two; a value wider than the
+  line, such as a long path in a title on a phone, breaks anywhere
+  inside its block, so that it never runs past the screen's edge. In a
+  row of the list it is on `bg-active` while the row is under the
+  pointer and on `bg-selected` while the row is pressed, so that it
+  stays apart from the row's background. Its tip, a popover that only explains, says in the
   language of the text around it, a line each, that it is a configurable
   parameter and its name, the name in code: monospace, on `bg-hover` (a
   step above the tip's `bg-panel`) inside `1px` of `bg-active`, with

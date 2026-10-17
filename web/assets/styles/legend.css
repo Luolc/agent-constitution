@@ -49,6 +49,7 @@
 .rules .rules-legend .legend-item { display: inline-flex; align-items: baseline; gap: var(--t-space-2); }
 .rules .rules-legend .legend-item > :is(.rule-mark, .icon) { flex: none; align-self: center; }
 .rules .rules-legend .legend-item > .rule-mark:not(.rule-dot) { inline-size: auto; }
+.rules .rules-legend .legend-item > .param-value { flex: none; }
 .rules .rules-legend strong { font-weight: var(--t-weight-medium); }
 .rules .rules-legend .legend-default-option { color: var(--t-accent); }
 .rules .rules-legend .legend-option > .icon { color: var(--t-text-muted); }

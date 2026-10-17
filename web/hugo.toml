@@ -104,6 +104,11 @@ enableRobotsTXT = false
 [markup.goldmark.renderer]
   unsafe = true
 
+# No text strikes anything through, and a rule's `~` is a home directory:
+# two of them in one paragraph, as a value and its tip, are not a deletion.
+[markup.goldmark.extensions]
+  strikethrough = false
+
 # The table of contents at the right lists the articles and the preamble,
 # the level-2 headings under the page's `#` title.
 [markup.tableOfContents]
