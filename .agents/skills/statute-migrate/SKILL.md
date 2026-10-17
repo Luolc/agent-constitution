@@ -421,7 +421,10 @@ file under rule R280, and `.pre-commit-config.yaml` is not, so a
 repository that enables R280 first counts, in a rule of its own, a
 change to `statute.lock` that alters nothing but the `statute` version
 line and the `[[commands]]` tables as a generated file (R47) that goes
-with the change to `rev`, as agent-constitution's rule L31 does.
+with the change to `rev`, as agent-constitution's rule L31 does. A
+repository whose own rules keep a change of a hook's `rev` apart from
+every other change first excepts the `rev` of the `statute-compile`
+hook from them, so that it changes together with `statute.lock`.
 
 Acceptance: `statute compile --check` exits 0 with the new statute, and
 on the pull request, CI runs the hook at the new `rev`, and it passes.
