@@ -133,6 +133,45 @@ keeps the edition in force and a draft of the next one is settled by
   checks the wheels of the tag in its input `tag` from that tag's Release
   and keeps them as a workflow artifact, uploading nothing. No job asks PyPI for a token only to check the publisher: for a
   pending publisher, PyPI creates the project when it mints the token.
+- The same tag also updates the pre-commit mirror
+  `Luolc/statute-pre-commit`, whose hook `statute-compile` runs
+  `statute compile --check`. pre-commit has no language that downloads a
+  prebuilt binary, but `language: python` installs a Python project from
+  the root of the hook's repository, and its `pyproject.toml` depends on
+  `statute==<version>`, so pre-commit installs the PyPI wheel and compiles
+  nothing. The mirror is a repository of its own because that
+  `pyproject.toml` has to sit at its root, where this repo keeps the
+  `pyproject.toml` of its uv workspace. The job `mirror` runs after
+  `publish-pypi` and writes the mirror directly, without polling PyPI: a
+  mirror tag whose pin PyPI does not serve yet would fail at `pip install`
+  in a consumer's repository rather than in this run. It takes four steps,
+  each with a check that fails when the step did not do its work:
+  1. It installs `statute==<version>` from PyPI with `uvx` and checks that
+     `statute --version` prints the tag's version, before writing anything.
+  2. It looks up the mirror's tag `v<version>` (the mirror's tags carry no
+     `statute-` prefix) before writing anything. A tag that points at the
+     mirror's `HEAD`, whose pin is this version, is an earlier run of the
+     job, and the job passes there; a tag that points elsewhere fails the
+     job and is not moved. It compares commits: it lists every tag and
+     takes the peeled `^{}` line when there is one, since an annotated
+     tag's own line carries the tag object, and `git ls-remote` with a
+     pattern drops the peeled line.
+  3. With no tag yet, it fails when the pin on the mirror's `main` is
+     already a later version, so that a rerun for an older release cannot
+     move it back. Otherwise it rewrites the line
+     `dependencies = ["statute==<version>"]` in the mirror's
+     `pyproject.toml` with `sed`, and `grep -Fxq` checks that the line is
+     there; `sed` exits 0 when its pattern matched nothing. It commits and
+     pushes to the mirror's `main` only when the pin changed.
+  4. It tags the mirror's `HEAD` `v<version>` and pushes the tag.
+
+  Only that pin and the tags are written by the job; the mirror's hook
+  definition, README, `AGENTS.md` and `LICENSE` are hand-written there.
+  The job holds no permission on this repo (`permissions: {}`) and writes
+  the mirror with the repository secret `PRECOMMIT_MIRROR_TOKEN`, a token
+  a person creates that can write to `Luolc/statute-pre-commit`. No job
+  needs `mirror`, so its failure leaves crates.io, the Release, the tap
+  and PyPI as they are, and `gh run rerun --failed` resumes it.
 - The overlay pins a tag and its commit SHA and refuses to build if they
   disagree. It moves to a new version by a change in the overlay, reviewed
   there.

@@ -85,6 +85,25 @@ uvx statute --help   # run once without installing
 pip install statute
 ```
 
+A repository that keeps its compiled files under statute can check them
+at each commit with [pre-commit](https://pre-commit.com/), through the
+mirror [`Luolc/statute-pre-commit`](https://github.com/Luolc/statute-pre-commit),
+which installs the PyPI wheel and compiles nothing. Its tag `v<version>`
+installs statute at that version; set `rev` to the version in your
+`statute.lock`:
+
+```yaml
+repos:
+  - repo: https://github.com/Luolc/statute-pre-commit
+    rev: v<version> # the version in statute.lock, such as v0.1.18
+    hooks:
+      - id: statute-compile
+```
+
+The hook runs `statute compile --check`. When `rev` and `statute.lock`
+name different versions, statute itself fails, saying which version wrote
+the lock; upgrade the two in the same commit.
+
 Each release also publishes it to crates.io, from 0.1.0 on (0.0.1 there is
 a placeholder that held the name), and attaches the prebuilt binaries to
 its GitHub Release; [Releases and versions](docs/design/amendments-and-releases.md#releases-and-versions)
