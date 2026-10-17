@@ -351,11 +351,11 @@ configuration or the private rule set gives them to the private
 output; in a private repository, which has no private output,
 `statute.toml` sets them.
 
-**The release, the runner and the socket.** R135, R212 and R190 each
-leave one value of a person's setup to the rule set: the Linux release
+**The release, the runner and the socket.** R135, R212, R322 and R323
+leave three values of a person's setup to the rule set: the Linux release
 of the machines and test containers, the label of the Linux runners
 the CI service hosts, and the socket of the FedNet client on the
-machine. Each is a `string` parameter of scope `personal`, with a
+machine, which R322 and R323 share. Each is a `string` parameter of scope `personal`, with a
 default that names nobody's setup, used by a rule that is off by
 default and requires the rule it fills in:
 
@@ -363,11 +363,11 @@ default and requires the rule it fills in:
 | --- | --- | --- | --- |
 | `linux.container-image` | `debian:13` | R316 (domain R127) | R135 |
 | `ci.linux-runner-label` | `ubuntu-22.04` | R317 (domain R276) | R212 |
-| `fednet.client-socket` | `/run/fednet/client.sock` | R318 (domain R188) | R190 |
+| `fednet.client-socket` | `/run/fednet/client.sock` | R318 and R325 (domain R188) | R322 and R323 |
 
 One value names both the machines' release and the containers' base
-image, its name and tag, so the two cannot disagree. R135, R212 and
-R190 are not superseded, since what they require holds without the
+image, its name and tag, so the two cannot disagree. R135, R212, R322 and
+R323 are not superseded, since what they require holds without the
 value: a rule set that enables them and not the new rules keeps them
 and says nothing about the value. A person sets the values as for the
 directories.

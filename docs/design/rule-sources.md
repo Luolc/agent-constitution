@@ -578,7 +578,7 @@ and then made:
    releases of the project out of Art. V §1, or when it turns off,
    with `statute remove --private`, a rule that is a guard
    (Art. II §5), which loosens that guard (Art. V §1(6)). A relayed
-   yes counts only as R38 to R40 provide, with its reference and
+   yes counts only as R319, R320 and R40 provide, with its reference and
    checks in the record.
 4. The author runs the commands, and pastes the resulting
    `private.toml` and `private.lock` into the record, where the
