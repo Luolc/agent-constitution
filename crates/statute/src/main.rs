@@ -419,11 +419,18 @@ fn write_private_lock(public: &Project, private: &Private) -> Result<(), ()> {
 }
 
 fn print_private_locked(path: &Path, public: &Project, both: &Project) {
-    let all = both.resolution.enabled.len();
-    let added = all - public.resolution.enabled.len();
+    let (public, both) = (&public.resolution.enabled, &both.resolution.enabled);
+    let added = both.keys().filter(|k| !public.contains_key(k)).count();
+    let off = public.keys().filter(|k| !both.contains_key(k)).count();
+    let off = if off > 0 {
+        format!(", {off} turned off by it")
+    } else {
+        String::new()
+    };
     println!(
-        "wrote {}: {all} rules enabled, {added} of them by the private layer",
-        path.display()
+        "wrote {}: {} rules enabled, {added} of them by the private layer{off}",
+        path.display(),
+        both.len()
     );
 }
 
