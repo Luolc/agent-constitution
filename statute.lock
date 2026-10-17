@@ -1307,13 +1307,6 @@ original-sha256 = "0461e00d7079ec78d86329ecd53e5afc995768342ee0e161493d7e27a4f72
 by = "default"
 
 [[rules]]
-rule = "R298"
-revision = 2
-sha256 = "e28408dee52d411766427a30287b1c9914fcc37d530fe623a409787ffaa1ec34"
-original-sha256 = "c798dc6333dbef03bf6eb61e9b94436f6d69dd6e49ae1118f46f7e692c59d2f0"
-by = "default"
-
-[[rules]]
 rule = "R299"
 revision = 2
 sha256 = "429b0b1cb7230793a138ca2b737f587c437a05d7d9f9435a776de5d9cbe9aded"
@@ -1381,6 +1374,13 @@ rule = "R315"
 revision = 1
 sha256 = "d02058d8ced485a15ad49937fead622c580a049c4e602381c3a3bd28a13eb486"
 original-sha256 = "6e09cdc984e9e1fa97712a12b566f68d744c1264f32b2623345adee0d80892bf"
+by = "default"
+
+[[rules]]
+rule = "R331"
+revision = 1
+sha256 = "2807e5e965f43a2624c8500ffe0434ee7be7e4d83b81f4ead5fa08fefa36cd46"
+original-sha256 = "eab8885d30d666d7e15c9338207ddd5a99b1e326fefb00e82ec69f92c42940c5"
 by = "default"
 
 [[rules]]
