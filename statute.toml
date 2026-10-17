@@ -31,8 +31,8 @@ domains = [
 ]
 
 rules = [
-  # The instruction system, the constitution and rule sources and the hook and CI entries that
-  # run statute among it, changes in pull requests of its own.
+  # The instruction system (the constitution and rule sources, and the hook and CI entries that
+  # run statute) changes in pull requests of its own.
   "R334",
   # The generated constitution goes with the sources it was rebuilt from.
   "R47",

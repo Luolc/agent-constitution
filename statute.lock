@@ -1550,8 +1550,8 @@ by = "default"
 [[rules]]
 rule = "L32"
 revision = 1
-sha256 = "42a2b4348321b7116ed80ca5cff9df590359285c7a65eb56bce5f2284ec5bd1a"
-original-sha256 = "d1b0a65b2ed04b8475f61e2813fc54ad1b40737ed1850025ba37a7253c7de94b"
+sha256 = "9a64ef23db5144697e733ee499939b3405d4f1e09224b63b5227d9afb3b0a234"
+original-sha256 = "492165d2f5b83a5968e3967136b4cea72b9caf353289bff1c937baf45ae8c4fe"
 
 [[parameters]]
 name = "language.code-comments"
