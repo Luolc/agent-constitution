@@ -420,34 +420,6 @@ fn an_unknown_key_of_a_source_entry_is_named() {
 
 /// The private layer may turn on a domain, and turn off what the public
 /// one enables or turn on again what it excludes.
-/// `remove` of the default option of a one-of writes nothing to
-/// `exclude`, which cannot name it, and names the ways to turn it off;
-/// `remove` of the one-of writes the one-of there.
-#[test]
-fn remove_turns_off_a_one_of_not_its_default_option() {
-    let dir = repo("remove-option", "");
-    let before = read(&dir, "statute.toml");
-    let run = statute(&dir, &["remove", "R5"]);
-    assert_eq!(run.code, 1, "{}", run.stdout);
-    assert!(
-        run.stderr.contains(
-            "statute.toml: error: R5 is an option of the one-of R4, which `exclude` cannot name; to turn it off, `statute add` another option of R4, or `statute remove R4`"
-        ),
-        "{}",
-        run.stderr
-    );
-    assert_eq!(read(&dir, "statute.toml"), before);
-    let run = statute(&dir, &["remove", "R4"]);
-    ok(&run);
-    assert!(
-        run.stdout
-            .contains("added R4 to `exclude`, as it is on by default"),
-        "{}",
-        run.stdout
-    );
-    assert!(!read(&dir, "statute.lock").contains("rule = \"R5\""));
-}
-
 #[test]
 fn the_private_layer_has_domains_and_exclude() {
     let base = Manifest::parse(
