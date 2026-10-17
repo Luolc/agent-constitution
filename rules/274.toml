@@ -9,7 +9,7 @@ default = "on"
 
 [title]
 en = "Pull Requests"
-zh = "Pull request"
+zh = "Pull Request"
 
 [applicability]
 en = '''
