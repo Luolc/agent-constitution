@@ -1113,8 +1113,9 @@ addEventListener("load", () => {
 /// alone not enabled: the number of rules shown, the sources shown, what
 /// the menus of the status and of the rule set say, and whether the
 /// legend is open; Clear filters, which brings back the default filter
-/// and an empty search; and the legend kept folded. Skipped without
-/// Chrome, except in CI.
+/// and an empty search; and the legend kept folded, its summary saying
+/// so even before the toggle event of its folding arrives. Skipped
+/// without Chrome, except in CI.
 #[test]
 fn site_filters_and_searches_the_table() {
     let Some(chrome) = chrome() else {
@@ -1150,8 +1151,18 @@ addEventListener("load", () => {
   done(r);
 });
 </script></body>"##;
+    // At `#late`, the toggle events, which Chrome may deliver after the
+    // load event, held back from the index's script, which runs before
+    // the probe.
+    let late = r##"<script>
+if (location.hash === "#late") addEventListener("toggle", (e) => e.stopImmediatePropagation(), true);
+</script></head>"##;
     let page = dir.join("probe.html");
-    std::fs::write(&page, index.replace("</body>", probe)).unwrap();
+    std::fs::write(
+        &page,
+        index.replace("</head>", late).replace("</body>", probe),
+    )
+    .unwrap();
     let run = |query: &str| probe_run(&chrome, &dir, &page, query);
     // Each summary says whether it is open and what it opens.
     assert_eq!(
@@ -1174,10 +1185,11 @@ addEventListener("load", () => {
         run("?status=&q=x#clear"),
         "0 rules | 0 | None | All | none | open | false/true | controls | 4 rules | 4 | 3/5 | All | - | open | false/true | controls | -"
     );
-    // Folded, the legend stays folded on the next load.
+    // Folded, the legend stays folded on the next load, and its summary
+    // says so without its toggle event.
     run("#fold");
     assert_eq!(
-        run(""),
+        run("#late"),
         "4 rules | 4 | 3/5 | All | - | folded | false/false | controls"
     );
 }

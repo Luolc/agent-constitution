@@ -144,6 +144,10 @@
     changed();
   };
 
+  // The legend is folded before the summaries say whether their details
+  // are open, so that its summary does not wait for the toggle event,
+  // which may come after the page has loaded.
+  if (legend && kept(LEGEND) === "closed") legend.open = false;
   // Each summary says whether its details are open, kept in step as
   // they open and close.
   const expanded = (details) => {
@@ -218,10 +222,7 @@
   }
   if (shownLine) shownLine.hidden = false;
   document.querySelector(".none .reset")?.addEventListener("click", reset);
-  if (legend) {
-    if (kept(LEGEND) === "closed") legend.open = false;
-    legend.addEventListener("toggle", () => keep(LEGEND, legend.open ? "open" : "closed"));
-  }
+  legend?.addEventListener("toggle", () => keep(LEGEND, legend.open ? "open" : "closed"));
   window.addEventListener("popstate", () => {
     load(false);
     show();
