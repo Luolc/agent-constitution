@@ -1,4 +1,4 @@
-<!-- en-sha256: 3ef127952871158df6a37bc066bc2775a73a26cbf6b1dd829f34d2eaad269662 -->
+<!-- en-sha256: aa1b952d62c4d3e4a6ad6b61d03689432d40329d2d8b0cf3653781c1bba5ab78 -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。

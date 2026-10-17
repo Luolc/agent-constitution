@@ -78,9 +78,9 @@ a {
    would run out of it (the room assets/param-tip.js gives, --tip-room),
    never wider than the window, and hidden by Escape. Without the room
    it lies before the value, so a hidden tip widens no page. It is
-   hidden from screen
-   readers (aria-hidden), and left out of a selection: the link is named
-   by its value and then the tip (aria-label). */
+   hidden from screen readers (aria-hidden), and left out of a
+   selection: the link is named by its value and then the tip
+   (aria-label). */
 .param-tip {
   position: absolute;
   z-index: var(--t-z-popover);

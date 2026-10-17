@@ -1292,10 +1292,10 @@ Promise.all(frames.map((f) => new Promise((done) =>
 
 /// The table of rules with a rule overridden by one of a long title, in
 /// headless Chrome, in both languages: on a desktop the titles' column
-/// takes most of the table's width, and on a phone the table does not run
-/// past the screen's edge; the overridden rule's last cell names the
-/// other rule by its label alone, its title on hover. Skipped without
-/// Chrome, except in CI.
+/// takes most of the table's width, and on a phone neither the table nor
+/// the page, a hidden tip included, runs past the screen's edge; the
+/// overridden rule's last cell names the other rule by its label alone,
+/// its title on hover. Skipped without Chrome, except in CI.
 #[test]
 fn site_gives_the_titles_the_room_of_the_table() {
     let Some(chrome) = chrome() else {
@@ -1344,7 +1344,8 @@ Promise.all(frames.map((f) => new Promise((done) =>
     const title = doc.querySelector(".entry .rule-title").clientWidth;
     const inside = Array.from(doc.querySelectorAll(".table *"))
       .every((e) => e.getBoundingClientRect().right <= root.clientWidth);
-    done(`${{root.clientWidth}} ${{inside}} ${{root.clientWidth < 768 || title > table / 2}}`);
+    const wide = root.scrollWidth === root.clientWidth;
+    done(`${{root.clientWidth}} ${{inside && wide}} ${{root.clientWidth < 768 || title > table / 2}}`);
   }})))).then((r) => document.body.setAttribute("data-probe", r.join(" | ")));
 </script></body>"##
         ),

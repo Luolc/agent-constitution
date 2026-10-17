@@ -428,36 +428,37 @@ turned off (disabled), where it has these.
     language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
-- **A parameter's value**, wherever a placeholder's value is marked
-  (a rule's text and title, the list, the rules under a provision on
-  the constitution's pages): the value on `bg-selected` with
-  `radius-sm` and `space-1` of padding at each side, a dotted underline
-  in `accent`, never broken across lines, and `space-1` after it
-  `sliders-horizontal` (`icon-sm`) in `accent`, drawn as a mask. In a
-  row of the list it is on `bg-active` while the row is under the
-  pointer and on `bg-selected` while the row is pressed, so that it
-  stays apart from the row's background. Its tip, a popover that only
-  explains, says in the language of the text around it, a line each,
-  that it is a configurable parameter and its name, the name in inline
-  code as the site draws code in the text, its default on the public
-  site, and, where the value is a link, that it opens the parameter's
-  entry. The tip opens above the value, from its start; where it would
-  run out of the window, it moves back to end `space-4` inside the
-  window, and it is never wider than the window less `space-4` at each
-  side, so that it shows whole on a phone too. Hidden, it widens no
-  page. It opens after `delay-tip` under the pointer and at once under
-  the keyboard's focus; Escape closes it. It is hidden from screen readers (`aria-hidden`), so that
-  they do not read it into the sentence, and stays out of a selection
-  and of the text the list's search matches: a value that is a link is
-  named by the value and then the tip (`aria-label`); in a statement in
-  a row of the list, the legend says what the mark means. A value in a title that
+- **A parameter's value**, wherever a placeholder's value is marked (a
+  rule's text and title, the list, the rules under a provision on the
+  constitution's pages): the value on `bg-selected` with `radius-sm` and
+  `space-1` of padding at each side, a dotted underline in `accent`,
+  never broken across lines, and `space-1` after it `sliders-horizontal`
+  (`icon-sm`) in `accent`, drawn as a mask. In a row of the list it is
+  on `bg-active` while the row is under the pointer and on `bg-selected`
+  while the row is pressed, so that it stays apart from the row's
+  background. Its tip, a popover that only explains, says in the
+  language of the text around it, a line each, that it is a configurable
+  parameter and its name, the name in inline code as the site draws code
+  in the text, its default on the public site, and, where the value is a
+  link, that it opens the parameter's entry. The tip opens above the
+  value, from its start; where it would run out of the window, it moves
+  back to end `space-4` inside the window, and it is never wider than
+  the window less `space-4` at each side, so that it shows whole on a
+  phone too. Hidden, it widens no page. It opens after `delay-tip` under
+  the pointer and at once under the keyboard's focus; Escape closes it.
+  It is hidden from screen readers (`aria-hidden`), so that they do not
+  read it into the sentence, and stays out of a selection and of the
+  text the list's search matches: a value that is a link is named by the
+  value and then the tip (`aria-label`); in a statement in a row of the
+  list, the legend says what the mark means. A value in a title that
   stands inside a link (the list's titles, the rules under a provision)
   has the mark and no tip, as the list cuts its titles to one line and
   the link leads to the rule's page, where the value has one. A touch
-  screen shows no tip: the value's link leads to the parameter's
-  entry, and the legend says what the mark means. Not built yet: a tip
-  after another still waits `delay-tip` instead of opening at once
-  ([Interaction and accessibility](#interaction-and-accessibility), Tooltips).
+  screen shows no tip: the value's link leads to the parameter's entry,
+  and the legend says what the mark means. Not built yet: a tip after
+  another still waits `delay-tip` instead of opening at once
+  ([Interaction and accessibility](#interaction-and-accessibility),
+  Tooltips).
 - **The legend**, above the list of the rules, as Ruff's list of rules
   has one: a box with `1px` of `border-subtle` and `radius-md`, `text-sm`,
   that folds: its first line is a button, `chevron-right` (`icon-sm`)
