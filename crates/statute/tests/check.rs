@@ -321,7 +321,7 @@ fn r46_compiled_files_go_with_the_side_that_changed_them() {
 
 /// A lock file that changed in nothing but the version of statute, beside
 /// tools, is an instruction file in the same change for rule 46, as in
-/// any repository; only this repository's rule L31 counts it as
+/// any repository; only this repository's rule L32 counts it as
 /// generated, in `check-instruction-changes`. So is the deletion of the
 /// checks file an earlier statute wrote.
 #[test]
@@ -372,12 +372,14 @@ fn r46_a_lock_file_changed_only_in_its_version_stays_an_instruction_file() {
 /// exits 1. The cases leave out where the two differ by design: the
 /// script, with this repository's tables, counts the top `AGENTS.md` as
 /// generated always and the top `statute.lock` when its TOML differs only
-/// in `statute` and `commands`, as this repository's rule L31 provides,
+/// in `statute` and `commands`, as this repository's rule L32 provides,
 /// and `statute-checks.toml` always, as its rule L27 provides, while
 /// statute's check, which holds for any repository, counts the
 /// `AGENTS.md` only while it equals its compile (the hand-edited
 /// `AGENTS.md` of `r46_mixed_change_is_a_violation`) and the other two
-/// as instruction files; and the script
+/// as instruction files; the script counts the commit hook and CI files
+/// with neither side, for the reviewer, as rule 334 asks, while
+/// statute's check counts them as other files; and the script
 /// knows statute's files only at the top of the repository.
 #[test]
 fn r46_agrees_with_check_instruction_changes() {
