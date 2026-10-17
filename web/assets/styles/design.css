@@ -79,16 +79,17 @@
    parameter's name in code): a popover that only explains, above the
    value, after the delay of a tip under the pointer and at once under
    the keyboard's focus, ending at the value's end where it would run
-   out of the window (crates/statute/assets/param-tip.js), and hidden by
-   Escape. It is hidden from screen readers (aria-hidden), and left out
-   of a selection: a link is named by its value and then the tip
+   out of the window (crates/statute/assets/param-tip.js) and while
+   hidden, so that it never widens the page, and hidden by Escape. It is
+   hidden from screen readers (aria-hidden), and left out of a
+   selection: a link is named by its value and then the tip
    (aria-label), and in a row of the list the legend says what the mark
    means. */
 .param-tip {
   position: absolute;
   z-index: var(--t-z-popover);
   bottom: calc(100% + var(--t-space-1));
-  left: 0;
+  right: 0;
   width: max-content;
   max-width: var(--t-width-popover);
   padding: var(--t-space-2) var(--t-space-3);
@@ -102,7 +103,7 @@
   border: 1px solid var(--t-border-subtle);
   border-radius: var(--t-radius-md);
   box-shadow: var(--t-shadow-popover);
-  transform-origin: bottom left;
+  transform-origin: bottom right;
   user-select: none;
   pointer-events: none;
   opacity: 0;
@@ -111,7 +112,7 @@
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
-.param-value.tip-end .param-tip { left: auto; right: 0; transform-origin: bottom right; }
+.param-value.tip-start .param-tip { left: 0; right: auto; transform-origin: bottom left; }
 a.param-value:focus-visible .param-tip {
   opacity: 1;
   scale: 1;
