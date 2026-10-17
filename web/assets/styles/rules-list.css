@@ -159,7 +159,7 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
   min-inline-size: 0;
 }
 .rules .rule-title > .icon { color: var(--t-text-faint); }
-.rules .rule-text { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rules .rule-entry .rule-text { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rules .rule-entry > :is(.rule-enabled, .quadrant) { grid-row: 1; }
 .rules .rule-entry:has(> :is(.rule-enabled, .quadrant)) { grid-template-columns: var(--t-width-label) minmax(0, 1fr) auto auto; }
 
@@ -241,7 +241,7 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
   .rules :is(.rules-head, .rule-entry, .rules-group) { column-gap: var(--t-space-2); }
   .rules .rule-entry { align-items: start; padding-block: calc((var(--rules-row) - 1lh) / 2); }
   .rules .rule-entry > :is(.rule-title, .rule-marks) { min-block-size: 1lh; }
-  .rules .rule-text { white-space: normal; }
+  .rules .rule-entry .rule-text { white-space: normal; }
   .rules .one-of-options .rule-title { grid-template-columns: auto minmax(0, 1fr); padding-inline-start: var(--t-space-2); }
   .rules .one-of-options .rule-default-option { grid-column: 2; }
 }
