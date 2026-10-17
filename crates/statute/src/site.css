@@ -76,9 +76,9 @@ a {
    under the pointer and at once under the keyboard's focus, ending at
    the value's end where it would run out of the window
    (assets/param-tip.js) and while hidden, so that it never widens the
-   page, and hidden by Escape. It is hidden from screen
-   readers (aria-hidden), and left out of a selection: the link is named
-   by its value and then the tip (aria-label). */
+   page, and hidden by Escape. It is hidden from screen readers
+   (aria-hidden), and left out of a selection: the link is named by its
+   value and then the tip (aria-label). */
 .param-tip {
   position: absolute;
   z-index: var(--t-z-popover);
