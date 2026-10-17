@@ -465,8 +465,9 @@ file. It prints the path of `index.html`.
   default. A rule's page says where it is used, `AGENTS.md`, review or
   both, and two filters of the index hide the rules for either.
   A placeholder shows the value this rule set gives the parameter, the
-  person's own where there is one, marked, with the parameter's name
-  on hover and a link to the page of its source's parameters,
+  person's own where there is one, marked as the public site marks it
+  ([Frontend](frontend.md#components)), with a tip that names the
+  parameter and a link to the page of its source's parameters,
   `<source>/parameters.html`. That page lists each parameter's title,
   name, type, scope and default, its value and where the value comes
   from, and the enabled rules that use it.

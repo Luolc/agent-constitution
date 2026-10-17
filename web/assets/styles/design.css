@@ -55,6 +55,13 @@
   border-radius: var(--t-radius-sm);
   padding: 0 var(--t-space-1);
 }
+/* In a row of the list, the value keeps its background apart from the
+   row's under the pointer and pressed, where `bg-hover` would hide it
+   and leave its padding as a gap before the next character. */
+@media (hover: hover) and (pointer: fine) {
+  .rules a.rule-entry[href]:hover .param-value { background: var(--t-bg-active); }
+}
+.rules a.rule-entry[href]:active .param-value { background: var(--t-bg-selected); }
 /* After the value, Lucide's `sliders-horizontal` as a mask
    (--icon-lucide-sliders-horizontal, layouts/_partials/docs/inject/head.html),
    in the accent, the size of an icon in a line of text. */

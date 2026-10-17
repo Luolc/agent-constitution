@@ -529,9 +529,15 @@ class SiteRulesTest(unittest.TestCase):
       self.assertEqual(
         nodes[6]["text"]["statement"],
         'Write in <a class="param-value" href="../params/#language.docs"'
-        f' title="language.docs">{docs}</a>; label <code>x <a'
+        ' data-tip="Configurable parameter: language.docs&#10;'
+        f"Default: {docs}&#10;"
+        'Open it to read what it sets">'
+        f"{docs}</a>; label <code>x <a"
         ' class="param-value" href="../params/#work-items.label-done"'
-        ' title="work-items.label-done">done &amp; dusted</a></code>.',
+        ' data-tip="Configurable parameter: work-items.label-done&#10;'
+        "Default: done &amp; dusted&#10;"
+        'Open it to read what it sets">'
+        "done &amp; dusted</a></code>.",
       )
       self.assertEqual(nodes[6]["title"], "Rule 6")
     pages = data["zh"]["params"]
@@ -619,7 +625,10 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       nodes[5]["titleMarked"],
       'Rule in <a class="param-value" href="../params/#language.docs"'
-      ' title="language.docs">Chinese</a>',
+      ' data-tip="Configurable parameter: language.docs&#10;'
+      "Default: Chinese&#10;"
+      'Open it to read what it sets">'
+      "Chinese</a>",
     )
     self.assertEqual(nodes[3]["conflicts"][0]["title"], "Rule in Chinese")
 
@@ -642,7 +651,9 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(node["title"], "Label a <b> c")
     self.assertEqual(
       node["titleInLink"],
-      'Label <span class="param-value" title="work-items.label-done">'
+      'Label <span class="param-value"'
+      ' data-tip="Configurable parameter: work-items.label-done&#10;'
+      'Default: a &lt;b&gt; c">'
       "a &lt;b&gt; c</span>",
     )
 

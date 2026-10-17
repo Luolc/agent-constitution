@@ -81,15 +81,16 @@ PROVISION_LINK = "../../#{ref}"
 RULE_LINK = "../{id}/"
 # The text of a link to a rule, `{@rule:7}`, in the language of the text.
 RULE_LABEL = {"en": "rule {id}", "zh": "规定 {id}"}
-# The tip on a parameter's value, a line each, in the language of the
-# page: what it is, its name, its default and, on a link, where it leads.
+# The tip on a parameter's value, a line each, in the language of its
+# text: what it is and its name, its default and, on a link, where it
+# leads.
 PARAM_TIP = {
-  "en": ("Configurable parameter: {name}", "Default: {value}"),
-  "zh": ("可配置的参数：{name}", "默认值：{value}"),
-}
-PARAM_TIP_LINK = {
-  "en": "Open it to read what it sets",
-  "zh": "点开查看它的说明",
+  "en": (
+    "Configurable parameter: {name}",
+    "Default: {value}",
+    "Open it to read what it sets",
+  ),
+  "zh": ("可配置的参数：{name}", "默认值：{value}", "点开查看它的说明"),
 }
 # Each node keeps these fields of its file as they are, when it has them.
 FIELDS = ("revision", "level", "constitution", "check", "run", "tools")
@@ -623,9 +624,9 @@ class _Language:
     """Return a text with each placeholder as its parameter's default.
 
     With `mark` "link", a default is a link to the parameter's entry on
-    its page of parameters, with the name as its title; with "span", for
-    a text that stands inside a link, a span with the name as its title;
-    either escaped as HTML, and in a code span as well, which becomes
+    its page of parameters; with "span", for a text that stands inside a
+    link, a span; either with its tip (PARAM_TIP) in `data-tip`, a line
+    each, and escaped as HTML, and in a code span as well, which becomes
     HTML for it. With "none", the default alone, as it is, for a text
     that the template escapes.
 
@@ -647,17 +648,16 @@ class _Language:
       shown = p.shown.get(text_lang, p.default)
       if mark == "none":
         return shown
-      lines = [
-        line.format(name=p.name, value=shown) for line in PARAM_TIP[self.lang]
-      ]
+      words = PARAM_TIP.get(text_lang) or PARAM_TIP[self.lang]
+      # A value inside a link leads nowhere of its own: no last line.
+      lines = words[:2] if mark == "span" else words
+      tip = "\n".join(w.format(name=p.name, value=shown) for w in lines)
+      tip = html.escape(tip).replace("\n", "&#10;")
       if mark == "span":
-        tip = html.escape("\n".join(lines)).replace("\n", "&#10;")
         return (
           f'<span class="param-value" data-tip="{tip}">'
           f"{html.escape(shown)}</span>"
         )
-      lines.append(PARAM_TIP_LINK[self.lang])
-      tip = html.escape("\n".join(lines)).replace("\n", "&#10;")
       return (
         f'<a class="param-value" href="../{params_key(where)}/#{p.name}"'
         f' data-tip="{tip}">{html.escape(shown)}</a>'

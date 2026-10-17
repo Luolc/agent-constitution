@@ -310,6 +310,7 @@ What replaces today's icons:
 | None | Closing a popover | `x` |
 | None | A rule under another rule | `corner-down-right` |
 | None | An option of a one-of, the default one | `circle`, `circle-dot` |
+| None | After a parameter's value | `sliders-horizontal` |
 | None | Enabled by the rule set | `check` |
 
 ## Motion
@@ -426,6 +427,25 @@ turned off (disabled), where it has these.
     language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
+- **A parameter's value**, where a placeholder stands in a text: the
+  value on `bg-selected` with `radius-sm` and `space-1` of padding at
+  each side, a dotted underline in `accent`, never broken across lines,
+  and after it `sliders-horizontal` (`icon-sm`) in `accent`, drawn as a
+  mask. In a row of the list it is on `bg-active` while the row is
+  under the pointer and on `bg-selected` while the row is pressed, so
+  that it stays apart from the row's background. Its tip, a popover
+  that only explains, says in the language of the text around it, a
+  line each, that it is a configurable parameter and its name, its
+  default on the public site, and, where the value is a link, that it
+  opens the parameter's entry. The tip opens above the value, from its
+  start or, where it would run out of the window, from its end, after
+  `delay-tip` under the pointer and at once under the keyboard's focus;
+  Escape closes it. It is drawn from the value's `data-tip` even while
+  hidden, so what it says is part of the value's accessible name. A
+  touch screen shows no tip: the value's link leads to the parameter's
+  entry, and the legend says what the mark means. Not built yet: a tip
+  after another still waits `delay-tip` instead of opening at once
+  ([Interaction and accessibility](#interaction-and-accessibility), Tooltips).
 - **The legend**, above the list of the rules, as Ruff's list of rules
   has one: a box with `1px` of `border-subtle` and `radius-md`, `text-sm`,
   that folds: its first line is a button, `chevron-right` (`icon-sm`)
@@ -447,6 +467,7 @@ turned off (disabled), where it has these.
   `weight-medium`; One of, what a one-of is, then the default option's
   `circle-dot` in `accent` and another option's `circle`; when the site
   has them, Rule set, enabled and not enabled, and Source, a quadrant;
+  Parameter, a value drawn as the text draws one and what it is;
   last, Row end, the four places of the marks and their order, in
   `text-muted`. On a narrow screen a row's marks wrap under each other,
   its name staying at its start.
@@ -795,10 +816,13 @@ turned off (disabled), where it has these.
   for the target `es2018`, minified, and the page inlines it in its
   head as it does the other scripts; there is no source map, as the
   script is small and its source is in the repository. The short
-  scripts stay JavaScript in `web/assets/`, minified by Hugo. The local
-  site has no build step: the index's one script,
-  `crates/statute/src/site.js`, is JavaScript that `statute` inlines
-  with `include_str!`, and the page works without it. Read on
+  scripts stay JavaScript in `web/assets/`, minified by Hugo, but for
+  the one both sites run, the tip of a parameter's value,
+  `crates/statute/assets/param-tip.js`, which the public site mounts
+  from the crate as it does the tokens. The local site has no build
+  step: the index's script, `crates/statute/src/site.js`, and that one
+  are JavaScript that `statute` inlines with `include_str!`, and the
+  pages work without them. Read on
   2026-10-15 with Hugo 0.167.0: `js.Build` strips the types and
   type-only imports, bundles the imports between the files, lowers `?.`
   and `??` to the target, and fails the build on a syntax error.

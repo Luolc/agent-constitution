@@ -85,8 +85,9 @@ struct Words {
     title: &'static str,
     quadrants: [&'static str; 4],
     /// The lines of the legend: the status, the defaults, `uses`, the
-    /// one-of, this rule set and the places of the marks.
-    legend: [&'static str; 6],
+    /// one-of, this rule set, a parameter's value and the places of the
+    /// marks.
+    legend: [&'static str; 7],
     /// The legend's own name, on the button that folds it.
     legend_name: &'static str,
     /// What the places of the marks hold, in order.
@@ -96,6 +97,11 @@ struct Words {
     /// In the legend, what a one-of is, and an option not its default.
     one_of_meaning: &'static str,
     another_option: &'static str,
+    /// In the legend, what a parameter's value is.
+    param_meaning: &'static str,
+    /// The tip on a parameter's value, a line each: what it is and its
+    /// name, where it leads.
+    param_tip: [&'static str; 2],
     /// The switch between the views of the rows, and each view: title,
     /// statement.
     view: &'static str,
@@ -169,12 +175,14 @@ fn words(lang: &str) -> Words {
             untranslated: "无中文",
             title: "本仓规定",
             quadrants: ["全局公开", "全局私有", "本仓公开", "本仓私有"],
-            legend: ["默认", "状态", "用途", "择一", "规定清单", "行末"],
+            legend: ["默认", "状态", "用途", "择一", "规定清单", "参数", "行末"],
             legend_name: "图例",
             use_meanings: ["：写进 agent 的指令", "：审查方按它审查"],
             slots: "依次是默认、状态、指令、审查，没有的留空",
             one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
+            param_meaning: "规定清单可以另选的值，正文里写的是它取的值",
+            param_tip: ["可配置的参数：", "点开查看它的取值和说明"],
             view: "显示",
             views: ["短标题", "要求"],
             columns: ["编号", "规定"],
@@ -229,7 +237,15 @@ fn words(lang: &str) -> Words {
                 "Local public",
                 "Local private",
             ],
-            legend: ["Default", "Status", "Uses", "One of", "Rule set", "Row end"],
+            legend: [
+                "Default",
+                "Status",
+                "Uses",
+                "One of",
+                "Rule set",
+                "Parameter",
+                "Row end",
+            ],
             legend_name: "Legend",
             use_meanings: [
                 ": goes into the agent's instructions",
@@ -238,6 +254,11 @@ fn words(lang: &str) -> Words {
             slots: "default, status, instructions, review, in this order; empty where a rule has none",
             one_of_meaning: "the rule set takes exactly one option",
             another_option: "Another option",
+            param_meaning: "a value the rule set can choose; the text shows the one it has",
+            param_tip: [
+                "Configurable parameter: ",
+                "Open it to read its values and what it sets",
+            ],
             view: "Show",
             views: ["Short title", "Statement"],
             columns: ["ID", "Rule"],
@@ -322,6 +343,7 @@ const LANGUAGES: &str = include_str!("../assets/icons/lucide/languages.svg");
 const PENCIL: &str = include_str!("../assets/icons/lucide/pencil.svg");
 const SCAN_EYE: &str = include_str!("../assets/icons/lucide/scan-eye.svg");
 const SCROLL_TEXT: &str = include_str!("../assets/icons/lucide/scroll-text.svg");
+const SLIDERS_HORIZONTAL: &str = include_str!("../assets/icons/lucide/sliders-horizontal.svg");
 
 /// An icon's SVG on one line.
 fn one_line(svg: &str) -> String {
@@ -350,16 +372,23 @@ fn icon(svg: &str, class: &str) -> String {
 }
 
 /// The style sheet of every page: the tokens, the site's own, and the
-/// check of a check box, Lucide's `check` as a mask, drawn at the
+/// check of a check box and the mark after a parameter's value,
+/// Lucide's `check` and `sliders-horizontal` as masks, drawn at the
 /// stroke of every icon, `icon-stroke`, which a mask cannot take from
 /// the style sheet.
 fn style() -> String {
-    let check = one_line(CHECK)
-        .replace("stroke-width=\"2\"", "stroke-width=\"1.75\"")
-        .replace('"', "'")
-        .replace('<', "%3C")
-        .replace('>', "%3E");
-    format!("{TOKENS}\n{STYLE}\n:root {{ --icon-check: url(\"data:image/svg+xml,{check}\"); }}\n")
+    let mask = |svg: &str| {
+        one_line(svg)
+            .replace("stroke-width=\"2\"", "stroke-width=\"1.75\"")
+            .replace('"', "'")
+            .replace('<', "%3C")
+            .replace('>', "%3E")
+    };
+    format!(
+        "{TOKENS}\n{STYLE}\n:root {{ --icon-check: url(\"data:image/svg+xml,{}\"); --icon-sliders: url(\"data:image/svg+xml,{}\"); }}\n",
+        mask(CHECK),
+        mask(SLIDERS_HORIZONTAL)
+    )
 }
 
 /// One page of the site: its path below the site's directory, and its
@@ -569,7 +598,7 @@ fn page(key: &Key) -> PathBuf {
 /// switch to the other language at the top of it.
 fn head(title: &str, lang: &str, class: &str, switch: &str) -> String {
     format!(
-        "<!DOCTYPE html>\n<html lang=\"{lang}\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{}</title>\n<style>{}</style>\n</head>\n<body>\n<main class=\"{class}\">\n{switch}\n",
+        "<!DOCTYPE html>\n<html lang=\"{lang}\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{}</title>\n<style>{}</style>\n<script>{TIP_SCRIPT}</script>\n</head>\n<body>\n<main class=\"{class}\">\n{switch}\n",
         escape(title),
         style()
     )
@@ -666,6 +695,10 @@ fn domains<'a>(
         domains(source, child, above, depth, out);
     }
 }
+
+/// The script of a parameter's tip, on every page, which the public site
+/// inlines too.
+const TIP_SCRIPT: &str = include_str!("../assets/param-tip.js");
 
 /// The script of the index: the filter and the view in the address, All
 /// and None, the counts, the domains below one checked or cleared with
@@ -1398,7 +1431,7 @@ fn enabled_tag(what: &str, on: bool) -> String {
 /// then each mark as the rows draw it with its word, the defaults first
 /// as in a row.
 fn legend(w: &Words) -> String {
-    let [defaults, statuses, uses, one_of, enabled, places] = w.legend;
+    let [defaults, statuses, uses, one_of, enabled, param, places] = w.legend;
     let item = |html: String| format!("<span class=\"legend-item\">{html}</span>");
     let lines = [
         (
@@ -1449,6 +1482,13 @@ fn legend(w: &Words) -> String {
         (
             enabled,
             item(enabled_tag(w.enabled, true)) + &item(enabled_tag(w.not_enabled, false)),
+        ),
+        (
+            param,
+            item(format!(
+                "<span class=\"param-value\">{}</span>{}",
+                w.name, w.param_meaning
+            )),
         ),
         (places, w.slots.to_owned()),
     ];
@@ -1660,8 +1700,9 @@ fn text_html(
     let fail = |what: String| Err(format!("{}: {part}: {what}", project.sources.file(key)));
     // Escaping leaves the citations and the placeholders as they are:
     // they hold no character HTML treats specially. A placeholder shows
-    // the value, marked, with the parameter's name on hover, linked to
+    // the value, marked, with its tip in the text's language, linked to
     // its entry on the page of parameters.
+    let [tip, open] = words(lang).param_tip;
     let text = param::fill(&escape(text), |name| {
         let (source, shown) = match project.values.get(name) {
             Some(s) => (s.source.clone(), s.param.shown(s.private_value(), lang)),
@@ -1671,7 +1712,7 @@ fn text_html(
             },
         };
         format!(
-            "<a class=\"value\" href=\"{up}{}#{name}\" title=\"{name}\">{}</a>",
+            "<a class=\"param-value\" href=\"{up}{}#{name}\" data-tip=\"{tip}{name}&#10;{open}\">{}</a>",
             params_page(&source).display(),
             escape(&shown)
         )

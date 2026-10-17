@@ -556,7 +556,7 @@ fn site_marks_defaults_uses_and_values() {
     assert!(read(&site, "R/2.html").contains("<p>Used in: AGENTS.md</p>"));
     assert!(
         read(&site, "R/7.html").contains(
-            "<p>Write in <a class=\"value\" href=\"../R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"
+            "<p>Write in <a class=\"param-value\" href=\"../R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"
         ),
         "{}",
         read(&site, "R/7.html")
@@ -663,11 +663,15 @@ fn site_draws_the_tree_by_level() {
     assert!(index.contains(tokens));
     assert!(read(&dir, ".statute/site/R/4.html").contains(tokens));
     assert!(index.contains("--icon-check: url(\"data:image/svg+xml,%3Csvg "));
+    assert!(index.contains("--icon-sliders: url(\"data:image/svg+xml,%3Csvg "));
     // The legend draws each mark as the rows do, a line per kind, the
     // defaults first, open until folded.
     let legend = &index[index.find("<details class=\"legend\" open>").expect(&index)..];
     let legend = &legend[..legend.find("</details>").unwrap()];
-    assert_eq!(legend.matches("<dt>").count(), 6, "{legend}");
+    assert_eq!(legend.matches("<dt>").count(), 7, "{legend}");
+    assert!(legend.contains(
+        "<dt>Parameter</dt><dd><span class=\"legend-item\"><span class=\"param-value\">English</span>a value the rule set can choose; the text shows the one it has</span></dd>"
+    ), "{legend}");
     assert!(legend.find("<dt>Default</dt>") < legend.find("<dt>Status</dt>"));
     assert!(
         legend.contains(
@@ -951,7 +955,7 @@ fn site_shows_statements_in_three_views() {
     let index = read(&site, "index.html");
     assert_eq!(
         statement(&index, 7),
-        "<div class=\"statement\">\n<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>\n</div>"
+        "<div class=\"statement\">\n<p>Write in <a class=\"param-value\" href=\"R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>\n</div>"
     );
     assert_eq!(
         statement(&index, 2),
@@ -968,7 +972,7 @@ fn site_shows_statements_in_three_views() {
         "{r7}"
     );
     assert!(
-        r7.contains("<p>Write in <a class=\"value\" href=\"R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"),
+        r7.contains("<p>Write in <a class=\"param-value\" href=\"R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"),
         "{r7}"
     );
     // Two radio buttons, the title checked; the style sheet hides the
@@ -996,7 +1000,7 @@ fn site_shows_statements_in_three_views() {
     }
     // A rule's own page is as it was.
     assert!(read(&site, "R/7.html").contains(
-        "<p>Write in <a class=\"value\" href=\"../R/parameters.html#language.docs\" title=\"language.docs\">Chinese</a>.</p>"
+        "<p>Write in <a class=\"param-value\" href=\"../R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"
     ));
 }
 
