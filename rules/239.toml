@@ -35,7 +35,7 @@ The line a statement becomes is the statement as compiling writes it, with each 
 Violated when a change adds or rewrites a rule's statement so that it rests on what its line does not show, or so that it names another rule by position instead of by a citation.
 '''
 zh = '''
-要求编译成的那一行，指编译时写出的要求，其中的引用和参数都已渲染。一个 agent 只读这一行，如果不看规定的标题、理由、核验方法、领域、parent 或同一 one-of 的其他选项，不看规定源里挨着它的规定，也不看它的 `requires` 或 `conflicts`，就弄不清它要求什么、对谁或对什么适用，这条要求就依赖了这一行看不到的东西。例如，规定要做到的某件事只写在核验方法、理由或标题里，要求本身没有写，这条要求就依赖了这一行看不到的东西。引用只显示所引规定的编号。要求引用了别的规定，只要引用周围的文字已经说清意思 (例如「scratch 目录」后面跟着对设立它的那条规定的引用)，或者这条规定 `requires` 被引用的规定，使被引规定的那一行也在同一份指令里，这条要求仍算单独读得懂。
+要求编译成的那一行，指编译时写出的要求，其中的引用和参数都已渲染。一个 agent 只读这一行，如果不看规定的标题、理由、核验方法、领域、parent 或同一 one-of 的其他选项，不看规定源里挨着它的规定，也不看它的 `requires` 或 `conflicts`，就弄不清它要求什么、对谁或对什么适用，这条要求就依赖了这一行看不到的东西。例如，规定要求的某件事只写在核验方法、理由或标题里，要求本身没有写，这条要求就依赖了这一行看不到的东西。引用只显示所引规定的编号。要求引用了别的规定，只要引用周围的文字已经说清意思 (例如「scratch 目录」后面跟着对设立它的那条规定的引用)，或者这条规定 `requires` 被引用的规定，使被引规定的那一行也在同一份指令里，这条要求仍算单独读得懂。
 
 变更新增或改写规定的要求后，要求依赖了它那一行看不到的东西，或者按位置而不是用引用提到别的规定的，即为违反本规定。
 '''
