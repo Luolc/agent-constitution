@@ -1,4 +1,4 @@
-<!-- en-sha256: 88bcb493c664425d61d14b024d36ece62c35aa0191f6c55bfb2bd24377736aef -->
+<!-- en-sha256: 5641a260218ac9711a5ee85a63ade7c005a29f1d160154767d4227af476e38b6 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
@@ -163,15 +163,15 @@ commit message 与 pull request 描述分成两个参数，是因为常见的做
 
 R314 在领域 R161 (`fleet-cli`) 里，其余的在领域 R127 (`machine`) 里。用到这些参数的规定都默认关，依赖 scratch 目录和数据目录的 R217 到 R220 也默认关，没打开它们的规定清单对这些目录什么也不说。要用它们的人在自己那一层打开它们并给出取值：公开仓库里由全局配置或私有规定清单给私有输出；私有仓库没有私有输出，由 `statute.toml` 设定。
 
-**发行版本、runner 与 socket。** R135、R212 和 R190 各把这个人环境里的一个值留给规定清单：Linux 机器与测试容器的发行版本，CI 服务托管的 Linux runner 的标签，本机 FedNet client 的 socket。每个值都由一个范围为 `personal` 的 `string` 参数给出，默认值不对应任何人的环境；用到它的规定默认关，并依赖它补值的那条规定：
+**发行版本、runner 与 socket。** R135、R212 和 R322 各把这个人环境里的一个值留给规定清单：Linux 机器与测试容器的发行版本，CI 服务托管的 Linux runner 的标签，本机 FedNet client 的 socket。每个值都由一个范围为 `personal` 的 `string` 参数给出，默认值不对应任何人的环境；用到它的规定默认关，并依赖它补值的那条规定：
 
 | 名字 | 默认值 | 用到它的规定 | 补值的规定 |
 | --- | --- | --- | --- |
 | `linux.container-image` | `debian:13` | R316 (领域 R127) | R135 |
 | `ci.linux-runner-label` | `ubuntu-22.04` | R317 (领域 R276) | R212 |
-| `fednet.client-socket` | `/run/fednet/client.sock` | R318 (领域 R188) | R190 |
+| `fednet.client-socket` | `/run/fednet/client.sock` | R318 和 R325 (领域 R188) | R322 和 R323 |
 
-机器的发行版本和容器的基础镜像由同一个值 (镜像的名字和 tag) 给出，两者不会对不上。R135、R212 和 R190 没有被取代，因为它们的要求不靠这个值也成立：启用它们而没打开新规定的规定清单仍有它们，只是不提这个值。取值的设定方式与目录相同。
+机器的发行版本和容器的基础镜像由同一个值 (镜像的名字和 tag) 给出，两者不会对不上。R135、R212、R322 和 R323 没有被取代，因为它们的要求不靠这个值也成立：启用它们而没打开新规定的规定清单仍有它们，只是不提这个值。取值的设定方式与目录相同。
 
 这十九个参数都声明在 `rules/params.toml` 里。表 `work-items` 与键 `language.work-items` 不冲突：一个是规定清单的表，一个是表 `language` 里的键。
 
