@@ -53,9 +53,15 @@ fn dir(name: &str, constitution: bool, nodes: &[(u64, String)]) -> PathBuf {
 }
 
 fn export(dir: &Path) -> (i32, String, String) {
+    export_in(Path::new("."), dir)
+}
+
+/// `export` run in `cwd`, as next to the `statute.toml` there.
+fn export_in(cwd: &Path, dir: &Path) -> (i32, String, String) {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .arg("export")
         .arg(dir)
+        .current_dir(cwd)
         .output()
         .unwrap();
     (
@@ -216,6 +222,32 @@ fn rules_alone() {
     assert_eq!(data["nodes"][0]["fields"]["parent"], "R1");
     // On, but whether it comes in depends on R1, which is not here.
     assert_eq!(data["nodes"][0].get("on-by-default"), Some(&Value::Null));
+}
+
+/// Without a constitution in the directory, a rule may leave out
+/// `authority` and `constitution` only where the rule set next to it
+/// rests on none.
+#[test]
+fn without_a_constitution_a_rule_needs_no_authority() {
+    let (id, text) = rule(2, 1, "");
+    let bare = text.replace("authority = [\"simplicity\"]\nconstitution = \">=1\"\n", "");
+    assert_ne!(bare, text);
+    let dir = dir("rules-alone-bare", false, &[domain(1), (id, bare)]);
+    let (code, _, stderr) = export_in(&dir, Path::new("."));
+    assert_eq!(code, 1);
+    assert!(
+        stderr.contains("rules/2.toml: error: a rule needs authority, constitution"),
+        "{stderr}"
+    );
+    std::fs::write(
+        dir.join("statute.toml"),
+        "public = false\nlocal-rules = \"rules\"\n",
+    )
+    .unwrap();
+    let (code, stdout, stderr) = export_in(&dir, Path::new("."));
+    assert_eq!((code, stderr.as_str()), (0, ""));
+    let data: Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(data["nodes"][1]["fields"].get("authority"), None);
 }
 
 #[test]

@@ -329,7 +329,13 @@ and checks what the constitution decides of the rules: each node's
 status against `index.toml`'s, each `{@constitution:...}` citation and
 each `authority` entry, with the warning on an `authority` that names a
 provision and one above it; a constitution that does not load is one
-error, and its own errors are left to `constitution build`. With
+error, and its own errors are left to `constitution build`. Without
+one, when `statute.toml` in the directory it runs in has no
+`constitution`, the rule set there rests on none, and a rule may leave
+out `authority` and `constitution`, as when that rule set reads it
+([Rule file format](rule-format.md#rule-file-format)); with no
+`statute.toml` there, or one that names a constitution, both are
+required. With
 `--base <git-ref>` it also runs the rules part of check 7: when the
 numbering is compared, every node of the base still exists, a rule of
 the older format as the node whose slug is its name, and what was
@@ -494,7 +500,11 @@ file. It prints the path of `index.html`.
 directory, `.` by default, as one JSON value, for a program that reads
 them; this repo's site does
 ([Static site](static-site.md), Rules). It reads no rule set: the
-directory is a source, holding `constitution/`, `rules/` or both.
+directory is a source, holding `constitution/`, `rules/` or both. Only
+when the directory has no `constitution/` does it look at `statute.toml`
+in the directory it runs in, and when that has no `constitution`, a
+rule may leave out `authority` and `constitution`, as `validate` reads
+it (above).
 
 - `constitution`: `null` without `constitution/`; otherwise the
   `edition`, `revision`, `status` and `languages` of the `index.toml` of

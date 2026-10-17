@@ -44,11 +44,19 @@ struct Index {
 ///   the default as an output writes it in each language a title of the
 ///   source is written in.
 ///
+/// With `rests_on_constitution` false, for a rule set that rests on no
+/// constitution, a rule may leave out `authority` and `constitution`.
+///
 /// The value is `None` when the sources do not pass statute's checks, so
 /// every translation a node lists follows its current original.
-pub fn export(dir: &Path) -> (Option<Value>, Diagnostics) {
+pub fn export(dir: &Path, rests_on_constitution: bool) -> (Option<Value>, Diagnostics) {
     let mut diags = Diagnostics::default();
     let base = dir.to_string_lossy();
+    let load = if rests_on_constitution {
+        Source::load
+    } else {
+        Source::load_without_constitution
+    };
     let constitution = if dir.join("constitution").is_dir() {
         match constitution(dir) {
             Ok(value) => value,
@@ -64,7 +72,7 @@ pub fn export(dir: &Path) -> (Option<Value>, Diagnostics) {
     let mut nodes = Vec::new();
     let mut params = Vec::new();
     if rules_dir.is_dir() {
-        let (source, more) = Source::load(&rules_dir, &shown(&base, "rules"));
+        let (source, more) = load(&rules_dir, &shown(&base, "rules"));
         diags.0.extend(more.0);
         if diags.has_errors() {
             return (None, diags);

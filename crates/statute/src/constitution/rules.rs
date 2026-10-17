@@ -34,11 +34,7 @@ pub fn validate(
     base: Option<&str>,
     diags: &mut Diagnostics,
 ) -> Vec<String> {
-    let root = dir
-        .canonicalize()
-        .ok()
-        .and_then(|d| d.parent().map(Path::to_path_buf));
-    let Some(root) = root.filter(|r| r.join(CONSTITUTION).is_dir()) else {
+    let Some(root) = beside(dir) else {
         if base.is_some() {
             diags.error(
                 &source.dir,
@@ -71,6 +67,14 @@ pub fn validate(
     };
     report(errors, diags);
     note.into_iter().collect()
+}
+
+/// The directory that holds `dir` when it holds a `constitution/` too.
+pub fn beside(dir: &Path) -> Option<PathBuf> {
+    dir.canonicalize()
+        .ok()
+        .and_then(|d| d.parent().map(Path::to_path_buf))
+        .filter(|r| r.join(CONSTITUTION).is_dir())
 }
 
 /// Moves the constitution's errors, `path:line: check N: message`, into
