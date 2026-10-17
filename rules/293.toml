@@ -30,14 +30,14 @@ agent 要让工作往下走 ({@constitution:automation-first.keep-moving})；安
 
 [text.verification]
 en = '''
-A rule halts work when its statement or its verification tells an agent to stop, pause, wait or start no work in a case where the agent cannot go on with that work by any act of its own, nor by waiting for a process already running to finish, as in "start no work while the ticketing system cannot be reached". A rule that forbids an act, or that allows one only under a condition the agent can bring about itself, such as its checks passing, or that a running process brings about, such as CI finishing, halts no work. A rule that allows an act only once a person or another agent has acted halts the work that waits on it, as {@rule:333} does, where no process set out in advance covers a rule, in allowing its move to `active` only once a principal has said it may.
+A rule halts work when its statement or its verification tells an agent to stop, pause, wait or start no work in a case where the agent cannot go on with that work by any act of its own, nor by waiting for a process already running to finish, as in "start no work while the ticketing system cannot be reached". A rule that forbids an act, or that allows one only under a condition the agent can bring about itself, such as its checks passing, or that a running process brings about, such as CI finishing, halts no work. A rule that allows an act only once a person or another agent has acted halts the work that waits on it.
 
 The way forward is an act that lets the work go on: a route the agent takes itself, or a request to a named party, such as whoever delegated the work or a principal, for what would let it go on, such as a decision, a route or an access. A report that asks for nothing is not a way forward. The statement says the way forward even when the halt is in the verification.
 
 Violated when a change adds or rewrites a rule that halts work and whose statement does not say the way forward.
 '''
 zh = '''
-规定的要求或核验方法让 agent 停下、暂停、等待或不开始某项工作，而在这种情况下，agent 自己做什么都没法让这项工作继续，等一个已经在跑的过程结束也不行 (例如「工单系统连不上时不开工」)，这条规定就让工作停下了。只禁止某个动作的规定，或者只在某个条件满足时才允许某个动作、而这个条件 agent 自己能促成 (例如自己的检查通过) 或在跑的过程会促成 (例如 CI 跑完) 的规定，不让工作停下。只在某个人或另一个 agent 做了什么之后才允许某个动作的规定，让等着它的工作停下了，例如没有事先定好的流程覆盖某条规定时，{@rule:333} 只在委托人说了可以之后才允许它转为 `active`。
+规定的要求或核验方法让 agent 停下、暂停、等待或不开始某项工作，而在这种情况下，agent 自己做什么都没法让这项工作继续，等一个已经在跑的过程结束也不行 (例如「工单系统连不上时不开工」)，这条规定就让工作停下了。只禁止某个动作的规定，或者只在某个条件满足时才允许某个动作、而这个条件 agent 自己能促成 (例如自己的检查通过) 或在跑的过程会促成 (例如 CI 跑完) 的规定，不让工作停下。只在某个人或另一个 agent 做了什么之后才允许某个动作的规定，让等着它的工作停下了。
 
 往下走的办法，是让工作能继续的一个动作：agent 自己走的一条路，或者向一个点了名的一方 (例如派活的一方或委托人) 要能让工作继续的东西，例如一个决定、一条路或一项权限。只报告、什么也不要的，不算往下走的办法。让工作停下的话即使写在核验方法里，往下走的办法也写在要求里。
 
@@ -45,4 +45,4 @@ zh = '''
 '''
 
 [translations]
-zh = "1d51d6914a64f333b8df3aeaeef268476ea53f41ca2499ecd580a1b9d530fc74"
+zh = "f4c7134f1676eeeef5c6087c94ed096d044f8113fc8087b7160c0ce092be0049"
