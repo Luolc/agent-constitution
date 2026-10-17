@@ -1,23 +1,23 @@
 id = 267
-slug = "shared-machines"
-revision = 2
+slug = "shared-resources"
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
-parent = 13
+parent = 273
 default = "on"
 
 [title]
-en = "Shared Machines"
-zh = "共享机器"
+en = "Shared Resources"
+zh = "共享资源"
 
 [applicability]
 en = '''
-Work on a machine that others share: no load generators, problems that need heavy load reproduced in isolation, and a way to stop every waiting loop and lasting process. Enable it wherever agents work; the rules here that are off by default are for machines shared with others.
+Work that shares a resource whose capacity is limited with other tasks, such as a machine's processors and memory, an account with a shared quota or a service with a rate limit: a fair share of it, no harm to the tasks already running, waits that end when what they wait for fails, and a fallback for stopping every lasting background process. Enable it wherever agents work.
 '''
 zh = '''
-在与别人共用的机器上工作：不起负载发生器，高负载下才出现的问题隔离复现，等待的循环和长期运行的进程都有办法停下。凡有 agent 工作的地方都要启用；这里默认关着的规定是给与别人共用的机器的。
+和别的任务共用有上限的资源时的工作，例如机器的 CPU 和内存、共用额度的账号、限了速率的服务：共用的资源只用自己该用的一份，不妨碍正在运行的任务，等的事失败了就结束等待，一直占用资源的后台进程都有兜底。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "71a90f4058c0712f3e18badd5abd71384b77524982138c4771693bb9a7a8442a"
+zh = "bc4b0e1df15c4f35cd3298b15266ff1c650c33115b7478b2b91e83c72849afba"

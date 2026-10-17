@@ -1,8 +1,9 @@
 id = 30
 slug = "no-load-generators"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 335
 lang = "en"
 parent = 267
 default = "off"
