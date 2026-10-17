@@ -1289,3 +1289,89 @@ Promise.all(frames.map((f) => new Promise((done) =>
         "390 true | 390 true"
     );
 }
+
+/// The table of rules with a rule overridden by one of a long title, in
+/// headless Chrome, in both languages: on a desktop the titles' column
+/// takes most of the table's width, and on a phone the table does not run
+/// past the screen's edge; the overridden rule's last cell names the
+/// other rule by its label alone, its title on hover. Skipped without
+/// Chrome, except in CI.
+#[test]
+fn site_gives_the_titles_the_room_of_the_table() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("wide");
+    let manifest = read(&dir, "statute.toml").replace("\"R7\"]", "\"R7\", \"20\"]");
+    write(&dir, "statute.toml", &manifest);
+    let long = "A rule whose title runs on well past the width of any column of the table";
+    let l20 = edit(
+        edit(
+            rule(20, 1, ""),
+            "parent = 1\ndefault = \"off\"",
+            "overrides = \"R2\"",
+        ),
+        "en = \"Rule 20\"",
+        &format!("en = \"{long}\""),
+    );
+    write(&dir, ".statute/rules/1.toml", &domain(1).1);
+    write(&dir, ".statute/rules/20.toml", &l20.1);
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    let page = dir.join("wide.html");
+    let frames: String = ["index.html", "zh/index.html"]
+        .iter()
+        .flat_map(|page| {
+            [(1280, page), (390, page)].map(|(width, page)| {
+                format!("<iframe src=\".statute/site/{page}?view=statement\" style=\"width: {width}px; height: 900px\"></iframe>\n")
+            })
+        })
+        .collect();
+    std::fs::write(
+        &page,
+        format!(
+            r##"<!DOCTYPE html><body>
+{frames}<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {{
+    const doc = f.contentDocument;
+    const root = doc.documentElement;
+    const table = doc.querySelector(".table").clientWidth;
+    const title = doc.querySelector(".entry .rule-title").clientWidth;
+    const inside = Array.from(doc.querySelectorAll(".table *"))
+      .every((e) => e.getBoundingClientRect().right <= root.clientWidth);
+    done(`${{root.clientWidth}} ${{inside}} ${{root.clientWidth < 768 || title > table / 2}}`);
+  }})))).then((r) => document.body.setAttribute("data-probe", r.join(" | ")));
+</script></body>"##
+        ),
+    )
+    .unwrap();
+    let out = Command::new(chrome)
+        .args([
+            "--headless",
+            "--no-proxy-server",
+            "--hide-scrollbars",
+            // The frames' documents, files too, are the page's to read.
+            "--allow-file-access-from-files",
+            "--window-size=1400,900",
+            "--virtual-time-budget=5000",
+        ])
+        .arg(format!("--user-data-dir={}", dir.join("profile").display()))
+        .arg("--dump-dom")
+        .arg(format!("file://{}", page.display()))
+        .output()
+        .unwrap();
+    let dom = String::from_utf8(out.stdout).unwrap();
+    let start = dom.find("data-probe=\"").expect(&dom) + 12;
+    assert_eq!(
+        &dom[start..start + dom[start..].find('"').unwrap()],
+        "1280 true true | 390 true true | 1280 true true | 390 true true"
+    );
+    assert!(read(&dir, ".statute/site/index.html").contains(&format!(
+        "overridden by <a href=\"L/20.html\" title=\"{long}\">L20</a>"
+    )));
+}
