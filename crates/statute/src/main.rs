@@ -349,26 +349,25 @@ fn print(diags: &Diagnostics) {
 /// `validate`: reads the rule files of `dir` as the first-party source,
 /// `R`, checks them, and against the constitution beside `dir` when there
 /// is one, and prints every finding; fails when one is an error. Without
-/// a constitution beside `dir`, the rules may leave out `authority` and
-/// `constitution` when the rule set here rests on none.
+/// a constitution beside `dir`, when the rule set here rests on none, the
+/// rules may leave out `authority` and `constitution`, and a citation of
+/// the constitution is an error, as `lock` reads them.
 fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
     use statute::source::Source;
     let label = dir.to_string_lossy();
     let label = label.trim_end_matches('/');
     let constitution = statute::constitution::rules::beside(dir).is_some()
         || rests_on_constitution(Path::new("."))?;
-    let load = if constitution {
-        Source::load
-    } else {
-        Source::load_without_constitution
-    };
-    let (mut source, mut diags) = load(dir, label);
+    let (mut source, mut diags) = Source::load_for(dir, label, constitution);
     source.name = manifest::FIRST_PARTY.to_owned();
     source.public = true;
     let sources = statute::source::Sources::new(vec![source]);
     sources.check(&mut diags);
     let first = sources.iter().next().expect("one source");
     first.check_retired_references(&mut diags);
+    if !constitution {
+        statute::constitution::rules::check_without_constitution(dir, first, &mut diags);
+    }
     let notes = statute::constitution::rules::validate(dir, first, base, &mut diags);
     print(&diags);
     for note in notes {

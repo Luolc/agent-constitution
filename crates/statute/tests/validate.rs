@@ -310,7 +310,7 @@ fn without_a_constitution_a_rule_needs_no_authority() {
     let (id, text) = rule(2, 1, "");
     let bare = text.replace("authority = [\"simplicity\"]\nconstitution = \">=1\"\n", "");
     assert_ne!(bare, text);
-    let dir = rules("rules-alone", &[domain(1), (id, bare)]);
+    let dir = rules("rules-alone", &[domain(1), (id, bare.clone())]);
     let root = dir.parent().unwrap();
     let needs = "rules/2.toml: error: a rule needs authority, constitution";
     for (manifest, code) in [
@@ -334,4 +334,21 @@ fn without_a_constitution_a_rule_needs_no_authority() {
         assert_eq!(run.code, code, "{manifest:?}: {}", run.stderr);
         assert_eq!(run.stderr.contains(needs), code == 1, "{}", run.stderr);
     }
+    // A citation of the constitution has nothing to render as, as `lock`
+    // finds it.
+    let cites = edit(
+        (id, bare),
+        "Do the thing 2.",
+        "Do the thing {@constitution:simplicity}.",
+    );
+    std::fs::write(dir.join("2.toml"), cites.1).unwrap();
+    let run = validate_in(root, Path::new("rules"));
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr.contains(
+            "rules/2.toml:16: error: cites constitution:simplicity, and statute.toml names no constitution"
+        ),
+        "{}",
+        run.stderr
+    );
 }

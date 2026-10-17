@@ -232,7 +232,7 @@ fn without_a_constitution_a_rule_needs_no_authority() {
     let (id, text) = rule(2, 1, "");
     let bare = text.replace("authority = [\"simplicity\"]\nconstitution = \">=1\"\n", "");
     assert_ne!(bare, text);
-    let dir = dir("rules-alone-bare", false, &[domain(1), (id, bare)]);
+    let dir = dir("rules-alone-bare", false, &[domain(1), (id, bare.clone())]);
     let (code, _, stderr) = export_in(&dir, Path::new("."));
     assert_eq!(code, 1);
     assert!(
@@ -248,6 +248,20 @@ fn without_a_constitution_a_rule_needs_no_authority() {
     assert_eq!((code, stderr.as_str()), (0, ""));
     let data: Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(data["nodes"][1]["fields"].get("authority"), None);
+    let cites = edit(
+        (id, bare),
+        "Do the thing 2.",
+        "Do the thing {@constitution:simplicity}.",
+    );
+    std::fs::write(dir.join("rules/2.toml"), cites.1).unwrap();
+    let (code, stdout, stderr) = export_in(&dir, Path::new("."));
+    assert_eq!((code, stdout.as_str()), (1, ""));
+    assert!(
+        stderr.contains(
+            "rules/2.toml:16: error: cites constitution:simplicity, and statute.toml names no constitution"
+        ),
+        "{stderr}"
+    );
 }
 
 #[test]

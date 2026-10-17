@@ -52,11 +52,6 @@ struct Index {
 pub fn export(dir: &Path, rests_on_constitution: bool) -> (Option<Value>, Diagnostics) {
     let mut diags = Diagnostics::default();
     let base = dir.to_string_lossy();
-    let load = if rests_on_constitution {
-        Source::load
-    } else {
-        Source::load_without_constitution
-    };
     let constitution = if dir.join("constitution").is_dir() {
         match constitution(dir) {
             Ok(value) => value,
@@ -72,8 +67,12 @@ pub fn export(dir: &Path, rests_on_constitution: bool) -> (Option<Value>, Diagno
     let mut nodes = Vec::new();
     let mut params = Vec::new();
     if rules_dir.is_dir() {
-        let (source, more) = load(&rules_dir, &shown(&base, "rules"));
+        let (source, more) =
+            Source::load_for(&rules_dir, &shown(&base, "rules"), rests_on_constitution);
         diags.0.extend(more.0);
+        if !rests_on_constitution {
+            crate::constitution::rules::check_without_constitution(&rules_dir, &source, &mut diags);
+        }
         if diags.has_errors() {
             return (None, diags);
         }
