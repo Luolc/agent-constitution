@@ -25,8 +25,9 @@ pub struct Project {
     /// The sources of `[sources]`, and the repository's own rules, `L`,
     /// when it has a `rules/` and no source is at `.`.
     pub sources: Sources,
-    /// The constitution's revision as `index.toml` writes it.
-    pub revision: String,
+    /// The constitution's revision as `index.toml` writes it; `None`
+    /// without a constitution.
+    pub revision: Option<String>,
     pub resolution: Resolution,
     /// The value of each parameter an enabled rule uses, by name.
     pub values: BTreeMap<String, Setting>,
@@ -55,6 +56,17 @@ pub struct Env {
 struct Index {
     edition: String,
     revision: String,
+}
+
+/// The edition of the constitution a rule set rests on, as read.
+struct Edition {
+    /// `constitution/<edition>/` in its source.
+    dir: PathBuf,
+    /// How its `index.toml` is named in messages.
+    index_name: String,
+    /// Its revision as `index.toml` writes it, and as a number.
+    revision: String,
+    number: u64,
 }
 
 /// `rules` for the source `.`, `../team/rules` for `../team`: how a path
@@ -349,54 +361,56 @@ impl Project {
             list.retain(|k| !absent.contains(k));
         }
 
-        let spec = manifest.constitution_spec();
-        let source_root = root.join(&spec.path);
-        let index_name = spec.shown(&format!("constitution/{}/index.toml", manifest.edition));
-        let index = std::fs::read_to_string(
-            source_root
-                .join("constitution")
-                .join(&manifest.edition)
-                .join("index.toml"),
-        )
-        .map_err(|e| {
-            format!(
-                "cannot read the constitution of edition `{}`: {e}",
-                manifest.edition
-            )
-        })
-        .and_then(|text| {
-            toml::from_str::<Index>(&text).map_err(|e| e.to_string().trim_end().to_owned())
-        })
-        .and_then(|index| {
-            if index.edition != manifest.edition {
-                return Err(format!(
-                    "the index is of edition `{}`, and the rule set names `{}`",
-                    index.edition, manifest.edition
-                ));
+        let mut constitution = None;
+        if let Some((c, spec)) = manifest.constitution_spec() {
+            let edition_dir = root.join(&spec.path).join("constitution").join(&c.edition);
+            let index_name = spec.shown(&format!("constitution/{}/index.toml", c.edition));
+            let index = std::fs::read_to_string(edition_dir.join("index.toml"))
+                .map_err(|e| {
+                    format!(
+                        "cannot read the constitution of edition `{}`: {e}",
+                        c.edition
+                    )
+                })
+                .and_then(|text| {
+                    toml::from_str::<Index>(&text).map_err(|e| e.to_string().trim_end().to_owned())
+                })
+                .and_then(|index| {
+                    if index.edition != c.edition {
+                        return Err(format!(
+                            "the index is of edition `{}`, and the rule set names `{}`",
+                            index.edition, c.edition
+                        ));
+                    }
+                    let number = index.revision.parse::<u64>().map_err(|_| {
+                        format!("revision `{}` is not a whole number", index.revision)
+                    })?;
+                    Ok((index.revision, number))
+                });
+            match index {
+                Ok((revision, number)) => {
+                    constitution = Some(Edition {
+                        dir: edition_dir,
+                        index_name,
+                        revision,
+                        number,
+                    });
+                }
+                Err(e) => {
+                    diags.error(index_name, e);
+                    return (None, diags);
+                }
             }
-            let number = index
-                .revision
-                .parse::<u64>()
-                .map_err(|_| format!("revision `{}` is not a whole number", index.revision))?;
-            Ok((index.revision, number))
-        });
-        let (revision, number) = match index {
-            Ok(r) => r,
-            Err(e) => {
-                diags.error(index_name, e);
-                return (None, diags);
-            }
-        };
+        }
 
         if diags.has_errors() {
             return (None, diags);
         }
-        let edition_dir = source_root.join("constitution").join(&manifest.edition);
+        let number = constitution.as_ref().map(|c| c.number);
         let lang = manifest.lang.clone();
         let cite = |resolution: &Resolution, diags: &mut Diagnostics| {
             check_citations(
-                &edition_dir,
-                &index_name,
+                constitution.as_ref(),
                 &lang,
                 &sources,
                 &dirs,
@@ -413,6 +427,7 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
+        let revision = constitution.map(|c| c.revision);
         let project = Project {
             root: root.to_owned(),
             manifest,
@@ -435,7 +450,7 @@ type Cite<'a> = dyn Fn(&Resolution, &mut Diagnostics) + 'a;
 fn fails(
     sources: &Sources,
     manifest: &Manifest,
-    number: u64,
+    number: Option<u64>,
     public: &Resolution,
     cite: &Cite,
 ) -> Option<String> {
@@ -461,7 +476,7 @@ fn fails(
 fn fit_global(
     sources: &Sources,
     manifest: &mut Manifest,
-    number: u64,
+    number: Option<u64>,
     public: &Resolution,
     cite: &Cite,
 ) {
@@ -503,32 +518,35 @@ fn fit_global(
 }
 
 /// Checks what the repository's own nodes, all but the repealed, and the
-/// enabled rules of the other sources cite of the constitution, whose
-/// edition directory is `edition_dir` and `index.toml` is named
-/// `index_name`: each `authority` entry and `{@constitution:...}` citation
+/// enabled rules of the other sources cite of the edition `constitution`
+/// of the constitution: each `authority` entry and `{@constitution:...}` citation
 /// names a provision of it that is not repealed, as `statute validate`
 /// checks a source beside its constitution, with each finding at its line
 /// of the node's file in `dirs`, the directory of each source by name.
+/// Without a constitution, `authority` is not checked, and every
+/// `{@constitution:...}` citation is an error, for it has nothing to
+/// render as.
 fn check_citations(
-    edition_dir: &Path,
-    index_name: &str,
+    constitution: Option<&Edition>,
     lang: &str,
     sources: &Sources,
     dirs: &BTreeMap<String, PathBuf>,
     resolution: &Resolution,
     diags: &mut Diagnostics,
 ) {
-    let labels = match Labels::load(&edition_dir.join("articles"), lang) {
-        Ok(labels) => labels,
-        Err(e) => {
-            diags.error(
-                index_name,
-                format!("{e}, so what the rules cite of the constitution is not checked"),
-            );
-            return;
-        }
+    let provisions = match constitution {
+        None => Provisions::none(),
+        Some(edition) => match Labels::load(&edition.dir.join("articles"), lang) {
+            Ok(labels) => Provisions::of_labels(&labels),
+            Err(e) => {
+                diags.error(
+                    &edition.index_name,
+                    format!("{e}, so what the rules cite of the constitution is not checked"),
+                );
+                return;
+            }
+        },
     };
-    let provisions = Provisions::of_labels(&labels);
     for (key, n) in sources.nodes() {
         let own = sources.source(&key.source).is_some_and(|s| s.local);
         if n.status == Status::Repealed || !(own || resolution.enabled.contains_key(&key)) {

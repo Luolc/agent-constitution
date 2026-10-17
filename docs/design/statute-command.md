@@ -34,7 +34,9 @@ this order: a comment that the file is generated, which `compile` reads to
 tell its own file from one written by hand; the constitution's version
 for agents in the rule set's language, the file
 `constitution/<edition>/generated/constitution.<lang>.agent.md` that the
-constitution's build writes, unchanged; and a heading "Rules" with the
+constitution's build writes, unchanged, when the rule set rests on a
+constitution ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file));
+and a heading "Rules" with the
 enabled rules. The edition, revision and source the file rests on are in
 `statute.lock`, not in the file.
 

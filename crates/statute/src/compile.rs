@@ -1,8 +1,8 @@
 //! Compiling a locked rule set (`docs/design/statute-command.md`, Compilation
-//! and the site) into `AGENTS.md`, the constitution's version for agents
-//! and then the enabled rules along the parent tree, with the citations in
-//! their text rendered; and, next to it, the skills the enabled rules
-//! need.
+//! and the site) into `AGENTS.md`, the constitution's version for agents,
+//! when the rule set rests on one, and then the enabled rules along the
+//! parent tree, with the citations in their text rendered; and, next to
+//! it, the skills the enabled rules need.
 
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
@@ -509,28 +509,29 @@ fn check_lock(path: &Path, shown: &str, current: &str, set: &str) -> Result<(), 
 /// The text of `AGENTS.md`; with `private`, with the person's own values.
 fn agents_md(project: &Project, private: bool) -> Result<String, String> {
     let m = &project.manifest;
-    let spec = m.constitution_spec();
     let lang = m.lang.as_str();
-    let relative = format!(
-        "constitution/{}/generated/constitution.{lang}.agent.md",
-        m.edition
-    );
-    let constitution = std::fs::read_to_string(project.root.join(&spec.path).join(&relative))
-        .map_err(|e| {
+    let w = words(lang);
+    let mut out = String::new();
+    let _ = writeln!(out, "{GENERATED}\n");
+    if let Some((c, spec)) = m.constitution_spec() {
+        let relative = format!(
+            "constitution/{}/generated/constitution.{lang}.agent.md",
+            c.edition
+        );
+        let constitution = std::fs::read_to_string(project.root.join(&spec.path).join(&relative))
+            .map_err(|e| {
             format!(
                 "cannot read {relative} of source `{}`: {e}; `{}` writes it",
                 spec.name,
                 crate::constitution::BUILD_COMMAND
             )
         })?;
+        out.push_str(constitution.trim_end());
+        out.push_str("\n\n");
+    }
 
     let labels = labels(project, lang)?;
 
-    let w = words(lang);
-    let mut out = String::new();
-    let _ = writeln!(out, "{GENERATED}\n");
-    out.push_str(constitution.trim_end());
-    out.push_str("\n\n");
     let _ = writeln!(out, "# {}\n", w.rules);
 
     // The domains of the first-party source, then those of the other
@@ -571,14 +572,31 @@ fn shown(project: &Project, key: &Key) -> bool {
 }
 
 /// The labels of the provisions of the project's constitution, in
-/// `lang`.
+/// `lang`; none without a constitution.
 pub fn labels(project: &Project, lang: &str) -> Result<Labels, String> {
-    let m = &project.manifest;
+    let Some((c, spec)) = project.manifest.constitution_spec() else {
+        return Ok(Labels::default());
+    };
     let articles = project
         .root
-        .join(&m.constitution_spec().path)
-        .join(format!("constitution/{}/articles", m.edition));
+        .join(&spec.path)
+        .join(format!("constitution/{}/articles", c.edition));
     Labels::load(&articles, lang)
+}
+
+/// What is wrong with `{@constitution:<id>}`, a citation that `labels`
+/// has no label for.
+pub fn uncited(project: &Project, id: &str) -> String {
+    match &project.manifest.constitution {
+        Some(c) => format!(
+            "cites `{{@constitution:{id}}}`, which is not in edition {} of the constitution",
+            c.edition
+        ),
+        None => format!(
+            "cites `{{@constitution:{id}}}`, and {} names no constitution",
+            crate::manifest::FILE
+        ),
+    }
 }
 
 /// The text of node `key` with its citations rendered: a rule, with
@@ -633,10 +651,7 @@ pub fn cited(
         }
         Citation::Constitution(id) => match labels.get(id) {
             Some(label) => Ok(label.to_string()),
-            None => fail(&format!(
-                "cites `{{@constitution:{id}}}`, which is not in edition {} of the constitution",
-                project.manifest.edition
-            )),
+            None => fail(&uncited(project, id)),
         },
         Citation::Bare(id) => fail(&format!(
             "cites `{{@{id}}}` without `rule:` or `constitution:`"

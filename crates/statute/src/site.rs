@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::cite::{self, Citation, Labels};
-use crate::compile::{filled, labels, pick};
+use crate::compile::{filled, labels, pick, uncited};
 use crate::manifest::Key;
 use crate::node::{self, Kind, Node, Status, Switch, Text};
 use crate::param::{self, Origin, Scope, Type};
@@ -1756,10 +1756,7 @@ fn text_html(
         },
         Citation::Constitution(id) => match labels.get(id) {
             Some(label) => Ok(escape(label)),
-            None => fail(format!(
-                "cites `{{@constitution:{id}}}`, which is not in edition {} of the constitution",
-                project.manifest.edition
-            )),
+            None => fail(uncited(project, id)),
         },
         Citation::Bare(id) => fail(format!(
             "cites `{{@{id}}}` without `rule:` or `constitution:`"

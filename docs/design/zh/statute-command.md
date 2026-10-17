@@ -1,4 +1,4 @@
-<!-- en-sha256: adb3ed405110f408bce2ccf9ceaa6c368e132caf403f2c6ac0f02d10498e65a5 -->
+<!-- en-sha256: dad55d33b3598328e4ee2c0d9803958b589f3369b6e9163747999d77e4ca8e88 -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -13,7 +13,7 @@
 
 `AGENTS.md` 只收录 `uses` 含 `instructions` 的启用规定 ([规定用在哪里](rule-config.md#where-a-rule-is-used))；参数实现之后，每个占位符都换成它的取值 ([参数](rule-config.md#parameters))。
 
-`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，skill 写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，连同它记下的 statute 版本，否则不写；只有版本不同时，报错写明两个版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。`AGENTS.md` 依次包含：一行说明文件是生成的注释，`compile` 靠它区分自己写的文件和手写的文件；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入；最后是标题「规定」及启用的规定。文件依据的宪法的版、修订号和规定源记在 `statute.lock` 里，不写进文件。
+`statute compile` 把 `AGENTS.md` 写在 `statute.toml` 旁边，用 `--output` 可以写到别的文件，skill 写在它旁边 (见下)；锁文件必须与 `statute lock` 此刻会写出的内容一致，连同它记下的 statute 版本，否则不写；只有版本不同时，报错写明两个版本 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。`AGENTS.md` 依次包含：一行说明文件是生成的注释，`compile` 靠它区分自己写的文件和手写的文件；规定清单所用语言的宪法 agent 版，即宪法构建写出的 `constitution/<edition>/generated/constitution.<lang>.agent.md`，原样收入，规定清单依据一部宪法时才有 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；最后是标题「规定」及启用的规定。文件依据的宪法的版、修订号和规定源记在 `statute.lock` 里，不写进文件。
 
 `AGENTS.md` 是给 agent 读的，私有全文 `.statute/AGENTS.full.md` 也是，两者构建方式相同。标题「规定」下面，文件里有启用规定的每个领域各是一个标题，写的是领域的标题：有规定清单所用语言的译文就用译文，没有就用原文，占位符与要求里一样替换成取值。每条启用的规定是一项，写成 `- <引用> <要求>`，例如 `- R22 Keep a credential out of every message.`：先是 statute 显示的这条规定的引用 (`R42`、`L12`、`P7`、`team:7`)，一个空格，然后是它的要求；要求有多行时，第一行之后的每行缩进两个空格，接着这一项写。别的一概不写：没有规定的标题、理由和核验方法，不写 one-of 的任何内容，领域只写标题，不写 applicability，也没有锚点和链接。这些标题占不了几行，agent 或读这个文件的人能一眼看出每组规定从哪里开始。节点之间的关系和设置，即 `requires`、`conflicts`、one-of、`overrides`、默认开关、`uses` 和 `parent`，都是元信息：statute 在锁定和编译时检查它们，规定清单编译通过之后，它们的作用就尽到了，不写进文件。规定的标题、理由、核验方法和领域的 applicability 是给人看的，放在网站上 (见下)；审查方从 `statute check` 拿到规定的理由和核验方法。引用保留在每一项的开头，审查发现和引用都靠它指明是哪条规定。
 
