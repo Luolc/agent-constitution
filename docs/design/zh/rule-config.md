@@ -1,4 +1,4 @@
-<!-- en-sha256: 144c324379648a287dc0657e6df0538ad11af00496f01a9bda7b69d8e060dc14 -->
+<!-- en-sha256: 14c8ae86a6fdc19407fe8c6beab1c49281f3246b466b5ca0cde163f3f9f93f1c -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
@@ -259,7 +259,7 @@ packs = ["R96"]
 - `exclude` 关掉一个默认开启的领域、one-of 或规定。关掉一个节点，就关掉它的整棵子树；关掉的 one-of 一个选项也不启用。被某条启用的规定依赖的规定不能关：构建失败，并指出依赖它的那条规定。one-of 的选项，不论是默认的还是别的，都不能写进 `exclude`：构建失败，并提示在 `rules` 或 `domains` 里写另一个选项，或者关掉整个 one-of。同一个节点既在 `exclude` 里、又在 `rules` 或 `packs` 里，也失败，并提示只留一处。
 - `packs` 与现在一样，开启整棵子树里的每条规定，不论它的 `default`；但在 one-of 处只开一个选项：规定清单在 `rules` 或 `domains` 里点名的那个，没有点名就是默认的那个；是领域的选项，开启其中每条规定。`exclude` 可以关掉其中一部分。
 - 一条规定依赖某个 one-of，而规定清单没有启用这个 one-of 的任何选项时，带进来的是默认选项，与 statute 补上任何缺失的依赖一样，不再报错。
-- `statute add` 把领域写进 `domains`，把规定写进 `rules`；`statute remove` 从 `rules`、`domains` 或 `packs` 里去掉一项，这条规定或这个领域仍然默认开启时，把它写进 `exclude`。
+- `statute add` 把领域写进 `domains`，把规定写进 `rules`；`statute remove` 从 `rules`、`domains` 或 `packs` 里去掉一项，这条规定、这个领域或这个 one-of 仍然默认开启时，把它写进 `exclude`。one-of 的选项它哪里都不写：选项仍然开启、又没有从哪个列表里去掉时，它报错，并指出关掉它的两种做法 (添加另一个选项，或去掉整个 one-of)。
 - `private.toml` 可以有 `rules`、`domains`、`packs` 和 `exclude`，它们只改变私有输出：`AGENTS.md` 和 `statute.lock` 仍是 `statute.toml` 给出的样子 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。它们可以点名任何规定源的节点，包括第一方规定源，每一项都与在 `statute.toml` 里一样起作用，作用在两层合起来的规定清单上：
   - `exclude` 关掉任一层的默认值开启的领域、one-of 或规定，或者 `statute.toml` 列出的。它点名的 `statute.toml` 的 `rules`、`domains` 或 `packs` 里的一项，在私有层里去掉；`statute.toml` 在它点名的领域下列出的规定仍然启用，与在 `statute.toml` 里一样，要按名字关掉。
   - `rules`、`domains` 和 `packs` 开启默认值没有开启的，也重新开启 `statute.toml` 的 `exclude` 点名的：这一项在私有层里离开那个 `exclude`，也不给出「默认值已经开启它」的警告，因为只有去掉那个 `exclude`，默认值才开启它。

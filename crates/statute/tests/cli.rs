@@ -325,18 +325,21 @@ fn remove_says_when_the_rule_stays_enabled() {
     );
 }
 
+/// `remove` of the default option of a one-of writes nothing to
+/// `exclude`, which cannot name it, and names the ways to turn it off;
+/// `remove` of the one-of writes the one-of there.
 #[test]
-fn remove_that_would_break_the_rule_set_changes_nothing() {
-    // In domain 1, on, one-of 4 enables its default 5, which `remove`
-    // would write to `exclude`, where an option cannot go.
+fn remove_turns_off_a_one_of_not_its_default_option() {
+    // In domain 1, on, one-of 4 enables its default 5.
     let mut on = nodes();
     on[0] = set_default(domain(1), "\"on\"");
-    let dir = repo("remove-breaks", &manifest(""), &on);
+    let dir = repo("remove-option", &manifest(""), &on);
     let run = statute(&dir, &["remove", "R5"]);
     assert_eq!(run.code, 1);
     assert!(
-        run.stderr
-            .contains("`exclude` names R5, an option of the one-of R4"),
+        run.stderr.contains(
+            "statute.toml: error: R5 is an option of the one-of R4, which `exclude` cannot name; to turn it off, `statute add` another option of R4, or `statute remove R4`"
+        ),
         "{}",
         run.stderr
     );
@@ -348,6 +351,15 @@ fn remove_that_would_break_the_rule_set_changes_nothing() {
         "{}",
         run.stderr
     );
+    let run = statute(&dir, &["remove", "R4"]);
+    ok(&run);
+    assert!(
+        run.stdout
+            .contains("added R4 to `exclude`, as it is on by default"),
+        "{}",
+        run.stdout
+    );
+    assert!(!read(&dir, "statute.lock").contains("rule = \"R5\"\n"));
 }
 
 /// Writes a rule file (or the index, for `id` 0) over the one in `dir`.
