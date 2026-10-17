@@ -17,14 +17,14 @@ zh = "起任务之前，先想清楚它会不会妨碍正在运行的任务"
 
 [text.statement]
 en = "Before you start a task or hand one to another agent, consider whether it would harm tasks already running, for example by taking resources they share, deadlocking with them, changing the same code or stopping their processes; where it would, follow the way of resolving such conflicts that is set or agreed in advance, and where there is none, avoid the harm or first ask whoever delegated the work."
-zh = "起一个任务或把任务交给别的 agent 之前，先想清楚它会不会妨碍正在运行的任务，例如抢占共用的资源、与它们互相锁死、改同一处代码、停掉它们的进程；会的话，有现成的冲突处理办法或事先的约定就照着做，没有就避开这种妨碍，或者先问委派工作的一方。"
+zh = "起一个任务或把任务交给别的 agent 之前，先想清楚它会不会妨碍正在运行的任务，例如抢占共用的资源、与它们形成死锁、改同一处代码、停掉它们的进程；会的话，有现成的冲突处理办法或事先的约定就照着做，没有就避开这种妨碍，或者先问委派工作的一方。"
 
 [text.reason]
 en = '''
 A task that takes the resources of other tasks, locks against them, changes the code they change or stops their processes spoils their work; agents pursue goals only by legitimate means ({@constitution:decency.legitimate-means}), and an agent that hands a task on cannot give the other agent leave to do what it may not do itself ({@constitution:delegated-authority}). Before the task starts is when such harm is cheapest to avoid.
 '''
 zh = '''
-一个任务抢了别的任务的资源、和它们互相锁死、改了它们在改的代码，或者停掉了它们的进程，就会坏了它们的工作；agent 只用正当的手段达成目标 ({@constitution:decency.legitimate-means})，把任务交给别的 agent 时，也不能让对方去做自己都不能做的事 ({@constitution:delegated-authority})。这种妨碍在任务开始之前避开，代价最小。
+一个任务抢了别的任务的资源、和它们形成死锁、改了它们在改的代码，或者停掉了它们的进程，就会坏了它们的工作；agent 只用正当的手段达成目标 ({@constitution:decency.legitimate-means})，把任务交给别的 agent 时，也不能让对方去做自己都不能做的事 ({@constitution:delegated-authority})。这种妨碍在任务开始之前避开，代价最小。
 '''
 
 [text.verification]

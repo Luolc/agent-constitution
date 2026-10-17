@@ -1,23 +1,23 @@
 id = 267
-slug = "shared-machines"
-revision = 3
+slug = "shared-resources"
+revision = 4
 kind = "domain"
 status = "trial"
 lang = "en"
-parent = 13
+parent = 273
 default = "on"
 
 [title]
-en = "Shared Machines"
-zh = "共享机器"
+en = "Shared Resources"
+zh = "共享资源"
 
 [applicability]
 en = '''
-Work on a machine where other tasks are running too: a fair share of the resources they share, no harm to the tasks already running, waits that end when what they wait for fails, and a fallback for stopping every lasting background process. Enable it wherever agents work.
+Work that shares a resource whose capacity is limited with other tasks, such as a machine's processors and memory, an account with a shared quota or a service with a rate limit: a fair share of it, no harm to the tasks already running, waits that end when what they wait for fails, and a fallback for stopping every lasting background process. Enable it wherever agents work.
 '''
 zh = '''
-机器上还有别的任务在跑时的工作：共用的资源只用自己该用的一份，不妨碍正在运行的任务，等的事失败了就结束等待，一直占用资源的后台进程都有兜底。凡有 agent 工作的地方都要启用。
+和别的任务共用有上限的资源时的工作，例如机器的 CPU 和内存、共用额度的账号、限了速率的服务：共用的资源只用自己该用的一份，不妨碍正在运行的任务，等的事失败了就结束等待，一直占用资源的后台进程都有兜底。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "0cd585122c7d60188c9a9fab8ef7b5cdc3ff5abc5d70c9275ade65bd011d118c"
+zh = "bc4b0e1df15c4f35cd3298b15266ff1c650c33115b7478b2b91e83c72849afba"
