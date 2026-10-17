@@ -759,15 +759,15 @@ pub fn resolve(
                 );
             }
         }
-        if let Some(revision) = revision
-            && !rule.constitution.contains(revision)
+        if let (Some(revision), Some(revisions)) = (revision, &rule.constitution)
+            && !revisions.contains(revision)
         {
             diags.error(
                 file,
                 format!(
                     "rule {} is compatible with constitution revisions `{}`, and the rule set rests on revision {revision}; take the rule out or move to a revision it accepts",
                     label(sources, key),
-                    rule.constitution
+                    revisions
                 ),
             );
         }

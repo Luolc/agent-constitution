@@ -26,7 +26,8 @@ R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 lang = "en"
 ```
 
-The rule set names the constitution's source and edition; the revision
+The rule set names the constitution's source and edition, or leaves
+`constitution` out (**Or to none**, below); the revision
 is the one at the commit of that source the lock file pins, and the lock
 file records it. `rules` lists the rules chosen directly and `packs` the
 roots of the packs enabled, each as a reference
@@ -238,9 +239,10 @@ local-rules = "agent-rules"
 `compile` writes the file as it always does, less the constitution's
 version for agents
 ([Compilation and the site](statute-command.md#compilation-and-the-site)),
-and the lock file has no `[constitution]`. Each rule still has the
-`authority` and `constitution` fields the rule format requires; with no
-constitution to check them against, statute checks neither, and a
+and the lock file has no `[constitution]`. A rule of such a rule set
+may leave out `authority` and `constitution`
+([Rule file format](rule-format.md#rule-file-format)); where it has them,
+statute checks neither, with no constitution to check them against. A
 `{@constitution:...}` citation in a rule's text fails `lock` and
 `compile`, since it has nothing to render as.
 

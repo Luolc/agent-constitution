@@ -178,6 +178,51 @@ fn without_a_constitution_compiles_the_rules_alone() {
     );
 }
 
+/// `text`, a rule of `common::rule`, without `authority` and
+/// `constitution`.
+fn without_authority(text: &str) -> String {
+    let fields = "authority = [\"simplicity\"]\nconstitution = \">=1\"\n";
+    assert!(text.contains(fields), "{text}");
+    text.replace(fields, "")
+}
+
+#[test]
+fn without_a_constitution_a_rule_needs_no_authority() {
+    let dir = rules_alone("rules-alone-bare");
+    for (id, text) in nodes() {
+        if text.contains("kind = \"rule\"") {
+            std::fs::write(
+                dir.join(format!("my-rules/{id}.toml")),
+                without_authority(&text),
+            )
+            .unwrap();
+        }
+    }
+    let expected = format!(
+        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n\n{}",
+        RULES_EN.replace("- R", "- L")
+    );
+    assert_eq!(compiled(&dir), expected);
+}
+
+#[test]
+fn with_a_constitution_a_rule_still_needs_authority() {
+    let dir = repo("needs-authority", &manifest(""));
+    std::fs::write(
+        dir.join("rules/2.toml"),
+        without_authority(&rule(2, 1, "").1),
+    )
+    .unwrap();
+    let run = statute(&dir, &["lock"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr
+            .contains("rules/2.toml: error: a rule needs authority, constitution"),
+        "{}",
+        run.stderr
+    );
+}
+
 #[test]
 fn without_a_constitution_a_citation_of_one_fails() {
     let dir = rules_alone("rules-alone-cite");

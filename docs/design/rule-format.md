@@ -213,6 +213,10 @@ The fields:
   compatible with, written as a Python version specifier (`">=1"`,
   `">=1,<4"`; see
   [Tracing rules to the constitution](#tracing-rules-to-the-constitution)).
+  It and `authority` are required, but a rule set that rests on no
+  constitution reads its rules without them
+  ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file));
+  `statute validate` and a rule set with a constitution require both.
 - `level`: the default level, `project` or `user`
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)).
 - `check`: how compliance is checked ([Checks](rule-checks.md#checks)). `builtin`: the
@@ -313,8 +317,9 @@ per repository ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-loc
 
 ## Tracing rules to the constitution
 
-Every rule cites the provisions of the constitution it refines, in the
-`authority` field ([Rule file format](#rule-file-format)). That link is
+Every rule that rests on a constitution cites the provisions of it that
+the rule refines, in the `authority` field
+([Rule file format](#rule-file-format)). That link is
 used in both directions:
 
 - When a provision of the constitution is amended, the rules that cite it

@@ -1,4 +1,4 @@
-<!-- en-sha256: d9d9751a6c8f42e2ae4dddbf55dd20ced956ad6260b86cb11c8d3c509199012c -->
+<!-- en-sha256: c8217532c43a3cb28d103d2b8b97985bef017cf41d39d26b83fdc485fe28d411 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -21,7 +21,7 @@ R = { git = "https://github.com/Luolc/agent-constitution", tag = "<tag>" }
 lang = "en"
 ```
 
-规定清单写明宪法的规定源和版；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。one-of 的选项是规定时，选它就是把它写进 `rules`，这里是 `R51`；是领域时，通过 `domains` 选 ([规定清单里](rule-config.md#in-the-rule-set))。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个选项启用。`[compile]` 里的 `lang` 指定编译出的 `AGENTS.md` 用哪种语言写，默认 `en`。文件收录每条规定的哪些部分不是一项设置：只有它的引用和要求 ([编译与网站](statute-command.md#compilation-and-the-site))；`[compile]` 以前的键 `agents-md` 写了会让构建失败，并说明这一点。
+规定清单写明宪法的规定源和版，也可以不写 `constitution` (见下文的**或者不绑定宪法**)；修订号就是锁文件钉住的那个规定源提交上的修订号，由锁文件记下。`rules` 列出直接选用的规定，`packs` 列出启用的规定包的根，都写成引用 ([规定源与引用](#sources-and-references))：这里 `R42` 和 `R51` 是第一方规定，`12` 是仓库自己的规定。one-of 的选项是规定时，选它就是把它写进 `rules`，这里是 `R51`；是领域时，通过 `domains` 选 ([规定清单里](rule-config.md#in-the-rule-set))。`rules` 里写了 domain 或 one-of 的，构建失败，并提示 domain 要作为规定包启用，one-of 要通过它的某个选项启用。`[compile]` 里的 `lang` 指定编译出的 `AGENTS.md` 用哪种语言写，默认 `en`。文件收录每条规定的哪些部分不是一项设置：只有它的引用和要求 ([编译与网站](statute-command.md#compilation-and-the-site))；`[compile]` 以前的键 `agents-md` 写了会让构建失败，并说明这一点。
 
 [规定源](rule-sources.md) 加了几个字段。顶层的 `public` 必填，写明仓库是否公开；`R` 以外的每个规定源也为自己写明 `public`，还可以写 `scope`，默认 `"global"`，也可以是 `"local"` (见[四类规定源](rule-sources.md#four-kinds-of-source))。公开仓库把私有规定源写在私有规定清单里，即 git 自己目录里的 `private.toml`，一个 clone 的所有 worktree 共用。它继承所在 worktree 的 `statute.toml`，不用写明，锁文件 `private.lock` 则每个 worktree 一份。这个锁文件只锁定私有层自己的规定源，每个记地址、分支或 tag 和 commit；两层合起来的解析在每个 worktree 里根据它的 `statute.lock` 和 `private.lock` 在内存里算出，从不落盘。它编译成 `.statute/AGENTS.full.md`，公开规定与私有规定合在一份里 (见[公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))。[规定配置](rule-config.md) 又加了本地规定的目录、参数和默认开关，哪些还没有实现，它在相应处标明。
 
@@ -94,7 +94,7 @@ public = false
 local-rules = "agent-rules"
 ```
 
-`compile` 照常写出文件，只是不收宪法的 agent 版 ([编译与网站](statute-command.md#compilation-and-the-site))，锁文件里也没有 `[constitution]`。每条规定仍有规定格式要求的 `authority` 和 `constitution` 字段；没有宪法可以对照，statute 两个都不检查；规定正文里的 `{@constitution:...}` 引用会让 `lock` 和 `compile` 失败，因为它没有可以渲染成的东西。
+`compile` 照常写出文件，只是不收宪法的 agent 版 ([编译与网站](statute-command.md#compilation-and-the-site))，锁文件里也没有 `[constitution]`。这样的规定清单里，规定可以不写 `authority` 和 `constitution` ([规定文件格式](rule-format.md#rule-file-format))；写了的，没有宪法可以对照，statute 两个都不检查。规定正文里的 `{@constitution:...}` 引用会让 `lock` 和 `compile` 失败，因为它没有可以渲染成的东西。
 
 **按仓库划分，可以继承。** 规定清单属于一个仓库，它可以继承一份共用的基础规定清单 (写在它的 `base` 字段里，尚未实现)，这样一个用户或团队的所有仓库都认可的规定只写一次。仓库在基础清单之上增加规定、去掉规定，并在 one-of 的子节点中作出选择。这样，当前设计中的法域 (`division-of-instructions.rules`) 就成了一份基础规定清单的所有者，它的各个仓库继承这份清单；每个仓库的规定清单和编译输出，取代每个法域一份的规定选择和编译文件。互斥按规定清单检查，所以一个仓库可以用 uv 管理它的 Python 包，另一个用 Bazel。
 

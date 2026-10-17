@@ -40,6 +40,16 @@ impl Source {
     /// the directory is named in messages (`rules`). The source is returned
     /// even when there are errors; callers look at `Diagnostics`.
     pub fn load(dir: &Path, label: &str) -> (Source, Diagnostics) {
+        Source::read(dir, label, true)
+    }
+
+    /// As `load`, for a rule set that rests on no constitution: a rule may
+    /// leave out `authority` and `constitution`.
+    pub fn load_without_constitution(dir: &Path, label: &str) -> (Source, Diagnostics) {
+        Source::read(dir, label, false)
+    }
+
+    fn read(dir: &Path, label: &str, constitution: bool) -> (Source, Diagnostics) {
         let mut files = Vec::new();
         let entries = match std::fs::read_dir(dir) {
             Ok(entries) => entries,
@@ -70,7 +80,7 @@ impl Source {
                 Err(e) => diags.error(file, format!("cannot read: {e}")),
             }
         }
-        let (mut source, more) = Source::from_files(files);
+        let (mut source, more) = Source::from_files_for(files, constitution);
         source.dir = label.to_owned();
         diags.0.extend(more.0);
         (source, diags)
@@ -79,7 +89,16 @@ impl Source {
     /// Checks the given files, each a name such as `rules/42.toml` and its
     /// bytes. A file named `params.toml` holds the source's parameters,
     /// next to the rule files (`docs/design/rule-config.md`, Parameters).
-    pub fn from_files(mut files: Vec<(String, Vec<u8>)>) -> (Source, Diagnostics) {
+    pub fn from_files(files: Vec<(String, Vec<u8>)>) -> (Source, Diagnostics) {
+        Source::from_files_for(files, true)
+    }
+
+    /// As `from_files`; with `constitution` false, as
+    /// `load_without_constitution` reads them.
+    fn from_files_for(
+        mut files: Vec<(String, Vec<u8>)>,
+        constitution: bool,
+    ) -> (Source, Diagnostics) {
         let mut diags = Diagnostics::default();
         let mut params = Vec::new();
         files.retain(|(file, bytes)| {
@@ -104,7 +123,7 @@ impl Source {
         let mut files_by_id: HashMap<Id, String> = HashMap::new();
         let mut slugs: HashMap<String, Id> = HashMap::new();
         for (file, bytes) in &files {
-            let Some(node) = node::parse(file, bytes, &mut diags) else {
+            let Some(node) = node::read(file, bytes, constitution, &mut diags) else {
                 continue;
             };
             if let Some(first) = files_by_id.get(&node.id) {

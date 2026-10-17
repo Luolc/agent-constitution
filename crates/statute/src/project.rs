@@ -316,12 +316,17 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
+        let load = if manifest.constitution.is_some() {
+            Source::load
+        } else {
+            Source::load_without_constitution
+        };
         let mut list = Vec::new();
         // Where each source's rules are read from, by its name.
         let mut dirs = BTreeMap::new();
         for spec in &manifest.sources {
             let dir = root.join(&spec.path).join(&spec.rules_dir);
-            let (mut source, more) = Source::load(&dir, &spec.shown(&spec.rules_dir));
+            let (mut source, more) = load(&dir, &spec.shown(&spec.rules_dir));
             dirs.insert(spec.name.clone(), dir);
             diags.0.extend(more.0);
             source.name = spec.name.clone();
@@ -333,7 +338,7 @@ impl Project {
         let local_rules = &manifest.local_rules;
         if !manifest.sources.iter().any(|s| s.holds(local_rules)) && root.join(local_rules).is_dir()
         {
-            let (mut source, more) = Source::load(&root.join(local_rules), local_rules);
+            let (mut source, more) = load(&root.join(local_rules), local_rules);
             diags.0.extend(more.0);
             source.name = LOCAL.to_owned();
             dirs.insert(LOCAL.to_owned(), root.join(local_rules));

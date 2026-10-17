@@ -90,8 +90,9 @@ enum Command {
         #[arg(long)]
         private: bool,
     },
-    /// Write AGENTS.md from the constitution and the locked rule set, and
-    /// next to it the skills and the checks.
+    /// Write AGENTS.md from the locked rule set, after the constitution
+    /// when the rule set rests on one, and next to it the skills and the
+    /// checks.
     Compile {
         /// Write here instead of AGENTS.md next to statute.toml; the other
         /// files go next to it.
