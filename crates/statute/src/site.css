@@ -71,15 +71,14 @@ a {
   background: var(--t-accent);
   mask: var(--icon-sliders) center / contain no-repeat;
 }
-/* Its tip (data-tip, a line each): a popover that only explains, above
-   the value, after the delay of a tip under the pointer and at once
-   under the keyboard's focus, ending at the value's end where it would
-   run out of the window (assets/param-tip.js), and hidden by Escape.
-   Its alternative text is empty: the link is named by its value and
-   then the tip (aria-label). */
-.param-value[data-tip]::before {
-  content: attr(data-tip);
-  content: attr(data-tip) / "";
+/* Its tip (.param-tip, a line each, the parameter's name in code): a
+   popover that only explains, above the value, after the delay of a tip
+   under the pointer and at once under the keyboard's focus, ending at
+   the value's end where it would run out of the window
+   (assets/param-tip.js), and hidden by Escape. It is hidden from screen
+   readers (aria-hidden), and left out of a selection: the link is named
+   by its value and then the tip (aria-label). */
+.param-tip {
   position: absolute;
   z-index: var(--t-z-popover);
   bottom: calc(100% + var(--t-space-1));
@@ -98,6 +97,7 @@ a {
   border-radius: var(--t-radius-md);
   box-shadow: var(--t-shadow-popover);
   transform-origin: bottom left;
+  user-select: none;
   pointer-events: none;
   opacity: 0;
   scale: .95;
@@ -105,14 +105,14 @@ a {
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
-.param-value.tip-end[data-tip]::before { left: auto; right: 0; transform-origin: bottom right; }
-.param-value:focus-visible::before {
+.param-value.tip-end .param-tip { left: auto; right: 0; transform-origin: bottom right; }
+.param-value:focus-visible .param-tip {
   opacity: 1;
   scale: 1;
   transition-duration: var(--t-duration-base);
 }
 @media (hover: hover) and (pointer: fine) {
-  .param-value[data-tip]:hover::before {
+  .param-value:hover .param-tip {
     pointer-events: auto;
     opacity: 1;
     scale: 1;
@@ -120,13 +120,13 @@ a {
     transition-delay: var(--t-delay-tip);
   }
 }
-:root.tips-dismissed .param-value[data-tip]::before {
+:root.tips-dismissed .param-value .param-tip {
   pointer-events: none;
   opacity: 0;
   transition-delay: 0s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .param-value[data-tip]::before { scale: none; transition-property: opacity; }
+  .param-tip { scale: none; transition-property: opacity; }
 }
 
 /* The focus ring, the same on every control, from the keyboard only. */

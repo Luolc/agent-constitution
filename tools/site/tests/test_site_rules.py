@@ -513,22 +513,28 @@ class SiteRulesTest(unittest.TestCase):
       nodes = {n["id"]: n for n in data[lang]["nodes"]}
       # Rule 6 is untranslated: its English text names the language in
       # English on both languages' pages, and its tips are in English.
+      # The tip names the parameter in code; the link's name, as text.
       docs_tip = (
-        "Configurable parameter: language.docs&#10;"
+        "Configurable parameter: {}&#10;"
         f"Default: {docs}&#10;Open it to read what it sets"
       )
       label_tip = (
-        "Configurable parameter: work-items.label-done&#10;"
+        "Configurable parameter: {}&#10;"
         "Default: done &amp; dusted&#10;Open it to read what it sets"
       )
       self.assertEqual(
         nodes[6]["text"]["statement"],
         'Write in <a class="param-value" href="../params/#language.docs"'
-        f' data-tip="{docs_tip}" aria-label="{docs}&#10;{docs_tip}">'
-        f"{docs}</a>; label <code>x <a"
+        f' aria-label="{docs}&#10;{docs_tip.format("language.docs")}">'
+        f'{docs}<span class="param-tip" aria-hidden="true">'
+        f"{docs_tip.format('<code>language.docs</code>')}</span></a>;"
+        " label <code>x <a"
         ' class="param-value" href="../params/#work-items.label-done"'
-        f' data-tip="{label_tip}" aria-label="done &amp; dusted&#10;'
-        f'{label_tip}">done &amp; dusted</a></code>.',
+        ' aria-label="done &amp; dusted&#10;'
+        f'{label_tip.format("work-items.label-done")}">done &amp; dusted'
+        '<span class="param-tip" aria-hidden="true">'
+        f"{label_tip.format('<code>work-items.label-done</code>')}"
+        "</span></a></code>.",
       )
       self.assertEqual(nodes[6]["title"], "Rule 6")
     pages = data["zh"]["params"]
@@ -616,11 +622,11 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(
       nodes[5]["titleMarked"],
       'Rule in <a class="param-value" href="../params/#language.docs"'
-      ' data-tip="Configurable parameter: language.docs&#10;'
-      'Default: Chinese&#10;Open it to read what it sets"'
       ' aria-label="Chinese&#10;Configurable parameter: language.docs&#10;'
       'Default: Chinese&#10;Open it to read what it sets">'
-      "Chinese</a>",
+      'Chinese<span class="param-tip" aria-hidden="true">'
+      "Configurable parameter: <code>language.docs</code>&#10;"
+      "Default: Chinese&#10;Open it to read what it sets</span></a>",
     )
     self.assertEqual(nodes[3]["conflicts"][0]["title"], "Rule in Chinese")
 

@@ -5,13 +5,11 @@
 // Inlined in <head> by both sites, so it listens on the document.
 (function () {
   function place(event) {
-    var value = event.target.closest && event.target.closest(".param-value[data-tip]");
-    if (!value) return;
+    var value = event.target.closest && event.target.closest(".param-value");
+    var tip = value && value.querySelector(".param-tip");
+    if (!tip) return;
     document.documentElement.classList.remove("tips-dismissed");
-    var tip = getComputedStyle(value, "::before");
-    var width = parseFloat(tip.width);
-    if (tip.boxSizing !== "border-box") width += parseFloat(tip.paddingLeft) + parseFloat(tip.paddingRight);
-    value.classList.toggle("tip-end", value.getBoundingClientRect().left + width > document.documentElement.clientWidth);
+    value.classList.toggle("tip-end", value.getBoundingClientRect().left + tip.offsetWidth > document.documentElement.clientWidth);
   }
   document.addEventListener("mouseover", place);
   document.addEventListener("focusin", place);

@@ -620,8 +620,9 @@ class _Language:
     """Return a text with each placeholder as its parameter's default.
 
     With `mark` "link", a default is a link to the parameter's entry on
-    its page of parameters, with its tip (PARAM_TIP) in `data-tip`, a
-    line each, and named by the value and then the tip; with "tip", for
+    its page of parameters, with its tip (PARAM_TIP), a line each and
+    the parameter's name in code, in a span hidden from screen readers,
+    and named by the value and then the tip; with "tip", for
     a statement that stands inside a link, a span with the tip but its
     last line; with "span", for a title inside a link, a span alone;
     each escaped as HTML, and in a code span as well, which becomes HTML
@@ -650,18 +651,27 @@ class _Language:
         return f'<span class="param-value">{html.escape(shown)}</span>'
       words = PARAM_TIP.get(text_lang) or PARAM_TIP[self.lang]
       # A value inside a link leads nowhere of its own: no last line.
-      lines = [w.format(name=p.name, value=shown) for w in words]
-      tip = "\n".join(lines[:2] if mark == "tip" else lines)
-      tip = html.escape(tip).replace("\n", "&#10;")
-      if mark == "tip":
-        return (
-          f'<span class="param-value" data-tip="{tip}">'
-          f"{html.escape(shown)}</span>"
+      words = words[:2] if mark == "tip" else words
+      label = "&#10;".join(
+        html.escape(w.format(name=p.name, value=shown)) for w in words
+      )
+      tip = (
+        '<span class="param-tip" aria-hidden="true">'
+        + "&#10;".join(
+          html.escape(w).format(
+            name=f"<code>{html.escape(p.name)}</code>",
+            value=html.escape(shown),
+          )
+          for w in words
         )
+        + "</span>"
+      )
+      if mark == "tip":
+        return f'<span class="param-value">{html.escape(shown)}{tip}</span>'
       return (
         f'<a class="param-value" href="../{params_key(where)}/#{p.name}"'
-        f' data-tip="{tip}" aria-label="{html.escape(shown)}&#10;{tip}">'
-        f"{html.escape(shown)}</a>"
+        f' aria-label="{html.escape(shown)}&#10;{label}">'
+        f"{html.escape(shown)}{tip}</a>"
       )
 
     def code(m: re.Match[str]) -> str:
