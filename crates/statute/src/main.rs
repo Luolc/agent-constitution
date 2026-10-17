@@ -158,9 +158,9 @@ enum Command {
         /// the rule that supersedes it.
         #[arg(long)]
         replace_superseded: bool,
-        /// Read only the private layer's sources at their newest commits,
-        /// and write only this worktree's private.lock; statute.lock and
-        /// the public sources' commits stay as they are.
+        /// Move only the private layer's own sources to their newest
+        /// commits, and write only this worktree's private.lock;
+        /// statute.lock and the public sources' commits stay as they are.
         #[arg(long, conflicts_with = "replace_superseded")]
         private: bool,
     },

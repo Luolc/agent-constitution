@@ -445,8 +445,44 @@ fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
             .trim_end()
             .to_owned()
     };
+    // `R` as a git source, so that `statute.lock` records its commit.
+    let r_work = w.at.join("r-work");
+    let r_bare = w.at.join("r.git");
+    assert!(
+        Command::new("cp")
+            .arg("-r")
+            .arg(w.repo.join("r"))
+            .arg(&r_work)
+            .status()
+            .unwrap()
+            .success()
+    );
+    git_in(&w, &r_work, &["init", "-q", "-b", "main"]);
+    git_in(&w, &r_work, &["add", "-A"]);
+    git_in(&w, &r_work, &["commit", "-q", "-m", "rules"]);
+    let r_bare = r_bare.to_str().unwrap();
+    git_in(
+        &w,
+        &w.at,
+        &["clone", "-q", "--bare", r_work.to_str().unwrap(), r_bare],
+    );
+    let manifest = read(&w.repo, "statute.toml");
+    write(
+        &w.repo,
+        "statute.toml",
+        &manifest.replace(
+            "R = { path = \"r\" }",
+            &format!("R = {{ git = \"{r_bare}\", branch = \"main\", public = true }}"),
+        ),
+    );
+    ok(&w.run(&w.repo, &["lock"]));
+    w.git(&["commit", "-q", "-am", "R from git"]);
     let old = commit(&w.at.join("me.git"));
-    // The private source moves on.
+    // Both sources move on. `R` drops R2, which the rule set enables, so
+    // reading `R` at its newest commit fails.
+    git_in(&w, &r_work, &["rm", "-q", "rules/2.toml"]);
+    git_in(&w, &r_work, &["commit", "-q", "-m", "no R2"]);
+    git_in(&w, &r_work, &["push", "-q", r_bare, "main"]);
     let work = w.at.join("me-work");
     let me4 = read(&work, "rules/4.toml");
     write(
