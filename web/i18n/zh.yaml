@@ -29,7 +29,7 @@ back: "回到完整版"
 untranslated: "本页还没有中文译文，下面是英文原文。"
 # 规定的各页 (layouts/rules/) 和条款下引用它的规定 (content/_content.gotmpl)。
 rules: "规定"
-rules-intro: "细化本宪法的规定，按所属领域的树排列，各自链到详情页，并标出新的规定清单是否默认就有它。图例说明每种标记的含义；筛选决定显示哪些状态、默认开关、用途和领域的规定。"
+rules-intro: "细化本宪法的规定，按所属领域的树排列，各自链到详情页，并按它自己的设置标出是否默认开启：默认开启的规定，所在领域关着时，要等领域开启才进入规定清单。图例说明每种标记的含义；筛选决定显示哪些状态、默认开关、用途和领域的规定。"
 rule-superseded-by: "已被{{ .rule }}取代。"
 rule-repealed: "已废止。"
 rule-untranslated: "这条规定还没有中文译文，下面是原文 ({{ .lang }})。"
@@ -123,7 +123,7 @@ param-scope-repo: "仓库的，所有人一样"
 param-scope-personal: "每个人自己的"
 param-default: "默认值"
 param-rules: "用到它的规定"
-# 规定源的默认值是否启用一个节点，以及 one-of 的默认选项
+# 领域或规定自己的 `default` 是否默认开启，以及 one-of 的默认选项
 # (layouts/_partials/rules/default.html)。
 default-on: "默认开启"
 default-off: "默认关闭"

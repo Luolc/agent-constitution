@@ -393,18 +393,19 @@ turned off (disabled), where it has these.
 
 - **Marks.** In the list of the rules, a row's marks stand at its
   end in four places of `width-mark` each, about four characters in
-  all, in this order: whether the defaults enable the node, the status,
+  all, in this order: whether the node is on by default, the status,
   instructions and review, its `uses`. A place without its mark stays
   empty, so that the marks line up from one row to the next; the column
   has no head, the legend says what each place holds. Each mark is an
   icon (`icon-sm`) or a dot, named for assistive technology and on
   hover by its word (`role="img"`, `aria-label` and `title`):
-  - Whether the defaults enable a node: a dot of `size-dot`, filled
-    with `accent` when they do, a ring (a `2px` border) of
-    `text-muted` when they do not; the place stays empty when that depends on another source.
+  - Whether a domain or a rule is on by default, by its own `default`
+    whatever the domains above it are: a dot of `size-dot`, filled
+    with `accent` when on, a ring (a `2px` border) of `text-muted`
+    when off; the place stays empty for a node without a `default`: a
+    one-of, an option of one, or a rule with `overrides`.
     A domain's group row has this dot too, in the first place, lined up
-    with the rows' marks; a one-of's row has it when the one-of has an
-    answer, else its place stays empty.
+    with the rows' marks.
   - Status: `circle-check` for Active in `status-active`,
     `flask-conical` for Trial in `status-trial`, `pencil` for Draft in
     `status-draft`, `arrow-right-left` for Superseded and
@@ -414,7 +415,7 @@ turned off (disabled), where it has these.
   - Marks do not react to the pointer; the row does.
 - **Tags.** Small, `text-xs`, `line-height-ui`, one line, never wrapped,
   for the facts a row's four places do not hold and on a rule's page:
-  - Whether the defaults enable a node, on its page: the dot of the
+  - Whether a node is on by default, on its page: the dot of the
     marks before the word, in `text-muted`.
   - Enabled by the rule set: `check` (`icon-sm`) before the word, in
     `accent`; not enabled: the word alone in `text-muted`.
