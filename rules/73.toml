@@ -1,8 +1,9 @@
 id = 73
 slug = "decide-who-stops-a-background-process"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 338
 lang = "en"
 parent = 267
 default = "on"

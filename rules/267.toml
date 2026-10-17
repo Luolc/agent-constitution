@@ -1,6 +1,6 @@
 id = 267
 slug = "shared-machines"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "共享机器"
 
 [applicability]
 en = '''
-Work on a machine that others share: no load generators, problems that need heavy load reproduced in isolation, and a way to stop every waiting loop and lasting process. Enable it wherever agents work; the rules here that are off by default are for machines shared with others.
+Work on a machine where other tasks are running too: a fair share of the resources they share, no harm to the tasks already running, waits that end when what they wait for fails, and a fallback for stopping every lasting background process. Enable it wherever agents work.
 '''
 zh = '''
-在与别人共用的机器上工作：不起负载发生器，高负载下才出现的问题隔离复现，等待的循环和长期运行的进程都有办法停下。凡有 agent 工作的地方都要启用；这里默认关着的规定是给与别人共用的机器的。
+机器上还有别的任务在跑时的工作：共用的资源只用自己该用的一份，不妨碍正在运行的任务，等的事失败了就结束等待，一直占用资源的后台进程都有兜底。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "71a90f4058c0712f3e18badd5abd71384b77524982138c4771693bb9a7a8442a"
+zh = "0cd585122c7d60188c9a9fab8ef7b5cdc3ff5abc5d70c9275ade65bd011d118c"

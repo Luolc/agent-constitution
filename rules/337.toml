@@ -1,0 +1,43 @@
+id = 337
+slug = "end-a-wait-on-failure"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 267
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "End a wait as soon as what you wait for fails"
+zh = "等的事失败了，就及时结束等待"
+
+[text.statement]
+en = "When you wait for something to finish, such as a process, a CI run or a merge, end the wait not only when it succeeds but also as soon as it fails, errs or can no longer finish, instead of waiting out a time limit."
+zh = "等一件事完成时 (例如进程退出、CI 跑完、PR 合入)，不只在它成功时结束等待；它失败、出错或已经不可能完成时，也要及时察觉并结束，不要空等到超时。"
+
+[text.reason]
+en = '''
+A wait that ends only on success goes on after what it waits for has failed: the work that depends on it stands still, and the wait holds the machine's resources for nothing until a time limit runs out or someone notices ({@constitution:decency.legitimate-means}).
+'''
+zh = '''
+只在成功时才结束的等待，在等的事失败之后还会继续：依赖它的工作停在原地，等待本身也白白占着机器的资源，直到超时或者有人发现 ({@constitution:decency.legitimate-means})。
+'''
+
+[text.verification]
+en = '''
+What is waited for has failed, erred or can no longer finish when, for example, the process exits with an error or is gone, the CI run fails or is cancelled, or the pull request is closed or its merge is refused. Ending the wait means going on with the work, such as handling the failure or reporting it.
+
+Violated when a wait an agent runs, itself or through a loop it wrote, goes on after what it watches already shows that what it waits for has failed, erred or can no longer finish.
+'''
+zh = '''
+等的事失败、出错或已经不可能完成，例如：进程报错退出或者已经不在了，CI 失败或被取消，PR 被关掉或者合入被拒绝。结束等待，指接着做后面的工作，例如处理这次失败或者报告它。
+
+agent 自己等着、或者用它写的循环等着的事，从它盯着的情况已经看得出失败、出错或不可能完成，等待却还在继续的，即为违反本规定。
+'''
+
+[translations]
+zh = "b04297ffcaaf20a788226ea6ccee778cb698510e606b1d352cf5828b1e9e42f9"

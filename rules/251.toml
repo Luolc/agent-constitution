@@ -1,8 +1,9 @@
 id = 251
 slug = "task-text-asks-whether-at-all"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 336
 lang = "en"
 parent = 267
 default = "off"

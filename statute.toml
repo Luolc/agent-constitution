@@ -81,13 +81,8 @@ rules = [
   "R27",
   # Content Markdown lives under docs/ and only convention files at the root.
   "R206",
-  # The owner's environment, as for the domains above: shared machines take no load,
-  # and a problem that needs heavy load is reproduced only where its load is capped,
-  "R30",
-  "R278",
-  # a task gives no precautions for what a shared machine forbids,
-  "R251",
-  # and design questions go to the owner directly, at most five at a time.
+  # The owner's environment, as for the domains above: design questions go to the owner
+  # directly, at most five at a time.
   "R237",
   "R238",
 ]

@@ -1,0 +1,43 @@
+id = 338
+slug = "fallback-for-background-processes"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 267
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Arrange a fallback for stopping a lasting background process"
+zh = "为一直占用资源的后台进程安排兜底"
+
+[text.statement]
+en = "Before you start a background process that keeps holding resources, arrange a fallback in case you do not stop it yourself: a mechanism that stops it on its own, such as a time limit or a watcher that reclaims it, or a person or agent responsible for the work who knows it is running and how to stop it. Never leave it running where no one knows of it."
+zh = "启动会一直占用资源的后台进程之前，先安排好兜底，以防自己没能停掉它：要么有机制会自动停掉它，例如到时自行退出，或者有监视进程定期回收；要么让负责这项工作的人或 agent 知道它在跑、知道怎么停。不能让它在后台没人知道地一直跑。"
+
+[text.reason]
+en = '''
+An agent can be closed or fail before it stops a process it started, and the process then keeps holding the machine's resources with no one aware of it ({@constitution:decency.legitimate-means}). A fallback arranged before the start keeps such a process from being forgotten.
+'''
+zh = '''
+agent 可能在停掉自己启动的进程之前就被关掉或者出了错，这个进程于是继续占着机器的资源，却没有谁知道它在跑 ({@constitution:decency.legitimate-means})。启动之前安排好兜底，这样的进程就不会被忘掉。
+'''
+
+[text.verification]
+en = '''
+A background process that keeps holding resources outlives the command that started it and keeps using processor time, memory, a port, a lock or disk space, such as a server, a file watcher or a build run detached. A fallback is a mechanism that stops the process without the agent, or a person or agent responsible for the work who has been told that it runs and how to stop it.
+
+Violated when an agent starts such a process with no fallback in place when it starts.
+'''
+zh = '''
+会一直占用资源的后台进程，指比启动它的命令活得更久、并持续占用 CPU 时间、内存、端口、锁或磁盘空间的进程，例如服务器、文件监视器、放到后台跑的构建。兜底，指不靠这个 agent 也能停掉它的机制，或者负责这项工作、已经被告知它在跑以及怎么停的人或 agent。
+
+agent 启动这样的进程时，没有安排好兜底的，即为违反本规定。
+'''
+
+[translations]
+zh = "aa72973e921707bb5eaee83e52c161475f50c64e20948f7241031b9e067a4bf5"
