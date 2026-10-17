@@ -11,7 +11,7 @@
 {{- /* The scripts, in this order; one in TypeScript is bundled by Hugo's
   js.Build (esbuild), which strips its types without checking them
   (docs/design/frontend.md, In the code). */ -}}
-{{- range slice "theme.js" "count-info.js" "cites.js" "ts/rules-list.ts" "ts/rules-view.ts" "toc-current.js" "ts/sidebars.ts" }}
+{{- range slice "theme.js" "count-info.js" "cites.js" "param-tip.js" "ts/rules-list.ts" "ts/rules-view.ts" "toc-current.js" "ts/sidebars.ts" }}
   {{- $script := resources.Get . }}
   {{- if strings.HasSuffix . ".ts" }}
     {{- $script = $script | js.Build (dict "target" "es2018" "minify" true) }}
@@ -20,10 +20,14 @@
   {{- end }}
 <script>{{ $script.Content | safeJS }}</script>
 {{- end }}
-{{- /* The check of a check box (assets/styles/controls.css): Lucide's
-  `check` as a mask, drawn at the stroke of every icon, `icon-stroke`. */}}
-{{- with resources.Get "icons/lucide/check.svg" }}
-<style>:root { --icon-lucide-check: url("data:image/svg+xml;base64,{{ replace .Content `stroke-width="2"` `stroke-width="1.75"` | base64Encode }}"); }</style>
+{{- /* The check of a check box (assets/styles/controls.css) and the
+  mark after a parameter's value (assets/styles/design.css): Lucide's
+  `check` and `sliders-horizontal` as masks, drawn at the stroke of every
+  icon, `icon-stroke`. */}}
+{{- range $name := slice "check" "sliders-horizontal" }}
+{{- with resources.Get (printf "icons/lucide/%s.svg" $name) }}
+<style>:root { --icon-lucide-{{ $name }}: url("data:image/svg+xml;base64,{{ replace .Content `stroke-width="2"` `stroke-width="1.75"` | base64Encode }}"); }</style>
+{{- end }}
 {{- end }}
 {{- /* Without scripts, the lists of the rules under the provisions
   are open, since nothing could open them (assets/cites.js). */}}

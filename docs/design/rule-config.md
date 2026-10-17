@@ -421,8 +421,8 @@ they differ) and which enabled rules use it.
 **The public site** has a page of parameters for each
 source: each parameter's title, name, type, scope, default (and
 values, for a `choice`) and the rules that use it. A placeholder shows
-its default, marked as a value, with the parameter's name on hover,
-linked to its entry on that page. **The local site** shows the value
+its default, marked as a value, with a tip that says it is a
+configurable parameter and names it, linked to its entry on that page. **The local site** shows the value
 of its rule set in the same way, and on the page of parameters where
 each value came from.
 

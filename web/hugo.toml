@@ -154,11 +154,12 @@ enableRobotsTXT = false
   source = "../docs/design"
   target = "assets/design"
   files = ["*.md", "zh/*.md"]
-# The design tokens and the icons, from crates/statute/assets/, where the
-# local site of `statute site` can include them too
-# (docs/design/frontend.md): tokens.css among the style sheets
-# (assets/styles/index.yaml) and the icons as icons/<source>/<name>.svg,
-# which layouts/_partials/icon.html includes.
+# The design tokens, the icons and the script of a parameter's tip, from
+# crates/statute/assets/, where the local site of `statute site` can
+# include them too (docs/design/frontend.md): tokens.css among the style
+# sheets (assets/styles/index.yaml), the icons as
+# icons/<source>/<name>.svg, which layouts/_partials/icon.html includes,
+# and param-tip.js among the scripts (layouts/_partials/docs/inject/head.html).
 [[module.mounts]]
   source = "../crates/statute/assets"
   target = "assets/styles"
@@ -173,3 +174,9 @@ enableRobotsTXT = false
 [[module.mounts]]
   source = "assets"
   target = "assets"
+# After the site's own assets, so that Hugo writes its jsconfig.json
+# there and not into the crate.
+[[module.mounts]]
+  source = "../crates/statute/assets"
+  target = "assets"
+  files = ["param-tip.js"]

@@ -6,7 +6,8 @@
   the order of the marks: whether a node is on by default; the
   statuses; the uses, instructions and review, each with what it means;
   a one-of, what it is and the icons of its default and other options; when the site has a rule set, whether it
-  enables a rule; with more than one source, the quadrant; last, the
+  enables a rule; with more than one source, the quadrant; a parameter's
+  value, marked as the text marks it (rules/statement.html); last, the
   order of the four places of the marks (rules/marks.html). Takes (dict
   "enabled" whether the site has a rule set "many" whether it has more
   than one source). */ -}}
@@ -43,6 +44,9 @@
 <span class="legend-item">{{ partial "rules/quadrant.html" (dict "quadrant" "global-public" "source" "") }}{{ i18n "rules-legend-quadrant" }}</span>
 </dd></div>
 {{- end }}
+<div><dt>{{ i18n "rules-legend-param" }}</dt><dd>
+<span class="legend-item"><span class="param-value">{{ i18n "rules-legend-param-sample" }}</span>{{ i18n "rules-legend-param-text" }}</span>
+</dd></div>
 <div class="legend-places"><dt>{{ i18n "rules-legend-places" }}</dt><dd>{{ i18n "rules-legend-slots" }}</dd></div>
 </dl>
 </details>

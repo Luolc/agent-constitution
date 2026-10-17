@@ -210,8 +210,9 @@ screenshots (Screenshots, below). The workflow
   head until the next one covers it, with the style sheet alone. Above
   the list, a legend gives each mark a rule carries there, a row per
   kind ([Frontend](frontend.md#components)): on and off by default, the
-  statuses, the two `uses`, a one-of's options, and, when the site has
-  them, enabled or not and the quadrant; its last row gives the order
+  statuses, the two `uses`, a one-of's options, when the site has
+  them, enabled or not and the quadrant, and a parameter's value; its
+  last row gives the order
   of the marks' places. It folds, open by default; the script keeps it
   folded or open as the reader left it, in `localStorage`. Below it,
   one row of controls ([Frontend](frontend.md#components)): a search,
@@ -306,14 +307,16 @@ screenshots (Screenshots, below). The workflow
   placeholder, `{$language.docs}`, becomes its parameter's default as
   the outputs write it in the text's language ("English", 「英文」),
   marked as a value: a link to the parameter's entry on its source's
-  page of parameters, the parameter's name as its title, shown on hover;
+  page of parameters, with a tip that names the parameter and gives its
+  default ([Frontend](frontend.md#components));
   in a code span the span becomes HTML around the link. A title stands
   inside a link in the list, in a one-of's box, in a node named on a
   page and in the home page's lists of the rules under a provision, and
   so does a statement in the list (`statementInLink`, its citations as
   their labels alone, not linked), so there the value is
-  marked as a span with the parameter's name as its
-  title, escaped, and not linked; on the rule's own page it is marked
+  marked as a span, escaped, and not linked, the statement's with the
+  same tip but for its last line, on where the link leads, and a
+  title's with none; on the rule's own page it is marked
   and linked as in the text, and elsewhere the value stands alone. A
   title's code spans show as code wherever it is shown in the page;
   Hugo renders the title in the list and on the rule's own page, and

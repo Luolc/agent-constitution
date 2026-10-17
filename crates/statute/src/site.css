@@ -49,8 +49,85 @@ a {
 @media (hover: hover) and (pointer: fine) {
   a:hover { color: var(--t-accent); text-decoration-color: currentColor; }
 }
-/* A placeholder's value, marked as a value. */
-a.value { text-decoration-style: dotted; text-decoration-color: currentColor; }
+/* A placeholder's value, marked as a value on a background of its own,
+   Lucide's `sliders-horizontal` after it (the mask site.rs sets), in the
+   accent, the size of an icon in a line of text. */
+.param-value {
+  position: relative;
+  white-space: nowrap;
+  text-decoration: underline dotted var(--t-accent);
+  text-underline-offset: .2em;
+  background: var(--t-bg-selected);
+  border-radius: var(--t-radius-sm);
+  padding: 0 var(--t-space-1);
+}
+.param-value::after {
+  content: "";
+  display: inline-block;
+  inline-size: var(--t-icon-sm);
+  block-size: var(--t-icon-sm);
+  margin-inline-start: var(--t-space-1);
+  vertical-align: middle;
+  background: var(--t-accent);
+  mask: var(--icon-sliders) center / contain no-repeat;
+}
+/* Its tip (data-tip, a line each): a popover that only explains, above
+   the value, after the delay of a tip under the pointer and at once
+   under the keyboard's focus, ending at the value's end where it would
+   run out of the window (assets/param-tip.js), and hidden by Escape.
+   Its alternative text is empty: the link is named by its value and
+   then the tip (aria-label). */
+.param-value[data-tip]::before {
+  content: attr(data-tip);
+  content: attr(data-tip) / "";
+  position: absolute;
+  z-index: var(--t-z-popover);
+  bottom: calc(100% + var(--t-space-1));
+  left: 0;
+  width: max-content;
+  max-width: var(--t-width-popover);
+  padding: var(--t-space-2) var(--t-space-3);
+  font-size: var(--t-text-sm);
+  font-weight: var(--t-weight-regular);
+  line-height: var(--t-line-height-ui);
+  white-space: pre-line;
+  text-align: start;
+  color: var(--t-text);
+  background: var(--t-bg-panel);
+  border: 1px solid var(--t-border-subtle);
+  border-radius: var(--t-radius-md);
+  box-shadow: var(--t-shadow-popover);
+  transform-origin: bottom left;
+  pointer-events: none;
+  opacity: 0;
+  scale: .95;
+  transition-property: opacity, scale;
+  transition-duration: var(--t-duration-fast);
+  transition-timing-function: var(--t-ease-out);
+}
+.param-value.tip-end[data-tip]::before { left: auto; right: 0; transform-origin: bottom right; }
+.param-value:focus-visible::before {
+  opacity: 1;
+  scale: 1;
+  transition-duration: var(--t-duration-base);
+}
+@media (hover: hover) and (pointer: fine) {
+  .param-value[data-tip]:hover::before {
+    pointer-events: auto;
+    opacity: 1;
+    scale: 1;
+    transition-duration: var(--t-duration-base);
+    transition-delay: var(--t-delay-tip);
+  }
+}
+:root.tips-dismissed .param-value[data-tip]::before {
+  pointer-events: none;
+  opacity: 0;
+  transition-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .param-value[data-tip]::before { scale: none; transition-property: opacity; }
+}
 
 /* The focus ring, the same on every control, from the keyboard only. */
 :focus-visible { outline: 2px solid var(--t-accent); outline-offset: 2px; }

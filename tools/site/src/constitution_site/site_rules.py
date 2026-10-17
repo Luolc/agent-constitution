@@ -82,6 +82,17 @@ PROVISION_LINK = "../../#{ref}"
 RULE_LINK = "../{id}/"
 # The text of a link to a rule, `{@rule:7}`, in the language of the text.
 RULE_LABEL = {"en": "rule {id}", "zh": "规定 {id}"}
+# The tip on a parameter's value, a line each, in the language of its
+# text: what it is and its name, its default and, on a link, where it
+# leads.
+PARAM_TIP = {
+  "en": (
+    "Configurable parameter: {name}",
+    "Default: {value}",
+    "Open it to read what it sets",
+  ),
+  "zh": ("可配置的参数：{name}", "默认值：{value}", "点开查看它的说明"),
+}
 # Each node keeps these fields of its file as they are, when it has them.
 FIELDS = ("revision", "level", "constitution", "check", "run", "tools")
 # The name of this repo's source, as another source names one of its
@@ -609,17 +620,19 @@ class _Language:
     """Return a text with each placeholder as its parameter's default.
 
     With `mark` "link", a default is a link to the parameter's entry on
-    its page of parameters, with the name as its title; with "span", for
-    a text that stands inside a link, a span with the name as its title;
-    either escaped as HTML, and in a code span as well, which becomes
-    HTML for it. With "none", the default alone, as it is, for a text
-    that the template escapes.
+    its page of parameters, with its tip (PARAM_TIP) in `data-tip`, a
+    line each, and named by the value and then the tip; with "tip", for
+    a statement that stands inside a link, a span with the tip but its
+    last line; with "span", for a title inside a link, a span alone;
+    each escaped as HTML, and in a code span as well, which becomes HTML
+    for it. With "none", the default alone, as it is, for a text that
+    the template escapes.
 
     Args:
       text: the text, its citations already links.
       text_lang: its language.
       source: the name of the source of the node that holds it.
-      mark: "link", "span" or "none".
+      mark: "link", "tip", "span" or "none".
 
     Returns:
       The text; a placeholder of no parameter stays as it is.
@@ -634,13 +647,21 @@ class _Language:
       if mark == "none":
         return shown
       if mark == "span":
+        return f'<span class="param-value">{html.escape(shown)}</span>'
+      words = PARAM_TIP.get(text_lang) or PARAM_TIP[self.lang]
+      # A value inside a link leads nowhere of its own: no last line.
+      lines = [w.format(name=p.name, value=shown) for w in words]
+      tip = "\n".join(lines[:2] if mark == "tip" else lines)
+      tip = html.escape(tip).replace("\n", "&#10;")
+      if mark == "tip":
         return (
-          f'<span class="param-value" title="{p.name}">'
+          f'<span class="param-value" data-tip="{tip}">'
           f"{html.escape(shown)}</span>"
         )
       return (
         f'<a class="param-value" href="../{params_key(where)}/#{p.name}"'
-        f' title="{p.name}">{html.escape(shown)}</a>'
+        f' data-tip="{tip}" aria-label="{html.escape(shown)}&#10;{tip}">'
+        f"{html.escape(shown)}</a>"
       )
 
     def code(m: re.Match[str]) -> str:
@@ -887,7 +908,7 @@ class _Language:
           self.links(node.text["statement"][shown], shown, name, link=False),
           shown,
           name,
-          "span",
+          "tip",
         )
         if node.text
         else None,
