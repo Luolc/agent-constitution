@@ -778,10 +778,11 @@ parent = 104
   hung under its domains, which a rule set enables by listing them in
   `rules`, or a subdomain of another source as a pack of its own.
 
-**Rendering.** The compiled `AGENTS.md` shows no domain or subdomain:
-its rules are a flat list in the order of the tree, as in
-[Compilation and the site](statute-command.md#compilation-and-the-site),
-which gives the order: a subdomain's rules come after the rules and
+**Rendering.** In the compiled `AGENTS.md`, each domain or subdomain
+with a rule in the file is a heading of its title, a subdomain one level
+below its domain, and its rules are items in the order of the tree, as
+in [Compilation and the site](statute-command.md#compilation-and-the-site),
+which gives the order and the levels: a subdomain's rules come after the rules and
 one-ofs directly under its domain, and in each part the domain's own
 source comes first, then the other sources by their names, as the
 domains themselves are ordered. On the site, a subdomain heads the rules
@@ -880,7 +881,7 @@ marking what is not built:
 - [Dependencies, one-ofs and packs](rule-sets.md#dependencies-one-ofs-and-packs):
   domains nested to any depth.
 - [Compilation and the site](statute-command.md#compilation-and-the-site):
-  where a subdomain's rules come in the flat list.
+  where a subdomain's heading and rules come in the compiled file.
 - [The command and the first version](statute-command.md#the-command-and-the-first-version):
   what is built so far, and moving over by the cutover above.
 - [Checkers](checkers.md#checkers): what `statute validate` checks of

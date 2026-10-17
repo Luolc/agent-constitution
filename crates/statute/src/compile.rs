@@ -543,7 +543,7 @@ fn agents_md(project: &Project, private: bool) -> Result<String, String> {
         .map(|(key, _)| key)
         .collect();
     for domain in &domains {
-        render(project, &labels, domain, private, &mut out)?;
+        render(project, &labels, domain, 1, private, &mut out)?;
     }
     Ok(out)
 }
@@ -646,14 +646,16 @@ pub fn cited(
 
 /// Writes node `key` and what is below it, in the order of the tree, a
 /// node before its children and a domain's subdomains after its other
-/// children: each rule shown as one item of a flat list,
-/// its number and its statement, and nothing of a domain or a one-of but
-/// the rules below it (`docs/design/statute-command.md`, Compilation and
+/// children: each rule shown as one item of a list, its number and its
+/// statement; each domain as a heading of its title, one level below
+/// `level`, that of the heading above it; and nothing of a one-of but
+/// what is below it (`docs/design/statute-command.md`, Compilation and
 /// the site). An overridden rule's place holds the rule that stands in it.
 fn render(
     project: &Project,
     labels: &Labels,
     key: &Key,
+    level: usize,
     private: bool,
     out: &mut String,
 ) -> Result<(), String> {
@@ -683,10 +685,21 @@ fn render(
         out.push('\n');
         return Ok(());
     }
+    let level = if at.kind == Kind::Domain {
+        if !out.ends_with("\n\n") {
+            out.push('\n');
+        }
+        // Markdown has six levels of headings.
+        let hashes = "#".repeat((level + 1).min(6));
+        let _ = writeln!(out, "{hashes} {}\n", title(project, key, at, private));
+        level + 1
+    } else {
+        level
+    };
     let mut children = project.sources.children(key);
     children.sort_by_key(|c| (project.sources.subdomain(key, c), c.clone()));
     for child in children {
-        render(project, labels, &child, private, out)?;
+        render(project, labels, &child, level, private, out)?;
     }
     Ok(())
 }
