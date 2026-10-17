@@ -509,7 +509,7 @@ fn parameters(project: &Project, l: &Lang, source: &Source, switch: &str) -> Str
     let mut out = head(&title, lang, "list", switch);
     let _ = writeln!(
         out,
-        "<nav><a href=\"../index.html\">{}</a></nav>\n<h1>{}</h1>\n<table>\n<tr>{}</tr>",
+        "<nav><a href=\"../index.html\">{}</a></nav>\n<h1>{}</h1>\n<table class=\"parameters\">\n<tr>{}</tr>",
         w.index,
         escape(&title),
         w.param_columns
@@ -570,9 +570,12 @@ fn parameters(project: &Project, l: &Lang, source: &Source, switch: &str) -> Str
             }
             None => (String::new(), w.unused.to_owned()),
         };
+        // Each cell after the first names its column, which a narrow
+        // screen shows above it in place of the head.
+        let [_, kinds, default, values, used] = w.param_columns;
         let _ = writeln!(
             out,
-            "<tr id=\"{name}\"><td>{}<br><code>{name}</code></td><td>{} · {scope}</td><td><code>{}</code></td><td>{value}</td><td>{rules}</td></tr>",
+            "<tr id=\"{name}\"><td>{}<br><code>{name}</code></td><td data-label=\"{kinds}\">{} · {scope}</td><td data-label=\"{default}\"><code>{}</code></td><td data-label=\"{values}\">{value}</td><td data-label=\"{used}\">{rules}</td></tr>",
             in_lang(&escape(title), title_lang, lang),
             kind,
             escape(&p.default),
