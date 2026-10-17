@@ -749,10 +749,10 @@ has this shape, and statute checks it when it reads a source:
   ([Rule file format](rule-format.md#rule-file-format)), and an option
   is added or moved by changing one file. The one-of's own file does
   not show its options; `statute explain` and the sites list them.
-- In the compiled `AGENTS.md`, a flat list, a one-of's enabled option
-  stands at the one-of's place with nothing that names the one-of: an
-  option that is a rule is an item like any other, and one that is a
-  domain gives its rules
+- In the compiled `AGENTS.md`, a one-of's enabled option stands at the
+  one-of's place with nothing that names the one-of: an option that is
+  a rule is an item like any other, and one that is a domain is a
+  heading over its rules, one level below the one-of's domain
   ([Compilation and the site](statute-command.md#compilation-and-the-site)).
   On the sites, a one-of is a box in its domain's list that names each
   option and marks the default; an option that is a rule appears in
