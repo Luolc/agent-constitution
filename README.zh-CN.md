@@ -45,6 +45,14 @@ AGENTS.md 一类给 coding agent 的指令文件，越改越长、越来越难�
 brew install luolc/tap/statute
 ```
 
+从 0.1.18 起，每次发布也上 PyPI，有 Linux (x86_64 与 aarch64，glibc 与 musl) 和 macOS (x86_64 与 arm64) 的 wheel，没有 Windows 的。用 uv 可以把它加进项目、在项目里运行，也可以不安装、运行一次；或者用 pip 安装：
+
+```sh
+uv add --dev statute # 之后：uv run statute ...
+uvx statute --help   # 不安装，运行一次
+pip install statute
+```
+
 每次发布也把它发到 crates.io，从 0.1.0 起 (那里的 0.0.1 是占名的占位版本)，并把预编译二进制附在 GitHub Release 上；手动安装其中一个的方法见 [发布与版本](docs/design/zh/amendments-and-releases.md#releases-and-versions)。也可以从源码构建：
 
 ```sh
