@@ -1,0 +1,40 @@
+id = 325
+slug = "fednet-client-socket-read-answer"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 188
+default = "off"
+requires = [323]
+authority = ["explicit-yes.verification", "explicit-yes.rules"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Read back a card through the FedNet client's socket `{$fednet.client-socket}`"
+zh = "经 FedNet client 的 socket `{$fednet.client-socket}` 读回卡片"
+
+[text.statement]
+en = "When you read back a FedNet card relayed as a yes as {@rule:323} asks, run `fednet client read-answer -socket {$fednet.client-socket} -json <CARD-ID>`, with the card ID you were sent."
+zh = "按 {@rule:323} 读回作为同意转告的 FedNet 卡片时，运行 `fednet client read-answer -socket {$fednet.client-socket} -json <CARD-ID>`，卡片 ID 用收到的那个。"
+
+[text.reason]
+en = '''
+{@rule:323} has the acting agent read the card back through the FedNet client on its machine ({@constitution:explicit-yes.verification}), and the client listens on a socket whose path the machine's setup chooses; the command has no default for it. This rule names the path, so an agent can run the command as written. Through another socket the agent reads nothing of what the hub recorded.
+'''
+zh = '''
+{@rule:323} 要求执行的 agent 经本机的 FedNet client 读回卡片 ({@constitution:explicit-yes.verification})，client 监听的 socket 路径由机器的配置决定，命令本身没有默认值。本规定写明这个路径，agent 照着就能运行命令。用别的 socket，读不到 hub 记下的内容。
+'''
+
+[text.verification]
+en = '''
+Violated when an agent acts on a yes relayed from a FedNet card and read the card back through a socket other than `{$fednet.client-socket}`.
+'''
+zh = '''
+agent 凭 FedNet 卡片转告的同意行事，而读回卡片时用的 socket 不是 `{$fednet.client-socket}` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "0c54b7310def35150fab3b9929bb647624a714928957bdb5e8c7200d492ac972"
