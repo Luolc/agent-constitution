@@ -94,7 +94,7 @@ class Change(unittest.TestCase):
       (
         0,
         "instruction-only check: instruction files only since base"
-        " (6 instruction, 0 other, 0 generated)\n",
+        " (6 instruction, 0 other, 0 generated, 0 hook and CI)\n",
       ),
     )
 
@@ -102,8 +102,6 @@ class Change(unittest.TestCase):
     self.change(
       "tools/build_constitution.py",
       "docs/design/README.md",
-      ".github/workflows/ci.yml",
-      ".pre-commit-config.yaml",
       "README.md",
     )
     self.assertEqual(
@@ -111,7 +109,7 @@ class Change(unittest.TestCase):
       (
         0,
         "instruction-only check: other files only since base"
-        " (0 instruction, 5 other, 0 generated)\n",
+        " (0 instruction, 3 other, 0 generated, 0 hook and CI)\n",
       ),
     )
 
@@ -132,10 +130,37 @@ class Change(unittest.TestCase):
       (
         0,
         "instruction-only check: other files only since base"
-        " (0 instruction, 1 other, 1 generated)\n"
+        " (0 instruction, 1 other, 1 generated, 0 hook and CI)\n"
         "generated files:\n  M"
         " constitution/2026-10/generated/constitution.en.md\n",
       ),
+    )
+
+  def test_hook_and_ci_files_go_with_either_side(self):
+    hooks = (".pre-commit-config.yaml", ".github/workflows/ci.yml")
+    for names, code in [
+      ([*hooks, "statute.toml"], 0),
+      ([*hooks, "tools/build_constitution.py"], 0),
+      ([*hooks, "statute.toml", "tools/build_constitution.py"], 1),
+    ]:
+      with self.subTest(names):
+        self.git("reset", "-q", "--hard", "base")
+        self.change(*names)
+        code_out = self.run_check()
+        self.assertEqual(code_out[0], code, code_out[1])
+        self.assertIn(
+          "hook and CI files:\n  A .github/workflows/ci.yml\n"
+          "  A .pre-commit-config.yaml\n",
+          code_out[1],
+        )
+
+  def test_hook_and_ci_files_are_other_unless_declared(self):
+    self.change(".pre-commit-config.yaml", "statute.toml")
+    own = ("--instructions", r"policy/.+")
+    self.assertEqual(self.run_check(*own)[0], 1)
+    self.assertEqual(
+      self.run_check(*own, "--hooks-and-ci", r"\.pre-commit-config\.yaml")[0],
+      0,
     )
 
   def test_mixed_fails(self):

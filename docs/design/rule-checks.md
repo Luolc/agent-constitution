@@ -141,8 +141,10 @@ not run rule 50's check. The built-in checks:
   as generated always, the top `statute.lock` when its TOML differs from
   the base's (at the merge base) only in `statute` and `commands`, which
   statute writes from its own version and the rules' checks, and
-  `statute-checks.toml` always, by its rules L31 and L27, since its CI
-  runs `statute compile --check`, and it knows statute's files only at the
+  `statute-checks.toml` always, by its rules L32 and L27, since its CI
+  runs `statute compile --check`; it counts the commit hook and CI files
+  with neither side and names them for the reviewer, where this check
+  counts them as other files; and it knows statute's files only at the
   top of the repository. Files of agent tools the
   tables do not name, sources of instructions outside them, and paths a
   repository declares in its `AGENTS.md` are left to the reviewer, and

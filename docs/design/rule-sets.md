@@ -135,13 +135,13 @@ installs statute from the hook's `rev`, in CI too, so the change that
 commits the new lock file also sets `rev` to `v<version>`; when the two
 differ, the hook fails, naming both versions. A repository that installs
 statute in CI without pre-commit reads the version from the lock file;
-where the lock file is an instruction file kept apart from other files,
-the CI step that reads the version goes in a change of its own, before
-the one that commits the new lock file, and falls back to the old file
-until then. This repository's own
+under rule 334 that CI step is part of the instruction system and goes in
+the change that commits the new lock file, while under rule 280, which
+keeps the lock file apart from every other file, it goes in a change of
+its own, before that one, and falls back to the old file until then. This repository's own
 checks run statute built from its source, so a change that raises the
 crate's version must rewrite the `statute` line of `statute.lock` in the same
-change: this repository's rule L31 counts a change to the lock file in
+change: this repository's rule L32 counts a change to the lock file in
 nothing but `statute` and `commands` as generated, so that it goes with
 the code; any other change to the lock file stays an instruction change.
 

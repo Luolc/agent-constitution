@@ -2,14 +2,16 @@
 
 The change is `git diff <base>...HEAD`: what HEAD changed since it left the
 base. A rename counts as a deletion of the old path and an addition of the
-new one. Each changed path is an instruction file, a generated file or
-another file, by the tables below; a change with both instruction files and
-other files fails, generated files not counted. With this repo's tables,
-the top statute.lock is generated when its TOML differs from the base's
-only in the entries statute writes from its own version and the rules'
-checks, ENTRIES, and an instruction file otherwise. Instruction files only,
-other files only, or nothing, passes. docs/design/checkers.md says what
-this proves and how another repo runs it.
+new one. Each changed path is an instruction file, a generated file, a
+hook or CI file or another file, by the tables below; a change with both
+instruction files and other files fails, generated and hook or CI files
+not counted.
+With this repo's tables, the top statute.lock is generated when its TOML
+differs from the base's only in the entries statute writes from its own
+version and the rules' checks, ENTRIES, and an instruction file otherwise.
+Instruction files only, other files only, or nothing, passes.
+docs/design/checkers.md says what this proves and how another repo runs
+it.
 
 Exit status: 0 on pass, 1 on a mixed change, 2 when git cannot give the diff.
 """
@@ -60,7 +62,7 @@ REPO = [
 # instruction file even when GENERIC lists it. The AGENTS.md at the top is
 # one: `statute compile --check` proves it equals a compile of the rule set,
 # and it changes with how statute renders the rule set as well as with the
-# rule set; this repo's rule L31, in place of R46, counts it so. Another
+# rule set; this repo's rule L32, in place of R334, counts it so. Another
 # repo declares it with --generated once its CI runs that check.
 # statute-checks.toml is another, as this repo's rule L27 provides: statute
 # wrote it before the lock file recorded its version and the checks, and
@@ -69,6 +71,16 @@ GENERATED = [
   r"constitution/[^/]+/generated/constitution\.[^/]+\.md",
   r"statute-checks\.toml",
   r"AGENTS\.md",
+]
+
+# Hook and CI files: under R334 the entries that install, pin or run the
+# compiler of the instructions are part of the instruction system and the
+# rest is not, so such a file counts by what the change alters in it,
+# which a path cannot tell. They go with neither side, and the pass names
+# them for the reviewer. Another repo declares its own with --hooks-and-ci.
+HOOKS_AND_CI = [
+  r"\.pre-commit-config\.yaml",
+  r"\.github/workflows/.+",
 ]
 
 
@@ -89,7 +101,7 @@ def matches(path: str, patterns: list[str]) -> bool:
 # version and the rules' checks rather than from the rule set and the
 # sources; `statute compile --check` proves them, and the version changes
 # with the tools. A change to the lock file in nothing else is generated in
-# this repo, as its rule L31 provides; another repo's lock file stays an
+# this repo, as its rule L32 provides; another repo's lock file stays an
 # instruction file.
 LOCK = "statute.lock"
 ENTRIES = ("statute", "commands")
@@ -198,8 +210,8 @@ def main(argv: list[str] | None = None) -> int:
     "--instructions",
     action="append",
     metavar="REGEX",
-    help="a path pattern the repo declares as instructions; with this or"
-    " --generated, the patterns of this repo are not used",
+    help="a path pattern the repo declares as instructions; with this,"
+    " --generated or --hooks-and-ci, the patterns of this repo are not used",
   )
   parser.add_argument(
     "--generated",
@@ -207,20 +219,34 @@ def main(argv: list[str] | None = None) -> int:
     metavar="REGEX",
     help="a path pattern of the repo's generated files",
   )
+  parser.add_argument(
+    "--hooks-and-ci",
+    action="append",
+    metavar="REGEX",
+    help="a path pattern of a commit hook or CI file, which counts by what"
+    " the change alters in it and is left to the reviewer",
+  )
   args = parser.parse_args(argv)
-  own = args.instructions is not None or args.generated is not None
+  own = (
+    args.instructions is not None
+    or args.generated is not None
+    or args.hooks_and_ci is not None
+  )
   instructions = GENERIC + ((args.instructions or []) if own else REPO)
   generated = (args.generated or []) if own else GENERATED
+  hooks_and_ci = (args.hooks_and_ci or []) if own else HOOKS_AND_CI
 
   files = changed(args.root, args.base)
   if files is None:
     return 2
-  groups = {"instruction": [], "generated": [], "other": []}
+  groups = {"instruction": [], "generated": [], "hook and CI": [], "other": []}
   for status, path in files:
     kind = (
       "generated"
       if matches(path, generated)
       or (not own and path == LOCK and entries_only(args.root, args.base))
+      else "hook and CI"
+      if matches(path, hooks_and_ci)
       else "instruction"
       if matches(path, instructions)
       else "other"
@@ -247,13 +273,16 @@ def main(argv: list[str] | None = None) -> int:
   print(
     f"instruction-only check: {summary} since {args.base}"
     f" ({len(groups['instruction'])} instruction, {len(groups['other'])} other,"
-    f" {len(groups['generated'])} generated)"
+    f" {len(groups['generated'])} generated,"
+    f" {len(groups['hook and CI'])} hook and CI)"
   )
   # A reviewer checks that a generated file changed only in rendering
-  # when tools changed it, so the pass names them.
-  if groups["generated"]:
-    print("generated files:")
-    print("\n".join(f"  {line}" for line in groups["generated"]))
+  # when tools changed it, and on which side each change to a hook or CI
+  # file falls, so the pass names them.
+  for group in ("generated", "hook and CI"):
+    if groups[group]:
+      print(f"{group} files:")
+      print("\n".join(f"  {line}" for line in groups[group]))
   return 0
 
 

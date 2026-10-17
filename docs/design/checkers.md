@@ -177,10 +177,10 @@ repeated in history stay; each push is judged on its own commit.
 The instruction-only check (`check-instruction-changes`) keeps
 the changes that an agent reads as instructions apart from all others, so
 each can be reviewed and reverted on its own. Which paths are instruction
-files, which are generated and which are other files is one table at the
-top of the script: a generic part that holds in any repo, this repo's own
-part (the constitution, rule and skill sources) and this repo's generated
-files. The generic part has what an agent harness reads in any directory
+files, which are generated, which are commit hook and CI files and which
+are other files is one table at the top of the script: a generic part
+that holds in any repo, this repo's own part (the constitution, rule and
+skill sources), this repo's generated files and its hook and CI files. The generic part has what an agent harness reads in any directory
 and, at the top of the repo, statute's files: `statute.toml`,
 `statute.lock` and `.statute/`, which it compiles the instruction file
 from; `statute-checks.toml`, which statute before 0.1.18 wrote beside the
@@ -194,17 +194,23 @@ the generic part also lists: generated counts first. `statute-checks.toml`
 is generated as this repo's rule L27 provides: its only change left is its
 deletion. The `AGENTS.md` is, since `statute compile --check` proves it is
 a compile of the rule set, and it changes with how statute renders the
-rules as well as with the rule set, as this repo's rule L31 provides in
-place of R46. The top `statute.lock` is generated too when its TOML
+rules as well as with the rule set, as this repo's rule L32 provides in
+place of R334. The top `statute.lock` is generated too when its TOML
 differs from the base's (at the merge base) only in `statute` and
 `commands`, the entries statute writes from its own version and the
 rules' checks, which `statute compile --check` proves as well, again as
-L31 provides; any other change to it is an instruction change. An
+L32 provides; any other change to it is an instruction change. An
 `AGENTS.md` or `statute.lock` in a subdirectory stays an instruction
-file. The
+file. The commit hook and CI files, `.pre-commit-config.yaml` and
+`.github/workflows/`, go with neither side: under R334 the entries in
+them that install, pin or run the compiler of the instructions are part
+of the instruction system and the rest is not, so such a file counts by
+what the change alters in it, which a path cannot tell. The check does
+not prove on which side a change to one falls; the reviewer judges it,
+from the list the script prints. The
 script compares `HEAD` with `--base` (`git diff <base>...HEAD`, renames
 off), lists both groups when they mix, and on a pass names the
-generated files, for the reviewer. CI runs
+generated files and the hook and CI files, for the reviewer. CI runs
 it against the same base as check 7; a push to `main` that carries
 several changes at once is checked as one.
 
@@ -216,10 +222,12 @@ checkout: the script needs only the standard library, so that repo needs
 neither uv nor this workspace. The generic part always applies.
 The repo declares its own instruction paths in its `AGENTS.md`, in words
 for agents, and passes the same paths to the script as `--instructions
-<regex>`, one per path, and its generated files as `--generated <regex>`;
-either option replaces this repo's own part and generated files, and
-with them the exception for `statute.lock`, which stays an instruction
-file there. `statute-checks.toml` and the top `AGENTS.md` stay
+<regex>`, one per path, its generated files as `--generated <regex>` and
+its commit hook and CI files as `--hooks-and-ci <regex>`; any of these
+options replaces this repo's own part, generated files and hook and
+CI files, and with them the exception for `statute.lock`, which stays an
+instruction file there; its hook and CI files are other files unless it
+declares them. `statute-checks.toml` and the top `AGENTS.md` stay
 instruction files there until the repo declares them with
 `--generated`, once its CI runs `statute compile --check`. statute's built-in check of rule 46 needs no
 such declaration: it tells statute's files apart by itself, and where it
