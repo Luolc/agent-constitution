@@ -152,12 +152,13 @@ keeps the edition in force and a draft of the next one is settled by
      `statute-` prefix) before writing anything. A tag that points at the
      mirror's `HEAD`, whose pin is this version, is an earlier run of the
      job, and the job passes there; a tag that points elsewhere fails the
-     job and is not moved, so a rerun for an older release cannot move the
-     pin on `main` back. It compares commits: it lists every tag and
+     job and is not moved. It compares commits: it lists every tag and
      takes the peeled `^{}` line when there is one, since an annotated
      tag's own line carries the tag object, and `git ls-remote` with a
      pattern drops the peeled line.
-  3. With no tag yet, it rewrites the line
+  3. With no tag yet, it fails when the pin on the mirror's `main` is
+     already a later version, so that a rerun for an older release cannot
+     move it back. Otherwise it rewrites the line
      `dependencies = ["statute==<version>"]` in the mirror's
      `pyproject.toml` with `sed`, and `grep -Fxq` checks that the line is
      there; `sed` exits 0 when its pattern matched nothing. It commits and
