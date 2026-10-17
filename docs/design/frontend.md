@@ -438,15 +438,17 @@ turned off (disabled), where it has these.
   pointer and on `bg-selected` while the row is pressed, so that it
   stays apart from the row's background. Its tip, a popover that only
   explains, says in the language of the text around it, a line each,
-  that it is a configurable parameter and its name, its default on the
-  public site, and, where the value is a link, that it opens the
-  parameter's entry. The tip opens above the value, from its start or,
+  that it is a configurable parameter and its name, the name in inline
+  code as the site draws code in the text, its default on the public
+  site, and, where the value is a link, that it opens the parameter's
+  entry. The tip opens above the value, from its start or,
   where it would run out of the window, from its end, after `delay-tip`
   under the pointer and at once under the keyboard's focus; Escape
-  closes it. Its alternative text is empty, so a screen reader does
-  not read it into the sentence: a value that is a link is named by the
-  value and then the tip (`aria-label`); in a statement in a row of the
-  list, the legend says what the mark means. A value in a title that
+  closes it. It is hidden from screen readers (`aria-hidden`), so that
+  they do not read it into the sentence, and stays out of a selection
+  and of the text the list's search matches: a value that is a link is
+  named by the value and then the tip (`aria-label`); in a statement in
+  a row of the list, the legend says what the mark means. A value in a title that
   stands inside a link (the list's titles, the rules under a provision)
   has the mark and no tip, as the list cuts its titles to one line and
   the link leads to the rule's page, where the value has one. A touch
@@ -475,7 +477,8 @@ turned off (disabled), where it has these.
   `weight-medium`; One of, what a one-of is, then the default option's
   `circle-dot` in `accent` and another option's `circle`; when the site
   has them, Rule set, enabled and not enabled, and Source, a quadrant;
-  Parameter, a value drawn as the text draws one and what it is;
+  Parameter, a placeholder, [value] / 「[值]」, drawn as the text draws
+  a value, and what it is;
   last, Row end, the four places of the marks and their order, in
   `text-muted`. On a narrow screen a row's marks wrap under each other,
   its name staying at its start.

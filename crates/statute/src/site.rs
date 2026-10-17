@@ -97,10 +97,12 @@ struct Words {
     /// In the legend, what a one-of is, and an option not its default.
     one_of_meaning: &'static str,
     another_option: &'static str,
-    /// In the legend, what a parameter's value is.
+    /// In the legend, a parameter's value, as a placeholder, and what
+    /// it is.
+    param_sample: &'static str,
     param_meaning: &'static str,
     /// The tip on a parameter's value, a line each: what it is and its
-    /// name, where it leads.
+    /// name, in code, where it leads.
     param_tip: [&'static str; 2],
     /// The switch between the views of the rows, and each view: title,
     /// statement.
@@ -181,6 +183,7 @@ fn words(lang: &str) -> Words {
             slots: "依次是默认、状态、指令、审查，没有的留空",
             one_of_meaning: "规定清单恰好取其中一个选项",
             another_option: "其他选项",
+            param_sample: "[值]",
             param_meaning: "规定清单可以另选的值，正文里写的是它取的值",
             param_tip: ["可配置的参数：", "点开查看它的取值和说明"],
             view: "显示",
@@ -254,6 +257,7 @@ fn words(lang: &str) -> Words {
             slots: "default, status, instructions, review, in this order; empty where a rule has none",
             one_of_meaning: "the rule set takes exactly one option",
             another_option: "Another option",
+            param_sample: "[value]",
             param_meaning: "a value the rule set can choose; the text shows the one it has",
             param_tip: [
                 "Configurable parameter: ",
@@ -1487,7 +1491,7 @@ fn legend(w: &Words) -> String {
             param,
             item(format!(
                 "<span class=\"param-value\">{}</span>{}",
-                w.name, w.param_meaning
+                w.param_sample, w.param_meaning
             )),
         ),
         (places, w.slots.to_owned()),
@@ -1712,7 +1716,7 @@ fn text_html(
             },
         };
         format!(
-            "<a class=\"param-value\" href=\"{up}{}#{name}\" data-tip=\"{tip}{name}&#10;{open}\" aria-label=\"{shown}&#10;{tip}{name}&#10;{open}\">{shown}</a>",
+            "<a class=\"param-value\" href=\"{up}{}#{name}\" aria-label=\"{shown}&#10;{tip}{name}&#10;{open}\">{shown}<span class=\"param-tip\" aria-hidden=\"true\">{tip}<code>{name}</code>&#10;{open}</span></a>",
             params_page(&source).display(),
             shown = escape(&shown)
         )

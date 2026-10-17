@@ -382,7 +382,7 @@ class SiteTest(unittest.TestCase):
       " default Status Active Trial Draft Superseded Repealed Uses"
       " Instructions : goes into the agent's instructions Review : a reviewer"
       " checks it One of the rule set takes exactly one option Default option"
-      " Another option Parameter English a value the rule set can choose; the"
+      " Another option Parameter [value] a value the rule set can choose; the"
       " text shows its default Row end default, status, instructions, review,"
       " in this order; empty where a rule has none Search Show Short title"
       " Statement"
@@ -540,7 +540,7 @@ class SiteTest(unittest.TestCase):
       "图例 默认 默认开启 默认关闭 状态 生效 试行 草案 已取代 已废止"
       " 用途 指令 ：写进 agent 的指令 审查 ：审查方按它审查"
       " 择一 规定清单恰好取其中一个选项 默认选项 其他选项"
-      " 参数 英文 规定清单可以另选的值，正文里写的是默认值"
+      " 参数 [值] 规定清单可以另选的值，正文里写的是默认值"
       " 行末 依次是默认、状态、指令、审查，没有的留空",
       pages["zh/rules/index.html"],
     )
@@ -1094,18 +1094,20 @@ Promise.all(frames.map((f) => new Promise((done) =>
     )
     self.assertIn(
       'Write in <a class="param-value" href="../params/#language.docs"'
-      ' data-tip="Configurable parameter: language.docs&#10;'
-      'Default: Chinese&#10;Open it to read what it sets"'
       ' aria-label="Chinese&#10;Configurable parameter: language.docs&#10;'
       'Default: Chinese&#10;Open it to read what it sets">'
-      "Chinese</a>; label <code>x <a"
-      ' class="param-value" href="../params/#work-items.label-done"'
-      ' data-tip="Configurable parameter: work-items.label-done&#10;'
-      'Default: done &amp; dusted&#10;Open it to read what it sets"'
+      'Chinese<span class="param-tip" aria-hidden="true">'
+      "Configurable parameter: <code>language.docs</code>\n"
+      "Default: Chinese\nOpen it to read what it sets</span></a>;"
+      ' label <code>x <a class="param-value"'
+      ' href="../params/#work-items.label-done"'
       ' aria-label="done &amp; dusted&#10;Configurable parameter:'
       " work-items.label-done&#10;Default: done &amp; dusted&#10;Open it"
-      ' to read what it sets">'
-      "done &amp; dusted</a></code>.",
+      ' to read what it sets">done &amp; dusted'
+      '<span class="param-tip" aria-hidden="true">'
+      "Configurable parameter: <code>work-items.label-done</code>\n"
+      "Default: done &amp; dusted\nOpen it to read what it sets"
+      "</span></a></code>.",
       raw["rules/6/index.html"],
     )
 
@@ -1192,13 +1194,13 @@ Promise.all(frames.map((f) => new Promise((done) =>
       raw["rules/index.html"],
     )
     self.assertIn(
-      '<span class="rule-statement">Write in <span class="param-value"'
-      ' data-tip="Configurable parameter: language.docs&#10;Default: Chinese">'
-      'Chinese</span>; label <code>x <span class="param-value"'
-      ' data-tip="Configurable parameter: work-items.label-done&#10;'
-      'Default: a &lt;b&gt; c">'
-      "a &lt;b&gt; c"
-      "</span></code>.</span>",
+      '<span class="rule-statement">Write in <span class="param-value">'
+      'Chinese<span class="param-tip" aria-hidden="true">'
+      "Configurable parameter: <code>language.docs</code>\n"
+      'Default: Chinese</span></span>; label <code>x <span class="param-value">'
+      'a &lt;b&gt; c<span class="param-tip" aria-hidden="true">'
+      "Configurable parameter: <code>work-items.label-done</code>\n"
+      "Default: a &lt;b&gt; c</span></span></code>.</span>",
       raw["rules/index.html"],
     )
     self.assertNotIn("<b>", raw["rules/index.html"])
@@ -1215,7 +1217,7 @@ Promise.all(frames.map((f) => new Promise((done) =>
     # The legend: the rule set's marks and the quadrant.
     self.assertIn(
       "Another option Rule set Enabled Not enabled Source Global public the"
-      " quadrant of the rule's source Parameter English a value the rule set"
+      " quadrant of the rule's source Parameter [value] a value the rule set"
       " can choose; the text shows its default Row end",
       pages["rules/index.html"],
     )

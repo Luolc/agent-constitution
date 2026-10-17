@@ -35,11 +35,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const count = document.querySelector<HTMLElement>(".rules-count")!;
   const none = document.querySelector<HTMLElement>(".rules-none");
   const items = Array.from(list.querySelectorAll<HTMLElement>(".rule-item"));
-  // An item's text, that of its rows, not of its group row.
+  // An item's text, that of its rows, not of its group row nor of the
+  // tips on its parameters' values.
+  const text = (row: Element): string => {
+    const copy = row.cloneNode(true) as Element;
+    copy.querySelectorAll(".param-tip").forEach((tip) => tip.remove());
+    return copy.textContent ?? "";
+  };
   const texts = new Map(
     items.map((item) => [
       item,
-      Array.from(item.querySelectorAll(".rule-entry"), (row) => row.textContent ?? "")
+      Array.from(item.querySelectorAll(".rule-entry"), text)
         .join(" ")
         .toLowerCase(),
     ]),

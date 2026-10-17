@@ -38,7 +38,13 @@
   const boxes = (field) => Array.from(document.querySelectorAll(`.menu input[name='${field}']`));
   const chosen = (field) => boxes(field).filter((box) => box.checked).map((box) => box.value);
   const defaults = new Map(fields.map((f) => [f, boxes(f).filter((b) => b.defaultChecked).map((b) => b.value)]));
-  const texts = new Map(items.map((item) => [item, item.textContent.toLowerCase()]));
+  // A row's text, not that of the tips on its parameters' values.
+  const text = (item) => {
+    const copy = item.cloneNode(true);
+    copy.querySelectorAll(".param-tip").forEach((tip) => tip.remove());
+    return copy.textContent.toLowerCase();
+  };
+  const texts = new Map(items.map((item) => [item, text(item)]));
   // A page opened from disk may refuse to change its address or to keep
   // a value.
   const kept = (key) => {
