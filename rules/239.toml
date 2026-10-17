@@ -1,6 +1,6 @@
 id = 239
 slug = "self-contained-statement"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The line a statement becomes is the statement as compiling writes it, with each citation and parameter rendered. A statement rests on what that line does not show when an agent that reads only the line cannot tell what it requires, or whom or what it applies to, without the rule's title, reason, verification, domain, parent or the other options of its one-of, the rules next to it in the source, or its `requires` or `conflicts`. A citation shows only the reference of the rule it names. A statement that cites a rule still reads on its own when the words around the citation say what is meant, as in "a scratch directory" followed by a citation of the rule that sets it up, or when the rule `requires` the cited rule, so that the cited rule's line is in the same instructions.
+The line a statement becomes is the statement as compiling writes it, with each citation and parameter rendered. A statement rests on what that line does not show when an agent that reads only the line cannot tell what it requires, or whom or what it applies to, without the rule's title, reason, verification, domain, parent or the other options of its one-of, the rules next to it in the source, or its `requires` or `conflicts`. For example, a statement rests on what its line does not show when something the rule requires is written only in its verification, reason or title, and not in the statement itself. A citation shows only the reference of the rule it names. A statement that cites a rule still reads on its own when the words around the citation say what is meant, as in "a scratch directory" followed by a citation of the rule that sets it up, or when the rule `requires` the cited rule, so that the cited rule's line is in the same instructions.
 
 Violated when a change adds or rewrites a rule's statement so that it rests on what its line does not show, or so that it names another rule by position instead of by a citation.
 '''
 zh = '''
-要求编译成的那一行，指编译时写出的要求，其中的引用和参数都已渲染。一个 agent 只读这一行，如果不看规定的标题、理由、核验方法、领域、parent 或同一 one-of 的其他选项，不看规定源里挨着它的规定，也不看它的 `requires` 或 `conflicts`，就弄不清它要求什么、对谁或对什么适用，这条要求就依赖了这一行看不到的东西。引用只显示所引规定的编号。要求引用了别的规定，只要引用周围的文字已经说清意思 (例如「scratch 目录」后面跟着对设立它的那条规定的引用)，或者这条规定 `requires` 被引用的规定，使被引规定的那一行也在同一份指令里，这条要求仍算单独读得懂。
+要求编译成的那一行，指编译时写出的要求，其中的引用和参数都已渲染。一个 agent 只读这一行，如果不看规定的标题、理由、核验方法、领域、parent 或同一 one-of 的其他选项，不看规定源里挨着它的规定，也不看它的 `requires` 或 `conflicts`，就弄不清它要求什么、对谁或对什么适用，这条要求就依赖了这一行看不到的东西。例如，规定要求的某件事只写在核验方法、理由或标题里，要求本身没有写，这条要求就依赖了这一行看不到的东西。引用只显示所引规定的编号。要求引用了别的规定，只要引用周围的文字已经说清意思 (例如「scratch 目录」后面跟着对设立它的那条规定的引用)，或者这条规定 `requires` 被引用的规定，使被引规定的那一行也在同一份指令里，这条要求仍算单独读得懂。
 
 变更新增或改写规定的要求后，要求依赖了它那一行看不到的东西，或者按位置而不是用引用提到别的规定的，即为违反本规定。
 '''
 
 [translations]
-zh = "6c778cbb81d9aa713d84701443595b8edb66618b4a206d14bbd5dc40435d4be3"
+zh = "4bacef147ded5db06832aefabd534686030d48dfa63817384349645d339d4007"
