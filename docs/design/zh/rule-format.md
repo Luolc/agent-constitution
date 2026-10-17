@@ -1,4 +1,4 @@
-<!-- en-sha256: bfb8d1cd48674b58607054921e99afa7c38c3b865247de00487ae68b8b160a0f -->
+<!-- en-sha256: af41d3b18b87e4432f2ee49a5b28e32e3309e0cdea44117e063769a3b1860c82 -->
 # 规定格式
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -124,7 +124,7 @@ it.
 - `requires` (可选)：启用这条规定所需的规定或 one-of。同一规定源里的节点写成数字，别的规定源里的写成字符串：规定源的短名、一个冒号和 ID (`"team:7"`)，短名是大写字母的规定源则写成字母加 ID (`"P7"`)，短名取自本规定源的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references))。
 - `conflicts` (可选)：不能与这条规定一起用的规定，写法同 `requires`，只写在一边 ([依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs))。
 - `authority`：这条规定所细化的宪法条文的 ID，写法与宪法引用自身时相同，不带命名空间 (`"simplicity"`、`"must-ask.capital"`)。这是字段的值，不是正文里的 `{@...}` 引用，所以 [ID](source-formats.md#ids) 要求规定的引用带命名空间，这一条不适用于它；规定正文里的引用照旧带命名空间 (`{@constitution:simplicity}`)。
-- `constitution`：这条规定兼容的宪法修订号，写成 Python 的版本说明符 (`">=1"`、`">=1,<4"`；见[从规定追溯到宪法](#tracing-rules-to-the-constitution))。它和 `authority` 都必填，但不依据宪法的规定清单读规定时不要求这两项 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；`statute validate` 和依据宪法的规定清单两项都要求。
+- `constitution`：这条规定兼容的宪法修订号，写成 Python 的版本说明符 (`">=1"`、`">=1,<4"`；见[从规定追溯到宪法](#tracing-rules-to-the-constitution))。它和 `authority` 都必填，但不依据宪法的规定清单读规定时不要求这两项 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))；依据宪法的规定清单两项都要求。`statute validate` 也要求，除非规定旁边没有宪法；`statute export` 也要求，除非导出的目录里没有宪法；这两种例外都还要运行所在目录的 `statute.toml` 没写宪法 ([命令与第一版](statute-command.md#the-command-and-the-first-version)、[导出](statute-command.md#export))。
 - `level`：默认层级，`project` 或 `user` ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。
 - `check`：怎样检查是否合规 ([检查](rule-checks.md#checks))。`builtin`：这条规定在本仓的 crate 里有一个模块。`command`：外部命令，另由两个字段给出，`run` 是命令行，`tools` 是它需要的工具列表 (`["uv"]`)。`none`：没有自动检查；审查方是否拿到这条规定，由 `uses` 决定。`review` 是 `none` 的旧名，写了就报错。
 - `default`：必填，规定是否默认开启，`on` 或 `off`；one-of 的子节点没有，带 `overrides` 的规定也没有 (见[默认开关](rule-config.md#default-switches))。

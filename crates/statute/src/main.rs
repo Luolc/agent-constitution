@@ -140,7 +140,9 @@ enum Command {
     },
     /// Check a directory of rule files as the first-party source's
     /// `rules/`, with every check that needs no rule set, and against the
-    /// constitution beside it when there is one; exits 1 on an error.
+    /// constitution beside it when there is one; without one, its rules
+    /// need no `authority` when statute.toml here names no constitution.
+    /// Exits 1 on an error.
     Validate {
         /// The directory of the rule files, as `rules`.
         dir: std::path::PathBuf,
@@ -333,6 +335,11 @@ fn read_env(mode: Mode) -> Result<Env, Vec<String>> {
     Ok(env)
 }
 
+/// [`manifest::rests_on_constitution`], with its error printed.
+fn rests_on_constitution(root: &Path) -> Result<bool, ()> {
+    manifest::rests_on_constitution(root).map_err(|e| eprintln!("{e}"))
+}
+
 fn print(diags: &Diagnostics) {
     for d in &diags.0 {
         eprintln!("{d}");
@@ -341,17 +348,26 @@ fn print(diags: &Diagnostics) {
 
 /// `validate`: reads the rule files of `dir` as the first-party source,
 /// `R`, checks them, and against the constitution beside `dir` when there
-/// is one, and prints every finding; fails when one is an error.
+/// is one, and prints every finding; fails when one is an error. Without
+/// a constitution beside `dir`, when the rule set here rests on none, the
+/// rules may leave out `authority` and `constitution`, and a citation of
+/// the constitution is an error, as `lock` reads them.
 fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
+    use statute::source::Source;
     let label = dir.to_string_lossy();
     let label = label.trim_end_matches('/');
-    let (mut source, mut diags) = statute::source::Source::load(dir, label);
+    let constitution = statute::constitution::rules::beside(dir).is_some()
+        || rests_on_constitution(Path::new("."))?;
+    let (mut source, mut diags) = Source::load_for(dir, label, constitution);
     source.name = manifest::FIRST_PARTY.to_owned();
     source.public = true;
     let sources = statute::source::Sources::new(vec![source]);
     sources.check(&mut diags);
     let first = sources.iter().next().expect("one source");
     first.check_retired_references(&mut diags);
+    if !constitution {
+        statute::constitution::rules::check_without_constitution(dir, first, &mut diags);
+    }
     let notes = statute::constitution::rules::validate(dir, first, base, &mut diags);
     print(&diags);
     for note in notes {
@@ -419,11 +435,18 @@ fn write_private_lock(public: &Project, private: &Private) -> Result<(), ()> {
 }
 
 fn print_private_locked(path: &Path, public: &Project, both: &Project) {
-    let all = both.resolution.enabled.len();
-    let added = all - public.resolution.enabled.len();
+    let (public, both) = (&public.resolution.enabled, &both.resolution.enabled);
+    let added = both.keys().filter(|k| !public.contains_key(k)).count();
+    let off = public.keys().filter(|k| !both.contains_key(k)).count();
+    let off = if off > 0 {
+        format!(", {off} turned off by it")
+    } else {
+        String::new()
+    };
     println!(
-        "wrote {}: {all} rules enabled, {added} of them by the private layer",
-        path.display()
+        "wrote {}: {} rules enabled, {added} of them by the private layer{off}",
+        path.display(),
+        both.len()
     );
 }
 
@@ -661,7 +684,8 @@ fn site(root: &Path) -> Result<(), ()> {
 }
 
 fn export(dir: &Path) -> Result<(), ()> {
-    let (data, diags) = statute::export::export(dir);
+    let rests = dir.join("constitution").is_dir() || rests_on_constitution(Path::new("."))?;
+    let (data, diags) = statute::export::export(dir, rests);
     print(&diags);
     println!("{}", data.ok_or(())?);
     Ok(())
@@ -1729,10 +1753,11 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         _ => Project::with_manifest(root, text, &env),
     };
     let current = try_load(start).0;
-    let is_domain = current
+    let kind = current
         .as_ref()
         .and_then(|p| p.sources.get(&key))
-        .is_some_and(|n| n.kind == Kind::Domain);
+        .map(|n| n.kind);
+    let is_domain = kind == Some(Kind::Domain);
     let field = match (pack, is_domain) {
         (true, _) => "packs",
         (false, true) => "domains",
@@ -1782,7 +1807,12 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
             matches!(r, Reason::Default | Reason::DefaultOf(_))
                 || (private && matches!(r, Reason::Direct | Reason::Pack(_)))
         };
-        let turns_off = try_load(&doc.to_string()).0.is_some_and(|p| {
+        let after = try_load(&doc.to_string()).0;
+        let turns_off = after.as_ref().is_some_and(|p| {
+            // Only its domain turns on a one-of outside `packs`.
+            if kind == Some(Kind::OneOf) {
+                return true;
+            }
             if is_domain {
                 return private || Switches::new(&p.sources, &p.manifest).on_by_default(&key);
             }
@@ -1791,16 +1821,34 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
                 .get(&key)
                 .is_some_and(|reasons| reasons.iter().all(switched))
         });
-        if turns_off {
-            edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
-            done.push(format!(
-                "added {key} to `exclude`, as {}",
-                if private {
-                    "the public layer enables it"
-                } else {
-                    "it is on by default"
+        // An option of a one-of is chosen, never excluded: another option
+        // is chosen, or the whole one-of is turned off, in its place.
+        let one_of = after.as_ref().and_then(|p| {
+            p.sources
+                .parent(&key)
+                .filter(|o| p.sources.get(o).is_some_and(|n| n.kind == Kind::OneOf))
+        });
+        match (turns_off, one_of) {
+            (false, _) => {}
+            (true, Some(one_of)) => {
+                if done.is_empty() {
+                    eprintln!(
+                        "{file}: error: {key} is an option of the one-of {one_of}, which `exclude` cannot name; to turn it off, `statute add` another option of {one_of}, or `statute remove {one_of}`"
+                    );
+                    return Err(());
                 }
-            ));
+            }
+            (true, None) => {
+                edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
+                done.push(format!(
+                    "added {key} to `exclude`, as {}",
+                    if private {
+                        "the public layer enables it"
+                    } else {
+                        "it is on by default"
+                    }
+                ));
+            }
         }
     }
     if only_exclude && done.is_empty() {

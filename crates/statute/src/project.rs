@@ -316,11 +316,8 @@ impl Project {
         if diags.has_errors() {
             return (None, diags);
         }
-        let load = if manifest.constitution.is_some() {
-            Source::load
-        } else {
-            Source::load_without_constitution
-        };
+        let load =
+            |dir: &Path, label: &str| Source::load_for(dir, label, manifest.constitution.is_some());
         let mut list = Vec::new();
         // Where each source's rules are read from, by its name.
         let mut dirs = BTreeMap::new();

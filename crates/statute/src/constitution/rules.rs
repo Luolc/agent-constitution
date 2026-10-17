@@ -34,11 +34,7 @@ pub fn validate(
     base: Option<&str>,
     diags: &mut Diagnostics,
 ) -> Vec<String> {
-    let root = dir
-        .canonicalize()
-        .ok()
-        .and_then(|d| d.parent().map(Path::to_path_buf));
-    let Some(root) = root.filter(|r| r.join(CONSTITUTION).is_dir()) else {
+    let Some(root) = beside(dir) else {
         if base.is_some() {
             diags.error(
                 &source.dir,
@@ -71,6 +67,31 @@ pub fn validate(
     };
     report(errors, diags);
     note.into_iter().collect()
+}
+
+/// For the rules of `source`, read from `dir`, of a rule set that rests on
+/// no constitution: each `{@constitution:...}` citation of a node not
+/// repealed is an error, as `lock` finds it, for it has nothing to render
+/// as.
+pub fn check_without_constitution(dir: &Path, source: &Source, diags: &mut Diagnostics) {
+    let rules = Rules::new(dir, source);
+    let none = Provisions::none();
+    for (&id, n) in &source.nodes {
+        if n.status == Status::Repealed {
+            continue;
+        }
+        for (needle, message) in none.findings(n) {
+            diags.error(rules.at(id, &[&needle]), message);
+        }
+    }
+}
+
+/// The directory that holds `dir` when it holds a `constitution/` too.
+pub fn beside(dir: &Path) -> Option<PathBuf> {
+    dir.canonicalize()
+        .ok()
+        .and_then(|d| d.parent().map(Path::to_path_buf))
+        .filter(|r| r.join(CONSTITUTION).is_dir())
 }
 
 /// Moves the constitution's errors, `path:line: check N: message`, into
