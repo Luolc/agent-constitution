@@ -127,11 +127,17 @@ entry, and fails too; `statute lock` and `statute upgrade` write both,
 `upgrade` showing the version it records or the version it moves from.
 
 So a repository moves to a new version of statute by running
-`statute lock` and `statute compile` with it, and CI installs that
-version. Where the lock file is an instruction file kept apart from
-other files, as in most repositories, the CI step that reads the version
-goes in a change of its own, before the one that commits the new lock
-file, and falls back to the old file until then. This repository's own
+`statute lock` and `statute compile` with it. A repository that runs
+`statute compile --check` as a pre-commit hook through the mirror
+`Luolc/statute-pre-commit` ([Releases and versions](amendments-and-releases.md#releases-and-versions))
+installs statute from the hook's `rev`, in CI too, so the change that
+commits the new lock file also sets `rev` to `v<version>`; when the two
+differ, the hook fails, naming both versions. A repository that installs
+statute in CI without pre-commit reads the version from the lock file;
+where the lock file is an instruction file kept apart from other files,
+the CI step that reads the version goes in a change of its own, before
+the one that commits the new lock file, and falls back to the old file
+until then. This repository's own
 checks run statute built from its source, so a change that raises the
 crate's version must rewrite the `statute` line of `statute.lock` in the same
 change: this repository's rule L31 counts a change to the lock file in
