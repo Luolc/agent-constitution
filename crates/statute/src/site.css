@@ -109,6 +109,15 @@ a {
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
+/* The parameter's name in the tip: monospace (code's own font), on
+   `bg-hover`, a step above the tip's `bg-panel`, inside `1px` of
+   `bg-active`. */
+.param-tip code {
+  padding: 0 var(--t-space-1);
+  background: var(--t-bg-hover);
+  border: 1px solid var(--t-bg-active);
+  border-radius: var(--t-radius-sm);
+}
 .param-value:focus-visible .param-tip {
   opacity: 1;
   scale: 1;
