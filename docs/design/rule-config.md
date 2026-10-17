@@ -548,8 +548,11 @@ packs = ["R96"]
   requirement, instead of failing.
 - `statute add` writes a domain to `domains` and a rule to `rules`;
   `statute remove` takes an entry out of `rules`, `domains` or `packs`,
-  and when the rule or domain is still enabled by default, writes it to
-  `exclude`.
+  and when the rule, domain or one-of is still enabled by default,
+  writes it to `exclude`. An option of a one-of it writes nowhere: when
+  the option is still on, and was not taken out of a list, it fails,
+  naming the two ways to turn it off, adding another option or removing
+  the one-of.
 - `private.toml` may have `rules`, `domains`, `packs` and `exclude`,
   which change the private output alone: `AGENTS.md` and `statute.lock`
   stay as `statute.toml` makes them

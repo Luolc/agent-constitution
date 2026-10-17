@@ -1729,10 +1729,11 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
         _ => Project::with_manifest(root, text, &env),
     };
     let current = try_load(start).0;
-    let is_domain = current
+    let kind = current
         .as_ref()
         .and_then(|p| p.sources.get(&key))
-        .is_some_and(|n| n.kind == Kind::Domain);
+        .map(|n| n.kind);
+    let is_domain = kind == Some(Kind::Domain);
     let field = match (pack, is_domain) {
         (true, _) => "packs",
         (false, true) => "domains",
@@ -1782,7 +1783,12 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
             matches!(r, Reason::Default | Reason::DefaultOf(_))
                 || (private && matches!(r, Reason::Direct | Reason::Pack(_)))
         };
-        let turns_off = try_load(&doc.to_string()).0.is_some_and(|p| {
+        let after = try_load(&doc.to_string()).0;
+        let turns_off = after.as_ref().is_some_and(|p| {
+            // Only its domain turns on a one-of outside `packs`.
+            if kind == Some(Kind::OneOf) {
+                return true;
+            }
             if is_domain {
                 return private || Switches::new(&p.sources, &p.manifest).on_by_default(&key);
             }
@@ -1791,16 +1797,34 @@ fn edit(root: &Path, text: &str, pack: bool, adding: bool, private: bool) -> Res
                 .get(&key)
                 .is_some_and(|reasons| reasons.iter().all(switched))
         });
-        if turns_off {
-            edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
-            done.push(format!(
-                "added {key} to `exclude`, as {}",
-                if private {
-                    "the public layer enables it"
-                } else {
-                    "it is on by default"
+        // An option of a one-of is chosen, never excluded: another option
+        // is chosen, or the whole one-of is turned off, in its place.
+        let one_of = after.as_ref().and_then(|p| {
+            p.sources
+                .parent(&key)
+                .filter(|o| p.sources.get(o).is_some_and(|n| n.kind == Kind::OneOf))
+        });
+        match (turns_off, one_of) {
+            (false, _) => {}
+            (true, Some(one_of)) => {
+                if done.is_empty() {
+                    eprintln!(
+                        "{file}: error: {key} is an option of the one-of {one_of}, which `exclude` cannot name; to turn it off, `statute add` another option of {one_of}, or `statute remove {one_of}`"
+                    );
+                    return Err(());
                 }
-            ));
+            }
+            (true, None) => {
+                edit_list(&mut doc, "exclude", &key, &manifest, true, &file)?;
+                done.push(format!(
+                    "added {key} to `exclude`, as {}",
+                    if private {
+                        "the public layer enables it"
+                    } else {
+                        "it is on by default"
+                    }
+                ));
+            }
         }
     }
     if only_exclude && done.is_empty() {
