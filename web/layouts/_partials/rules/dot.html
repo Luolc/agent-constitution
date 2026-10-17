@@ -1,11 +1,12 @@
-{{- /* Whether the defaults enable a node, the first of its marks
-  (rules/marks.html) and in its group row: a dot filled or a ring, named
-  for assistive technology and on hover; an empty place when that
-  depends on another source. Takes the node's data; returns the HTML. */ -}}
+{{- /* Whether a domain or a rule is on by default, by its own `default`,
+  the first of its marks (rules/marks.html) and in its group row: a dot
+  filled or a ring, named for assistive technology and on hover; an
+  empty place for a node without a `default`. Takes the node's data;
+  returns the HTML. */ -}}
 {{- $dot := `<span class="rule-mark"></span>` }}
-{{- if eq .onByDefault true }}
+{{- if eq .default "on" }}
   {{- $dot = printf `<span class="rule-mark rule-dot on" role="img" aria-label="%s" title="%s"></span>` (i18n "default-on") (i18n "default-on") }}
-{{- else if eq .onByDefault false }}
+{{- else if eq .default "off" }}
   {{- $dot = printf `<span class="rule-mark rule-dot" role="img" aria-label="%s" title="%s"></span>` (i18n "default-off") (i18n "default-off") }}
 {{- end }}
 {{- return $dot }}

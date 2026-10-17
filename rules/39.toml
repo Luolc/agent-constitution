@@ -1,8 +1,9 @@
 id = 39
 slug = "relayed-yes-checks"
-revision = 4
+revision = 5
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 320
 lang = "en"
 parent = 269
 default = "on"

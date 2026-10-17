@@ -1,6 +1,6 @@
 id = 269
 slug = "relayed-approvals"
-revision = 2
+revision = 3
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "转告的同意"
 
 [applicability]
 en = '''
-How a principal's yes is relayed from one agent to another, and how the agent that acts on it checks it against the original message; what holds only for one messaging tool is in that tool's domain below. Enable it wherever agents work.
+How a principal's yes is relayed from one agent to another, and how the agent that acts on it checks it against the original record, the principal's message or answer; what holds only for one messaging tool is in that tool's domain below. Enable it wherever agents work.
 '''
 zh = '''
-委托人的同意怎么从一个 agent 转告给另一个，执行的 agent 怎么对照原消息核实；只对某个消息工具成立的，在下面那个工具的 domain 里。凡有 agent 工作的地方都要启用。
+委托人的同意怎么从一个 agent 转告给另一个，执行的 agent 怎么对照原始记录 (委托人的消息或者回答) 核实；只对某个消息工具成立的，在下面那个工具的 domain 里。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "6f839fa1a4fb7d94c92de6aaf58c851950acf2b9f1f13e20d5397539dbdba206"
+zh = "bcb7aa7d1309759870ba0b56c93ba01759f11e076bda8e9e85d4a93e0f450c7f"

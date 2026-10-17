@@ -1,0 +1,47 @@
+id = 321
+slug = "slack-message-or-card-with-reference"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 188
+default = "on"
+authority = ["explicit-yes.verification", "explicit-yes.rules"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Relay only a yes given in a Slack message or on a FedNet card, with its reference"
+zh = "转告的同意只认 Slack 消息或 FedNet 卡片上的回答，并带引用"
+
+[text.statement]
+en = "Relay only a yes that the principal gave in a Slack message or by answering a FedNet question card, and send with it, for a message, the thread key `CHANNEL/TS` of the thread the message is in and the message's `ts`, and for a card, the card's ID."
+zh = "转告委托人的同意时，只转告委托人在 Slack 消息里说的话，或者委托人在 FedNet 问题卡片上的回答；消息带上它所在线程的 thread key `CHANNEL/TS` 和那条消息的 `ts`，卡片带上卡片的 ID。"
+
+[text.reason]
+en = '''
+A relayed yes counts only once the acting agent has verified it against a record it can check for itself and that only the principal could have left ({@constitution:explicit-yes.verification}). Where agents reach Slack through FedNet, two records are of that kind: the principal's Slack message, and the principal's answer to a question card, which the FedNet hub records only from the press it receives from Slack; the acting agent can read both back through FedNet. {@rule:319} asks for a reference to the original record; how it is verified is set by the rules ({@constitution:explicit-yes.rules}), and this rule sets the form of the reference.
+'''
+zh = '''
+转告的同意，只有执行的 agent 依据它自己能查验、而且只有委托人本人才能留下的记录核实之后才算数 ({@constitution:explicit-yes.verification})。在 agent 经 FedNet 接入 Slack 的环境里，这样的记录有两种：委托人在 Slack 里发的消息，以及委托人在问题卡片上的回答，后者只由 FedNet hub 依据它从 Slack 收到的点击记下；两种执行的 agent 都能经 FedNet 读回。{@rule:319} 要求转告时附上原始记录的引用；怎样核实由规定确定 ({@constitution:explicit-yes.rules})，本规定写明引用的格式。
+'''
+
+[text.verification]
+en = '''
+The reference is copied as it is from FedNet's output: for a message, the thread key and the `ts`, from the output of the command that read the message; for a card, its ID as FedNet printed it, the one `fednet client read-answer` takes. A summary or a quotation of the record is not a reference, and neither is who answered a card or when, which the relaying agent may send beside the ID. The relaying agent sends the reference even when it expects the receiving agent to find the record itself, since the receiving agent may have no way to look it up: a lead or a worker that Agent Fleet starts, for one, cannot look up the key of the thread its task came from.
+
+An answer to a card that an agent keeps or reports elsewhere, such as in Agent Fleet's ledger or in a message that passes the answer on, is not the principal's yes: agents can write those. Only the record that FedNet reads back counts.
+
+Violated when an agent relays as the principal's yes anything other than what the principal said in a Slack message or answered on a FedNet question card, or relays a message's yes without the thread key or the `ts`, or a card's yes without the card's ID.
+'''
+zh = '''
+引用从 FedNet 的输出里原样取：消息是 thread key 与 `ts`，取自读到那条消息的命令输出；卡片是 FedNet 打出的卡片 ID，即 `fednet client read-answer` 接受的那个。对记录的概述或者摘引不构成引用；卡片是谁回答的、什么时候回答的，转告方可以与 ID 一起带上，但它们也不构成引用。即使转告方以为接收的 agent 自己找得到记录，也照样带上引用，因为接收的 agent 可能无从查找：比如 Agent Fleet 起的 lead 或 worker，自己就查不到它的任务来自哪个线程的 key。
+
+agent 在别处保存或者转述的卡片回答，比如 Agent Fleet 账本里的回答，或者转述回答的消息，都不是委托人的同意：这些 agent 都写得进去。只有 FedNet 读回的记录才算。
+
+agent 把委托人在 Slack 消息里说的话、在 FedNet 问题卡片上的回答以外的内容当作委托人的同意转告，或者转告消息里的同意时缺了 thread key 或 `ts`，转告卡片上的同意时缺了卡片的 ID 的，即为违反本规定。
+'''
+
+[translations]
+zh = "5d3e0bd2e93a33c58a5097db0f646aead5031eaa0474fb7ed55d458f4f872a46"

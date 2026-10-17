@@ -1,0 +1,43 @@
+id = 322
+slug = "verify-message-with-read-thread"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 188
+default = "on"
+authority = ["explicit-yes.verification", "explicit-yes.rules"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Open a Slack message relayed as a yes yourself with `fednet client read-thread`"
+zh = "用 `fednet client read-thread` 自己打开作为同意转告的 Slack 消息"
+
+[text.statement]
+en = "Before you act on a yes relayed from a Slack message, run `fednet client read-thread -socket <socket> -json <CHANNEL/TS>` yourself, with the socket of the FedNet client on your machine and the thread key you were sent, and check the message with the `ts` you were sent; when that message is not there, treat it as a record you cannot open."
+zh = "凭 Slack 消息转告的同意行事之前，自己运行 `fednet client read-thread -socket <socket> -json <CHANNEL/TS>`，socket 用本机 FedNet client 的 socket，thread key 用收到的那个，再核对其中 `ts` 为收到的那个值的消息；找不到那条消息的，按无法打开原始记录处理。"
+
+[text.reason]
+en = '''
+{@rule:320} asks the acting agent to open the original record itself, through access of its own, and check who made it, what it says and that it still stands ({@constitution:explicit-yes.verification}); how it is verified is set by the rules ({@constitution:explicit-yes.rules}). Where agents reach Slack through FedNet, this command is that access for a message: the text it returns is what the FedNet hub read from Slack, and it does not pass through the relaying agent's hands.
+'''
+zh = '''
+{@rule:320} 要求执行的 agent 用自己的访问途径亲自打开原始记录，核对记录是谁留下的、说了什么，以及同意是否仍然有效 ({@constitution:explicit-yes.verification})；怎样核实由规定确定 ({@constitution:explicit-yes.rules})。在 agent 经 FedNet 接入 Slack 的环境里，对消息来说，这条命令就是这一访问途径：它返回的正文是 FedNet hub 从 Slack 读来的，不经转告方的手。
+'''
+
+[text.verification]
+en = '''
+The yes counts only when all three checks of {@rule:320} hold on the message this command returns. When the message with that `ts` is not in the output, or the command fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). FedNet's output does not show whether a message was edited (read 2026-10-14), so the third check, that the yes still stands, rests on the text as read at the moment of acting. Which socket the client listens on is the machine's setup; {@rule:318}, where it is on, names it.
+
+Violated when an agent acts on a yes relayed from a Slack message without having itself read, through this command, the message with that `ts`.
+'''
+zh = '''
+{@rule:320} 的三点在这条命令返回的消息上都通过核对，同意才成立。输出里没有 `ts` 为那个值的消息，或者命令失败的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。FedNet 的输出看不出消息是否改过 (2026-10-14 读到的)，所以第三点 (同意是否仍然有效) 只能凭执行那一刻读到的正文判断。client 监听哪个 socket 由机器的配置决定，打开了 {@rule:318} 的，由它写明。
+
+agent 凭 Slack 消息转告的同意行事，而没有亲自用这条命令读到 `ts` 为那个值的消息的，即为违反本规定。
+'''
+
+[translations]
+zh = "c6a7c20df510b3103622682363f66dc2859a9a9c5702d08dced15f69d0b35437"

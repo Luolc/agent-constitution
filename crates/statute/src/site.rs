@@ -820,7 +820,7 @@ fn same(a: &[&Node], b: &[&Node]) -> bool {
 /// The row of a group: the innermost domain's label, the path from the
 /// source, its quadrant and name, through the domains, the whole a link
 /// to the innermost domain's page, and in the first place of the marks
-/// whether the defaults enable that domain; a band, the darker for a
+/// whether that domain is on by default; a band, the darker for a
 /// group of the first level.
 fn group(site: &Site, source: &Source, groups: &[&Node]) -> String {
     let (project, l) = (site.project, site.l);
@@ -1022,8 +1022,8 @@ fn statement(site: &Site, key: &Key, node: &Node, text: &Text) -> Result<String,
     ))
 }
 
-/// Whether the defaults enable a node, as a mark: a dot, filled or a
-/// ring, named by its words, or an empty place.
+/// Whether a domain or a rule is on by default, by its own `default`, as
+/// a mark: a dot, filled or a ring, named by its words, or an empty place.
 fn dot(w: &Words, node: &Node) -> String {
     let (class, name) = match node.default {
         Some(Switch::On) => ("dot on", w.on_by_default),
@@ -1035,7 +1035,7 @@ fn dot(w: &Words, node: &Node) -> String {
     )
 }
 
-/// A row's marks in four places: whether the defaults enable it, its
+/// A row's marks in four places: whether it is on by default, its
 /// status, and its uses, each place empty without its mark.
 fn marks(w: &Words, node: &Node, (instructions, review): (bool, bool)) -> String {
     let mut out = String::from("<span class=\"marks\">");
@@ -1344,7 +1344,7 @@ fn quadrant_tag(w: &Words, source: &Source) -> String {
 }
 
 /// On a node's page, its kind unless it is a rule, its status and
-/// whether the defaults enable it, and for a rule what this rule set does
+/// whether it is on by default, and for a rule what this rule set does
 /// with it. Each fact has its own form (`docs/design/frontend.md`,
 /// Components, Tags): the status a pill, a default switch a dot.
 fn tags(project: &Project, l: &Lang, key: &Key, node: &Node) -> String {
