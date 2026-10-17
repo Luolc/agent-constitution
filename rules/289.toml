@@ -1,6 +1,6 @@
 id = 289
 slug = "trial-to-active-on-a-principals-yes"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -21,10 +21,10 @@ zh = "试用规定只有在委托人明确说过它可以改为 `active` 之后�
 
 [text.reason]
 en = '''
-`trial` and `active` say how settled a rule is, as experimental and stable do for the checks of a linter: an `active` rule is stable and can be used as it is, a `trial` rule is still being tried and may change. Whether a rule has reached that point is a judgment a principal makes; a count of uses that nothing keeps is no ground anyone can check. The rule library may move a matter agents decide themselves ({@constitution:decide-yourself.ordinary-rules}) to those that go through a principal ({@constitution:list-defaults.tightening}).
+`trial` and `active` say how settled a rule is, as experimental and stable do for the checks of a linter: an `active` rule is stable and can be used as it is, a `trial` rule is still being tried and may change. Whether a rule has reached that point is a judgment a principal makes, and a principal's explicit yes is a record a reviewer can open and check. The rule library may move a matter agents decide themselves ({@constitution:decide-yourself.ordinary-rules}) to those that go through a principal ({@constitution:list-defaults.tightening}).
 '''
 zh = '''
-`trial` 与 `active` 说的是一条规定定型到什么程度，就像 linter 里检查项的实验性与稳定：`active` 的规定已经稳定，可以直接拿来用；`trial` 的规定还在试，还可能改。一条规定是否已经到了这一步，由委托人来判断；没有任何机制在记的使用次数，谁也核对不了，不能当依据。规定库可以把 agent 自行决定的事项 ({@constitution:decide-yourself.ordinary-rules}) 移到须经委托人的事项里 ({@constitution:list-defaults.tightening})。
+`trial` 与 `active` 说的是一条规定定型到什么程度，就像 linter 里检查项的实验性与稳定：`active` 的规定已经稳定，可以直接拿来用；`trial` 的规定还在试，还可能改。一条规定是否已经到了这一步，由委托人来判断；委托人的明确同意是一份审查方能打开、能核对的记录。规定库可以把 agent 自行决定的事项 ({@constitution:decide-yourself.ordinary-rules}) 移到须经委托人的事项里 ({@constitution:list-defaults.tightening})。
 '''
 
 [text.verification]
@@ -40,4 +40,4 @@ zh = '''
 '''
 
 [translations]
-zh = "fe64854f5e7909e11f681601cfb39fabf0897c6ed7fb3c739152c7b9a3392525"
+zh = "bc1a37b43f838f4593b9be3b67638ed693628696f838217d082e299766d1acad"

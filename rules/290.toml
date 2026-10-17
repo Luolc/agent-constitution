@@ -1,6 +1,6 @@
 id = 290
 slug = "rest-on-running-mechanisms"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -34,7 +34,7 @@ A rule rests on a mechanism when what it requires, or the condition under which 
 
 An act the rule asks agents to do themselves rests on no mechanism when what the act works on is there to be read when it is done, as the processes left after a cleanup are; when it works on a history or a record that nothing keeps, or on a format that nothing reads, it rests on that. Building a mechanism is not resting on it when building it is the whole requirement, as in a rule that has commit hooks scan for credentials; a rule that has agents fill in a format that nothing reads, or feed a gate that nothing runs, rests on that format or gate. A condition that asks only whether a mechanism exists, as in "where the repository has a screenshot script", rests on none.
 
-A mechanism runs when, as the change takes effect, an agent can run it or read what it keeps: a command that is installed, a CI job that runs, a record that something writes. Where it must run follows from the rule's source. A rule of a repository's own source rests on what runs in that repository. A rule of a public source rests on what that source ships itself, such as a check built into its tool, or, for a rule under a tool's domain ({@rule:102}), on that tool. A value the rule leaves to the layers below as a parameter ({@rule:101}) is the jurisdiction's to provide and is not a mechanism of the rule.
+A mechanism runs when, as the change takes effect, an agent can run it or read what it keeps: a command that is installed, a CI job that runs, a record that something writes. Where it must run depends on which source the rule belongs to. For a rule of a repository's own source, it must run in that repository. For a rule of a public source, it must be one that source ships itself, such as a check built into its tool, or, for a rule under a tool's domain ({@rule:102}), one of that tool. A value the rule leaves to the layers below as a parameter ({@rule:101}) is the jurisdiction's to provide and is not a mechanism of the rule.
 
 Violated when a change adds or rewrites a rule so that what it requires, or the condition under which it applies, rests on a mechanism that does not run, where this verification says it must, as the change takes effect.
 '''
@@ -43,10 +43,10 @@ zh = '''
 
 规定要求 agent 自己做的动作，在做的时候，它所处理的东西就摆在那里可以读 (例如清理之后剩下的进程)，就不依赖机制；它处理的是没有东西在记的历史或记录，或者没有东西去读的格式，就依赖它们。规定要求的就是把某个机制建起来 (例如要求用 commit 钩子扫描凭证的规定)，不算依赖这个机制；规定让 agent 去填一个没有东西去读的格式，或者去喂一个没有东西在跑的 gate，就依赖这个格式或 gate。只问某个机制有没有的条件 (例如「仓库有截图脚本的」)，不依赖机制。
 
-在变更生效时，agent 能运行这个机制或读到它记下的东西，这个机制就算在跑：已经装好的命令，在跑的 CI job，有东西在写的记录。它要在哪里跑，由规定所在的来源决定。仓库自己的来源里的规定，依赖的是这个仓库里在跑的东西。公开来源里的规定，依赖的是这个来源自己带的东西 (例如它的工具内置的检查)；挂在某个工具的领域下的规定 ({@rule:102})，依赖的是那个工具。规定作为参数留给下层的值 ({@rule:101})，由辖区提供，不算这条规定的机制。
+在变更生效时，agent 能运行这个机制或读到它记下的东西，这个机制就算在跑：已经装好的命令，在跑的 CI job，有东西在写的记录。它要在哪里跑，看规定属于哪个来源：仓库自己的来源里的规定，机制要在这个仓库里跑；公开来源里的规定，机制要是这个来源自己带的 (例如它的工具内置的检查)，挂在某个工具的领域下的 ({@rule:102})，也可以是那个工具带的。规定作为参数留给下层的值 ({@rule:101})，由辖区提供，不算这条规定的机制。
 
 变更新增或改写的规定，要求的事或适用的条件依赖了一个机制，而在变更生效时，这个机制在本节说的地方没有在跑的，即为违反本规定。
 '''
 
 [translations]
-zh = "298f529f0c4866a7b9b749214031745f6620ec87b099bc2cd86bb33721fc90b2"
+zh = "5f1ff10e50c8b9803265a1cc7c57045fbd52f7cd14baadade8ed3316d1b074d8"
