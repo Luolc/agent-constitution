@@ -351,11 +351,11 @@ configuration or the private rule set gives them to the private
 output; in a private repository, which has no private output,
 `statute.toml` sets them.
 
-**The release, the runner and the socket.** R135, R212 and R322 each
-leave one value of a person's setup to the rule set: the Linux release
+**The release, the runner and the socket.** R135, R212, R322 and R323
+leave three values of a person's setup to the rule set: the Linux release
 of the machines and test containers, the label of the Linux runners
 the CI service hosts, and the socket of the FedNet client on the
-machine. Each is a `string` parameter of scope `personal`, with a
+machine, which R322 and R323 share. Each is a `string` parameter of scope `personal`, with a
 default that names nobody's setup, used by a rule that is off by
 default and requires the rule it fills in:
 
