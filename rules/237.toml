@@ -1,6 +1,6 @@
 id = 237
 slug = "decision-memo-five-points"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -12,12 +12,12 @@ level = "user"
 check = "none"
 
 [title]
-en = "Put design questions to a principal at most five at a time"
-zh = "要委托人裁决的设计问题一次不超过五条"
+en = "Put design questions to a principal at most {$memo.points} at a time"
+zh = "要委托人裁决的设计问题一次不超过 {$memo.points} 条"
 
 [text.statement]
-en = "Put the design questions a principal must decide to them in one memo of at most five points, each with a recommended default, so that one sentence can settle it."
-zh = "要委托人裁决的设计问题，写成一份不超过五条、每条带推荐默认值的决策备忘交给委托人，让委托人一句话就能定。"
+en = "Put the design questions a principal must decide to them in one memo of at most {$memo.points} points, each with a recommended default, so that one sentence can settle it."
+zh = "要委托人裁决的设计问题，写成一份不超过 {$memo.points} 条、每条带推荐默认值的决策备忘交给委托人，让委托人一句话就能定。"
 
 [text.reason]
 en = '''
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-Questions put to a principal for decision at one time number at most five, and each comes with its recommended default.
+Questions put to a principal for decision at one time number at most {$memo.points}, and each comes with its recommended default.
 
-Violated when an agent puts more than five design questions to a principal for decision at once, or puts one without a recommended default.
+Violated when an agent puts more than {$memo.points} design questions to a principal for decision at once, or puts one without a recommended default.
 '''
 zh = '''
-一次交给委托人裁决的设计问题，条数不超过五，每条写明推荐的默认值。
+一次交给委托人裁决的设计问题，条数不超过 {$memo.points}，每条写明推荐的默认值。
 
-一次向委托人提出超过五条要裁决的设计问题的，或者有一条没有推荐默认值的，即为违反本规定。
+一次向委托人提出超过 {$memo.points} 条要裁决的设计问题的，或者有一条没有推荐默认值的，即为违反本规定。
 '''
 
 [translations]
-zh = "bee75f3565893f61712bfa5cd6e06e760cafdbb157f1d555f4017308635b1504"
+zh = "61136c98e47133cc928da9703642c562abe00639f6c0f2a7ca21c79be16fad21"
