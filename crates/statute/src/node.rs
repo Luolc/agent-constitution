@@ -101,8 +101,10 @@ pub type Text = BTreeMap<String, String>;
 pub struct RuleFields {
     pub requires: Vec<Ref>,
     pub conflicts: Vec<Ref>,
+    /// Empty, and `constitution` `None`, only in a rule of a rule set
+    /// that rests on no constitution, which may leave both out.
     pub authority: Vec<String>,
-    pub constitution: Specifier,
+    pub constitution: Option<Specifier>,
     pub level: Level,
     pub check: Check,
     pub uses: Uses,
@@ -299,6 +301,18 @@ fn parse_ref(raw: RawRef) -> Result<Ref, String> {
 /// first; the node is returned when it could be read at all, so the checks
 /// across files can still run on it.
 pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> {
+    read(file, bytes, true, diags)
+}
+
+/// As `parse`; without `constitution`, for a rule set that rests on no
+/// constitution, a rule may leave out `authority` and `constitution`
+/// (`docs/design/rule-format.md`, Rule file format).
+pub(crate) fn read(
+    file: &str,
+    bytes: &[u8],
+    constitution: bool,
+    diags: &mut Diagnostics,
+) -> Option<Node> {
     let sha256 = sha256_hex(bytes);
     let Ok(content) = std::str::from_utf8(bytes) else {
         diags.error(file, "not valid UTF-8");
@@ -466,7 +480,7 @@ pub fn parse(file: &str, bytes: &[u8], diags: &mut Diagnostics) -> Option<Node> 
     };
 
     let rule = if kind == Kind::Rule {
-        parse_rule_fields(&raw, &mut err)
+        parse_rule_fields(&raw, constitution, &mut err)
     } else {
         let present: Vec<&str> = [
             ("superseded-by", raw.superseded_by.is_some()),
@@ -556,7 +570,11 @@ fn original_sha256(content: &str, lang: &str) -> String {
     )
 }
 
-fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<RuleFields> {
+fn parse_rule_fields(
+    raw: &RawNode,
+    constitution: bool,
+    err: &mut impl FnMut(String),
+) -> Option<RuleFields> {
     let mut missing = Vec::new();
     let mut refs = |name: &str, list: &Option<Vec<RawRef>>| {
         let mut out: Vec<Ref> = Vec::new();
@@ -574,9 +592,9 @@ fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<Rule
     let conflicts = refs("conflicts", &raw.conflicts);
 
     let authority = raw.authority.clone().unwrap_or_default();
-    if raw.authority.is_none() {
+    if raw.authority.is_none() && constitution {
         missing.push("authority");
-    } else if authority.is_empty() {
+    } else if raw.authority.is_some() && authority.is_empty() {
         err(
             "`authority` is empty; name the provisions of the constitution the rule refines"
                 .to_owned(),
@@ -590,18 +608,15 @@ fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<Rule
         }
     }
 
-    let constitution = match &raw.constitution {
-        None => {
+    let revisions = match &raw.constitution {
+        None if constitution => {
             missing.push("constitution");
-            None
+            Err(())
         }
-        Some(text) => match Specifier::parse(text) {
-            Ok(s) => Some(s),
-            Err(e) => {
-                err(format!("`constitution`: {e}"));
-                None
-            }
-        },
+        None => Ok(None),
+        Some(text) => Specifier::parse(text).map(Some).map_err(|e| {
+            err(format!("`constitution`: {e}"));
+        }),
     };
     if raw.level.is_none() {
         missing.push("level");
@@ -687,7 +702,7 @@ fn parse_rule_fields(raw: &RawNode, err: &mut impl FnMut(String)) -> Option<Rule
         requires,
         conflicts,
         authority,
-        constitution: constitution?,
+        constitution: revisions.ok()?,
         level: raw.level?,
         check: check?,
         uses,
