@@ -9,8 +9,8 @@ apply here.
 and a rule set with its lock file, and writes:
 
 - an `AGENTS.md`, which holds the constitution's version for agents and
-  then the enabled rules as one flat list, each rule an item of its reference and its
-  statement and nothing more (below). The file is not split for now. Once the
+  then the enabled rules under a heading for each domain, each rule an
+  item of its reference and its statement and nothing more (below). The file is not split for now. Once the
   compiled file of a repository using it has been measured with
   `count-tokens`, a length threshold is set from that measurement, and a
   file over it is split along domains;
@@ -39,25 +39,30 @@ enabled rules. The edition, revision and source the file rests on are in
 `statute.lock`, not in the file.
 
 `AGENTS.md` is for agents, as is the private full text,
-`.statute/AGENTS.full.md`, built the same way, and each is always a
-flat list. Each enabled
+`.statute/AGENTS.full.md`, built the same way. Below the heading
+"Rules", each domain with an enabled rule in the file is a heading of
+its title, in the rule set's language when it has a translation into it
+and in its original otherwise, its placeholders filled as in a
+statement. Each enabled
 rule is one item, `- <reference> <statement>`, such as
 `- R22 Keep a credential out of every message.`: the rule's reference
 as statute shows it (`R42`, `L12`, `P7`, `team:7`), a space, and its
 statement, a line after the first indented by two spaces to continue
 the item. Nothing else goes in: no title, reason or verification of a
-rule, no domain, subdomain or one-of, neither its title nor its
-applicability, and no anchor or link. The relations and settings
+rule, nothing of a one-of, nothing of a domain but its title, neither
+its applicability nor an anchor or link. The headings take few lines
+and let an agent, or a person reading the file, see where each group of
+rules starts. The relations and settings
 between the nodes, `requires`, `conflicts`, one-ofs, `overrides`, the
 defaults, `uses` and `parent`, are metadata: statute checks them when it
 locks and compiles, and once the rule set compiles they have done their
-work and stay out of the file. Titles, reasons, verifications and the
-domains' applicability are for people, on the site (below); the
+work and stay out of the file. The titles of rules, reasons,
+verifications and the domains' applicability are for people, on the site (below); the
 reviewer gets a rule's reason and verification from `statute check`.
 The references stay, at the start of each item, so that a review's
 findings and a citation can name the rule.
 
-The items follow the tree, a node before its children, so that related
+The headings and items follow the tree, a node before its children, so that related
 rules stay together: the first-party source's domains first, then those
 of the other sources by the sources' names, then the repository's own;
 below a node, the first-party source's children first, then those of
@@ -66,9 +71,18 @@ ID; below a domain, its rules and one-ofs first, and its subdomains
 after them, each part in that order, so that a domain's own rules stay
 together. The sites order a domain's children the same way, under one
 heading for each domain
-([The local site](#the-local-site), [Static site](static-site.md)). A one-of contributes the rules of its enabled option, the option's
-own rules when it is a domain; a subtree with no enabled rule
-contributes nothing. An overriding rule
+([The local site](#the-local-site), [Static site](static-site.md)).
+"Rules" is a heading of level one; a domain at the top is a heading of
+level two, and each domain below it one level below the nearest domain
+above it, down to level six, the last Markdown has, which also holds
+every domain deeper than that. A domain hung under a domain of another
+source takes its level from its place in the tree. A one-of has no
+heading and takes no level: it contributes its enabled option, an item
+when the option is a rule and, when it is a domain, the domain with its
+heading, one level below the domain the one-of is in. A subtree with no
+enabled rule contributes nothing, not even a heading. A blank line
+comes before and after each heading, and the file ends with one
+newline. An overriding rule
 ([Overrides](rule-sources.md#overrides)) stands at the place of the rule
 it overrides, which is not in the file. A rule uses its translation
 into the language when it has one, and its original otherwise. The

@@ -117,13 +117,19 @@ fn compiled(dir: &Path) -> String {
     std::fs::read_to_string(dir.join("out.md")).unwrap()
 }
 
-/// One item per rule shown, its number first, in the order of the tree;
-/// nothing of the domains, of one-of 4 or of rule 10's requirement.
+/// A heading per domain with a rule shown, and one item per rule shown,
+/// its number first, in the order of the tree; nothing of one-of 4, of
+/// domain 11 or of rule 10's requirement.
 const RULES_EN: &str = "# Rules
+
+## Domain 1
 
 - R2 Do the thing 2.
 - R3 Do the thing 3.
 - R5 Do the thing 5.
+
+## Domain 9
+
 - R10 Do the thing 10.
 ";
 
@@ -170,16 +176,15 @@ fn the_same_input_compiles_to_the_same_bytes() {
     assert_eq!(compiled(&dir), first);
 }
 
-/// What only the site shows stays out of `AGENTS.md`: titles, reasons,
-/// verifications, a domain's applicability, and the relations between
-/// the nodes.
+/// What only the site shows stays out of `AGENTS.md`: the titles of rules
+/// and one-ofs, reasons, verifications, a domain's applicability, and the
+/// relations between the nodes.
 #[test]
 fn agents_md_holds_no_title_reason_or_relation() {
     let dir = repo("statements-only", &manifest(""));
     std::fs::write(dir.join("rules/1.toml"), domain_1_with_applicability()).unwrap();
     let out = compiled(&dir);
     for absent in [
-        "Domain 1",
         "Rule 2",
         "One-of 4",
         "Because.",
@@ -230,14 +235,16 @@ fn agents_md_is_not_a_setting() {
 #[test]
 fn compiles_in_the_language_of_the_rule_set() {
     let dir = repo("zh", &manifest("\n[compile]\nlang = \"zh\"\n"));
+    std::fs::write(dir.join("rules/1.toml"), domain_1_with_applicability()).unwrap();
     let out = compiled(&dir);
     assert!(
         out.contains("do not edit by hand. -->\n\n# 宪法\n"),
         "{out}"
     );
     assert!(out.contains("\n# 规定\n"), "{out}");
-    // No translation: the original.
-    assert!(out.ends_with("\n# 规定\n\n- R2 Do the thing 2.\n- R3 Do the thing 3.\n- R5 Do the thing 5.\n- R10 Do the thing 10.\n"), "{out}");
+    // Domain 1's translated title; no translation of the rest: the
+    // original.
+    assert!(out.ends_with("\n# 规定\n\n## 领域 1\n\n- R2 Do the thing 2.\n- R3 Do the thing 3.\n- R5 Do the thing 5.\n\n## Domain 9\n\n- R10 Do the thing 10.\n"), "{out}");
 }
 
 #[test]
@@ -337,10 +344,15 @@ fn this_repo_compiles_the_same_twice_with_every_citation_rendered() {
             !first.contains("{@"),
             "{lang}: a citation is left as written"
         );
-        // After the constitution, a flat list: each line an item that
-        // starts with a rule's number.
+        // After the constitution, the domains' headings, and below them
+        // items that each start with a rule's number.
         let rules = first.rsplit_once("\n# ").unwrap().1;
-        let mut items = rules.lines().skip(2).peekable();
+        assert!(rules.contains("\n## "), "{lang}: no domain");
+        let mut items = rules
+            .lines()
+            .skip(2)
+            .filter(|l| !l.is_empty() && !l.starts_with('#'))
+            .peekable();
         assert!(items.peek().is_some(), "{lang}: no rule");
         for line in items {
             let number = line.strip_prefix("- R").and_then(|l| l.split_once(' '));
@@ -359,8 +371,8 @@ fn an_option_stands_in_the_place_of_its_one_of() {
         &manifest("").replace("\"R3\", \"R5\", \"R10\"", "\"R105\""),
     );
     // Under domain 1: one-of 102, its option domain 103, one-of 104 in
-    // it, and rule 105, its option. Neither a one-of nor a domain shows:
-    // rule 105 is an item like any other.
+    // it, and rule 105, its option. No one-of shows, nor takes a level:
+    // domain 103 heads rule 105 one level below domain 1.
     let domain_option = edit(domain(103), "default = \"off\"", "parent = 102");
     for (id, text) in [
         one_of(102, 1, 103),
@@ -372,7 +384,7 @@ fn an_option_stands_in_the_place_of_its_one_of() {
     }
     let out = compiled(&dir);
     assert!(
-        out.ends_with("\n# Rules\n\n- R105 Do the thing 105.\n"),
+        out.ends_with("\n# Rules\n\n## Domain 1\n\n### Domain 103\n\n- R105 Do the thing 105.\n"),
         "{out}"
     );
 }

@@ -206,7 +206,7 @@ fn a_chain_of_overrides() {
     ok(&statute(&dir, &["compile"]));
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
     assert!(
-        out.ends_with("\n# Rules\n\n- L20 Do the thing 20.\n"),
+        out.ends_with("\n# Rules\n\n## Domain 1\n\n- L20 Do the thing 20.\n"),
         "{out}"
     );
     let run = statute(&dir, &["explain", "20"]);
