@@ -165,11 +165,68 @@ fn a_subdomains_rules_follow_the_order_of_the_tree() {
         &[],
     );
     // R4, a rule of domain 1, before the rules of its subdomain 2, though
-    // its number is higher; no domain shows, and no requirement.
+    // its number is higher; no requirement shows.
     assert_eq!(numbers(&dir), ["R4", "R3", "R7", "R8"]);
     let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    assert!(!out.contains("Requires"), "{out}");
+}
+
+#[test]
+fn a_domain_heads_its_rules_one_level_below_the_domain_above_it() {
+    // Under subdomain 2: subdomain 20, one-of 21 in it with domain 22 as
+    // its option, then subdomains 23 and 24 with rule 25; and me:30, hung
+    // under domain 2.
+    let more = [
+        ("r/rules", subdomain(20, 2)),
+        ("r/rules", common::one_of(21, 20, 22)),
+        (
+            "r/rules",
+            edit(domain(22), "default = \"off\"", "parent = 21"),
+        ),
+        ("r/rules", subdomain(23, 22)),
+        ("r/rules", subdomain(24, 23)),
+        ("r/rules", rule(25, 24, "")),
+        ("me/rules", hung_domain(30, "R2")),
+        ("me/rules", rule(31, 30, "")),
+    ];
+    let dir = repo(
+        "levels",
+        &manifest("\"R3\", \"R4\", \"R25\", \"me:31\"", ""),
+        &more,
+    );
+    ok(&statute(&dir, &["lock"]));
+    ok(&statute(&dir, &["compile"]));
+    let out = std::fs::read_to_string(dir.join("AGENTS.md")).unwrap();
+    // One-of 21 shows no heading and takes no level; a level past six
+    // stays at six; domain 5, whose rule is off, and the domains 1 of the
+    // other sources, with no rule, show nothing.
     assert!(
-        !out.contains("Domain") && !out.contains("Requires"),
+        out.ends_with(
+            "\n# Rules
+
+## Domain 1
+
+- R4 Do the thing 4.
+
+### Domain 2
+
+- R3 Do the thing 3.
+
+#### Domain 20
+
+##### Domain 22
+
+###### Domain 23
+
+###### Domain 24
+
+- R25 Do the thing 25.
+
+#### Domain 30
+
+- me:31 Do the thing 31.
+"
+        ),
         "{out}"
     );
 }

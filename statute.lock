@@ -1,6 +1,6 @@
 # Written by statute from statute.toml; do not edit by hand.
 
-statute = "0.1.18"
+statute = "0.1.19"
 
 [constitution]
 path = "."
@@ -662,9 +662,9 @@ by = "default"
 
 [[rules]]
 rule = "R166"
-revision = 4
-sha256 = "002e71b9d3e3625b4c0f1631b355a8422735284c35152aebef2cb2cc9a7672a5"
-original-sha256 = "3105ed4906d00c8b595dd67cc27c4a40ab1f7c2e34098c79d4637fe59adffa77"
+revision = 5
+sha256 = "d01138d6129a30fba8bcafa0c28dedd532e4f13fe5ee6e035336f9341752cc59"
+original-sha256 = "475de4344c8e5eaf752db904df1875c03fe3ab24d3fff0a2e570e73f755ba9ef"
 by = "default"
 
 [[rules]]
@@ -1036,9 +1036,9 @@ by = "default"
 
 [[rules]]
 rule = "R237"
-revision = 3
-sha256 = "fcd381be2cbe247461e63c6cb0eb8ba53d9df4796f60b277daad5760d26f193d"
-original-sha256 = "aa7fd58c6eb3b95a40c99046d402725625ddd6b9a3cf864afa34cbe4edc71188"
+revision = 4
+sha256 = "f1b098b46132adc0606bd3868fcc997743953a785e359312a4c93d800def7b41"
+original-sha256 = "b99be0088c4977dba54bd1f53b5debf3ef75b8449e193d737c6fe2b040c22aa2"
 
 [[rules]]
 rule = "R238"
@@ -1150,9 +1150,9 @@ original-sha256 = "c651326bfe5279649b2f13cd69cbd1361703c6a62d1cc24e15e637df9a05a
 
 [[rules]]
 rule = "R255"
-revision = 2
-sha256 = "0ccf60c8617efb54ff38947eceb7d2e7ee5aa1db1f7b84e17f637834c61a7d26"
-original-sha256 = "07f50c8c7dd842390eefdaf7067d491905caa8768ff2836da37a0865be7990c6"
+revision = 3
+sha256 = "d7c5f8f60f2c81518648ba0932fa95dd8e48a3683af84e1c29362df087e0b6d1"
+original-sha256 = "b7febf8c3b00a6ec86a6378dd0d80954da91b438a962b7971ccd2965e229c70b"
 
 [[rules]]
 rule = "R256"
@@ -1279,13 +1279,6 @@ original-sha256 = "0461e00d7079ec78d86329ecd53e5afc995768342ee0e161493d7e27a4f72
 by = "default"
 
 [[rules]]
-rule = "R298"
-revision = 2
-sha256 = "e28408dee52d411766427a30287b1c9914fcc37d530fe623a409787ffaa1ec34"
-original-sha256 = "c798dc6333dbef03bf6eb61e9b94436f6d69dd6e49ae1118f46f7e692c59d2f0"
-by = "default"
-
-[[rules]]
 rule = "R299"
 revision = 2
 sha256 = "429b0b1cb7230793a138ca2b737f587c437a05d7d9f9435a776de5d9cbe9aded"
@@ -1395,6 +1388,13 @@ rule = "R324"
 revision = 1
 sha256 = "cfa5e107cf034178c9aba2600a51da84ddec1c2dff4c335b6bd12426c233b32f"
 original-sha256 = "fbe53f2ab42c5af95d54f0c380a47a6d3a350a8f4548c5357a4abb0759310e34"
+by = "default"
+
+[[rules]]
+rule = "R331"
+revision = 1
+sha256 = "0b159d03fea1b938129c9f6139939673f8408753018e3efe65ccd87e328e5ffb"
+original-sha256 = "b310b58f8417599b76f26aaf858a8b870818ae8383cc40826fb4a9caab909ec2"
 by = "default"
 
 [[rules]]
@@ -1580,6 +1580,14 @@ value = "en"
 [[parameters]]
 name = "language.work-items"
 value = "zh"
+
+[[parameters]]
+name = "memo.points"
+value = "5"
+
+[[parameters]]
+name = "review.rounds"
+value = "3"
 
 [[parameters]]
 name = "work-items.label-approved"
