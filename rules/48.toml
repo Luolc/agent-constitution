@@ -1,6 +1,6 @@
 id = 48
 slug = "instructions-take-effect-first"
-revision = 7
+revision = 8
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,14 +29,14 @@ zh = '''
 
 [text.verification]
 en = '''
-When work needs both a change to instruction files and changes to other files, which {@rule:280} keeps in two changes, the change to the instructions is merged and takes effect first, and the changes it affects are merged after it, done under the new instructions.
+When work needs both a change to the instruction system and changes outside it, which {@rule:334} keeps in two changes, the change to the instructions is merged and takes effect first, and the changes it affects are merged after it, done under the new instructions.
 
 A change to the design alone may be merged before or after the change to the instructions. A change that holds anything besides the design is one of the changes the instructions affect.
 
 Violated when a change that the change to the instructions affects, other than a change to the design alone, is merged before the change to the instructions is in effect.
 '''
 zh = '''
-工作既要修改指令文件、又要修改其他文件，按 {@rule:280} 分成两个变更的，修改指令的变更先合入并生效，受它影响的其他变更再按新指令进行、在它之后合入。
+工作既要修改指令体系、又要修改体系以外的东西，按 {@rule:334} 分成两个变更的，修改指令的变更先合入并生效，受它影响的其他变更再按新指令进行、在它之后合入。
 
 只改设计的变更，在修改指令的变更之前或之后合入均可。变更里除了设计还有别的内容的，仍属于受指令影响的变更。
 
@@ -44,4 +44,4 @@ zh = '''
 '''
 
 [translations]
-zh = "6a07e75bfc9a332624f6196f4409857a512d4ca43148d9ddc4c7a99c86286cbc"
+zh = "0d690c442187e3587739d5736b49941988fa2bbc7f42004f05ef672f6ce6c634"

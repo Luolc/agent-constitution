@@ -1,6 +1,6 @@
 id = 47
 slug = "generated-file-side"
-revision = 6
+revision = 7
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -17,8 +17,8 @@ en = "A generated file goes with the side that changed it"
 zh = "生成文件归入使它发生变化的那一方"
 
 [text.statement]
-en = "When you keep changes to instruction files apart from changes to other files, count a generated file with whichever of the two changed it, and when a change to tools changes it, say that only its rendering changed."
-zh = "把指令文件的修改与其他文件的修改分开时，生成文件归入使它发生变化的那一方 (指令文件或其他文件)；工具的修改使它发生变化的，说明变化只在渲染。"
+en = "When you keep changes to the instruction system apart from changes to anything outside it, count a generated file with whichever of the two changed it, and when a change to tools changes it, say that only its rendering changed."
+zh = "把指令体系的修改与体系以外的修改分开时，生成文件归入使它发生变化的那一方 (指令体系或体系以外)；工具的修改使它发生变化的，说明变化只在渲染。"
 
 [text.reason]
 en = '''
@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A generated file that CI shows to equal the output of its build is not classed on its own ({@rule:280}): it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
+A generated file that CI shows to equal the output of its build is not classed on its own ({@rule:334}): it goes with the side that changed it. When a change to tools changes such a file, the description of the change says that only the rendering changed, not the meaning, and the review checks that. If the meaning changed, the change counts as a change to instructions.
 
 Violated when a change to tools changes a generated file and its description does not say that only the rendering changed, or when a change to tools changes the meaning of a generated file.
 '''
 zh = '''
-CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:280})，归入使它发生变化的那一方。工具的修改使这类文件发生变化的，变更说明里写明变化只在渲染、不改变含义，由审查核对这一点。含义变了的，按修改指令处理。
+CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:334})，归入使它发生变化的那一方。工具的修改使这类文件发生变化的，变更说明里写明变化只在渲染、不改变含义，由审查核对这一点。含义变了的，按修改指令处理。
 
 工具的修改使生成文件发生变化，而变更说明没有写明变化只在渲染的，或者工具的修改改变了生成文件的含义的，即为违反本规定。
 '''
 
 [translations]
-zh = "9d0c9237b27f7b0a6fb31a36891d085a45c2d09b77dfa462154cf84e6dbc9d8a"
+zh = "e69da9383ee637815b623e39c7db4acc571386eee573ba6c5ab8bcba650662c3"

@@ -1,8 +1,9 @@
 id = 280
 slug = "instruction-files-apart-but-migration"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 334
 lang = "en"
 parent = 275
 default = "off"
