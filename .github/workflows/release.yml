@@ -13,6 +13,8 @@
 # `brew install luolc/tap/statute` installs them.
 # The job `pypi-wheels` packs the Release's binaries into PyPI wheels, and
 # `publish-pypi` uploads them, trusted by PyPI in the same way.
+# The job `mirror` then pins that version in the pre-commit mirror
+# Luolc/statute-pre-commit and tags it v<version>.
 # Run by hand (workflow_dispatch) with an existing tag, the workflow builds
 # the binaries and keeps them as workflow artifacts, renders, audits,
 # installs and tests that tag's formula, and builds, checks and installs
@@ -355,3 +357,75 @@ jobs:
         if: steps.remaining.outputs.count != '0'
         with:
           packages-dir: dist
+
+  # The pre-commit mirror Luolc/statute-pre-commit, whose hook installs the
+  # PyPI wheel, so that pre-commit runs statute without compiling it. Only
+  # the `statute==` pin in its pyproject.toml and its v<version> tags are
+  # written from here; its other files are hand-written. It comes after
+  # PyPI: a tag there whose pin PyPI does not serve fails at `pip install`
+  # in a consumer's repository, not in this run. No job needs it, so its
+  # failure leaves crates.io, the Release, the tap and PyPI as they are.
+  mirror:
+    if: github.event_name == 'push'
+    needs: publish-pypi
+    runs-on: ubuntu-24.04
+    # The mirror is written with PRECOMMIT_MIRROR_TOKEN; nothing here needs
+    # this repository's token.
+    permissions: {}
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Luolc/statute-pre-commit
+          token: ${{ secrets.PRECOMMIT_MIRROR_TOKEN }}
+
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.0"
+
+      # `needs` proves that the upload returned success, not that the index
+      # serves the version; this installs it from PyPI and runs it.
+      - name: Check that PyPI serves this version and the wheel runs
+        run: |
+          set -euo pipefail
+          printed=$(uvx --from "statute==${TAG#statute-v}" statute --version)
+          printf '%s\n' "$printed"
+          [ "$printed" = "statute ${TAG#statute-v}" ]
+
+      - name: Pin this version, commit and tag
+        run: |
+          set -euo pipefail
+          version="${TAG#statute-v}"
+          mirror_tag="v$version"
+          # sed exits 0 when nothing matched, so the grep is the check.
+          sed -i -E "s/^dependencies = \[\"statute==[^\"]*\"\]$/dependencies = [\"statute==$version\"]/" pyproject.toml
+          grep -Fxq "dependencies = [\"statute==$version\"]" pyproject.toml
+          echo "pin: $(grep -F 'statute==' pyproject.toml)"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- pyproject.toml; then
+            echo "pin: already at $version, nothing to commit"
+          else
+            git commit -q -m "Pin statute==$version" -- pyproject.toml
+            git push origin HEAD:main
+          fi
+
+          # A tag already on HEAD is an earlier run of this job, so a rerun
+          # passes; one elsewhere is not moved. An annotated tag's own line
+          # carries the tag object, and a pattern given to ls-remote drops
+          # the peeled ^{} line, so list every tag and prefer the peeled one.
+          head=$(git rev-parse HEAD)
+          refs=$(git ls-remote --tags origin)
+          peeled=$(printf '%s\n' "$refs" | awk -v t="refs/tags/$mirror_tag^{}" '$2 == t { print $1 }')
+          direct=$(printf '%s\n' "$refs" | awk -v t="refs/tags/$mirror_tag" '$2 == t { print $1 }')
+          existing=${peeled:-$direct}
+          if [ -n "$existing" ]; then
+            echo "tag: $mirror_tag already exists at commit $existing"
+            [ "$existing" = "$head" ]
+          else
+            git tag "$mirror_tag" "$head"
+            git push origin "refs/tags/$mirror_tag"
+            echo "tag: pushed $mirror_tag at $head"
+          fi
