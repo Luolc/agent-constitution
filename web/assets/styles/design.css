@@ -29,7 +29,10 @@
 /* The page of one rule: its label muted before its title, its notes
    between hairlines as on an untranslated design page, the statement a
    little larger, the relations and metadata in two columns, a parameter's
-   value marked in the text. */
+   value marked in the text, one block that moves whole to the next line
+   and breaks inside only when wider than the line. A word wider than
+   the line, such as a path in code, breaks too. */
+.rules.rule { overflow-wrap: break-word; }
 .rules h1 .rule-label { color: var(--t-text-muted); font-variant-numeric: tabular-nums; }
 .rules .rule-note {
   border-block: 1px solid var(--t-border-subtle);
@@ -47,7 +50,9 @@
 .rules dl.rule-meta dt { color: var(--t-text-muted); font-weight: inherit; }
 .param-value {
   position: relative;
-  white-space: nowrap;
+  display: inline-block;
+  max-inline-size: 100%;
+  overflow-wrap: break-word;
   color: inherit;
   text-decoration: underline dotted var(--t-accent);
   text-underline-offset: .2em;

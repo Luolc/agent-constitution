@@ -1377,11 +1377,13 @@ Promise.all(frames.map((f) => new Promise((done) =>
     )));
 }
 
-/// The index in the Statement view, in headless Chrome, in both
-/// languages, on a desktop and on a phone: nothing on the page, hidden
-/// tips and closed menus included, runs past the window's edge, and a
-/// parameter's tip, placed as the pointer comes to its value, lies
-/// whole inside the window. Skipped without Chrome, except in CI.
+/// The index in the Statement view and a rule's page, in headless
+/// Chrome, in both languages, on a desktop and on a phone: nothing on
+/// the page, hidden tips and closed menus included, runs past the
+/// window's edge, a value, a path in code and a slug each longer than a
+/// phone's line among them, and a parameter's tip, placed as the pointer
+/// comes to its value, lies whole inside the window. Skipped without
+/// Chrome, except in CI.
 #[test]
 fn site_keeps_the_tips_inside_the_window() {
     let Some(chrome) = chrome() else {
@@ -1389,8 +1391,33 @@ fn site_keeps_the_tips_inside_the_window() {
         return;
     };
     let dir = statements("tips");
+    let params = read(&dir, "r/rules/params.toml")
+        + &param(
+            "service.socket",
+            "type = \"string\"",
+            "personal",
+            "/run/an-example-service/with-a-long-name/client.sock",
+        );
+    write(&dir, "r/rules/params.toml", &params);
+    put(
+        &dir,
+        "r/rules",
+        edit(
+            rule(
+                7,
+                1,
+                "slug = \"a-slug-as-long-as-the-longest-slug-of-the-rules-here\"",
+            ),
+            "Do the thing 7.",
+            "Write in {$language.docs}, run `serve -socket {$service.socket}` and keep `/an/example/path/longer/than/a/phone/line`.",
+        ),
+    );
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
     let page = dir.join("tips.html");
-    let frames: String = ["index.html", "zh/index.html"]
+    let frames: String = ["index.html", "zh/index.html", "R/7.html", "zh/R/7.html"]
         .iter()
         .flat_map(|page| {
             [(1280, page), (390, page)].map(|(width, page)| {
@@ -1443,6 +1470,8 @@ Promise.all(frames.map((f) => new Promise((done) =>
     let start = dom.find("data-probe=\"").expect(&dom) + 12;
     assert_eq!(
         &dom[start..start + dom[start..].find('"').unwrap()],
-        "1280 1280 true true | 390 390 true true | 1280 1280 true true | 390 390 true true"
+        ["1280 1280 true true", "390 390 true true"]
+            .repeat(4)
+            .join(" | ")
     );
 }

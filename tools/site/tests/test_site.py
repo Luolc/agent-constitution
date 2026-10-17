@@ -1147,6 +1147,76 @@ Promise.all(frames.map((f) => new Promise((done) =>
       [[1280, False, True], [390, False, True]] * 2,
     )
 
+  def test_rule_page_fits_a_phone(self):
+    """A path wider than a phone in a rule's text widens no page.
+
+    Rule 3's pages, in both languages, name a long path whose default
+    starts with `~`, as the tip's line of the default does, and the
+    Chinese title has a word of paths wider than a phone: the tip says
+    the default whole, and the pages, loaded in frames 1280px and 390px
+    wide, do not scroll sideways. Skipped without Chrome, except in CI.
+    """
+    chrome = site_screenshots.find_chrome()
+    if chrome is None and not os.environ.get("CI"):
+      self.skipTest("needs Google Chrome or Chromium")
+    assert chrome, "no Chrome in CI"
+    raw = self.build(raw=True, edit_rules=site_fixture.long_value)
+    pages = ("rules/3/index.html", "zh/rules/3/index.html")
+    self.assertIn(
+      "<code>dirs.socket</code>\n"
+      "默认值：~/an-example-service/with-a-long-name/client.sock\n",
+      raw[pages[1]],
+    )
+    script = """<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {
+    const root = f.contentDocument.documentElement;
+    done([root.clientWidth, root.scrollWidth > root.clientWidth]);
+  })))).then((out) => {
+  document.body.dataset.result = JSON.stringify(out);
+});
+</script>"""
+    frames = "".join(
+      f'<iframe src="{path}" style="width: {width}px; height: 900px"></iframe>'
+      for path in pages
+      for width in (1280, 390)
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+      for path, text in raw.items():
+        if path.endswith(".css") or path in pages:
+          (Path(tmp) / path).parent.mkdir(parents=True, exist_ok=True)
+          (Path(tmp) / path).write_text(text, encoding="utf-8")
+      page = Path(tmp) / "phone.html"
+      page.write_text(
+        f"<!DOCTYPE html><body>{frames}{script}</body>", encoding="utf-8"
+      )
+      dom = subprocess.run(
+        [
+          chrome,
+          "--headless",
+          "--no-proxy-server",
+          "--hide-scrollbars",
+          # The frames' documents, files too, are the page's to read.
+          "--allow-file-access-from-files",
+          f"--user-data-dir={Path(tmp) / 'profile'}",
+          "--window-size=1400,900",
+          "--virtual-time-budget=5000",
+          "--dump-dom",
+          page.as_uri(),
+        ],
+        capture_output=True,
+        check=True,
+        text=True,
+        timeout=CHROME_TIMEOUT,
+      ).stdout
+    found = re.search(r'data-result="([^"]*)"', dom)
+    assert found, "the script wrote no result"
+    self.assertEqual(
+      json.loads(html.unescape(found.group(1))),
+      [[1280, False], [390, False]] * 2,
+    )
+
   def test_params(self):
     """A page of parameters; a placeholder marked, linked to its entry."""
     raw = self.build(raw=True, edit_rules=site_fixture.params)

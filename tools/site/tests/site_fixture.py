@@ -391,6 +391,43 @@ def params(root: Path) -> None:
   )
 
 
+def long_value(root: Path) -> None:
+  """Name in rule 3's statement, in a code span, a path wider than a phone.
+
+  `dirs.socket`, a string whose default starts with `~`, as the tip's
+  line of the default does too. The Chinese title joins paths in code by
+  full-width commas, which no line breaks next to: one word wider than a
+  phone.
+
+  Args:
+    root: the checkout.
+  """
+  path = "~/an-example-service/with-a-long-name/client.sock"
+  (root / "rules/params.toml").write_text(
+    '[[parameter]]\nname = "dirs.socket"\ntype = "string"\nscope = "repo"\n'
+    f'default = "{path}"\n\n[parameter.title]\nen = "Socket"\n',
+    encoding="utf-8",
+  )
+  rule = root / "rules/3.toml"
+  text = rule.read_text(encoding="utf-8")
+  en, zh = STATEMENTS[3]
+  new_en = "Run `serve -socket {$dirs.socket}`."
+  new_zh = "运行 `serve -socket {$dirs.socket}`。"
+  zh_title = "`.example/one/`，`.example/two/`，`.example/three/`"
+  for old, new in (
+    (en, new_en),
+    (zh, new_zh),
+    ('zh = "规定 3"', f'zh = "规定 3 {zh_title}"'),
+    (
+      original("Rule 3", en, "Why.", "Violated when not."),
+      original("Rule 3", new_en, "Why.", "Violated when not."),
+    ),
+  ):
+    assert old in text
+    text = text.replace(old, new, 1)
+  rule.write_text(text, encoding="utf-8")
+
+
 def domain_option(root: Path) -> None:
   """Make the one-of 2's option a domain, 7, which holds rule 3.
 

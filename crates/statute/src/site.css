@@ -18,10 +18,11 @@ body {
 /* Room on both sides that grows with the window (the `vw` term) between
    two tokens. A page of text is a column; the table of parameters spans
    the window, and the index spans it with one space at each side, its
-   text as wide as its tables. */
+   text as wide as its tables. In a page of text a word wider than the
+   line, such as a path in code, breaks. */
 main { padding: var(--t-space-8) clamp(var(--t-space-4), 5vw, var(--t-space-12)); }
 main.list { padding-inline: var(--t-space-6); }
-main.text { max-inline-size: var(--t-measure); margin-inline: auto; }
+main.text { max-inline-size: var(--t-measure); margin-inline: auto; overflow-wrap: break-word; }
 h1 { margin: 0 0 var(--t-space-4); font-size: var(--t-text-2xl); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
 h2 { margin: 1.5em 0 .5em; font-size: var(--t-text-lg); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
 h3 { margin: 1.5em 0 .5em; font-size: var(--t-text-md); font-weight: var(--t-weight-bold); line-height: var(--t-line-height-ui); }
@@ -51,10 +52,14 @@ a {
 }
 /* A placeholder's value, marked as a value on a background of its own,
    Lucide's `sliders-horizontal` after it (the mask site.rs sets), in the
-   accent, the size of an icon in a line of text. */
+   accent, the size of an icon in a line of text: one block that moves
+   whole to the next line and breaks inside only when wider than the
+   line. */
 .param-value {
   position: relative;
-  white-space: nowrap;
+  display: inline-block;
+  max-inline-size: 100%;
+  overflow-wrap: break-word;
   text-decoration: underline dotted var(--t-accent);
   text-underline-offset: .2em;
   background: var(--t-bg-selected);
@@ -188,6 +193,8 @@ section { margin-block-start: var(--t-space-8); padding-block-start: var(--t-spa
   line-height: var(--t-line-height-ui);
   white-space: nowrap;
 }
+/* A slug wider than the line wraps, at its hyphens first. */
+.slug { white-space: normal; overflow-wrap: anywhere; }
 /* Status: a pill in its colors; superseded and repealed an outline. */
 .status { padding: 0 var(--t-space-2); border-radius: var(--t-radius-full); }
 .status.active { color: var(--t-status-active); background: var(--t-status-active-bg); }
