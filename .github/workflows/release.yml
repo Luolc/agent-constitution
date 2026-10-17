@@ -385,13 +385,26 @@ jobs:
           version: "0.13.0"
 
       # `needs` proves that the upload returned success, not that the index
-      # serves the version; this installs it from PyPI and runs it.
+      # serves the version; this installs it from PyPI and runs it. The
+      # index can lag the upload by a while, so a failed install is tried
+      # again, without uv's cache, every 30 seconds up to 10 times; a wheel
+      # that installs but prints another version fails at once.
       - name: Check that PyPI serves this version and the wheel runs
         run: |
           set -euo pipefail
-          printed=$(uvx --from "statute==${TAG#statute-v}" statute --version)
-          printf '%s\n' "$printed"
-          [ "$printed" = "statute ${TAG#statute-v}" ]
+          version="${TAG#statute-v}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if printed=$(uvx --no-cache --from "statute==$version" statute --version); then
+              printf '%s\n' "$printed"
+              [ "$printed" = "statute $version" ]
+              exit 0
+            fi
+            echo "attempt $attempt: statute==$version not installable from PyPI" >&2
+            if [ "$attempt" -lt 10 ]; then
+              sleep 30
+            fi
+          done
+          exit 1
 
       - name: Pin this version, commit and tag
         run: |
