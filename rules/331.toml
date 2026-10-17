@@ -17,28 +17,28 @@ en = "Write the English in domain titles in Chicago title case"
 zh = "domain 标题里的英文用 Chicago 标题式大小写"
 
 [text.statement]
-en = "Write the English in every domain title, whatever language the title is in, in the title case of The Chicago Manual of Style, and each product name as its owner writes it."
-zh = "domain 标题里的英文，不论标题是哪种语言，都按《芝加哥格式手册》(The Chicago Manual of Style) 的标题式大小写来写，产品名照它的所有者的写法。"
+en = "Write the English in every domain title, whatever language the title is in, in Chicago title case, and each product name as its owner writes it."
+zh = "domain 标题里的英文，不论标题是哪种语言，都用 Chicago 标题式大小写，产品名照所有者的写法。"
 
 [text.reason]
 en = '''
 Domain titles are the headings of the rule tree, and the compiled instructions, the site and the path in a page's title show them side by side in each language. They read as one set only when they share one style, the English inside a title in another language included. Title case marks a domain title as a heading, apart from the titles of rules, which are sentences, and Chicago's word lists leave a reviewer one answer for each word ({@constitution:decidable-provisions}).
 '''
 zh = '''
-domain 的标题是规定树的各级标题，编译出的指令、站点和页面标题里的路径在每种语言下都把它们并排列出。风格一致，读起来才是一套，其他语言的标题里出现的英文也一样。标题式大小写让 domain 的标题一看就是标题，与规定的标题 (都是句子) 分开；Chicago 对每类词怎么写都有明确的规定，审查方对每个词都只有一个答案 ({@constitution:decidable-provisions})。
+domain 的标题是规定树的各级标题，编译出的指令、站点和页面标题里的路径在每种语言下都把它们并排列出。风格一致，读起来才是一套，非英文标题里的英文也一样。标题式大小写让 domain 的标题一看就是标题，与规定的标题 (都是句子) 分开；Chicago 对每类词怎么写都有明确的规定，审查方对每个词都只有一个答案 ({@constitution:decidable-provisions})。
 '''
 
 [text.verification]
 en = '''
-Under Chicago title case, the first and the last word start with a capital letter, and so does every other word except these, which are lowercase: the articles a, an and the; the coordinating conjunctions and, but, or, nor, for, so and yet; prepositions used as prepositions, whatever their length, such as of, in, on, to, with, from, into and between (a preposition used as an adverb or an adjective, as in Set Up, is capitalized); to in an infinitive; and as. An acronym, such as CI, keeps its capitals. A product name keeps the form its owner gives it wherever it stands: FedNet keeps the capital N inside it, and Agent Fleet and Claude Code stay as they are written. In a title in another language, each run of English words in it is held to these as if it were a title of its own: `Pull Request` and `CI 与发版` comply, `Pull request` does not.
+Chicago title case is the title case of The Chicago Manual of Style: the first and the last word start with a capital letter, and so does every other word except these, which are lowercase: the articles a, an and the; the coordinating conjunctions and, but, or, nor, for, so and yet; prepositions used as prepositions, whatever their length, such as of, in, on, to, with, from, into and between (a preposition used as an adverb or an adjective, as in Set Up, is capitalized); to in an infinitive; and as. An acronym, such as CI, keeps its capitals. A product name keeps the form its owner gives it wherever it stands: FedNet keeps the capital N inside it, and Agent Fleet and Claude Code stay as they are written. In a title in a language other than English, each run of English words in it is held to these as if it were a title of its own: `Pull Request` and `CI 与发版` comply, `Pull request` does not.
 
 Violated when a change adds a domain or changes one of its titles, in any language, and a title it leaves holds English that capitalizes one of the lowercase words above where it is neither the first nor the last word, leaves any other word lowercase except a product name its owner writes so, or writes a product name otherwise than its owner does.
 '''
 zh = '''
-按 Chicago 标题式大小写，第一个词和最后一个词首字母大写，其余的词除下面这些外也都首字母大写；下面这些词小写：冠词 a、an、the；并列连词 and、but、or、nor、for、so、yet；用作介词的介词，不论多长，例如 of、in、on、to、with、from、into、between (介词用作副词或形容词时首字母大写，例如 Set Up)；不定式里的 to；以及 as。缩写词 (例如 CI) 保留它的大写。产品名不论在什么位置，都保持它的所有者给它的写法：FedNet 中间的大写 N 要保留，Agent Fleet 和 Claude Code 照原样写。其他语言的标题里，每一段连续的英文单独当作一个标题，按上面的规定来判：`Pull Request` 和 `CI 与发版` 合规，`Pull request` 不合规。
+Chicago 标题式大小写指《芝加哥格式手册》(The Chicago Manual of Style) 的标题式大小写：第一个词和最后一个词首字母大写，其余的词除下面这些外也都首字母大写；下面这些词小写：冠词 a、an、the；并列连词 and、but、or、nor、for、so、yet；用作介词的介词，不论多长，例如 of、in、on、to、with、from、into、between (介词用作副词或形容词时首字母大写，例如 Set Up)；不定式里的 to；以及 as。缩写词 (例如 CI) 保留它的大写。产品名不论在什么位置，都保持它的所有者给它的写法：FedNet 中间的大写 N 要保留，Agent Fleet 和 Claude Code 照原样写。非英文标题里，每一段连续的英文单独当作一个标题，按上面的规定来判：`Pull Request` 和 `CI 与发版` 合规，`Pull request` 不合规。
 
 变更新增 domain 或改动 domain 任一语言的标题后，留下的标题里的英文把上面列出的小写词 (不在开头或结尾时) 写成了首字母大写，把其他词 (所有者本来就小写的产品名除外) 写成了小写，或者产品名的写法与它的所有者不同的，即为违反本规定。
 '''
 
 [translations]
-zh = "d26c873487c068e6a0fae78e12e33fbfc1e88942d59d59d26aa8491e85218f63"
+zh = "ba09d7729e9d7d9a6e286674b31c1e0c6b51a7b802260c0a5be8abb0283141d8"
