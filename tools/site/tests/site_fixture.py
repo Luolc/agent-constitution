@@ -224,6 +224,20 @@ def long_code(root: Path) -> None:
     rule.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
+def rule_on(root: Path) -> None:
+  """Turn rule 6 on by default, in the domain 1, which stays off.
+
+  Args:
+    root: the checkout.
+  """
+  rule = root / "rules/6.toml"
+  text = rule.read_text(encoding="utf-8")
+  assert 'default = "off"\n' in text
+  rule.write_text(
+    text.replace('default = "off"\n', 'default = "on"\n', 1), encoding="utf-8"
+  )
+
+
 def subdomain(root: Path) -> None:
   """Make the one-of 2 a domain under the domain 1.
 
