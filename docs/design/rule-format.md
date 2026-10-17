@@ -216,7 +216,12 @@ The fields:
   It and `authority` are required, but a rule set that rests on no
   constitution reads its rules without them
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file));
-  `statute validate` and a rule set with a constitution require both.
+  a rule set with a constitution requires both. So do `statute
+  validate`, unless there is no constitution beside the rules, and
+  `statute export`, unless there is none in the directory it exports,
+  where in either case `statute.toml` in the directory they run in
+  names no constitution
+  ([The command and the first version](statute-command.md#the-command-and-the-first-version), [Export](statute-command.md#export)).
 - `level`: the default level, `project` or `user`
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)).
 - `check`: how compliance is checked ([Checks](rule-checks.md#checks)). `builtin`: the

@@ -811,6 +811,21 @@ fn normal(path: &Path) -> Vec<String> {
     out
 }
 
+/// Whether the rule set of `root`'s `statute.toml` rests on a
+/// constitution: `false` only when the file is there and names none, so
+/// that its rules may leave out `authority` and `constitution`; else the
+/// error that the file cannot be read.
+pub fn rests_on_constitution(root: &Path) -> Result<bool, String> {
+    let text = match std::fs::read_to_string(root.join(FILE)) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(true),
+        Err(e) => return Err(format!("{FILE}: error: cannot read: {e}")),
+    };
+    let table: toml::Table = toml::from_str(&text)
+        .map_err(|e| format!("{FILE}: error: {}", e.to_string().trim_end()))?;
+    Ok(table.contains_key("constitution"))
+}
+
 /// A `rules-dir` as written, when it names a directory within the
 /// source, outside `.statute/`; else what is wrong.
 pub fn rules_dir(dir: &str) -> Result<String, String> {

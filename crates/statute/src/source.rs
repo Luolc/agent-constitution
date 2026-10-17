@@ -40,16 +40,13 @@ impl Source {
     /// the directory is named in messages (`rules`). The source is returned
     /// even when there are errors; callers look at `Diagnostics`.
     pub fn load(dir: &Path, label: &str) -> (Source, Diagnostics) {
-        Source::read(dir, label, true)
+        Source::load_for(dir, label, true)
     }
 
-    /// As `load`, for a rule set that rests on no constitution: a rule may
-    /// leave out `authority` and `constitution`.
-    pub fn load_without_constitution(dir: &Path, label: &str) -> (Source, Diagnostics) {
-        Source::read(dir, label, false)
-    }
-
-    fn read(dir: &Path, label: &str, constitution: bool) -> (Source, Diagnostics) {
+    /// As `load`; with `rests_on_constitution` false, for a rule set that
+    /// rests on no constitution, a rule may leave out `authority` and
+    /// `constitution`.
+    pub fn load_for(dir: &Path, label: &str, rests_on_constitution: bool) -> (Source, Diagnostics) {
         let mut files = Vec::new();
         let entries = match std::fs::read_dir(dir) {
             Ok(entries) => entries,
@@ -80,7 +77,7 @@ impl Source {
                 Err(e) => diags.error(file, format!("cannot read: {e}")),
             }
         }
-        let (mut source, more) = Source::from_files_for(files, constitution);
+        let (mut source, more) = Source::from_files_for(files, rests_on_constitution);
         source.dir = label.to_owned();
         diags.0.extend(more.0);
         (source, diags)
@@ -93,8 +90,8 @@ impl Source {
         Source::from_files_for(files, true)
     }
 
-    /// As `from_files`; with `constitution` false, as
-    /// `load_without_constitution` reads them.
+    /// As `from_files`; with `constitution` false, as `load_for` reads
+    /// the rules of a rule set that rests on no constitution.
     fn from_files_for(
         mut files: Vec<(String, Vec<u8>)>,
         constitution: bool,
