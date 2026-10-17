@@ -854,7 +854,11 @@ fn init(
         eprintln!("statute: {} is not written", manifest::FILE);
         return Err(());
     };
-    let at = project.manifest.constitution_spec().place();
+    let at = project
+        .manifest
+        .constitution_spec()
+        .map(|(_, spec)| spec.place())
+        .expect("the rule set `init` writes names a constitution");
     let written = std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -1090,16 +1094,19 @@ fn report_changes(old: &lock::Locked, project: &Project) {
             ),
         });
     }
+    let none = |v: &Option<String>| v.clone().unwrap_or_else(|| "none".to_owned());
     if old.edition != new.edition {
         line(format!(
             "constitution: edition {} -> {}",
-            old.edition, new.edition
+            none(&old.edition),
+            none(&new.edition)
         ));
     }
     if old.revision != new.revision {
         line(format!(
             "constitution: revision {} -> {}",
-            old.revision, new.revision
+            none(&old.revision),
+            none(&new.revision)
         ));
     }
     for (key, now) in &new.rules {
@@ -1505,7 +1512,7 @@ fn explain_defaults(root: &Path) -> Result<(), ()> {
         exclude: Vec::new(),
         ..project.manifest.clone()
     };
-    let number = project.revision.parse().unwrap_or(0);
+    let number = project.revision.as_deref().map(|r| r.parse().unwrap_or(0));
     let mut ignored = Diagnostics::default();
     let defaults = statute::resolve::resolve(sources, &bare, number, &mut ignored).enabled;
     let enabled = &project.resolution.enabled;

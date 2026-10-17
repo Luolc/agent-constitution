@@ -356,9 +356,10 @@ pub fn built_in_first_party() -> SourceSpec {
 
 #[derive(Debug, Clone)]
 pub struct Manifest {
-    /// The name of the source the constitution comes from.
-    pub constitution_source: String,
-    pub edition: String,
+    /// The constitution the rule set rests on; `None` for a rule set that
+    /// compiles its rules alone (`docs/design/rule-sets.md`, Rule sets and
+    /// the lock file).
+    pub constitution: Option<Constitution>,
     /// Whether the repository that holds the rule set is public; the
     /// visibility of its own rules.
     pub public: bool,
@@ -406,7 +407,7 @@ pub struct Manifest {
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct RawManifest {
-    constitution: RawConstitution,
+    constitution: Option<Constitution>,
     public: Option<bool>,
     local_rules: Option<String>,
     #[serde(default)]
@@ -452,11 +453,13 @@ fn values(
     out
 }
 
-#[derive(Deserialize)]
+/// `constitution = { source = "R", edition = "2026-10" }`: the source
+/// the constitution comes from and its edition.
+#[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct RawConstitution {
-    source: String,
-    edition: String,
+pub struct Constitution {
+    pub source: String,
+    pub edition: String,
 }
 
 #[derive(Deserialize)]
@@ -933,7 +936,10 @@ impl Manifest {
                 sources.push(spec.clone());
             }
         }
-        let uses_first_party = raw.constitution.source == FIRST_PARTY
+        let uses_first_party = raw
+            .constitution
+            .as_ref()
+            .is_some_and(|c| c.source == FIRST_PARTY)
             || raw
                 .rules
                 .iter()
@@ -944,16 +950,21 @@ impl Manifest {
         }
         sources.sort_by(|a, b| a.name.cmp(&b.name));
         held.sort_by(|a, b| a.name.cmp(&b.name));
-        if sources.is_empty() && unread.is_empty() {
+        // Without a constitution, the repository's own rules may be all
+        // there is.
+        if sources.is_empty() && unread.is_empty() && raw.constitution.is_some() {
             errors.push(
                 "[sources] is empty; name the source of the rules, as in `R = { path = \".\" }`"
                     .to_owned(),
             );
         }
-        if sources_ok && !sources.iter().any(|s| s.name == raw.constitution.source) {
+        if let Some(c) = &raw.constitution
+            && sources_ok
+            && !sources.iter().any(|s| s.name == c.source)
+        {
             errors.push(format!(
                 "`constitution.source = \"{}\"` is not a source named in [sources]",
-                raw.constitution.source
+                c.source
             ));
         }
         let here: Vec<&str> = sources
@@ -1022,8 +1033,7 @@ impl Manifest {
             return Err(errors);
         }
         Ok(Manifest {
-            constitution_source: raw.constitution.source,
-            edition: raw.constitution.edition,
+            constitution: raw.constitution,
             public,
             sources,
             held,
@@ -1234,10 +1244,14 @@ impl Manifest {
         self.sources.iter().find(|s| s.name == name)
     }
 
-    /// The source the constitution comes from.
-    pub fn constitution_spec(&self) -> &SourceSpec {
-        self.spec(&self.constitution_source)
-            .expect("Manifest::parse checks that the constitution's source is named")
+    /// The constitution and the source it comes from; `None` without a
+    /// constitution.
+    pub fn constitution_spec(&self) -> Option<(&Constitution, &SourceSpec)> {
+        let c = self.constitution.as_ref()?;
+        let spec = self
+            .spec(&c.source)
+            .expect("Manifest::parse checks that the constitution's source is named");
+        Some((c, spec))
     }
 
     /// How an entry for `key` is written in `rules` or `packs`: `R42`,
@@ -1276,7 +1290,7 @@ lang = "en"
     #[test]
     fn reads_a_rule_set() {
         let m = Manifest::parse(GOOD).unwrap();
-        assert_eq!(m.edition, "2026-10");
+        assert_eq!(m.constitution.as_ref().unwrap().edition, "2026-10");
         assert!(!m.public);
         assert_eq!(
             m.sources,

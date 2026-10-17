@@ -26,7 +26,8 @@ struct Lock<'a> {
     /// First, on a line of its own, so that CI can read the version to
     /// install with one `sed` or `grep`.
     statute: &'a str,
-    constitution: Constitution<'a>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    constitution: Option<Constitution<'a>>,
     sources: Vec<Source<'a>>,
     rules: Vec<Rule<'a>>,
     /// The value the committed `AGENTS.md` gets of each parameter an
@@ -141,11 +142,13 @@ pub fn render(project: &Project) -> String {
     let chosen = project.resolution.chosen();
     let lock = Lock {
         statute: VERSION,
-        constitution: Constitution {
-            at: pin(m.constitution_spec(), false),
-            edition: &m.edition,
-            revision: &project.revision,
-        },
+        constitution: m.constitution_spec().zip(project.revision.as_deref()).map(
+            |((c, spec), revision)| Constitution {
+                at: pin(spec, false),
+                edition: &c.edition,
+                revision,
+            },
+        ),
         sources: m
             .sources
             .iter()
@@ -247,8 +250,9 @@ pub struct Locked {
     /// The version of statute that wrote it; missing in a lock file
     /// written before it was recorded.
     pub statute: Option<String>,
-    pub edition: String,
-    pub revision: String,
+    /// The constitution's edition and revision; `None` without one.
+    pub edition: Option<String>,
+    pub revision: Option<String>,
     pub rules: BTreeMap<Key, LockedRule>,
     /// The value of each parameter, by name.
     pub parameters: BTreeMap<String, String>,
@@ -279,7 +283,7 @@ impl LockedRule {
 #[derive(Deserialize)]
 struct RawLock {
     statute: Option<String>,
-    constitution: RawConstitution,
+    constitution: Option<RawConstitution>,
     #[serde(default)]
     rules: Vec<RawRule>,
     #[serde(default)]
@@ -314,8 +318,8 @@ pub fn read(text: &str) -> Result<Locked, String> {
     let raw: RawLock = toml::from_str(text).map_err(|e| e.to_string().trim_end().to_owned())?;
     Ok(Locked {
         statute: raw.statute,
-        edition: raw.constitution.edition,
-        revision: raw.constitution.revision,
+        edition: raw.constitution.as_ref().map(|c| c.edition.clone()),
+        revision: raw.constitution.map(|c| c.revision),
         rules: raw
             .rules
             .into_iter()
@@ -344,7 +348,11 @@ pub fn read(text: &str) -> Result<Locked, String> {
 pub fn current(project: &Project) -> Locked {
     Locked {
         statute: Some(VERSION.to_owned()),
-        edition: project.manifest.edition.clone(),
+        edition: project
+            .manifest
+            .constitution
+            .as_ref()
+            .map(|c| c.edition.clone()),
         revision: project.revision.clone(),
         rules: project
             .resolution

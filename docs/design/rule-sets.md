@@ -223,6 +223,27 @@ upgrade, like any other. A rule set that inherits a base rule set may pin
 another revision than the base does. The build then takes the newer of
 the two, and fails if some enabled rule's range cannot hold it.
 
+**Or to none.** A rule set may leave `constitution` out, for a
+repository that keeps rules of its own and wants only them compiled,
+for example into a prompt. It then needs no entry in `[sources]`: its
+own rules, in the directory of local rules
+([The directory of local rules](rule-config.md#the-directory-of-local-rules)),
+may be all it has.
+
+```toml
+public = false
+local-rules = "agent-rules"
+```
+
+`compile` writes the file as it always does, less the constitution's
+version for agents
+([Compilation and the site](statute-command.md#compilation-and-the-site)),
+and the lock file has no `[constitution]`. Each rule still has the
+`authority` and `constitution` fields the rule format requires; with no
+constitution to check them against, statute checks neither, and a
+`{@constitution:...}` citation in a rule's text fails `lock` and
+`compile`, since it has nothing to render as.
+
 **Per repository, with inheritance.** A rule set belongs to a repository,
 and it may inherit a shared base rule set, named in its `base` field
 (not built yet), so the rules every repository

@@ -144,6 +144,61 @@ fn compiles_the_rules_along_the_tree() {
     assert!(!dir.join("AGENTS.md").exists());
 }
 
+/// A rule set with no constitution and no source but its own rules in
+/// `my-rules/`: nodes() there, rules 3, 5 and 10 enabled.
+fn rules_alone(name: &str) -> PathBuf {
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("compile")
+        .join(name);
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("my-rules")).unwrap();
+    std::fs::write(
+        dir.join("statute.toml"),
+        "public = false\nlocal-rules = \"my-rules\"\nrules = [\"3\", \"5\", \"10\"]\n",
+    )
+    .unwrap();
+    for (id, text) in nodes() {
+        std::fs::write(dir.join(format!("my-rules/{id}.toml")), text).unwrap();
+    }
+    dir
+}
+
+#[test]
+fn without_a_constitution_compiles_the_rules_alone() {
+    let dir = rules_alone("rules-alone");
+    let expected = format!(
+        "<!-- Written by statute from statute.toml and statute.lock; do not edit by hand. -->\n\n{}",
+        RULES_EN.replace("- R", "- L")
+    );
+    assert_eq!(compiled(&dir), expected);
+    let lock = std::fs::read_to_string(dir.join("statute.lock")).unwrap();
+    assert!(
+        !lock.contains("[constitution]") && lock.contains("sources = []\n"),
+        "{lock}"
+    );
+}
+
+#[test]
+fn without_a_constitution_a_citation_of_one_fails() {
+    let dir = rules_alone("rules-alone-cite");
+    let text = edit(
+        rule(2, 1, ""),
+        "Do the thing 2.",
+        "Do it under {@constitution:principals}.",
+    )
+    .1;
+    std::fs::write(dir.join("my-rules/2.toml"), text).unwrap();
+    let run = statute(&dir, &["lock"]);
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr.contains(
+            "my-rules/2.toml:18: error: rule L2: cites constitution:principals, and statute.toml names no constitution"
+        ),
+        "{}",
+        run.stderr
+    );
+}
+
 #[test]
 fn a_rule_only_for_review_is_not_compiled() {
     let dir = repo(

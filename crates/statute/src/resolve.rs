@@ -365,14 +365,14 @@ impl<'a> Switches<'a> {
 }
 
 /// Resolves `manifest` against `sources`, which have passed their own
-/// checks, for the constitution `revision`. Problems go to `diags`,
+/// checks, for the constitution `revision`, or none. Problems go to `diags`,
 /// against `statute.toml`. An overridden rule counts as enabled, and the
 /// rule that overrides it brings in what it would have
 /// (`docs/design/rule-sources.md`, Overrides).
 pub fn resolve(
     sources: &Sources,
     manifest: &Manifest,
-    revision: u64,
+    revision: Option<u64>,
     diags: &mut Diagnostics,
 ) -> Resolution {
     let file = manifest::FILE;
@@ -759,7 +759,9 @@ pub fn resolve(
                 );
             }
         }
-        if !rule.constitution.contains(revision) {
+        if let Some(revision) = revision
+            && !rule.constitution.contains(revision)
+        {
             diags.error(
                 file,
                 format!(

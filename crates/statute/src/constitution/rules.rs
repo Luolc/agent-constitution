@@ -277,6 +277,9 @@ impl<'a> Rules<'a> {
 pub(crate) struct Provisions {
     all: BTreeSet<String>,
     repealed: BTreeSet<String>,
+    /// Whether there is no constitution at all, for a rule set that rests
+    /// on none.
+    absent: bool,
 }
 
 impl Provisions {
@@ -284,6 +287,7 @@ impl Provisions {
         Provisions {
             all: src.provisions(),
             repealed: src.repealed(),
+            absent: false,
         }
     }
 
@@ -295,12 +299,31 @@ impl Provisions {
             .filter(|id| labels.repealed(id))
             .cloned()
             .collect();
-        Provisions { all, repealed }
+        Provisions {
+            all,
+            repealed,
+            absent: false,
+        }
+    }
+
+    /// No constitution: a rule's `authority` names nothing to check, and
+    /// a citation of a provision has nothing to render as.
+    pub(crate) fn none() -> Provisions {
+        Provisions {
+            all: BTreeSet::new(),
+            repealed: BTreeSet::new(),
+            absent: true,
+        }
     }
 
     /// What is wrong with citing `target`, written `written`.
     fn problem(&self, target: &str, written: &str) -> Option<String> {
-        if !self.all.contains(target) {
+        if self.absent {
+            Some(format!(
+                "{written}, and {} names no constitution",
+                crate::manifest::FILE
+            ))
+        } else if !self.all.contains(target) {
             Some(format!("undefined {written}"))
         } else if self.repealed.contains(target) {
             Some(format!("repealed {written}"))
@@ -327,7 +350,10 @@ impl Provisions {
                 }
             }
         }
-        let authority = n.rule.as_ref().map_or(&[][..], |r| &r.authority[..]);
+        let authority = match &n.rule {
+            Some(r) if !self.absent => &r.authority[..],
+            _ => &[],
+        };
         // An entry with a namespace fails the node's own format check.
         for a in authority.iter().filter(|a| !a.contains(':')) {
             if let Some(found) = self.problem(a, a) {

@@ -8,7 +8,8 @@ use std::path::{Path, PathBuf};
 /// The label of every article, section and item of one edition, by
 /// citation, as the constitution's version for agents writes them:
 /// `Art. IV §1(2)` for `principals.competent`, and which of them are
-/// repealed.
+/// repealed; none, by default, for a rule set without a constitution.
+#[derive(Default)]
 pub struct Labels {
     labels: BTreeMap<String, String>,
     /// As the constitution's build counts them: an article with

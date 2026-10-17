@@ -35,7 +35,7 @@ fn r(id: u64) -> Key {
 
 fn run(source: &Sources, rules: &[u64], packs: &[u64], revision: u64) -> (Resolution, Diagnostics) {
     let mut diags = Diagnostics::default();
-    let res = resolve(source, &manifest(rules, packs), revision, &mut diags);
+    let res = resolve(source, &manifest(rules, packs), Some(revision), &mut diags);
     (res, diags)
 }
 
@@ -548,7 +548,7 @@ fn a_rule_of_the_repository_s_own_that_nothing_enables_is_named() {
         .unwrap();
         let sources = local_source();
         let mut diags = Diagnostics::default();
-        let res = resolve(&sources, &manifest, 1, &mut diags);
+        let res = resolve(&sources, &manifest, Some(1), &mut diags);
         assert!(diags.0.is_empty(), "{:#?}", diags.0);
         unenabled_own(&sources, &manifest, &res)
             .iter()
