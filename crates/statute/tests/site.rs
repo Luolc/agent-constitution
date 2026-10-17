@@ -579,7 +579,7 @@ fn site_marks_defaults_uses_and_values() {
     let params = read(&site, "R/parameters.html");
     assert!(
         params.contains(
-            "<tr id=\"language.docs\"><td>The language.docs<br><code>language.docs</code></td><td>language · repo</td><td><code>en</code></td><td><code>zh</code> (statute.toml)</td><td><a href=\"../R/7.html\">"
+            "<tr id=\"language.docs\"><td>The language.docs<br><code>language.docs</code></td><td data-label=\"Type and scope\">language · repo</td><td data-label=\"Default\"><code>en</code></td><td data-label=\"Value\"><code>zh</code> (statute.toml)</td><td data-label=\"Used by\"><a href=\"../R/7.html\">"
         ),
         "{params}"
     );
@@ -1473,5 +1473,92 @@ Promise.all(frames.map((f) => new Promise((done) =>
         ["1280 1280 true true", "390 390 true true"]
             .repeat(4)
             .join(" | ")
+    );
+}
+
+/// The page of parameters, with a parameter whose default and value are
+/// longer than a phone's line, in headless Chrome, in both languages, on
+/// a desktop and on a phone: the page does not scroll sideways and
+/// nothing on it runs past the window's edge. Skipped without Chrome,
+/// except in CI.
+#[test]
+fn site_fits_the_parameters_on_a_phone() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("parameters");
+    let params = read(&dir, "r/rules/params.toml")
+        + &param(
+            "service.socket",
+            "type = \"string\"",
+            "personal",
+            "/run/an-example-service/with-a-long-name/client.sock",
+        );
+    write(&dir, "r/rules/params.toml", &params);
+    put(
+        &dir,
+        "r/rules",
+        edit(
+            rule(7, 1, ""),
+            "Do the thing 7.",
+            "Write in {$language.docs} and run `serve -socket {$service.socket}`.",
+        ),
+    );
+    for command in ["lock", "site"] {
+        let r = statute(&dir, &[command]);
+        assert_eq!(r.code, 0, "{command}: {}", r.stderr);
+    }
+    for page in ["R/parameters.html", "zh/R/parameters.html"] {
+        assert!(read(&dir.join(".statute/site"), page).contains("with-a-long-name"));
+    }
+    let page = dir.join("parameters.html");
+    let frames: String = ["R/parameters.html", "zh/R/parameters.html"]
+        .iter()
+        .flat_map(|page| {
+            [(1280, page), (390, page)].map(|(width, page)| {
+                format!("<iframe src=\".statute/site/{page}\" style=\"width: {width}px; height: 900px\"></iframe>\n")
+            })
+        })
+        .collect();
+    std::fs::write(
+        &page,
+        format!(
+            r##"<!DOCTYPE html><body>
+{frames}<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {{
+    const doc = f.contentDocument;
+    const width = doc.documentElement.clientWidth;
+    const scroll = doc.documentElement.scrollWidth;
+    const inside = Array.from(doc.querySelectorAll("body *"))
+      .every((e) => e.getBoundingClientRect().right <= width);
+    done(`${{width}} ${{scroll}} ${{inside}}`);
+  }})))).then((r) => document.body.setAttribute("data-probe", r.join(" | ")));
+</script></body>"##
+        ),
+    )
+    .unwrap();
+    let out = Command::new(chrome)
+        .args([
+            "--headless",
+            "--no-proxy-server",
+            "--hide-scrollbars",
+            // The frames' documents, files too, are the page's to read.
+            "--allow-file-access-from-files",
+            "--window-size=1400,900",
+            "--virtual-time-budget=5000",
+        ])
+        .arg(format!("--user-data-dir={}", dir.join("profile").display()))
+        .arg("--dump-dom")
+        .arg(format!("file://{}", page.display()))
+        .output()
+        .unwrap();
+    let dom = String::from_utf8(out.stdout).unwrap();
+    let start = dom.find("data-probe=\"").expect(&dom) + 12;
+    assert_eq!(
+        &dom[start..start + dom[start..].find('"').unwrap()],
+        ["1280 1280 true", "390 390 true"].repeat(2).join(" | ")
     );
 }

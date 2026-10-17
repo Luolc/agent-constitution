@@ -611,7 +611,9 @@ body:has(#view-title:checked) .entry .statement { display: none; }
    the rule set enables a rule goes under it; a group row leaves out the
    quadrant and source, which the headings above it name, when it has
    domains to show; the search takes a row of its own; a menu's popover
-   spans the row. */
+   spans the row; the table of parameters is a block a parameter, its
+   title and name first, each other cell under its column's name, an
+   empty one left out. */
 @media (max-width: 48rem) {
   .rule-text .title { white-space: normal; }
   .group-path > .q:has(+ .icon) { display: none; }
@@ -622,6 +624,11 @@ body:has(#view-title:checked) .entry .statement { display: none; }
   .find { flex-basis: 100%; }
   .find input { inline-size: 100%; box-sizing: border-box; }
   .menu-panel { inline-size: 100%; max-inline-size: none; }
+  .parameters, .parameters :is(tbody, tr, td) { display: block; }
+  .parameters :is(tr:first-child, td:empty) { display: none; }
+  .parameters tr { padding-block: var(--t-space-2); border-block-start: 1px solid var(--t-border-subtle); }
+  .parameters td { padding: var(--t-space-1) 0; border: 0; overflow-wrap: break-word; }
+  .parameters td[data-label]::before { content: attr(data-label); display: block; font-weight: var(--t-weight-medium); color: var(--t-text-muted); }
 }
 
 /* Check boxes, drawn as controls.css of the public site draws them: a

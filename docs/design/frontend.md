@@ -429,9 +429,17 @@ turned off (disabled), where it has these.
     language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
-- **A rule's page.** A word wider than the line, such as a path in code
-  in its title or text, breaks anywhere inside it rather than run past
-  the screen's edge.
+- **A node's page**, a rule's, a domain's or a one-of's. A word wider
+  than the line, such as a path in code in its title or text, breaks
+  anywhere inside it rather than run past the screen's edge.
+- **The table of parameters**, on the local site's page of a source's
+  parameters: a head and then a row a parameter, spanning the window.
+  On a narrow screen (below `48rem`) the head goes, and each parameter
+  is a block under a `border-subtle` hairline: its title and name
+  first, then each other cell under the name of its column, in
+  `weight-medium` and `text-muted` as the head is, an empty cell left
+  out; a word wider than the line breaks, so that the page never
+  scrolls sideways.
 - **A parameter's value**, wherever a placeholder's value is marked (a
   rule's text and title, the list, the rules under a provision on the
   constitution's pages): the value on `bg-selected` with `radius-sm` and
@@ -889,7 +897,8 @@ the filter's popovers; the language switch and the tag of a text not
 in the page's language; the parent's title after a title that nodes
 under two parents have; the view of the list of [Components](#components), its choice
 in the address as `view`, and kept for the next index opened only when
-it opens at an address without one. Not built yet, and what each replaces:
+it opens at an address without one; the table of parameters, a block
+a parameter on a narrow screen. Not built yet, and what each replaces:
 
 - On the public site, the tags of a rule's page, and enabled and the
   quadrant in the list, are boxes of one look; the tags of
