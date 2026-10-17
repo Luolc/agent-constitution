@@ -1,8 +1,9 @@
 id = 166
 slug = "lead-escalates-review-through-ask-human"
-revision = 5
+revision = 6
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 332
 lang = "en"
 parent = 161
 default = "on"

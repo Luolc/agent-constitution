@@ -1,6 +1,6 @@
 id = 161
 slug = "fleet-cli"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "命令"
 
 [applicability]
 en = '''
-What holds only for the agents that Agent Fleet itself starts: its commands (`fleet watch`, `fleet ask-human`, `fleet done`), its work orders, and the scope settings it reads (`models`, `paths`, `channels`). Enable it where Agent Fleet starts the agents; where another tool divides the work the way Agent Fleet does, enable only {@rule:78}.
+What holds only for the agents that Agent Fleet itself starts: its commands (`fleet watch`, `fleet ask-thread`, `fleet done`), its work orders, and the scope settings it reads (`models`, `paths`, `channels`). Enable it where Agent Fleet starts the agents; where another tool divides the work the way Agent Fleet does, enable only {@rule:78}.
 '''
 zh = '''
-只对 Agent Fleet 自己起的 agent 成立的做法：它的命令 (`fleet watch`、`fleet ask-human`、`fleet done`)、它的工单，以及它读的 scope 设置 (`models`、`paths`、`channels`)。agent 由 Agent Fleet 起的环境启用；用别的工具像 Agent Fleet 那样分工的，只启用{@rule:78}。
+只对 Agent Fleet 自己起的 agent 成立的做法：它的命令 (`fleet watch`、`fleet ask-thread`、`fleet done`)、它的工单，以及它读的 scope 设置 (`models`、`paths`、`channels`)。agent 由 Agent Fleet 起的环境启用；用别的工具像 Agent Fleet 那样分工的，只启用{@rule:78}。
 '''
 
 [translations]
-zh = "b9afae08d18ee9da5a957c5e8fb1295af68bcdcaa935cfe8a5fe706b72b7f7cb"
+zh = "8e80024e36d117541e01ca844952ed4e43a5624f1335a8327a1042b5df4d3c7f"
