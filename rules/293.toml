@@ -30,7 +30,7 @@ agent 要让工作往下走 ({@constitution:automation-first.keep-moving})；安
 
 [text.verification]
 en = '''
-A rule halts work when its statement or its verification tells an agent to stop, pause, wait or start no work in a case where the agent cannot go on with that work by any act of its own, nor by waiting for a process already running to finish, as in "start no work while the ticketing system cannot be reached". A rule that forbids an act, or that allows one only under a condition the agent can bring about itself, such as its checks passing, or that a running process brings about, such as CI finishing, halts no work. A rule that allows an act only once a person or another agent has acted halts the work that waits on it, as {@rule:333} does for a rule that no process set out in advance covers, allowing its move to `active` only once a principal has said it may.
+A rule halts work when its statement or its verification tells an agent to stop, pause, wait or start no work in a case where the agent cannot go on with that work by any act of its own, nor by waiting for a process already running to finish, as in "start no work while the ticketing system cannot be reached". A rule that forbids an act, or that allows one only under a condition the agent can bring about itself, such as its checks passing, or that a running process brings about, such as CI finishing, halts no work. A rule that allows an act only once a person or another agent has acted halts the work that waits on it, as {@rule:333} does, where no process set out in advance covers a rule, in allowing its move to `active` only once a principal has said it may.
 
 The way forward is an act that lets the work go on: a route the agent takes itself, or a request to a named party, such as whoever delegated the work or a principal, for what would let it go on, such as a decision, a route or an access. A report that asks for nothing is not a way forward. The statement says the way forward even when the halt is in the verification.
 
@@ -45,4 +45,4 @@ zh = '''
 '''
 
 [translations]
-zh = "7b8068caa1231962482593e849b4f373bbcfd6610c92c30173399251383c8d27"
+zh = "1d51d6914a64f333b8df3aeaeef268476ea53f41ca2499ecd580a1b9d530fc74"

@@ -22,10 +22,10 @@ zh = "规定要求的事，以及它适用的条件，只能依赖已经在跑�
 
 [text.reason]
 en = '''
-A requirement that rests on a mechanism nothing runs can be neither met nor decided: no agent can tell whether its work complies, and no reviewer can tell either ({@constitution:decidable-provisions}). A rule that let a trial rule become active after a number of uses that nothing counted was such a rule: its threshold could never be checked. Where the mechanism is worth having, build it first and write the rule that rests on it after; otherwise leave the condition out.
+A requirement that rests on a mechanism nothing runs can be neither met nor decided: no agent can tell whether its work complies, and no reviewer can tell either ({@constitution:decidable-provisions}). Where the mechanism is worth having, build it first and write the rule that rests on it after; otherwise leave the condition out.
 '''
 zh = '''
-依赖一个没人在跑的机制的要求，既没法满足，也没法判定：agent 判断不了自己的工作是否合规，审查方也判断不了 ({@constitution:decidable-provisions})。曾有一条规定让试用规定在用过若干次之后改为生效，而这个次数没有任何东西在记，就是这样的规定：它的门槛永远核对不了。机制值得有，就先把它建起来，再写依赖它的规定；不值得，就不写这个条件。
+依赖一个没人在跑的机制的要求，既没法满足，也没法判定：agent 判断不了自己的工作是否合规，审查方也判断不了 ({@constitution:decidable-provisions})。机制值得有，就先把它建起来，再写依赖它的规定；不值得，就不写这个条件。
 '''
 
 [text.verification]
@@ -49,4 +49,4 @@ zh = '''
 '''
 
 [translations]
-zh = "5f1ff10e50c8b9803265a1cc7c57045fbd52f7cd14baadade8ed3316d1b074d8"
+zh = "d23c5df7d7bb6badb5b9153572d3077a7226f3e241a0bd226e9998cfbeb79784"
