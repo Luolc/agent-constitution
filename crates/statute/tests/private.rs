@@ -1124,3 +1124,22 @@ fn a_private_rule_needs_a_rule_statute_toml_excludes_in_private_rules() {
     assert!(read(&dir, ".statute/AGENTS.full.md").contains("\n- R6 "));
     assert!(!read(&dir, "AGENTS.md").contains("\n- R6 "));
 }
+
+/// A private layer that turns off more public rules than it enables says
+/// how many it turned off.
+#[test]
+fn the_private_lock_file_counts_what_the_private_layer_turns_off() {
+    let dir = repo("turns-off");
+    set_up(&dir);
+    ok(&statute(&dir, &["remove", "--private", "me:4"]));
+    let run = statute(&dir, &["remove", "--private", "3"]);
+    ok(&run);
+    assert!(
+        run.stdout.contains(&format!(
+            "wrote {}: 1 rules enabled, 0 of them by the private layer, 1 turned off by it",
+            own_lock(&dir).display()
+        )),
+        "{}",
+        run.stdout
+    );
+}
