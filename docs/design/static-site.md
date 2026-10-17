@@ -183,8 +183,10 @@ screenshots (Screenshots, below). The workflow
   The list (`web/layouts/rules/section.html`) is a table under a head,
   one row a rule, along the tree: each rule's label, its title, cut to
   the row by the style sheet, or its statement, and its marks,
-  linked to its page: whether the source's defaults enable it (on or
-  off, as `statute export` reckons it), its status, and its `uses`, each an icon or a dot in
+  linked to its page: whether it is on or off by default, by its own
+  `default` whatever the domains above it are (a rule on by default in
+  a domain that is off comes into a rule set only with its domain), its
+  status, and its `uses`, each an icon or a dot in
   a place of its own ([Frontend](frontend.md#components)); then, with
   `--enabled`, whether it is enabled, and with more than one source, the
   quadrant of its source, each a small tag. A rule under another rule
@@ -195,11 +197,11 @@ screenshots (Screenshots, below). The workflow
   option that is a domain is a row of the box too, and its rules stay in
   the list under its group row, a level below its one-of's domain: no
   one-of heads a group. The filter treats the box as one entry, with the
-  one-of's status, domain and switch and the `uses` of its rule
-  options. Domains are not rows of their own: each rule carries a group
+  one-of's status and domain, off by default as a one-of has no
+  `default` of its own, and the `uses` of its rule options. Domains are not rows of their own: each rule carries a group
   row for its nearest domain, with that domain's label (`R13`) and the
   path of its domains (`Documentation › Design`), and in the first place
-  of the marks whether the defaults enable the domain, shown where the group
+  of the marks whether the domain is on by default, shown where the group
   changes from the rule shown before it and above the first rule shown,
   so each group's row shows once, as a domain's rules come before its
   subdomains; with more than one source, the path starts
@@ -223,9 +225,9 @@ screenshots (Screenshots, below). The workflow
   whose rows' text, their labels, titles and statements, holds what is
   typed, case aside; a group row's text does not count. A rule is shown
   when it meets the search and when, in
-  every field, one of its values is checked: its status, whether the
-  defaults enable it (a node whose answer depends on another source,
-  whose place stays empty, counts as off), its `uses`
+  every field, one of its values is checked: its status, whether it is
+  on by default (a node without a `default`, whose place stays empty,
+  counts as off), its `uses`
   (`["instructions"]` when its file leaves it out), its nearest domain
   and its quadrant; checking or unchecking a domain does the same to the
   domains under it. A change applies at once. A node whose `parent` is
@@ -278,7 +280,7 @@ screenshots (Screenshots, below). The workflow
   rule's page (`web/layouts/rules/page.html`) gives, under a breadcrumb
   of the nodes above it (`path`, [Frontend](frontend.md#components)),
   its label and title,
-  under it whether the defaults enable it, as in the list, with more
+  under it whether it is on by default, as in the list, with more
   than one source, the quadrant and name of its
   source ("Global private · team"), and with `--enabled` whether it is
   enabled, for a superseded rule the rules that supersede it, for a

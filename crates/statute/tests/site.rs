@@ -464,6 +464,9 @@ fn site_marks_defaults_uses_and_values() {
     );
     put(&dir, "r/rules", set_default(domain(1), "\"on\""));
     put(&dir, "r/rules", set_default(rule(2, 1, ""), "\"on\""));
+    // A rule on by default in a domain that is off.
+    put(&dir, "r/rules", domain(8));
+    put(&dir, "r/rules", set_default(rule(9, 8, ""), "\"on\""));
     put(&dir, "r/rules", rule(3, 1, "uses = [\"review\"]"));
     put(&dir, "r/rules", one_of(4, 1, 5));
     put(&dir, "r/rules", option(5, 4, ""));
@@ -483,8 +486,8 @@ fn site_marks_defaults_uses_and_values() {
     }
     let site = dir.join(".statute/site");
     let index = read(&site, "index.html");
-    // The first place of a row's marks says whether the defaults enable
-    // it: a dot named by its words.
+    // The first place of a row's marks says whether the node is on by
+    // default, by its own `default`: a dot named by its words.
     for (id, mark) in [
         (
             2,
@@ -494,10 +497,22 @@ fn site_marks_defaults_uses_and_values() {
             3,
             "<span class=\"marks\"><span class=\"mark dot\" role=\"img\" aria-label=\"off by default\"",
         ),
+        (
+            9,
+            "<span class=\"marks\"><span class=\"mark dot on\" role=\"img\" aria-label=\"on by default\"",
+        ),
     ] {
         let row = entry(&index, &format!("R/{id}.html"));
         assert!(row.contains(mark), "{row}");
     }
+    // The filter takes rule 9 as on by default, with its domain off.
+    assert!(
+        item(&index, "R/9.html").starts_with(
+            "<div class=\"item\" data-status=\"draft\" data-default=\"on\" data-uses=\"instructions\" data-domain=\"R8\""
+        ),
+        "{}",
+        item(&index, "R/9.html")
+    );
     assert!(
         entry(&index, "R/5.html").contains("<span class=\"default-option\"><svg class=\"icon\""),
         "{}",

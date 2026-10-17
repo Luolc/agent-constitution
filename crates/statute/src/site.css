@@ -458,7 +458,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 /* A group row: a band, the first level's `bg-active`, a deeper one's
    `bg-panel-hover`; the label and the path in `text`, joined by
    `chevron-right`, the whole a link underlined under the pointer; in the
-   first place of the marks, whether the defaults enable the domain. */
+   first place of the marks, whether the domain is on by default. */
 .group {
   position: sticky;
   inset-block-start: var(--row);
@@ -528,7 +528,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 body:has(#view-title:checked) .entry .statement { display: none; }
 
 /* The marks: four places of `width-mark`, each mark in the middle of
-   its place: whether the defaults enable the node, a dot of `accent` or
+   its place: whether the node is on by default, a dot of `accent` or
    a ring of `text-muted`; the status in its color for Active, Trial and
    Draft, else muted; the uses muted. */
 .marks { display: grid; grid-template-columns: repeat(4, var(--t-width-mark)); align-items: center; justify-items: center; }

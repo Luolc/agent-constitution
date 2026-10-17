@@ -470,15 +470,8 @@ class SiteRulesTest(unittest.TestCase):
     """Each node's switch, the one-of's default option and a rule's uses."""
     nodes = self.nodes("en")
     self.assertEqual(
-      [(i, n.get("default"), n["onByDefault"]) for i, n in nodes.items()],
-      [
-        (1, "off", False),
-        (2, None, False),
-        (3, None, False),
-        (4, "off", False),
-        (5, "off", False),
-        (6, "off", False),
-      ],
+      [(i, n.get("default")) for i, n in nodes.items()],
+      [(1, "off"), (2, None), (3, None), (4, "off"), (5, "off"), (6, "off")],
     )
     self.assertEqual(
       nodes[2]["defaultOption"],
@@ -496,26 +489,20 @@ class SiteRulesTest(unittest.TestCase):
     )
     self.assertEqual(nodes[3]["uses"], ["instructions"])
     self.assertNotIn("uses", nodes[1])
-    # The domain on, and rule 6 in it: rule 3 comes in as the one-of's
-    # default; rule 4, on but superseded, does not.
-    for name, old, new in (
-      ("rules/1.toml", 'default = "off"', 'default = "on"'),
-      ("rules/4.toml", 'default = "off"', 'default = "on"'),
-      (
-        "rules/6.toml",
+    # Rule 6 on, its domain still off: its own `default` is on.
+    path = self.root / "rules/6.toml"
+    text = path.read_text(encoding="utf-8")
+    self.assertIn('default = "off"', text)
+    path.write_text(
+      text.replace(
         'default = "off"',
         'default = "on"\nuses = ["instructions", "review"]',
+        1,
       ),
-    ):
-      path = self.root / name
-      text = path.read_text(encoding="utf-8")
-      self.assertIn(old, text)
-      path.write_text(text.replace(old, new, 1), encoding="utf-8")
-    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
-    self.assertEqual(
-      [(i, n["onByDefault"]) for i, n in nodes.items()],
-      [(1, True), (2, True), (3, True), (4, False), (5, False), (6, True)],
+      encoding="utf-8",
     )
+    nodes = {n["id"]: n for n in self.load()["en"]["nodes"]}
+    self.assertEqual((nodes[1]["default"], nodes[6]["default"]), ("off", "on"))
     self.assertEqual(nodes[6]["uses"], ["instructions", "review"])
 
   def test_params(self):

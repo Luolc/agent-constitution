@@ -1,6 +1,6 @@
 id = 255
 slug = "unsettled-review-to-principal"
-revision = 2
+revision = 3
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,32 +16,32 @@ en = "Put a review that does not settle to a principal"
 zh = "审查收不了尾的，交给委托人"
 
 [text.statement]
-en = "When a review is still unapproved after three rounds, or its author and reviewer disagree about a serious finding, have the agent responsible for the work put the review to a principal; that agent may give one more round instead only when each remaining finding is one of the round before, smaller than it was, and undisputed."
-zh = "审查三轮之后仍未批准，或者作者和审查方对一条严重的审查意见有分歧的，由负责这项工作的 agent 把审查交给委托人；只有剩下的每条意见都是上一轮就有的、比上一轮小、而且没有分歧时，它才可以改为再给一轮。"
+en = "When a review is still unapproved after {$review.rounds} rounds, or its author and reviewer disagree about a serious finding, have the agent responsible for the work put the review to a principal; that agent may give one more round instead only when each remaining finding is one of the round before, smaller than it was, and undisputed."
+zh = "审查 {$review.rounds} 轮之后仍未批准，或者作者和审查方对一条严重的审查意见有分歧的，由负责这项工作的 agent 把审查交给委托人；只有剩下的每条意见都是上一轮就有的、比上一轮小、而且没有分歧时，它才可以改为再给一轮。"
 
 [text.reason]
 en = '''
-A review that has not converged in three rounds is unlikely to converge by going on the same way, and a disagreement about a serious finding is one that neither side can settle alone. The agent responsible for the work answers for the whole task ({@constitution:accountable-agent.whole-task}) and decides how the work goes on ({@constitution:decide-yourself.changing-approach}); a review that author and reviewer cannot settle needs a principal's decision, and a principal is asked for it ({@constitution:asking}).
+A review that has not converged in {$review.rounds} rounds is unlikely to converge by going on the same way, and a disagreement about a serious finding is one that neither side can settle alone. The agent responsible for the work answers for the whole task ({@constitution:accountable-agent.whole-task}) and decides how the work goes on ({@constitution:decide-yourself.changing-approach}); a review that author and reviewer cannot settle needs a principal's decision, and a principal is asked for it ({@constitution:asking}).
 '''
 zh = '''
-审查三轮还没有收敛，照原样继续下去多半也收敛不了；对一条严重的审查意见有分歧，哪一方都不能单方面了结。负责这项工作的 agent 对整个任务负责 ({@constitution:accountable-agent.whole-task})，由它决定工作怎样继续 ({@constitution:decide-yourself.changing-approach})；作者和审查方了结不了的审查需要委托人来定，就去问委托人 ({@constitution:asking})。
+审查 {$review.rounds} 轮还没有收敛，照原样继续下去多半也收敛不了；对一条严重的审查意见有分歧，哪一方都不能单方面了结。负责这项工作的 agent 对整个任务负责 ({@constitution:accountable-agent.whole-task})，由它决定工作怎样继续 ({@constitution:decide-yourself.changing-approach})；作者和审查方了结不了的审查需要委托人来定，就去问委托人 ({@constitution:asking})。
 '''
 
 [text.verification]
 en = '''
 A round is one verdict of the reviewer on one version of the change, together with the author's answers to it; the rounds are counted from the first verdict. A serious finding is one of the highest priority on the scale the review grades its findings by. A disagreement is a finding the author declines and the reviewer upholds after the author's answer; it ends when either side gives way of its own accord.
 
-After the third verdict without approval, or once there is a disagreement about a serious finding, neither the author nor the reviewer starts another round or settles the matter on their own: they tell the agent responsible for the work. That agent gives one more round only when both points hold: each remaining finding is one of the round before and smaller than it was, and author and reviewer do not disagree about it. Otherwise it puts the review to a principal. After each further round without approval it decides again. Where the agent responsible for the work is the author, the decision falls to whoever accepts its work under {@constitution:accountable-agent.own-work}, never to the author itself.
+After {$review.rounds} verdicts without approval, or once there is a disagreement about a serious finding, neither the author nor the reviewer starts another round or settles the matter on their own: they tell the agent responsible for the work. That agent gives one more round only when both points hold: each remaining finding is one of the round before and smaller than it was, and author and reviewer do not disagree about it. Otherwise it puts the review to a principal. After each further round without approval it decides again. Where the agent responsible for the work is the author, the decision falls to whoever accepts its work under {@constitution:accountable-agent.own-work}, never to the author itself.
 
-Violated when a fourth or later round begins without a principal's decision and without both points holding; when, after the third verdict without approval, the review is settled in any other way, such as abandoning the attempt or changing approach, without a principal's decision; when a disagreement about a serious finding is decided by anyone but a principal, or when the author makes the decision this rule gives to another.
+Violated when a round after the first {$review.rounds} begins without a principal's decision and without both points holding; when, after {$review.rounds} verdicts without approval, the review is settled in any other way, such as abandoning the attempt or changing approach, without a principal's decision; when a disagreement about a serious finding is decided by anyone but a principal, or when the author makes the decision this rule gives to another.
 '''
 zh = '''
 一轮是审查方对变更的一个版本给出的一份 verdict，加上作者对它的答复；轮数从第一份 verdict 算起。严重的审查意见，指在审查给意见分级所用的尺度上优先级最高的那一级。分歧，指作者不接受、审查方在作者答复之后仍然坚持的审查意见；任何一方自愿让步，分歧就结束了。
 
-第三份 verdict 仍未批准，或者对一条严重的审查意见出现了分歧之后，作者和审查方都不自行开始新的一轮，也不自行了结，而是告诉负责这项工作的 agent。只有两点都成立时，它才再给一轮：剩下的每条意见都是上一轮就有的，而且比上一轮小；作者和审查方对它没有分歧。否则它把审查交给委托人。此后每多一轮仍未批准，都由它再决定一次。负责这项工作的 agent 就是作者的，由按{@constitution:accountable-agent.own-work}验收它的工作的一方决定，不由作者自己决定。
+{$review.rounds} 份 verdict 都没有批准，或者对一条严重的审查意见出现了分歧之后，作者和审查方都不自行开始新的一轮，也不自行了结，而是告诉负责这项工作的 agent。只有两点都成立时，它才再给一轮：剩下的每条意见都是上一轮就有的，而且比上一轮小；作者和审查方对它没有分歧。否则它把审查交给委托人。此后每多一轮仍未批准，都由它再决定一次。负责这项工作的 agent 就是作者的，由按{@constitution:accountable-agent.own-work}验收它的工作的一方决定，不由作者自己决定。
 
-第四轮或之后的某一轮，既没有委托人的决定、两点又不都成立就开始了的；第三份 verdict 仍未批准之后，没有委托人的决定，就以别的方式了结了审查的，例如放弃这次尝试或者改变做法；对严重审查意见的分歧由委托人以外的人裁定的，或者作者作出了本规定交给别人的决定的，即为违反本规定。
+前 {$review.rounds} 轮之后的某一轮，既没有委托人的决定、两点又不都成立就开始了的；{$review.rounds} 份 verdict 都没有批准之后，没有委托人的决定，就以别的方式了结了审查的，例如放弃这次尝试或者改变做法；对严重审查意见的分歧由委托人以外的人裁定的，或者作者作出了本规定交给别人的决定的，即为违反本规定。
 '''
 
 [translations]
-zh = "3d1d3d1995bb00fcf6bcd5ce0f68a5d077c36ba91339c63a4988b0c96ca59a8c"
+zh = "f0cd328bd8903e3ea356e535e9677e1792941d788c6667f4336c89c65d70de8f"

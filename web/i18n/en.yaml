@@ -32,7 +32,7 @@ untranslated: "This page has no translation yet; below is the English text."
 # The rules' pages (layouts/rules/) and the rules under a provision
 # (content/_content.gotmpl).
 rules: "Rules"
-rules-intro: "The rules that refine the constitution, along the tree of their domains; each links to its page and says whether a new rule set gets it by default. The legend says what each mark means; the filter chooses the statuses, defaults, uses and domains shown."
+rules-intro: "The rules that refine the constitution, along the tree of their domains; each links to its page and says whether it is on by default, by its own setting: a rule on by default in a domain that is off comes into a rule set only once the domain is on. The legend says what each mark means; the filter chooses the statuses, defaults, uses and domains shown."
 rule-superseded-by: "Superseded by {{ .rule }}."
 rule-repealed: "Repealed."
 rule-untranslated: "This rule has no translation into English; below is its original, in {{ .lang }}."
@@ -134,7 +134,8 @@ param-scope-repo: "The repository's, the same for everyone"
 param-scope-personal: "Each person's own"
 param-default: "Default"
 param-rules: "Used by"
-# Whether a source's defaults enable a node, and a one-of's default option
+# Whether a domain or a rule is on by default, by its own `default`, and a
+# one-of's default option
 # (layouts/_partials/rules/default.html).
 default-on: "On by default"
 default-off: "Off by default"

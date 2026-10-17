@@ -1,5 +1,4 @@
-{{- /* Whether the source's defaults enable a node, when that does not
-  depend on another source, and whether a one-of's option is its default:
-  takes the node's data. */ -}}
-{{- if eq .onByDefault true }}<span class="rule-default">{{ i18n "default-on" }}</span>{{ else if eq .onByDefault false }}<span class="rule-default off">{{ i18n "default-off" }}</span>{{ end }}
+{{- /* Whether a domain or a rule is on by default, by its own `default`,
+  and whether a one-of's option is its default: takes the node's data. */ -}}
+{{- if eq .default "on" }}<span class="rule-default">{{ i18n "default-on" }}</span>{{ else if eq .default "off" }}<span class="rule-default off">{{ i18n "default-off" }}</span>{{ end }}
 {{- if .optionDefault }}<span class="rule-default option">{{ i18n "default-option" }}</span>{{ end -}}

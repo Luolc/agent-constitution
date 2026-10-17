@@ -523,7 +523,7 @@ class SiteTest(unittest.TestCase):
       ' aria-controls="rules-legend-list">',
       page,
     )
-    # A group row says whether the defaults enable its domain.
+    # A group row says whether its domain is on by default.
     self.assertRegex(
       page,
       r'<h2 class="rules-group" data-group="1"><a [^\n]*?</a><span'
@@ -1130,6 +1130,37 @@ Promise.all(frames.map((f) => new Promise((done) =>
       page,
     )
 
+  def test_a_rule_on_in_a_domain_off(self):
+    """A rule shows its own `default`, on, though its domain is off."""
+    raw = self.build(raw=True, edit_rules=site_fixture.rule_on)
+    page = raw["rules/index.html"]
+    on = (
+      '<span class="rule-mark rule-dot on" role="img"'
+      ' aria-label="On by default" title="On by default"></span>'
+    )
+    # Rule 6 is on in the list, its mark and its filter's value, and the
+    # domain's group row and rule 5 stay off.
+    self.assertRegex(
+      page,
+      r'<div class="rule-item" data-status="active" data-domain="1"'
+      r' data-uses="instructions" data-default="on">\n(<h\d[^\n]*\n)*'
+      r'<a class="rule-entry" href="\.\./rules/6/"[^\n]*'
+      + re.escape(f'<span class="rule-marks">{on}'),
+    )
+    self.assertRegex(
+      page,
+      r'<h2 class="rules-group" data-group="1"><a [^\n]*?</a><span'
+      r' class="rule-marks"><span class="rule-mark rule-dot" role="img"'
+      r' aria-label="Off by default"',
+    )
+    self.assertRegex(
+      page,
+      r'data-default="off">\n(<h\d[^\n]*\n)*<a class="rule-entry"'
+      r' href="\.\./rules/5/"',
+    )
+    self.assertIn("R6 Rule 6 On by default", visible(raw["rules/6/index.html"]))
+    self.assertIn("R6 Rule 6 默认开启", visible(raw["zh/rules/6/index.html"]))
+
   def test_a_value_in_a_title_is_escaped(self):
     """In the list, a value with `<` in a title or a statement shows as text.
 
@@ -1226,7 +1257,7 @@ Promise.all(frames.map((f) => new Promise((done) =>
     self.assertIn('<a href="../3/">rule R3</a>', raw["rules/demo-2/index.html"])
     self.assertIn("Requires R3 Rule 3", demo)
     self.assertIn(
-      "R3 Rule 3 Off by default Default option Global public · R Enabled",
+      "R3 Rule 3 Default option Global public · R Enabled",
       pages["rules/3/index.html"],
     )
     self.assertIn("全局私有 · demo 已启用", pages["zh/rules/demo-2/index.html"])
@@ -1270,7 +1301,7 @@ Promise.all(frames.map((f) => new Promise((done) =>
     self.assertNotIn("Repealed.", pages["rules/4/index.html"])
     # Rule 3 names `one` and `one-a`, under it: only `one-a` is listed.
     self.assertIn(
-      "R3 Rule 3 Off by default Default option See Art. I §1 and rule 6 ."
+      "R3 Rule 3 Default option See Art. I §1 and rule 6 ."
       " Reason Why. Verification Violated"
       " when not. Provisions of the constitution it cites Art. I §1 one-a"
       " Relations Parent R2 Group 2 Requires none Conflicts with R5 Rule 5"
@@ -1315,7 +1346,7 @@ Promise.all(frames.map((f) => new Promise((done) =>
       "On this page Relations Metadata", pages["rules/1/index.html"]
     )
     self.assertIn(
-      "R3 规定 3 默认关闭 默认选项 见 第一条第一款 和 规定 6 。 理由 为何。",
+      "R3 规定 3 默认选项 见 第一条第一款 和 规定 6 。 理由 为何。",
       pages["zh/rules/3/index.html"],
     )
     # Rule 4's translation follows an older original: shown as none is.

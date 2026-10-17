@@ -1,6 +1,6 @@
 id = 40
 slug = "relayed-yes-record"
-revision = 4
+revision = 5
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -21,23 +21,23 @@ zh = "凭转告的同意行事时，把引用和每一点的核对结果记在�
 
 [text.reason]
 en = '''
-Where the verification of a yes is recorded is set by the rules ({@constitution:explicit-yes.rules}); a record lets a reviewer open the same message and check it again ({@constitution:evidence.grounds}), and lets a later agent see that the yes has been used.
+Where the verification of a yes is recorded is set by the rules ({@constitution:explicit-yes.rules}); a record lets a reviewer open the same original record and check it again ({@constitution:evidence.grounds}), and lets a later agent see that the yes has been used.
 '''
 zh = '''
-同意的核实结果记在哪里，由规定确定 ({@constitution:explicit-yes.rules})；有了记录，审查方能打开同一条消息重新核对 ({@constitution:evidence.grounds})，后续的 agent 也能看出这一同意已经使用过。
+同意的核实结果记在哪里，由规定确定 ({@constitution:explicit-yes.rules})；有了记录，审查方能打开同一份原始记录重新核对 ({@constitution:evidence.grounds})，后续的 agent 也能看出这一同意已经使用过。
 '''
 
 [text.verification]
 en = '''
 The record is the one the action itself leaves, for example the pull request, the release notes or the task report.
 
-Violated when an agent acts on a relayed yes and the record of the action lacks its reference or the result of any of the three checks of {@rule:39}.
+Violated when an agent acts on a relayed yes and the record of the action lacks its reference or the result of any of the three checks of {@rule:320}.
 '''
 zh = '''
 记录指这次动作本身留下的记录，例如 pull request、发布说明或者任务报告。
 
-agent 凭转告的同意行事，而这次动作的记录里缺少引用，或者缺少{@rule:39}三点中任何一点的核对结果的，即为违反本规定。
+agent 凭转告的同意行事，而这次动作的记录里缺少引用，或者缺少{@rule:320}三点中任何一点的核对结果的，即为违反本规定。
 '''
 
 [translations]
-zh = "684bc6153e65207eec614d28f4e29f19fd8556b37368af2542aa47c45a1a265c"
+zh = "225e2b897988499517dcbb921147ebb14d93159d4f9d228fdd6c0a75fd10be45"

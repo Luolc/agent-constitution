@@ -31,10 +31,11 @@ breadcrumb shows, and the title of its page, its label and that path
 another parent also has is named with its parent's title wherever it is
 named alone.
 
-Each node says whether its source's defaults enable it, as statute
-reckons it; a domain or a rule gives its own `default`, a one-of its
-default option, an option whether it is that one, and a rule its `uses`
-(docs/design/rule-config.md, Default switches and Where a rule is used).
+A domain or a rule gives its own `default`, which the pages show as
+on or off by default whether or not the domains above it are on, a
+one-of its default option, an option whether it is that one, and a rule
+its `uses` (docs/design/rule-config.md, Default switches and Where a
+rule is used).
 
 Each source with parameters has a page of them, each parameter with its
 title, name, type, scope, default (and values) and the rules that use
@@ -146,8 +147,6 @@ class Node:
     text: a rule's parts, each by language; empty for a domain or one-of.
     translations: the languages it is translated into, each following its
       current original, as statute checks.
-    on_by_default: whether its source's defaults enable it, None when
-      that depends on another source.
     data: the fields of its file.
   """
 
@@ -164,7 +163,6 @@ class Node:
   applicability: dict[str, str] | None
   text: dict[str, dict[str, str]]
   translations: list[str]
-  on_by_default: bool | None
   data: dict[str, Any]
 
 
@@ -187,8 +185,7 @@ def node(entry: dict[str, Any]) -> Node:
   """Return a node of the rule tree as `statute export` gives it.
 
   Args:
-    entry: the node: the fields of its file and whether its source's
-      defaults enable it.
+    entry: the node, with the fields of its file.
 
   Returns:
     The node.
@@ -210,7 +207,6 @@ def node(entry: dict[str, Any]) -> Node:
     applicability=None if applicability is None else texts(applicability),
     text={part: texts(t) for part, t in fields.get("text", {}).items()},
     translations=sorted(fields.get("translations", {})),
-    on_by_default=entry["on-by-default"],
     data=fields,
   )
 
@@ -938,7 +934,6 @@ class _Language:
         "domain": domain,
         "source": name,
         "quadrant": source.quadrant,
-        "onByDefault": node.on_by_default,
         # A rule that is an option of a one-of is listed in the one-of's
         # box, not on its own.
         "boxed": node.kind == "rule" and "optionDefault" in extra,
