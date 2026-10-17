@@ -244,3 +244,29 @@ zh = "本机 FedNet client 的 socket"
 
 [parameter.translations]
 zh = "7fc795e9ce6e87f86582a0747209371e1aeffe192972b5c0860b90586adbb7cb"
+
+[[parameter]]
+name = "memo.points"
+type = "string"
+scope = "personal"
+default = "5"
+
+[parameter.title]
+en = "Most design questions put to a principal in one memo"
+zh = "一份决策备忘里交给委托人的设计问题最多几条"
+
+[parameter.translations]
+zh = "c7bd362cb6ed694dc8649094c07d5550aa5a4aae860f197676a80fb744b45e65"
+
+[[parameter]]
+name = "review.rounds"
+type = "string"
+scope = "repo"
+default = "3"
+
+[parameter.title]
+en = "Rounds of review after which an unapproved review goes to a principal"
+zh = "审查过了几轮仍未批准，就交给委托人"
+
+[parameter.translations]
+zh = "d57fef23ca7032167987ac5a56e3c545b3a8978b528bc1555c3a837285013585"

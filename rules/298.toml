@@ -1,8 +1,9 @@
 id = 298
 slug = "domain-titles-in-title-case"
-revision = 2
+revision = 3
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 331
 lang = "en"
 parent = 96
 default = "on"
