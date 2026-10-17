@@ -1095,13 +1095,16 @@ Promise.all(frames.map((f) => new Promise((done) =>
     self.assertIn(
       'Write in <a class="param-value" href="../params/#language.docs"'
       ' data-tip="Configurable parameter: language.docs&#10;'
-      "Default: Chinese&#10;"
-      'Open it to read what it sets">'
+      'Default: Chinese&#10;Open it to read what it sets"'
+      ' aria-label="Chinese&#10;Configurable parameter: language.docs&#10;'
+      'Default: Chinese&#10;Open it to read what it sets">'
       "Chinese</a>; label <code>x <a"
       ' class="param-value" href="../params/#work-items.label-done"'
       ' data-tip="Configurable parameter: work-items.label-done&#10;'
-      "Default: done &amp; dusted&#10;"
-      'Open it to read what it sets">'
+      'Default: done &amp; dusted&#10;Open it to read what it sets"'
+      ' aria-label="done &amp; dusted&#10;Configurable parameter:'
+      " work-items.label-done&#10;Default: done &amp; dusted&#10;Open it"
+      ' to read what it sets">'
       "done &amp; dusted</a></code>.",
       raw["rules/6/index.html"],
     )
@@ -1184,9 +1187,7 @@ Promise.all(frames.map((f) => new Promise((done) =>
 
     raw = self.build(raw=True, edit_rules=edit)
     self.assertIn(
-      '<span class="rule-text">Label <span class="param-value"'
-      ' data-tip="Configurable parameter: work-items.label-done&#10;'
-      'Default: a &lt;b&gt; c">'
+      '<span class="rule-text">Label <span class="param-value">'
       "a &lt;b&gt; c</span></span>",
       raw["rules/index.html"],
     )

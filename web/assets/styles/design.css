@@ -45,7 +45,7 @@
 }
 .rules dl.rule-meta :is(dt, dd) { margin: 0; }
 .rules dl.rule-meta dt { color: var(--t-text-muted); font-weight: inherit; }
-.rules .param-value {
+.param-value {
   position: relative;
   white-space: nowrap;
   color: inherit;
@@ -65,13 +65,13 @@
 /* After the value, Lucide's `sliders-horizontal` as a mask
    (--icon-lucide-sliders-horizontal, layouts/_partials/docs/inject/head.html),
    in the accent, the size of an icon in a line of text. */
-.rules .param-value::after {
+.param-value::after {
   content: "";
   display: inline-block;
   inline-size: var(--t-icon-sm);
   block-size: var(--t-icon-sm);
-  margin-inline-start: .15em;
-  vertical-align: -.125em;
+  margin-inline-start: var(--t-space-1);
+  vertical-align: middle;
   background: var(--t-accent);
   mask: var(--icon-lucide-sliders-horizontal) center / contain no-repeat;
 }
@@ -79,10 +79,14 @@
    that only explains, above the value, after the delay of a tip under
    the pointer and at once under the keyboard's focus, ending at the
    value's end where it would run out of the window
-   (assets/param-tip.js), and hidden by Escape. It is drawn while
-   hidden, so that what it says is part of the value's accessible name. */
-.rules .param-value[data-tip]::before {
+   (crates/statute/assets/param-tip.js), and hidden by Escape. Its
+   alternative text is empty, so it stays out of the names a screen
+   reader reads: a link is named by its value and then the tip
+   (aria-label), and in a row of the list the legend says what the
+   mark means. */
+.param-value[data-tip]::before {
   content: attr(data-tip);
+  content: attr(data-tip) / "";
   position: absolute;
   z-index: var(--t-z-popover);
   bottom: calc(100% + var(--t-space-1));
@@ -108,14 +112,14 @@
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
-.rules .param-value.tip-end[data-tip]::before { left: auto; right: 0; transform-origin: bottom right; }
-.rules a.param-value:focus-visible::before {
+.param-value.tip-end[data-tip]::before { left: auto; right: 0; transform-origin: bottom right; }
+a.param-value:focus-visible::before {
   opacity: 1;
   scale: 1;
   transition-duration: var(--t-duration-base);
 }
 @media (hover: hover) and (pointer: fine) {
-  .rules .param-value[data-tip]:hover::before {
+  .param-value[data-tip]:hover::before {
     pointer-events: auto;
     opacity: 1;
     scale: 1;
@@ -123,13 +127,13 @@
     transition-delay: var(--t-delay-tip);
   }
 }
-:root.tips-dismissed .rules .param-value[data-tip]::before {
+:root.tips-dismissed .param-value[data-tip]::before {
   pointer-events: none;
   opacity: 0;
   transition-delay: 0s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .rules .param-value[data-tip]::before { scale: none; transition-property: opacity; }
+  .param-value[data-tip]::before { scale: none; transition-property: opacity; }
 }
 
 /* Above a node's title, the nodes above it: small and muted, joined by

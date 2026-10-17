@@ -428,22 +428,29 @@ turned off (disabled), where it has these.
     language's `lang`.
   - In the list, enabled and the quadrant, when the site has them,
     follow the four places of the marks, in columns of their own.
-- **A parameter's value**, where a placeholder stands in a text: the
-  value on `bg-selected` with `radius-sm` and `space-1` of padding at
-  each side, a dotted underline in `accent`, never broken across lines,
-  and after it `sliders-horizontal` (`icon-sm`) in `accent`, drawn as a
-  mask. In a row of the list it is on `bg-active` while the row is
-  under the pointer and on `bg-selected` while the row is pressed, so
-  that it stays apart from the row's background. Its tip, a popover
-  that only explains, says in the language of the text around it, a
-  line each, that it is a configurable parameter and its name, its
-  default on the public site, and, where the value is a link, that it
-  opens the parameter's entry. The tip opens above the value, from its
-  start or, where it would run out of the window, from its end, after
-  `delay-tip` under the pointer and at once under the keyboard's focus;
-  Escape closes it. It is drawn from the value's `data-tip` even while
-  hidden, so what it says is part of the value's accessible name. A
-  touch screen shows no tip: the value's link leads to the parameter's
+- **A parameter's value**, wherever a placeholder's value is marked
+  (a rule's text and title, the list, the rules under a provision on
+  the constitution's pages): the value on `bg-selected` with
+  `radius-sm` and `space-1` of padding at each side, a dotted underline
+  in `accent`, never broken across lines, and `space-1` after it
+  `sliders-horizontal` (`icon-sm`) in `accent`, drawn as a mask. In a
+  row of the list it is on `bg-active` while the row is under the
+  pointer and on `bg-selected` while the row is pressed, so that it
+  stays apart from the row's background. Its tip, a popover that only
+  explains, says in the language of the text around it, a line each,
+  that it is a configurable parameter and its name, its default on the
+  public site, and, where the value is a link, that it opens the
+  parameter's entry. The tip opens above the value, from its start or,
+  where it would run out of the window, from its end, after `delay-tip`
+  under the pointer and at once under the keyboard's focus; Escape
+  closes it. Its alternative text is empty, so a screen reader does
+  not read it into the sentence: a value that is a link is named by the
+  value and then the tip (`aria-label`); in a statement in a row of the
+  list, the legend says what the mark means. A value in a title that
+  stands inside a link (the list's titles, the rules under a provision)
+  has the mark and no tip, as the list cuts its titles to one line and
+  the link leads to the rule's page, where the value has one. A touch
+  screen shows no tip: the value's link leads to the parameter's
   entry, and the legend says what the mark means. Not built yet: a tip
   after another still waits `delay-tip` instead of opening at once
   ([Interaction and accessibility](#interaction-and-accessibility), Tooltips).

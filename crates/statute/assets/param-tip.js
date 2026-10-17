@@ -9,7 +9,8 @@
     if (!value) return;
     document.documentElement.classList.remove("tips-dismissed");
     var tip = getComputedStyle(value, "::before");
-    var width = parseFloat(tip.width) + parseFloat(tip.paddingLeft) + parseFloat(tip.paddingRight);
+    var width = parseFloat(tip.width);
+    if (tip.boxSizing !== "border-box") width += parseFloat(tip.paddingLeft) + parseFloat(tip.paddingRight);
     value.classList.toggle("tip-end", value.getBoundingClientRect().left + width > document.documentElement.clientWidth);
   }
   document.addEventListener("mouseover", place);

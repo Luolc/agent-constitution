@@ -1712,9 +1712,9 @@ fn text_html(
             },
         };
         format!(
-            "<a class=\"param-value\" href=\"{up}{}#{name}\" data-tip=\"{tip}{name}&#10;{open}\">{}</a>",
+            "<a class=\"param-value\" href=\"{up}{}#{name}\" data-tip=\"{tip}{name}&#10;{open}\" aria-label=\"{shown}&#10;{tip}{name}&#10;{open}\">{shown}</a>",
             params_page(&source).display(),
-            escape(&shown)
+            shown = escape(&shown)
         )
     });
     let text = cite::replace(&text, |c| match c {

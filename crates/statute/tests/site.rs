@@ -571,7 +571,7 @@ fn site_marks_defaults_uses_and_values() {
     assert!(read(&site, "R/2.html").contains("<p>Used in: AGENTS.md</p>"));
     assert!(
         read(&site, "R/7.html").contains(
-            "<p>Write in <a class=\"param-value\" href=\"../R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"
+            "<p>Write in <a class=\"param-value\" href=\"../R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\" aria-label=\"Chinese&#10;Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"
         ),
         "{}",
         read(&site, "R/7.html")
@@ -970,7 +970,7 @@ fn site_shows_statements_in_three_views() {
     let index = read(&site, "index.html");
     assert_eq!(
         statement(&index, 7),
-        "<div class=\"statement\">\n<p>Write in <a class=\"param-value\" href=\"R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>\n</div>"
+        "<div class=\"statement\">\n<p>Write in <a class=\"param-value\" href=\"R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\" aria-label=\"Chinese&#10;Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>\n</div>"
     );
     assert_eq!(
         statement(&index, 2),
@@ -987,7 +987,7 @@ fn site_shows_statements_in_three_views() {
         "{r7}"
     );
     assert!(
-        r7.contains("<p>Write in <a class=\"param-value\" href=\"R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"),
+        r7.contains("<p>Write in <a class=\"param-value\" href=\"R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\" aria-label=\"Chinese&#10;Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"),
         "{r7}"
     );
     // Two radio buttons, the title checked; the style sheet hides the
@@ -1015,7 +1015,7 @@ fn site_shows_statements_in_three_views() {
     }
     // A rule's own page is as it was.
     assert!(read(&site, "R/7.html").contains(
-        "<p>Write in <a class=\"param-value\" href=\"../R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"
+        "<p>Write in <a class=\"param-value\" href=\"../R/parameters.html#language.docs\" data-tip=\"Configurable parameter: language.docs&#10;Open it to read its values and what it sets\" aria-label=\"Chinese&#10;Configurable parameter: language.docs&#10;Open it to read its values and what it sets\">Chinese</a>.</p>"
     ));
 }
 

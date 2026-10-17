@@ -512,19 +512,23 @@ class SiteRulesTest(unittest.TestCase):
     for lang, docs in (("en", "Chinese"), ("zh", "Chinese")):
       nodes = {n["id"]: n for n in data[lang]["nodes"]}
       # Rule 6 is untranslated: its English text names the language in
-      # English on both languages' pages.
+      # English on both languages' pages, and its tips are in English.
+      docs_tip = (
+        "Configurable parameter: language.docs&#10;"
+        f"Default: {docs}&#10;Open it to read what it sets"
+      )
+      label_tip = (
+        "Configurable parameter: work-items.label-done&#10;"
+        "Default: done &amp; dusted&#10;Open it to read what it sets"
+      )
       self.assertEqual(
         nodes[6]["text"]["statement"],
         'Write in <a class="param-value" href="../params/#language.docs"'
-        ' data-tip="Configurable parameter: language.docs&#10;'
-        f"Default: {docs}&#10;"
-        'Open it to read what it sets">'
+        f' data-tip="{docs_tip}" aria-label="{docs}&#10;{docs_tip}">'
         f"{docs}</a>; label <code>x <a"
         ' class="param-value" href="../params/#work-items.label-done"'
-        ' data-tip="Configurable parameter: work-items.label-done&#10;'
-        "Default: done &amp; dusted&#10;"
-        'Open it to read what it sets">'
-        "done &amp; dusted</a></code>.",
+        f' data-tip="{label_tip}" aria-label="done &amp; dusted&#10;'
+        f'{label_tip}">done &amp; dusted</a></code>.',
       )
       self.assertEqual(nodes[6]["title"], "Rule 6")
     pages = data["zh"]["params"]
@@ -613,8 +617,9 @@ class SiteRulesTest(unittest.TestCase):
       nodes[5]["titleMarked"],
       'Rule in <a class="param-value" href="../params/#language.docs"'
       ' data-tip="Configurable parameter: language.docs&#10;'
-      "Default: Chinese&#10;"
-      'Open it to read what it sets">'
+      'Default: Chinese&#10;Open it to read what it sets"'
+      ' aria-label="Chinese&#10;Configurable parameter: language.docs&#10;'
+      'Default: Chinese&#10;Open it to read what it sets">'
       "Chinese</a>",
     )
     self.assertEqual(nodes[3]["conflicts"][0]["title"], "Rule in Chinese")
@@ -638,10 +643,7 @@ class SiteRulesTest(unittest.TestCase):
     self.assertEqual(node["title"], "Label a <b> c")
     self.assertEqual(
       node["titleInLink"],
-      'Label <span class="param-value"'
-      ' data-tip="Configurable parameter: work-items.label-done&#10;'
-      'Default: a &lt;b&gt; c">'
-      "a &lt;b&gt; c</span>",
+      'Label <span class="param-value">a &lt;b&gt; c</span>',
     )
 
   def test_main_with_another_source(self):

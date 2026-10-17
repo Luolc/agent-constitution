@@ -314,9 +314,9 @@ screenshots (Screenshots, below). The workflow
   page and in the home page's lists of the rules under a provision, and
   so does a statement in the list (`statementInLink`, its citations as
   their labels alone, not linked), so there the value is
-  marked as a span with the same tip but for its last line, on where
-  the link leads,
-  escaped, and not linked; on the rule's own page it is marked
+  marked as a span, escaped, and not linked, the statement's with the
+  same tip but for its last line, on where the link leads, and a
+  title's with none; on the rule's own page it is marked
   and linked as in the text, and elsewhere the value stands alone. A
   title's code spans show as code wherever it is shown in the page;
   Hugo renders the title in the list and on the rule's own page, and
