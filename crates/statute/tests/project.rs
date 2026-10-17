@@ -57,7 +57,7 @@ fn loads_and_resolves() {
     let (project, diags) = Project::load(&dir, &Default::default());
     assert!(diags.0.is_empty(), "{:#?}", diags.0);
     let project = project.unwrap();
-    assert_eq!(project.revision, "2");
+    assert_eq!(project.revision.as_deref(), Some("2"));
     assert_eq!(
         project
             .resolution

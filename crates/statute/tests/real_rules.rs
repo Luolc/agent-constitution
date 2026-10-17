@@ -104,7 +104,12 @@ fn every_domain_of_this_repo_as_a_pack_resolves() {
     assert!(in_force > 0, "no rule in force to check");
     let project = project.unwrap();
     assert_eq!(project.resolution.enabled.len(), in_force);
-    assert!(project.revision.parse::<u64>().is_ok());
+    assert!(
+        project
+            .revision
+            .as_deref()
+            .is_some_and(|r| r.parse::<u64>().is_ok())
+    );
     let lock = statute::lock::render(&project);
     assert_eq!(lock.matches("[[rules]]").count(), in_force, "{lock}");
     // The local site has a page for every node, the index and the page of

@@ -54,7 +54,7 @@ fn run(extra: &str) -> (Resolution, Diagnostics) {
     let res = resolve(
         &tree(),
         &manifest_with(extra, "{ path = \".\" }"),
-        1,
+        Some(1),
         &mut diags,
     );
     (res, diags)
@@ -104,7 +104,7 @@ fn the_defaults_alone_enable_the_rules_on_in_domains_on() {
 fn defaults_false_takes_none_of_a_sources_defaults() {
     let mut diags = Diagnostics::default();
     let m = manifest_with("rules = [\"R3\"]", "{ path = \".\", defaults = false }");
-    let res = resolve(&tree(), &m, 1, &mut diags);
+    let res = resolve(&tree(), &m, Some(1), &mut diags);
     assert!(diags.0.is_empty(), "{:#?}", diags.0);
     assert_eq!(res.enabled.keys().map(|k| k.id).collect::<Vec<_>>(), [3]);
 }
@@ -140,7 +140,7 @@ fn domains_picks_a_domain_that_is_the_option_of_a_one_of() {
     let enabled = |extra: &str| {
         let mut diags = Diagnostics::default();
         let m = manifest_with(extra, "{ path = \".\" }");
-        let res = resolve(&s, &m, 1, &mut diags);
+        let res = resolve(&s, &m, Some(1), &mut diags);
         assert!(diags.0.is_empty(), "{:#?}", diags.0);
         res.enabled.keys().map(|k| k.id).collect::<Vec<_>>()
     };
