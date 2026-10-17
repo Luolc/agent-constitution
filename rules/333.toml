@@ -1,0 +1,43 @@
+id = 333
+slug = "trial-to-active-on-a-yes-or-a-set-process"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 96
+default = "on"
+authority = ["list-defaults.tightening", "advance-authorization.listed-items"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Make a trial rule active only on a principal's explicit yes or through a process a principal set in advance"
+zh = "试用规定要委托人明确同意，或者通过委托人事先定好的流程，才改为生效"
+
+[text.statement]
+en = "Move a trial rule to `active` only once a principal has said explicitly that it may move, or once it has passed a process for the move that a principal set out in advance."
+zh = "试用规定只有在委托人明确说过它可以改为 `active`，或者通过了委托人事先定好的转 `active` 流程之后，才改为 `active`。"
+
+[text.reason]
+en = '''
+`trial` and `active` say how settled a rule is, as experimental and stable do for the checks of a linter: an `active` rule is stable and can be used as it is, a `trial` rule is still being tried and may change. Whether a rule has reached that point is a judgment a principal makes, on the rule itself or in advance, by setting out a process for the move, such as conditions, a review or an automated check ({@constitution:advance-authorization.listed-items}). A principal's explicit yes, or the record such a process leaves, is something a reviewer can open and check. The rule library may move a matter agents decide themselves ({@constitution:decide-yourself.ordinary-rules}) to those that go through a principal ({@constitution:list-defaults.tightening}).
+'''
+zh = '''
+`trial` 与 `active` 说的是一条规定定型到什么程度，就像 linter 里检查项的实验性与稳定：`active` 的规定已经稳定，可以直接拿来用；`trial` 的规定还在试，还可能改。一条规定是否已经到了这一步，由委托人来判断：可以对这条规定本身作判断，也可以事先定好一套转 `active` 的流程，例如几项条件、一道审核或一项自动检查 ({@constitution:advance-authorization.listed-items})。委托人的明确同意，或者这套流程留下的记录，审查方都能打开、能核对。规定库可以把 agent 自行决定的事项 ({@constitution:decide-yourself.ordinary-rules}) 移到须经委托人的事项里 ({@constitution:list-defaults.tightening})。
+'''
+
+[text.verification]
+en = '''
+An explicit yes is a principal's own message or comment on a pull request that names each rule it covers, by ID or so that it leaves no doubt which rules it means (for example in reply to a list of them), and says that they may move to `active`: that the principal judges them stable and ready to be used as they are. A general approval, such as "these all look fine", or a yes to the change that added a rule, is not one. A process set out in advance is one a principal has written down where an advance authorization of such a move must be written ({@constitution:advance-authorization.listed-items}), saying which rules it covers and what a rule must pass to move; a rule has passed it when a record shows each of those steps done. The yes or the process is only the condition for the move: `active` says that a rule is stable, not that a principal reviewed it. A yes relayed by an agent counts only once it is checked as {@constitution:explicit-yes} requires. The description of the change that moves the rule cites where the yes is, so that a reviewer can open it: for a chat message its thread and the message's own identifier, for a comment its link; for a process, it cites the process and the record that the rule passed it. Where that description is public and the yes or the record is in a private place, the citation goes into the record of the task that makes the change instead, such as its ticket, and the description says that it is there. The move changes only the status ({@rule:109}).
+
+Violated when a rule moves from `trial` to `active` without a principal's explicit yes that covers it and without having passed a process set out in advance that covers it, or in a change that does not cite where that yes, or that process and its record, is, in its description or in the record this rule allows in its place.
+'''
+zh = '''
+明确同意，指委托人本人的一条消息或 pull request 上的一条评论：它点名了所涉及的每一条规定 (写出 ID，或者让人不会弄错指的是哪几条，例如回复一份列出它们的清单)，并说这些规定可以改为 `active`，也就是委托人判断它们已经稳定，可以直接拿来用。泛泛的认可 (例如「都挺好」)，或者对新增某条规定的那次变更的同意，都不算。事先定好的流程，指委托人写在这类事先授权必须写进的地方 ({@constitution:advance-authorization.listed-items}) 的流程，写明它管哪些规定、规定要通过什么才能转 `active`；有记录表明这些步骤都已完成，这条规定就算通过了流程。这条同意或这套流程只是改状态的条件：`active` 说的是规定已经稳定，不是说委托人审过它。经 agent 转告的同意，要按{@constitution:explicit-yes}的要求核实之后才算。把规定改为 `active` 的变更，要在说明里写出这条同意在哪里，让审查方能打开它：聊天消息写出所在的线程和这条消息自己的标识，评论写出链接；按流程转的，写出这套流程和规定通过它的记录。变更的说明是公开的、这条同意或这份记录又在私有的地方时，出处改写进做这次变更的任务的记录 (例如它的工单)，说明里写明出处记在那里。改为生效只改状态 ({@rule:109})。
+
+既没有覆盖某条规定的委托人明确同意，它也没有通过覆盖它的事先定好的流程，就把它从 `trial` 改为 `active` 的，或者改动没有在说明里、也没有在本规定允许代替说明的记录里写出这条同意、或这套流程及其记录在哪里的，即为违反本规定。
+'''
+
+[translations]
+zh = "ea979422cf17628fc6e7df4f812365210d9347b9f83dd53939b62a4c0d0669fd"

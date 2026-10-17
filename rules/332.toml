@@ -1,43 +1,43 @@
 id = 332
-slug = "trial-to-active-on-a-yes-or-a-set-process"
+slug = "lead-escalates-review-through-ask-thread"
 revision = 1
 kind = "rule"
 status = "trial"
 lang = "en"
-parent = 96
+parent = 161
 default = "on"
-authority = ["list-defaults.tightening", "advance-authorization.listed-items"]
+authority = ["asking", "asking-principals", "decide-yourself.changing-approach"]
 constitution = ">=1"
 level = "project"
 check = "none"
 
 [title]
-en = "Make a trial rule active only on a principal's explicit yes or through a process a principal set in advance"
-zh = "试用规定要委托人明确同意，或者通过委托人事先定好的流程，才改为生效"
+en = "As a lead, put an unsettled review to a principal with `fleet ask-thread`"
+zh = "lead 用 `fleet ask-thread` 把没谈拢的审查交给委托人"
 
 [text.statement]
-en = "Move a trial rule to `active` only once a principal has said explicitly that it may move, or once it has passed a process for the move that a principal set out in advance."
-zh = "试用规定只有在委托人明确说过它可以改为 `active`，或者通过了委托人事先定好的转 `active` 流程之后，才改为 `active`。"
+en = "As a lead that Agent Fleet started, when a review is still unapproved after {$review.rounds} rounds or its author and reviewer disagree about a P0 finding, put the matter to a principal with `fleet ask-thread`; give another round yourself instead only when the remaining finding is the same as in the round before, smaller than it was, and undisputed."
+zh = "作为 Agent Fleet 起的 lead，审查 {$review.rounds} 轮仍未批准，或者作者与审查方对一条 P0 级问题有分歧时，用 `fleet ask-thread` 交委托人决定；只有剩下的问题与上一轮是同一条、比上一轮小、双方也没有分歧时，才可以不问人，自己再给一轮。"
 
 [text.reason]
 en = '''
-`trial` and `active` say how settled a rule is, as experimental and stable do for the checks of a linter: an `active` rule is stable and can be used as it is, a `trial` rule is still being tried and may change. Whether a rule has reached that point is a judgment a principal makes, on the rule itself or in advance, by setting out a process for the move, such as conditions, a review or an automated check ({@constitution:advance-authorization.listed-items}). A principal's explicit yes, or the record such a process leaves, is something a reviewer can open and check. The rule library may move a matter agents decide themselves ({@constitution:decide-yourself.ordinary-rules}) to those that go through a principal ({@constitution:list-defaults.tightening}).
+A review still unsettled after {$review.rounds} rounds mostly hides a disagreement about direction or standards, and going on only spins; a disagreement about a P0 finding means the two judge its consequences differently, which is for a person to decide ({@constitution:asking}). When one finding shrinks round after round and no one disputes it, another round costs little and is not worth a person's attention. {@rule:255} has the agent responsible for the work put such a review to a principal; this rule fixes the route for a lead of Agent Fleet. `fleet ask-thread` hands the question to the thread agent, the agent talking with principals in the job's home thread, which puts it to them and brings the answer back, as {@rule:115} allows.
 '''
 zh = '''
-`trial` 与 `active` 说的是一条规定定型到什么程度，就像 linter 里检查项的实验性与稳定：`active` 的规定已经稳定，可以直接拿来用；`trial` 的规定还在试，还可能改。一条规定是否已经到了这一步，由委托人来判断：可以对这条规定本身作判断，也可以事先定好一套转 `active` 的流程，例如几项条件、一道审核或一项自动检查 ({@constitution:advance-authorization.listed-items})。委托人的明确同意，或者这套流程留下的记录，审查方都能打开、能核对。规定库可以把 agent 自行决定的事项 ({@constitution:decide-yourself.ordinary-rules}) 移到须经委托人的事项里 ({@constitution:list-defaults.tightening})。
+审查 {$review.rounds} 轮还没谈拢，多半是方向或标准上有分歧，再审下去只是空转；对 P0 级问题有分歧，说明双方对后果的判断不同，这得由人来定 ({@constitution:asking})。而一条问题逐轮缩小、也没有人有异议时，再给一轮代价很小，不值得占用人的注意力。{@rule:255}要负责这项工作的 agent 把这样的审查交给委托人；本规定为 Agent Fleet 的 lead 定下交给委托人的途径。`fleet ask-thread` 把问题交给 thread agent，也就是在 job 的 home thread 里与委托人对话的 agent，由它向委托人提问并带回答复，这是{@rule:115}允许的做法。
 '''
 
 [text.verification]
 en = '''
-An explicit yes is a principal's own message or comment on a pull request that names each rule it covers, by ID or so that it leaves no doubt which rules it means (for example in reply to a list of them), and says that they may move to `active`: that the principal judges them stable and ready to be used as they are. A general approval, such as "these all look fine", or a yes to the change that added a rule, is not one. A process set out in advance is one a principal has written down where an advance authorization of such a move must be written ({@constitution:advance-authorization.listed-items}), saying which rules it covers and what a rule must pass to move; a rule has passed it when a record shows each of those steps done. The yes or the process is only the condition for the move: `active` says that a rule is stable, not that a principal reviewed it. A yes relayed by an agent counts only once it is checked as {@constitution:explicit-yes} requires. The description of the change that moves the rule cites where the yes is, so that a reviewer can open it: for a chat message its thread and the message's own identifier, for a comment its link; for a process, it cites the process and the record that the rule passed it. Where that description is public and the yes or the record is in a private place, the citation goes into the record of the task that makes the change instead, such as its ticket, and the description says that it is there. The move changes only the status ({@rule:109}).
+A round is one verdict of the reviewer. A P0 finding is one of the highest priority on the scale the review grades its findings by. Before giving another round itself, the lead checks both points: the remaining finding is the same as in the round before and smaller than it was, and the author and the reviewer do not disagree about it. When it asks, it asks everything at once, with the course it recommends.
 
-Violated when a rule moves from `trial` to `active` without a principal's explicit yes that covers it and without having passed a process set out in advance that covers it, or in a change that does not cite where that yes, or that process and its record, is, in its description or in the record this rule allows in its place.
+Violated when, after {$review.rounds} rounds without approval, the lead gives another round without both points holding or settles the review in any other way without putting it to a principal; when a disagreement about a P0 finding is settled without a principal; or when the lead puts either question to a principal by any route other than `fleet ask-thread`.
 '''
 zh = '''
-明确同意，指委托人本人的一条消息或 pull request 上的一条评论：它点名了所涉及的每一条规定 (写出 ID，或者让人不会弄错指的是哪几条，例如回复一份列出它们的清单)，并说这些规定可以改为 `active`，也就是委托人判断它们已经稳定，可以直接拿来用。泛泛的认可 (例如「都挺好」)，或者对新增某条规定的那次变更的同意，都不算。事先定好的流程，指委托人写在这类事先授权必须写进的地方 ({@constitution:advance-authorization.listed-items}) 的流程，写明它管哪些规定、规定要通过什么才能转 `active`；有记录表明这些步骤都已完成，这条规定就算通过了流程。这条同意或这套流程只是改状态的条件：`active` 说的是规定已经稳定，不是说委托人审过它。经 agent 转告的同意，要按{@constitution:explicit-yes}的要求核实之后才算。把规定改为 `active` 的变更，要在说明里写出这条同意在哪里，让审查方能打开它：聊天消息写出所在的线程和这条消息自己的标识，评论写出链接；按流程转的，写出这套流程和规定通过它的记录。变更的说明是公开的、这条同意或这份记录又在私有的地方时，出处改写进做这次变更的任务的记录 (例如它的工单)，说明里写明出处记在那里。改为生效只改状态 ({@rule:109})。
+一轮指审查方发出一份 verdict。P0 级问题指审查给问题分级所用的那套优先级里最高一级的问题。lead 自己再给一轮之前，核对两点：剩下的问题与上一轮是同一条，而且比上一轮小；作者与审查方对它没有分歧。问人时一次问完，附上推荐的做法。
 
-既没有覆盖某条规定的委托人明确同意，它也没有通过覆盖它的事先定好的流程，就把它从 `trial` 改为 `active` 的，或者改动没有在说明里、也没有在本规定允许代替说明的记录里写出这条同意、或这套流程及其记录在哪里的，即为违反本规定。
+{$review.rounds} 轮之后仍未批准，lead 不满足上面两点仍自己给了新的一轮，或者没有交委托人就用别的方式了结了这次审查；对 P0 级问题的分歧没有交委托人就定了；或者 lead 经 `fleet ask-thread` 以外的途径向委托人提这两类问题的，即为违反本规定。
 '''
 
 [translations]
-zh = "ea979422cf17628fc6e7df4f812365210d9347b9f83dd53939b62a4c0d0669fd"
+zh = "dd59a60bff00b2369db580aff82f08507f4b52a2f36ddfd2b8ffd57c3acfd7c8"

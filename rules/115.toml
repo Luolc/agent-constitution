@@ -1,6 +1,6 @@
 id = 115
 slug = "job-agent-asks-in-relay-conversation"
-revision = 3
+revision = 4
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-This rule is for the jurisdictions of {@rule:28}. There, the agent talking with principals relays questions and answers between them and the other agents, and starts work. The agent responsible for a job splits the job into tasks and delegates them, accepts the results the workers hand back, and merges approved ordinary changes ({@constitution:accountable-agent}, {@constitution:decide-yourself.splitting-work}, {@constitution:decide-yourself.routine-changes}). Its questions to principals go to the agent talking with them, which relays them and brings the answers back, or it posts them itself into the conversation that principals hold with that agent, where both see them; a tool that posts the question into that conversation, as Agent Fleet's `ask-human` posts it into the thread, counts as the second way.
+This rule is for the jurisdictions of {@rule:28}. There, the agent talking with principals relays questions and answers between them and the other agents, and starts work. The agent responsible for a job splits the job into tasks and delegates them, accepts the results the workers hand back, and merges approved ordinary changes ({@constitution:accountable-agent}, {@constitution:decide-yourself.splitting-work}, {@constitution:decide-yourself.routine-changes}). Its questions to principals go to the agent talking with them, which relays them and brings the answers back, or it posts them itself into the conversation that principals hold with that agent, where both see them; a tool that hands the question to that agent, as Agent Fleet's `ask-thread` hands it to the thread agent, counts as the first way.
 
 Violated when the agent responsible for a job asks a principal other than through the agent talking with principals or in the conversation principals hold with that agent.
 '''
 zh = '''
-本规定适用于{@rule:28}所说的法域。在那里，与委托人对话的 agent 在委托人和其他 agent 之间转达问题与答复，并启动工作。负责一项工作的 agent 把这项工作拆成任务委派出去，验收 worker 交回的结果，合并已获批准的普通变更 ({@constitution:accountable-agent}、{@constitution:decide-yourself.splitting-work}、{@constitution:decide-yourself.routine-changes})。它向委托人提的问题，或者交给与委托人对话的 agent，由后者转达并带回答复；或者由它自己贴进委托人与那个 agent 的对话里，双方都看得到。借助工具把问题贴进那段对话 (例如 Agent Fleet 的 `ask-human` 把问题贴进线程)，算第二种做法。
+本规定适用于{@rule:28}所说的法域。在那里，与委托人对话的 agent 在委托人和其他 agent 之间转达问题与答复，并启动工作。负责一项工作的 agent 把这项工作拆成任务委派出去，验收 worker 交回的结果，合并已获批准的普通变更 ({@constitution:accountable-agent}、{@constitution:decide-yourself.splitting-work}、{@constitution:decide-yourself.routine-changes})。它向委托人提的问题，或者交给与委托人对话的 agent，由后者转达并带回答复；或者由它自己贴进委托人与那个 agent 的对话里，双方都看得到。借助工具把问题交给那个 agent (例如 Agent Fleet 的 `ask-thread` 把问题交给 thread agent)，算第一种做法。
 
 负责一项工作的 agent 既不经与委托人对话的 agent、也不在委托人与那个 agent 的对话里，而是另找途径向委托人提问的，即为违反本规定。
 '''
 
 [translations]
-zh = "733738e378c8cbc340a0b60db2eefa589c4c2e85730a3a7ef609a0215b6abde7"
+zh = "426e1694d17edb6c910649d8af417780e8ce3f65cb77de73ce34abcf2f8ee5b9"
