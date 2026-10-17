@@ -1,8 +1,9 @@
 id = 189
 slug = "slack-only-with-thread-key"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 321
 lang = "en"
 parent = 188
 default = "on"

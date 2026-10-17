@@ -1,0 +1,43 @@
+id = 324
+slug = "card-answered-by-principal"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 188
+default = "on"
+authority = ["explicit-yes.verification"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "The card was answered by the principal's Slack ID"
+zh = "卡片的回答者是委托人本人的 Slack ID"
+
+[text.statement]
+en = "When you check who answered a FedNet question card read back through FedNet, count the answer as the principal's only when its `answer.by` is the principal's own Slack user ID."
+zh = "核对经 FedNet 读回的问题卡片是谁回答的时，只有 `answer.by` 等于委托人本人的 Slack 用户 ID 的，才算委托人的回答。"
+
+[text.reason]
+en = '''
+Only an answer that the principal's own Slack account made can have been made by the principal alone ({@constitution:explicit-yes.verification}). The card has no field that says whether a bot pressed it: the FedNet hub records a press only from a person on its users list who is not a bot, and drops every other press, so an `answer` that is there was not made by a bot. A name in the card's text, or in the relayed message, does not establish who answered ({@rule:320}).
+'''
+zh = '''
+只有委托人本人的 Slack 账号作出的回答，才只可能是委托人自己作出的 ({@constitution:explicit-yes.verification})。卡片上没有表明是否由 bot 点击的字段：FedNet hub 只记录它用户名单上、不是 bot 的人的点击，其余的点击一律丢弃，所以卡片上有 `answer`，就不是 bot 作出的。卡片正文或者转告的消息里写的名字，都不能证明回答者是谁 ({@rule:320})。
+'''
+
+[text.verification]
+en = '''
+The principal's own Slack user ID is the one the FedNet hub's configuration lists for that principal in its users. When another record of the ID differs from that configuration, the configuration holds, and the other record is corrected.
+
+Violated when an agent takes a card's answer as the principal's yes although its `answer.by` is not the principal's own Slack user ID.
+'''
+zh = '''
+委托人本人的 Slack 用户 ID，以 FedNet hub 配置的用户名单里该委托人那一条为准。别处记的 ID 与这份配置不一致时，以配置为准，并改正别处的记录。
+
+卡片的 `answer.by` 不是委托人本人的 Slack 用户 ID，agent 仍把这一回答当作委托人的同意的，即为违反本规定。
+'''
+
+[translations]
+zh = "e6aed04f8519a8fecb2b67131837b551d7303e64b201933025b7b26c8437b812"

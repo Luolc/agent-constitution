@@ -1,4 +1,4 @@
-<!-- en-sha256: e0737b6a3da76225209e8008cdb365c2ad10ba788b38014f0231d4df4c4c40e6 -->
+<!-- en-sha256: ea36a8d58b91c8833be352cb999699fe7a02f37a35a7943cd85ac326fc466e7a -->
 # 前端
 
 本文写本仓页面的样子和行为，以及改动页面时怎么做、怎么审：设计 token、图标、动效、组件及其状态，以及 pull request 要附的截图。它适用于展示宪法和规定的两个网站：[公开网站](static-site.md) 和 `statute site` 生成的[本地网站](statute-command.md#the-local-site)。
@@ -237,13 +237,13 @@ token 是一个有名字的值：一种颜色、一个尺寸、一段时长。�
 
 下面每个组件都写出静止时的样子和各种状态：指针悬停 (hover)、按下 (active)、获得键盘焦点 (focus，即[颜色](#color) 一节的焦点框)、当前或选中 (selected)、禁用 (disabled)，有哪些写哪些。
 
-- **标记。** 在规定列表里，一行的标记放在行尾的四个位置，每个宽 `width-mark`，合起来约四个字符宽，依次是：默认是否启用，状态，以及用途里的指令和审查。没有某项标记的位置空着，这样上下行的标记对齐；这一列没有表头，每个位置放什么由图例说明。每个标记是一个图标 (`icon-sm`) 或一个圆点，用它的词给读屏软件命名，hover 时也显示这个词 (`role="img"`、`aria-label` 和 `title`)：
-  - 默认是否启用：`size-dot` 的圆点，默认开启时用 `accent` 填满，默认关闭时是 `text-muted` 的空心圆圈 (一条 `2px` 的边框)；要看别的规定源才定得下来时，这个位置空着。领域的分组行也有这个圆点，在第一个位置，与各行的标记对齐；one-of 那一行在 one-of 有答案时有它，否则这个位置空着。
+- **标记。** 在规定列表里，一行的标记放在行尾的四个位置，每个宽 `width-mark`，合起来约四个字符宽，依次是：是否默认开启，状态，以及用途里的指令和审查。没有某项标记的位置空着，这样上下行的标记对齐；这一列没有表头，每个位置放什么由图例说明。每个标记是一个图标 (`icon-sm`) 或一个圆点，用它的词给读屏软件命名，hover 时也显示这个词 (`role="img"`、`aria-label` 和 `title`)：
+  - 领域或规定是否默认开启，按它自己的 `default`，不管上层领域开没开：`size-dot` 的圆点，开启时用 `accent` 填满，关闭时是 `text-muted` 的空心圆圈 (一条 `2px` 的边框)；没有 `default` 的节点 (one-of、one-of 的选项、带 `overrides` 的规定)，这个位置空着。领域的分组行也有这个圆点，在第一个位置，与各行的标记对齐。
   - 状态：Active 是 `status-active` 的 `circle-check`，Trial 是 `status-trial` 的 `flask-conical`，Draft 是 `status-draft` 的 `pencil`，Superseded 是 `arrow-right-left`、Repealed 是 `circle-x`，这两个用 `text-muted`。
   - 用途：指令是 `scroll-text`，审查是 `scan-eye`，都用 `text-muted`。
   - 标记本身不响应指针，响应的是整行。
 - **tag。** 小号，`text-xs`、`line-height-ui`，只占一行，不折行，用在一行的四个位置放不下的事实和规定自己的页面上：
-  - 默认是否启用，在节点自己的页面上：标记里的那个圆点后面跟着词，用 `text-muted`。
+  - 是否默认开启，在节点自己的页面上：标记里的那个圆点后面跟着词，用 `text-muted`。
   - 规定清单启用了它：词前加 `check` (`icon-sm`)，用 `accent`；没有启用：只有那个词，用 `text-muted`。
   - 规定源的象限：`radius-sm` 的方框，填象限的颜色，文字用 `text`。
   - 节点有文字不是页面的语言时，在它自己的页面上：不加框，`languages` (`icon-sm`) 后面跟 Not translated /「无中文」，用 `text-muted`。那段文字本身带上它自己语言的 `lang`。

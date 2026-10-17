@@ -20,9 +20,9 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 .rules .rules-params { margin-top: calc(-1 * var(--t-space-2)); }
 .rules .rules-none { color: var(--t-text-muted); }
 
-/* A rule's tags on its page, small and muted, in boxes: whether the
-   defaults enable it and whether the rule set does, in the accent color
-   when they do; the quadrant of its source on the quadrant's color. The
+/* A rule's tags on its page, small and muted, in boxes: whether it is
+   on by default and whether the rule set enables it, in the accent
+   color when it is; the quadrant of its source on the quadrant's color. The
    last two also follow a row's marks in the list. */
 .rules :is(.rule-enabled, .rule-default, .quadrant) {
   flex: none;
@@ -94,7 +94,7 @@ main.container:has(.rules-index) { gap: 0; padding-inline-end: 0; }
 /* A group row: a band, the first level's `bg-active`, a deeper one's
    `bg-panel-hover`, the label and the path in `text`, which keeps its
    contrast there; the label in the ID's column; in the first place of
-   the marks, whether the defaults enable the group. Under the pointer its
+   the marks, whether the group is on by default. Under the pointer its
    text is underlined, as `accent` is too faint on the band. */
 .rules .rules-group {
   position: sticky;
