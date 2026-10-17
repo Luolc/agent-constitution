@@ -517,7 +517,7 @@ The rule set lists only what differs from the defaults:
 ```toml
 rules = ["R57", "R62"]
 domains = ["R78"]
-exclude = ["R83", "R66"]
+exclude = ["R83", "R337"]
 packs = ["R96"]
 ```
 
@@ -628,7 +628,7 @@ lists those that a changed `default` brings in or drops.
 
 **`statute explain <rule>`** says, for a rule or domain, whether it is
 on by default and why the rule set has it or not: "R44 is on by
-default, and its domain R13 is on"; "R66 is on by default and taken
+default, and its domain R13 is on"; "R337 is on by default and taken
 out by `exclude`"; "R78 is off by default; `statute add R78` turns it
 on". For a one-of it names the default option, and the option the rule
 set picked when that is another. `statute explain --defaults` prints
