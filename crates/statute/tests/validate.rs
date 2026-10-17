@@ -14,8 +14,14 @@ struct Run {
 }
 
 fn validate(dir: &Path) -> Run {
+    validate_in(Path::new("."), dir)
+}
+
+/// `validate` run in `cwd`, as next to the `statute.toml` there.
+fn validate_in(cwd: &Path, dir: &Path) -> Run {
     let out = Command::new(env!("CARGO_BIN_EXE_statute"))
         .args(["validate", dir.to_str().unwrap()])
+        .current_dir(cwd)
         .output()
         .unwrap();
     Run {
@@ -295,4 +301,54 @@ fn a_node_in_force_names_no_retired_rule() {
     );
     let run = validate(&dir);
     assert_eq!(run.code, 0, "{}", run.stderr);
+}
+
+/// A rule may leave out `authority` and `constitution` only where the
+/// rule set next to it rests on no constitution.
+#[test]
+fn without_a_constitution_a_rule_needs_no_authority() {
+    let (id, text) = rule(2, 1, "");
+    let bare = text.replace("authority = [\"simplicity\"]\nconstitution = \">=1\"\n", "");
+    assert_ne!(bare, text);
+    let dir = rules("rules-alone", &[domain(1), (id, bare.clone())]);
+    let root = dir.parent().unwrap();
+    let needs = "rules/2.toml: error: a rule needs authority, constitution";
+    for (manifest, code) in [
+        (None, 1),
+        (
+            Some(
+                "public = false\nlocal-rules = \"rules\"\nconstitution = { source = \"R\", edition = \"2026-10\" }\n",
+            ),
+            1,
+        ),
+        (Some("public = false\nlocal-rules = \"rules\"\n"), 0),
+    ] {
+        let path = root.join("statute.toml");
+        match manifest {
+            Some(text) => std::fs::write(&path, text).unwrap(),
+            None => {
+                let _ = std::fs::remove_file(&path);
+            }
+        }
+        let run = validate_in(root, Path::new("rules"));
+        assert_eq!(run.code, code, "{manifest:?}: {}", run.stderr);
+        assert_eq!(run.stderr.contains(needs), code == 1, "{}", run.stderr);
+    }
+    // A citation of the constitution has nothing to render as, as `lock`
+    // finds it.
+    let cites = edit(
+        (id, bare),
+        "Do the thing 2.",
+        "Do the thing {@constitution:simplicity}.",
+    );
+    std::fs::write(dir.join("2.toml"), cites.1).unwrap();
+    let run = validate_in(root, Path::new("rules"));
+    assert_eq!(run.code, 1);
+    assert!(
+        run.stderr.contains(
+            "rules/2.toml:16: error: cites constitution:simplicity, and statute.toml names no constitution"
+        ),
+        "{}",
+        run.stderr
+    );
 }

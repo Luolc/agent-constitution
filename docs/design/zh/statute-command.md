@@ -1,4 +1,4 @@
-<!-- en-sha256: dad55d33b3598328e4ee2c0d9803958b589f3369b6e9163747999d77e4ca8e88 -->
+<!-- en-sha256: 2d8ad4ccc1fb859943c891403f41900f0be3711d6b2bbd4c9e96583ee7f974ae -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -60,7 +60,7 @@ statute 的版本和检查的命令记在锁文件里，CI 从那里读 ([规定
 
 **`upgrade`** 把解析结果与 `statute.lock` 比较，打印变了什么 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))，没有变化就说锁文件已是最新，然后像 `lock` 一样写锁文件。没有 `statute.lock` 时没有可比的东西，以退出码 1 退出。加上 `--replace-superseded` 时，它先在 `rules` 和 `packs` 里把每条被取代的规定换成它的后继规定，顺着取代链找到最后一条，文件其余部分保持原样；后继规定已经列出的，只去掉旧的那一项。取代链走到一条有多个后继规定的规定时，这一项保持不动，把这几条后继规定列出来，由用户用 `add` 和 `remove` 自己选。已废止的规定留给用户自己去掉。改过的规定清单解析不通过时，两个文件都不改。
 
-**`validate <dir>`** 把一个目录里的规定文件当作第一方规定源读，连同 `params.toml` 里的参数，做所有不需要规定清单的检查 ([检查程序](checkers.md#checkers))：每个节点和参数的格式、规定树、引用的目标、译文、引用和占位符，以及默认值；另外只对这一个规定源检查在用的节点不指向其中已被取代或已废止的节点，规定清单读规定源时不做这项检查。每条发现单独一行写到标准错误；有错误时以状态 1 退出，没有问题时向标准输出打一行，写明节点数。`<dir>` 旁边有 `constitution/` 时，它还读这部宪法，检查宪法对规定的要求：每个节点的 status 与 `index.toml` 的一致，每处 `{@constitution:...}` 引用和每个 `authority` 条目都成立，`authority` 同时写了某个条款和它的上级时给警告；宪法读不进来时只报一条错误，宪法自身的错误留给 `constitution build` 报。加 `--base <git-ref>` 时还做第 7 项检查里规定的那部分：比较编号时，base 里的每个节点都还在，旧格式的规定以 slug 为其名字的节点存在，已废止或已被取代的仍然如此，译文以外有改动的节点修订号比 base 的大；第 7 项跳过比较的情况下它也跳过，并打出同样的提示；`<dir>` 旁边没有 `constitution/` 时报错。这些发现写成 `rules/7.toml:12: error: <message>`。本仓把 `statute validate rules` 作为 commit 钩子运行，CI 里还加上 `--base` 运行。`--base <git-ref>` 比较的是 `<git-ref>` 的 tip，不是分支从它分出去的那个点，所以落后于它的分支会把它那边改过的节点当成自己的改动报出来；在本地跑之前，先把 base 合入分支。在 pull request 上，CI 比较的是 merge commit 与它的第一个父提交，不受影响；push 到 `main` 时，比较的是 push 之前的那个提交。
+**`validate <dir>`** 把一个目录里的规定文件当作第一方规定源读，连同 `params.toml` 里的参数，做所有不需要规定清单的检查 ([检查程序](checkers.md#checkers))：每个节点和参数的格式、规定树、引用的目标、译文、引用和占位符，以及默认值；另外只对这一个规定源检查在用的节点不指向其中已被取代或已废止的节点，规定清单读规定源时不做这项检查。每条发现单独一行写到标准错误；有错误时以状态 1 退出，没有问题时向标准输出打一行，写明节点数。`<dir>` 旁边有 `constitution/` 时，它还读这部宪法，检查宪法对规定的要求：每个节点的 status 与 `index.toml` 的一致，每处 `{@constitution:...}` 引用和每个 `authority` 条目都成立，`authority` 同时写了某个条款和它的上级时给警告；宪法读不进来时只报一条错误，宪法自身的错误留给 `constitution build` 报。旁边没有宪法时，如果运行所在目录的 `statute.toml` 没写 `constitution`，那里的规定清单不依据宪法，规定可以省掉 `authority` 和 `constitution`，`{@constitution:...}` 引用则是错误，与那个规定清单读它时一样 ([规定文件格式](rule-format.md#rule-file-format))；那里没有 `statute.toml`，或者它写了宪法，两项都必填。加 `--base <git-ref>` 时还做第 7 项检查里规定的那部分：比较编号时，base 里的每个节点都还在，旧格式的规定以 slug 为其名字的节点存在，已废止或已被取代的仍然如此，译文以外有改动的节点修订号比 base 的大；第 7 项跳过比较的情况下它也跳过，并打出同样的提示；`<dir>` 旁边没有 `constitution/` 时报错。这些发现写成 `rules/7.toml:12: error: <message>`。本仓把 `statute validate rules` 作为 commit 钩子运行，CI 里还加上 `--base` 运行。`--base <git-ref>` 比较的是 `<git-ref>` 的 tip，不是分支从它分出去的那个点，所以落后于它的分支会把它那边改过的节点当成自己的改动报出来；在本地跑之前，先把 base 合入分支。在 pull request 上，CI 比较的是 merge commit 与它的第一个父提交，不受影响；push 到 `main` 时，比较的是 push 之前的那个提交。
 
 **`constitution build`** 检查 `constitution/` 下唯一一版的源文件，为每种语言把完整版和 agent 版写到这一版的 `generated/` 里，文件第一行写明生成它的命令 `cargo run -p statute -- constitution build`；加 `--check` 时什么都不写，已提交的文件与重新构建的结果不同就失败；加 `--check --base <git-ref>` 时还要与那个提交比较编号和修订号；`--root <dir>` 让它在当前目录以外的检出上运行。它做的检查是[检查程序](checkers.md#checkers) 里第 1 至第 7 项中关于宪法的部分。它不读 `rules/`：规定对宪法的说法和 base 提交里已有的规定，归 `validate` 检查 (见上文)。本仓把 `constitution build --check` 作为 commit 钩子运行，CI 里还加上 `--base` 运行。
 
@@ -80,7 +80,7 @@ statute 的版本和检查的命令记在锁文件里，CI 从那里读 ([规定
 
 ## <a id="export"></a>导出
 
-`statute export [<dir>]` 把一个目录 (默认是 `.`) 里的宪法和规定打印成一个 JSON 值，供读取它们的程序使用，本仓的网站就是这样用的 ([静态网站](static-site.md)，「规定」)。它不读规定清单：这个目录是一个规定源，里面有 `constitution/` 或 `rules/`，或者两者都有。
+`statute export [<dir>]` 把一个目录 (默认是 `.`) 里的宪法和规定打印成一个 JSON 值，供读取它们的程序使用，本仓的网站就是这样用的 ([静态网站](static-site.md)，「规定」)。它不解析规定清单：这个目录是一个规定源，里面有 `constitution/` 或 `rules/`，或者两者都有。只有目录里没有 `constitution/` 时，它才读运行所在目录的 `statute.toml` 里的一个键 `constitution`；那个文件没写这个键时，规定可以省掉 `authority` 和 `constitution`，`{@constitution:...}` 引用则是错误，与 `validate` 读规定时一样 (见上文)。
 
 - `constitution`：没有 `constitution/` 时为 `null`；否则是它唯一那一版的 `index.toml` 里的 `edition`、`revision`、`status` 和 `languages` (一版都没有或不止一版时导出失败)，以及按正文顺序排列的 `provisions`：每个条、款、项给出引用它时写的 `id`、它的 `parent` (条为 `null`) 和按语言给出的 `labels`，写法与编译出的 `AGENTS.md` 相同。
 - `nodes`：`rules/` 里的每个节点，按 ID 排序，给出它的 `file` 和它的 `fields`，即文件里原样写的各字段，正文也在内。程序拿到的是文件里原样写的值；statute 以后认识的新字段，不改导出也能传过去；默认值由程序自己补。只有一个值是 statute 自己算出来的，免得每个程序再算一遍：`on-by-default`，即规定源的默认值是否启用这个节点 ([默认开关](rule-config.md#default-switches))，已被取代或已废止的规定总是否；取决于别的规定源里的节点时为 `null`。
