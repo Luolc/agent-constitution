@@ -158,6 +158,11 @@ enum Command {
         /// the rule that supersedes it.
         #[arg(long)]
         replace_superseded: bool,
+        /// Read only the private layer's sources at their newest commits,
+        /// and write only this worktree's private.lock; statute.lock and
+        /// the public sources' commits stay as they are.
+        #[arg(long, conflicts_with = "replace_superseded")]
+        private: bool,
     },
 }
 
@@ -243,7 +248,10 @@ fn main() -> ExitCode {
             edition,
             (public || private).then_some(public),
         ),
-        Command::Upgrade { replace_superseded } => upgrade(root, replace_superseded),
+        Command::Upgrade { private: true, .. } => upgrade_private(root),
+        Command::Upgrade {
+            replace_superseded, ..
+        } => upgrade(root, replace_superseded),
         Command::Site => site(root),
         Command::Export { dir } => export(&dir),
         Command::Validate { dir, base } => validate(&dir, base.as_deref()),
@@ -1098,6 +1106,20 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
     let private = private_ready(root, &project, &env)?;
     report_changes(&old, &project);
     write_lock(root, &project)?;
+    relock_private(&project, private.as_ref())
+}
+
+/// `upgrade --private`: resolves the private layer as `lock` does, but at
+/// the newest commits of its own sources, and writes the private lock
+/// file alone.
+fn upgrade_private(root: &Path) -> Result<(), ()> {
+    if private_dir(root)?.is_none() {
+        eprintln!("statute: error: {}", private::NO_REPOSITORY);
+        return Err(());
+    }
+    let mut env = env(Mode::Lock)?;
+    env.private_newest = true;
+    let (project, private) = load_layers(root, &env)?;
     relock_private(&project, private.as_ref())
 }
 

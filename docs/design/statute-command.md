@@ -312,7 +312,11 @@ the successor is listed already, the old entry is only taken out. Where
 the chain reaches a rule with more than one successor, the entry is left
 as it is and the successors are listed, for the user to choose with
 `add` and `remove`. A repealed rule is left for the user to take out. When the changed rule
-set does not resolve, neither file is changed.
+set does not resolve, neither file is changed. With `--private`, which
+`--replace-superseded` excludes, it moves only the private layer's own
+sources and writes only the worktree's `private.lock`
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository));
+outside a git repository it fails.
 
 **`validate <dir>`** reads the rule files of one directory as the
 first-party source, with its parameters in `params.toml`, and runs

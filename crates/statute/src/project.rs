@@ -47,6 +47,10 @@ pub struct Env {
     /// Whether each git source is read at its newest commit, as `upgrade`
     /// does, rather than at the one the lock file records.
     pub newest: bool,
+    /// Whether each git source of the private layer alone is read at its
+    /// newest commit, as `upgrade --private` does, rather than at the one
+    /// `private.lock` records.
+    pub private_newest: bool,
     /// Whether each git source is read from statute's cache alone, at the
     /// commit the lock file records, without the network.
     pub offline: bool,
@@ -176,7 +180,8 @@ impl Project {
 
     /// As `load_private`, with the text of `private.toml` given. Each git
     /// source is read at the commit that `private.lock` records for it,
-    /// or `statute.lock` for a source of the public layer.
+    /// unless `env.private_newest`, or `statute.lock` for a source of the
+    /// public layer.
     pub fn with_private(
         project: &Project,
         given: &Diagnostics,
@@ -209,7 +214,9 @@ impl Project {
         ) else {
             return (None, diags);
         };
-        locked.extend(own);
+        if !env.private_newest {
+            locked.extend(own);
+        }
         // What the private rule set excludes.
         let off: Vec<Key> = manifest
             .exclude
