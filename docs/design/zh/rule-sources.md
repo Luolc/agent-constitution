@@ -1,4 +1,4 @@
-<!-- en-sha256: d032187fa4d4281c703cfba31abc8d5d8572c057c3aba9f274af1123e0b46965 -->
+<!-- en-sha256: 6e86ae7a0840dd1aeb60596ed0a81587f1b0a084c81b4893409e72f917272ed2 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -299,7 +299,7 @@ parent = 104
 - 出于同样的理由，一个规定源的领域也可以挂在另一个规定源的领域下面：私有规定源里关于用户自己那套 agent 的领域，作为第一方「agent」领域的子领域出现，它的规定在它下面。第一方规定源自己的领域是根：在它里面，只有规定可以有指向另一个规定源的 `parent` ([检查程序](checkers.md#checkers))。
 - 把一个领域作为规定包启用，也就启用了它各个子领域下的规定；子领域本身也可以作为一个规定包的根。规定包是一个规定源里的一棵子树：挂在它的领域下面的别的规定源的规定或子领域，不在规定包里；规定要由规定清单在 `rules` 里列出来启用，别的规定源的子领域可以作为它自己的规定包启用。
 
-**怎样显示。** 编译出的 `AGENTS.md` 不显示领域和子领域：它们的规定按树的顺序排成一个平铺的列表，顺序由[编译与网站](statute-command.md#compilation-and-the-site) 规定：子领域的规定排在直接挂在所属领域下的规定和 one-of 之后，每一部分里先排领域自己规定源的节点，再按规定源的名字排别的规定源的，和领域本身的排法一样。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
+**怎样显示。** 编译出的 `AGENTS.md` 里，文件中有规定的每个领域或子领域各是一个标题，写的是它的标题，子领域比所属领域低一级；规定按树的顺序排成各项，顺序和层级由[编译与网站](statute-command.md#compilation-and-the-site) 规定：子领域的规定排在直接挂在所属领域下的规定和 one-of 之后，每一部分里先排领域自己规定源的节点，再按规定源的名字排别的规定源的，和领域本身的排法一样。在网站上，子领域像领域一样作为它下面那些规定的标题，嵌套在所属领域的标题下面；它的页面列出下面的节点 (见[静态网站](static-site.md))。
 
 ## <a id="conflicting-practices-as-one-ofs"></a>用 one-of 表达相互冲突的做法
 
@@ -342,7 +342,7 @@ parent = 104
 - [规定文件格式](rule-format.md#rule-file-format)：规定的 `parent` 可以指向另一个规定源的领域，领域可以有 `parent`，在自己的规定源或另一个规定源里，规定可以用 `overrides` 代替 `parent`。
 - [规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)：`public`、`scope`、私有规定清单，以及锁文件里的 `overridden-by`。
 - [依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)：任意多层嵌套的领域。
-- [编译与网站](statute-command.md#compilation-and-the-site)：子领域的规定在平铺列表里排在哪里。
+- [编译与网站](statute-command.md#compilation-and-the-site)：子领域的标题和规定在编译出的文件里排在哪里。
 - [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
 - [检查程序](checkers.md#checkers)：`statute validate` 在一个规定源之内对新字段查什么，跨规定源的哪些由 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
