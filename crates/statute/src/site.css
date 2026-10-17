@@ -286,7 +286,7 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 .legend dt { margin: 0; color: var(--t-text-muted); font-weight: var(--t-weight-regular); }
 .legend dd { display: flex; flex-wrap: wrap; gap: var(--t-space-1) var(--t-space-6); margin: 0; }
 .legend-item { display: inline-flex; align-items: center; gap: var(--t-space-2); }
-.legend-item > :is(.mark, .icon, .option) { flex: none; align-self: center; }
+.legend-item > :is(.mark, .icon, .option, .param-value) { flex: none; align-self: center; }
 .legend-item > .mark:not(.dot) { inline-size: auto; }
 .legend strong { font-weight: var(--t-weight-medium); }
 .legend .option { display: inline-flex; color: var(--t-text-muted); }
