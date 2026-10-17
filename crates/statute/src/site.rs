@@ -1017,7 +1017,7 @@ fn entry(
         None => ("entry", String::new()),
     };
     let enabled = if node.kind == Kind::Rule {
-        enabled(project, l, key, "")
+        enabled(project, l, key, "", label_link)
     } else {
         String::new()
     };
@@ -1320,6 +1320,23 @@ fn link(project: &Project, key: &Key, up: &str, lang: &str) -> String {
     title_link(project, key, up, lang, &parent_title(project, key, lang))
 }
 
+/// A link to a node's page as `link` makes it, but of its reference
+/// alone, its title on hover: the last column of the table of rules is
+/// as wide as its widest cell, and a title there would take the room the
+/// titles' column needs.
+fn label_link(project: &Project, key: &Key, up: &str, lang: &str) -> String {
+    let title = project.sources.get(key).map_or(String::new(), |n| {
+        let (title, title_lang) = pick_lang(&n.title, n, lang);
+        filled(project, key, title, true, title_lang)
+    });
+    format!(
+        "<a href=\"{up}{}\" title=\"{}\">{}</a>",
+        page(key).display(),
+        escape(&title),
+        escape(&key.to_string()),
+    )
+}
+
 /// A link as `link` makes it, with `after` after the title in place of
 /// the parent's.
 fn title_link(project: &Project, key: &Key, up: &str, lang: &str, after: &str) -> String {
@@ -1391,18 +1408,24 @@ fn tags(project: &Project, l: &Lang, key: &Key, node: &Node) -> String {
         out.push_str(&mark.tag());
     }
     if node.kind == Kind::Rule {
-        out.push_str(&enabled(project, l, key, "../"));
+        out.push_str(&enabled(project, l, key, "../", link));
     }
     out
 }
 
 /// What this rule set does with a rule, from a page `up` below the
 /// directory of its language: enables it, leaves it out, or has another
-/// rule override it.
-fn enabled(project: &Project, l: &Lang, key: &Key, up: &str) -> String {
+/// rule override it, that rule named by `by`, as `link` or `label_link`.
+fn enabled(
+    project: &Project,
+    l: &Lang,
+    key: &Key,
+    up: &str,
+    by: fn(&Project, &Key, &str, &str) -> String,
+) -> String {
     let (w, res) = (&l.w, &project.resolution);
     let what = match res.overridden.get(key) {
-        Some(by) => format!("{}{}", w.overridden_by, link(project, by, up, l.code)),
+        Some(other) => format!("{}{}", w.overridden_by, by(project, other, up, l.code)),
         None if res.enabled.contains_key(key) => w.enabled.to_owned(),
         None => w.not_enabled.to_owned(),
     };
