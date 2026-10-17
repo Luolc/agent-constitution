@@ -429,14 +429,16 @@ turned off (disabled), where it has these.
 - **The legend**, above the list of the rules, as Ruff's list of rules
   has one: a box with `1px` of `border-subtle` and `radius-md`, `text-sm`,
   that folds: its first line is a button, `chevron-right` (`icon-sm`)
-  and Legend / 「图例」 in `weight-medium` and `text-muted`, `text` under
+  and Legend / 「图例」 in `weight-medium` and `text`, `accent` under
   the pointer, the chevron turned down while the legend is open (a
   `details` and its `summary`, which work without scripts, the summary's
   `aria-expanded` and `aria-controls` saying whether and what it
   opens). It is open by default, and stays folded or open as the reader
-  left it, kept in the browser. Open, it holds
-  a row per kind of mark (a description list), its name at the start in
-  a column of its own, `weight-medium` in `text-muted`, and its marks
+  left it, kept in the browser. Open, it holds, `space-3` under a
+  hairline of `border-subtle` across the box, a row per kind of mark (a
+  description list), its name at the start in a column of its own,
+  `weight-regular` in `text-muted`, a step below the button's `text`
+  and `weight-medium`, and its marks
   after it on one line, each drawn as the list draws it and followed by
   its word. The rows, in the order of the marks: Default, on and off by
   default; Status, each status's icon and word, with no

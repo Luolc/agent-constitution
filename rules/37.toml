@@ -1,8 +1,8 @@
 id = 37
 slug = "credential-leak-report"
-revision = 7
+revision = 8
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 265
 default = "on"

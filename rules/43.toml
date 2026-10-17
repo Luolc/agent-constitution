@@ -1,8 +1,8 @@
 id = 43
 slug = "credential-designated-place"
-revision = 6
+revision = 7
 kind = "rule"
-status = "trial"
+status = "active"
 lang = "en"
 parent = 265
 default = "on"
