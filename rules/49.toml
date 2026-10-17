@@ -1,6 +1,6 @@
 id = 49
 slug = "instruction-check-in-ci"
-revision = 5
+revision = 6
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-Where a repository has a check for {@rule:280}, the check runs in CI on every change and fails a change that mixes instruction files with other files. Where it has none, this rule asks nothing; {@rule:280} holds all the same.
+Where a repository has a check for {@rule:334}, the check runs in CI on every change and fails a change that mixes instruction files with other files. Where it has none, this rule asks nothing; {@rule:334} holds all the same.
 
 Violated when a repository has such a check and CI does not run it on a change, or it does not fail a change that mixes the two.
 '''
 zh = '''
-仓库有 {@rule:280} 的检查的，检查在 CI 里对每个变更运行，混合了指令文件与其他文件的变更判为不通过。仓库没有这项检查的，本规定不作要求，{@rule:280} 照样适用。
+仓库有 {@rule:334} 的检查的，检查在 CI 里对每个变更运行，混合了指令文件与其他文件的变更判为不通过。仓库没有这项检查的，本规定不作要求，{@rule:334} 照样适用。
 
 仓库有这项检查，而 CI 没有在某个变更上运行它，或者它没有让混合了两类文件的变更不通过的，即为违反本规定。
 '''
 
 [translations]
-zh = "d09b3e7c5e40756b925312770fdfa4156f5d451ac86ac3e17a9c91757553e405"
+zh = "23f63f3c25e9273c63fe8653d5829605336aae91e92012966f3d8a1c733207b0"
