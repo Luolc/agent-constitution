@@ -412,11 +412,16 @@ and the answers to the questions.
 
 ## Upgrading statute
 
-To move a repository to a newer statute, run `statute upgrade` (or
-`statute lock`) with the new version, then `statute compile`, and change
-`rev` of the `statute-compile` hook to `v<new version>`, all in one
-pull request: with the lock file and `rev` changed apart, the hook
-fails on the pull request in between. The lock file is an instruction
+To move a repository to a newer statute, run `statute lock` with the
+new version, then `statute compile`, and change `rev` of the
+`statute-compile` hook to `v<new version>`, all in one pull request:
+with the lock file and `rev` changed apart, the hook fails on the pull
+request in between. `statute lock` keeps the pinned sources and changes
+only the `statute` version line (and the `[[commands]]` tables where
+the new version records others). `statute upgrade` also moves the
+sources to newer commits, which changes the rules the repository
+follows: run it in a pull request of its own, as an instruction change,
+before or after the one that changes `rev`. The lock file is an instruction
 file under rule R280, and `.pre-commit-config.yaml` is not, so a
 repository that enables R280 first counts, in a rule of its own, a
 change to `statute.lock` that alters nothing but the `statute` version
