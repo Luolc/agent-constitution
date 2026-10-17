@@ -248,12 +248,14 @@ its title, its applicability and which rules it holds; a domain can be
 `active` while some of its rules are still `trial`.
 
 **Becoming active.** A principal decides when a trial rule is stable
-enough to move to `active`, on the conditions of R289
-(`rules/289.toml`). Most rules cannot be settled by a deterministic check,
+enough to move to `active`, either on the rule itself or by setting out in
+advance a process for the move, on the conditions of R333
+(`rules/333.toml`). Most rules cannot be settled by a deterministic check,
 so the main use of a rule is in review: the reviewer runs the checks there
 are, reads the rule's verification, and judges the change by the rules of
 its domain. How a trial rule fares there, how often it was used and
-whether it was misapplied, is what the principal has to go on; no count of
-uses moves a rule by itself. The move changes only the status, not what
-counts as compliant, so the rule is edited in place and its revision goes
-up by one ([IDs and revisions](rule-format.md#ids-and-revisions)).
+whether it was misapplied, is what the principal has to go on, whether
+judging the rule or setting the process. The move changes only the
+status, not what counts as compliant, so the rule is edited in place and
+its revision goes up by one
+([IDs and revisions](rule-format.md#ids-and-revisions)).
