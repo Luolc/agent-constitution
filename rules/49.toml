@@ -1,6 +1,6 @@
 id = 49
 slug = "instruction-check-in-ci"
-revision = 5
+revision = 6
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -16,28 +16,28 @@ en = "Run the instruction-only check in CI"
 zh = "指令单独修改的检查在 CI 里运行"
 
 [text.statement]
-en = "Where a repository has a check that a change keeps instruction files apart from other files, run it in CI and have it fail a change that mixes them."
-zh = "仓库有检查变更是否把指令文件与其他文件分开的，让它在 CI 里运行，混合了两类文件的变更判为不通过。"
+en = "Where a repository has a check that a change keeps the instruction system apart from everything outside it, run it in CI and have it fail a change that alters both."
+zh = "仓库有检查变更是否把指令体系与体系以外的东西分开的，让它在 CI 里运行，同时改了两者的变更判为不通过。"
 
 [text.reason]
 en = '''
-Instruction files are changed in a change of their own ({@constitution:separate-instruction-changes}). A check that does not run on a change, or passes one that mixes the two, lets that change through and is no evidence that they were kept apart ({@constitution:discriminating-checks}).
+The instruction system is changed in a change of its own ({@constitution:separate-instruction-changes}). A check that does not run on a change, or passes one that alters both it and anything outside it, lets that change through and is no evidence that they were kept apart ({@constitution:discriminating-checks}).
 '''
 zh = '''
-指令文件要单独成一个变更修改 ({@constitution:separate-instruction-changes})。检查不在变更上运行，或者让混合了两类文件的变更通过，就会放过这样的变更，不能当作两类文件已经分开的证据 ({@constitution:discriminating-checks})。
+指令体系要单独成一个变更修改 ({@constitution:separate-instruction-changes})。检查不在变更上运行，或者让同时改了指令体系与体系以外的东西的变更通过，就会放过这样的变更，不能当作两者已经分开的证据 ({@constitution:discriminating-checks})。
 '''
 
 [text.verification]
 en = '''
-Where a repository has a check for {@rule:280}, the check runs in CI on every change and fails a change that mixes instruction files with other files. Where it has none, this rule asks nothing; {@rule:280} holds all the same.
+Where a repository has a check for {@rule:334}, the check runs in CI on every change and fails a change that alters both the instruction system and anything outside it. Where it has none, this rule asks nothing; {@rule:334} holds all the same.
 
-Violated when a repository has such a check and CI does not run it on a change, or it does not fail a change that mixes the two.
+Violated when a repository has such a check and CI does not run it on a change, or it does not fail a change that alters both.
 '''
 zh = '''
-仓库有 {@rule:280} 的检查的，检查在 CI 里对每个变更运行，混合了指令文件与其他文件的变更判为不通过。仓库没有这项检查的，本规定不作要求，{@rule:280} 照样适用。
+仓库有 {@rule:334} 的检查的，检查在 CI 里对每个变更运行，同时改了指令体系与体系以外的东西的变更判为不通过。仓库没有这项检查的，本规定不作要求，{@rule:334} 照样适用。
 
-仓库有这项检查，而 CI 没有在某个变更上运行它，或者它没有让混合了两类文件的变更不通过的，即为违反本规定。
+仓库有这项检查，而 CI 没有在某个变更上运行它，或者它没有让同时改了两者的变更不通过的，即为违反本规定。
 '''
 
 [translations]
-zh = "d09b3e7c5e40756b925312770fdfa4156f5d451ac86ac3e17a9c91757553e405"
+zh = "2ff844fbb66958a674bf483fb1c05e8ade3e5cd62efbe9493f7422fbf4d7303e"
