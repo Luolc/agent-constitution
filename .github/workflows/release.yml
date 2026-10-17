@@ -398,9 +398,28 @@ jobs:
           set -euo pipefail
           version="${TAG#statute-v}"
           mirror_tag="v$version"
+          pin="dependencies = [\"statute==$version\"]"
+
+          # The tag is looked up before anything is written, so that a rerun
+          # for an older release cannot move main back to its pin. A tag on
+          # HEAD with this pin is an earlier run of this job, so a rerun
+          # passes; one elsewhere is not moved. An annotated tag's own line
+          # carries the tag object, and a pattern given to ls-remote drops
+          # the peeled ^{} line, so list every tag and prefer the peeled one.
+          refs=$(git ls-remote --tags origin)
+          peeled=$(printf '%s\n' "$refs" | awk -v t="refs/tags/$mirror_tag^{}" '$2 == t { print $1 }')
+          direct=$(printf '%s\n' "$refs" | awk -v t="refs/tags/$mirror_tag" '$2 == t { print $1 }')
+          existing=${peeled:-$direct}
+          if [ -n "$existing" ]; then
+            echo "tag: $mirror_tag already exists at commit $existing"
+            [ "$existing" = "$(git rev-parse HEAD)" ]
+            grep -Fxq "$pin" pyproject.toml
+            exit 0
+          fi
+
           # sed exits 0 when nothing matched, so the grep is the check.
-          sed -i -E "s/^dependencies = \[\"statute==[^\"]*\"\]$/dependencies = [\"statute==$version\"]/" pyproject.toml
-          grep -Fxq "dependencies = [\"statute==$version\"]" pyproject.toml
+          sed -i -E "s/^dependencies = \[\"statute==[^\"]*\"\]$/$pin/" pyproject.toml
+          grep -Fxq "$pin" pyproject.toml
           echo "pin: $(grep -F 'statute==' pyproject.toml)"
 
           git config user.name 'github-actions[bot]'
@@ -412,20 +431,7 @@ jobs:
             git push origin HEAD:main
           fi
 
-          # A tag already on HEAD is an earlier run of this job, so a rerun
-          # passes; one elsewhere is not moved. An annotated tag's own line
-          # carries the tag object, and a pattern given to ls-remote drops
-          # the peeled ^{} line, so list every tag and prefer the peeled one.
           head=$(git rev-parse HEAD)
-          refs=$(git ls-remote --tags origin)
-          peeled=$(printf '%s\n' "$refs" | awk -v t="refs/tags/$mirror_tag^{}" '$2 == t { print $1 }')
-          direct=$(printf '%s\n' "$refs" | awk -v t="refs/tags/$mirror_tag" '$2 == t { print $1 }')
-          existing=${peeled:-$direct}
-          if [ -n "$existing" ]; then
-            echo "tag: $mirror_tag already exists at commit $existing"
-            [ "$existing" = "$head" ]
-          else
-            git tag "$mirror_tag" "$head"
-            git push origin "refs/tags/$mirror_tag"
-            echo "tag: pushed $mirror_tag at $head"
-          fi
+          git tag "$mirror_tag" "$head"
+          git push origin "refs/tags/$mirror_tag"
+          echo "tag: pushed $mirror_tag at $head"
