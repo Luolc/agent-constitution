@@ -251,7 +251,12 @@ with `public = true`:
   worktree with no lock file of its own reads the main worktree's, so
   a new worktree starts from the commits the main worktree pins, and
   `statute upgrade` in one worktree moves the private sources of that
-  worktree alone. The rule set stays shared, so a command in one
+  worktree alone. `statute upgrade --private` moves them and nothing
+  else: it reads the private layer's own sources at their newest
+  commits and the public sources at the commits `statute.lock`
+  records, and writes the worktree's `private.lock` and no other file,
+  so a new worktree can take the newest private rules without changing
+  a tracked file. The rule set stays shared, so a command in one
   worktree that changes its sources, `statute source add` or an edit
   by hand, leaves the lock files of the others stale: their
   `statute compile` fails with a note to run `statute lock`, and

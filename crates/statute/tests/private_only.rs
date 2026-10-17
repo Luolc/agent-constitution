@@ -436,3 +436,87 @@ fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
     ]);
     assert!(!other.join(".statute").exists());
 }
+
+#[test]
+fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
+    let w = world("upgrade");
+    let commit = |dir: &Path| {
+        git_in(&w, dir, &["rev-parse", "HEAD"])
+            .trim_end()
+            .to_owned()
+    };
+    // `R` as a git source, so that `statute.lock` records its commit.
+    let r_work = w.at.join("r-work");
+    let r_bare = w.at.join("r.git");
+    assert!(
+        Command::new("cp")
+            .arg("-r")
+            .arg(w.repo.join("r"))
+            .arg(&r_work)
+            .status()
+            .unwrap()
+            .success()
+    );
+    git_in(&w, &r_work, &["init", "-q", "-b", "main"]);
+    git_in(&w, &r_work, &["add", "-A"]);
+    git_in(&w, &r_work, &["commit", "-q", "-m", "rules"]);
+    let r_bare = r_bare.to_str().unwrap();
+    git_in(
+        &w,
+        &w.at,
+        &["clone", "-q", "--bare", r_work.to_str().unwrap(), r_bare],
+    );
+    let manifest = read(&w.repo, "statute.toml");
+    write(
+        &w.repo,
+        "statute.toml",
+        &manifest.replace(
+            "R = { path = \"r\" }",
+            &format!("R = {{ git = \"{r_bare}\", branch = \"main\", public = true }}"),
+        ),
+    );
+    ok(&w.run(&w.repo, &["lock"]));
+    w.git(&["commit", "-q", "-am", "R from git"]);
+    let old = commit(&w.at.join("me.git"));
+    // Both sources move on. `R` drops R2, which the rule set enables, so
+    // reading `R` at its newest commit fails.
+    git_in(&w, &r_work, &["rm", "-q", "rules/2.toml"]);
+    git_in(&w, &r_work, &["commit", "-q", "-m", "no R2"]);
+    git_in(&w, &r_work, &["push", "-q", r_bare, "main"]);
+    let work = w.at.join("me-work");
+    let me4 = read(&work, "rules/4.toml");
+    write(
+        &work,
+        "rules/4.toml",
+        &me4.replace("revision = 1", "revision = 2")
+            .replace("Do the thing 4.", "Do the new thing 4."),
+    );
+    git_in(&w, &work, &["commit", "-q", "-am", "new"]);
+    git_in(
+        &w,
+        &work,
+        &["push", "-q", w.at.join("me.git").to_str().unwrap(), "main"],
+    );
+    let new = commit(&work);
+    let tree = w.worktree("upgraded");
+    ok(&w.run(&tree, &["upgrade", "--private"]));
+    assert_eq!(git_in(&w, &tree, &["status", "--porcelain"]), "");
+    ok(&w.run(&tree, &["compile", "--private-only"]));
+    let full = read(&tree, ".statute/AGENTS.full.md");
+    assert!(
+        full.contains("Do the new thing 4.") && !full.contains("Do the thing 4."),
+        "{full}"
+    );
+    let own = read(&w.repo, ".git/worktrees/upgraded/statute/private.lock");
+    assert!(own.contains(&new), "{own}");
+    let main = read(&w.common(), "private.lock");
+    assert!(main.contains(&old) && !main.contains(&new), "{main}");
+    // Without it, a new worktree reads the main worktree's lock.
+    let tree = w.worktree("plain");
+    ok(&w.run(&tree, &["compile", "--private-only"]));
+    let full = read(&tree, ".statute/AGENTS.full.md");
+    assert!(
+        full.contains("Do the thing 4.") && !full.contains("Do the new thing 4."),
+        "{full}"
+    );
+}
