@@ -17,8 +17,8 @@ en = "A generated file goes with the side that changed it"
 zh = "生成文件归入使它发生变化的那一方"
 
 [text.statement]
-en = "When you keep changes to instruction files apart from changes to other files, count a generated file with whichever of the two changed it, and when a change to tools changes it, say that only its rendering changed."
-zh = "把指令文件的修改与其他文件的修改分开时，生成文件归入使它发生变化的那一方 (指令文件或其他文件)；工具的修改使它发生变化的，说明变化只在渲染。"
+en = "When you keep changes to the instruction system apart from changes to anything outside it, count a generated file with whichever of the two changed it, and when a change to tools changes it, say that only its rendering changed."
+zh = "把指令体系的修改与体系以外的修改分开时，生成文件归入使它发生变化的那一方 (指令体系或体系以外)；工具的修改使它发生变化的，说明变化只在渲染。"
 
 [text.reason]
 en = '''
@@ -41,4 +41,4 @@ CI 已证明与构建结果一致的生成文件，不单独归类 ({@rule:334})
 '''
 
 [translations]
-zh = "98583f8b9e9e3f0a8fe6c19aa6911db202b17d0c38e7f1a08d8b8345a148aa95"
+zh = "e69da9383ee637815b623e39c7db4acc571386eee573ba6c5ab8bcba650662c3"
