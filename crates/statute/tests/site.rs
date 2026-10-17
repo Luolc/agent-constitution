@@ -1375,3 +1375,73 @@ Promise.all(frames.map((f) => new Promise((done) =>
         "overridden by <a href=\"L/20.html\" title=\"{long}\">L20</a>"
     )));
 }
+
+/// The index in the Statement view, in headless Chrome, in both
+/// languages, on a desktop and on a phone: nothing on the page, hidden
+/// tips and closed menus included, runs past the window's edge, and a
+/// parameter's tip, placed as the pointer comes to its value, lies
+/// whole inside the window. Skipped without Chrome, except in CI.
+#[test]
+fn site_keeps_the_tips_inside_the_window() {
+    let Some(chrome) = chrome() else {
+        eprintln!("skipped: needs Google Chrome or Chromium");
+        return;
+    };
+    let dir = statements("tips");
+    let page = dir.join("tips.html");
+    let frames: String = ["index.html", "zh/index.html"]
+        .iter()
+        .flat_map(|page| {
+            [(1280, page), (390, page)].map(|(width, page)| {
+                format!("<iframe src=\".statute/site/{page}?view=statement\" style=\"width: {width}px; height: 900px\"></iframe>\n")
+            })
+        })
+        .collect();
+    std::fs::write(
+        &page,
+        format!(
+            r##"<!DOCTYPE html><body>
+{frames}<script>
+const frames = Array.from(document.querySelectorAll("iframe"));
+Promise.all(frames.map((f) => new Promise((done) =>
+  f.addEventListener("load", () => {{
+    const doc = f.contentDocument;
+    const width = doc.documentElement.clientWidth;
+    const scroll = doc.documentElement.scrollWidth;
+    const inside = Array.from(doc.querySelectorAll("body *"))
+      .every((e) => e.getBoundingClientRect().right <= width);
+    const values = Array.from(doc.querySelectorAll(".param-value"))
+      .filter((v) => v.querySelector(".param-tip"));
+    values.forEach((v) => v.dispatchEvent(new MouseEvent("mouseover", {{ bubbles: true }})));
+    const tips = values.length > 0 && values.every((v) => {{
+      const tip = v.querySelector(".param-tip").getBoundingClientRect();
+      return tip.left >= 0 && tip.right <= width;
+    }});
+    done(`${{width}} ${{scroll}} ${{inside}} ${{tips}}`);
+  }})))).then((r) => document.body.setAttribute("data-probe", r.join(" | ")));
+</script></body>"##
+        ),
+    )
+    .unwrap();
+    let out = Command::new(chrome)
+        .args([
+            "--headless",
+            "--no-proxy-server",
+            "--hide-scrollbars",
+            // The frames' documents, files too, are the page's to read.
+            "--allow-file-access-from-files",
+            "--window-size=1400,900",
+            "--virtual-time-budget=5000",
+        ])
+        .arg(format!("--user-data-dir={}", dir.join("profile").display()))
+        .arg("--dump-dom")
+        .arg(format!("file://{}", page.display()))
+        .output()
+        .unwrap();
+    let dom = String::from_utf8(out.stdout).unwrap();
+    let start = dom.find("data-probe=\"").expect(&dom) + 12;
+    assert_eq!(
+        &dom[start..start + dom[start..].find('"').unwrap()],
+        "1280 1280 true true | 390 390 true true | 1280 1280 true true | 390 390 true true"
+    );
+}

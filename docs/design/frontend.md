@@ -441,10 +441,12 @@ turned off (disabled), where it has these.
   that it is a configurable parameter and its name, the name in inline
   code as the site draws code in the text, its default on the public
   site, and, where the value is a link, that it opens the parameter's
-  entry. The tip opens above the value, from its start or,
-  where it would run out of the window, from its end, after `delay-tip`
-  under the pointer and at once under the keyboard's focus; Escape
-  closes it. It is hidden from screen readers (`aria-hidden`), so that
+  entry. The tip opens above the value, from its start; where it would
+  run out of the window, it moves back to end `space-4` inside the
+  window, and it is never wider than the window less `space-4` at each
+  side, so that it shows whole on a phone too. Hidden, it widens no
+  page. It opens after `delay-tip` under the pointer and at once under
+  the keyboard's focus; Escape closes it. It is hidden from screen readers (`aria-hidden`), so that
   they do not read it into the sentence, and stays out of a selection
   and of the text the list's search matches: a value that is a link is
   named by the value and then the tip (`aria-label`); in a statement in

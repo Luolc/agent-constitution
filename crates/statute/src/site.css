@@ -73,9 +73,12 @@ a {
 }
 /* Its tip (.param-tip, a line each, the parameter's name in code): a
    popover that only explains, above the value, after the delay of a tip
-   under the pointer and at once under the keyboard's focus, ending at
-   the value's end where it would run out of the window
-   (assets/param-tip.js), and hidden by Escape. It is hidden from screen
+   under the pointer and at once under the keyboard's focus, from the
+   value's start, moved back to end `space-4` inside the window where it
+   would run out of it (the room assets/param-tip.js gives, --tip-room),
+   never wider than the window, and hidden by Escape. Without the room
+   it lies before the value, so a hidden tip widens no page. It is
+   hidden from screen
    readers (aria-hidden), and left out of a selection: the link is named
    by its value and then the tip (aria-label). */
 .param-tip {
@@ -84,7 +87,7 @@ a {
   bottom: calc(100% + var(--t-space-1));
   left: 0;
   width: max-content;
-  max-width: var(--t-width-popover);
+  max-width: min(var(--t-width-popover), 100vw - 2 * var(--t-space-4));
   padding: var(--t-space-2) var(--t-space-3);
   font-size: var(--t-text-sm);
   font-weight: var(--t-weight-regular);
@@ -96,6 +99,7 @@ a {
   border: 1px solid var(--t-border-subtle);
   border-radius: var(--t-radius-md);
   box-shadow: var(--t-shadow-popover);
+  translate: min(0px, var(--tip-room, 0px) - var(--t-space-4) - 100%);
   transform-origin: bottom left;
   user-select: none;
   pointer-events: none;
@@ -105,7 +109,6 @@ a {
   transition-duration: var(--t-duration-fast);
   transition-timing-function: var(--t-ease-out);
 }
-.param-value.tip-end .param-tip { left: auto; right: 0; transform-origin: bottom right; }
 .param-value:focus-visible .param-tip {
   opacity: 1;
   scale: 1;
@@ -405,6 +408,9 @@ body:has(#view-statement:checked) .has-statement .rule-text .title {
 @starting-style {
   .menu[open] .menu-panel { opacity: 0; scale: .95; }
 }
+/* Closed, the panel has no box: Chrome would lay it out against the
+   closed menu's own width, its rows past the screen's edge. */
+.menu:not([open]) > .menu-panel { display: none; }
 .menu .all { display: flex; gap: var(--t-space-1); }
 .menu .all button { font-size: var(--t-text-xs); color: var(--t-text-muted); }
 .menu .search { min-block-size: var(--t-target); padding: 0 var(--t-space-2); font: inherit; color: var(--t-text); background: var(--t-bg-page); border: 1px solid var(--t-border-strong); border-radius: var(--t-radius-sm); }
