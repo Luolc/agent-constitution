@@ -608,6 +608,39 @@ fn citations_render_as_numbers_and_labels() {
     );
 }
 
+/// Rule 3 of `nodes` in Chinese, its statement citing next to Han
+/// characters, full-width punctuation, spaces and the ends of the text.
+fn citing_rule_3_in_chinese() -> String {
+    let texts = |statement| {
+        original_hash(&[
+            "Rule 3",
+            statement,
+            "Because.\n",
+            "Violated when the thing is not done.",
+        ])
+    };
+    let statement = "Do {@rule:2} after {@rule:6} under {@constitution:principals}.";
+    rule_3_in_chinese()
+        .replace(&texts("Do the thing 3."), &texts(statement))
+        .replace("Do the thing 3.", statement)
+        .replace("做事 3。", "{@rule:2}在先，摘下{@rule:2}的标签，见{@rule:6}。已有空格的 {@rule:2} 不变，在{@constitution:principals}之下；结尾是{@rule:2}")
+}
+
+#[test]
+fn a_citation_is_spaced_from_han_characters() {
+    let compile = "\n[compile]\nlang = \"zh\"\n";
+    let dir = repo("cite-spaced", &manifest(compile));
+    std::fs::write(dir.join("rules/3.toml"), citing_rule_3_in_chinese()).unwrap();
+    let out = compiled(&dir);
+    // A space between a reference and a Han character, none next to
+    // full-width punctuation, a space or the end, nor between Han
+    // characters and a label of Han characters.
+    assert!(
+        out.contains("\n- R3 R2 在先，摘下 R2 的标签，见 R6。已有空格的 R2 不变，在第四条第一款之下；结尾是 R2\n"),
+        "{out}"
+    );
+}
+
 #[test]
 fn a_citation_of_nothing_fails_and_names_where_it_is() {
     // A citation of a rule, or one without a namespace, fails when the
