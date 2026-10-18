@@ -1110,28 +1110,118 @@ fn upgrade(root: &Path, replace_superseded: bool) -> Result<(), ()> {
 }
 
 /// `upgrade --private`: resolves the private layer as `lock` does, but at
-/// the newest commits of its own sources, and writes the private lock
-/// file alone.
+/// the newest commits of its own sources, prints what changed against the
+/// private lock file this work tree reads, and writes the one it writes.
 fn upgrade_private(root: &Path) -> Result<(), ()> {
-    if private_dir(root)?.is_none() {
+    let Some(dir) = private_dir(root)? else {
         eprintln!("statute: error: {}", private::NO_REPOSITORY);
         return Err(());
+    };
+    let env = env(Mode::Lock)?;
+    let (project, diags) = Project::load(root, &env);
+    print(&diags);
+    let project = project.ok_or(())?;
+    // What the private lock file records now, read before it is written.
+    let read = dir.read_lock();
+    let recorded = std::fs::read_to_string(&read).ok();
+    let was = recorded
+        .as_ref()
+        .and_then(|_| Project::load_private(&project, &diags, &env, &dir).0);
+    let newest = Env {
+        private_newest: true,
+        ..env
+    };
+    let (both, more) = Project::load_private(&project, &diags, &newest, &dir);
+    print(&more);
+    if more.has_errors() {
+        return Err(());
     }
-    let mut env = env(Mode::Lock)?;
-    env.private_newest = true;
-    let (project, private) = load_layers(root, &env)?;
-    relock_private(&project, private.as_ref())
+    let private = both.map(|both| Private { dir, both });
+    let Some(new) = private.as_ref().filter(|p| p.rule_set().is_some()) else {
+        return Ok(());
+    };
+    if read != new.dir.lock() {
+        println!(
+            "compared with {}, the main worktree's: this worktree has no {} of its own",
+            read.display(),
+            private::LOCK
+        );
+    }
+    let old_sources = recorded
+        .as_deref()
+        .and_then(|text| lock::sources(text).ok())
+        .unwrap_or_default();
+    let mut lines = Vec::new();
+    let short = |c: &str| c[..c.len().min(8)].to_owned();
+    for spec in new
+        .both
+        .manifest
+        .sources
+        .iter()
+        .filter(|s| project.manifest.spec(&s.name).is_none())
+    {
+        let Some(commit) = spec.git.as_ref().and_then(|g| g.commit.as_deref()) else {
+            continue;
+        };
+        let name = &spec.name;
+        let was = old_sources
+            .iter()
+            .find(|o| &o.name == name)
+            .and_then(|o| o.git.as_ref()?.commit.as_deref());
+        match was {
+            Some(c) if c == commit => {
+                println!("source `{name}`: still at commit {}", short(commit));
+            }
+            Some(c) => lines.push(format!(
+                "source `{name}`: commit {} -> {}",
+                short(c),
+                short(commit)
+            )),
+            None => lines.push(format!(
+                "brought in: source `{name}`, at commit {}",
+                short(commit)
+            )),
+        }
+    }
+    for o in &old_sources {
+        if !new.both.manifest.sources.iter().any(|s| s.name == o.name) {
+            lines.push(format!("dropped: source `{}`", o.name));
+        }
+    }
+    match &was {
+        Some(was) => lines.extend(changes(&lock::current(was), &new.both)),
+        None if recorded.is_some() => lines.push(format!(
+            "note: the rules are not compared: the private layer does not resolve at the commits of {}",
+            read.display()
+        )),
+        None => {}
+    }
+    print_changes(&lines, &read.display().to_string());
+    write_private_lock(&project, new)
+}
+
+/// Prints `lines`, what changed against the lock file `file`, or that it
+/// is up to date.
+fn print_changes(lines: &[String], file: &str) {
+    if lines.is_empty() {
+        println!("{file} is up to date");
+    }
+    for line in lines {
+        println!("{line}");
+    }
 }
 
 /// Prints how `project` differs from the lock file `old`.
 fn report_changes(old: &lock::Locked, project: &Project) {
+    print_changes(&changes(old, project), lock::FILE);
+}
+
+/// How `project` differs from the lock file `old`, a line per change.
+fn changes(old: &lock::Locked, project: &Project) -> Vec<String> {
     let new = lock::current(project);
     let sources = &project.sources;
-    let mut any = false;
-    let mut line = |text: String| {
-        any = true;
-        println!("{text}");
-    };
+    let mut lines = Vec::new();
+    let mut line = |text: String| lines.push(text);
     if old.statute != new.statute {
         line(match &old.statute {
             Some(was) => format!("statute: {was} -> {}", lock::VERSION),
@@ -1205,9 +1295,7 @@ fn report_changes(old: &lock::Locked, project: &Project) {
     {
         line(format!("dropped: parameter `{name}`"));
     }
-    if !any {
-        println!("{} is up to date", lock::FILE);
-    }
+    lines
 }
 
 /// The reasons `key` is enabled, one step down the chain `explain`

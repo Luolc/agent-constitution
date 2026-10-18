@@ -351,4 +351,9 @@ not gets an upper bound, or is rewritten under a new ID if the change
 alters what counts as compliant ([IDs and revisions](#ids-and-revisions)).
 At compile time the revision the rule set pins must lie inside the range
 of every enabled rule; otherwise the build fails and names the rule and
-its range.
+its range. For a rule only the private layer enables
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository)),
+the finding is on `private.toml`, and it says to take the rule out
+there or move the public layer to a revision the rule accepts, which
+`statute upgrade` does where the constitution's source has a newer
+commit at such a revision.

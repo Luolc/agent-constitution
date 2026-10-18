@@ -1143,3 +1143,25 @@ fn the_private_lock_file_counts_what_the_private_layer_turns_off() {
         run.stdout
     );
 }
+
+#[test]
+fn a_private_rule_beyond_the_public_revision_asks_for_an_upgrade() {
+    let dir = ignoring("private-revision");
+    set_up_from(&dir, &dir);
+    let shown = common(&dir).join("private.toml").display().to_string();
+    let me4 = read(&dir, "me/rules/4.toml");
+    write(
+        &dir,
+        "me/rules/4.toml",
+        &me4.replace("constitution = \">=1\"", "constitution = \">=2\""),
+    );
+    let said = format!(
+        "{shown}: error: rule me:4 (Rule 4) is compatible with constitution revisions `>=2`, and the rule set rests on revision 1; take the rule out of private.toml, or move the public layer to a revision it accepts"
+    );
+    fails_with(
+        &statute(&dir, &["lock"]),
+        &format!("{said}: `statute upgrade` moves its sources to their newest commits\n"),
+    );
+    // `upgrade` has moved the public sources already.
+    fails_with(&statute(&dir, &["upgrade"]), &format!("{said}\n"));
+}
