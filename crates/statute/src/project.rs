@@ -248,6 +248,22 @@ impl Project {
             {
                 d.file.clone_from(&shown);
             } else if d.file == manifest::FILE
+                && let Some(head) = d.message.strip_suffix(resolve::REVISION_ADVICE)
+            {
+                // The public layer has passed this check, so the rule is
+                // one the private layer enables, and only the public
+                // sources can bring another revision.
+                let upgrade = if env.newest {
+                    ""
+                } else {
+                    ": `statute upgrade` moves its sources to their newest commits"
+                };
+                d.message = format!(
+                    "{head}take the rule out of {}, or move the public layer to a revision it accepts{upgrade}",
+                    private::MANIFEST
+                );
+                d.file.clone_from(&shown);
+            } else if d.file == manifest::FILE
                 && d.message.starts_with("rule ")
                 && d.message.contains(" cannot be turned off: ")
             {

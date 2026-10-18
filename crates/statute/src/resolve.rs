@@ -364,6 +364,9 @@ impl<'a> Switches<'a> {
     }
 }
 
+/// What to do about a rule the constitution's revision does not suit.
+pub const REVISION_ADVICE: &str = "take the rule out or move to a revision it accepts";
+
 /// Resolves `manifest` against `sources`, which have passed their own
 /// checks, for the constitution `revision`, or none. Problems go to `diags`,
 /// against `statute.toml`. An overridden rule counts as enabled, and the
@@ -765,7 +768,7 @@ pub fn resolve(
             diags.error(
                 file,
                 format!(
-                    "rule {} is compatible with constitution revisions `{}`, and the rule set rests on revision {revision}; take the rule out or move to a revision it accepts",
+                    "rule {} is compatible with constitution revisions `{}`, and the rule set rests on revision {revision}; {REVISION_ADVICE}",
                     label(sources, key),
                     revisions
                 ),

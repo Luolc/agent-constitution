@@ -437,15 +437,13 @@ fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
     assert!(!other.join(".statute").exists());
 }
 
-#[test]
-fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
-    let w = world("upgrade");
-    let commit = |dir: &Path| {
-        git_in(&w, dir, &["rev-parse", "HEAD"])
-            .trim_end()
-            .to_owned()
-    };
-    // `R` as a git source, so that `statute.lock` records its commit.
+/// `world` with `R` as a git source, so that `statute.lock` records its
+/// commit, and then both sources moved on: `R` drops R2, which the rule
+/// set enables, so that reading `R` at its newest commit fails, and `me`
+/// changes me:4's text and revision. Also the commits of `me` before and
+/// after.
+fn moved(name: &str) -> (World, String, String) {
+    let w = world(name);
     let r_work = w.at.join("r-work");
     let r_bare = w.at.join("r.git");
     assert!(
@@ -477,9 +475,7 @@ fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
     );
     ok(&w.run(&w.repo, &["lock"]));
     w.git(&["commit", "-q", "-am", "R from git"]);
-    let old = commit(&w.at.join("me.git"));
-    // Both sources move on. `R` drops R2, which the rule set enables, so
-    // reading `R` at its newest commit fails.
+    let old = head(&w, &w.at.join("me.git"));
     git_in(&w, &r_work, &["rm", "-q", "rules/2.toml"]);
     git_in(&w, &r_work, &["commit", "-q", "-m", "no R2"]);
     git_in(&w, &r_work, &["push", "-q", r_bare, "main"]);
@@ -497,19 +493,61 @@ fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
         &work,
         &["push", "-q", w.at.join("me.git").to_str().unwrap(), "main"],
     );
-    let new = commit(&work);
-    let tree = w.worktree("upgraded");
-    ok(&w.run(&tree, &["upgrade", "--private"]));
-    assert_eq!(git_in(&w, &tree, &["status", "--porcelain"]), "");
-    ok(&w.run(&tree, &["compile", "--private-only"]));
-    let full = read(&tree, ".statute/AGENTS.full.md");
+    let new = head(&w, &work);
+    (w, old, new)
+}
+
+fn text(path: &Path) -> String {
+    std::fs::read_to_string(path).unwrap()
+}
+
+fn head(w: &World, dir: &Path) -> String {
+    git_in(w, dir, &["rev-parse", "HEAD"]).trim_end().to_owned()
+}
+
+/// What `upgrade --private` prints when `me` moved from `old` to `new`.
+fn moved_lines(old: &str, new: &str) -> String {
+    format!(
+        "source `me`: commit {} -> {}\nchanged: rule me:4 (Rule 4): revision 1 -> 2\n",
+        &old[..8],
+        &new[..8]
+    )
+}
+
+/// `upgrade --private` in `tree` moves its private output to me:4's new
+/// text and leaves every tracked file as it is.
+#[track_caller]
+fn upgrades(w: &World, tree: &Path) -> Run {
+    let run = w.run(tree, &["upgrade", "--private"]);
+    ok(&run);
+    assert_eq!(git_in(w, tree, &["status", "--porcelain"]), "");
+    ok(&w.run(tree, &["compile", "--private-only"]));
+    let full = read(tree, ".statute/AGENTS.full.md");
     assert!(
         full.contains("Do the new thing 4.") && !full.contains("Do the thing 4."),
         "{full}"
     );
-    let own = read(&w.repo, ".git/worktrees/upgraded/statute/private.lock");
-    assert!(own.contains(&new), "{own}");
-    let main = read(&w.common(), "private.lock");
+    run
+}
+
+#[test]
+fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
+    let (w, old, new) = moved("upgrade");
+    let tree = w.worktree("upgraded");
+    let run = upgrades(&w, &tree);
+    let main = w.common().join("private.lock");
+    let own = w.repo.join(".git/worktrees/upgraded/statute/private.lock");
+    assert_eq!(
+        run.stdout,
+        format!(
+            "compared with {}, the main worktree's: this worktree has no private.lock of its own\n{}wrote {}: 2 rules enabled, 1 of them by the private layer\n",
+            main.display(),
+            moved_lines(&old, &new),
+            own.display()
+        )
+    );
+    assert!(text(&own).contains(&new));
+    let main = text(&main);
     assert!(main.contains(&old) && !main.contains(&new), "{main}");
     // Without it, a new worktree reads the main worktree's lock.
     let tree = w.worktree("plain");
@@ -519,4 +557,56 @@ fn upgrade_private_moves_only_a_new_worktrees_private_lock() {
         full.contains("Do the thing 4.") && !full.contains("Do the new thing 4."),
         "{full}"
     );
+}
+
+#[test]
+fn upgrade_private_moves_a_worktrees_own_private_lock() {
+    let (w, old, new) = moved("upgrade-own");
+    let tree = w.worktree("own");
+    ok(&w.run(&tree, &["lock"]));
+    let own = w.repo.join(".git/worktrees/own/statute/private.lock");
+    assert!(text(&own).contains(&old));
+    let run = upgrades(&w, &tree);
+    assert_eq!(
+        run.stdout,
+        format!(
+            "{}wrote {}: 2 rules enabled, 1 of them by the private layer\n",
+            moved_lines(&old, &new),
+            own.display()
+        )
+    );
+    assert!(text(&own).contains(&new));
+    let main = read(&w.common(), "private.lock");
+    assert!(main.contains(&old) && !main.contains(&new), "{main}");
+    // Run again, nothing moves.
+    let again = w.run(&tree, &["upgrade", "--private"]);
+    ok(&again);
+    assert_eq!(
+        again.stdout,
+        format!(
+            "source `me`: still at commit {}\n{} is up to date\nwrote {1}: 2 rules enabled, 1 of them by the private layer\n",
+            &new[..8],
+            own.display()
+        )
+    );
+}
+
+#[test]
+fn upgrade_private_moves_the_main_worktrees_private_lock() {
+    let (w, old, new) = moved("upgrade-main");
+    let tree = w.worktree("own");
+    ok(&w.run(&tree, &["lock"]));
+    let run = upgrades(&w, &w.repo);
+    let main = w.common().join("private.lock");
+    assert_eq!(
+        run.stdout,
+        format!(
+            "{}wrote {}: 2 rules enabled, 1 of them by the private layer\n",
+            moved_lines(&old, &new),
+            main.display()
+        )
+    );
+    assert!(text(&main).contains(&new));
+    let own = read(&w.repo, ".git/worktrees/own/statute/private.lock");
+    assert!(own.contains(&old) && !own.contains(&new), "{own}");
 }
