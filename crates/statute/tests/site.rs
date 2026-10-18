@@ -792,8 +792,8 @@ fn switched(site: &Path, path: &Path) -> PathBuf {
 #[test]
 fn site_writes_both_languages() {
     let dir = four("languages");
-    // R2 has a Chinese translation, here:5 is Chinese only, and me:4,
-    // which cites R2, English only.
+    // R2 has a Chinese translation, here:5, which cites R2, is Chinese
+    // only, and me:4, which cites R2, English only.
     let hash = statute::node::original_hash(&[
         "Rule 2",
         "Do the thing 2.",
@@ -820,6 +820,7 @@ fn site_writes_both_languages() {
     );
     let (id, r5) = edit(rule(5, 1, ""), "lang = \"en\"", "lang = \"zh\"");
     let r5 = edit((id, r5.replace("\nen = ", "\nzh = ")), "Rule 5", "规定 5");
+    let r5 = edit(r5, "Do the thing 5.", "先做{@rule:R2}再做。");
     put(&dir, "here/rules", r5);
     let r = statute(&dir, &["site"]);
     assert_eq!(r.code, 0, "{}", r.stderr);
@@ -892,6 +893,13 @@ fn site_writes_both_languages() {
     assert!(
         r4.contains("<div lang=\"en\">\n<p>Keep the secret, after <a href=\"../R/2.html\"><span class=\"ref\">R2</span><span class=\"title\">Rule 2</span></a>.</p>\n</div>"),
         "{r4}"
+    );
+    // A cited rule is set off by a space from a Han character next to
+    // its reference or its title's half-width end.
+    let r5 = read(&site, "zh/here/5.html");
+    assert!(
+        r5.contains("<p>先做 <a href=\"../R/2.html\"><span class=\"ref\">R2</span><span class=\"title\">规定 2</span></a> 再做。</p>"),
+        "{r5}"
     );
     let r5 = read(&site, "here/5.html");
     assert!(r5.contains("<span lang=\"zh\">规定 5</span></h1>"), "{r5}");

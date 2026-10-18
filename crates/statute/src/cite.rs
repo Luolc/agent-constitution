@@ -144,7 +144,9 @@ pub enum Citation<'a> {
 
 /// The text with each citation replaced by what `cite` returns for it;
 /// anything else, braces included, stays as it is. The first error of
-/// `cite` is returned.
+/// `cite` is returned. A citation whose end, outside HTML tags, is
+/// half-width (`R181`, `Art. V §1`) is set off by a space from a Han
+/// character next to that end, as Chinese text spaces half-width text.
 pub fn replace(
     text: &str,
     mut cite: impl FnMut(Citation) -> Result<String, String>,
@@ -159,8 +161,17 @@ pub fn replace(
             .and_then(|end| parse(&after[..end]).map(|c| (c, end)))
         {
             Some((citation, end)) => {
-                out.push_str(&cite(citation)?);
+                let cited = cite(citation)?;
                 rest = &after[end + 1..];
+                let shown = shown(&cited);
+                let half = |c: Option<char>| c.is_some_and(|c| c.is_ascii_graphic());
+                if out.chars().next_back().is_some_and(han) && half(shown.chars().next()) {
+                    out.push(' ');
+                }
+                out.push_str(&cited);
+                if half(shown.chars().next_back()) && rest.chars().next().is_some_and(han) {
+                    out.push(' ');
+                }
             }
             None => {
                 out.push('{');
@@ -170,6 +181,34 @@ pub fn replace(
     }
     out.push_str(rest);
     Ok(out)
+}
+
+/// `text` without the HTML tags at its ends, as a reader sees where it
+/// meets the text around it.
+fn shown(text: &str) -> &str {
+    let mut s = text;
+    while let Some(t) = s
+        .strip_prefix('<')
+        .and_then(|t| t.find('>').map(|i| &t[i + 1..]))
+    {
+        s = t;
+    }
+    while let Some(i) = s.strip_suffix('>').and_then(|t| t.rfind('<')) {
+        s = &s[..i];
+    }
+    s
+}
+
+/// A Han character: a CJK unified ideograph, of its extensions included,
+/// or a CJK compatibility ideograph.
+fn han(c: char) -> bool {
+    matches!(
+        c,
+        '\u{3400}'..='\u{4dbf}'
+            | '\u{4e00}'..='\u{9fff}'
+            | '\u{f900}'..='\u{faff}'
+            | '\u{20000}'..='\u{3134f}'
+    )
 }
 
 /// `rule:7`, `constitution:leaks` or `must-ask.capital`, as the

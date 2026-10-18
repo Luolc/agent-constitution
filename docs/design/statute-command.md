@@ -92,7 +92,10 @@ citations in a statement are rendered ([IDs](source-formats.md#ids)):
 `{@rule:<id>}` as the cited rule's reference, `R42`, whether the rule is
 in the file or not, and as the rule in its place when it is overridden,
 unless that rule is the one citing it, which names it as itself; and `{@constitution:<id>}` as the provision's label in the language, in
-plain text as in the version for agents, such as `Art. IV §1(2)`. The labels
+plain text as in the version for agents, such as `Art. IV §1(2)`. A
+citation whose text is half-width at one end, as `R42` is, is set off
+by a space from a Han character next to that end (`摘下 R42 的`), as
+Chinese typography asks, and so it is on the sites. The labels
 come from the edition's sources, the numbers of the articles' and
 sections' names and the items' `number`, by the same rules as in the
 constitution's build ([Compilation](compilation.md)); unlike that build,
