@@ -3,10 +3,10 @@ status = "active"
 
 [content]
 en = '''
-A guard, permission or protection that blocks an action is a signal to take the reviewed route and must never be worked around. A **guard** is a limit, permission, control or other protection, wherever it is set, that meets at least one of the items below; one that may meet one counts as a guard, and a provision of a rule or of a project's instructions that meets none is not a guard, however strict it is:
+A guard, permission or protection that blocks an action is a signal to take the reviewed route and must never be worked around. A **guard** is a limit, permission, control or other protection, wherever it is set, that meets at least one of the items below, and a provision of a rule or of a project's instructions that meets none is not a guard, however strict it is. For limits that people or systems outside the work at hand impose, the rules may set which are guards and what each binds; this does not reach limits a principal sets. Acting where such a provision says a limit does not bind is not working around it. Adopting or changing such a provision so that it binds agents less than before is loosening a guard ({@must-ask.loosening-guards}). Where no such provision decides the case, one that may meet an item counts as a guard:
 '''
 zh = '''
-防护、权限或保护措施拦下某个动作，说明应当改走经过审查的途径；不得设法绕开。**防护**是指符合下列至少一项的限制、权限、控制措施或者其他保护措施，不论设在何处；可能符合的，按防护对待；规定或者项目指令中的条文一项都不符合的，再严也不是防护：
+防护、权限或保护措施拦下某个动作，说明应当改走经过审查的途径；不得设法绕开。**防护**是指符合下列至少一项的限制、权限、控制措施或者其他保护措施，不论设在何处；规定或者项目指令中的条文一项都不符合的，再严也不是防护。这项工作之外的人或系统施加的限制，哪些是防护、各自约束什么，可以由规定划定；委托人设定的限制不在此列。在这样的条文写明某项限制不约束的范围内行事，不算绕开它。采用或者修改这样的条文，使它对 agent 的约束比原先少，属于放宽防护 ({@must-ask.loosening-guards})。没有这样的条文可以判定时，可能符合某一项的，按防护对待：
 '''
 
 [[items]]

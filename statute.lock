@@ -5,7 +5,7 @@ statute = "0.1.23"
 [constitution]
 path = "."
 edition = "2026-10"
-revision = "3"
+revision = "4"
 
 [[sources]]
 name = "R"
