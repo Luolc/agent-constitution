@@ -610,3 +610,36 @@ fn upgrade_private_moves_the_main_worktrees_private_lock() {
     let own = read(&w.repo, ".git/worktrees/own/statute/private.lock");
     assert!(own.contains(&old) && !own.contains(&new), "{own}");
 }
+
+#[test]
+fn upgrade_private_says_when_the_old_commits_do_not_resolve() {
+    let (w, old, _) = moved("upgrade-unresolved");
+    // me:5 exists only at the new commit, so the old one does not resolve.
+    let work = w.at.join("me-work");
+    write(&work, "rules/5.toml", &rule(5, 1, "").1);
+    git_in(&w, &work, &["add", "-A"]);
+    git_in(&w, &work, &["commit", "-q", "-m", "me:5"]);
+    git_in(
+        &w,
+        &work,
+        &["push", "-q", w.at.join("me.git").to_str().unwrap(), "main"],
+    );
+    let new = head(&w, &work);
+    let manifest = w.common().join("private.toml");
+    write(
+        &w.common(),
+        "private.toml",
+        &text(&manifest).replace("[\"me:4\"]", "[\"me:4\", \"me:5\"]"),
+    );
+    let run = upgrades(&w, &w.repo);
+    let main = w.common().join("private.lock");
+    assert_eq!(
+        run.stdout,
+        format!(
+            "source `me`: commit {} -> {}\nnote: the rules are not compared: the private layer does not resolve at the commits of {}\nwrote {2}: 3 rules enabled, 2 of them by the private layer\n",
+            &old[..8],
+            &new[..8],
+            main.display()
+        )
+    );
+}

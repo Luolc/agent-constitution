@@ -256,7 +256,12 @@ with `public = true`:
   commits and the public sources at the commits `statute.lock`
   records, and writes the worktree's `private.lock` and no other file,
   so a new worktree can take the newest private rules without changing
-  a tracked file. The rule set stays shared, so a command in one
+  a tracked file. Like `upgrade`, it prints what changed against the
+  lock file the worktree read, the main worktree's when it had none of
+  its own: each private git source's old and new commit, or that it
+  stayed, and each rule whose revision or content moved, brought in or
+  dropped, which it finds by resolving the private layer at the old
+  commits too. The rule set stays shared, so a command in one
   worktree that changes its sources, `statute source add` or an edit
   by hand, leaves the lock files of the others stale: their
   `statute compile` fails with a note to run `statute lock`, and

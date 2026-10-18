@@ -1124,8 +1124,9 @@ fn upgrade_private(root: &Path) -> Result<(), ()> {
     // What the private lock file records now, read before it is written.
     let read = dir.read_lock();
     let recorded = std::fs::read_to_string(&read).ok();
-    let was =
-        (Project::load_private(&project, &diags, &env, &dir).0).filter(|_| recorded.is_some());
+    let was = recorded
+        .as_ref()
+        .and_then(|_| Project::load_private(&project, &diags, &env, &dir).0);
     let newest = Env {
         private_newest: true,
         ..env
@@ -1163,21 +1164,19 @@ fn upgrade_private(root: &Path) -> Result<(), ()> {
             continue;
         };
         let name = &spec.name;
-        match old_sources
+        let was = old_sources
             .iter()
             .find(|o| &o.name == name)
-            .and_then(|o| o.git.as_ref())
-        {
-            Some(o) => match o.commit.as_deref() {
-                Some(c) if c == commit => {
-                    println!("source `{name}`: still at commit {}", short(commit));
-                }
-                c => lines.push(format!(
-                    "source `{name}`: commit {} -> {}",
-                    short(c.unwrap_or("none")),
-                    short(commit)
-                )),
-            },
+            .and_then(|o| o.git.as_ref()?.commit.as_deref());
+        match was {
+            Some(c) if c == commit => {
+                println!("source `{name}`: still at commit {}", short(commit));
+            }
+            Some(c) => lines.push(format!(
+                "source `{name}`: commit {} -> {}",
+                short(c),
+                short(commit)
+            )),
             None => lines.push(format!(
                 "brought in: source `{name}`, at commit {}",
                 short(commit)
