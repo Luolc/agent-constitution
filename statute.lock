@@ -1424,15 +1424,15 @@ by = "default"
 [[rules]]
 rule = "R347"
 revision = 1
-sha256 = "7ecf3f7bf2b55ad71b392eb1878ab2c56d5e901a0d89acdb465109c8f660c0e1"
-original-sha256 = "860742bdf187fb97ff4e6b63048950324e635f0ddaf6a0493517814a24020c28"
+sha256 = "028ff286b35e77ebbf32363479b92cc9a667573e800cc569fc21901144a93e71"
+original-sha256 = "d0dc8c57bb8aff0e3497395263fcd2f3d685fbb51502e59f58d854f3f5433825"
 by = "default"
 
 [[rules]]
 rule = "R348"
 revision = 1
-sha256 = "ae95dab10959b6304c52fee2c74e887f91bac1aaf9e16858e7a4424bbfaf8bc0"
-original-sha256 = "eca645443904179d671d3153304cb4f3ae6e7feda90adc3d1bb692f491166727"
+sha256 = "fcd1c5aa7523df04f71d5e8f4ce660e666c9bd9c7cb7fc67d3970f6d040fc15a"
+original-sha256 = "0886943658f92382350e4c81a856fdd6c24eeea5e4f218f9ff93df5ad2e8d389"
 by = "default"
 
 [[rules]]
@@ -1445,8 +1445,8 @@ by = "default"
 [[rules]]
 rule = "R350"
 revision = 1
-sha256 = "40dd29182f940b064532009098bc9202c2e1337cb76b5a7c063a590d95202676"
-original-sha256 = "b0328b0a360427621e11779f723a34b7b309d155ffbc38a096c2c57822c12ecf"
+sha256 = "9b826eccd426c7cc3d7f8154434903845e68e63da966697da41ceb8dbe65cfcb"
+original-sha256 = "112afffb7433d2bd2b42c4788868ab3372ee6619466e182f723d3dcf90128f4b"
 by = "default"
 
 [[rules]]
@@ -1459,22 +1459,22 @@ by = "default"
 [[rules]]
 rule = "R352"
 revision = 1
-sha256 = "5a8b48a9163c2e4785854e101c426dc34a77506dd71de60d0001c23ad370d054"
-original-sha256 = "cb53b0fa18035a11c06b1bf56d0dcba4b8f7f011852ae3cfddfe9405fc2e5baa"
+sha256 = "76de38642035caff10fab3067db283c8470f17d793544347a3e84501ac5a1a99"
+original-sha256 = "12bb1fab5890ab5dd134528c4007c05698c98022996cd54f4de268a524e075b6"
 by = "default"
 
 [[rules]]
 rule = "R353"
 revision = 1
-sha256 = "86afe380afa6728d089a77116380a8c636e502e7528acce99eca43b9bdf1e401"
-original-sha256 = "a72710906edfd9ffb5f9412241abd0dd15c146fab1aeba952a477024a2c4dd93"
+sha256 = "446c806121b941fa80b5a205ad093b3cb5d4ee0bf51e35a80c9301ccfe9149fc"
+original-sha256 = "98797c1715ee248bb521f037f83edcab6eb23a19777f3e1a4a073e232e8ecd97"
 by = "default"
 
 [[rules]]
 rule = "R354"
 revision = 1
-sha256 = "e541c5fd1384c97352b6b3c317618ed6ea5306dd85cdc84a0a7a4af856bd03ce"
-original-sha256 = "ddaca2bb2278b2dd0c8d2789cf2a81c829f3e039e03d1969085a7436599b0575"
+sha256 = "af3f650d0cc3b248ac78d6a9320eec51eac7cd2fc95f926294e7249a62a7dc5f"
+original-sha256 = "053a6c2d0dc38320fb4daafe61b69e8d6abe4b0d921b62759860eea8155ec0e9"
 by = "default"
 
 [[rules]]

@@ -16,8 +16,8 @@ en = "Give the routes ruled out and what must hold next in the report on a task"
 zh = "任务的报告里写明排除了哪些路线、下一步之前什么必须成立"
 
 [text.statement]
-en = "When you report on a task you end, to another agent or to a person, give the routes you ruled out with why, and what must hold before the next step."
-zh = "结束一项任务、向另一个 agent 或者向人报告时，写明你排除了哪些路线、各因为什么，以及下一步开始之前什么必须成立。"
+en = "When you report the end of a task to whoever delegated it, an agent or a person, give the routes you ruled out with why, and what must hold before the next step."
+zh = "结束一项任务、向派活的一方 (agent 或者人) 报告时，写明你排除了哪些路线、各因为什么，以及下一步开始之前什么必须成立。"
 
 [text.reason]
 en = '''
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-A route ruled out is an approach tried or weighed and dropped: the report says what it was and the evidence or reason that ruled it out. What must hold before the next step is each condition that the work after this task depends on, such as a merge, a person's yes, a release or a fix elsewhere. Where there is none of either, the report says so.
+A route ruled out is an approach tried or weighed and dropped: the report says what it was and the evidence or reason that ruled it out. What must hold before the next step is each condition that the work after this task depends on, such as a merge, a person's yes, a release or a fix elsewhere.
 
-Violated when an agent's report on a task it ends leaves out the routes it ruled out, or why, or what must hold before the next step, or does not say that there is none.
+Violated when an agent's report of the end of a task to whoever delegated it leaves out a route it ruled out, or why, or a condition that must hold before the next step.
 '''
 zh = '''
-排除的路线，指试过或考虑过、后来放弃的做法：报告写明它是什么，以及排除它的证据或理由。下一步之前必须成立的，指这项任务之后的工作所依赖的每个条件，例如一次合并、一个人的同意、一次发布或者别处的一处修复。两样都没有的，报告里也写明没有。
+排除的路线，指试过或考虑过、后来放弃的做法：报告写明它是什么，以及排除它的证据或理由。下一步之前必须成立的，指这项任务之后的工作所依赖的每个条件，例如一次合并、一个人的同意、一次发布或者别处的一处修复。
 
-agent 结束任务时的报告漏掉了排除的路线或排除的原因，漏掉了下一步之前必须成立的条件，或者没有就没写明没有的，即为违反本规定。
+agent 结束任务时交给派活一方的报告，漏掉了一条排除的路线或者排除的原因，或者漏掉了一个下一步之前必须成立的条件的，即为违反本规定。
 '''
 
 [translations]
-zh = "1b6287e927bd7391519d70cdfd8d590e6e627e77d6340846fa3a8aff41e353dd"
+zh = "834296cf4e9fc33a7f5f4e35806ef3803b7e1b87b7c6c64ec2df9447019be1b2"

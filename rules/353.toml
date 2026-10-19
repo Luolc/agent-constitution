@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-Installing, and system or global configuration, mean what they mean in {@rule:65}; setting up the project's own environment as its instructions prescribe, such as syncing its locked dependencies, is neither. {@rule:65} goes further for a tool to check or debug with. When unsure whether an act installs something or changes system or global configuration, treat it as doing so.
+Installing, and system or global configuration, mean what they mean in {@rule:65}, with one difference: a dependency that the change itself declares in the project's manifest and lock file, installed only into the project's own environment in the agent's own checkout or worktree, is not installing here, since the change's review covers it. Setting up the project's own environment as its instructions prescribe, such as syncing its locked dependencies, is not installing either. {@rule:65} goes further for a tool to check or debug with. When unsure whether an act installs something or changes system or global configuration, treat it as doing so.
 
 Violated when an agent installs software on a machine, or changes its system or global configuration, beyond what the project's instructions prescribe, without the yes that {@constitution:must-ask} requires.
 '''
 zh = '''
-安装、系统配置和全局配置的含义与{@rule:65}相同；按项目指令搭建项目自己的环境，例如同步项目锁定的依赖，两者都不算。为检查或调试而用的工具，{@rule:65} 管得更严。不确定某个操作是否属于安装、是否修改系统配置或全局配置的，按属于处理。
+安装、系统配置和全局配置的含义与{@rule:65}相同，只有一处不同：变更本身在项目的 manifest 和 lock 文件里声明的依赖，只装进 agent 自己的检出或 worktree 里的项目环境的，这里不算安装，因为它在这个变更的审查范围之内。按项目指令搭建项目自己的环境，例如同步项目锁定的依赖，也不算安装。为检查或调试而用的工具，{@rule:65} 管得更严。不确定某个操作是否属于安装、是否修改系统配置或全局配置的，按属于处理。
 
 agent 在项目指令规定的范围之外往机器上安装软件，或者修改机器的系统配置或全局配置，却没有取得{@constitution:must-ask}所要求的同意的，即为违反本规定。
 '''
 
 [translations]
-zh = "5ff459e2e4f792ec615950d68c0700f1a955e999b41a91232fb550889adb1403"
+zh = "02392637fde83da0db76ee1b5bdd2fd5c5815346351ca8ab76b969d3e12ce2a8"

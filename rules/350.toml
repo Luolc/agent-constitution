@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The whole error is all the output of the failed run, not only its last lines. What it points to is the log files, configuration, files and process or service state that the error names or the failing step uses. Running the command again only to see more of its output, with a verbose flag or on a single case, is reading. This rule asks for reading only and allows no change that another provision does not allow.
+The whole error is every error message and failure report the run printed, each in full with the lines around it, not only the last lines of the output; the lines of steps that passed are not part of it. What it points to is the log files, configuration, files and process or service state that the error names or the failing step uses. Running the command again only to see more of its output, with a verbose flag or on a single case, is reading. This rule asks for reading only and allows no change that another provision does not allow.
 
 Violated when, after a command fails, an agent runs it again or changes code, configuration or state to get past the failure without having read the whole error, or without having read what the error points to.
 '''
 zh = '''
-完整的报错，指失败那次运行的全部输出，不只是最后几行。报错指向的东西，指报错点名的、或者失败的那一步用到的日志文件、配置、文件和进程或服务的状态。只为看到更多输出而重新运行 (加上 verbose 选项，或者只跑一个用例)，算作读。本规定只要求读，不许可别的规定没有许可的任何改动。
+完整的报错，指这次运行打印出的每一条错误信息和失败报告，各自连同前后的几行完整读完，不只是输出的最后几行；通过了的那些步骤的输出不算在内。报错指向的东西，指报错点名的、或者失败的那一步用到的日志文件、配置、文件和进程或服务的状态。只为看到更多输出而重新运行 (加上 verbose 选项，或者只跑一个用例)，算作读。本规定只要求读，不许可别的规定没有许可的任何改动。
 
 命令失败后，agent 没有读完整的报错，或者没有读报错指向的东西，就重新运行它，或者为绕过这次失败改动代码、配置或状态的，即为违反本规定。
 '''
 
 [translations]
-zh = "ae757c89c5a53ce58650ebafd87a0fd59b29a7bbde524c5f70f0a90d736825d6"
+zh = "ae859bc19878096077488b08325c499f95a9766987cafd9a6501d7f050edb17c"

@@ -16,8 +16,8 @@ en = "Start an agent with Agent Fleet on the model and effort of its task's diff
 zh = "用 Agent Fleet 起 agent，按任务难度定型号与 effort"
 
 [text.statement]
-en = "When you start an agent with Agent Fleet, start it on {$tiers.hard-model} with effort {$tiers.hard-effort} when its task is large, needs several parties coordinated or is sensitive, on {$tiers.trivial-model} with effort {$tiers.trivial-effort} when the change it makes is small and simple, and on {$tiers.moderate-model} with effort {$tiers.moderate-effort} otherwise, and give the reason in the task file whenever you pick another model or effort."
-zh = "用 Agent Fleet 起 agent 时，任务工作量大、要多方协调或者比较敏感的，用 {$tiers.hard-model}，effort 用 {$tiers.hard-effort}；它要做的改动很小、很简单的，用 {$tiers.trivial-model}，effort 用 {$tiers.trivial-effort}；其余的用 {$tiers.moderate-model}，effort 用 {$tiers.moderate-effort}；选了别的型号或 effort 的，在 task file 里写明理由。"
+en = "When you start an agent with Agent Fleet, start it on {$tiers.hard-model} with effort {$tiers.hard-effort} when its task is large, needs several parties coordinated or is sensitive, on {$tiers.trivial-model} with effort {$tiers.trivial-effort} when its task concerns only a small and simple change, and on {$tiers.moderate-model} with effort {$tiers.moderate-effort} otherwise, and give the reason in the task file whenever you pick another model or effort."
+zh = "用 Agent Fleet 起 agent 时，任务工作量大、要多方协调或者比较敏感的，用 {$tiers.hard-model}，effort 用 {$tiers.hard-effort}；任务只涉及一处很小、很简单的改动的，用 {$tiers.trivial-model}，effort 用 {$tiers.trivial-effort}；其余的用 {$tiers.moderate-model}，effort 用 {$tiers.moderate-effort}；选了别的型号或 effort 的，在 task file 里写明理由。"
 
 [text.reason]
 en = '''
@@ -31,17 +31,17 @@ zh = '''
 en = '''
 The difficulty is that of the task the agent is started for, judged by whoever starts it: a lead's by its job as a whole, an implementer's by its change, a reviewer's by the change it reviews, a research worker's by its research. A task is large when it spans many files or steps or takes many rounds; it needs several parties coordinated when it depends on other agents, repositories or people working on it at the same time, as a cross-repository change does; it is sensitive when a mistake in it is costly or hard to undo, as in work on credentials, guards, the instruction system, a release or a running service. A change is small and simple when it touches little and needs no judgement beyond what the task says, such as an edit to documents or to a simple configuration. When unsure between two difficulties, take the harder.
 
-The thread agent starts the lead and the lead starts the workers, passing a model and an effort with `--model` and `--effort`. Without them, `fleet job start` and `fleet spawn` use `models.lead` or `models.worker` of the scope's settings, and when the scope sets none, the agent's own default applies; so the one who starts an agent passes both whenever what Agent Fleet would use otherwise is not the pair this rule gives. A worker that `fleet watch` starts uses the `model` and `effort` of the watch's entry, which whoever writes the entry picks the same way, by the watch's task.
+The thread agent starts the lead and the lead starts the workers, passing a model and an effort with `--model` and `--effort`. Without them, `fleet job start` and `fleet spawn` use `models.lead` or `models.worker` of the scope's settings, and when the scope sets none, the agent's own default applies; so the one who starts an agent passes both whenever what Agent Fleet would use otherwise is not the pair this rule gives. A worker that `fleet watch` starts is started by no agent: it uses the `model` and `effort` of the watch's entry, and this rule does not cover it.
 
 Violated when an agent is started with Agent Fleet on a model or effort other than the one this rule gives for its task's difficulty, and the task file gives no reason for it.
 '''
 zh = '''
 难度指为之起这个 agent 的那项任务的难度，由起它的一方判断：lead 按它的整个 job，实现方按它的改动，审查方按它审的改动，调研 worker 按它的调研。任务涉及的文件或步骤多、要做很多轮的，是工作量大；任务依赖同时在做它的其他 agent、仓库或人的，是要多方协调，跨仓库的改动就是这样；任务里出错代价大或者难以撤回的，是比较敏感，例如涉及凭证、guard、指令系统、发布或运行中服务的工作。改动涉及的东西少、除了任务写明的之外不需要判断的，是很小、很简单的改动，例如改文档或者改简单的配置。拿不准两档之间算哪一档的，按难的那档。
 
-thread agent 起 lead，lead 起 worker，型号和 effort 用 `--model` 与 `--effort` 传。不传时，`fleet job start` 与 `fleet spawn` 用 scope 设置里的 `models.lead` 或 `models.worker`，scope 也没配的，由 agent 自己的默认值决定；所以 Agent Fleet 不传参数时会用的组合不是本规定给出的那一对时，起 agent 的一方两个参数都要传。`fleet watch` 起的 worker 用 watch 条目里的 `model` 与 `effort`，写条目的一方按 watch 的任务同样地选。
+thread agent 起 lead，lead 起 worker，型号和 effort 用 `--model` 与 `--effort` 传。不传时，`fleet job start` 与 `fleet spawn` 用 scope 设置里的 `models.lead` 或 `models.worker`，scope 也没配的，由 agent 自己的默认值决定；所以 Agent Fleet 不传参数时会用的组合不是本规定给出的那一对时，起 agent 的一方两个参数都要传。`fleet watch` 起的 worker 不是哪个 agent 起的：它用 watch 条目里的 `model` 与 `effort`，不归本规定管。
 
 用 Agent Fleet 起 agent 时，型号或 effort 不是本规定按任务难度给出的那一个，task file 里又没有写理由的，即为违反本规定。
 '''
 
 [translations]
-zh = "e37b2efd45c7a58a65269f9145ea27548f70747ca548b4b3c78d62c390f26122"
+zh = "2d6286daa6c0f67de8fcf01de3c1fa4658c3d512ee77e820d4cea3e99ea72bdc"
