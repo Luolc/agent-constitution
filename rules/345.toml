@@ -1,0 +1,43 @@
+id = 345
+slug = "link-slack-threads"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 344
+default = "on"
+authority = ["purpose", "evidence.grounds"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Link each Slack thread, card or message that a text for a person points to"
+zh = "给人看的文字提到 Slack 的线程、卡片或者消息，附上链接"
+
+[text.statement]
+en = "When a text you write for a person, such as a reply, a card or a report, points to a Slack thread, card or message other than the thread the text is posted in, give with it a link that opens that thread, card or message, never only its channel, thread key or timestamp."
+zh = "写给人看的文字 (回复、卡片、报告等) 提到 Slack 里的某个线程、卡片或者消息，而它不是这段文字所在的线程时，附上能打开它的链接，不能只写频道、线程 key 或者时间戳。"
+
+[text.reason]
+en = '''
+A channel name, a thread key or a timestamp tells a person where something is, but leaves them to find it by hand: to open the channel and scroll, or to search for it. A link opens it in one click, so the person spends their attention on what is there rather than on finding it ({@constitution:purpose}), and can check for themselves what the text says of it ({@constitution:evidence.grounds}).
+'''
+zh = '''
+频道名、线程 key 或者时间戳告诉人东西在哪儿，却要人自己去找：打开频道往上翻，或者去搜。有链接，点一下就能打开，人的注意力花在那里的内容上，而不是花在找它上 ({@constitution:purpose})，也能自己核对文字里对它的说法 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+A text points to a thread, card or message when it names one, by its channel, a thread key such as `CHANNEL/TS`, a timestamp, or words such as "in the thread in #channel", for the person to look at. The link sits beside that mention and opens the very thread, card or message named, not only its channel; how it is written follows the medium, in Markdown `[text](url)`. Where a text may not locate the thread at all, as in a public repository ({@rule:259}), this rule asks for no link.
+
+Violated when a text for a person names another Slack thread, card or message, by any of these, and gives no link beside it that opens that thread, card or message.
+'''
+zh = '''
+文字提到线程、卡片或者消息，是指它用频道、`CHANNEL/TS` 这样的线程 key、时间戳，或者「在 #某频道 的线程里」这样的说法点出其中一个，让人去看。链接紧挨着这处提及，打开的就是点出的那个线程、卡片或者消息，而不只是它所在的频道；链接怎么写按所在的媒介，Markdown 里写成 `[text](url)`。文字里根本不能写出线程位置的，例如公开仓库 ({@rule:259})，本规定不要求链接。
+
+给人看的文字用上面任一种方式点出别的 Slack 线程、卡片或者消息，旁边却没有能打开它的链接的，即为违反本规定。
+'''
+
+[translations]
+zh = "ff650df38ebd75be89fa9874d28dbfa2e17292d9c494c7a77acdce0eef623a1c"
