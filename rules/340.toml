@@ -1,0 +1,44 @@
+id = 340
+slug = "read-the-python-guide"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 339
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Read the Python guide before writing Python or setting up a Python project"
+zh = "写 Python 或建 Python 项目之前先读 Python 指南"
+
+[text.statement]
+en = "Before you write, change or review Python code, or set up a Python project, read the Python guide that the rules in force name, together with the parts it names for that work, and follow it."
+zh = "写、改、审 Python 代码，或者建 Python 项目之前，先读现行规定指定的 Python 指南，连同它为这件事指定的部分一起读，并照着做。"
+
+[text.reason]
+en = '''
+A guide holds what a person has already settled about Python: the traps a linter does not catch, how a project is laid out and which checks it turns on. An agent that does not read it makes the same mistakes again, and the person has to point them out each time ({@constitution:purpose}).
+'''
+zh = '''
+指南里收着人已经定下的 Python 做法：linter 抓不住的坑，项目怎么布局，开哪些检查。agent 不读，就会把同样的错再犯一遍，人每次都得重新指出来 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+The guide is a skill or a document that a rule enabled in the rule set names, with where to find it and which of its parts serve which work; where no enabled rule names one, this rule requires nothing. Setting up a Python project includes adding one to a repository that already has others.
+
+Violated when an agent writes, changes or reviews Python code, or sets up a Python project, without having first read the guide and the parts it names for that work, or when the work does what the guide lists as a fault and gives a fix for.
+'''
+zh = '''
+Python 指南是规则集里启用的某条规定指定的 skill 或文档，那条规定同时写明它在哪里、哪些部分用于哪种工作；没有启用的规定指定 Python 指南的，本规定不提出要求。建 Python 项目也包括往已经有 Python 项目的仓库里再加一个。
+
+agent 写、改、审 Python 代码或建 Python 项目之前，没有先读指南以及它为这件事指定的部分的，或者做出来的东西有指南列为毛病、给了改法的做法的，即为违反本规定。
+'''
+
+[translations]
+zh = "944b30c3881ad02c7ea5e469333324c89859ab30491f3ad95a1a38eeca53791e"

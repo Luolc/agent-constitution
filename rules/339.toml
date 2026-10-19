@@ -1,0 +1,23 @@
+id = 339
+slug = "python"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 83
+default = "off"
+
+[title]
+en = "Python"
+zh = "Python"
+
+[applicability]
+en = '''
+Covers Python code and the projects that hold it: the guide an agent reads before writing, reviewing or setting up Python, and the checks a Python project configures and where they run. Enable it in a repository with Python code; a repository without any does not need it.
+'''
+zh = '''
+管 Python 代码和装着它的项目：agent 写、审 Python 或建 Python 项目之前读的指南，以及 Python 项目配置哪些检查、在哪里跑。仓库里有 Python 代码，就要启用；没有的仓库不需要。
+'''
+
+[translations]
+zh = "7f6d6c3c74398f457eba60bb7a9c99d5cfacab5abf8c47413e449d6d23d76856"

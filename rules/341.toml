@@ -1,0 +1,44 @@
+id = 341
+slug = "python-reference-configuration"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 339
+default = "on"
+authority = ["prefer-tooling"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Configure a new Python project's checks from the reference configuration"
+zh = "新的 Python 项目照参考配置设置检查"
+
+[text.statement]
+en = "When you create a Python project or add one to a repository, configure its formatter, linter, docstring checker and type checker with the settings of the reference configuration that the rules in force name, and for each setting you leave out or change, say why in the repository's instructions or a decision record, in that change or before it."
+zh = "新建 Python 项目或往仓库里加一个时，它的 formatter、linter、docstring 检查器和类型检查器照现行规定指定的参考配置设置；少设或改了值的每一项，在这个变更里或之前，于仓库的指令或决策记录中写明理由。"
+
+[text.reason]
+en = '''
+A mistake that a linter rule catches costs nothing once the rule is on, and a review or a person's reminder each time it is off ({@constitution:prefer-tooling}). A project set up from memory turns on fewer rules than the reference without anyone choosing to; a written reason makes a gap a choice that a reviewer can weigh.
+'''
+zh = '''
+linter 规则能抓的错，规则开着就不费事，关着就每次都要靠审查或人来提醒 ({@constitution:prefer-tooling})。凭记忆建的项目，会在没人选择的情况下比参考配置少开规则；写下理由，缺的那一项就成了审查方能掂量的选择。
+'''
+
+[text.verification]
+en = '''
+The reference configuration is one that a rule enabled in the rule set names, with where to find it; where no enabled rule names one, this rule requires nothing. A project is created or added by the change that adds its project file, such as `pyproject.toml`; a member added to an existing workspace whose root holds these settings takes them from there. Turning on more rules than the reference, or adding a stricter setting, is not leaving out or changing a setting.
+
+Violated when a change creates a Python project or adds one to a repository, and a setting of the reference configuration for the formatter, linter, docstring checker or type checker is missing from the configuration that applies to the project or has another value, with no reason for it written in the repository's instructions or a decision record in that change or before it.
+'''
+zh = '''
+参考配置是规则集里启用的某条规定指定的配置，那条规定同时写明它在哪里；没有启用的规定指定参考配置的，本规定不提出要求。新建或加入项目，指加入其项目文件 (例如 `pyproject.toml`) 的那个变更；往已有的 workspace 里加成员时，若 workspace 根上已有这些设置，成员从根上继承即可。比参考配置多开规则、设得更严，不算少设或改值。
+
+变更新建了 Python 项目或往仓库里加了一个，而参考配置里 formatter、linter、docstring 检查器或类型检查器的某项设置在适用于该项目的配置里缺了或值不同，在这个变更里或之前，仓库的指令和决策记录里都没有写明理由的，即为违反本规定。
+'''
+
+[translations]
+zh = "c6628f74174309d9e5e38e7d1b19716aeda9925e390ca2e5bdd3c369d205ed59"
