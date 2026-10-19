@@ -30,6 +30,8 @@ domains = [
   "R188",
   # The repository holds Python code, in tools/.
   "R339",
+  # Agents here talk with people in Slack threads.
+  "R344",
 ]
 
 rules = [
