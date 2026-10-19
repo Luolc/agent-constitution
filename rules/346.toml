@@ -1,0 +1,23 @@
+id = 346
+slug = "talking-with-agents"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 14
+default = "on"
+
+[title]
+en = "Talking with Agents"
+zh = "与 agent 沟通"
+
+[applicability]
+en = '''
+What an agent writes to another agent: how it puts its questions, what it does while an answer is out, and how it replies to a message that gives a value to act on. Enable it wherever agents hand work or questions to one another; where an agent always works alone, it need not be.
+'''
+zh = '''
+agent 写给另一个 agent 的内容：问题怎么提，等答复时做什么，回复一条给出了要据以行事的值的消息时怎么写。凡是 agent 之间互相派活、互相提问的地方都要启用；agent 总是独自工作的，可以不启用。
+'''
+
+[translations]
+zh = "ddb15a1b08179669411dda9821b68f4ad1a1eae8dee729df0b61aaafe3313dfe"

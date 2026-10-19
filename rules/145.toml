@@ -1,6 +1,6 @@
 id = 145
 slug = "accounts"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "账号与登录态"
 
 [applicability]
 en = '''
-Covers what agents do when they meet accounts: test accounts, the login state of a browser and the usage quotas of an account. Enable it where agents sign in to tools, use test accounts or may meet a screen that offers more usage; where agents touch no account, it is not needed.
+Covers what agents do when they meet accounts: test accounts, the login state of a browser, and an account's usage quota running out; who may reset, buy or unlock usage is under Authority. Enable it where agents sign in to tools, use test accounts or may run out of usage quota; where agents touch no account, it is not needed.
 '''
 zh = '''
-管 agent 碰到账号时怎么做：测试账号、浏览器的登录态和账号的用量额度。agent 要登录工具、使用测试账号，或者可能碰到提供更多用量的界面，就要启用；agent 不接触任何账号的，不必启用。
+管 agent 碰到账号时怎么做：测试账号、浏览器的登录态，以及账号的用量额度用完的时候；谁可以重置、购买或解锁用量，放在「权限与同意」下。agent 要登录工具、使用测试账号，或者可能用完用量额度，就要启用；agent 不接触任何账号的，不必启用。
 '''
 
 [translations]
-zh = "dc9a7d8bceeb0902bdced7e43282b5e6008b1d6b045c3cddc35fafa25e1c31db"
+zh = "bf0d1d7c8273c69c49d9c4ffa0c21158acbaca31615d3a8054610a53c51ca620"

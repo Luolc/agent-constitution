@@ -270,3 +270,107 @@ zh = "审查过了几轮仍未批准，就交给委托人"
 
 [parameter.translations]
 zh = "d57fef23ca7032167987ac5a56e3c545b3a8978b528bc1555c3a837285013585"
+
+[[parameter]]
+name = "questions.points"
+type = "string"
+scope = "personal"
+default = "5"
+
+[parameter.title]
+en = "Most points in one message of questions to another agent"
+zh = "一条消息里问另一个 agent 的问题最多几条"
+
+[parameter.translations]
+zh = "182937f0a31f2ed0937f28de81852513f6fef7a5627a83335b13e9ce2a7ae6c4"
+
+[[parameter]]
+name = "stuck.attempts"
+type = "string"
+scope = "repo"
+default = "2"
+
+[parameter.title]
+en = "Attempts in a row without new evidence after which an agent stops and reports"
+zh = "连续几次尝试没有新证据，agent 就停下来报告"
+
+[parameter.translations]
+zh = "01688356ca2b7c2502531ece6371c488171e5f48addf9213256975f806b9f527"
+
+[[parameter]]
+name = "tiers.hard-model"
+type = "string"
+scope = "personal"
+default = "the most capable model"
+
+[parameter.title]
+en = "Model of an agent whose task is large, needs several parties coordinated or is sensitive"
+zh = "任务工作量大、要多方协调或者比较敏感的 agent 用的型号"
+
+[parameter.translations]
+zh = "9f4b10ce443fdfaabbc5db6a6aaf9dfc77334a929bfe9f765ebfc2c31cd57377"
+
+[[parameter]]
+name = "tiers.hard-effort"
+type = "string"
+scope = "personal"
+default = "high"
+
+[parameter.title]
+en = "Effort of an agent whose task is large, needs several parties coordinated or is sensitive"
+zh = "任务工作量大、要多方协调或者比较敏感的 agent 用的 effort"
+
+[parameter.translations]
+zh = "c24f5d5f385d2b5daacaeaf6590ed9a3f35a14f3db79d77004ec25f464ac1fad"
+
+[[parameter]]
+name = "tiers.moderate-model"
+type = "string"
+scope = "personal"
+default = "a mid-sized model"
+
+[parameter.title]
+en = "Model of an agent whose task is neither hard nor trivial"
+zh = "任务既不难也不是 trivial 的 agent 用的型号"
+
+[parameter.translations]
+zh = "3b1a84347dd4edbe4fe4680e1b7e0900b39195dc100151e0f7c529144e8fe014"
+
+[[parameter]]
+name = "tiers.moderate-effort"
+type = "string"
+scope = "personal"
+default = "medium"
+
+[parameter.title]
+en = "Effort of an agent whose task is neither hard nor trivial"
+zh = "任务既不难也不是 trivial 的 agent 用的 effort"
+
+[parameter.translations]
+zh = "af30640b5dff106473ad89842445aea5a1e2ae532c4155dafd3e6b9d638b1c07"
+
+[[parameter]]
+name = "tiers.trivial-model"
+type = "string"
+scope = "personal"
+default = "the smallest model"
+
+[parameter.title]
+en = "Model of an agent whose change is small and simple"
+zh = "改动很小、很简单的 agent 用的型号"
+
+[parameter.translations]
+zh = "c69e589524c79dd58d2aa9eaf75b20b67c2b8426b12b43b873a3c6b10dd7b5b4"
+
+[[parameter]]
+name = "tiers.trivial-effort"
+type = "string"
+scope = "personal"
+default = "low"
+
+[parameter.title]
+en = "Effort of an agent whose change is small and simple"
+zh = "改动很小、很简单的 agent 用的 effort"
+
+[parameter.translations]
+zh = "6118fe38722aef55ca96d1ac181e30d84566c3fdd98315369fe10ef2efed8c0d"

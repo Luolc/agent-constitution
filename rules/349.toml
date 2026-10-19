@@ -1,0 +1,43 @@
+id = 349
+slug = "name-back-a-value-to-act-on"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 346
+default = "on"
+authority = ["evidence.facts"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Name back in a reply a value someone will act on"
+zh = "回复里写出别人要据以行事的值"
+
+[text.statement]
+en = "When you reply to another agent's message that gives a value someone will act on, such as a number, a SHA or a path, write that value out in your reply instead of only referring to it."
+zh = "回复另一个 agent 的消息，消息里有别人要据以行事的值 (例如一个数、一个 SHA 或一个路径) 的，在回复里把这个值写出来，不要只用指代。"
+
+[text.reason]
+en = '''
+A value written back as it was read shows the sender what the reply rests on, so that a value misread, mistyped or meant for another message is caught before someone acts on it ({@constitution:evidence.facts}).
+'''
+zh = '''
+把读到的值原样写回去，发消息的一方就看得到回复依据的是什么；读错的、抄错的、本来属于另一条消息的值，在有人据以行事之前就能发现 ({@constitution:evidence.facts})。
+'''
+
+[text.verification]
+en = '''
+A value someone will act on is one the reply leads to an act on: a head to merge, a path to run in, a count to report. The reply writes it out as the agent read it, such as `approved 1a2b3c4`, not as "the SHA you sent" or "that one".
+
+Violated when an agent replies to such a message and refers to such a value without writing it out.
+'''
+zh = '''
+别人要据以行事的值，指回复会引出一个用到它的动作：要合并的 head、要在里面运行的路径、要写进报告的数。回复按 agent 读到的样子把它写出来，例如 `approved 1a2b3c4`，而不是「你发的那个 SHA」或者「那个」。
+
+agent 回复这样的消息时只用指代、没有把这样的值写出来的，即为违反本规定。
+'''
+
+[translations]
+zh = "38da7b489f7e5eb911226e3e275e3d8a32a2c89df87895074c725687503961b6"

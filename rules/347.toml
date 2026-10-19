@@ -1,0 +1,43 @@
+id = 347
+slug = "questions-to-an-agent-at-once"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 346
+default = "on"
+authority = ["asking", "automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Put questions to another agent at once, at most {$questions.points}, each with a recommended answer"
+zh = "向另一个 agent 提的问题一次问完，不超过 {$questions.points} 条，每条带推荐的答案"
+
+[text.statement]
+en = "Put the questions you have for another agent to it together, in one message of at most {$questions.points} points, each with the answer you recommend."
+zh = "要问另一个 agent 的问题一起问，写在一条消息里，不超过 {$questions.points} 条，每条带上你推荐的答案。"
+
+[text.reason]
+en = '''
+A question between agents often goes on to a principal through the agent that relays it; put whole, short and with a recommended answer on each point, it can be settled or relayed as it stands, and one yes can settle it ({@constitution:asking}). Every further round trip holds up the work that waits on the answer ({@constitution:automation-first.keep-moving}).
+'''
+zh = '''
+agent 之间的问题，常常还要经转达的 agent 交到委托人那里；一次问全、条数少、每条带推荐答案，就能原样定下或者原样转达，一句「同意」就能定 ({@constitution:asking})。每多来回一次，等着答复的工作就多耽搁一次 ({@constitution:automation-first.keep-moving})。
+'''
+
+[text.verification]
+en = '''
+The questions put together are those the agent has about its work at the time it asks; one that arises only later, from an answer or from new work, may go in a later message. Before asking, the agent settles what it can itself, by the rules, precedents and earlier answers ({@constitution:decide-yourself.answered-questions}). When more than {$questions.points} points are left, it asks the {$questions.points} that hold up the most work and says how many are left. Each point gives the answer the agent recommends, so that the other agent can settle it by agreeing.
+
+Violated when an agent puts to another agent, in several messages, questions it already had when it sent the first; puts more than {$questions.points} points in one message; or puts a point without the answer it recommends.
+'''
+zh = '''
+一起问的，是 agent 提问时手头这件工作上已有的问题；之后才冒出来的 (从答复里或者从新的工作里来的)，可以放到后面的消息里。提问之前，agent 先按规定、先例和以前的答复把自己能定的定下来 ({@constitution:decide-yourself.answered-questions})。剩下的超过 {$questions.points} 条的，先问最耽搁工作的 {$questions.points} 条，并写明还剩几条。每条写明 agent 推荐的答案，对方同意就能定下来。
+
+agent 把发第一条消息时就已经有的问题分成几条消息去问另一个 agent 的，一条消息里超过 {$questions.points} 条的，或者有一条没有写推荐答案的，即为违反本规定。
+'''
+
+[translations]
+zh = "fabbb3e6e3b589a365c470fc69c23aa665bc2126a83be36e34e6ee55ff09b1f5"
