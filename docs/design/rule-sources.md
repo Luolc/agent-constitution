@@ -617,8 +617,11 @@ that its descriptions are in Chinese, which overrides the public one.
 The lasting fix is to propose to the source the rule in its
 principle-only form.
 The compiled file then has only the local rule, at the place of the one
-it overrides, with a line that says which one, `Overrides R200.`
-([Compilation and the site](statute-command.md#compilation-and-the-site)). The
+it overrides, and no line about the override, in `AGENTS.md` and in the
+private full text alike
+([Compilation and the site](statute-command.md#compilation-and-the-site)).
+The local site lists the rule it overrides on its page
+([The local site](statute-command.md#the-local-site)). The
 public rule is not superseded: it stays in force in every other rule
 set.
 
@@ -653,16 +656,18 @@ may override only a rule of a lower rank:
 Two rules of the same rank cannot override each other, and within one
 source a rule is changed in place or superseded, never overridden. A
 chain is allowed: a local rule may override `team:7`, which overrides
-`R200`; the compiled file then shows the local rule, and its line says
-"Overrides team:7, which overrides R200". The reference direction
+`R200`; the compiled file then shows the local rule alone, the local
+site gives each link of the chain on the page of the rule that makes it,
+and `statute explain` gives the whole chain, "it overrides team:7, which
+overrides R200". The reference direction
 ([Which rules may cite which](#which-rules-may-cite-which)) applies as well: a public rule
 cannot override a private one.
 
 **Only within one output.** An override is made only between rules
 compiled into the same output. In a private repository every layer is
 compiled into one file, so any rule may override one of a lower rank:
-the overridden rule does not appear, and the overriding rule says which
-one it overrides. In a public repository, the private layer overrides
+the overridden rule does not appear, and the overriding rule stands in
+its place. In a public repository, the private layer overrides
 no rule of the public layer
 ([Private rules in a public repository](#private-rules-in-a-public-repository)):
 a rule it enables fails when it overrides a rule of the public layer,
