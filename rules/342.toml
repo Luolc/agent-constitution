@@ -1,5 +1,5 @@
 id = 342
-slug = "python-checks-in-hooks-and-ci"
+slug = "python-lint-in-hooks"
 revision = 1
 kind = "rule"
 status = "trial"
@@ -13,32 +13,32 @@ check = "none"
 uses = ["instructions", "review"]
 
 [title]
-en = "Run a Python project's lint in the commit hooks and all its checks in CI"
-zh = "Python 项目的 lint 进 commit hook，全部检查进 CI"
+en = "Run a Python project's lint and lock file check in the commit hooks"
+zh = "Python 项目的 lint 和锁文件检查进 commit hook"
 
 [text.statement]
-en = "Run a Python project's formatter, linter and docstring checker and the check that its lock file is current in the repository's commit hooks, and every check it configures, its type check and tests among them, in CI."
-zh = "Python 项目的 formatter、linter、docstring 检查器，以及检查锁文件是否最新的那项检查，放进仓库的 commit hook；它配置的每一项检查，类型检查和测试在内，都放进 CI。"
+en = "Run the formatter, linter and docstring checker that a Python project configures, and the check that its lock file is current, in the repository's commit hooks."
+zh = "Python 项目配置的 formatter、linter 和 docstring 检查器，以及检查它的锁文件是否最新的那项检查，都放进仓库的 commit hook。"
 
 [text.reason]
 en = '''
-A check that runs only when someone remembers to run it catches mistakes only then. In the hooks, the fast checks stop a mistake before it is committed; in CI, every check runs on every change, whatever was run before the push ({@constitution:automation-first.keep-moving}). The type check and the tests stay out of the hooks, which {@rule:250} keeps to checks that take seconds.
+A check that runs only when someone remembers to run it catches mistakes only then; in the hooks, these fast checks stop a mistake before it is committed ({@constitution:automation-first.keep-moving}). The type check and the tests stay out of the hooks, which {@rule:250} keeps to checks that take seconds.
 '''
 zh = '''
-只在有人记得时才跑的检查，也只有那时才抓得到错。快的检查放进 hook，错在提交之前就被拦下；全部检查放进 CI，每个变更都跑一遍，不管 push 之前跑过什么 ({@constitution:automation-first.keep-moving})。类型检查和测试不进 hook，{@rule:250} 把 hook 限在几秒跑完的检查。
+只在有人记得时才跑的检查，也只有那时才抓得到错；这几项快的检查放进 hook，错在提交之前就被拦下 ({@constitution:automation-first.keep-moving})。类型检查和测试不进 hook，{@rule:250} 把 hook 限在几秒跑完的检查。
 '''
 
 [text.verification]
 en = '''
-The checks a project configures are those its configuration sets up: the tools in its dependency groups with settings for them, and its test suite. The lock file check is one that fails when the lock file no longer matches the project file, such as the `uv-lock` hook. Running a check in the hooks and again in CI meets both halves.
+What the hooks run is read from their configuration. A project configures a tool when the tool is in its dependency groups with settings for it; whether a project must have a docstring checker at all is for {@rule:341}, not this rule. The lock file check is one that fails when the lock file no longer matches the project file, such as the `uv-lock` hook; a project that keeps no lock file needs none. A gap that is already there when a repository enables this rule is broken only by a change that touches it, as below, so that unrelated changes are not in breach.
 
-Violated when a repository's commit hooks, read from their configuration, do not run the formatter, the linter, the docstring checker or the lock file check of a Python project in it, or when its CI does not run, on every change, a check that a Python project in it configures.
+Violated when a change adds a Python project, adds a formatter, linter or docstring checker to one, or changes the commit hook configuration, and after the change the hooks do not run one of these checks, or the lock file check, for a Python project in the repository.
 '''
 zh = '''
-项目配置的检查，指它的配置里设了的那些：依赖组里有、且配了设置的工具，以及它的测试集。锁文件检查指锁文件与项目文件对不上时会失败的检查，例如 `uv-lock` hook。同一项检查在 hook 里跑、在 CI 里再跑一遍，两半都满足。
+hook 跑什么，从 hook 的配置里读。项目配置了某个工具，指这个工具在它的依赖组里、并且配了设置；项目要不要有 docstring 检查器，归 {@rule:341} 管，不归本规定。锁文件检查指锁文件与项目文件对不上时会失败的检查，例如 `uv-lock` hook；项目不留锁文件的，不需要它。仓库启用本规定时已经存在的缺口，只有按下面所说碰到它的变更才算违反，与它无关的变更不算。
 
-仓库的 commit hook (从其配置读) 没有跑仓库里某个 Python 项目的 formatter、linter、docstring 检查器或锁文件检查的，或者仓库的 CI 没有对每个变更都跑仓库里某个 Python 项目配置的某项检查的，即为违反本规定。
+变更加了 Python 项目、给某个项目加了 formatter、linter 或 docstring 检查器，或者改了 commit hook 的配置，而变更之后 hook 没有为仓库里某个 Python 项目跑其中某项检查或锁文件检查的，即为违反本规定。
 '''
 
 [translations]
-zh = "b8bb052f7bc170352ff1cc9906464d015da8225e05660efc095643a29e712e4b"
+zh = "ea75f529315c3bcf6a8f20dd939c62c98f3ac14f0fa717f7decf211c5f60fe75"

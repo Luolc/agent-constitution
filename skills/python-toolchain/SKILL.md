@@ -2,7 +2,7 @@
 name: python-toolchain
 description: How to set up the check toolchain of a Python repo with uv and pre-commit, so that the commit hooks and CI run the same tool versions, taken from uv.lock. Use when creating a Python repo or adding a Python project to one, or when adding or changing the Python checks in a repo's pre-commit configuration or CI.
 metadata:
-  statute-rules: "341 342"
+  statute-rules: "341 342 343"
 ---
 
 # Python check toolchain
