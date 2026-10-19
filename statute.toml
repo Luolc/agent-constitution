@@ -28,6 +28,8 @@ domains = [
   "R152",
   # and approvals relayed through fednet.
   "R188",
+  # The repository holds Python code, in tools/.
+  "R339",
 ]
 
 rules = [
