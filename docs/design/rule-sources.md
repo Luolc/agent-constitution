@@ -26,6 +26,7 @@ replaces.
 - [Conflicting practices as one-ofs](#conflicting-practices-as-one-ofs)
 - [Cutover from the hand-written guide](#cutover-from-the-hand-written-guide)
 - [What this changes](#what-this-changes)
+- [Open questions](#open-questions)
 
 ## Four kinds of source
 
@@ -835,15 +836,16 @@ conditions inside either child.
 
 ## Cutover from the hand-written guide
 
-The hand-written guide is replaced by rules of the four kinds as a
-whole, in one step, once every part of it has one and the four
-conditions below hold; every repository the guide governs switches
-then. There is no
-transition clause: no text that keeps part of the guide in force after
-the switch, and no switch of one topic (credentials, say) before the
-others. What is specific to one environment was never a candidate for
-the first-party source and does not wait in the guide either: it is a
-global private or a local rule from the start.
+The hand-written guide is replaced repository by repository. Since
+2026-10-15 the guide says of itself that an agent working in a
+repository whose root has a `statute.toml` ignores the guide entirely
+and follows only that repository's `AGENTS.md`. This one sentence is
+the only transition clause: a repository switches when the change that
+adds its rule set is merged, and it switches as a whole, with no topic
+(credentials, say) moving before the others. What is specific to one
+environment was never a candidate for the first-party source and does
+not wait in the guide either: it is a global private or a local rule
+from the start.
 
 **The inventory.** Each item of the guide gets exactly one destination,
 recorded in a mapping on the private side, as in
@@ -862,7 +864,15 @@ step 3, with its "private rule" split three ways:
 A repository's own departure from the guide (that guide's step 6)
 becomes an override, a child of a one-of, or is removed.
 
-**Done when** all of these hold, checked on the private side:
+**Retiring the guide.** Once every repository in which agents still
+work has switched, one
+change on the private side retires the guide. It installs nothing in
+its place: no compiled output goes into the home directory, which
+afterwards holds no rule text (whether it keeps a short pointer is an
+[open question](#open-questions)). The user-level compiler of
+[Compilation](compilation.md) is planned, not built, and the retirement
+does not wait for it. The change may be made when all of these hold,
+checked on the private side:
 
 1. Every item of the guide has a destination in the mapping, and each
    destination that is a rule gives its reference (`R42`, `me:4`, `L12`).
@@ -871,15 +881,24 @@ becomes an override, a child of a one-of, or is removed.
    items. The private-term scan ([Checkers](checkers.md#checkers)) runs
    with the guide's file name and the pattern of its item numbers as
    terms, each pattern first run on a line that must match.
-3. Every repository the guide governs has a rule set, and `statute lock`
-   and `statute compile` succeed for it, the private rule set included.
-   The compiled output has been compared with the guide section by
-   section, and every difference is recorded as intended.
-4. [Load verification](checkers.md#load-verification) passes on the compiled
-   output.
-
-Then one change on the private side installs the compiled output in
-place of the guide and retires the guide.
+3. Every repository in which agents still work has a `statute.toml` at
+   its root and passes `statute compile --check`, the private rule set
+   included where it has one, and the change that added its rule set
+   recorded what its compiled output keeps, changes and drops of the
+   instructions it replaced. A repository in which no agent works any
+   more is listed as such on the private side instead.
+4. A load check stands in for
+   [Load verification](checkers.md#load-verification), which is planned,
+   not built. On each machine, once the retiring change is applied
+   there, Claude Code, Codex and Grok each start one session in a
+   repository that has switched. What the session loaded holds a line
+   of that repository's `AGENTS.md` that the guide does not hold, such
+   as the heading of the constitution's edition, and does not hold the
+   opening paragraph of the guide. The generated-file line at the top
+   of `AGENTS.md` is an HTML comment, which Claude Code strips before
+   loading, so it is not the line to look for. Run before the change is
+   applied, the same check fails, since the guide is still loaded; that
+   shows it tells the two cases apart.
 
 ## What this changes
 
@@ -904,3 +923,12 @@ marking what is not built:
   sources.
 - [Choosing rules](rules.md#choosing-rules): a rule is changed by an
   override.
+
+## Open questions
+
+- What the home directory holds once the guide is retired: nothing, the
+  user-level instruction files and their links removed, or a pointer of
+  a few lines saying that the rules are in each repository's
+  `AGENTS.md` and that an agent working outside any repository first
+  stops and asks whoever delegated the work. The person decides this in
+  the change that retires the guide; a pointer is easy to remove later.

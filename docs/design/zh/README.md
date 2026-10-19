@@ -1,4 +1,4 @@
-<!-- en-sha256: a32c720f4d95c21d039555e3e11b034a444697ce30c6aa01bed350247ecfedb9 -->
+<!-- en-sha256: bd44f7eae5f96b27f9f499e1aa67ed4cc845548426f8f0a850615a953c9775ee -->
 # agent-constitution 设计
 
 状态：草案。这是本仓唯一的一份设计，由下面列出的几个文件组成。宪法本身从它的版目录 `constitution/2026-10/` 下的 `index.toml` 和 `articles/` 构建成两个版本：[英文版](../../../constitution/2026-10/generated/constitution.en.md)、[中文版](../../../constitution/2026-10/generated/constitution.zh.md)；本设计只按 ID 引用宪法 (见[源文件格式的 ID 一节](source-formats.md#ids))，从不复述它的内容。
@@ -15,7 +15,7 @@
 - [宪法](constitution.md)：宪法的源文件、编号和 agent 版。
 - [规定与放宽](rules.md)：规定的源文件、选用规定、放宽声明和本地参数。
 - [Skill](skills.md)：skill 的目录结构。
-- [编译](compilation.md)：怎样构建指令文件。
+- [编译](compilation.md)：怎样构建用户级的指令文件；计划中，没有实现。
 - [静态网站](static-site.md)：Hugo 网站及其部署。
 - [前端](frontend.md)：网站页面的设计 token、图标、动效和组件，以及改动页面时的截图与审查；尚未实现。
 - [检查程序、fixture 与反馈](checkers.md)：检查程序、fixture、加载验证，以及预留的反馈回路。
@@ -26,6 +26,6 @@
 - [规定清单、引用与依赖](rule-sets.md)：规定清单与锁文件、规定源与引用、依赖、one-of 与规定包。
 - [规定检查与审查](rule-checks.md)：检查、结果与审查回路、试行规定。
 - [statute 命令](statute-command.md)：编译与网站、命令与第一版、为什么用 Rust。
-- [规定源](rule-sources.md)：四类规定源 (全局或本仓、公开或私有)、哪些规定可以引用哪些、覆盖、子领域，以及从手写的指南切换过来；部分已实现。
+- [规定源](rule-sources.md)：四类规定源 (全局或本仓、公开或私有)、哪些规定可以引用哪些、覆盖、子领域，以及逐个仓库从手写的指南切换过来；部分已实现。
 - [全局配置与 git 规定源](global-configuration.md)：家目录里 statute 的目录、全局配置、一个名字指哪个规定源、git 规定源和添加规定源；部分已实现。
 - [规定配置](rule-config.md)：本地规定的目录、语言这类参数、哪些领域和规定默认开启、规定用在哪里，以及规定不挂在规定下面；已实现。

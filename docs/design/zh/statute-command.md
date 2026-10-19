@@ -1,4 +1,4 @@
-<!-- en-sha256: bff3494e0f22ed3f54c2d3f10e0915a17ecfc6738a27093eb06df9d0c6bc02d9 -->
+<!-- en-sha256: a53fe94ce6ac75b282843437faae48383e52392310c8e52aca9e3a406b37883a -->
 # statute 命令
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -52,7 +52,7 @@ statute 的版本和检查的命令记在锁文件里，CI 从那里读 ([规定
 - `constitution build`：从源文件构建所在仓库的宪法，或者检查它 (见下文)；
 - `validate <dir>`：单独检查一个规定目录，当作一个规定源，不需要规定清单 (见下文)。
 
-**第一版**只做仓库级。用户级是第二步，它的指令文件在用户的家目录里，目前由私有 overlay 安装。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
+**第一版**只做仓库级。用户级在计划中，没有实现；私有 overlay 目前装在用户家目录里的手写指南，停用时不等它 ([从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide))。本仓的规定已经迁到新格式，每条把原来的文字 ID 留作 `slug`。最先用新格式写的规定里，有关于怎样写设计文档的那几条，正好拿实际工作把整套流程试一遍。
 
 **目前已实现**：`init`、`lock`、`explain`、`add`、`remove`、`upgrade`、`compile` 和 `check` (内置检查有规定 43、46、50、58、61 和 71，以及被 43 和 46 取代的 3 和 7) 八个命令，以及 `site`、`constitution build` 和 `validate`，支持磁盘上的规定源和 git 规定源，`[sources]` 写几个就读几个；还有 `export`。仓库自己的规定 `L12` 从 `.statute/rules/` 或 `local-rules` 指定的目录读 (见[本地规定的目录](rule-config.md#the-directory-of-local-rules))；那个目录是某个规定源的规定目录时，比如 `local-rules = "rules"` 加上 `R = { path = "." }`，这些规定归那个规定源，本地引用会报错并提示写成 `R12`。规定在 `requires`、`conflicts` 和 `{@rule:...}` 里引用别的规定源的规定时，写作 `R12`、`P7` 或 `team:7`，用的是规定清单 `[sources]` 里的名字：规定源自己的 `[sources]` 表 ([规定源与引用](rule-sets.md#sources-and-references)) 还不读。[规定源](rule-sources.md) 里已实现的是 `public`，连同 `requires`、`conflicts`、`overrides`、`parent` 和 `{@rule:...}` 里哪些规定可以引用哪些，以及把 `public` 与 GitHub 核对的检查 ([检查](rule-checks.md#checks))。凡是读规定清单的命令，加载时都检查仓库自己未废止的节点和其他规定源已启用的规定：每个 `authority` 条目、每处 `{@constitution:...}` 引用，指向的都必须是本版宪法里存在且未废止的条款，和 `validate` 在宪法旁边做的检查一样；每条结果写明规定和所在行，如 `rules/7.toml:12`。覆盖已经实现，连同 `scope` 和级别；子领域、规定或领域指向另一个规定源的 `parent`，以及放在 git 目录里的私有层连同它的锁文件、它的输出、`.statute/.gitignore` 和 `compile --private-only`，也都已实现。全局配置、`init --global`、git 规定源和 `source add` 已经实现 ([全局配置与 git 规定源](global-configuration.md))，只是 `upgrade` 还不显示一条规定改动的文字。[规定配置](rule-config.md) 里，规定文件的 `default`、`uses` 和 `check = "none"` 已经读取并检查，连同[规定不挂在规定下面](rule-config.md#no-rule-under-a-rule) 的树形，`compile` 写什么、`check` 列什么也按 `uses` 来；规定清单的默认开关也已实现，连同 `domains`、`exclude`、`local-rules` 和规定源条目的 `defaults`，以及 `add`、`remove`、`explain` (包括 `--defaults`) 和锁文件对它们的处理。`default` 在规定文件需要它的地方必填，`check = "review"` 报错。参数也已实现，取值写进锁文件、`upgrade`、`explain <name>` 和两份输出。两个网站的标记、公开网站的参数页、编译出的 `AGENTS.md` 里 one-of 的位置，以及网站上 one-of 的框，也都已经实现。继承规定清单和按路径分段还没有实现。
 
@@ -64,7 +64,7 @@ statute 的版本和检查的命令记在锁文件里，CI 从那里读 ([规定
 
 **`constitution build`** 检查 `constitution/` 下唯一一版的源文件，为每种语言把完整版和 agent 版写到这一版的 `generated/` 里，文件第一行写明生成它的命令 `cargo run -p statute -- constitution build`；加 `--check` 时什么都不写，已提交的文件与重新构建的结果不同就失败；加 `--check --base <git-ref>` 时还要与那个提交比较编号和修订号；`--root <dir>` 让它在当前目录以外的检出上运行。它做的检查是[检查程序](checkers.md#checkers) 里第 1 至第 7 项中关于宪法的部分。它不读 `rules/`：规定对宪法的说法和 base 提交里已有的规定，归 `validate` 检查 (见上文)。本仓把 `constitution build --check` 作为 commit 钩子运行，CI 里还加上 `--base` 运行。
 
-**切换。** 目前 agent 读的是私有 overlay 的用户级指令文件。这些文件将加一条：仓库里有 `statute.lock` 的，以这个仓库的编译输出为准，用户级指令文件不再适用。它们管着的所有仓库一次切换：等它们的每一部分都成了规定，并且[从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide) 的几个条件都成立；不先切某一个主题。在那之前，编译输出照常构建、用来对比，但不代替它们给 agent 读。
+**切换。** 仓库一个一个迁到 statute：根目录有 `statute.toml` 的仓库，以这个仓库的编译输出为准，私有 overlay 的用户级指令文件不再适用，这是那些文件自己写明的；其余仓库仍然由它们管。仓库怎样切换、用户级指令文件什么时候停用，见[从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide)。
 
 ## <a id="the-local-site"></a>本地网站
 

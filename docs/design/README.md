@@ -28,7 +28,8 @@ the whole design.
 - [Rules and relaxations](rules.md): rule sources, choosing rules,
   relaxation declarations and local parameters.
 - [Skills](skills.md): the skill layout.
-- [Compilation](compilation.md): building the instruction file.
+- [Compilation](compilation.md): building the user-level instruction
+  file; planned, not built.
 - [Static site](static-site.md): the Hugo site and its deployment.
 - [Frontend](frontend.md): the design tokens, icons, motion and
   components of the sites' pages, and the screenshots and review of a
@@ -56,7 +57,8 @@ the whole design.
   the command and the first version, and why Rust.
 - [Rule sources](rule-sources.md): the four kinds of source (global or
   local, public or private), which may cite which, overrides,
-  subdomains and the cutover from the hand-written guide; built in part.
+  subdomains and the repository-by-repository cutover from the
+  hand-written guide; built in part.
 - [Global configuration and git sources](global-configuration.md): the
   statute directories in the home directory, the global configuration,
   which source a name means, git sources and adding a source; built in
