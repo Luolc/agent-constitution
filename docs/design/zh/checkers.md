@@ -1,4 +1,4 @@
-<!-- en-sha256: dd1eb563ae8a6ae5b5a746d6adb7a9d48782a177828eef0563fc9e113a086202 -->
+<!-- en-sha256: 72a1c2df87ca4ca3069780cea072d4401aced699a13ab97735caaeb6289694c9 -->
 # 检查程序、fixture 与反馈
 
 ## <a id="checkers"></a>检查程序
@@ -88,7 +88,7 @@ fixtures/behavior/redline/<name>/   stage C
 
 ## <a id="load-verification"></a>加载验证
 
-没有实现。实现之前，停用手写的指南时用人工检查代替 ([从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide)，第 4 个条件)。
+没有实现。实现之前，停用手写的指南时经下面这些入口人工检查 ([从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide)，「检查停用的结果」一段)。
 
 编译出文件，不说明 agent 读到了它。overlay 的 apply 步骤用每个 harness 自己的只读入口检查它 (截至 2026-10-12：Codex 的 `debug prompt-input`、Grok 的 `inspect`，以及 Claude Code 的 `InstructionsLoaded` hook)：
 

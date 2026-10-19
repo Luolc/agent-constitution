@@ -22,10 +22,14 @@ Method and order only; the per-rule mapping is its own piece of work.
    rule, private rule, parameter (the value moves to `params.toml`, the rule
    keeps a placeholder), procedure (moves into a skill), provenance (moves to
    the private casebook), or removal.
-4. Build the compiler and the schema and reference checkers, then port rules
-   in batches, compiling after each batch.
-5. Compare the compiled output with the hand-written guide, section by
-   section, and record every intended difference.
+4. Build `statute` and its checkers
+   ([The command and the first version](statute-command.md#the-command-and-the-first-version)),
+   then port rules in batches, compiling after each batch.
+5. Each repository, in the change that adds its rule set, compares its
+   compiled output with the instructions it replaces and records every
+   intended difference
+   ([Rule sources](rule-sources.md#cutover-from-the-hand-written-guide),
+   condition 3).
 6. Each existing repo-level override either becomes a `relaxes:`
    declaration or is removed; a person decides which.
 7. Cutover: repositories switch one at a time, and once the last one in

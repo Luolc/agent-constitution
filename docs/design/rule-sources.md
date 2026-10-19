@@ -286,7 +286,7 @@ with `public = true`:
   `statute check` runs those checks all the same. Those of a public
   rule the private layer turns off stay in the committed files, and
   `statute check` does not run its check. How a private rule's
-  skills are installed is an open question.
+  skills are installed is an [open question](#open-questions).
 
 The place in git's directory is chosen so that every worktree of a
 clone shares one private rule set, and each keeps its own lock file.
@@ -887,18 +887,23 @@ checked on the private side:
    recorded what its compiled output keeps, changes and drops of the
    instructions it replaced. A repository in which no agent works any
    more is listed as such on the private side instead.
-4. A load check stands in for
-   [Load verification](checkers.md#load-verification), which is planned,
-   not built. On each machine, once the retiring change is applied
-   there, Claude Code, Codex and Grok each start one session in a
-   repository that has switched. What the session loaded holds a line
-   of that repository's `AGENTS.md` that the guide does not hold, such
-   as the heading of the constitution's edition, and does not hold the
-   opening paragraph of the guide. The generated-file line at the top
-   of `AGENTS.md` is an HTML comment, which Claude Code strips before
-   loading, so it is not the line to look for. Run before the change is
-   applied, the same check fails, since the guide is still loaded; that
-   shows it tells the two cases apart.
+
+**Checking the retirement.** A load check stands in for
+[Load verification](checkers.md#load-verification), which is planned,
+not built. On each machine, once the retiring change is applied there,
+Claude Code, Codex and Grok each start one session in a repository that
+has switched, and what each loaded is read through the harness's own
+read-only entry point, the ones Load verification lists, never by
+asking the model. The check passes when what was loaded holds a line of
+that repository's `AGENTS.md` that the guide does not hold, such as the
+heading of the constitution's edition, and does not hold the opening
+paragraph of the guide. The generated-file line at the top of
+`AGENTS.md` is an HTML comment, which Claude Code strips before loading,
+so it is not the line to look for. Each arm has its control: run before
+the change is applied, the second arm fails, since the guide is still
+loaded; run in a repository without an `AGENTS.md`, the first arm finds
+no such line. On a machine where the check fails, the change is reverted
+there, so that the guide is back, until the cause is found and fixed.
 
 ## What this changes
 
@@ -932,3 +937,6 @@ marking what is not built:
   `AGENTS.md` and that an agent working outside any repository first
   stops and asks whoever delegated the work. The person decides this in
   the change that retires the guide; a pointer is easy to remove later.
+- How the skills of a rule that only the private layer enables are
+  installed
+  ([Private rules in a public repository](#private-rules-in-a-public-repository)).

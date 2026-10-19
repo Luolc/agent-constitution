@@ -371,9 +371,9 @@ the project does not own.
 ## Load verification
 
 Not built. Until it is, retiring the hand-written guide is checked by
-hand
+hand, through the entry points below
 ([Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide),
-condition 4).
+Checking the retirement).
 
 Compiling the file does not show that an agent read it. The overlay's apply
 step checks each harness with its own read-only entry point (as of
