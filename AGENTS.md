@@ -265,6 +265,10 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 - R194 Before using a file path, a code identifier, a command-line argument or a domain term from a principal's message, infer its most likely intended form and check its separators and case against the names that really exist in the repository and outside it.
 - R195 When you have inferred an identifier or chosen one meaning of an ambiguous term, list those guesses in your reply and ask the principal to confirm them.
 
+#### Slack
+
+- R345 When a text you write for a person, such as a reply, a card or a report, points to a Slack thread, card or message other than the thread the text is posted in, and the text may say where it is, give with it a link that opens that thread, card or message, never only its channel, thread key or timestamp.
+
 ### Shared Record
 
 - R68 Put what is still needed after the task ends, such as a decision, knowledge to keep or work handed over to a later agent, into a repository through review, never only into a conversation.
