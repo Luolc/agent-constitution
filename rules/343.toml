@@ -1,0 +1,44 @@
+id = 343
+slug = "python-checks-in-ci"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 339
+default = "on"
+authority = ["automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "none"
+uses = ["instructions", "review"]
+
+[title]
+en = "Run every check a Python project configures in CI"
+zh = "Python 项目配置的每项检查都进 CI"
+
+[text.statement]
+en = "Run every check that a Python project configures, its type check and tests among them, in CI on every change."
+zh = "Python 项目配置的每一项检查，类型检查和测试在内，都放进 CI，对每个变更都跑。"
+
+[text.reason]
+en = '''
+What runs before a push depends on what the author remembered to run; CI runs every check on every change whatever was run before ({@constitution:automation-first.keep-moving}). The type check and the tests, which the hooks leave out ({@rule:250}), are caught only here.
+'''
+zh = '''
+push 之前跑了什么，取决于作者记得跑什么；CI 不管之前跑过什么，对每个变更都把每项检查跑一遍 ({@constitution:automation-first.keep-moving})。类型检查和测试不进 hook ({@rule:250})，只有在这里才拦得住。
+'''
+
+[text.verification]
+en = '''
+The checks a project configures are the tools in its dependency groups with settings for them, and its test suite. A check that CI runs through the commit hooks, with `pre-commit run --all-files` for example, counts as run in CI. A gap that is already there when a repository enables this rule is broken only by a change that touches it, as below, so that unrelated changes are not in breach.
+
+Violated when a change adds a Python project, adds a check to one, or changes the CI configuration, and after the change CI does not run, on every change, a check that a Python project in the repository configures.
+'''
+zh = '''
+项目配置的检查，指它的依赖组里有、并且配了设置的工具，以及它的测试集。CI 经由 commit hook 跑的检查 (例如用 `pre-commit run --all-files`)，算在 CI 里跑了。仓库启用本规定时已经存在的缺口，只有按下面所说碰到它的变更才算违反，与它无关的变更不算。
+
+变更加了 Python 项目、给某个项目加了检查，或者改了 CI 的配置，而变更之后 CI 没有对每个变更都跑仓库里某个 Python 项目配置的某项检查的，即为违反本规定。
+'''
+
+[translations]
+zh = "97f9413269b28dd6bb01a6b34c70eb469be8cf13f9652fd5b703215cb089b7a7"

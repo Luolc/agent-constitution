@@ -1,6 +1,8 @@
 ---
 name: python-toolchain
-description: How to set up the check toolchain of a Python repo with uv and pre-commit, so that the commit hooks and CI run the same tool versions, taken from uv.lock. Use when creating a Python repo, or when adding or changing the Python checks in a repo's pre-commit configuration or CI.
+description: How to set up the check toolchain of a Python repo with uv and pre-commit, so that the commit hooks and CI run the same tool versions, taken from uv.lock. Use when creating a Python repo or adding a Python project to one, or when adding or changing the Python checks in a repo's pre-commit configuration or CI.
+metadata:
+  statute-rules: "341 342 343"
 ---
 
 # Python check toolchain
@@ -42,7 +44,8 @@ other hooks from external repos) stay as they are.
 
 3. CI installs the environment from the lock, then runs the same hooks:
    `uv sync --locked` (in a uv workspace `uv sync --locked
-   --all-packages`) on every run, then `pre-commit run --all-files`.
+   --all-packages`) on every run, then `pre-commit run --all-files`,
+   then the checks that are not hooks: the type checker and the tests.
    `--locked` fails when the lock is stale. Pin the runner to a fixed
    image (not `-latest`) and the actions by commit SHA, as the repo's
    other workflows do.
@@ -54,8 +57,9 @@ other hooks from external repos) stay as they are.
    first; write down why in the repo's `AGENTS.md`. It gets:
 
    - its own Python hooks, `entry: uv run --project <dir> --frozen
-     --no-sync <tool> ...` with `files: ^<dir>/`. `--project` keeps the
-     working directory at the root, so a tool that reads its settings
+     --no-sync <tool> ...` with `files: ^<dir>/`, and its own CI steps
+     for the checks that are not hooks, run the same way. `--project`
+     keeps the working directory at the root, so a tool that reads its settings
      from there must be pointed at `<dir>`: `basedpyright -p <dir>` with a
      `[tool.basedpyright]` section in `<dir>/pyproject.toml` (without
      that section it finds no source files and passes), and `pydoclint
@@ -64,12 +68,13 @@ other hooks from external repos) stay as they are.
    - its own `uv-lock` hook, `args: [--project, <dir>]` with
      `files: ^<dir>/(pyproject\.toml|uv\.lock)$`;
    - `exclude: ^<dir>/` on the root's hooks, so the two sets of tools do
-     not both check its files. A root hook that checks the whole tree
-     rather than the file names it is given (basedpyright with
-     `pass_filenames: false`) ignores `exclude:`; leave `<dir>` out in
-     that tool's own configuration as well, for basedpyright `exclude`
-     under `[tool.basedpyright]`;
-   - its own `uv sync --locked --project <dir>` in CI.
+     not both check its files. A tool that checks the whole tree rather
+     than the file names it is given, such as the root's basedpyright in
+     CI, has no `exclude:`; leave `<dir>` out in that tool's own
+     configuration, for basedpyright `exclude` under
+     `[tool.basedpyright]`;
+   - its own `uv sync --locked --project <dir>` in CI, before its own
+     steps.
 
 5. Call scripts with `uv run <path>`. Do not give a Python script a
    shebang such as `#!/usr/bin/env python3` or the executable bit: with
@@ -125,13 +130,11 @@ repos:
         entry: uv run --frozen --no-sync pydoclint --quiet
         language: system
         types: [python]
-      - id: basedpyright
-        name: basedpyright
-        entry: uv run --frozen --no-sync basedpyright
-        language: system
-        types_or: [python, pyi]
-        pass_filenames: false
 ```
+
+The type checker and the tests are not hooks: they grow with the code
+and soon take more than the seconds a hook may; they run in CI, and
+before a push.
 
 `--force-exclude` keeps ruff's `exclude` settings in force for the file
 names that pre-commit passes; without it ruff checks them anyway.
@@ -156,6 +159,8 @@ jobs:
       - uses: astral-sh/setup-uv@<sha> # <version>
       - run: uv sync --locked # in a uv workspace: --locked --all-packages
       - run: uv run --frozen --no-sync pre-commit run --all-files
+      - run: uv run --frozen --no-sync basedpyright
+      - run: uv run --frozen --no-sync pytest
 ```
 
 ## Checking that it works
