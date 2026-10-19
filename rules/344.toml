@@ -1,0 +1,23 @@
+id = 344
+slug = "slack"
+revision = 1
+kind = "domain"
+status = "trial"
+lang = "en"
+parent = 270
+default = "off"
+
+[title]
+en = "Slack"
+zh = "Slack"
+
+[applicability]
+en = '''
+Covers what an agent writes to people about Slack, where they talk with agents: how it points them to a thread, a card or a message there. Enable it where agents talk with people in Slack; where none does, leave it off.
+'''
+zh = '''
+管人在 Slack 里与 agent 交谈时，agent 写给人的内容里涉及 Slack 的部分：怎样把人指到那里的某个线程、卡片或者消息。agent 在 Slack 里与人交谈的环境启用；没有 agent 这样做的，不启用。
+'''
+
+[translations]
+zh = "3a550bf8f2b0d524881450e68ea401c17243e0fcc2271e77e31e25ce087d2f5c"
