@@ -1,4 +1,4 @@
-<!-- en-sha256: 9877781e97702832fdcaf229609c963ad60612b6c4ae6f69a5d69c5a70f2ab7e -->
+<!-- en-sha256: 91aa5928e1fad6a256b0611c7b6a1cdd418d064d421f85c6198c76767944eba2 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -14,6 +14,7 @@
 - [用 one-of 表达相互冲突的做法](#conflicting-practices-as-one-ofs)
 - [从手写的指南切换过来](#cutover-from-the-hand-written-guide)
 - [它改变什么](#what-this-changes)
+- [待定问题](#open-questions)
 
 ## <a id="four-kinds-of-source"></a>四类规定源
 
@@ -120,7 +121,7 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
 - 这个私有层只改变私有输出。它可以在那里关掉公开层的规定，或者重新开启 `statute.toml` 排除的规定，但不能覆盖公开层的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。它关掉的规定不出现在全文里，所以只读全文的 agent 不再有这条规定；Grok 还读 `AGENTS.md` (见下文)，仍然有它。
 - 它有锁文件 `private.lock`，每个 worktree 一份，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它；每条命令只写它所在 worktree 的那份锁文件，不碰别的。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。linked worktree 还没有自己的锁文件时，读主 worktree 的那份，所以新 worktree 从主 worktree 锁定的 commit 起步；在一个 worktree 里跑 `statute upgrade`，只移动这个 worktree 的私有规定源。`statute upgrade --private` 只移动这些私有规定源，别的都不动：私有层自己的规定源读最新的 commit，公开规定源仍读 `statute.lock` 记录的 commit，只写这个 worktree 的 `private.lock`，不写别的文件，所以新 worktree 能取到最新的私有规定，又不改任何被跟踪的文件。它像 `upgrade` 一样打印跟这个 worktree 读的那份锁文件相比有什么变化 (这个 worktree 原先没有自己的锁文件时，比的是主 worktree 的那份)：每个私有 git 规定源的旧 commit 和新 commit，或者说它没变；以及修订号或内容变了、新带进来或去掉的每条规定，这是它把私有层在旧 commit 上也解析一遍得出的。私有规定清单仍是共用的，所以在一个 worktree 里改了它的规定源 (`statute source add`，或者手改)，别的 worktree 的锁文件就过期了：它们的 `statute compile` 会失败，并提示运行 `statute lock`，`compile --private-only` 什么都不写，也这样提示。只改清单里的列表，比如 `statute add --private`，别的 worktree 的锁文件仍是最新的，因为锁文件不记规定。
 - git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件都不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
-- 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute.lock` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有层关掉的公开规定，它的 skill 和检查留在提交的文件里，`statute check` 不运行它的检查。私有规定的 skill 怎样安装，是一个尚未解决的问题。
+- 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute.lock` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有层关掉的公开规定，它的 skill 和检查留在提交的文件里，`statute check` 不运行它的检查。私有规定的 skill 怎样安装，是一个[待定问题](#open-questions)。
 
 放在 git 的目录里，是为了让一个 clone 的所有 worktree 共用一份私有规定清单，同时各自保留自己的锁文件。git 在各 worktree 之间共用 common 目录下 `common/` 里的一切 (gitrepository-layout(5))，而 `git rev-parse --git-path common/...` 从任何一个 worktree 都能得到这个位置；换成 git 不认识的路径，比如 `--git-path statute`，得到的是每个 worktree 各自的目录，`git worktree remove` 会连同 worktree 一起删掉它。锁文件如果由所有 worktree 共用，在任何一个 worktree 里跑的命令都会改掉其他 worktree 读的 commit，几个任务同时重新锁定时还会互相覆盖。主 worktree 的锁文件仍放在私有规定清单旁边，每个已有的 clone 本来就有这份，所以哪个 clone 都不用挪文件。放在工作区里的文件不会随 `git worktree add` 出现，因为它只检出 git 跟踪的文件，每个新 worktree 都得复制一份，之后各份就会不一致。放在家目录里、按仓库路径区分的目录也能共用，但 clone 一移动或删除，它就没人认领了，而且要设计一套把路径编码成文件名的规则；按 remote 地址区分，会把同一个 remote 的两个本该不同的 clone 合成一份，没有 remote 的仓库也没法区分。放在 git 目录里的代价是文件不显眼：写这两个文件的命令会打印它们的完整路径。重新 clone，或者不经 git 复制过去的仓库，一开始没有这两个文件。
 
@@ -314,7 +315,7 @@ parent = 104
 
 ## <a id="cutover-from-the-hand-written-guide"></a>从手写的指南切换过来
 
-手写的指南等到每一部分都有了去处，并且下面四个条件都成立时，再一步整体换成四类规定，指南管着的所有仓库同时切换。没有过渡条款：切换之后，没有哪段文字让指南的一部分继续有效；也不先切某一个主题 (比如凭证)，再切其他的。只适用于某个环境的内容本来就不会进第一方规定源，也不必留在指南里等：它从一开始就是全局私有规定或本地规定。
+手写的指南逐个仓库换下来。从 2026-10-15 起，指南自己写明：在根目录有 `statute.toml` 的仓库里工作的 agent 完全忽略指南，只按这个仓库的 `AGENTS.md` 办。过渡条款只有这一句：加入规定清单的那次修改合入时，这个仓库就切换了，而且整个仓库一起切，不先切某一个主题 (比如凭证)，再切其他的。只适用于某个环境的内容本来就不会进第一方规定源，也不必留在指南里等：它从一开始就是全局私有规定或本地规定。
 
 **清点。** 指南的每一项都有且只有一个去处，记在私有一侧的对照表里，做法同[从现有的手写的指南迁移](fleet-and-migration.md#migrating-from-the-current-hand-written-guide) 第 3 步，只是其中的「私有规定」分成三种：
 
@@ -326,14 +327,13 @@ parent = 104
 
 某个仓库偏离指南的地方 (那份指南的第 6 步) 改成一条覆盖、一个 one-of 的子节点，或者删掉。
 
-**完成的判据**是下面几条都成立，在私有一侧检查：
+**停用指南。** 还有 agent 在干活的仓库都切换之后，由私有一侧的一次修改停用指南。这次修改不装任何东西代替它：家目录里不放编译出的输出，此后也不放规定文本 (要不要留一段简短的指针，见[待定问题](#open-questions))。[编译](compilation.md) 里写的用户级编译器还在计划中，没有实现，停用指南不等它。下面几条都成立时可以做这次修改，在私有一侧检查：
 
 1. 指南的每一项在对照表里都有去处，去处是规定的，写明它的引用 (`R42`、`me:4`、`L12`)。没有一项待定。
 2. 任何一类规定都不提指南、指南的文件或指南条目的编号。私有词扫描 (见[检查程序](checkers.md#checkers)) 把指南的文件名和条目编号的模式作为扫描词来跑，每个模式先在一行必定命中的文本上跑一次。
-3. 指南管着的每个仓库都有规定清单，`statute lock` 和 `statute compile` 对它都成功，私有规定清单也在内。编译出的输出已经与指南逐节对比过，每一处差异都记为有意为之。
-4. 编译出的输出通过[加载验证](checkers.md#load-verification)。
+3. 还有 agent 在干活的每个仓库，根目录都有 `statute.toml`，`statute compile --check` 都通过，有私有规定清单的连同它一起；加入规定清单的那次修改都记下了编译出的输出对它所替换的指令保留了什么、改了什么、去掉了什么。已经没有 agent 干活的仓库，改在私有一侧注明。
 
-然后由私有一侧的一次修改装上编译出的输出、替换指南，并停用指南。
+**检查停用的结果。** [加载验证](checkers.md#load-verification) 还在计划中，没有实现，由一次加载检查代替。每台机器 apply 了停用指南的修改之后，Claude Code、Codex 和 Grok 各在一个已经切换的仓库里起一次会话，经各个 harness 自己的只读入口 (加载验证一节列出的那些) 读出它加载了什么，不靠问模型。加载的内容里有这个仓库 `AGENTS.md` 里指南没有的一行，比如宪法版本的标题，并且没有指南开头那一段，检查才算通过。`AGENTS.md` 顶上那行生成文件的说明是 HTML 注释，Claude Code 加载前会把它去掉，所以不拿它来找。两项各有对照：在 apply 之前跑，指南还在加载，第二项不通过；在没有 `AGENTS.md` 的仓库里跑，第一项找不到那一行。哪台机器上检查不通过，就在那台机器上撤回这次修改，让指南回来，直到查明原因、修好为止。
 
 ## <a id="what-this-changes"></a>它改变什么
 
@@ -346,3 +346,8 @@ parent = 104
 - [命令与第一版](statute-command.md#the-command-and-the-first-version)：目前实现了什么，以及按上面的切换来切换。
 - [检查程序](checkers.md#checkers)：`statute validate` 在一个规定源之内对新字段查什么，跨规定源的哪些由 statute 查。
 - [选用规定](rules.md#choosing-rules)：修改一条规定用覆盖。
+
+## <a id="open-questions"></a>待定问题
+
+- 停用指南之后家目录里放什么：什么都不放，用户级指令文件和指向它的软链一起删掉；或者放一段几行的指针，说明规定在各个仓库的 `AGENTS.md` 里，不在任何仓库里工作的 agent 先停下来，问派活的一方。由人在停用指南的那次修改里定；指针以后要删也容易。
+- 只由私有层启用的规定，它们的 skill 怎样安装 ([公开仓库里的私有规定](#private-rules-in-a-public-repository))。

@@ -370,6 +370,11 @@ the project does not own.
 
 ## Load verification
 
+Not built. Until it is, retiring the hand-written guide is checked by
+hand, through the entry points below
+([Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide),
+Checking the retirement).
+
 Compiling the file does not show that an agent read it. The overlay's apply
 step checks each harness with its own read-only entry point (as of
 2026-10-12: Codex `debug prompt-input`, Grok `inspect`, and Claude Code's

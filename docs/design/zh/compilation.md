@@ -1,5 +1,7 @@
-<!-- en-sha256: 9cb55cd6ea4c19f45da7b69b9a85af537ef285f1ec10da580835709f82d2e976 -->
+<!-- en-sha256: 296d03cfcce3d0848ddf24507ea0a350bc22bcd3a906d4adc26f95dbb56ecf4a -->
 # 编译
+
+状态：计划中，没有实现。仓库的 `AGENTS.md` 由 `statute compile` 构建 ([编译与网站](statute-command.md#compilation-and-the-site))，停用手写的指南时也不装这个编译器的输出 ([从手写的指南切换过来](rule-sources.md#cutover-from-the-hand-written-guide))。
 
 输入：本仓的一个固定版本 (一个 tag，并核对它的提交 SHA) 和一个 overlay 目录。语言由 overlay 选定。编译器从该语言的 agent 版 `constitution.<lang>.agent.md` 取宪法 (不读宪法的源文件)，并取每条规定在该语言里的文字块。输出：一个文件，由 overlay 安装为用户级的指令文件 (家目录里的一个文件，三种 harness 都通过软链读它)，外加一份构建 manifest。此外没有别的输出。
 

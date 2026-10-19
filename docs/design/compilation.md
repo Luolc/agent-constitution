@@ -1,5 +1,12 @@
 # Compilation
 
+Status: planned, not built. `statute compile` builds a repository's
+`AGENTS.md` instead
+([Compilation and the site](statute-command.md#compilation-and-the-site)),
+and retiring the hand-written guide does not install this compiler's
+output
+([Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide)).
+
 Input: one pinned version of this repo (a tag, checked against its commit
 SHA) and one overlay directory. The overlay selects the language. The
 compiler takes the constitution from the version for agents in that

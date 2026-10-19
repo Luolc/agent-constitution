@@ -13,25 +13,31 @@ any harness does. The only file specific to Agent Fleet is
 
 Method and order only; the per-rule mapping is its own piece of work.
 
-1. The hand-written guide stays in force until cutover. Nothing is deleted
-   early.
+1. The hand-written guide stays in force until cutover, except in a
+   repository that has already switched to its own rule set. Nothing is
+   deleted early.
 2. The constitution is approved first, because every rule needs an
    `authority` to point at.
 3. Classify each current rule into one destination: constitution, general
    rule, private rule, parameter (the value moves to `params.toml`, the rule
    keeps a placeholder), procedure (moves into a skill), provenance (moves to
    the private casebook), or removal.
-4. Build the compiler and the schema and reference checkers, then port rules
-   in batches, compiling after each batch.
-5. Compare the compiled output with the hand-written guide, section by
-   section, and record every intended difference.
+4. Build `statute` and its checkers
+   ([The command and the first version](statute-command.md#the-command-and-the-first-version)),
+   then port rules in batches, compiling after each batch.
+5. Each repository, in the change that adds its rule set, compares its
+   compiled output with the instructions it replaces and records every
+   intended difference
+   ([Rule sources](rule-sources.md#cutover-from-the-hand-written-guide),
+   condition 3).
 6. Each existing repo-level override either becomes a `relaxes:`
    declaration or is removed; a person decides which.
-7. Cutover: the overlay's apply step installs the compiled file in place of
-   the hand-written one; load verification passes; the hand-written source
-   is retired.
+7. Cutover: repositories switch one at a time, and once the last one in
+   use has switched, the hand-written guide is retired, with no compiled
+   file installed in its place.
 
 [Rule sources](rule-sources.md#cutover-from-the-hand-written-guide)
 splits the destination "private rule" of step 3 by scope and
-visibility, turns step 6 into overrides and one-ofs, and says when step
-7 may happen.
+visibility, turns step 6 into overrides and one-ofs, and says how a repository
+switches in step 7, when the guide may be retired and how the
+retirement is checked.

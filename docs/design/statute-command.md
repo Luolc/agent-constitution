@@ -230,9 +230,10 @@ The rule set is `statute.toml`, the lock file
 - `validate <dir>`: check a directory of rule files on its own, as one
   source, without a rule set (below).
 
-**The first version** builds the repository level only. The user level,
-whose instruction files in the user's home directory the private overlay
-installs today, is the second step. The rules of this repo have moved to
+**The first version** builds the repository level only. The user level
+is planned, not built; retiring the hand-written guide that the private
+overlay installs in the user's home directory today does not wait for it
+([Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide)). The rules of this repo have moved to
 the new format, each keeping its earlier word ID as its `slug`. Among the first
 rules written in the new format are those for writing a design document,
 which try the whole process on real work.
@@ -373,15 +374,13 @@ rules say of the constitution, and the rules a base commit had, are
 `validate`'s (above). This repo runs `constitution build --check` as a
 commit hook, and CI runs it with `--base` too.
 
-**Moving over.** Today agents read the user-level instruction files of
-the private overlay. These will gain a provision: in a repository that
-has a `statute.lock`, the repository's compiled output governs, and the
-user-level instruction files are set aside. Every repository they
-govern switches at once, when every part of them has become a rule and
-the conditions of
-[Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide)
-hold; no topic switches first. Until then the compiled output is built
-and compared, but not read in their place.
+**Moving over.** Repositories move onto statute one at a time: in a
+repository whose root has a `statute.toml`, the repository's compiled
+output governs and the user-level instruction files of the private
+overlay are set aside, as those files themselves say; everywhere else
+they still govern. How a repository switches and when the user-level
+files are retired is
+[Cutover from the hand-written guide](rule-sources.md#cutover-from-the-hand-written-guide).
 
 ## The local site
 
