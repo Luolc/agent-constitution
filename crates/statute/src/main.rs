@@ -389,8 +389,9 @@ fn validate(dir: &Path, base: Option<&str>) -> Result<(), ()> {
     Ok(())
 }
 
-/// The private layer of a public repository over the public project:
-/// where its rule set and lock file are and the project with both layers.
+/// The private layer over the public project, the layer of
+/// `statute.toml`: where its rule set and lock file are and the project
+/// with both layers.
 struct Private {
     dir: private::Dir,
     both: Project,

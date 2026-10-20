@@ -143,11 +143,11 @@ impl Project {
         (project, diags)
     }
 
-    /// The private layer of the public `project`, read from the private
-    /// rule set of `dir` ([`private::dir`]), with the public rule set:
-    /// `None` and no finding when there is no such file and the global
-    /// configuration turns nothing on, else a layer of its entries
-    /// alone. It fails when a
+    /// The private layer over `project`, the layer of `statute.toml`,
+    /// read from the private rule set of `dir` ([`private::dir`]), with
+    /// the public rule set: `None` and no finding when there is no such
+    /// file and the global configuration turns nothing on, else a layer
+    /// of its entries alone, in a private repository too. It fails when a
     /// rule that only it enables overrides one that the public rule set
     /// enables (`docs/design/rule-sources.md`, Overrides). Its findings
     /// leave out those of `given`, the public rule set's.
