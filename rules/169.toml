@@ -1,8 +1,9 @@
 id = 169
 slug = "starter-picks-model-and-effort"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [354]
 lang = "en"
 parent = 161
 default = "on"

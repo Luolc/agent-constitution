@@ -1,0 +1,43 @@
+id = 352
+slug = "report-routes-ruled-out-and-what-must-hold"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 271
+default = "on"
+authority = ["accountable-agent.whole-task", "evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Give the routes ruled out and what must hold next in the report on a task"
+zh = "任务的报告里写明排除了哪些路线、下一步之前什么必须成立"
+
+[text.statement]
+en = "When you report the end of a task to whoever delegated it, an agent or a person, give the routes you ruled out with why, and what must hold before the next step."
+zh = "结束一项任务、向派活的一方 (agent 或者人) 报告时，写明你排除了哪些路线、各因为什么，以及下一步开始之前什么必须成立。"
+
+[text.reason]
+en = '''
+Whoever takes the report answers for the whole of the work and plans the next step from it ({@constitution:accountable-agent.whole-task}). A route ruled out, with the evidence that ruled it out, keeps the next agent from trying it again ({@constitution:evidence.grounds}); a condition left unsaid lets the next step start before it holds.
+'''
+zh = '''
+收到报告的一方对整项工作负责，要据此安排下一步 ({@constitution:accountable-agent.whole-task})。写明排除的路线和排除它的证据，下一个 agent 就不会再去试一遍 ({@constitution:evidence.grounds})；不写明的条件，下一步就可能在它成立之前开始。
+'''
+
+[text.verification]
+en = '''
+A route ruled out is an approach tried or weighed and dropped: the report says what it was and the evidence or reason that ruled it out. What must hold before the next step is each condition that the work after this task depends on, such as a merge, a person's yes, a release or a fix elsewhere.
+
+Violated when an agent's report of the end of a task to whoever delegated it leaves out a route it ruled out, or why, or a condition that must hold before the next step.
+'''
+zh = '''
+排除的路线，指试过或考虑过、后来放弃的做法：报告写明它是什么，以及排除它的证据或理由。下一步之前必须成立的，指这项任务之后的工作所依赖的每个条件，例如一次合并、一个人的同意、一次发布或者别处的一处修复。
+
+agent 结束任务时交给派活一方的报告，漏掉了一条排除的路线或者排除的原因，或者漏掉了一个下一步之前必须成立的条件的，即为违反本规定。
+'''
+
+[translations]
+zh = "834296cf4e9fc33a7f5f4e35806ef3803b7e1b87b7c6c64ec2df9447019be1b2"

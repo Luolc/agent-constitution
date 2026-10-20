@@ -1,0 +1,43 @@
+id = 350
+slug = "find-out-why-a-command-failed"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 15
+default = "on"
+authority = ["evidence.grounds", "decide-yourself.own-mistakes"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Find out why a command failed before trying again"
+zh = "命令失败了，先查明原因再重试"
+
+[text.statement]
+en = "When a command fails, read its whole error, and then the logs, files and state that the error points to, before you run it again or change anything to get past it."
+zh = "命令失败了，先读完整的报错，再读报错指向的日志、文件和状态，然后才重新运行它，或者为绕过这次失败改动任何东西。"
+
+[text.reason]
+en = '''
+Without the error and what it points to, a retry or a fix is a guess, and a cause given for the failure has no grounds ({@constitution:evidence.grounds}). Diagnosing a failure is the agent's own to do ({@constitution:decide-yourself.own-mistakes}); reading the machine changes nothing on it.
+'''
+zh = '''
+不看报错和它指向的东西，重试也好、修复也好都是猜，给出的失败原因也没有依据 ({@constitution:evidence.grounds})。查明失败原因是 agent 自己的事 ({@constitution:decide-yourself.own-mistakes})；读机器上的东西不会改动机器。
+'''
+
+[text.verification]
+en = '''
+The whole error is every error message and failure report the run printed, each in full with the lines around it, not only the last lines of the output; the lines of steps that passed are not part of it. What it points to is the log files, configuration, files and process or service state that the error names or the failing step uses. Running the command again only to see more of its output, with a verbose flag or on a single case, is reading. This rule asks for reading only and allows no change that another provision does not allow.
+
+Violated when, after a command fails, an agent runs it again or changes code, configuration or state to get past the failure without having read the whole error, or without having read what the error points to.
+'''
+zh = '''
+完整的报错，指这次运行打印出的每一条错误信息和失败报告，各自连同前后的几行完整读完，不只是输出的最后几行；通过了的那些步骤的输出不算在内。报错指向的东西，指报错点名的、或者失败的那一步用到的日志文件、配置、文件和进程或服务的状态。只为看到更多输出而重新运行 (加上 verbose 选项，或者只跑一个用例)，算作读。本规定只要求读，不许可别的规定没有许可的任何改动。
+
+命令失败后，agent 没有读完整的报错，或者没有读报错指向的东西，就重新运行它，或者为绕过这次失败改动代码、配置或状态的，即为违反本规定。
+'''
+
+[translations]
+zh = "ae859bc19878096077488b08325c499f95a9766987cafd9a6501d7f050edb17c"
