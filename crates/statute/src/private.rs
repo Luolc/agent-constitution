@@ -151,6 +151,26 @@ pub fn written(root: &Path) -> bool {
     root.join(full()).symlink_metadata().is_ok()
 }
 
+/// The paragraph above `AGENTS.md` in a full text that `withdraw`
+/// writes.
+pub const WITHDRAWN: &str = "> statute could not write the private output of this work tree, so this file leaves out the private rules and says only what `AGENTS.md` says. `statute compile --private-only` names the cause; `statute compile` writes the private output, or says what to fix.\n\n";
+
+/// After a compile that did not write the private output, rewrites a
+/// full text already on disk in `root` to `WITHDRAWN` and `public`, the
+/// `AGENTS.md` there, so that the links lead to no private rule that may
+/// no longer hold. The text is public, so it is written whether git
+/// ignores it or not; nothing is written where there is no full text,
+/// and no link is touched. Returns whether it wrote.
+pub fn withdraw(root: &Path, public: &str) -> Result<bool, String> {
+    if !written(root) {
+        return Ok(false);
+    }
+    let file = root.join(full());
+    replace(&file, &format!("{WITHDRAWN}{public}"))
+        .map(|()| true)
+        .map_err(|e| format!("{}: cannot write: {e}", file.display()))
+}
+
 /// Writes `.statute/.gitignore` in `root` when it is missing or is
 /// statute's and differs from `GITIGNORE`; fails, writing nothing, when
 /// the file there is not statute's. Called before any generated file is

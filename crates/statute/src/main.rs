@@ -493,7 +493,29 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
     Ok(())
 }
 
+/// `compile`, which takes the private rules out of a private output
+/// already there when it fails.
 fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
+    compile_layers(root, output).inspect_err(|()| withdraw_private(root))
+}
+
+/// Rewrites a private output already in `root` to say what `AGENTS.md`
+/// says under a line that the private rules are left out
+/// ([`private::withdraw`]), after a compile that failed.
+fn withdraw_private(root: &Path) {
+    let public = std::fs::read_to_string(root.join(statute::compile::FILE)).unwrap_or_default();
+    match private::withdraw(root, &public) {
+        Ok(true) => eprintln!(
+            "statute: note: {} now says what {} says, without the private rules",
+            private::full().display(),
+            statute::compile::FILE
+        ),
+        Ok(false) => {}
+        Err(e) => eprintln!("statute: error: {e}"),
+    }
+}
+
+fn compile_layers(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let (project, private) = load_layers(root, &env(Mode::Read)?)?;
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
     // The private output is made in full before anything is written.
@@ -580,8 +602,10 @@ fn compile_check(root: &Path, output: Option<&Path>) -> Result<(), ()> {
 /// set, what the global configuration turns on and a person's own value
 /// that differs from the committed one, it rewrites a private output
 /// already there to say what `AGENTS.md` says, and otherwise does
-/// nothing. Any other problem fails it, and nothing is written. The hook
-/// ends with `exit 0`, so that the failure never fails the checkout.
+/// nothing. Any other problem fails it, and nothing is written but a
+/// private output already there, rewritten without the private rules
+/// ([`private::withdraw`]). The hook ends with `exit 0`, so that the
+/// failure never fails the checkout.
 fn compile_private_only(root: &Path) -> Result<(), ()> {
     match private_only(root) {
         Ok(written) => {
@@ -594,6 +618,7 @@ fn compile_private_only(root: &Path) -> Result<(), ()> {
             for cause in causes {
                 eprintln!("statute: error: {cause}");
             }
+            withdraw_private(root);
             eprintln!(
                 "statute: error: the private output is not written; `statute compile` writes it, or says what to fix"
             );
