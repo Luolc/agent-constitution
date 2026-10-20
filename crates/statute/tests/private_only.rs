@@ -469,6 +469,23 @@ fn a_failure_takes_the_private_rules_out_of_a_private_output_already_there() {
     failed(&w.run(&tree, &["compile", "--private-only"]));
     assert_eq!(read(&tree, "AGENTS.override.md"), "# Our own\n");
     assert!(!read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+    // A full text of the repository's own is left as it is: beside a
+    // .statute/.gitignore of its own, or tracked.
+    std::fs::remove_file(tree.join("AGENTS.override.md")).unwrap();
+    write(&tree, ".statute/AGENTS.full.md", "# Our full text\n");
+    let gitignore = read(&tree, ".statute/.gitignore");
+    write(&tree, ".statute/.gitignore", "# ours\n");
+    assert_eq!(w.run(&tree, &["compile"]).code, 1);
+    assert_eq!(read(&tree, ".statute/AGENTS.full.md"), "# Our full text\n");
+    write(&tree, ".statute/.gitignore", &gitignore);
+    git_in(&w, &tree, &["add", "-f", ".statute/AGENTS.full.md"]);
+    write(
+        &tree,
+        "r/rules/2.toml",
+        &r2.replace("Do the thing 2.", "Do the thing 2 well."),
+    );
+    assert_eq!(w.run(&tree, &["compile"]).code, 1);
+    assert_eq!(read(&tree, ".statute/AGENTS.full.md"), "# Our full text\n");
 }
 
 #[test]

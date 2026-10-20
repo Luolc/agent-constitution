@@ -160,15 +160,44 @@ pub const WITHDRAWN: &str = "> statute could not write the private output of thi
 /// `AGENTS.md` there, so that the links lead to no private rule that may
 /// no longer hold. The text is public, so it is written whether git
 /// ignores it or not; nothing is written where there is no full text,
-/// and no link is touched. Returns whether it wrote.
+/// or where it is the repository's own, tracked by git or beside a
+/// `.statute/.gitignore` that is not statute's, and no link is touched.
+/// Returns whether it wrote.
 pub fn withdraw(root: &Path, public: &str) -> Result<bool, String> {
-    if !written(root) {
+    if !written(root) || !gitignore_is_statutes(root) || tracked(root, &full())? {
         return Ok(false);
     }
     let file = root.join(full());
     replace(&file, &format!("{WITHDRAWN}{public}"))
         .map(|()| true)
         .map_err(|e| format!("{}: cannot write: {e}", file.display()))
+}
+
+/// Whether `.statute/.gitignore` in `root` starts with statute's line.
+fn gitignore_is_statutes(root: &Path) -> bool {
+    let head = GITIGNORE.lines().next().unwrap_or_default();
+    std::fs::read_to_string(root.join(DIR).join(".gitignore"))
+        .is_ok_and(|text| text.lines().next() == Some(head))
+}
+
+/// Whether git tracks `path`, relative to `root`; an error when git
+/// cannot tell.
+fn tracked(root: &Path, path: &Path) -> Result<bool, String> {
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["ls-files", "-z", "--"])
+        .arg(path)
+        .output()
+        .map_err(|e| format!("cannot run git: {e}"))?;
+    if !out.status.success() {
+        return Err(format!(
+            "git cannot tell whether it tracks {}: {}",
+            path.display(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
+    }
+    Ok(!out.stdout.is_empty())
 }
 
 /// Writes `.statute/.gitignore` in `root` when it is missing or is

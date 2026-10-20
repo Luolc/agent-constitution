@@ -266,7 +266,7 @@ with `public = true`:
   worktree that changes its sources, `statute source add` or an edit
   by hand, leaves the lock files of the others stale: their
   `statute compile` fails with a note to run `statute lock`, and
-  `compile --private-only` writes nothing and says the same. A change
+  `compile --private-only` writes no private output and says the same. A change
   to its lists alone, such as `statute add --private`, leaves the
   other worktrees' lock files current, since none records a rule.
 - git never tracks a file in its own directory, so the private rule set
@@ -494,7 +494,9 @@ as when the links are not ignored. The `AGENTS.md` on disk is read, not
 compiled, since the public layer may be what fails to load. Where there
 is no full text, as in a new worktree, the command writes nothing and
 makes no link; it never writes at a link's path, so a file there that
-is not statute's link is left as it is.
+is not statute's link is left as it is. Nor does it rewrite a full text
+that is the repository's own: one that git tracks, or one beside a
+`.statute/.gitignore` that does not start with statute's line.
 
 The links are relative and lead to the worktree's own `.statute/`.
 
