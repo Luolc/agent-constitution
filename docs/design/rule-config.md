@@ -346,10 +346,10 @@ R127 (`machine`). The rules that use these parameters are off by
 default, and so are R217 to R220, which rest on the scratch and data
 directories, so a rule set that does not turn them on says nothing
 about the directories. A person who wants them turns them on in their
-own layer and sets the values: in a public repository, the global
-configuration or the private rule set gives them to the private
-output; in a private repository, which has no private output,
-`statute.toml` sets them.
+own layer and sets the values: the global configuration, and in a
+public repository the private rule set, gives them to the private
+output; a private repository may also set them in `statute.toml`, for
+the committed `AGENTS.md`.
 
 **The release, the runner and the socket.** R135, R212, R322 and R323
 leave three values of a person's setup to the rule set: the Linux release
@@ -404,14 +404,17 @@ reads as if the value had been written in the rule.
 
 **The private output**, `.statute/AGENTS.full.md`, writes the person's
 own values of the `personal` parameters, and is otherwise the same:
-with no value of the person's own, the two files say the same. In a
-public repository, a `personal` value that differs from the committed
-one makes `statute compile` write the private output even when there
-is no private rule set, as does a rule the global configuration turns
-on ([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)),
-and `statute compile --private-only` writes it then too. A private repository (`public = false`) has no private
-output, so a person's own value there is not used, and
-`statute compile` says so in a note, naming the parameter.
+with no value of the person's own, the two files say the same. A
+`personal` value that differs from the committed one makes
+`statute compile` write the private output even when there is no
+private rule set, as does a rule the global configuration turns on
+([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)),
+and `statute compile --private-only` writes it then too. This holds in
+a private repository (`public = false`) as in a public one: the
+committed `AGENTS.md` and `statute.lock` keep the value of
+`statute.toml` or the default, so that `statute compile --check` finds
+the same files on every machine, and the person's own value goes to
+the private output alone.
 
 **`statute explain <name>`** says the value, where it came from
 (`statute.toml`, the default, and for a `personal` parameter the

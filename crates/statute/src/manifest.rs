@@ -1073,21 +1073,24 @@ impl Manifest {
     /// `statute.toml` (`docs/design/rule-sources.md`, Private rules in a
     /// public repository). Every problem found is returned.
     pub fn with_private(&self, text: &str) -> Result<Manifest, Vec<String>> {
-        self.with_private_from(text, &[])
+        self.private_layer(Some(text), &[])
     }
 
     /// As `with_private`, with `locked`, the sources of the private lock
-    /// file, for names neither layer gives.
-    pub fn with_private_from(
+    /// file, for names neither layer gives; without `text`, the layer of
+    /// what the global configuration turns on alone, which a private
+    /// repository (`public = false`) has too, though it has no
+    /// `private.toml`.
+    pub fn private_layer(
         &self,
-        text: &str,
+        text: Option<&str>,
         locked: &[SourceSpec],
     ) -> Result<Manifest, Vec<String>> {
-        let mut raw: RawPrivate =
-            toml::from_str(text).map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
+        let mut raw: RawPrivate = toml::from_str(text.unwrap_or_default())
+            .map_err(|e| vec![e.to_string().trim_end().to_owned()])?;
         let mut errors = Vec::new();
         misplaced(&mut raw.sources, &mut errors);
-        if !self.public {
+        if !self.public && text.is_some() {
             errors.push(format!(
                 "{} is for a public repository; in a private one (`public = false`), statute.toml names every source and rule",
                 crate::private::MANIFEST

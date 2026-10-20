@@ -1107,21 +1107,60 @@ fn the_global_configuration_turns_rules_on_for_the_private_output() {
     assert!(full.contains("Do the thing 2."), "{full}");
 }
 
+/// A private repository has the same private output: what the global
+/// configuration turns on, of its private sources too, reaches it, and
+/// AGENTS.md has none of it.
 #[test]
-fn a_private_repository_says_the_global_configuration_turns_on_nothing() {
+fn the_global_configuration_turns_rules_on_in_a_private_repository_too() {
     let w = world("enables-private");
-    configure_top(&w, "rules = [\"R2\"]\n");
+    let (_, me) = source(
+        &w.at,
+        "me",
+        &[domain(1), rule(4, 1, ""), overriding(5, "R2")],
+    );
+    w.configure(&format!(
+        "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
+    ));
+    configure_top(&w, "rules = [\"R2\", \"me:4\"]\n");
     ok(&w.run(&["init", "--private"]));
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["lock"]));
+    assert!(!w.repo.join(PRIVATE_LOCK).exists());
+    let run = w.run(&["compile"]);
+    ok(&run);
+    assert!(!run.stderr.contains("note"), "{}", run.stderr);
+    let public = read(&w.repo, "AGENTS.md");
+    assert!(!public.contains("Do the thing 2."), "{public}");
+    assert!(!public.contains("Do the thing 4."), "{public}");
+    let full = read(&w.repo, ".statute/AGENTS.full.md");
+    assert!(full.contains("Do the thing 2."), "{full}");
+    assert!(full.contains("Do the thing 4."), "{full}");
+    assert!(!w.repo.join(PRIVATE_LOCK).exists());
+    ok(&w.run(&["compile", "--check"]));
+    // A new worktree's hook writes it too, from the cache.
+    std::fs::remove_file(w.repo.join(".statute/AGENTS.full.md")).unwrap();
+    ok(&w.run(&["compile", "--private-only"]));
+    assert!(read(&w.repo, ".statute/AGENTS.full.md").contains("Do the thing 4."));
+    // AGENTS.md holds what statute.toml enables, so a rule of the
+    // global configuration's that overrides one is left out.
+    let config = w.home.join(".config/statute/config.toml");
+    let text = std::fs::read_to_string(&config).unwrap();
+    std::fs::write(&config, text.replace("\"R2\", \"me:4\"", "\"me:5\"")).unwrap();
+    let manifest = read(&w.repo, "statute.toml").replace("rules = []", "rules = [\"R2\"]");
+    write(&w.repo, "statute.toml", &manifest);
     ok(&w.run(&["lock"]));
     let run = w.run(&["compile"]);
     ok(&run);
     assert!(
-        run.stderr.contains("statute: note: the global configuration turns on rules, packs or domains, and this repository is private"),
+        run.stderr.contains("statute: note: the global configuration's `me:5` is left out here: me:5 would override R2, a rule statute.toml enables\n"),
         "{}",
         run.stderr
     );
-    assert!(!read(&w.repo, "AGENTS.md").contains("Do the thing 2."));
-    assert!(!w.repo.join(".statute/AGENTS.full.md").exists());
+    assert!(!read(&w.repo, ".statute/AGENTS.full.md").contains("Do the thing 5."));
 }
 
 #[test]

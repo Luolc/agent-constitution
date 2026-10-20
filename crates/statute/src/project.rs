@@ -160,15 +160,14 @@ impl Project {
         let mut diags = Diagnostics::default();
         let path = dir.manifest();
         match std::fs::read_to_string(&path) {
-            Ok(text) => Project::with_private(project, given, &text, env, dir),
+            Ok(text) => Project::layer(project, given, Some(&text), env, dir),
             // What the global configuration turns on makes a private
-            // layer of its own.
+            // layer of its own, in a private repository too.
             Err(e)
                 if e.kind() == std::io::ErrorKind::NotFound
-                    && project.manifest.public
                     && !project.manifest.global_enables.is_empty() =>
             {
-                Project::with_private(project, given, "", env, dir)
+                Project::layer(project, given, None, env, dir)
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => (None, diags),
             Err(e) => {
@@ -189,6 +188,18 @@ impl Project {
         env: &Env,
         dir: &private::Dir,
     ) -> (Option<Project>, Diagnostics) {
+        Project::layer(project, given, Some(text), env, dir)
+    }
+
+    /// As `with_private`; without `text`, the layer of what the global
+    /// configuration turns on alone, which a private repository has too.
+    fn layer(
+        project: &Project,
+        given: &Diagnostics,
+        text: Option<&str>,
+        env: &Env,
+        dir: &private::Dir,
+    ) -> (Option<Project>, Diagnostics) {
         let root = &project.root;
         let mut diags = Diagnostics::default();
         let shown = dir.manifest().display().to_string();
@@ -197,7 +208,7 @@ impl Project {
             return (None, diags);
         };
         let fallback = if env.from_lock { &own[..] } else { &[] };
-        let manifest = match project.manifest.with_private_from(text, fallback) {
+        let manifest = match project.manifest.private_layer(text, fallback) {
             Ok(m) => m,
             Err(errors) => {
                 for e in errors {
@@ -490,7 +501,14 @@ fn fails(
         .find(|(target, by)| {
             public.enabled.contains_key(*target) && !public.enabled.contains_key(*by)
         })
-        .map(|(target, by)| format!("{by} would override {target}, a rule of the public layer"))
+        .map(|(target, by)| {
+            let of = if manifest.public {
+                "a rule of the public layer".to_owned()
+            } else {
+                format!("a rule {} enables", manifest::FILE)
+            };
+            format!("{by} would override {target}, {of}")
+        })
 }
 
 /// Leaves out of the private layer `manifest` each entry of the global

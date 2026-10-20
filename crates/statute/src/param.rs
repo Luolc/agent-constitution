@@ -489,8 +489,7 @@ pub struct Setting {
     /// The value the committed `AGENTS.md` and the lock file get.
     pub value: String,
     pub from: Origin,
-    /// The person's own value of a `personal` parameter, in a public
-    /// repository, when one is set.
+    /// The person's own value of a `personal` parameter, when one is set.
     pub personal: Option<(String, Origin)>,
     /// The enabled rules that use it.
     pub rules: Vec<Key>,
@@ -619,7 +618,6 @@ pub fn settle(
             }
             if let Some(setting) = out.get_mut(name)
                 && setting.personal.is_none()
-                && manifest.public
             {
                 setting.personal = Some((value.clone(), origin));
             }

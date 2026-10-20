@@ -1,4 +1,4 @@
-<!-- en-sha256: 14c8ae86a6fdc19407fe8c6beab1c49281f3246b466b5ca0cde163f3f9f93f1c -->
+<!-- en-sha256: 5eeb50f6b169cec64b73419367fd009903c0dc4f77aef7c2d0f8f19d1388e7ac -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
@@ -161,7 +161,7 @@ commit message 与 pull request 描述分成两个参数，是因为常见的做
 | `dirs.third-party` | `~/third-party` | R312、R313 |
 | `dirs.initiatives` | `~/initiatives` | R314 |
 
-R314 在领域 R161 (`fleet-cli`) 里，其余的在领域 R127 (`machine`) 里。用到这些参数的规定都默认关，依赖 scratch 目录和数据目录的 R217 到 R220 也默认关，没打开它们的规定清单对这些目录什么也不说。要用它们的人在自己那一层打开它们并给出取值：公开仓库里由全局配置或私有规定清单给私有输出；私有仓库没有私有输出，由 `statute.toml` 设定。
+R314 在领域 R161 (`fleet-cli`) 里，其余的在领域 R127 (`machine`) 里。用到这些参数的规定都默认关，依赖 scratch 目录和数据目录的 R217 到 R220 也默认关，没打开它们的规定清单对这些目录什么也不说。要用它们的人在自己那一层打开它们并给出取值：由全局配置给私有输出，公开仓库里也可以由私有规定清单给；私有仓库还可以在 `statute.toml` 里设定，给提交的 `AGENTS.md`。
 
 **发行版本、runner 与 socket。** R135、R212、R322 和 R323 把这个人环境里的三个值留给规定清单：Linux 机器与测试容器的发行版本，CI 服务托管的 Linux runner 的标签，本机 FedNet client 的 socket (R322 和 R323 共用)。每个值都由一个范围为 `personal` 的 `string` 参数给出，默认值不对应任何人的环境；用到它的规定默认关，并依赖它补值的那条规定：
 
@@ -191,7 +191,7 @@ value = "zh"
 
 **编译出的 `AGENTS.md`** 用取值替换占位符，不加任何标记：语言写成它在文件所用语言里的名称 (`Chinese`、`中文`)，字符串照写。规定的要求读起来就像取值本来就写在规定里。
 
-**私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。在公开仓库里，某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，全局配置开启了规定时也一样 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))，`statute compile --private-only` 这时同样会写。私有仓库 (`public = false`) 没有私有输出，所以那里个人的取值不起作用，`statute compile` 用一条 note 说明这一点，并指出是哪个参数。
+**私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，全局配置开启了规定时也一样 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))，`statute compile --private-only` 这时同样会写。私有仓库 (`public = false`) 与公开仓库一样：提交的 `AGENTS.md` 和 `statute.lock` 保留 `statute.toml` 的取值或默认值，这样 `statute compile --check` 在每台机器上得到相同的文件，个人的取值只进私有输出。
 
 **`statute explain <name>`** 说明取值、它从哪里来 (`statute.toml`、默认值；`personal` 参数还可能来自私有规定清单或全局配置，两个取值不同时都列出)，以及哪些启用的规定在用它。
 
