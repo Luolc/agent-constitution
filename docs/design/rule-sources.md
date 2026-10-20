@@ -470,7 +470,10 @@ does not install the hooks: the user does, once per clone.
   cause and the command to run, and exits 1, whenever the plain
   `statute compile` would fail or need the network: a lock file that is stale, a commit
   missing from the cache, a link not ignored through
-  `.git/info/exclude`, a rule set that does not resolve. The last
+  `.git/info/exclude`, a rule set that does not resolve. A
+  `statute.lock` of an older statute that is otherwise current is not
+  stale here
+  ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)). The last
   line it prints is `statute: error: the private output is not
   written; …`. A hook that fails would make `git worktree add` and
   `git switch` exit with its status (githooks(5)), so both hook lines
@@ -481,8 +484,8 @@ does not install the hooks: the user does, once per clone.
 already on disk would otherwise keep giving the agents, through the
 links, what the last compile that succeeded wrote: private rules that
 may no longer hold. So when `statute compile` or `statute compile
---private-only` fails, it rewrites a `.statute/AGENTS.full.md` that is
-there to what the `AGENTS.md` on disk says, under one paragraph: statute
+--private-only` fails, except on a lock file of another version
+(below), it rewrites a `.statute/AGENTS.full.md` that is there to what the `AGENTS.md` on disk says, under one paragraph: statute
 could not write the private output, the file leaves out the private
 rules, `statute compile --private-only` names the cause and `statute
 compile` writes the private output or says what to fix. The links are
@@ -497,6 +500,22 @@ makes no link; it never writes at a link's path, so a file there that
 is not statute's link is left as it is. Nor does it rewrite a full text
 that is the repository's own: one that git tracks, or one beside a
 `.statute/.gitignore` that does not start with statute's line.
+
+**A lock file of another version leaves the private output as it
+was.** While `statute.lock` is of a version the command does not take,
+any version but its own for `compile`, and for `--private-only` a newer
+one or one that does not read as major.minor.patch, a failed compile
+does not rewrite the full text, whatever else failed with the version:
+a statute older than the lock file may not read the rule set at all.
+The version says nothing of whether the private rules still hold, and
+rewriting would take them from every agent on a machine at each
+release: on the machines that install the new statute before a
+repository locks again with it, and on those that have not installed
+the statute a repository locked with. The command prints a note that
+the file is left as it was and what writes it: the statute that wrote
+the lock file, or for an older one, `statute lock` and then `statute
+compile`. Any other failure, such as a lock file of an older statute
+that `--private-only` finds stale, still rewrites it.
 
 The links are relative and lead to the worktree's own `.statute/`.
 

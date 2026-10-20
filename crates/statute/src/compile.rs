@@ -118,6 +118,7 @@ pub fn compile(project: &Project) -> Result<Output, String> {
         lock::FILE,
         &lock::render(project),
         crate::manifest::FILE,
+        false,
     )?;
     let agents_md = agents_md(project, false)?;
     let mut skills: Vec<(String, PathBuf)> = Vec::new();
@@ -446,17 +447,22 @@ fn files_below(dir: &Path) -> Result<Vec<PathBuf>, String> {
 /// (`docs/design/rule-sources.md`, Private rules in a public repository).
 /// Without a private rule set, `both` is `public` and `dir` is `None`:
 /// the text then differs only in the person's own values.
-/// Fails as `compile` does.
+/// Fails as `compile` does; with `older`, as `compile --private-only`
+/// runs it, takes a `statute.lock` of an older statute that holds what
+/// this one writes once its version is this one's, so that a new statute
+/// does not wait for each repository to lock again.
 pub fn full_text(
     public: &Project,
     both: &Project,
     dir: Option<&private::Dir>,
+    older: bool,
 ) -> Result<String, String> {
     check_lock(
         &public.root.join(lock::FILE),
         lock::FILE,
         &lock::render(public),
         crate::manifest::FILE,
+        older,
     )?;
     if let Some(dir) = dir {
         let path = dir.read_lock();
@@ -465,6 +471,7 @@ pub fn full_text(
             &path.display().to_string(),
             &lock::render_private(public, both),
             private::MANIFEST,
+            false,
         )?;
     }
     agents_md(both, true)
@@ -482,28 +489,49 @@ pub fn personal_differs(project: &Project) -> bool {
 
 /// Fails unless the lock file at `path`, shown as `shown`, holds
 /// `current`, what the rule set `set` and the rules give now, the version
-/// of statute that wrote it included.
-fn check_lock(path: &Path, shown: &str, current: &str, set: &str) -> Result<(), String> {
+/// of statute that wrote it included; with `older`, a lock file of an
+/// older statute passes when it holds `current` once its version is this
+/// one's.
+fn check_lock(
+    path: &Path,
+    shown: &str,
+    current: &str,
+    set: &str,
+    older: bool,
+) -> Result<(), String> {
+    let stale =
+        || format!("{shown} is not what {set} and the rules give now; run `statute lock` first");
     match std::fs::read_to_string(path) {
         Ok(text) if text == current => Ok(()),
-        Ok(text)
-            if let Some(other) = lock::read(&text)
-                .ok()
-                .and_then(|l| l.statute)
-                .filter(|v| v != lock::VERSION) =>
-        {
-            Err(format!(
+        Ok(text) => match lock::version(&text).filter(|v| v != lock::VERSION) {
+            Some(other) if older && lock::older(&other) => {
+                if lock::as_this(&text, &other) == current {
+                    Ok(())
+                } else {
+                    Err(stale())
+                }
+            }
+            Some(other) => Err(format!(
                 "{shown} was written by statute {other}, and this is statute {}; run statute {other}, or `statute lock` to write it with this one",
                 lock::VERSION
-            ))
-        }
-        Ok(_) => Err(format!(
-            "{shown} is not what {set} and the rules give now; run `statute lock` first"
-        )),
+            )),
+            None => Err(stale()),
+        },
         Err(e) => Err(format!(
             "cannot read {shown}: {e}; run `statute lock` first"
         )),
     }
+}
+
+/// The version of statute that wrote `statute.lock` in `root`, when a
+/// compile refuses the file for that alone: any other version than this
+/// one, or with `older`, as `compile --private-only` runs [`full_text`],
+/// one that is not older. `None` when the file cannot be
+/// read or records no version.
+pub fn refused_version(root: &Path, older: bool) -> Option<String> {
+    let other = lock::version(&std::fs::read_to_string(root.join(lock::FILE)).ok()?)
+        .filter(|v| v != lock::VERSION)?;
+    (!(older && lock::older(&other))).then_some(other)
 }
 
 /// The text of `AGENTS.md`; with `private`, with the person's own values.

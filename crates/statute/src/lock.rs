@@ -280,6 +280,41 @@ impl LockedRule {
     }
 }
 
+/// The version of statute that wrote the lock file `text`, read
+/// whatever else the file holds, so that a lock file of a later format
+/// still gives it; `None` in a lock file written before it was recorded.
+pub fn version(text: &str) -> Option<String> {
+    #[derive(Deserialize)]
+    struct Raw {
+        statute: Option<String>,
+    }
+    toml::from_str::<Raw>(text).ok()?.statute
+}
+
+/// Whether statute `version` is older than this one, both read as
+/// major.minor.patch; false when `version` does not read so.
+pub fn older(version: &str) -> bool {
+    fn numbers(v: &str) -> Option<[u64; 3]> {
+        let mut parts = v.split('.').map(|p| p.parse().ok());
+        let n = [parts.next()??, parts.next()??, parts.next()??];
+        parts.next().is_none().then_some(n)
+    }
+    numbers(version)
+        .zip(numbers(VERSION))
+        .is_some_and(|(it, this)| it < this)
+}
+
+/// The lock file `text` that statute `other` wrote, with this version in
+/// place of `other`: what this statute writes from the same rules,
+/// unless the format changed between the two.
+pub fn as_this(text: &str, other: &str) -> String {
+    text.replacen(
+        &format!("statute = \"{other}\"\n"),
+        &format!("statute = \"{VERSION}\"\n"),
+        1,
+    )
+}
+
 #[derive(Deserialize)]
 struct RawLock {
     statute: Option<String>,

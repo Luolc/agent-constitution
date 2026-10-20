@@ -488,6 +488,102 @@ fn a_failure_takes_the_private_rules_out_of_a_private_output_already_there() {
     assert_eq!(read(&tree, ".statute/AGENTS.full.md"), "# Our full text\n");
 }
 
+/// Rewrites the version in `statute.lock` of `tree` to `version`, as if
+/// that statute had written it from the same rules.
+fn locked_by(tree: &Path, version: &str) {
+    let lock = read(tree, "statute.lock");
+    let this = format!("statute = \"{}\"\n", env!("CARGO_PKG_VERSION"));
+    assert!(lock.contains(&this), "{lock}");
+    write(
+        tree,
+        "statute.lock",
+        &lock.replacen(&this, &format!("statute = \"{version}\"\n"), 1),
+    );
+}
+
+/// Older than this statute, and after it as text, so that the versions
+/// are compared as numbers.
+const OLDER: &str = "0.1.9";
+
+/// The note of a failure that leaves the private output as it was, for a
+/// lock file of statute `version`.
+fn kept(version: &str, then: &str) -> String {
+    format!(
+        "statute: note: .statute/AGENTS.full.md is left as it was, since statute.lock is of statute {version}; {then}\n"
+    )
+}
+
+#[test]
+fn a_lock_file_of_an_older_statute_gives_the_private_output() {
+    let w = world("older");
+    let tree = w.worktree("other");
+    locked_by(&tree, OLDER);
+    let run = w.run(&tree, &["compile", "--private-only"]);
+    ok(&run);
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+    // The plain compile, which writes the public layer, needs this
+    // statute's lock file, and leaves the private output as it was.
+    let run = w.run(&tree, &["compile"]);
+    assert_eq!(run.code, 1, "{}", run.stderr);
+    assert!(
+        run.stderr.contains(&format!(
+            "statute: error: statute.lock was written by statute {OLDER}, and this is statute {}",
+            env!("CARGO_PKG_VERSION")
+        )) && run.stderr.contains(&kept(
+            OLDER,
+            "`statute lock` and then `statute compile` write it with this one"
+        )),
+        "{}",
+        run.stderr
+    );
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+    // A rule changed since the lock file still takes the private rules
+    // out.
+    git_in(&w, &tree, &["checkout", "statute.lock"]);
+    ok(&w.run(&tree, &["compile"]));
+    locked_by(&tree, OLDER);
+    let r2 = read(&tree, "r/rules/2.toml");
+    write(
+        &tree,
+        "r/rules/2.toml",
+        &r2.replace("Do the thing 2.", "Do the thing 2 well."),
+    );
+    let run = w.run(&tree, &["compile", "--private-only"]);
+    failed(&run);
+    assert!(
+        run.stderr.starts_with("statute: error: statute.lock is not what statute.toml and the rules give now; run `statute lock` first\n"),
+        "{}",
+        run.stderr
+    );
+    withdrawn(&tree);
+}
+
+#[test]
+fn a_lock_file_of_a_newer_statute_leaves_the_private_output_as_it_was() {
+    let w = world("newer");
+    let tree = w.worktree("other");
+    ok(&w.run(&tree, &["compile"]));
+    for other in ["99.0.0", "0.1.x"] {
+        locked_by(&tree, other);
+        let run = w.run(&tree, &["compile", "--private-only"]);
+        failed(&run);
+        assert!(
+            run.stderr.starts_with(&format!(
+                "statute: error: statute.lock was written by statute {other}, and this is statute {}; ",
+                env!("CARGO_PKG_VERSION")
+            )) && run
+                .stderr
+                .contains(&kept(other, &format!("statute {other} writes it"))),
+            "{}",
+            run.stderr
+        );
+        assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+        assert_eq!(w.run(&tree, &["compile"]).code, 1);
+        assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+        git_in(&w, &tree, &["checkout", "statute.lock"]);
+    }
+}
+
 #[test]
 fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
     let w = world("hook");

@@ -1,4 +1,4 @@
-<!-- en-sha256: f22f6e97a27d817c031a9dfef6f8cbe3d61a4f23ad3b7ef979d94626d0969e06 -->
+<!-- en-sha256: 2248ce0bcfc5ff6b64e98a8d3bedbc1723e3afe8d0d5c5b26455bd5f81de9ed2 -->
 # 规定清单、引用与依赖
 
 这是[规定体系](rule-system.md) 的一部分，那里的状态和术语也适用于这里。
@@ -62,7 +62,7 @@ tools = ["<tool>"]
 
 `statute` 是头注释之后的第一个键，单独占一行，这样 CI 用一行命令就能从锁文件读出要装的 statute 版本，例如 `sed -n 's/^statute = "\(.*\)"$/\1/p' statute.lock`；规定用到的内置检查就在这个二进制里。规定之后，每条 `check = "command"` 的启用规定一张 `[[commands]]` 表，按 ID 排序，写明它的 `rule`、`run` 和 `tools` ([检查](rule-checks.md#checks))；没有启用规定带这种检查时，锁文件里没有这种表。所以同样的规定清单和规定源，用同一版 statute 得出同样的锁文件，换一版 statute 会改写这一行。
 
-这个版本是写出锁文件的那一版，仓库的 CI 装的就是它 ([发布与版本](amendments-and-releases.md#releases-and-versions))。`compile` 和 `compile --check` 要求锁文件是 `statute lock` 此刻会写出的内容，版本也算在内：别的版本写的锁文件会失败，并写明两个版本。0.1.18 之前的 statute 写的锁文件两项都没有，同样失败；`statute lock` 和 `statute upgrade` 会把两项写上，`upgrade` 还会显示记下的版本或从哪一版升上来。
+这个版本是写出锁文件的那一版，仓库的 CI 装的就是它 ([发布与版本](amendments-and-releases.md#releases-and-versions))。`compile` 和 `compile --check` 要求锁文件是 `statute lock` 此刻会写出的内容，版本也算在内：别的版本写的锁文件会失败，并写明两个版本。这两条命令这样严格，是因为提交的输出必须是锁文件钉住的那一版编出来的，在 CI 里、在每台机器上都一样。`compile --private-only` 只写私有输出，由 git 钩子运行，而机器往往在各个仓库重新锁定之前就装上了最新的 statute ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository)，新的 worktree)，所以它也接受更旧的 statute 写的锁文件：两个版本按 major.minor.patch 逐段比数字，把锁文件的 `statute` 一行换成本版之后，正是 `statute lock` 此刻会写出的内容，就照常通过。更新的 statute 写的锁文件，或者版本读不成 major.minor.patch 的，它和 `compile` 一样失败，并写明两个版本。某一版改了锁文件的格式，更旧的版本写的锁文件就会因为不是 `statute lock` 此刻会写出的内容而失败。0.1.18 之前的 statute 写的锁文件两项都没有，同样失败；`statute lock` 和 `statute upgrade` 会把两项写上，`upgrade` 还会显示记下的版本或从哪一版升上来。
 
 所以仓库换用新版 statute，是用新版运行 `statute lock` 和 `statute compile`。经镜像仓 `Luolc/statute-pre-commit` 把 `statute compile --check` 作为 pre-commit hook 运行的仓库 ([发布与版本](amendments-and-releases.md#releases-and-versions))，statute 按 hook 的 `rev` 安装，CI 里也一样，所以提交新锁文件的那个变更同时把 `rev` 改成 `v<version>`；两者不一致时，hook 会失败，并写出两个版本。不经 pre-commit、在 CI 里自己装 statute 的仓库，从锁文件读版本；按规定 334，这个 CI 步骤属于指令体系，放进提交新锁文件的那个变更；按规定 280，锁文件要与其他所有文件分开改，读版本的 CI 步骤另成一个变更，排在提交新锁文件的变更之前，在那之前回退读旧文件。本仓自己的检查用从源码构建的 statute 运行，所以提高 crate 版本的变更必须在同一个变更里改写 `statute.lock` 里的 `statute` 行：本仓规定 L32 把只改了 `statute` 和 `commands` 的锁文件改动算作生成文件，让它随代码走；对锁文件的其他改动仍是指令改动。
 

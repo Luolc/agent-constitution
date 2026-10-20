@@ -494,9 +494,33 @@ fn write_lock(root: &Path, project: &Project) -> Result<(), ()> {
 }
 
 /// `compile`, which takes the private rules out of a private output
-/// already there when it fails.
+/// already there when it fails ([`after_failure`]).
 fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
-    compile_layers(root, output).inspect_err(|()| withdraw_private(root))
+    compile_layers(root, output).inspect_err(|()| after_failure(root, false))
+}
+
+/// After a compile that failed, with `older` `--private-only`: leaves a
+/// private output already in `root` as it was, with a note, when the
+/// compile refuses `statute.lock` for the version of statute that wrote
+/// it ([`statute::compile::refused_version`]), which says nothing of
+/// whether the private rules still hold; otherwise takes the private
+/// rules out of it.
+fn after_failure(root: &Path, older: bool) {
+    let Some(other) = statute::compile::refused_version(root, older) else {
+        return withdraw_private(root);
+    };
+    if private::written(root) {
+        let then = if lock::older(&other) {
+            "`statute lock` and then `statute compile` write it with this one".to_owned()
+        } else {
+            format!("statute {other} writes it")
+        };
+        eprintln!(
+            "statute: note: {} is left as it was, since {} is of statute {other}; {then}",
+            private::full().display(),
+            lock::FILE
+        );
+    }
 }
 
 /// Rewrites a private output already in `root` to say what `AGENTS.md`
@@ -520,9 +544,14 @@ fn compile_layers(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let path = output.map_or_else(|| root.join(statute::compile::FILE), Path::to_path_buf);
     // The private output is made in full before anything is written.
     let full = match &private {
-        Some(p) => Some(statute::compile::full_text(&project, &p.both, p.rule_set())),
+        Some(p) => Some(statute::compile::full_text(
+            &project,
+            &p.both,
+            p.rule_set(),
+            false,
+        )),
         None if statute::compile::personal_differs(&project) || private::written(root) => {
-            Some(statute::compile::full_text(&project, &project, None))
+            Some(statute::compile::full_text(&project, &project, None, false))
         }
         None => None,
     }
@@ -602,10 +631,12 @@ fn compile_check(root: &Path, output: Option<&Path>) -> Result<(), ()> {
 /// set, what the global configuration turns on and a person's own value
 /// that differs from the committed one, it rewrites a private output
 /// already there to say what `AGENTS.md` says, and otherwise does
-/// nothing. Any other problem fails it, and nothing is written but a
-/// private output already there, rewritten without the private rules
-/// ([`private::withdraw`]). The hook ends with `exit 0`, so that the
-/// failure never fails the checkout.
+/// nothing. It takes a `statute.lock` of an older statute
+/// ([`statute::compile::full_text`] with `older`). Any other problem fails it, and
+/// nothing is written but a private output already there, rewritten
+/// without the private rules, or left as it was when `statute.lock` is
+/// of a version it does not take ([`after_failure`]). The hook ends with
+/// `exit 0`, so that the failure never fails the checkout.
 fn compile_private_only(root: &Path) -> Result<(), ()> {
     match private_only(root) {
         Ok(written) => {
@@ -618,7 +649,7 @@ fn compile_private_only(root: &Path) -> Result<(), ()> {
             for cause in causes {
                 eprintln!("statute: error: {cause}");
             }
-            withdraw_private(root);
+            after_failure(root, true);
             eprintln!(
                 "statute: error: the private output is not written; `statute compile` writes it, or says what to fix"
             );
@@ -657,12 +688,14 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let full = if has_private || global {
         let (both, more) = Project::load_private(&project, &diags, &env, &dir);
         match both {
-            Some(both) => statute::compile::full_text(&project, &both, has_private.then_some(&dir)),
+            Some(both) => {
+                statute::compile::full_text(&project, &both, has_private.then_some(&dir), true)
+            }
             None if more.has_errors() => return Err(errors(&more)),
             None => return Err(one(format!("{} did not load", private::MANIFEST))),
         }
     } else if statute::compile::personal_differs(&project) || private::written(root) {
-        statute::compile::full_text(&project, &project, None)
+        statute::compile::full_text(&project, &project, None, true)
     } else {
         return Ok(Vec::new());
     };

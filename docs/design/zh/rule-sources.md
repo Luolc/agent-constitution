@@ -1,4 +1,4 @@
-<!-- en-sha256: d7aeafad9ba0311d831e12dbcd11183077b7cf1943da182c5c3ac6baea436621 -->
+<!-- en-sha256: facb1dcc7a2f1910c423bd1e7b8f89dbd3f63b13a74f1158425cb73669742ab9 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -184,9 +184,11 @@ statute compile --private-only; exit 0
 - 读这个 worktree 的 `statute.toml`、`statute.lock` 和私有锁文件，以及私有规定清单，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
 - 没有 `statute.toml` 时，什么都不做，不出声，退出码为 0；
 - 既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，`.statute/AGENTS.full.md` 已经存在的，把它重写成与 `AGENTS.md` 相同的内容，软链保留 (见[锁文件与输出里的取值](rule-config.md#values-in-the-lock-file-and-the-outputs))，不存在的，什么都不做，不出声，退出码为 0；
-- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就不写私有输出，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
+- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就不写私有输出，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。更旧的 statute 写的 `statute.lock`，其余都是最新的，在这里不算过期 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
 
-**编译失败时不留下私有规定。** 不然，盘上已有的私有输出会继续经软链把上一次成功的编译写下的内容交给 agent，其中的私有规定可能已经不成立了。所以 `statute compile` 或 `statute compile --private-only` 失败时，把已经存在的 `.statute/AGENTS.full.md` 重写成盘上 `AGENTS.md` 的内容，前面加一段话：statute 没能写出私有输出，这个文件不含私有规定，`statute compile --private-only` 会说明原因，`statute compile` 会写出私有输出或者说明要修什么。软链保留，所以 agent 读到的是公开规定和这段话，而不是旧的私有规定，也不会碰到悬空的软链。这段话不写原因，因为原因里可能出现私有规定源或私有规定。这时文件里只有公开内容，所以不论 git 是否忽略它都照写，软链没被忽略时也一样。盘上的 `AGENTS.md` 是直接读的，不重新编译，因为失败的可能正是公开层加载不了。没有全文时 (例如新的 worktree)，命令什么都不写，也不建软链；它从不在软链的路径上写东西，所以那里不是 statute 软链的文件原样保留。仓库自己的全文它也不改写：git 跟踪的，或者旁边的 `.statute/.gitignore` 第一行不是 statute 那一行的。
+**编译失败时不留下私有规定。** 不然，盘上已有的私有输出会继续经软链把上一次成功的编译写下的内容交给 agent，其中的私有规定可能已经不成立了。所以 `statute compile` 或 `statute compile --private-only` 失败时，除非是因为锁文件是别的版本写的 (见下)，都把已经存在的 `.statute/AGENTS.full.md` 重写成盘上 `AGENTS.md` 的内容，前面加一段话：statute 没能写出私有输出，这个文件不含私有规定，`statute compile --private-only` 会说明原因，`statute compile` 会写出私有输出或者说明要修什么。软链保留，所以 agent 读到的是公开规定和这段话，而不是旧的私有规定，也不会碰到悬空的软链。这段话不写原因，因为原因里可能出现私有规定源或私有规定。这时文件里只有公开内容，所以不论 git 是否忽略它都照写，软链没被忽略时也一样。盘上的 `AGENTS.md` 是直接读的，不重新编译，因为失败的可能正是公开层加载不了。没有全文时 (例如新的 worktree)，命令什么都不写，也不建软链；它从不在软链的路径上写东西，所以那里不是 statute 软链的文件原样保留。仓库自己的全文它也不改写：git 跟踪的，或者旁边的 `.statute/.gitignore` 第一行不是 statute 那一行的。
+
+**锁文件是别的版本写的，私有输出原样保留。** `statute.lock` 的版本是这条命令不接受的 (对 `compile` 是本版以外的任何版本，对 `--private-only` 是更新的版本，或者读不成 major.minor.patch 的版本) 时，编译失败也不改写全文，不论同时还有什么别的错：比锁文件旧的 statute 可能根本读不了规定清单。版本不同说明不了私有规定还成不成立，改写的话，每发一版，一台机器上所有 agent 都会丢掉私有规定：在仓库用新版重新锁定之前就装上新版的机器上是这样，没装上仓库锁定所用版本的机器上也是这样。命令打印一条 note，说明文件原样保留，以及用什么写它：写出锁文件的那一版 statute；锁文件是更旧的版本写的，就先 `statute lock` 再 `statute compile`。其他失败照旧改写全文，例如 `--private-only` 发现更旧的 statute 写的锁文件已经过期。
 
 软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
