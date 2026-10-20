@@ -499,7 +499,7 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     // The private output is made in full before anything is written.
     let full = match &private {
         Some(p) => Some(statute::compile::full_text(&project, &p.both, p.rule_set())),
-        None if statute::compile::personal_differs(&project) => {
+        None if statute::compile::personal_differs(&project) || private::written(root) => {
             Some(statute::compile::full_text(&project, &project, None))
         }
         None => None,
@@ -576,9 +576,11 @@ fn compile_check(root: &Path, output: Option<&Path>) -> Result<(), ()> {
 /// `compile --private-only`, which a git `post-checkout` hook runs in a
 /// new worktree (`docs/design/rule-sources.md`, A new worktree): writes
 /// the private output alone, reading git sources from the cache only.
-/// Without a public rule set, or without a private rule set and a
-/// person's own value that differs from the committed one, it does
-/// nothing; any other problem fails it, and nothing is written. The hook
+/// Without a public rule set it does nothing; without a private rule
+/// set, what the global configuration turns on and a person's own value
+/// that differs from the committed one, it rewrites a private output
+/// already there to say what `AGENTS.md` says, and otherwise does
+/// nothing. Any other problem fails it, and nothing is written. The hook
 /// ends with `exit 0`, so that the failure never fails the checkout.
 fn compile_private_only(root: &Path) -> Result<(), ()> {
     match private_only(root) {
@@ -619,8 +621,9 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let has_private = has_private_rule_set(&dir);
     let global = !env.layers.enables.is_empty();
     // Without a private rule set or what the global configuration turns
-    // on, only a person's own value could call for the private output,
-    // and a rule set that does not load has none to tell.
+    // on, only a person's own value, or a private output to bring up to
+    // date, calls for writing it, and a rule set that does not load has
+    // nothing to write.
     let project = match project {
         Some(project) => project,
         None if has_private || global => return Err(errors(&diags)),
@@ -633,7 +636,7 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
             None if more.has_errors() => return Err(errors(&more)),
             None => return Err(one(format!("{} did not load", private::MANIFEST))),
         }
-    } else if statute::compile::personal_differs(&project) {
+    } else if statute::compile::personal_differs(&project) || private::written(root) {
         statute::compile::full_text(&project, &project, None)
     } else {
         return Ok(Vec::new());

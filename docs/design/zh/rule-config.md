@@ -1,4 +1,4 @@
-<!-- en-sha256: 5eeb50f6b169cec64b73419367fd009903c0dc4f77aef7c2d0f8f19d1388e7ac -->
+<!-- en-sha256: 2cd868eeab14f2d4241c76f8a363c2e4612c997bca9f02ff449ea8fa33f650a5 -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
@@ -191,7 +191,7 @@ value = "zh"
 
 **编译出的 `AGENTS.md`** 用取值替换占位符，不加任何标记：语言写成它在文件所用语言里的名称 (`Chinese`、`中文`)，字符串照写。规定的要求读起来就像取值本来就写在规定里。
 
-**私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，全局配置开启了规定时也一样 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))，`statute compile --private-only` 这时同样会写。私有仓库 (`public = false`) 与公开仓库一样：提交的 `AGENTS.md` 和 `statute.lock` 保留 `statute.toml` 的取值或默认值，这样 `statute compile --check` 在每台机器上得到相同的文件，个人的取值只进私有输出。
+**私有输出** `.statute/AGENTS.full.md` 写入 `personal` 参数的个人取值，其余与提交的文件相同：没有个人取值时，两个文件内容一致。某个 `personal` 参数的个人取值与提交的取值不同时，即使没有私有规定清单，`statute compile` 也写私有输出，全局配置开启了规定时也一样 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))，`statute compile --private-only` 这时同样会写。不再有任何东西需要私有输出时，若它已经存在，两条命令都把它重写成与 `AGENTS.md` 相同的内容，软链保留，个人已经去掉的取值不会留在里面。私有仓库 (`public = false`) 与公开仓库一样：提交的 `AGENTS.md` 和 `statute.lock` 保留 `statute.toml` 的取值或默认值，这样 `statute compile --check` 在每台机器上得到相同的文件，个人的取值只进私有输出。
 
 **`statute explain <name>`** 说明取值、它从哪里来 (`statute.toml`、默认值；`personal` 参数还可能来自私有规定清单或全局配置，两个取值不同时都列出)，以及哪些启用的规定在用它。
 

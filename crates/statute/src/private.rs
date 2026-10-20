@@ -144,6 +144,13 @@ pub fn full() -> PathBuf {
     Path::new(DIR).join(FULL)
 }
 
+/// Whether the full text is on disk in `root`: a compile with nothing
+/// left to call for the private output then rewrites it to say what
+/// `AGENTS.md` says, instead of leaving what it said before.
+pub fn written(root: &Path) -> bool {
+    root.join(full()).symlink_metadata().is_ok()
+}
+
 /// Writes `.statute/.gitignore` in `root` when it is missing or is
 /// statute's and differs from `GITIGNORE`; fails, writing nothing, when
 /// the file there is not statute's. Called before any generated file is

@@ -462,6 +462,9 @@ does not install the hooks: the user does, once per clone.
 - does nothing and exits 0, silently, when there is no `statute.toml`,
   or there is no private rule set, the global configuration turns
   nothing on and no person's own value differs from the committed one;
+  in the last case, a `.statute/AGENTS.full.md` already there is
+  rewritten to say what `AGENTS.md` says
+  ([Values in the lock file and the outputs](rule-config.md#values-in-the-lock-file-and-the-outputs));
 - otherwise writes nothing, prints an error that names the cause and
   the command to run, and exits 1, whenever the plain `statute compile`
   would fail or need the network: a lock file that is stale, a commit

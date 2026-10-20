@@ -566,6 +566,16 @@ fn the_private_rule_set_is_written_in_git_s_directory() {
     assert_eq!(read_private(&dir, "private.toml"), "rules = []\n");
 }
 
+fn remove_private_output(dir: &Path) {
+    for path in [
+        ".statute/AGENTS.full.md",
+        "CLAUDE.local.md",
+        "AGENTS.override.md",
+    ] {
+        std::fs::remove_file(dir.join(path)).unwrap();
+    }
+}
+
 #[test]
 fn a_claude_md_is_not_needed() {
     let dir = ignoring("claude-md");
@@ -579,9 +589,10 @@ fn a_claude_md_is_not_needed() {
         "{}",
         run.stderr
     );
-    // Without a private layer, the warning says less; without CLAUDE.md,
-    // nothing.
+    // Without a private layer and its output, the warning says less;
+    // without CLAUDE.md, nothing.
     std::fs::remove_file(common(&dir).join("private.toml")).unwrap();
+    remove_private_output(&dir);
     let run = statute(&dir, &["compile"]);
     ok(&run);
     assert!(
@@ -629,8 +640,17 @@ fn an_agents_md_below_the_top_is_not_loaded() {
             "sub/deeper/AGENTS.md: warning: Claude Code does not load an AGENTS.md below the top of the repository while CLAUDE.local.md is there; move its rules into statute's rules",
         ]
     );
-    // Without a private layer, there is no CLAUDE.local.md.
+    // While the private output is there, so is CLAUDE.local.md, which
+    // says what AGENTS.md says; without it, there is no warning.
     std::fs::remove_file(common(&dir).join("private.toml")).unwrap();
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(
+        run.stderr.contains("sub/AGENTS.md: warning"),
+        "{}",
+        run.stderr
+    );
+    remove_private_output(&dir);
     let run = statute(&dir, &["compile"]);
     ok(&run);
     assert!(!run.stderr.contains("warning"), "{}", run.stderr);

@@ -1107,6 +1107,35 @@ fn the_global_configuration_turns_rules_on_for_the_private_output() {
     assert!(full.contains("Do the thing 2."), "{full}");
 }
 
+/// Once the global configuration turns nothing on, `compile` rewrites
+/// the private output to say what `AGENTS.md` says.
+#[test]
+fn the_private_output_loses_what_the_global_configuration_no_longer_turns_on() {
+    let w = world("enables-gone");
+    let (_, me) = source(&w.at, "me", &[domain(1), rule(4, 1, "")]);
+    w.configure(&format!(
+        "me = {{ git = \"{me}\", branch = \"main\", public = false }}"
+    ));
+    configure_top(&w, "rules = [\"me:4\"]\n");
+    ok(&w.run(&["init", "--public"]));
+    write(
+        &w.repo,
+        ".git/info/exclude",
+        "/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    ok(&w.run(&["lock"]));
+    ok(&w.run(&["compile"]));
+    assert!(read(&w.repo, ".statute/AGENTS.full.md").contains("Do the thing 4."));
+    let config = w.home.join(".config/statute/config.toml");
+    let text = std::fs::read_to_string(&config).unwrap();
+    std::fs::write(&config, text.replace("rules = [\"me:4\"]\n", "")).unwrap();
+    ok(&w.run(&["lock"]));
+    ok(&w.run(&["compile"]));
+    let public = read(&w.repo, "AGENTS.md");
+    assert_eq!(read(&w.repo, ".statute/AGENTS.full.md"), public);
+    assert_eq!(read(&w.repo, "CLAUDE.local.md"), public);
+}
+
 /// A private repository has the same private output: what the global
 /// configuration turns on, of its private sources too, reaches it, and
 /// AGENTS.md has none of it.
