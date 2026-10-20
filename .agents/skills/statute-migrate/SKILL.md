@@ -416,7 +416,9 @@ the exclude file" are there, and statute's cache holds no private
 source. Check statute and the global configuration first (step 0.1
 and 0.2; `statute upgrade --private` needs statute 0.1.23 or later),
 then put the rest back in this order, from the directory of the rule
-set:
+set in the main worktree: a linked worktree writes a private lock file
+of its own, which the main worktree and the worktrees added later do
+not read (the table):
 
 1. Add `/CLAUDE.local.md` and `/AGENTS.override.md`, the lines for the
    private links, to the exclude file (step g.2).
