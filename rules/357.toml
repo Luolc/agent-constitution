@@ -1,0 +1,43 @@
+id = 357
+slug = "leave-fleet-claims-to-fleet"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+default = "on"
+authority = ["accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Leave the work items Agent Fleet claims to Agent Fleet"
+zh = "Agent Fleet 领取的工作项留给 Agent Fleet"
+
+[text.statement]
+en = "As an agent that Agent Fleet started, never claim or release yourself a work item that Agent Fleet claims for its agents, such as a job's parent issue, a work order or a thread's ticket, yours or another agent's, and leave both to the `fleet` commands that do them."
+zh = "作为 Agent Fleet 起的 agent，Agent Fleet 替它的 agent 领取的工作项 (例如 job 的父 issue、工单、thread 的 ticket)，不论是自己的还是别的 agent 的，都不自己领取或释放，留给做这两件事的 `fleet` 命令。"
+
+[text.reason]
+en = '''
+Agent Fleet claims these work items in an agent's name as it starts the agent, and releases each in the same step that writes its report or conclusion and updates its ledger; agents and tools tell by the claim who answers for the item. A claim taken or given back around Agent Fleet puts the work item and the ledger out of step, and who answers for the work item is no longer clear ({@constitution:accountable-agent}).
+'''
+zh = '''
+Agent Fleet 起 agent 时以它的名义领取这些工作项，释放时和写 report 或结论、更新账本在同一步里做完；别的 agent 和工具凭领取记录判断工作项由谁负责。绕开 Agent Fleet 领取或交还，工作项和账本就对不上，工作项该由谁负责也说不清了 ({@constitution:accountable-agent})。
+'''
+
+[text.verification]
+en = '''
+The work items Agent Fleet claims are a thread's ticket (`fleet inbox`), a job's parent issue and the lead's work order (`fleet job start`) and a worker's work order (`fleet spawn`); it releases them with `fleet thread end`, `fleet job end`, `fleet worker end` and `fleet done`, as `fleet <command> --help` says. Claiming or releasing here is running a command that claims or releases a work item, such as `atb linear claim` or `atb linear release`, or doing by hand what it does. A work item that Agent Fleet does not claim is taken and released as {@rule:186} says.
+
+Violated when an agent that Agent Fleet started claims or releases, other than with a `fleet` command, a work item that Agent Fleet claims for its agents.
+'''
+zh = '''
+Agent Fleet 领取的工作项是：thread 的 ticket (`fleet inbox`)、job 的父 issue 与 lead 的工单 (`fleet job start`)、worker 的工单 (`fleet spawn`)；释放它们的是 `fleet thread end`、`fleet job end`、`fleet worker end` 与 `fleet done`，详见 `fleet <命令> --help`。这里的领取或释放，指运行领取或释放工作项的命令 (例如 `atb linear claim`、`atb linear release`)，或者手动做这些命令做的事。Agent Fleet 不领取的工作项，照{@rule:186}领取和释放。
+
+Agent Fleet 起的 agent 不用 `fleet` 的命令，领取或释放了 Agent Fleet 替它的 agent 领取的工作项的，即为违反本规定。
+'''
+
+[translations]
+zh = "00c6c938a2f4d86b6445630f7ab0bd4eedcf5ee9e6d30005d314d30a4555f6f0"
