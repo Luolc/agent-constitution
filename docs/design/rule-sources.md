@@ -266,7 +266,7 @@ with `public = true`:
   worktree that changes its sources, `statute source add` or an edit
   by hand, leaves the lock files of the others stale: their
   `statute compile` fails with a note to run `statute lock`, and
-  `compile --private-only` writes nothing and says the same. A change
+  `compile --private-only` writes no private output and says the same. A change
   to its lists alone, such as `statute add --private`, leaves the
   other worktrees' lock files current, since none records a rule.
 - git never tracks a file in its own directory, so the private rule set
@@ -363,8 +363,8 @@ The two links are ignored through `.git/info/exclude`, never through a
 matches, judging by the link's own path, and does not read
 `.git/info/exclude`. So `statute compile` checks with `git check-ignore
 --verbose` that each link is ignored by a pattern outside every
-`.gitignore`, and writes nothing otherwise, naming the lines to add to
-`.git/info/exclude`. A file at either path that is not such a link is
+`.gitignore`, and writes nothing private otherwise, naming the lines to
+add to `.git/info/exclude`. A file at either path that is not such a link is
 left as it is, and the compile fails.
 
 **`.statute/` holds what is committed and what is not.** The
@@ -466,9 +466,9 @@ does not install the hooks: the user does, once per clone.
   it is there, keeping the links
   ([Values in the lock file and the outputs](rule-config.md#values-in-the-lock-file-and-the-outputs)),
   and otherwise does nothing and exits 0, silently;
-- otherwise writes nothing, prints an error that names the cause and
-  the command to run, and exits 1, whenever the plain `statute compile`
-  would fail or need the network: a lock file that is stale, a commit
+- otherwise writes no private output, prints an error that names the
+  cause and the command to run, and exits 1, whenever the plain
+  `statute compile` would fail or need the network: a lock file that is stale, a commit
   missing from the cache, a link not ignored through
   `.git/info/exclude`, a rule set that does not resolve. The last
   line it prints is `statute: error: the private output is not
@@ -476,6 +476,27 @@ does not install the hooks: the user does, once per clone.
   `git switch` exit with its status (githooks(5)), so both hook lines
   above end with `exit 0`, and a checkout succeeds whatever the
   command does.
+
+**A failed compile leaves no private rule behind.** A private output
+already on disk would otherwise keep giving the agents, through the
+links, what the last compile that succeeded wrote: private rules that
+may no longer hold. So when `statute compile` or `statute compile
+--private-only` fails, it rewrites a `.statute/AGENTS.full.md` that is
+there to what the `AGENTS.md` on disk says, under one paragraph: statute
+could not write the private output, the file leaves out the private
+rules, `statute compile --private-only` names the cause and `statute
+compile` writes the private output or says what to fix. The links are
+kept, so an agent reads the public rules and that paragraph, not old
+private rules, and no link leads nowhere. The paragraph names no
+cause, since a cause can name a private source or rule. What the file
+then holds is public, so it is written whether git ignores it or not,
+as when the links are not ignored. The `AGENTS.md` on disk is read, not
+compiled, since the public layer may be what fails to load. Where there
+is no full text, as in a new worktree, the command writes nothing and
+makes no link; it never writes at a link's path, so a file there that
+is not statute's link is left as it is. Nor does it rewrite a full text
+that is the repository's own: one that git tracks, or one beside a
+`.statute/.gitignore` that does not start with statute's line.
 
 The links are relative and lead to the worktree's own `.statute/`.
 

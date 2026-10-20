@@ -402,6 +402,92 @@ fn what_compile_would_fail_on_fails_it() {
     assert!(!tree.join(".statute/AGENTS.full.md").exists());
 }
 
+/// The full text in `tree` once a failure has taken the private rules
+/// out of it: the notice, then the `AGENTS.md` on disk, links kept.
+#[track_caller]
+fn withdrawn(tree: &Path) {
+    let full = read(tree, ".statute/AGENTS.full.md");
+    let public = read(tree, "AGENTS.md");
+    assert!(
+        full.starts_with("> statute could not write the private output of this work tree,")
+            && full.ends_with(&public)
+            && !full.contains("\n- me:4 "),
+        "{full}"
+    );
+    for link in ["CLAUDE.local.md", "AGENTS.override.md"] {
+        assert_eq!(
+            std::fs::read_link(tree.join(link)).unwrap(),
+            Path::new(".statute/AGENTS.full.md"),
+            "{link}"
+        );
+    }
+}
+
+#[test]
+fn a_failure_takes_the_private_rules_out_of_a_private_output_already_there() {
+    let w = world("withdrawn");
+    let tree = w.worktree("other");
+    ok(&w.run(&tree, &["compile"]));
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+    // A stale lock file.
+    let r2 = read(&tree, "r/rules/2.toml");
+    write(
+        &tree,
+        "r/rules/2.toml",
+        &r2.replace("Do the thing 2.", "Do the thing 2 well."),
+    );
+    let run = w.run(&tree, &["compile", "--private-only"]);
+    failed(&run);
+    withdrawn(&tree);
+    assert!(
+        run.stderr.contains("statute: note: .statute/AGENTS.full.md now says what AGENTS.md says, without the private rules\n"),
+        "{}",
+        run.stderr
+    );
+    // The plain compile does the same.
+    write(&tree, "r/rules/2.toml", &r2);
+    ok(&w.run(&tree, &["compile", "--private-only"]));
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+    write(
+        &tree,
+        "r/rules/2.toml",
+        &r2.replace("Do the thing 2.", "Do the thing 2 well."),
+    );
+    assert_eq!(w.run(&tree, &["compile"]).code, 1);
+    withdrawn(&tree);
+    // The links no longer ignored through .git/info/exclude.
+    write(&tree, "r/rules/2.toml", &r2);
+    ok(&w.run(&tree, &["compile", "--private-only"]));
+    write(&w.repo, ".git/info/exclude", "");
+    failed(&w.run(&tree, &["compile", "--private-only"]));
+    withdrawn(&tree);
+    // A file of the repository's own at a link's path is left as it is.
+    write(&w.repo, ".git/info/exclude", EXCLUDE);
+    ok(&w.run(&tree, &["compile", "--private-only"]));
+    std::fs::remove_file(tree.join("AGENTS.override.md")).unwrap();
+    write(&tree, "AGENTS.override.md", "# Our own\n");
+    failed(&w.run(&tree, &["compile", "--private-only"]));
+    assert_eq!(read(&tree, "AGENTS.override.md"), "# Our own\n");
+    assert!(!read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
+    // A full text of the repository's own is left as it is: beside a
+    // .statute/.gitignore of its own, or tracked.
+    std::fs::remove_file(tree.join("AGENTS.override.md")).unwrap();
+    write(&tree, ".statute/AGENTS.full.md", "# Our full text\n");
+    let gitignore = read(&tree, ".statute/.gitignore");
+    write(&tree, ".statute/.gitignore", "# ours\n");
+    assert_eq!(w.run(&tree, &["compile"]).code, 1);
+    assert_eq!(read(&tree, ".statute/AGENTS.full.md"), "# Our full text\n");
+    write(&tree, ".statute/.gitignore", &gitignore);
+    git_in(&w, &tree, &["add", "-f", ".statute/AGENTS.full.md"]);
+    write(
+        &tree,
+        "r/rules/2.toml",
+        &r2.replace("Do the thing 2.", "Do the thing 2 well."),
+    );
+    assert_eq!(w.run(&tree, &["compile"]).code, 1);
+    assert_eq!(read(&tree, ".statute/AGENTS.full.md"), "# Our full text\n");
+}
+
 #[test]
 fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
     let w = world("hook");

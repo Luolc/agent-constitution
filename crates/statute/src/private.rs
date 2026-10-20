@@ -151,6 +151,55 @@ pub fn written(root: &Path) -> bool {
     root.join(full()).symlink_metadata().is_ok()
 }
 
+/// The paragraph above `AGENTS.md` in a full text that `withdraw`
+/// writes.
+pub const WITHDRAWN: &str = "> statute could not write the private output of this work tree, so this file leaves out the private rules and says only what `AGENTS.md` says. `statute compile --private-only` names the cause; `statute compile` writes the private output, or says what to fix.\n\n";
+
+/// After a compile that did not write the private output, rewrites a
+/// full text already on disk in `root` to `WITHDRAWN` and `public`, the
+/// `AGENTS.md` there, so that the links lead to no private rule that may
+/// no longer hold. The text is public, so it is written whether git
+/// ignores it or not; nothing is written where there is no full text,
+/// or where it is the repository's own, tracked by git or beside a
+/// `.statute/.gitignore` that is not statute's, and no link is touched.
+/// Returns whether it wrote.
+pub fn withdraw(root: &Path, public: &str) -> Result<bool, String> {
+    if !written(root) || !gitignore_is_statutes(root) || tracked(root, &full())? {
+        return Ok(false);
+    }
+    let file = root.join(full());
+    replace(&file, &format!("{WITHDRAWN}{public}"))
+        .map(|()| true)
+        .map_err(|e| format!("{}: cannot write: {e}", file.display()))
+}
+
+/// Whether `.statute/.gitignore` in `root` starts with statute's line.
+fn gitignore_is_statutes(root: &Path) -> bool {
+    let head = GITIGNORE.lines().next().unwrap_or_default();
+    std::fs::read_to_string(root.join(DIR).join(".gitignore"))
+        .is_ok_and(|text| text.lines().next() == Some(head))
+}
+
+/// Whether git tracks `path`, relative to `root`; an error when git
+/// cannot tell.
+fn tracked(root: &Path, path: &Path) -> Result<bool, String> {
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["ls-files", "-z", "--"])
+        .arg(path)
+        .output()
+        .map_err(|e| format!("cannot run git: {e}"))?;
+    if !out.status.success() {
+        return Err(format!(
+            "git cannot tell whether it tracks {}: {}",
+            path.display(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
+    }
+    Ok(!out.stdout.is_empty())
+}
+
 /// Writes `.statute/.gitignore` in `root` when it is missing or is
 /// statute's and differs from `GITIGNORE`; fails, writing nothing, when
 /// the file there is not statute's. Called before any generated file is

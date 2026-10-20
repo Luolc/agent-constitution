@@ -1,4 +1,4 @@
-<!-- en-sha256: 10d169a759a9ee21d723a0a4a02716871dae955bac37bf890ed65a68ece6639d -->
+<!-- en-sha256: d7aeafad9ba0311d831e12dbcd11183077b7cf1943da182c5c3ac6baea436621 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -119,7 +119,7 @@ rules/21.toml: error: `parent` names "me:1", a domain of the private source `me`
   它可以像 `statute.toml` 那样列 `packs`，根可以是两层中任何一个规定源的节点，这样私有规定源新加的规定会跟着启用；规定包也可以启用公开规定，这时只有私有层启用它们，和它列出的规定一样。它没有 `[compile]`，因为它的输出位置是固定的 (见下文)；也没有 `base`，因为它的基础总是命令运行处的那份 `statute.toml`。其中的 `path` 要么是绝对路径，要么以 `~/` 开头；写相对路径会报错，因为这个文件供所有 worktree 共用，相对路径从每个 worktree 出发会指到不同的地方。`statute source add` 写的是绝对路径。它的规定源不能与 `statute.toml` 的重名，它的每个列表也不能与 `statute.toml` 的同名列表重复。它也可以列 `exclude`，只在私有输出里关掉默认值或 `statute.toml` 开启的节点 (见[规定清单里](rule-config.md#in-the-rule-set))。在私有仓库 (`public = false`) 里，这个文件会报错：那里由 `statute.toml` 写下一切。不在 git 仓库里就没有私有层，带 `--private` 的命令会失败。`statute add --private` 和 `statute remove --private` 修改它，先在同一目录写一个临时文件，再改名替换。
 
 - 这个私有层只改变私有输出。它可以在那里关掉公开层的规定，或者重新开启 `statute.toml` 排除的规定，但不能覆盖公开层的规定 (见[覆盖](#overrides))：不论私有层怎样写，提交进仓库的 `AGENTS.md` 里都有那条规定，agent 两份文件都读，就会看到两条相互矛盾的规定。它关掉的规定不出现在全文里，所以只读全文的 agent 不再有这条规定；Grok 还读 `AGENTS.md` (见下文)，仍然有它。
-- 它有锁文件 `private.lock`，每个 worktree 一份，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它；每条命令只写它所在 worktree 的那份锁文件，不碰别的。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。linked worktree 还没有自己的锁文件时，读主 worktree 的那份，所以新 worktree 从主 worktree 锁定的 commit 起步；在一个 worktree 里跑 `statute upgrade`，只移动这个 worktree 的私有规定源。`statute upgrade --private` 只移动这些私有规定源，别的都不动：私有层自己的规定源读最新的 commit，公开规定源仍读 `statute.lock` 记录的 commit，只写这个 worktree 的 `private.lock`，不写别的文件，所以新 worktree 能取到最新的私有规定，又不改任何被跟踪的文件。它像 `upgrade` 一样打印跟这个 worktree 读的那份锁文件相比有什么变化 (这个 worktree 原先没有自己的锁文件时，比的是主 worktree 的那份)：每个私有 git 规定源的旧 commit 和新 commit，或者说它没变；以及修订号或内容变了、新带进来或去掉的每条规定，这是它把私有层在旧 commit 上也解析一遍得出的。私有规定清单仍是共用的，所以在一个 worktree 里改了它的规定源 (`statute source add`，或者手改)，别的 worktree 的锁文件就过期了：它们的 `statute compile` 会失败，并提示运行 `statute lock`，`compile --private-only` 什么都不写，也这样提示。只改清单里的列表，比如 `statute add --private`，别的 worktree 的锁文件仍是最新的，因为锁文件不记规定。
+- 它有锁文件 `private.lock`，每个 worktree 一份，只锁定私有层自己的规定源，别的都不记：每个规定源按 `statute.lock` 记录规定源的方式记，git 规定源记地址、分支或 tag 和 commit，另记 `public` 和 `scope`。它不记任何规定，也不记公开层的任何东西。`statute lock` 把它和 `statute.lock` 一起写出，修改私有规定清单或其规定源的命令都会重写它；每条命令只写它所在 worktree 的那份锁文件，不碰别的。两层合起来的解析，每次在命令需要时根据这个 worktree 的 `statute.lock` 和 `private.lock` 在内存里算出来，从不落盘。linked worktree 还没有自己的锁文件时，读主 worktree 的那份，所以新 worktree 从主 worktree 锁定的 commit 起步；在一个 worktree 里跑 `statute upgrade`，只移动这个 worktree 的私有规定源。`statute upgrade --private` 只移动这些私有规定源，别的都不动：私有层自己的规定源读最新的 commit，公开规定源仍读 `statute.lock` 记录的 commit，只写这个 worktree 的 `private.lock`，不写别的文件，所以新 worktree 能取到最新的私有规定，又不改任何被跟踪的文件。它像 `upgrade` 一样打印跟这个 worktree 读的那份锁文件相比有什么变化 (这个 worktree 原先没有自己的锁文件时，比的是主 worktree 的那份)：每个私有 git 规定源的旧 commit 和新 commit，或者说它没变；以及修订号或内容变了、新带进来或去掉的每条规定，这是它把私有层在旧 commit 上也解析一遍得出的。私有规定清单仍是共用的，所以在一个 worktree 里改了它的规定源 (`statute source add`，或者手改)，别的 worktree 的锁文件就过期了：它们的 `statute compile` 会失败，并提示运行 `statute lock`，`compile --private-only` 不写私有输出，也这样提示。只改清单里的列表，比如 `statute add --private`，别的 worktree 的锁文件仍是最新的，因为锁文件不记规定。
 - git 从不跟踪它自己目录里的文件，所以私有规定清单和它的锁文件都不可能被提交，不需要 `.gitignore`，也不需要检查。私有层在工作区里写的是 `.statute/` 下的私有输出和顶层的两个软链 (见下文)；写 `.statute/` 下的那个文件之前，statute 用 `git check-ignore` 确认 git 忽略了它，两个软链按下文的方式检查。一个路径最后匹配的模式是否定模式 (`!`) 时，算没有被忽略。有一个没被忽略，或者 git 确认不了，就一个文件都不写，公开的也不写。
 - 只由私有层启用的规定，它们的 skill 和 `check = "command"` 检查不写进提交的文件，即 `.agents/skills/` 和 `statute.lock` ([编译与网站](statute-command.md#compilation-and-the-site))；`statute check` 照样运行这些检查。私有层关掉的公开规定，它的 skill 和检查留在提交的文件里，`statute check` 不运行它的检查。私有规定的 skill 怎样安装，是一个[待定问题](#open-questions)。
 
@@ -146,7 +146,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - OpenCode 暂不支持。
 - 提交进仓库的 `AGENTS.md` 不指向 `.statute/AGENTS.full.md`：读了软链的 agent 会把全文读两遍，两个软链都没找到的 agent 读到的是公开规定。
 
-两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则什么都不写，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
+两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 用 `git check-ignore --verbose` 确认每个软链都被某个 `.gitignore` 之外的模式忽略，否则不写任何私有内容，并列出要加进 `.git/info/exclude` 的几行。这两个路径上已有的文件不是这样的软链时，原样保留，编译失败。
 
 **`.statute/` 里既有要提交的，也有不提交的。** `.statute/rules/` 里仓库自己的规定要提交；私有输出和本地网站 (见[本地网站](statute-command.md#the-local-site)) 不提交。所以仓库的 `.gitignore` 不写 `.statute/`：statute 自己写 `.statute/.gitignore`，就像 uv 在它建的 `.venv` 里、ruff 在它的 `.ruff_cache` 里那样，按名字列出生成文件：
 
@@ -184,7 +184,9 @@ statute compile --private-only; exit 0
 - 读这个 worktree 的 `statute.toml`、`statute.lock` 和私有锁文件，以及私有规定清单，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
 - 没有 `statute.toml` 时，什么都不做，不出声，退出码为 0；
 - 既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，`.statute/AGENTS.full.md` 已经存在的，把它重写成与 `AGENTS.md` 相同的内容，软链保留 (见[锁文件与输出里的取值](rule-config.md#values-in-the-lock-file-and-the-outputs))，不存在的，什么都不做，不出声，退出码为 0；
-- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
+- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就不写私有输出，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
+
+**编译失败时不留下私有规定。** 不然，盘上已有的私有输出会继续经软链把上一次成功的编译写下的内容交给 agent，其中的私有规定可能已经不成立了。所以 `statute compile` 或 `statute compile --private-only` 失败时，把已经存在的 `.statute/AGENTS.full.md` 重写成盘上 `AGENTS.md` 的内容，前面加一段话：statute 没能写出私有输出，这个文件不含私有规定，`statute compile --private-only` 会说明原因，`statute compile` 会写出私有输出或者说明要修什么。软链保留，所以 agent 读到的是公开规定和这段话，而不是旧的私有规定，也不会碰到悬空的软链。这段话不写原因，因为原因里可能出现私有规定源或私有规定。这时文件里只有公开内容，所以不论 git 是否忽略它都照写，软链没被忽略时也一样。盘上的 `AGENTS.md` 是直接读的，不重新编译，因为失败的可能正是公开层加载不了。没有全文时 (例如新的 worktree)，命令什么都不写，也不建软链；它从不在软链的路径上写东西，所以那里不是 statute 软链的文件原样保留。仓库自己的全文它也不改写：git 跟踪的，或者旁边的 `.statute/.gitignore` 第一行不是 statute 那一行的。
 
 软链用相对路径，指向这个 worktree 自己的 `.statute/`。
 
