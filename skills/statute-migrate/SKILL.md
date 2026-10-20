@@ -43,7 +43,7 @@ files changes, this table is the one place to change.
 | the local rules directory | `.statute/rules/` next to the rule set, or what `local-rules` in the rule set names | yes |
 | the installed skills | `.agents/skills/<name>/`, with a link `.claude/skills/<name>` | yes |
 | the private rule set | `private.toml` in `$(git rev-parse --git-path common/statute)`, shared by the worktrees of a clone | no, in git's own directory |
-| the private lock file | `private.lock`: the main worktree's next to the private rule set; a linked worktree's own in `$(git rev-parse --git-path statute)`, written by `statute upgrade --private` run there, and until then it reads the main worktree's | no, in git's own directory |
+| the private lock file | `private.lock`: the main worktree's next to the private rule set; a linked worktree's own in `$(git rev-parse --git-path statute)`, once `statute lock` or `statute upgrade --private` run there writes it, and until then it reads the main worktree's | no, in git's own directory |
 | the private output | `.statute/AGENTS.full.md` | no, the statute ignore file lists it |
 | the statute ignore file | `.statute/.gitignore`, written by statute | yes |
 | the private links | `CLAUDE.local.md` and `AGENTS.override.md`, both leading to the private output | no, ignored through the exclude file |
@@ -423,8 +423,10 @@ not read (the table):
 1. Add `/CLAUDE.local.md` and `/AGENTS.override.md`, the lines for the
    private links, to the exclude file (step g.2).
 2. Put the private rule set in place: copy it from another clone of
-   the repository, or, with none left, write it again as the note at
-   the top says.
+   the repository, or, with none left, write it again, reviewed as the
+   note at the top says: `statute source add --private <name>
+   <address>` for each private source, then `statute add --private
+   <rule>` for each rule it enabled.
 3. `statute upgrade --private`, which fetches the private sources at
    their newest commits and writes the main worktree's private lock
    file. To keep the commits another clone follows, copy its private
@@ -439,16 +441,16 @@ Acceptance:
 
 - The private output holds the private layer: among its rule ID lines,
   `grep -cE '^- <name>:?[0-9]+ ' <the private output>` counts more than
-  0 for a private source `<name>` of the private rule set. The exit
-  status of `statute compile --private-only` does not show this: in a
-  clone without the private rule set, whether or not the exclude file
-  has the two lines, it exits 0 and writes no private output, since it
-  finds nothing private to write.
+  0 for a private source `<name>` of the private rule set. Only this
+  check shows it: neither the exit status of `statute compile
+  --private-only` nor a private output being there does. Without the
+  private rule set, once the exclude file has the two lines, it exits
+  0, writing no private output when nothing
+  else is private, or one without the private layer when the global
+  configuration makes a private output by itself (step 0.2).
 - `statute compile --private-only` fails without the two lines: take
   them out of the exclude file and run it, and it exits 1, naming the
-  lines to add; put them back and run it again, and it exits 0. An
-  exit 0 with the lines out means statute found no private rule set:
-  go back to step 2.
+  lines to add; put them back and run it again, and it exits 0.
 
 ## Upgrading statute
 
