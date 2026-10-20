@@ -123,7 +123,20 @@ The version is the one that wrote the lock file, and a repository's CI
 installs that version ([Releases and versions](amendments-and-releases.md#releases-and-versions)).
 `compile` and `compile --check` need the lock file to be what `statute
 lock` writes now, the version included: a lock file of another version
-fails, naming both. A lock file written before statute 0.1.18 has neither
+fails, naming both. They stay this strict because the committed output
+has to be what the version the lock file pins compiles, in CI and on
+every machine. `compile --private-only` writes only the private output,
+from a git hook, on machines that install the newest statute before
+each repository locks again
+([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
+A new worktree), so it also takes a lock file of an older statute, the
+versions compared as numbers, major.minor.patch, when the file is what
+`statute lock` writes now once its `statute` line names this version.
+A lock file of a newer statute, or of a version that does not read as
+major.minor.patch, fails it as it fails `compile`, naming both. A
+version that changes the lock file's format makes the lock files of
+older ones fail as not what `statute lock` writes now.
+A lock file written before statute 0.1.18 has neither
 entry, and fails too; `statute lock` and `statute upgrade` write both,
 `upgrade` showing the version it records or the version it moves from.
 
