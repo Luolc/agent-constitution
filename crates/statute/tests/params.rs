@@ -595,21 +595,57 @@ fn without_a_value_of_ones_own_there_is_no_private_output() {
     assert!(!work.join(".statute/AGENTS.full.md").exists());
 }
 
+/// A private repository writes the private output as a public one does,
+/// with a person's own value of a parameter like the effort for a small
+/// change, while `AGENTS.md` keeps the default.
 #[test]
-fn a_private_repository_says_a_persons_own_value_is_not_used() {
+fn a_private_repository_has_a_private_output_for_a_persons_own_value() {
     let work = repo("private-repo", false, "");
-    global(&work, "[language]\ncommunication = \"zh\"\n");
+    let params = read(&work, "r/rules/params.toml")
+        + &param(
+            "tiers.trivial-effort",
+            "type = \"string\"",
+            "personal",
+            "low",
+        );
+    write(&work, "r/rules/params.toml", &params);
+    write(
+        &work,
+        "r/rules/4.toml",
+        &saying(4, "Use effort {$tiers.trivial-effort} for a small change.").1,
+    );
+    let manifest = read(&work, "statute.toml").replace("\"R3\"]", "\"R3\", \"R4\"]");
+    write(&work, "statute.toml", &manifest);
+    let small = |effort: &str| format!(" Use effort {effort} for a small change.\n");
+    // Without a value of one's own, no private output.
     ok(&statute(&work, &["lock"]));
+    ok(&statute(&work, &["compile"]));
+    assert!(read(&work, "AGENTS.md").contains(&small("low")));
+    assert!(!work.join(".statute/AGENTS.full.md").exists());
+    let run = statute(&work, &["compile", "--private-only"]);
+    ok(&run);
+    assert_eq!(run.stdout, "");
+    assert!(!work.join(".statute/AGENTS.full.md").exists());
+    // With one, the private output has it and AGENTS.md the default.
+    global(&work, "[tiers]\ntrivial-effort = \"medium\"\n");
+    ok(&statute(&work, &["lock"]));
+    assert!(
+        read(&work, "statute.lock").contains("name = \"tiers.trivial-effort\"\nvalue = \"low\"\n")
+    );
     let run = statute(&work, &["compile"]);
     ok(&run);
-    assert!(
-        run.stderr.contains(
-            "statute: note: the global configuration sets `language.communication` to `zh`, and this repository is private (`public = false`), with no private output; AGENTS.md has `en`"
-        ),
-        "{}",
-        run.stderr
-    );
-    assert!(!work.join(".statute/AGENTS.full.md").exists());
+    assert!(!run.stderr.contains("note"), "{}", run.stderr);
+    let public = read(&work, "AGENTS.md");
+    assert!(public.contains(&small("low")), "{public}");
+    let full = read(&work, ".statute/AGENTS.full.md");
+    assert!(full.contains(&small("medium")), "{full}");
+    assert_eq!(read(&work, "CLAUDE.local.md"), full);
+    assert_eq!(read(&work, "AGENTS.override.md"), full);
+    ok(&statute(&work, &["compile", "--check"]));
+    // A new worktree's hook writes it too.
+    std::fs::remove_file(work.join(".statute/AGENTS.full.md")).unwrap();
+    ok(&statute(&work, &["compile", "--private-only"]));
+    assert!(read(&work, ".statute/AGENTS.full.md").contains(&small("medium")));
 }
 
 #[test]

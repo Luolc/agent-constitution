@@ -460,9 +460,8 @@ does not install the hooks: the user does, once per clone.
   ([The statute directories](global-configuration.md#the-statute-directories)),
   and nothing is fetched;
 - does nothing and exits 0, silently, when there is no `statute.toml`,
-  the repository is private (`public = false`), or there is no private
-  rule set, the global configuration turns nothing on and no person's
-  own value differs from the committed one;
+  or there is no private rule set, the global configuration turns
+  nothing on and no person's own value differs from the committed one;
 - otherwise writes nothing, prints an error that names the cause and
   the command to run, and exits 1, whenever the plain `statute compile`
   would fail or need the network: a lock file that is stale, a commit
@@ -548,9 +547,16 @@ one run each.
 The private layer is built as described here, except what this
 section marks as not built yet.
 
-In a private repository (`public = false`) none of this is needed: the
-one `statute.toml` names every source, and its outputs are committed as
-they are. Global private rules belong at the user level once it is
+In a private repository (`public = false`) there is no private rule
+set, and a `private.toml` fails: the one `statute.toml` names every
+source, and its outputs are committed as they are. Its private output
+holds only what is the person's own, from the global configuration:
+the values of `personal` parameters
+([Values in the lock file and the outputs](rule-config.md#values-in-the-lock-file-and-the-outputs))
+and the rules the configuration turns on
+([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)).
+It is written, linked and ignored as in a public repository, and the
+post-checkout hook writes it in a new worktree the same way. Global private rules belong at the user level once it is
 built ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file),
 Where it lives); until then they reach a repository
 this way, their source named once in the global configuration
@@ -665,10 +671,13 @@ overrides R200". The reference direction
 cannot override a private one.
 
 **Only within one output.** An override is made only between rules
-compiled into the same output. In a private repository every layer is
-compiled into one file, so any rule may override one of a lower rank:
-the overridden rule does not appear, and the overriding rule stands in
-its place. In a public repository, the private layer overrides
+compiled into the same output. In a private repository every source
+`statute.toml` names is compiled into one file, so any rule it enables
+may override one of a lower rank: the overridden rule does not appear,
+and the overriding rule stands in its place. A rule that the global
+configuration alone turns on there overrides none of them, as in a
+public repository: its entry is left out with a note
+([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)). In a public repository, the private layer overrides
 no rule of the public layer
 ([Private rules in a public repository](#private-rules-in-a-public-repository)):
 a rule it enables fails when it overrides a rule of the public layer,

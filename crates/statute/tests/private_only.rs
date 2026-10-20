@@ -347,8 +347,7 @@ fn nothing_to_compile_is_silent() {
     let private = std::fs::read_to_string(w.common().join("private.toml")).unwrap();
     std::fs::remove_file(w.common().join("private.toml")).unwrap();
     silent(&w.run(&tree, &["compile", "--private-only"]), &tree);
-    // A private repository.
-    std::fs::write(w.common().join("private.toml"), private).unwrap();
+    // A private repository with nothing of a person's own.
     let text = read(&tree, "statute.toml");
     write(
         &tree,
@@ -356,6 +355,16 @@ fn nothing_to_compile_is_silent() {
         &text.replace("public = true", "public = false"),
     );
     silent(&w.run(&tree, &["compile", "--private-only"]), &tree);
+    // A private repository fails on a private rule set, as compile does.
+    std::fs::write(w.common().join("private.toml"), private).unwrap();
+    let run = w.run(&tree, &["compile", "--private-only"]);
+    failed(&run);
+    assert!(
+        run.stderr
+            .contains("private.toml is for a public repository"),
+        "{}",
+        run.stderr
+    );
 }
 
 #[test]

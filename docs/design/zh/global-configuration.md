@@ -1,4 +1,4 @@
-<!-- en-sha256: 484c59b8853db88496aaa4680927080aa3e45b9eb4642b5e71adb845a1aece5a -->
+<!-- en-sha256: e551ea4dc63c972304d53281f4a419b1ef03ed86ce668e694421ba0fa914386c -->
 # 全局配置与 git 规定源
 
 状态：已定；部分已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这部分设计说明 statute 在用户家目录里把自己的文件放在哪里，全局配置怎样为每个仓库登记规定源，git 规定源怎样克隆、固定和读取，以及怎样用一条命令添加规定源。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file) 和[规定源](rule-sources.md) 为基础。
@@ -64,12 +64,12 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
 ```
 
 - 每一项的写法和规定清单里一样 ([规定源与引用](rule-sets.md#sources-and-references))，并且要写明规定源：写仓库自己的规定 (`L12`、`12`) 会报错，因为各个仓库自己的规定互不相同。
-- 在公开仓库里，这些项加入私有层 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，就像私有规定清单在自己的项之后列出了它们一样，不论有没有 `private.toml`。全局配置开启了任何东西，`statute compile` 就写私有输出，`statute compile --private-only` 也写。这些项不记进任何锁文件，`statute.lock` 和 `private.lock` 都不记：statute 每次编译私有输出时读它们，和读个人取值一样 ([设定取值](rule-config.md#setting-a-value))。
+- 这些项加入私有层 ([公开仓库里的私有规定](rule-sources.md#private-rules-in-a-public-repository))，就像私有规定清单在自己的项之后列出了它们一样，不论有没有 `private.toml`；私有仓库 (`public = false`) 没有私有规定清单，就当它有一份空的。全局配置开启了任何东西，`statute compile` 就写私有输出，`statute compile --private-only` 也写。这些项不记进任何锁文件，`statute.lock` 和 `private.lock` 都不记：statute 每次编译私有输出时读它们，和读个人取值一样 ([设定取值](rule-config.md#setting-a-value))。
 - 全局配置服务所有仓库，所以某一项在某个仓库里用不上时，在那里略过，不报任何问题：规定清单没有这一项的规定源，规定源在读取的提交里没有这个节点，`statute.toml` 或 `private.toml` 已经列了它，或者 `private.toml` 关掉了它。默认已经启用的项也不给警告。
 - 仓库自己的决定先于这个人的：`statute.toml` 用 `exclude` 关掉的项，在那里略过；会让私有层失败的项也略过，比如依赖了 `statute.toml` 关掉的规定的规定、覆盖了公开层某条规定的规定，引用了本仓宪法里没有或已废止的条款的规定，或者类型不对的项 (写在 `domains` 里的规定)。`statute compile` 用 note 逐条点名这样的项和原因。statute 按写的顺序逐项尝试，和前面留下的项放在一起能成立的就留下；去掉全局配置的所有项之后私有层仍然失败的，是 `private.toml` 自己的问题，一项也不略过。所以全局配置不会让任何仓库的 `lock` 或 `compile` 失败。`statute.toml` 关掉了什么，按这一项本身来比：`statute.toml` 关掉的领域下面的规定照样开启，和 `statute.toml` 自己在 `rules` 里列出它时一样。
 - 某个 clone 不该有某一项，就在它的 `private.toml` 里 `exclude` 掉；全局配置没有 `exclude`，这个人哪里都不要的，不写进列表就是了。
 - 没有 `private.toml` 时，这一层也没有 `private.lock`：全局配置里的私有规定源，读它跟随的分支或标签的最新提交，像没有锁文件记录的规定源那样先 fetch；`compile --private-only` 不 fetch，读 statute 缓存里它的那个提交。
-- 私有仓库 (`public = false`) 没有私有输出，所以这些项在那里不起作用，`statute compile` 用一条 note 说明这一点。
+- 在私有仓库里，全局配置的私有规定源已经进了 `statute.toml` 那一层 ([全局配置](#the-global-configuration)，全局规定源进哪一层一段)，所以私有层在那里不加规定源，只加这些项；它们进私有输出，提交的 `AGENTS.md` 里一项也没有，和公开仓库一样。
 - 对全局配置开启的规定，`statute explain` 会说它的那一项列在全局配置的 `rules`、`packs` 或 `domains` 里。`statute add` 和 `statute remove` 不写全局配置，由这个人自己编辑。
 
 ## <a id="which-source-a-name-means"></a>一个名字指哪个规定源

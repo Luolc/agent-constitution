@@ -498,7 +498,7 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     // The private output is made in full before anything is written.
     let full = match &private {
         Some(p) => Some(statute::compile::full_text(&project, &p.both, p.rule_set())),
-        None if project.manifest.public && statute::compile::personal_differs(&project) => {
+        None if statute::compile::personal_differs(&project) => {
             Some(statute::compile::full_text(&project, &project, None))
         }
         None => None,
@@ -508,14 +508,6 @@ fn compile(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let has_full = full.is_some();
     for note in private.iter().flat_map(|p| &p.both.manifest.left_out) {
         eprintln!("statute: note: {note}");
-    }
-    if !project.manifest.public {
-        unused_personal(&project);
-        if !project.manifest.global_enables.is_empty() {
-            eprintln!(
-                "statute: note: the global configuration turns on rules, packs or domains, and this repository is private (`public = false`), with no private output; AGENTS.md has none of them"
-            );
-        }
     }
     let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
     // `.statute/.gitignore` is the first file written, once nothing is
@@ -580,27 +572,6 @@ fn compile_check(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     Err(())
 }
 
-/// In a private repository, which has no private output, the note that
-/// a person's own value of a parameter goes unused.
-fn unused_personal(project: &Project) {
-    for (name, s) in &project.values {
-        if s.param.scope != statute::param::Scope::Personal {
-            continue;
-        }
-        if let Some(own) = project
-            .manifest
-            .global_values
-            .get(name)
-            .filter(|v| **v != s.value)
-        {
-            eprintln!(
-                "statute: note: the global configuration sets `{name}` to `{own}`, and this repository is private (`public = false`), with no private output; AGENTS.md has `{}`",
-                s.value
-            );
-        }
-    }
-}
-
 /// `compile --private-only`, which a git `post-checkout` hook runs in a
 /// new worktree (`docs/design/rule-sources.md`, A new worktree): writes
 /// the private output alone, reading git sources from the cache only.
@@ -631,20 +602,14 @@ fn compile_private_only(root: &Path) -> Result<(), ()> {
 /// The work of `compile_private_only`: what it wrote, or each cause.
 fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     let one = |e: String| vec![e];
-    let text = match std::fs::read_to_string(root.join(manifest::FILE)) {
-        Ok(text) => text,
+    match std::fs::metadata(root.join(manifest::FILE)) {
+        Ok(_) => {}
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
         Err(e) => return Err(one(format!("{}: cannot read: {e}", manifest::FILE))),
-    };
+    }
     let Some(dir) = private::dir(root).map_err(one)? else {
         return Ok(Vec::new());
     };
-    let public = toml::from_str::<toml::Table>(&text)
-        .ok()
-        .and_then(|t| t.get("public").and_then(toml::Value::as_bool));
-    if public == Some(false) {
-        return Ok(Vec::new());
-    }
     let mut env = read_env(Mode::Read)?;
     env.offline = true;
     let errors =

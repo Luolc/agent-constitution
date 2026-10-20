@@ -134,12 +134,13 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   ([Sources and references](rule-sets.md#sources-and-references)),
   and names its source: an entry of a repository's own rules (`L12`,
   `12`) fails, since those differ from one repository to the next.
-- In a public repository, the entries join the private layer
+- The entries join the private layer
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository))
   as if its private rule set listed them after its own, whether or not
-  there is a `private.toml`. `statute compile` writes the private
-  output when the configuration turns anything on, and so does
-  `statute compile --private-only`. No lock file records the entries,
+  there is a `private.toml`, and in a private repository
+  (`public = false`), which has none, as if it had an empty one.
+  `statute compile` writes the private output when the configuration
+  turns anything on, and so does `statute compile --private-only`. No lock file records the entries,
   neither `statute.lock` nor `private.lock`: statute reads them each
   time it compiles the private output, as it reads a person's own
   values ([Setting a value](rule-config.md#setting-a-value)).
@@ -173,9 +174,12 @@ me = { git = "git@example.test:me/rules.git", branch = "main", public = false }
   its branch or tag, fetched as for a source no lock file records, and
   `compile --private-only`, which fetches nothing, reads the commit
   that statute's cache holds for it.
-- A private repository (`public = false`) has no private output, so
-  the entries are not used there, and `statute compile` says so in a
-  note.
+- In a private repository a private source of the configuration has
+  joined the layer of `statute.toml` already
+  ([The global configuration](#the-global-configuration), Which layer
+  a global source joins), so the private layer adds no source there,
+  only the entries; they reach the private output, and the committed
+  `AGENTS.md` has none of them, as in a public repository.
 - `statute explain` says of a rule the configuration turns on that its
   entry is listed in `rules`, `packs` or `domains` of the global
   configuration. `statute add` and

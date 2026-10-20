@@ -1,4 +1,4 @@
-<!-- en-sha256: 91aa5928e1fad6a256b0611c7b6a1cdd418d064d421f85c6198c76767944eba2 -->
+<!-- en-sha256: 83792d2295802b1f99d6140886580c9e40743a296d48aa41e1e3a51761f622ef -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -182,7 +182,7 @@ statute compile --private-only; exit 0
 
 - 只写 `.statute/.gitignore`、`.statute/AGENTS.full.md` 和两个软链，从不写 `AGENTS.md` 或 skill；
 - 读这个 worktree 的 `statute.toml`、`statute.lock` 和私有锁文件，以及私有规定清单，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
-- 没有 `statute.toml`、仓库是私有的 (`public = false`)，或者既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，什么都不做，不出声，退出码为 0；
+- 没有 `statute.toml`，或者既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，什么都不做，不出声，退出码为 0；
 - 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
 
 软链用相对路径，指向这个 worktree 自己的 `.statute/`。
@@ -203,7 +203,7 @@ statute compile --private-only; exit 0
 
 私有层已按这里所写实现，但本节标明尚未实现的部分除外。
 
-私有仓库 (`public = false`) 用不着这些：一份 `statute.toml` 写下所有规定源，输出照常提交。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库，它们的规定源在全局配置里登记一次 ([全局配置与 git 规定源](global-configuration.md))。
+私有仓库 (`public = false`) 没有私有规定清单，有 `private.toml` 会报错：一份 `statute.toml` 写下所有规定源，输出照常提交。它的私有输出只放个人自己的、来自全局配置的东西：`personal` 参数的取值 ([锁文件与输出里的取值](rule-config.md#values-in-the-lock-file-and-the-outputs)) 和全局配置开启的规定 ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))。它的写入、链接和忽略方式与公开仓库相同，新 worktree 里也由 post-checkout hook 照样写。全局私有规定等用户级做出来以后归用户级 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)，放在哪里一段)；在那之前，它们这样进入一个仓库，它们的规定源在全局配置里登记一次 ([全局配置与 git 规定源](global-configuration.md))。
 
 ### <a id="enabling-a-private-rule"></a>启用私有规定
 
@@ -242,7 +242,7 @@ overrides = "R200"
 
 同一级的两条规定不能相互覆盖；同一个规定源里的规定只能原地修改或者被取代，不能被覆盖。允许一层套一层：本地规定可以覆盖 `team:7`，而 `team:7` 覆盖 `R200`；编译出的文件里只出现这条本地规定；本地网站把链上的每一环列在发起覆盖的那条规定的页面上，`statute explain` 给出整条链，「it overrides team:7, which overrides R200」。引用方向 (见[哪些规定可以引用哪些](#which-rules-may-cite-which)) 同样适用：公开规定不能覆盖私有规定。
 
-**只在同一份输出里覆盖。** 覆盖只发生在编译进同一份输出的规定之间。私有仓库把所有层编译进一个文件，所以任何规定都可以覆盖级别更低的规定：被覆盖的规定不出现，覆盖方站在它的位置上。公开仓库里，私有层不覆盖公开层的任何规定 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))：它启用的规定覆盖了公开层的规定，即 `statute.toml` 直接启用或经依赖带进来的规定，就报错：
+**只在同一份输出里覆盖。** 覆盖只发生在编译进同一份输出的规定之间。私有仓库把 `statute.toml` 写下的所有规定源编译进一个文件，所以它启用的任何规定都可以覆盖级别更低的规定：被覆盖的规定不出现，覆盖方站在它的位置上。只由全局配置在那里开启的规定不覆盖其中任何一条，和公开仓库一样：它那一项会被略去，并有一条 note ([全局配置开启什么](global-configuration.md#what-the-configuration-turns-on))。公开仓库里，私有层不覆盖公开层的任何规定 (见[公开仓库里的私有规定](#private-rules-in-a-public-repository))：它启用的规定覆盖了公开层的规定，即 `statute.toml` 直接启用或经依赖带进来的规定，就报错：
 
 ```text
 error: `here:2` overrides "R200", a rule of the public rule set `statute.toml`; in a public repository (`public = true`), a rule `private.toml` enables overrides no rule of the public layer
