@@ -501,7 +501,14 @@ fn fails(
         .find(|(target, by)| {
             public.enabled.contains_key(*target) && !public.enabled.contains_key(*by)
         })
-        .map(|(target, by)| format!("{by} would override {target}, a rule of the public layer"))
+        .map(|(target, by)| {
+            let of = if manifest.public {
+                "a rule of the public layer".to_owned()
+            } else {
+                format!("a rule {} enables", manifest::FILE)
+            };
+            format!("{by} would override {target}, {of}")
+        })
 }
 
 /// Leaves out of the private layer `manifest` each entry of the global

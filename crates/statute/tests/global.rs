@@ -1156,7 +1156,7 @@ fn the_global_configuration_turns_rules_on_in_a_private_repository_too() {
     let run = w.run(&["compile"]);
     ok(&run);
     assert!(
-        run.stderr.contains("statute: note: the global configuration's `me:5` is left out here: me:5 would override R2, a rule of the public layer\n"),
+        run.stderr.contains("statute: note: the global configuration's `me:5` is left out here: me:5 would override R2, a rule statute.toml enables\n"),
         "{}",
         run.stderr
     );
