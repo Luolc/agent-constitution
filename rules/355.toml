@@ -29,15 +29,15 @@ Agent Fleet 把它建的每个 agent 和 worktree 记进账本，再建之前先
 
 [text.verification]
 en = '''
-The `fleet` commands that create these are `fleet job start` and `fleet spawn`, which start an agent in a tab of its own, and `fleet worktree`, which opens a worktree; `fleet <command> --help` says how each works. Creating one any other way, for example with `herdr tab`, `herdr pane`, `herdr agent start`, `herdr worktree` or `git worktree add`, is what this rule forbids. An agent in a terminal of its own is one that runs in a tab or pane of the terminal multiplexer; a subagent that an agent tool runs inside the agent's own session, such as one that Claude Code starts, is not. Reading the terminal multiplexer's state, as `herdr agent list` and `herdr agent read` do, creates nothing.
+The `fleet` commands that create these include `fleet job start`, `fleet spawn`, `fleet inbox` and `fleet ask-thread`, which can start an agent in a tab of its own, and `fleet worktree`, which opens a worktree; `fleet <command> --help` says what each creates. Creating one any other way, for example with `herdr tab`, `herdr pane`, `herdr agent start`, `herdr worktree` or `git worktree add`, is what this rule forbids. An agent in a terminal of its own is one that runs in a tab or pane of the terminal multiplexer; a subagent that an agent tool runs inside the agent's own session, such as one that Claude Code starts, is not. Reading the terminal multiplexer's state, as `herdr agent list` and `herdr agent read` do, creates nothing.
 
 Violated when an agent that Agent Fleet started creates an agent in a terminal of its own, a terminal tab or pane, or a worktree other than with a `fleet` command.
 '''
 zh = '''
-建这些东西的 `fleet` 命令是：`fleet job start` 与 `fleet spawn`，在一个单独的 tab 里起 agent；`fleet worktree`，开 worktree；各自怎么用看 `fleet <命令> --help`。用别的办法建，例如 `herdr tab`、`herdr pane`、`herdr agent start`、`herdr worktree` 或 `git worktree add`，正是本规定禁止的。有自己终端的 agent，指在终端复用器的 tab 或 pane 里运行的 agent；agent 工具在 agent 自己的会话里跑的子 agent (例如 Claude Code 起的那种) 不算。读终端复用器的状态 (`herdr agent list`、`herdr agent read` 这类) 不建任何东西。
+建这些东西的 `fleet` 命令有：`fleet job start`、`fleet spawn`、`fleet inbox`、`fleet ask-thread` 等，可以在一个单独的 tab 里起 agent；`fleet worktree`，开 worktree；各自建什么看 `fleet <命令> --help`。用别的办法建，例如 `herdr tab`、`herdr pane`、`herdr agent start`、`herdr worktree` 或 `git worktree add`，正是本规定禁止的。有自己终端的 agent，指在终端复用器的 tab 或 pane 里运行的 agent；agent 工具在 agent 自己的会话里跑的子 agent (例如 Claude Code 起的那种) 不算。读终端复用器的状态 (`herdr agent list`、`herdr agent read` 这类) 不建任何东西。
 
 Agent Fleet 起的 agent 不用 `fleet` 的命令，建了一个有自己终端的 agent、一个终端 tab 或 pane、一个 worktree 的，即为违反本规定。
 '''
 
 [translations]
-zh = "cde10ebf69ddba86ed5b868a6d4139bae83c348b1639caf4364dc0f7f4280b00"
+zh = "3a1b222eb19d90e24727296ae14e1562abb4fb8083d861d2f09d15c5f01f2ea6"

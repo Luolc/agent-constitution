@@ -29,15 +29,15 @@ Agent Fleet 起 agent 时以它的名义领取这些工作项，释放时和写 
 
 [text.verification]
 en = '''
-The work items Agent Fleet claims are a thread's ticket (`fleet inbox`), a job's parent issue and the lead's work order (`fleet job start`) and a worker's work order (`fleet spawn`); it releases them with `fleet thread end`, `fleet job end`, `fleet worker end` and `fleet done`, as `fleet <command> --help` says. Claiming or releasing here is running a command that claims or releases a work item, such as `atb linear claim` or `atb linear release`, or doing by hand what it does. A work item that Agent Fleet does not claim is taken and released as {@rule:186} says.
+The work items Agent Fleet claims include a thread's ticket (`fleet inbox`, `fleet ask-thread`), a job's parent issue and the lead's work order (`fleet job start`) and a worker's work order (`fleet spawn`); it releases them with commands such as `fleet thread end`, `fleet job end`, `fleet worker end` and `fleet done`; `fleet <command> --help` says what each claims or releases. Claiming or releasing here is running a command that claims or releases a work item, such as `atb linear claim` or `atb linear release`, or doing by hand what it does. A work item that Agent Fleet does not claim is taken and released as {@rule:186} says.
 
 Violated when an agent that Agent Fleet started claims or releases, other than with a `fleet` command, a work item that Agent Fleet claims for its agents.
 '''
 zh = '''
-Agent Fleet 领取的工作项是：thread 的 ticket (`fleet inbox`)、job 的父 issue 与 lead 的工单 (`fleet job start`)、worker 的工单 (`fleet spawn`)；释放它们的是 `fleet thread end`、`fleet job end`、`fleet worker end` 与 `fleet done`，详见 `fleet <命令> --help`。这里的领取或释放，指运行领取或释放工作项的命令 (例如 `atb linear claim`、`atb linear release`)，或者手动做这些命令做的事。Agent Fleet 不领取的工作项，照{@rule:186}领取和释放。
+Agent Fleet 领取的工作项包括：thread 的 ticket (`fleet inbox`、`fleet ask-thread`)、job 的父 issue 与 lead 的工单 (`fleet job start`)、worker 的工单 (`fleet spawn`)；释放它们的有 `fleet thread end`、`fleet job end`、`fleet worker end`、`fleet done` 等命令；各自领取或释放什么看 `fleet <命令> --help`。这里的领取或释放，指运行领取或释放工作项的命令 (例如 `atb linear claim`、`atb linear release`)，或者手动做这些命令做的事。Agent Fleet 不领取的工作项，照{@rule:186}领取和释放。
 
 Agent Fleet 起的 agent 不用 `fleet` 的命令，领取或释放了 Agent Fleet 替它的 agent 领取的工作项的，即为违反本规定。
 '''
 
 [translations]
-zh = "00c6c938a2f4d86b6445630f7ab0bd4eedcf5ee9e6d30005d314d30a4555f6f0"
+zh = "76389049c7f83a1bdfdd83bae9d41fa9ec870b60f27c98d68bccf430a471dd7b"

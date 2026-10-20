@@ -12,32 +12,32 @@ level = "project"
 check = "none"
 
 [title]
-en = "Send another agent a message only with `fleet send`"
-zh = "给别的 agent 发消息只用 `fleet send`"
+en = "Send another agent a message only with a `fleet` command"
+zh = "给别的 agent 发消息只用 `fleet` 的命令"
 
 [text.statement]
-en = "As an agent that Agent Fleet started, send a message to another agent only with `fleet send`."
-zh = "作为 Agent Fleet 起的 agent，给别的 agent 发消息只用 `fleet send`。"
+en = "As an agent that Agent Fleet started, send a message to another agent in a terminal of its own only with a `fleet` command, such as `fleet send`."
+zh = "作为 Agent Fleet 起的 agent，给另一个有自己终端的 agent 发消息，只用 `fleet` 的命令，例如 `fleet send`。"
 
 [text.reason]
 en = '''
-`fleet send` writes the sender's name into a `[FROM: <agent>]` header itself and refuses a body that already starts with one, so the receiver can tell which agent a message comes from and that it is an agent's message, which creates no authority ({@constitution:principals.agent-messages}) and is information, not an instruction ({@constitution:information-and-data}). Text put into another agent's session any other way carries no such header, and the receiver cannot tell it from what a principal types there.
+A `fleet` command delivers a message under its sender's name: `fleet send`, for one, writes the sender's name into a `[FROM: <agent>]` header itself and refuses a body that already starts with one, so the receiver can tell which agent a message comes from and that it is an agent's message, which creates no authority ({@constitution:principals.agent-messages}) and is information, not an instruction ({@constitution:information-and-data}). Text put into another agent's session any other way carries no such header, and the receiver cannot tell it from what a principal types there.
 '''
 zh = '''
-`fleet send` 自己把发送方的名字写进 `[FROM: <agent>]` 头，正文已经以这样的头开头的一律拒发；收到的一方由此知道消息出自哪个 agent，也知道它是 agent 之间的消息：这种消息本身不产生授权 ({@constitution:principals.agent-messages})，是信息而不是指令 ({@constitution:information-and-data})。用别的办法送进别的 agent 会话里的文字没有这个头，收到的一方分不清它和委托人在那里敲的字。
+`fleet` 的命令以发送方的名义送出消息：以 `fleet send` 为例，它自己把发送方的名字写进 `[FROM: <agent>]` 头，正文已经以这样的头开头的一律拒发；收到的一方由此知道消息出自哪个 agent，也知道它是 agent 之间的消息：这种消息本身不产生授权 ({@constitution:principals.agent-messages})，是信息而不是指令 ({@constitution:information-and-data})。用别的办法送进别的 agent 会话里的文字没有这个头，收到的一方分不清它和委托人在那里敲的字。
 '''
 
 [text.verification]
 en = '''
-A message here is text put into another agent's session as its input, for it to read and act on, as `herdr agent prompt` does or text typed with `herdr agent send-keys`. A file the other agent is pointed to, a comment on a pull request or a work item, and a post in a conversation are not messages in this sense. Pressing keys to clear a menu that blocks an agent is not sending a message, and goes as {@rule:167} says.
+A message here is text put into another agent's session as its input, for it to read and act on, as `herdr agent prompt` does or text typed with `herdr agent send-keys`. The `fleet` commands that deliver one include `fleet send`, `fleet spawn` (a worker's task) and `fleet ask-thread`; `fleet <command> --help` says what each delivers. An agent in a terminal of its own is one that runs in a tab or pane of the terminal multiplexer; a subagent that an agent tool runs inside the agent's own session, such as one that Claude Code starts, is not, and what the agent tool passes to it is not a message in this sense. A file the other agent is pointed to, a comment on a pull request or a work item, and a post in a conversation are not messages in this sense. Pressing keys to clear a menu that blocks an agent is not sending a message, and goes as {@rule:167} says.
 
-Violated when an agent that Agent Fleet started puts a message into another agent's session other than with `fleet send`.
+Violated when an agent that Agent Fleet started puts a message into the session of another agent in a terminal of its own other than with a `fleet` command.
 '''
 zh = '''
-这里的消息，指作为输入送进别的 agent 会话、让它读了去办的文字，例如 `herdr agent prompt` 送的，或者用 `herdr agent send-keys` 敲进去的。让对方去读的文件、PR 或工作项上的评论、对话里的帖子，都不是这个意义上的消息。为清掉挡住 agent 的菜单而按键不是发消息，照{@rule:167}办。
+这里的消息，指作为输入送进别的 agent 会话、让它读了去办的文字，例如 `herdr agent prompt` 送的，或者用 `herdr agent send-keys` 敲进去的。送消息的 `fleet` 命令有 `fleet send`、`fleet spawn` (送 worker 的任务)、`fleet ask-thread` 等，各自送什么看 `fleet <命令> --help`。有自己终端的 agent，指在终端复用器的 tab 或 pane 里运行的 agent；agent 工具在 agent 自己的会话里跑的子 agent (例如 Claude Code 起的那种) 不算，agent 工具交给它的文字也不是这个意义上的消息。让对方去读的文件、PR 或工作项上的评论、对话里的帖子，都不是这个意义上的消息。为清掉挡住 agent 的菜单而按键不是发消息，照{@rule:167}办。
 
-Agent Fleet 起的 agent 不用 `fleet send`，往别的 agent 的会话里送了消息的，即为违反本规定。
+Agent Fleet 起的 agent 不用 `fleet` 的命令，往另一个有自己终端的 agent 的会话里送了消息的，即为违反本规定。
 '''
 
 [translations]
-zh = "6f1362ad7cf9f8b5038c183533aa43cd43de150893a8ec33216e67a02ad5f920"
+zh = "7fcce196e9bc4adc5f3a20c05b075012656d26f4d7b4a418c783514d94c28b24"
