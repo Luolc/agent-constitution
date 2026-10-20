@@ -1,6 +1,6 @@
 # Written by statute from statute.toml; do not edit by hand.
 
-statute = "0.1.25"
+statute = "0.1.26"
 
 [constitution]
 path = "."
