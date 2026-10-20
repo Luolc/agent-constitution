@@ -648,6 +648,65 @@ fn a_private_repository_has_a_private_output_for_a_persons_own_value() {
     assert!(read(&work, ".statute/AGENTS.full.md").contains(&small("medium")));
 }
 
+/// Once a person's own value is gone, `compile` rewrites the private
+/// output of a private repository to say what `AGENTS.md` says, links
+/// kept, instead of leaving the old value in it.
+#[test]
+fn a_private_output_loses_a_persons_own_value_once_it_is_gone() {
+    let work = repo("private-gone", false, "");
+    let params = read(&work, "r/rules/params.toml")
+        + &param(
+            "tiers.trivial-effort",
+            "type = \"string\"",
+            "personal",
+            "low",
+        );
+    write(&work, "r/rules/params.toml", &params);
+    write(
+        &work,
+        "r/rules/4.toml",
+        &saying(4, "Use effort {$tiers.trivial-effort} for a small change.").1,
+    );
+    let manifest = read(&work, "statute.toml").replace("\"R3\"]", "\"R3\", \"R4\"]");
+    write(&work, "statute.toml", &manifest);
+    global(&work, "[tiers]\ntrivial-effort = \"medium\"\n");
+    ok(&statute(&work, &["lock"]));
+    ok(&statute(&work, &["compile"]));
+    assert!(
+        read(&work, ".statute/AGENTS.full.md").contains(" Use effort medium for a small change.\n")
+    );
+    global(&work, "");
+    ok(&statute(&work, &["lock"]));
+    ok(&statute(&work, &["compile"]));
+    let public = read(&work, "AGENTS.md");
+    assert!(
+        public.contains(" Use effort low for a small change.\n"),
+        "{public}"
+    );
+    assert_eq!(read(&work, ".statute/AGENTS.full.md"), public);
+    assert_eq!(read(&work, "CLAUDE.local.md"), public);
+    assert_eq!(read(&work, "AGENTS.override.md"), public);
+}
+
+/// `compile --private-only` does the same in a public repository.
+#[test]
+fn the_hook_rewrites_a_private_output_once_ones_own_value_is_gone() {
+    let work = repo("public-gone", true, "");
+    global(&work, "[language]\ncommunication = \"zh\"\n");
+    ok(&statute(&work, &["lock"]));
+    ok(&statute(&work, &["compile"]));
+    assert!(read(&work, ".statute/AGENTS.full.md").contains(" Reply in Chinese.\n"));
+    global(&work, "");
+    let run = statute(&work, &["compile", "--private-only"]);
+    ok(&run);
+    assert!(run.stdout.contains("AGENTS.full.md\n"), "{}", run.stdout);
+    let public = read(&work, "AGENTS.md");
+    assert!(public.contains(" Reply in English.\n"), "{public}");
+    assert_eq!(read(&work, ".statute/AGENTS.full.md"), public);
+    assert_eq!(read(&work, "CLAUDE.local.md"), public);
+    assert_eq!(read(&work, "AGENTS.override.md"), public);
+}
+
 #[test]
 fn init_copies_no_value_from_the_global_configuration() {
     let work = repo("init", false, "");

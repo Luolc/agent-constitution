@@ -409,7 +409,10 @@ with no value of the person's own, the two files say the same. A
 `statute compile` write the private output even when there is no
 private rule set, as does a rule the global configuration turns on
 ([What the configuration turns on](global-configuration.md#what-the-configuration-turns-on)),
-and `statute compile --private-only` writes it then too. This holds in
+and `statute compile --private-only` writes it then too. Once nothing
+calls for it, both rewrite a private output already there to say what
+`AGENTS.md` says, links kept, so that no value the person has taken
+away stays in it. This holds in
 a private repository (`public = false`) as in a public one: the
 committed `AGENTS.md` and `statute.lock` keep the value of
 `statute.toml` or the default, so that `statute compile --check` finds

@@ -1,4 +1,4 @@
-<!-- en-sha256: 83792d2295802b1f99d6140886580c9e40743a296d48aa41e1e3a51761f622ef -->
+<!-- en-sha256: 10d169a759a9ee21d723a0a4a02716871dae955bac37bf890ed65a68ece6639d -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -182,7 +182,8 @@ statute compile --private-only; exit 0
 
 - 只写 `.statute/.gitignore`、`.statute/AGENTS.full.md` 和两个软链，从不写 `AGENTS.md` 或 skill；
 - 读这个 worktree 的 `statute.toml`、`statute.lock` 和私有锁文件，以及私有规定清单，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
-- 没有 `statute.toml`，或者既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，什么都不做，不出声，退出码为 0；
+- 没有 `statute.toml` 时，什么都不做，不出声，退出码为 0；
+- 既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，`.statute/AGENTS.full.md` 已经存在的，把它重写成与 `AGENTS.md` 相同的内容，软链保留 (见[锁文件与输出里的取值](rule-config.md#values-in-the-lock-file-and-the-outputs))，不存在的，什么都不做，不出声，退出码为 0；
 - 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就什么都不写，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链没有经 `.git/info/exclude` 忽略、规定清单解析不了，都是这样。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
 
 软链用相对路径，指向这个 worktree 自己的 `.statute/`。
