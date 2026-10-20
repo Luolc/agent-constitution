@@ -1,8 +1,9 @@
 id = 172
 slug = "fleet-owns-work-orders"
-revision = 3
+revision = 4
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = [357]
 lang = "en"
 parent = 161
 default = "on"

@@ -1,0 +1,43 @@
+id = 355
+slug = "create-only-through-fleet"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 161
+default = "on"
+authority = ["guards.resource-limits", "accountable-agent"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Create agents, tabs, panes and worktrees only through `fleet`"
+zh = "agent、tab、pane 与 worktree 只经 `fleet` 建"
+
+[text.statement]
+en = "As an agent that Agent Fleet started, create an agent in a terminal of its own, a terminal tab or pane, or a worktree only with a `fleet` command, and when no `fleet` command creates what your work needs, ask whoever delegated the work for a way forward."
+zh = "作为 Agent Fleet 起的 agent，建一个有自己终端的 agent、一个终端 tab 或 pane、一个 worktree，只用 `fleet` 的命令；工作需要的东西没有哪个 `fleet` 命令能建的，问派活的一方该怎么办。"
+
+[text.reason]
+en = '''
+Agent Fleet writes each agent and worktree it creates into its ledger and counts the agents and panes of a job against its caps before it creates another ({@constitution:guards.resource-limits}); by the ledger, `fleet status` and its watches tell who is running and who owes work, and `fleet job end` ends a job's agents and deletes its worktrees. One created around Agent Fleet is held to no cap, answers to no job, and is left behind when the job ends ({@constitution:accountable-agent}).
+'''
+zh = '''
+Agent Fleet 把它建的每个 agent 和 worktree 记进账本，再建之前先按上限数一数这个 job 的 agent 和 pane ({@constitution:guards.resource-limits})；`fleet status` 和它的 watch 靠账本看出谁在跑、谁欠着活，`fleet job end` 靠它结束一个 job 的 agent、删掉它的 worktree。绕开 Agent Fleet 建的，不受上限约束，不归哪个 job，job 结束时也留在那里没人收 ({@constitution:accountable-agent})。
+'''
+
+[text.verification]
+en = '''
+The `fleet` commands that create these include `fleet job start`, `fleet spawn`, `fleet inbox` and `fleet ask-thread`, which can start an agent in a tab of its own, and `fleet worktree`, which opens a worktree; `fleet <command> --help` says what each creates. Creating one any other way, for example with `herdr tab`, `herdr pane`, `herdr agent start`, `herdr worktree` or `git worktree add`, is what this rule forbids. An agent in a terminal of its own is one that runs in a tab or pane of the terminal multiplexer; a subagent that an agent tool runs inside the agent's own session, such as one that Claude Code starts, is not. Reading the terminal multiplexer's state, as `herdr agent list` and `herdr agent read` do, creates nothing.
+
+Violated when an agent that Agent Fleet started creates an agent in a terminal of its own, a terminal tab or pane, or a worktree other than with a `fleet` command.
+'''
+zh = '''
+建这些东西的 `fleet` 命令有：`fleet job start`、`fleet spawn`、`fleet inbox`、`fleet ask-thread` 等，可以在一个单独的 tab 里起 agent；`fleet worktree`，开 worktree；各自建什么看 `fleet <命令> --help`。用别的办法建，例如 `herdr tab`、`herdr pane`、`herdr agent start`、`herdr worktree` 或 `git worktree add`，正是本规定禁止的。有自己终端的 agent，指在终端复用器的 tab 或 pane 里运行的 agent；agent 工具在 agent 自己的会话里跑的子 agent (例如 Claude Code 起的那种) 不算。读终端复用器的状态 (`herdr agent list`、`herdr agent read` 这类) 不建任何东西。
+
+Agent Fleet 起的 agent 不用 `fleet` 的命令，建了一个有自己终端的 agent、一个终端 tab 或 pane、一个 worktree 的，即为违反本规定。
+'''
+
+[translations]
+zh = "3a1b222eb19d90e24727296ae14e1562abb4fb8083d861d2f09d15c5f01f2ea6"
