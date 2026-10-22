@@ -8,6 +8,7 @@ pub mod constitution;
 pub mod diag;
 pub mod export;
 pub mod global;
+pub mod hooks;
 pub mod lock;
 pub mod manifest;
 pub mod node;

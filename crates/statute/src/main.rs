@@ -6,6 +6,7 @@ use clap::{Parser, Subcommand};
 use toml_edit::{Array, DocumentMut, Item, Value};
 
 use statute::diag::Diagnostics;
+use statute::hooks;
 use statute::lock;
 use statute::manifest::{self, Follow, Key, Manifest};
 use statute::node::Kind;
@@ -109,6 +110,12 @@ enum Command {
         #[arg(long, conflicts_with = "private_only")]
         check: bool,
     },
+    /// Install the git hooks that write the private output after a
+    /// checkout of a branch and after a merge.
+    Hooks {
+        #[command(subcommand)]
+        action: HooksAction,
+    },
     /// List the enabled rules for review by domain, with the outcome of
     /// those a script checks; exits 1 on a violation.
     Check {
@@ -199,6 +206,16 @@ enum SourceAction {
     },
 }
 
+#[derive(Subcommand)]
+enum HooksAction {
+    /// Write post-checkout and post-merge, each running `statute compile
+    /// --private-only`, where `git rev-parse --git-path hooks/<name>`
+    /// says, which follows core.hooksPath. A hook statute did not write is
+    /// left as it is: exits 1, printing the line to add to it. Run at the
+    /// top of the work tree, next to statute.toml.
+    Install,
+}
+
 /// Exit status when the rule set, the source or the arguments are wrong.
 const FAILED: u8 = 1;
 
@@ -231,6 +248,9 @@ fn main() -> ExitCode {
         } => compile_check(root, output.as_deref()),
         Command::Compile { output, .. } => compile(root, output.as_deref()),
         Command::Check { base } => check(root, base.as_deref()),
+        Command::Hooks {
+            action: HooksAction::Install,
+        } => hooks_install(root),
         Command::Init {
             global: true,
             source,
@@ -656,6 +676,41 @@ fn compile_private_only(root: &Path) -> Result<(), ()> {
             Err(())
         }
     }
+}
+
+/// `hooks install`: writes each hook of [`hooks::HOOKS`] and prints what
+/// it did; fails, after trying both, when one is a hook statute did not
+/// write or cannot be written.
+fn hooks_install(root: &Path) -> Result<(), ()> {
+    if let Err(e) = std::fs::metadata(root.join(manifest::FILE)) {
+        eprintln!("{}: error: cannot read: {e}", manifest::FILE);
+        return Err(());
+    }
+    let paths = hooks::paths(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+    let mut failed = false;
+    for (hook, path) in hooks::HOOKS.iter().zip(&paths) {
+        let shown = path.display();
+        match hooks::install(path, hook) {
+            Ok(hooks::Outcome::Written) => println!("wrote {shown}"),
+            Ok(hooks::Outcome::Unchanged) => println!("{shown}: up to date"),
+            Ok(hooks::Outcome::Foreign) => {
+                failed = true;
+                eprintln!(
+                    "{shown}: error: a hook statute did not write is there, and is left as it is; add this line to it, where it runs before the hook exits: {}",
+                    hook.line
+                );
+                eprintln!(
+                    "{shown}: note: when pre-commit wrote it, a local hook with `stages: [{}]` in .pre-commit-config.yaml, installed with `pre-commit install --hook-type {}`, can run `statute compile --private-only` instead",
+                    hook.name, hook.name
+                );
+            }
+            Err(e) => {
+                failed = true;
+                eprintln!("{shown}: error: cannot write: {e}");
+            }
+        }
+    }
+    if failed { Err(()) } else { Ok(()) }
 }
 
 /// The work of `compile_private_only`: what it wrote, or each cause.
