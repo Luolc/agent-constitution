@@ -13,14 +13,6 @@ const INDEX: &str = "edition = \"2026-10\"\nrevision = \"1\"\n";
 /// What git ignores through `.git/info/exclude`: the links.
 const EXCLUDE: &str = "/CLAUDE.local.md\n/AGENTS.override.md\n";
 
-/// The line the design gives for the hook, with statute's path.
-fn hook() -> String {
-    format!(
-        "#!/bin/sh\n[ \"$3\" = 1 ] && {} compile --private-only; exit 0\n",
-        env!("CARGO_BIN_EXE_statute")
-    )
-}
-
 fn write(dir: &Path, path: &str, text: &str) {
     let path = dir.join(path);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -584,48 +576,100 @@ fn a_lock_file_of_a_newer_statute_leaves_the_private_output_as_it_was() {
     }
 }
 
+/// `PATH` with the directory of the statute under test first, for the
+/// hooks `hooks install` writes, which run `statute`.
+fn path() -> String {
+    let bin = Path::new(env!("CARGO_BIN_EXE_statute")).parent().unwrap();
+    let rest = std::env::var_os("PATH").unwrap_or_default();
+    let mut all = vec![bin.to_path_buf()];
+    all.extend(std::env::split_paths(&rest));
+    std::env::join_paths(all).unwrap().into_string().unwrap()
+}
+
+/// `git` in `dir` as `git_in` runs it, with the statute under test on
+/// `PATH`, for the hooks.
+fn git_hooked(w: &World, dir: &Path, args: &[&str]) {
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(dir)
+        .args([
+            "-c",
+            "user.name=Example",
+            "-c",
+            "user.email=example@example.test",
+        ])
+        .args(args)
+        .env("PATH", path())
+        .env("HOME", &w.home)
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_CACHE_HOME")
+        .env("GIT_CEILING_DIRECTORIES", &w.at)
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_INDEX_FILE")
+        .env_remove("GIT_WORK_TREE")
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "git {args:?}: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+}
+
 #[test]
 fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
     let w = world("hook");
-    let path = w.git(&[
-        "rev-parse",
-        "--path-format=absolute",
-        "--git-path",
-        "hooks/post-checkout",
-    ]);
-    let path = Path::new(path.trim_end());
-    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-    std::fs::write(path, hook()).unwrap();
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
-    }
+    ok(&w.run(&w.repo, &["hooks", "install"]));
     let tree = w.at.join("hooked");
-    w.git(&[
-        "worktree",
-        "add",
-        "-q",
-        "-b",
-        "hooked",
-        tree.to_str().unwrap(),
-    ]);
+    git_hooked(
+        &w,
+        &w.repo,
+        &[
+            "worktree",
+            "add",
+            "-q",
+            "-b",
+            "hooked",
+            tree.to_str().unwrap(),
+        ],
+    );
     let full = read(&tree, ".statute/AGENTS.full.md");
     assert!(full.contains("\n- me:4 "), "{full}");
     assert!(tree.join("CLAUDE.local.md").symlink_metadata().is_ok());
     assert!(!tree.join("AGENTS.md").exists());
+    // A checkout of files runs the hook, which writes nothing.
+    std::fs::remove_dir_all(tree.join(".statute")).unwrap();
+    git_hooked(&w, &tree, &["checkout", "-q", "--", "statute.toml"]);
+    assert!(!tree.join(".statute").exists());
     // A checkout the hook cannot serve still succeeds.
     std::fs::remove_dir_all(w.home.join(".cache")).unwrap();
     let other = w.at.join("unserved");
-    w.git(&[
-        "worktree",
-        "add",
-        "-q",
-        "-b",
-        "unserved",
-        other.to_str().unwrap(),
-    ]);
+    git_hooked(
+        &w,
+        &w.repo,
+        &[
+            "worktree",
+            "add",
+            "-q",
+            "-b",
+            "unserved",
+            other.to_str().unwrap(),
+        ],
+    );
     assert!(!other.join(".statute").exists());
+}
+
+#[test]
+fn a_post_merge_hook_writes_the_private_output_of_a_fast_forward() {
+    let w = world("merge-hook");
+    ok(&w.run(&w.repo, &["hooks", "install"]));
+    w.git(&["switch", "-q", "-c", "ahead"]);
+    w.git(&["commit", "-q", "--allow-empty", "-m", "ahead"]);
+    w.git(&["switch", "-q", "main"]);
+    std::fs::remove_file(w.repo.join(".statute/AGENTS.full.md")).unwrap();
+    git_hooked(&w, &w.repo, &["merge", "-q", "--ff-only", "ahead"]);
+    let full = read(&w.repo, ".statute/AGENTS.full.md");
+    assert!(full.contains("\n- me:4 "), "{full}");
 }
 
 /// `world` with `R` as a git source, so that `statute.lock` records its
