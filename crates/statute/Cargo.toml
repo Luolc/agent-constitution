@@ -1,6 +1,6 @@
 [package]
 name = "statute"
-version = "0.1.31"
+version = "0.1.32"
 description = "Compile a constitution and chosen rules into the instruction files coding agents read."
 readme = "README.md"
 keywords = ["agents", "ai", "instructions", "rules", "compiler"]
