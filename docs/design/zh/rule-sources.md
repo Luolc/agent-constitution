@@ -1,4 +1,4 @@
-<!-- en-sha256: c1ee975d9200756de4909486320fc62e41d3e23744550c17b49af62cf49f498d -->
+<!-- en-sha256: fb0a93f51ef77b482eca13b1fcc1922a11bf29e7f3c2dfc868e7eb53a16ddbc4 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -146,7 +146,7 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 - OpenCode 暂不支持。
 - 提交进仓库的 `AGENTS.md` 不指向 `.statute/AGENTS.full.md`：读了软链的 agent 会把全文读两遍，两个软链都没找到的 agent 读到的是公开规定。
 
-两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 或 `statute compile --private-only` 要写私有输出时，先用 `git check-ignore --verbose` 问清每个软链由哪个模式决定。没有模式忽略的软链，或者最后匹配的是某个 `.gitignore` 之外的否定模式的软链，把它那一行 (`statute.toml` 所在目录下的 `/<软链>`) 追加到 `git rev-parse --git-path info/exclude` 指的文件里，在 worktree 里是 common 目录的那份；文件和它的目录不存在时创建，文件里已有的行不再重复加，文件原有的内容一概不动。命令打印写了哪个文件、加了哪几行，然后再问一遍 git。软链由某个 `.gitignore` 决定时，不论是忽略它还是用否定模式把它排除，exclude 文件里加一行都改变不了什么，因为 `.gitignore` 排在它前面；所以这种情况，以及加了行之后 git 仍不忽略某个软链的情况，都不写任何私有内容，exclude 文件也不写。没有私有输出要写的命令不碰 exclude 文件。这两个路径上已有的文件不是这样的软链时，原样保留，编译在写 `AGENTS.md` 和 exclude 文件之前就失败。
+两个软链经 `.git/info/exclude` 忽略，不写进任何 `.gitignore`：Grok 会跳过被 `.gitignore` 匹配的指令文件，判断依据是软链本身的路径，而且它不读 `.git/info/exclude`。所以 `statute compile` 或 `statute compile --private-only` 要写私有输出时，先用 `git check-ignore --verbose` 问清每个软链由哪个模式决定。没有模式忽略的软链，或者最后匹配的是某个 `.gitignore` 之外的否定模式的软链，把它那一行 (`statute.toml` 所在目录下的 `/<软链>`) 追加到 `git rev-parse --git-path info/exclude` 指的文件里，在 worktree 里是 common 目录的那份；文件和它的目录不存在时创建，文件原有的内容一概不动。命令打印写了哪个文件、加了哪几行，然后再问一遍 git；git 仍不忽略某个软链时，加上的行留着，不写任何私有内容。软链由某个 `.gitignore` 决定时，不论是忽略它还是用否定模式把它排除，exclude 文件里加一行都改变不了什么，因为 `.gitignore` 排在它前面；所以这种情况，以及 exclude 文件里已有某个软链那一行、git 却不忽略它的情况 (例如那一行后面有否定模式)，都不写任何私有内容，exclude 文件也不写。没有私有输出要写的命令不碰 exclude 文件。这两个路径上已有的文件不是这样的软链时，原样保留，编译在写 `AGENTS.md` 和 exclude 文件之前就失败。
 
 **`.statute/` 里既有要提交的，也有不提交的。** `.statute/rules/` 里仓库自己的规定要提交；私有输出和本地网站 (见[本地网站](statute-command.md#the-local-site)) 不提交。所以仓库的 `.gitignore` 不写 `.statute/`：statute 自己写 `.statute/.gitignore`，就像 uv 在它建的 `.venv` 里、ruff 在它的 `.ruff_cache` 里那样，按名字列出生成文件：
 

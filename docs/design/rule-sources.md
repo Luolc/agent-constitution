@@ -368,14 +368,15 @@ pattern ignores, or one whose last matching pattern is a negation
 outside every `.gitignore`, gets its line, `/<link>` below the
 directory of `statute.toml`, appended to the file
 `git rev-parse --git-path info/exclude` names, the common directory's
-in a worktree; the file and its directory are made when missing, a
-line already there is not added again, and nothing in the file is
-changed. The command prints the file and the lines it added, and then
-asks git again. When a `.gitignore` decides a link, whether it ignores
-it or takes it out with a negation, a line in the exclude file would
-change nothing, since a `.gitignore` comes before it; so then, and when
-git still does not ignore a link after the lines are added, nothing
-private is written, the exclude file neither. A command with no private
+in a worktree; the file and its directory are made when missing, and
+nothing in the file is changed. The command prints the file and the
+lines it added, and then asks git again; when git still does not ignore
+a link, the lines added stay and nothing private is written. When a
+`.gitignore` decides a link, whether it ignores it or takes it out with
+a negation, a line in the exclude file would change nothing, since a
+`.gitignore` comes before it; so then, and when the exclude file has
+the line of a link git does not ignore, as with a negation after that
+line, nothing private is written, the exclude file neither. A command with no private
 output to write leaves the exclude file as it is. A file at either path
 that is not such a link is left as it is, and the compile fails before
 it writes `AGENTS.md` or the exclude file.

@@ -335,10 +335,12 @@ pub fn ready(root: &Path) -> Result<Option<String>, String> {
 
 /// Makes git ignore the links through the exclude file, which every
 /// worktree of a clone shares: adds the line of each link that no
-/// pattern outside every `.gitignore` ignores yet, unless the file has
-/// it already, and fails, writing nothing, when a `.gitignore` decides
-/// whether git ignores a link, since its patterns come before the
-/// exclude file's. Returns what it says of the lines it added.
+/// pattern outside every `.gitignore` ignores yet. It fails, writing
+/// nothing, when a `.gitignore` decides whether git ignores a link,
+/// since its patterns come before the exclude file's, or when the file
+/// has the line of a link git does not ignore; it fails, keeping the
+/// lines it added, when git still does not ignore a link after them.
+/// Returns what it says of the lines it added.
 fn exclude_links(root: &Path) -> Result<Option<String>, String> {
     let git = |args: &[&str]| -> Result<String, String> {
         let out = Command::new("git")
@@ -349,7 +351,8 @@ fn exclude_links(root: &Path) -> Result<Option<String>, String> {
             .map_err(|e| format!("cannot run git: {e}"))?;
         if !out.status.success() {
             return Err(format!(
-                "git cannot tell where the exclude file is: {}",
+                "`git {}` failed: {}",
+                args.join(" "),
                 String::from_utf8_lossy(&out.stderr).trim()
             ));
         }
@@ -388,50 +391,47 @@ fn exclude_links(root: &Path) -> Result<Option<String>, String> {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => String::new(),
         Err(e) => return Err(format!("{}: cannot read: {e}", exclude.display())),
     };
-    let lines: Vec<String> = needed
-        .iter()
-        .map(|link| format!("/{prefix}{link}"))
-        .filter(|line| !text.lines().any(|l| l == line))
-        .collect();
-    if !lines.is_empty() {
-        let mut add = String::new();
-        if !text.is_empty() && !text.ends_with('\n') {
-            add.push('\n');
+    let mut lines = Vec::new();
+    for link in &needed {
+        let line = format!("/{prefix}{link}");
+        if text.lines().any(|l| l == line) {
+            return Err(format!(
+                "{link}: {} has its line, `{line}`, but git does not ignore it, so nothing private is written; `git check-ignore --verbose --no-index {link}` shows the pattern that takes it out",
+                exclude.display()
+            ));
         }
-        for line in &lines {
-            add.push_str(line);
-            add.push('\n');
-        }
-        if let Some(dir) = exclude.parent() {
-            std::fs::create_dir_all(dir).map_err(fail)?;
-        }
-        std::fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&exclude)
-            .and_then(|mut f| std::io::Write::write_all(&mut f, add.as_bytes()))
-            .map_err(fail)?;
+        lines.push(line);
     }
-    let mut still = Vec::new();
+    let mut add = String::new();
+    if !text.is_empty() && !text.ends_with('\n') {
+        add.push('\n');
+    }
+    for line in &lines {
+        add.push_str(line);
+        add.push('\n');
+    }
+    if let Some(dir) = exclude.parent() {
+        std::fs::create_dir_all(dir).map_err(fail)?;
+    }
+    std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&exclude)
+        .and_then(|mut f| std::io::Write::write_all(&mut f, add.as_bytes()))
+        .map_err(fail)?;
     for link in needed {
         if ignored(root, Path::new(link))? != Ignored::Elsewhere {
-            still.push(link);
+            return Err(format!(
+                "{link}: git does not ignore it though its line is now in {}, where it stays, so nothing private is written; `git check-ignore --verbose --no-index {link}` shows the pattern that takes it out",
+                exclude.display()
+            ));
         }
     }
-    if !still.is_empty() {
-        return Err(format!(
-            "{}: git does not ignore these links though {} has their lines, so nothing private is written; `git check-ignore --verbose --no-index` on each shows the pattern that takes it out",
-            still.join(", "),
-            exclude.display()
-        ));
-    }
-    Ok((!lines.is_empty()).then(|| {
-        format!(
-            "wrote {}: added {}, so that git ignores the links to the private output",
-            exclude.display(),
-            lines.join(" and ")
-        )
-    }))
+    Ok(Some(format!(
+        "wrote {}: added {}, so that git ignores the links to the private output",
+        exclude.display(),
+        lines.join(" and ")
+    )))
 }
 
 /// Writes the full text and the links to it, next to `statute.toml` in

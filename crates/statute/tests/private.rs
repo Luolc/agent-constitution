@@ -504,6 +504,47 @@ fn the_links_are_ignored_through_the_exclude_file() {
 }
 
 #[test]
+fn a_link_git_does_not_ignore_with_its_line_there_writes_nothing() {
+    // The line is there already, and a negation after it takes it out.
+    let dir = repo("exclude-line-negated");
+    let exclude = "/CLAUDE.local.md\n!/CLAUDE.local.md\n";
+    write(&dir, ".git/info/exclude", exclude);
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        &format!(
+            "CLAUDE.local.md: {} has its line, `/CLAUDE.local.md`, but git does not ignore it, so nothing private is written; `git check-ignore --verbose --no-index CLAUDE.local.md` shows the pattern that takes it out",
+            dir.join(".git/info/exclude").display()
+        ),
+    );
+    assert_eq!(
+        std::fs::read_to_string(dir.join(".git/info/exclude")).unwrap(),
+        exclude
+    );
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    assert!(!dir.join("AGENTS.md").exists());
+    for link in ["CLAUDE.local.md", "AGENTS.override.md"] {
+        assert!(dir.join(link).symlink_metadata().is_err(), "{link}");
+    }
+
+    // Lines added where git does not read them, as git names the file:
+    // git is asked again.
+    let dir = repo("exclude-unread");
+    std::fs::remove_file(dir.join(".git/info/exclude")).unwrap();
+    std::os::unix::fs::symlink("/dev/null", dir.join(".git/info/exclude")).unwrap();
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        "CLAUDE.local.md: git does not ignore it though its line is now in /dev/null, where it stays, so nothing private is written",
+    );
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    assert!(!dir.join("AGENTS.md").exists());
+    assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
+}
+
+#[test]
 fn without_a_private_output_the_exclude_file_is_left_as_it_is() {
     let dir = repo("no-private-output");
     write(&dir, ".git/info/exclude", "# ours\n");
