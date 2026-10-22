@@ -6,10 +6,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const POST_CHECKOUT: &str =
-    "#!/bin/sh\n# written by statute\n[ \"$3\" = 1 ] && statute compile --private-only || true\n";
-const POST_MERGE: &str =
-    "#!/bin/sh\n# written by statute\nstatute compile --private-only || true\n";
+const POST_CHECKOUT: &str = "#!/bin/sh\n# written by `statute hooks install`, which rewrites this file\n[ \"$3\" = 1 ] && statute compile --private-only || true\n";
+const POST_MERGE: &str = "#!/bin/sh\n# written by `statute hooks install`, which rewrites this file\nstatute compile --private-only || true\n";
 
 /// A test's directory, holding a repository `repo` with a `statute.toml`.
 fn world(name: &str) -> (PathBuf, PathBuf) {
@@ -161,7 +159,7 @@ fn statutes_hooks_as_they_are_now_are_left_and_older_ones_rewritten() {
         )
     );
     // An older hook of statute's, and one that lost its mode.
-    let old = "#!/bin/sh\n# written by statute\nstatute compile --private-only; exit 0\n";
+    let old = "#!/bin/sh\n# written by `statute hooks install`, which rewrites this file\nstatute compile --private-only; exit 0\n";
     std::fs::write(hooks.join("post-merge"), old).unwrap();
     std::fs::set_permissions(
         hooks.join("post-checkout"),
@@ -182,13 +180,37 @@ fn statutes_hooks_as_they_are_now_are_left_and_older_ones_rewritten() {
     assert_eq!(mode(&hooks.join("post-checkout")), 0o755);
 }
 
+/// The files the design gave before `hooks install`, written by hand.
+const FORMER_CHECKOUT: &str =
+    "#!/bin/sh\n[ \"$3\" = 1 ] && statute compile --private-only; exit 0\n";
+const FORMER_MERGE: &str = "#!/bin/sh\nstatute compile --private-only; exit 0\n";
+
+#[test]
+fn the_hooks_the_design_gave_before_are_rewritten_and_with_more_left() {
+    let (at, repo) = world("former");
+    let hooks = repo.join(".git/hooks");
+    std::fs::create_dir_all(&hooks).unwrap();
+    std::fs::write(hooks.join("post-checkout"), FORMER_CHECKOUT).unwrap();
+    let more = format!("{FORMER_MERGE}echo mine\n");
+    std::fs::write(hooks.join("post-merge"), &more).unwrap();
+    let run = install(&at, &repo);
+    code(&run, 1);
+    assert_eq!(read(&hooks.join("post-checkout")), POST_CHECKOUT);
+    assert_eq!(read(&hooks.join("post-merge")), more);
+    assert_eq!(
+        run.stdout,
+        format!("wrote {}\n", hooks.join("post-checkout").display())
+    );
+}
+
 #[test]
 fn a_hook_statute_did_not_write_is_left_and_fails_after_the_other_is_written() {
     let (at, repo) = world("foreign");
     let hooks = repo.join(".git/hooks");
     std::fs::create_dir_all(&hooks).unwrap();
     // statute's marker, but not as its second line.
-    let mine = "#!/bin/sh\necho mine\n# written by statute\n";
+    let mine =
+        "#!/bin/sh\necho mine\n# written by `statute hooks install`, which rewrites this file\n";
     std::fs::write(hooks.join("post-checkout"), mine).unwrap();
     std::fs::set_permissions(
         hooks.join("post-checkout"),

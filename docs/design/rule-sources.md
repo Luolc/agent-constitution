@@ -424,7 +424,7 @@ serves every worktree of the clone. The hook runs one command,
 
 ```sh
 #!/bin/sh
-# written by statute
+# written by `statute hooks install`, which rewrites this file
 [ "$3" = 1 ] && statute compile --private-only || true
 ```
 
@@ -445,7 +445,7 @@ fast-forward, and a merge that finds nothing to do does not run it.
 
 ```sh
 #!/bin/sh
-# written by statute
+# written by `statute hooks install`, which rewrites this file
 statute compile --private-only || true
 ```
 
@@ -456,8 +456,11 @@ top of a work tree that has a `statute.toml`, writes both there,
 executable, and makes their directory when it is missing; no other
 command touches the hooks, `compile` included. Each hook is decided on
 its own, and what was done with each is printed. A hook whose second
-line is `# written by statute` is statute's: one as it is now is left as
-it is, an older one is written again. Any other file at that path, one
+line is the comment above is statute's, and a line added to it is lost
+when it is written again: one as it is now is left as it is, an older
+one is written again. A file that is exactly the hook this design gave
+before the command existed, `#!/bin/sh` and the same command ending in
+`; exit 0`, is an older one of statute's too. Any other file at that path, one
 a hook manager wrote or a hand-written one, is left exactly as it is:
 the command prints its path and that hook's third line, shown above,
 to add where it runs before the hook exits, and a note that pre-commit can run the

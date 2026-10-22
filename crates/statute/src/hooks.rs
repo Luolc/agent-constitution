@@ -7,13 +7,17 @@ use std::process::Command;
 
 /// The second line of a hook statute wrote, by which it knows the file
 /// as its own.
-pub const MARKER: &str = "# written by statute";
+pub const MARKER: &str = "# written by `statute hooks install`, which rewrites this file";
 
 /// One hook: its name in git's hooks directory and the line it runs,
 /// which is also the line to add to a hook statute did not write.
 pub struct Hook {
     pub name: &'static str,
     pub line: &'static str,
+    /// The whole file the design gave before `hooks install`, which
+    /// users wrote by hand and which counts as an older one of
+    /// statute's.
+    pub former: &'static str,
 }
 
 /// `post-checkout` runs on a checkout of a branch only (its third
@@ -22,10 +26,12 @@ pub const HOOKS: [Hook; 2] = [
     Hook {
         name: "post-checkout",
         line: "[ \"$3\" = 1 ] && statute compile --private-only || true",
+        former: "#!/bin/sh\n[ \"$3\" = 1 ] && statute compile --private-only; exit 0\n",
     },
     Hook {
         name: "post-merge",
         line: "statute compile --private-only || true",
+        former: "#!/bin/sh\nstatute compile --private-only; exit 0\n",
     },
 ];
 
@@ -103,7 +109,8 @@ pub fn install(path: &Path, hook: &Hook) -> std::io::Result<Outcome> {
     match std::fs::read(path) {
         Ok(old) => {
             let ours = std::str::from_utf8(&old).is_ok_and(|old| {
-                old.starts_with("#!/bin/sh\n") && old.lines().nth(1) == Some(MARKER)
+                old == hook.former
+                    || old.starts_with("#!/bin/sh\n") && old.lines().nth(1) == Some(MARKER)
             });
             if !ours {
                 return Ok(Outcome::Foreign);

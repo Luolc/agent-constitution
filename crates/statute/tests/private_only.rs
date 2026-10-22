@@ -662,11 +662,12 @@ fn a_post_checkout_hook_writes_the_private_output_of_a_new_worktree() {
 #[test]
 fn a_post_merge_hook_writes_the_private_output_of_a_fast_forward() {
     let w = world("merge-hook");
-    ok(&w.run(&w.repo, &["hooks", "install"]));
     w.git(&["switch", "-q", "-c", "ahead"]);
     w.git(&["commit", "-q", "--allow-empty", "-m", "ahead"]);
     w.git(&["switch", "-q", "main"]);
-    std::fs::remove_file(w.repo.join(".statute/AGENTS.full.md")).unwrap();
+    let _ = std::fs::remove_file(w.repo.join(".statute/AGENTS.full.md"));
+    ok(&w.run(&w.repo, &["hooks", "install"]));
+    assert!(!w.repo.join(".statute/AGENTS.full.md").exists());
     git_hooked(&w, &w.repo, &["merge", "-q", "--ff-only", "ahead"]);
     let full = read(&w.repo, ".statute/AGENTS.full.md");
     assert!(full.contains("\n- me:4 "), "{full}");
