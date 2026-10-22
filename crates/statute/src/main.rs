@@ -584,8 +584,10 @@ fn compile_layers(root: &Path, output: Option<&Path>) -> Result<(), ()> {
     let out = statute::compile::compile(&project).map_err(|e| eprintln!("statute: error: {e}"))?;
     // `.statute/.gitignore` is the first file written, once nothing is
     // left that can fail before the public files.
-    if full.is_some() {
-        private::ready(root).map_err(|e| eprintln!("statute: error: {e}"))?;
+    if full.is_some()
+        && let Some(note) = private::ready(root).map_err(|e| eprintln!("statute: error: {e}"))?
+    {
+        println!("{note}");
     }
     let statute::compile::Written {
         mut written,
@@ -754,7 +756,11 @@ fn private_only(root: &Path) -> Result<Vec<PathBuf>, Vec<String>> {
     } else {
         return Ok(Vec::new());
     };
-    private::write(root, &full.map_err(one)?).map_err(one)
+    let full = full.map_err(one)?;
+    if let Some(note) = private::ready(root).map_err(one)? {
+        println!("{note}");
+    }
+    private::write(root, &full).map_err(one)
 }
 
 fn site(root: &Path) -> Result<(), ()> {

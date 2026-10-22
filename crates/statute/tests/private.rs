@@ -399,17 +399,91 @@ fn the_private_layer_overrides_no_public_rule() {
     assert_eq!(files(), before);
 }
 
+/// The note of a compile that added `lines` to the exclude file of `dir`.
+fn added(dir: &Path, lines: &str) -> String {
+    format!(
+        "wrote {}: added {lines}, so that git ignores the links to the private output\n",
+        dir.join(".git/info/exclude").display()
+    )
+}
+
+#[test]
+fn compile_adds_the_links_to_the_exclude_file() {
+    // No exclude file, nor `info/` above it.
+    let dir = repo("exclude-made");
+    std::fs::remove_dir_all(dir.join(".git/info")).unwrap();
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(
+        run.stdout
+            .starts_with(&added(&dir, "/CLAUDE.local.md and /AGENTS.override.md")),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(read(&dir, ".git/info/exclude"), EXCLUDE);
+    assert_eq!(
+        std::fs::read_link(dir.join("CLAUDE.local.md")).unwrap(),
+        Path::new(".statute/AGENTS.full.md")
+    );
+    // Once they are there, nothing is added again.
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(!run.stdout.contains("info/exclude"), "{}", run.stdout);
+    assert_eq!(read(&dir, ".git/info/exclude"), EXCLUDE);
+
+    // What the file holds stays, a last line without its newline too,
+    // and a link it names already is not named again.
+    let dir = repo("exclude-kept");
+    write(&dir, ".git/info/exclude", "# ours\n/CLAUDE.local.md\n*.log");
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(
+        run.stdout.contains(&added(&dir, "/AGENTS.override.md")),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(
+        read(&dir, ".git/info/exclude"),
+        "# ours\n/CLAUDE.local.md\n*.log\n/AGENTS.override.md\n"
+    );
+
+    // A negation in the exclude file gives way to the line added after it.
+    let dir = repo("exclude-negation");
+    write(
+        &dir,
+        ".git/info/exclude",
+        "!/CLAUDE.local.md\n/AGENTS.override.md\n",
+    );
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(
+        run.stdout.contains(&added(&dir, "/CLAUDE.local.md")),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(
+        read(&dir, ".git/info/exclude"),
+        "!/CLAUDE.local.md\n/AGENTS.override.md\n/CLAUDE.local.md\n"
+    );
+}
+
 #[test]
 fn the_links_are_ignored_through_the_exclude_file() {
-    // Through a .gitignore, not .git/info/exclude.
+    // Through a .gitignore, not .git/info/exclude: its patterns come
+    // first, so a line in the exclude file would not change that.
     let dir = repo("links-in-gitignore");
     write(&dir, ".gitignore", EXCLUDE);
+    write(&dir, ".git/info/exclude", "# ours\n");
     set_up(&dir);
     let run = statute(&dir, &["compile"]);
     fails_with(
         &run,
-        "CLAUDE.local.md, AGENTS.override.md: git must ignore these links through .git/info/exclude, not a .gitignore (Grok skips an instruction file a .gitignore matches), so nothing private is written; add these lines to .git/info/exclude: /CLAUDE.local.md, /AGENTS.override.md",
+        "CLAUDE.local.md: git must ignore it through the exclude file, not a .gitignore (Grok skips an instruction file a .gitignore matches), but `.gitignore:1:/CLAUDE.local.md` decides it, and a .gitignore comes before the exclude file, so nothing private is written; take that line out",
     );
+    assert_eq!(read(&dir, ".git/info/exclude"), "# ours\n");
     assert!(!dir.join(".statute/AGENTS.full.md").exists());
     assert!(!dir.join("AGENTS.md").exists());
     assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
@@ -421,11 +495,69 @@ fn the_links_are_ignored_through_the_exclude_file() {
     let run = statute(&dir, &["compile"]);
     fails_with(
         &run,
-        "add these lines to .git/info/exclude: /AGENTS.override.md",
+        "AGENTS.override.md: git must ignore it through the exclude file, not a .gitignore (Grok skips an instruction file a .gitignore matches), but `.gitignore:1:!/AGENTS.override.md` decides it",
     );
+    assert_eq!(read(&dir, ".git/info/exclude"), EXCLUDE);
     assert!(!dir.join(".statute/AGENTS.full.md").exists());
     std::fs::remove_file(dir.join(".gitignore")).unwrap();
     ok(&statute(&dir, &["compile"]));
+}
+
+#[test]
+fn a_link_git_does_not_ignore_with_its_line_there_writes_nothing() {
+    // The line is there already, and a negation after it takes it out.
+    let dir = repo("exclude-line-negated");
+    let exclude = "/CLAUDE.local.md\n!/CLAUDE.local.md\n";
+    write(&dir, ".git/info/exclude", exclude);
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        &format!(
+            "CLAUDE.local.md: {} has its line, `/CLAUDE.local.md`, but git does not ignore it, so nothing private is written; `git check-ignore --verbose --no-index CLAUDE.local.md` shows the pattern that takes it out",
+            dir.join(".git/info/exclude").display()
+        ),
+    );
+    assert_eq!(
+        std::fs::read_to_string(dir.join(".git/info/exclude")).unwrap(),
+        exclude
+    );
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    assert!(!dir.join("AGENTS.md").exists());
+    for link in ["CLAUDE.local.md", "AGENTS.override.md"] {
+        assert!(dir.join(link).symlink_metadata().is_err(), "{link}");
+    }
+
+    // Lines added where git does not read them, as git names the file:
+    // git is asked again.
+    let dir = repo("exclude-unread");
+    std::fs::remove_file(dir.join(".git/info/exclude")).unwrap();
+    std::os::unix::fs::symlink("/dev/null", dir.join(".git/info/exclude")).unwrap();
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    fails_with(
+        &run,
+        "CLAUDE.local.md: git does not ignore it though its line is now in /dev/null, where it stays, so nothing private is written",
+    );
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    assert!(!dir.join("AGENTS.md").exists());
+    assert!(dir.join("CLAUDE.local.md").symlink_metadata().is_err());
+}
+
+#[test]
+fn without_a_private_output_the_exclude_file_is_left_as_it_is() {
+    let dir = repo("no-private-output");
+    write(&dir, ".git/info/exclude", "# ours\n");
+    ok(&statute(&dir, &["init", "--public", "--source", "r"]));
+    ok(&statute(&dir, &["add", "R2"]));
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(dir.join("AGENTS.md").exists());
+    assert!(!dir.join(".statute/AGENTS.full.md").exists());
+    assert_eq!(read(&dir, ".git/info/exclude"), "# ours\n");
+    let run = statute(&dir, &["compile", "--private-only"]);
+    ok(&run);
+    assert_eq!(read(&dir, ".git/info/exclude"), "# ours\n");
 }
 
 #[test]
@@ -487,7 +619,8 @@ fn outside_a_git_repository_there_is_no_private_layer() {
 
 #[test]
 fn a_file_in_a_links_place_is_left_as_it_is() {
-    let dir = ignoring("in-place");
+    let dir = repo("in-place");
+    write(&dir, ".git/info/exclude", "# ours\n");
     set_up(&dir);
     write(&dir, "CLAUDE.local.md", "mine\n");
     let run = statute(&dir, &["compile"]);
@@ -497,6 +630,9 @@ fn a_file_in_a_links_place_is_left_as_it_is() {
     );
     assert_eq!(read(&dir, "CLAUDE.local.md"), "mine\n");
     assert!(dir.join("AGENTS.override.md").symlink_metadata().is_err());
+    // Nor are AGENTS.md and the exclude file written.
+    assert!(!dir.join("AGENTS.md").exists());
+    assert_eq!(read(&dir, ".git/info/exclude"), "# ours\n");
 }
 
 #[test]
@@ -699,25 +835,29 @@ fn statute_writes_its_own_gitignore() {
 }
 
 #[test]
-fn a_worktree_names_the_clones_exclude_file() {
+fn a_worktree_writes_the_clones_exclude_file() {
     let dir = repo("worktree");
+    write(&dir, ".git/info/exclude", "");
     commit(&dir, "rules");
     let tree = dir.with_file_name("worktree-tree");
     let _ = std::fs::remove_dir_all(&tree);
     git(&dir, &["worktree", "add", "-q", tree.to_str().unwrap()]);
     set_up(&tree);
     let run = statute(&tree, &["compile"]);
-    let exclude = dir.join(".git/info/exclude");
-    fails_with(
-        &run,
-        &format!(
-            "add these lines to {}: /CLAUDE.local.md, /AGENTS.override.md",
-            exclude.display()
-        ),
+    ok(&run);
+    assert!(
+        run.stdout
+            .contains(&added(&dir, "/CLAUDE.local.md and /AGENTS.override.md")),
+        "{}",
+        run.stdout
     );
-    // The lines in the clone's exclude file hold for the worktree.
-    write(&dir, ".git/info/exclude", EXCLUDE);
-    ok(&statute(&tree, &["compile"]));
+    assert_eq!(read(&dir, ".git/info/exclude"), EXCLUDE);
+    // The lines in the clone's exclude file hold for the main worktree.
+    set_up(&dir);
+    let run = statute(&dir, &["compile"]);
+    ok(&run);
+    assert!(!run.stdout.contains("info/exclude"), "{}", run.stdout);
+    assert_eq!(read(&dir, ".git/info/exclude"), EXCLUDE);
 }
 
 #[test]
