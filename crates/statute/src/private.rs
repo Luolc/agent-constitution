@@ -235,11 +235,27 @@ pub enum Ignored {
     Elsewhere,
 }
 
-/// Asks git how it ignores `path`, relative to `root`; an error when git
-/// cannot tell, as outside a git repository. A path whose last matching
-/// pattern is a negation, `!`, is not ignored, though git names that
-/// pattern and exits 0 for it.
-pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
+/// The pattern that decides whether git ignores a path: where it is,
+/// `<source>:<line>:<pattern>`, and whether it is a negation, `!`.
+struct Match {
+    source: String,
+    at: String,
+    negation: bool,
+}
+
+impl Match {
+    fn in_gitignore(&self) -> bool {
+        Path::new(&self.source)
+            .file_name()
+            .is_some_and(|n| n == ".gitignore")
+    }
+}
+
+/// Asks git which pattern decides whether it ignores `path`, relative to
+/// `root`: `None` when none matches; an error when git cannot tell, as
+/// outside a git repository. git names a negation that matches last and
+/// exits 0 for it, as for a pattern that ignores.
+fn matched(root: &Path, path: &Path) -> Result<Option<Match>, String> {
     let out = Command::new("git")
         .arg("-C")
         .arg(root)
@@ -251,24 +267,19 @@ pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
         Some(0) => {
             // `<source>:<line>:<pattern>\t<path>`.
             let text = String::from_utf8_lossy(&out.stdout);
-            let match_ = text.split('\t').next().unwrap_or("");
-            let mut fields = match_.splitn(3, ':');
-            let source = fields.next().unwrap_or("");
-            if fields
+            let at = text.split('\t').next().unwrap_or("").to_owned();
+            let mut fields = at.splitn(3, ':');
+            let source = fields.next().unwrap_or("").to_owned();
+            let negation = fields
                 .nth(1)
-                .is_some_and(|pattern| pattern.starts_with('!'))
-            {
-                Ok(Ignored::No)
-            } else if Path::new(source)
-                .file_name()
-                .is_some_and(|n| n == ".gitignore")
-            {
-                Ok(Ignored::ByGitignore)
-            } else {
-                Ok(Ignored::Elsewhere)
-            }
+                .is_some_and(|pattern| pattern.starts_with('!'));
+            Ok(Some(Match {
+                source,
+                at,
+                negation,
+            }))
         }
-        Some(1) => Ok(Ignored::No),
+        Some(1) => Ok(None),
         _ => Err(format!(
             "git cannot tell whether it ignores {}: {}",
             path.display(),
@@ -277,16 +288,25 @@ pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
     }
 }
 
-/// Writes `.statute/.gitignore` and checks that git ignores the private
-/// output: asked before any file of a compile is written.
-pub fn ready(root: &Path) -> Result<(), String> {
-    write_gitignore(root)?;
-    check_ignored(root)
+/// Asks git how it ignores `path`, relative to `root`; an error when git
+/// cannot tell, as outside a git repository. A path whose last matching
+/// pattern is a negation, `!`, is not ignored.
+pub fn ignored(root: &Path, path: &Path) -> Result<Ignored, String> {
+    Ok(match matched(root, path)? {
+        None => Ignored::No,
+        Some(m) if m.negation => Ignored::No,
+        Some(m) if m.in_gitignore() => Ignored::ByGitignore,
+        Some(_) => Ignored::Elsewhere,
+    })
 }
 
-/// Fails unless git ignores the full text, and the links through a
-/// pattern outside every `.gitignore`.
-fn check_ignored(root: &Path) -> Result<(), String> {
+/// Writes `.statute/.gitignore`, checks that git ignores the private
+/// output and that nothing but statute's links is at the links' paths,
+/// and adds to the exclude file the lines that make git ignore the
+/// links: asked before any file of a compile is written. Returns what
+/// it says of the lines it added, if it added any.
+pub fn ready(root: &Path) -> Result<Option<String>, String> {
+    write_gitignore(root)?;
     let file = full();
     if ignored(root, &file)? == Ignored::No {
         return Err(format!(
@@ -295,46 +315,6 @@ fn check_ignored(root: &Path) -> Result<(), String> {
             file.display()
         ));
     }
-    check_links(root)
-}
-
-fn check_links(root: &Path) -> Result<(), String> {
-    let git = |args: &[&str]| {
-        Command::new("git")
-            .arg("-C")
-            .arg(root)
-            .args(args)
-            .output()
-            .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
-            .unwrap_or_default()
-    };
-    // The lines of the exclude file are relative to the top of the work
-    // tree; in a worktree, the file is the clone's.
-    let prefix = git(&["rev-parse", "--show-prefix"]);
-    let exclude = git(&["rev-parse", "--git-path", "info/exclude"]);
-    let mut missing = Vec::new();
-    for link in LINKS {
-        match ignored(root, Path::new(link))? {
-            Ignored::Elsewhere => {}
-            Ignored::No | Ignored::ByGitignore => missing.push(format!("/{prefix}{link}")),
-        }
-    }
-    if !missing.is_empty() {
-        return Err(format!(
-            "{}: git must ignore these links through {exclude}, not a .gitignore (Grok skips an instruction file a .gitignore matches), so nothing private is written; add these lines to {exclude}: {}",
-            LINKS.join(", "),
-            missing.join(", ")
-        ));
-    }
-    Ok(())
-}
-
-/// Writes the full text and the links to it, next to `statute.toml` in
-/// `root`, after `ready`; writes nothing when git does not ignore them,
-/// or when a file at a link's path is not that link. Links
-/// need a Unix system. Returns what was written.
-pub fn write(root: &Path, text: &str) -> Result<Vec<PathBuf>, String> {
-    ready(root)?;
     for link in LINKS {
         let path = root.join(link);
         if path.symlink_metadata().is_ok() && std::fs::read_link(&path).ok() != Some(full()) {
@@ -350,6 +330,116 @@ pub fn write(root: &Path, text: &str) -> Result<Vec<PathBuf>, String> {
             LINKS.join(" and ")
         ));
     }
+    exclude_links(root)
+}
+
+/// Makes git ignore the links through the exclude file, which every
+/// worktree of a clone shares: adds the line of each link that no
+/// pattern outside every `.gitignore` ignores yet, unless the file has
+/// it already, and fails, writing nothing, when a `.gitignore` decides
+/// whether git ignores a link, since its patterns come before the
+/// exclude file's. Returns what it says of the lines it added.
+fn exclude_links(root: &Path) -> Result<Option<String>, String> {
+    let git = |args: &[&str]| -> Result<String, String> {
+        let out = Command::new("git")
+            .arg("-C")
+            .arg(root)
+            .args(args)
+            .output()
+            .map_err(|e| format!("cannot run git: {e}"))?;
+        if !out.status.success() {
+            return Err(format!(
+                "git cannot tell where the exclude file is: {}",
+                String::from_utf8_lossy(&out.stderr).trim()
+            ));
+        }
+        Ok(String::from_utf8_lossy(&out.stdout)
+            .trim_end_matches('\n')
+            .to_owned())
+    };
+    let mut needed = Vec::new();
+    for link in LINKS {
+        match matched(root, Path::new(link))? {
+            Some(m) if m.in_gitignore() => {
+                return Err(format!(
+                    "{link}: git must ignore it through the exclude file, not a .gitignore (Grok skips an instruction file a .gitignore matches), but `{}` decides it, and a .gitignore comes before the exclude file, so nothing private is written; take that line out",
+                    m.at
+                ));
+            }
+            Some(m) if !m.negation => {}
+            _ => needed.push(link),
+        }
+    }
+    if needed.is_empty() {
+        return Ok(None);
+    }
+    // The lines of the exclude file are relative to the top of the work
+    // tree; in a worktree, the file is the clone's.
+    let prefix = git(&["rev-parse", "--show-prefix"])?;
+    let exclude = PathBuf::from(git(&[
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-path",
+        "info/exclude",
+    ])?);
+    let fail = |e: std::io::Error| format!("{}: cannot write: {e}", exclude.display());
+    let text = match std::fs::read_to_string(&exclude) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => String::new(),
+        Err(e) => return Err(format!("{}: cannot read: {e}", exclude.display())),
+    };
+    let lines: Vec<String> = needed
+        .iter()
+        .map(|link| format!("/{prefix}{link}"))
+        .filter(|line| !text.lines().any(|l| l == line))
+        .collect();
+    if !lines.is_empty() {
+        let mut add = String::new();
+        if !text.is_empty() && !text.ends_with('\n') {
+            add.push('\n');
+        }
+        for line in &lines {
+            add.push_str(line);
+            add.push('\n');
+        }
+        if let Some(dir) = exclude.parent() {
+            std::fs::create_dir_all(dir).map_err(fail)?;
+        }
+        std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&exclude)
+            .and_then(|mut f| std::io::Write::write_all(&mut f, add.as_bytes()))
+            .map_err(fail)?;
+    }
+    let mut still = Vec::new();
+    for link in needed {
+        if ignored(root, Path::new(link))? != Ignored::Elsewhere {
+            still.push(link);
+        }
+    }
+    if !still.is_empty() {
+        return Err(format!(
+            "{}: git does not ignore these links though {} has their lines, so nothing private is written; `git check-ignore --verbose --no-index` on each shows the pattern that takes it out",
+            still.join(", "),
+            exclude.display()
+        ));
+    }
+    Ok((!lines.is_empty()).then(|| {
+        format!(
+            "wrote {}: added {}, so that git ignores the links to the private output",
+            exclude.display(),
+            lines.join(" and ")
+        )
+    }))
+}
+
+/// Writes the full text and the links to it, next to `statute.toml` in
+/// `root`, after `ready`, which it asks again; writes nothing when git
+/// does not ignore them, or when a file at a link's path is not that
+/// link. Links need a Unix system. Returns what was written.
+pub fn write(root: &Path, text: &str) -> Result<Vec<PathBuf>, String> {
+    ready(root)?;
     let fail = |path: &Path, e: std::io::Error| format!("{}: cannot write: {e}", path.display());
     let dir = root.join(DIR);
     std::fs::create_dir_all(&dir).map_err(|e| fail(&dir, e))?;

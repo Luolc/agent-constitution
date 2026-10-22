@@ -361,11 +361,24 @@ AGENTS.override.md -> .statute/AGENTS.full.md
 The two links are ignored through `.git/info/exclude`, never through a
 `.gitignore`: Grok skips an instruction file that a `.gitignore`
 matches, judging by the link's own path, and does not read
-`.git/info/exclude`. So `statute compile` checks with `git check-ignore
---verbose` that each link is ignored by a pattern outside every
-`.gitignore`, and writes nothing private otherwise, naming the lines to
-add to `.git/info/exclude`. A file at either path that is not such a link is
-left as it is, and the compile fails.
+`.git/info/exclude`. So when `statute compile` or `statute compile
+--private-only` is to write a private output, it asks
+`git check-ignore --verbose` which pattern decides each link. A link no
+pattern ignores, or one whose last matching pattern is a negation
+outside every `.gitignore`, gets its line, `/<link>` below the
+directory of `statute.toml`, appended to the file
+`git rev-parse --git-path info/exclude` names, the common directory's
+in a worktree; the file and its directory are made when missing, a
+line already there is not added again, and nothing in the file is
+changed. The command prints the file and the lines it added, and then
+asks git again. When a `.gitignore` decides a link, whether it ignores
+it or takes it out with a negation, a line in the exclude file would
+change nothing, since a `.gitignore` comes before it; so then, and when
+git still does not ignore a link after the lines are added, nothing
+private is written, the exclude file neither. A command with no private
+output to write leaves the exclude file as it is. A file at either path
+that is not such a link is left as it is, and the compile fails before
+it writes `AGENTS.md` or the exclude file.
 
 **`.statute/` holds what is committed and what is not.** The
 repository's own rules in `.statute/rules/` are committed; the
@@ -469,8 +482,8 @@ does not install the hooks: the user does, once per clone.
 - otherwise writes no private output, prints an error that names the
   cause and the command to run, and exits 1, whenever the plain
   `statute compile` would fail or need the network: a lock file that is stale, a commit
-  missing from the cache, a link not ignored through
-  `.git/info/exclude`, a rule set that does not resolve. A
+  missing from the cache, a link that a `.gitignore` decides, a rule
+  set that does not resolve. A
   `statute.lock` of an older statute that is otherwise current is not
   stale here
   ([Rule sets and the lock file](rule-sets.md#rule-sets-and-the-lock-file)). The last

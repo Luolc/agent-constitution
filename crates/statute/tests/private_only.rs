@@ -386,20 +386,36 @@ fn what_compile_would_fail_on_fails_it() {
         run.stderr
     );
     assert!(!tree.join(".statute").exists());
-    // The links not ignored through .git/info/exclude.
+    // A link a .gitignore decides.
     write(&tree, "r/rules/2.toml", &r2);
     write(&w.repo, ".git/info/exclude", "");
+    write(&tree, ".gitignore", "/CLAUDE.local.md\n");
     let run = w.run(&tree, &["compile", "--private-only"]);
     failed(&run);
     assert!(
-        run.stderr.contains("add these lines to")
-            && run.stderr.contains(
-                "statute: error: CLAUDE.local.md, AGENTS.override.md: git must ignore these links"
-            ),
+        run.stderr.contains(
+            "statute: error: CLAUDE.local.md: git must ignore it through the exclude file, not a .gitignore"
+        ),
         "{}",
         run.stderr
     );
+    assert_eq!(read(&w.repo, ".git/info/exclude"), "");
     assert!(!tree.join(".statute/AGENTS.full.md").exists());
+    // Links that nothing ignores yet are added to the clone's exclude
+    // file.
+    std::fs::remove_file(tree.join(".gitignore")).unwrap();
+    let run = w.run(&tree, &["compile", "--private-only"]);
+    ok(&run);
+    assert!(
+        run.stdout.starts_with(&format!(
+            "wrote {}: added /CLAUDE.local.md and /AGENTS.override.md, so that git ignores the links to the private output\n",
+            w.repo.join(".git/info/exclude").display()
+        )),
+        "{}",
+        run.stdout
+    );
+    assert_eq!(read(&w.repo, ".git/info/exclude"), EXCLUDE);
+    assert!(read(&tree, ".statute/AGENTS.full.md").contains("\n- me:4 "));
 }
 
 /// The full text in `tree` once a failure has taken the private rules
@@ -455,14 +471,14 @@ fn a_failure_takes_the_private_rules_out_of_a_private_output_already_there() {
     );
     assert_eq!(w.run(&tree, &["compile"]).code, 1);
     withdrawn(&tree);
-    // The links no longer ignored through .git/info/exclude.
+    // A link no longer ignored, by a negation in a .gitignore.
     write(&tree, "r/rules/2.toml", &r2);
     ok(&w.run(&tree, &["compile", "--private-only"]));
-    write(&w.repo, ".git/info/exclude", "");
+    write(&tree, ".gitignore", "!/CLAUDE.local.md\n");
     failed(&w.run(&tree, &["compile", "--private-only"]));
     withdrawn(&tree);
     // A file of the repository's own at a link's path is left as it is.
-    write(&w.repo, ".git/info/exclude", EXCLUDE);
+    std::fs::remove_file(tree.join(".gitignore")).unwrap();
     ok(&w.run(&tree, &["compile", "--private-only"]));
     std::fs::remove_file(tree.join("AGENTS.override.md")).unwrap();
     write(&tree, "AGENTS.override.md", "# Our own\n");
