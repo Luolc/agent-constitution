@@ -1,4 +1,4 @@
-<!-- en-sha256: fb0a93f51ef77b482eca13b1fcc1922a11bf29e7f3c2dfc868e7eb53a16ddbc4 -->
+<!-- en-sha256: f65fb81ba9e35cdd1b9eca8e1926e1b3d17ac4133c53c9dbef3c5e50fdb61542 -->
 # 规定源
 
 状态：已定，部分已实现，见[命令与第一版](statute-command.md#the-command-and-the-first-version)。这一部分讲一个规定清单从哪几类规定源取规定、哪些规定可以引用哪些、规定清单怎样用自己的一条规定顶替另一条 (覆盖，override)、领域怎样嵌套，以及手写的指南怎样迁成规定、怎样停用。它以[规定体系](rule-system.md) 为基础：引用的写法 (`R42`、`L12`、`P7`、`team:7`) 见[规定源与引用](rule-sets.md#sources-and-references)，规定树、one-of 与规定包见[依赖、one-of 与规定包](rule-sets.md#dependencies-one-ofs-and-packs)。设计里受这一部分影响的其他地方已经按它写好，并各自标明哪些还没有实现；[它改变什么](#what-this-changes) 一节列出这些地方，以及实现其余部分会替换掉工具现在的哪些行为。
@@ -166,25 +166,27 @@ Codex 读一个项目的指令文件，从仓库根目录到工作目录的各�
 
 ```sh
 #!/bin/sh
-[ "$3" = 1 ] && statute compile --private-only; exit 0
+# written by `statute hooks install`, which rewrites this file
+[ "$3" = 1 ] && statute compile --private-only || true
 ```
 
-检出分支时 `$3` 是 1，检出文件时是 0，所以私有输出跟着分支走，因为不同分支的 `statute.toml` 可能不同。
+检出分支时 `$3` 是 1，检出文件时是 0，所以私有输出跟着分支走，因为不同分支的 `statute.toml` 可能不同。`|| true` 让钩子的退出码保持 0 (它会成为这次检出的退出码)，又不结束钩子，所以同一行也能放进还要运行别的命令的钩子里。
 
 merge 移动分支时不做检出。主检出如果只用 `git merge --ff-only` 跟上远端，就不会运行 `post-checkout` 钩子，它的私有输出会一直停在第一次检出时写的样子，或者从来没写过。`post-merge` 钩子在 merge 之后无条件运行同一条命令：`git merge` 会调用它，但 merge 因冲突失败时不调用 (githooks(5))；2026-10-15 用 git 2.43.0 实测，fast-forward 也会运行它，什么都没合的 merge 不运行。
 
 ```sh
 #!/bin/sh
-statute compile --private-only; exit 0
+# written by `statute hooks install`, which rewrites this file
+statute compile --private-only || true
 ```
 
-两个钩子的路径是 `git rev-parse --git-path hooks/post-checkout` 和 `git rev-parse --git-path hooks/post-merge` 打印的那两个，它们会遵循 `core.hooksPath`；钩子文件归某个钩子管理工具管的仓库，把这两行加在那里，pre-commit 也能安装这两类钩子。statute 不安装钩子，由用户在每个 clone 里装一次。`--private-only`：
+两个钩子的路径是 `git rev-parse --git-path hooks/post-checkout` 和 `git rev-parse --git-path hooks/post-merge` 打印的那两个，它们会遵循 `core.hooksPath`。`statute hooks install` 在每个 clone 里运行一次，运行位置是有 `statute.toml` 的工作区顶层，它把两个钩子写到那里并设为可执行，目录不存在时先建目录；别的命令都不碰钩子，`compile` 也不碰。两个钩子各自判断，每个怎么处理都打印出来。第二行是上面那行注释的钩子是 statute 写的，加在其中的行会在重写时丢掉：和现在一样的原样保留，旧的重写；与有这条命令之前设计给出的钩子 (`#!/bin/sh` 加上以 `; exit 0` 结尾的同一条命令) 一字不差的文件，也算 statute 写的旧钩子。那个路径上的其他文件，不论是钩子管理工具写的还是手写的，一个字都不改：命令打印它的路径和上面那个钩子的第三行，让用户加在钩子退出之前会运行到的地方，再提示 pre-commit 可以从这两类钩子的本地钩子运行这条命令 (用 `pre-commit install --hook-type post-checkout` 或 `post-merge` 安装)，处理完另一个钩子后以退出码 1 退出。运行目录里没有 `statute.toml`、不在 git 仓库里、或者在工作区顶层之下 (git 不在那里运行钩子) 时，它什么都不写，退出码为 1。钩子的内容是固定的，不拼进仓库里的任何东西。`--private-only`：
 
 - 只写 `.statute/.gitignore`、`.statute/AGENTS.full.md` 和两个软链，从不写 `AGENTS.md` 或 skill；
 - 读这个 worktree 的 `statute.toml`、`statute.lock` 和私有锁文件，以及私有规定清单，不需要联网：git 规定源从 statute 的缓存里读 (见[statute 的目录](global-configuration.md#the-statute-directories))，什么都不 fetch；
 - 没有 `statute.toml` 时，什么都不做，不出声，退出码为 0；
 - 既没有私有规定清单、全局配置也没开启任何东西、也没有与提交的取值不同的个人取值时，`.statute/AGENTS.full.md` 已经存在的，把它重写成与 `AGENTS.md` 相同的内容，软链保留 (见[锁文件与输出里的取值](rule-config.md#values-in-the-lock-file-and-the-outputs))，不存在的，什么都不做，不出声，退出码为 0；
-- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就不写私有输出，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链由某个 `.gitignore` 决定、规定清单解析不了，都是这样。更旧的 statute 写的 `statute.lock`，其余都是最新的，在这里不算过期 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `exit 0` 结尾，不论这条命令结果如何，检出都会成功。
+- 其余情况下，只要普通的 `statute compile` 会失败或需要联网，它就不写私有输出，打印一条 error，说明原因和要运行的命令，退出码为 1：锁文件过期、缓存里缺 commit、软链由某个 `.gitignore` 决定、规定清单解析不了，都是这样。更旧的 statute 写的 `statute.lock`，其余都是最新的，在这里不算过期 ([规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file))。它打印的最后一行是 `statute: error: the private output is not written; …`。钩子失败会让 `git worktree add` 和 `git switch` 以它的退出码退出 (githooks(5))，所以上面两行钩子都以 `|| true` 结尾，不论这条命令结果如何，检出都会成功。
 
 **编译失败时不留下私有规定。** 不然，盘上已有的私有输出会继续经软链把上一次成功的编译写下的内容交给 agent，其中的私有规定可能已经不成立了。所以 `statute compile` 或 `statute compile --private-only` 失败时，除非是因为锁文件是别的版本写的 (见下)，都把已经存在的 `.statute/AGENTS.full.md` 重写成盘上 `AGENTS.md` 的内容，前面加一段话：statute 没能写出私有输出，这个文件不含私有规定，`statute compile --private-only` 会说明原因，`statute compile` 会写出私有输出或者说明要修什么。软链保留，所以 agent 读到的是公开规定和这段话，而不是旧的私有规定，也不会碰到悬空的软链。这段话不写原因，因为原因里可能出现私有规定源或私有规定。这时文件里只有公开内容，所以不论 git 是否忽略它都照写，软链没被忽略时也一样。盘上的 `AGENTS.md` 是直接读的，不重新编译，因为失败的可能正是公开层加载不了。没有全文时 (例如新的 worktree)，命令什么都不写，也不建软链；它从不在软链的路径上写东西，所以那里不是 statute 软链的文件原样保留。仓库自己的全文它也不改写：git 跟踪的，或者旁边的 `.statute/.gitignore` 第一行不是 statute 那一行的。
 

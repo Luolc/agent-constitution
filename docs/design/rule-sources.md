@@ -438,11 +438,15 @@ serves every worktree of the clone. The hook runs one command,
 
 ```sh
 #!/bin/sh
-[ "$3" = 1 ] && statute compile --private-only; exit 0
+# written by `statute hooks install`, which rewrites this file
+[ "$3" = 1 ] && statute compile --private-only || true
 ```
 
 `$3` is 1 for a checkout of a branch and 0 for one of files, so the
 private output follows the branch, whose `statute.toml` may differ.
+`|| true` keeps the hook's exit status 0, which becomes that of the
+checkout, without ending the hook, so the same line serves in a hook
+that runs other commands too.
 
 A merge moves a branch without a checkout. A main checkout that is
 only ever brought up to date with `git merge --ff-only` runs no
@@ -455,14 +459,32 @@ fast-forward, and a merge that finds nothing to do does not run it.
 
 ```sh
 #!/bin/sh
-statute compile --private-only; exit 0
+# written by `statute hooks install`, which rewrites this file
+statute compile --private-only || true
 ```
 
 The hooks' paths are what `git rev-parse --git-path hooks/post-checkout`
 and `git rev-parse --git-path hooks/post-merge` print, which follow
-`core.hooksPath`; a repository whose hook manager owns those files adds
-the lines there, and pre-commit can install hooks of both types. statute
-does not install the hooks: the user does, once per clone.
+`core.hooksPath`. `statute hooks install`, run once per clone at the
+top of a work tree that has a `statute.toml`, writes both there,
+executable, and makes their directory when it is missing; no other
+command touches the hooks, `compile` included. Each hook is decided on
+its own, and what was done with each is printed. A hook whose second
+line is the comment above is statute's, and a line added to it is lost
+when it is written again: one as it is now is left as it is, an older
+one is written again. A file that is exactly the hook this design gave
+before the command existed, `#!/bin/sh` and the same command ending in
+`; exit 0`, is an older one of statute's too. Any other file at that path, one
+a hook manager wrote or a hand-written one, is left exactly as it is:
+the command prints its path and that hook's third line, shown above,
+to add where it runs before the hook exits, and a note that pre-commit can run the
+command from a local hook of either type, which `pre-commit install
+--hook-type post-checkout` or `post-merge` installs, and exits with
+status 1 after the other hook. Without a `statute.toml` in the
+directory it runs in, outside a git repository and below the top of a
+work tree, where git does not run the hooks, it writes nothing and exits
+with status 1. The hooks' text is fixed; nothing of the repository goes
+into it.
 `--private-only`:
 
 - writes only `.statute/.gitignore`, `.statute/AGENTS.full.md` and the
@@ -491,7 +513,7 @@ does not install the hooks: the user does, once per clone.
   line it prints is `statute: error: the private output is not
   written; …`. A hook that fails would make `git worktree add` and
   `git switch` exit with its status (githooks(5)), so both hook lines
-  above end with `exit 0`, and a checkout succeeds whatever the
+  above end with `|| true`, and a checkout succeeds whatever the
   command does.
 
 **A failed compile leaves no private rule behind.** A private output

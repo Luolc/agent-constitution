@@ -216,6 +216,10 @@ The rule set is `statute.toml`, the lock file
   ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
   A new worktree); with `--check`, nothing, failing when the committed
   output differs from a fresh compile;
+- `hooks install`: write the `post-checkout` and `post-merge` hooks
+  that run `compile --private-only`, leaving a hook it did not write as
+  it is ([Private rules in a public repository](rule-sources.md#private-rules-in-a-public-repository),
+  A new worktree);
 - `check`: list the enabled rules for review by domain, with the outcome
   of those a script checks ([Checks](rule-checks.md#checks));
 - `upgrade`: move the sources and the constitution to newer versions
@@ -265,8 +269,8 @@ does beside the constitution; each finding names the rule and its line,
 `rules/7.toml:12`. Overrides are built, with `scope`
 and the ranks, and so are subdomains, a rule's or a domain's `parent`
 in another source, and the private layer with its lock file in git's
-directory, its output, `.statute/.gitignore` and
-`compile --private-only`.
+directory, its output, `.statute/.gitignore`,
+`compile --private-only` and `hooks install`.
 The global configuration, `init --global`, git sources and `source add`
 are built ([Global configuration and git sources](global-configuration.md)),
 except that `upgrade` does not show the text of a changed rule yet.
