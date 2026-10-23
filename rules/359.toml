@@ -1,6 +1,6 @@
 id = 359
 slug = "check-a-pid-before-stopping"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -31,7 +31,7 @@ zh = '''
 en = '''
 This holds for every process, whoever started it. The check reads, in the same command as the signal or in the one just before it, what identifies the process under the PID, such as its command line (`ps -o args= -p <pid>`, `/proc/<pid>/cmdline`) or its start time (`ps -o lstart= -p <pid>`), and compares it with what the agent knows of the process it means: for one it started, the command it started or the start time it recorded; for any other, what it saw when it looked at that process. The check has to tell the process meant from every other process: where two processes run the same command line, the command line alone does not tell them apart, and the agent compares a property that differs between them, such as the parent PID, the owner, the working directory or the start time; when nothing tells them apart, the check cannot tell. Stopping through a tool by the ID it gave, or by a name it resolves to the one process or container it manages, is not sending a signal to a PID and is outside this rule.
 
-Violated when an agent sends a PID a signal that stops its process without such a check, or when the check shows another process under the PID or cannot tell; or when, the check showing another process or unable to tell, it does not tell whoever delegated the work.
+Violated when an agent sends a PID a signal that stops its process without such a check, or sends it when the check shows another process under the PID or cannot tell; or when, the check showing another process or unable to tell, it does not tell whoever delegated the work.
 '''
 zh = '''
 本规定适用于所有进程，不论是谁起的。核对，指在发信号的同一条命令里、或者紧挨着的前一条命令里，读出这个 PID 下进程的标识，例如命令行 (`ps -o args= -p <pid>`、`/proc/<pid>/cmdline`) 或启动时间 (`ps -o lstart= -p <pid>`)，和 agent 对要停的进程所知道的比较：自己起的进程，比的是自己启动的命令或记下的启动时间；别的进程，比的是 agent 查看那个进程时看到的。核对要能把要停的进程和其他每一个进程区分开：两个进程运行着同一条命令行时，只看命令行分不清，agent 要比较它们之间不同的属性，例如父进程 PID、属主、工作目录或启动时间；什么都分不清的，就是核对分不清。通过某个工具、按它给的 ID 或者它解析成自己管理的那一个进程或容器的名字停，不是向 PID 发信号，不在本规定之内。
@@ -40,4 +40,4 @@ agent 没有这样核对就向一个 PID 发停进程的信号，或者核对出
 '''
 
 [translations]
-zh = "22f7c1de092854bbe0feb39f80178566eb781d33bfd0b8ba91fb2a03e31bbad9"
+zh = "35431bb4481adf23c80ead2fa45ca0a228c2b0ec6813446b10139955b2cc8fb0"
