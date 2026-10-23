@@ -1,6 +1,6 @@
 id = 267
 slug = "shared-resources"
-revision = 4
+revision = 5
 kind = "domain"
 status = "trial"
 lang = "en"
@@ -13,11 +13,11 @@ zh = "共享资源"
 
 [applicability]
 en = '''
-Work that shares a resource whose capacity is limited with other tasks, such as a machine's processors and memory, an account with a shared quota or a service with a rate limit: a fair share of it, no harm to the tasks already running, waits that end when what they wait for fails, and a fallback for stopping every lasting background process. Enable it wherever agents work.
+Work that shares a resource whose capacity is limited with other tasks, such as a machine's processors and memory, an account with a shared quota or a service with a rate limit: a fair share of it, no harm to the tasks already running, waits that end when what they wait for fails, a fallback for stopping every lasting background process, and stopping processes only by PIDs named one by one and checked, one's own only by what one recorded at their start. Enable it wherever agents work.
 '''
 zh = '''
-和别的任务共用有上限的资源时的工作，例如机器的 CPU 和内存、共用额度的账号、限了速率的服务：共用的资源只用自己该用的一份，不妨碍正在运行的任务，等的事失败了就结束等待，一直占用资源的后台进程都有兜底。凡有 agent 工作的地方都要启用。
+和别的任务共用有上限的资源时的工作，例如机器的 CPU 和内存、共用额度的账号、限了速率的服务：共用的资源只用自己该用的一份，不妨碍正在运行的任务，等的事失败了就结束等待，一直占用资源的后台进程都有兜底，停进程只按逐个写明、核对过的 PID 停，自己起的只按启动时记下的停。凡有 agent 工作的地方都要启用。
 '''
 
 [translations]
-zh = "bc4b0e1df15c4f35cd3298b15266ff1c650c33115b7478b2b91e83c72849afba"
+zh = "e84a24f9f3f67369e68aea73cabb3e11019ce82cbb8db79bbd0c25d2a7619f4d"

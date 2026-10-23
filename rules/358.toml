@@ -1,0 +1,43 @@
+id = 358
+slug = "stop-own-processes-by-recorded-pid"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 267
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Stop a process you started only by what you recorded at its start"
+zh = "停自己起的进程，只按启动时记下的东西停"
+
+[text.statement]
+en = "Stop a process you started only through what you recorded at its start: its PID, from what started it or from a PID file you had it write, the PIDs found under it by parent PID, or the ID the tool that started it gave it; never through a PID you look up later by its name, command line or port. When you have none of these, do not stop it, and tell whoever delegated the work which process is left running."
+zh = "停自己起的进程，只通过启动时记下的东西停：它的 PID (从启动它的东西那里拿到，或者从让它写的 PID 文件里读到)、按父进程 PID 在它下面找到的 PID，或者启动它的工具给它的 ID；不通过事后按名字、命令行或端口查出来的 PID 停。这些都没有的，不要停它，告诉委派工作的一方哪个进程还在跑。"
+
+[text.reason]
+en = '''
+A PID looked up later, by the process's name, command line or port, cannot tell the process an agent started from another that runs the same command: a production service started with the same command as a test server is found just as well, and stopping it harms the tasks that rely on it ({@constitution:decency.legitimate-means}). What the agent recorded at the start names its own process only, and it is also what whoever stands as the fallback for the process ({@rule:338}) needs to stop it.
+'''
+zh = '''
+事后按进程的名字、命令行或端口查出来的 PID，分不清 agent 自己起的进程和运行着同一条命令的别的进程：用同一条命令启动的正式服务，和测试服务器一样会被查出来，停掉它就妨碍了依赖它的任务 ({@constitution:decency.legitimate-means})。启动时记下的东西只指 agent 自己的那个进程；为这个进程兜底的一方 ({@rule:338}) 要停掉它，靠的也是它。
+'''
+
+[text.verification]
+en = '''
+To stop a process is to send it a signal meant to end it, such as `SIGTERM` or `SIGKILL`, or to ask the tool that started it to end it. The PID from what started it is one such as the shell's `$!` or a PID a launcher prints; a PID file is one the process writes at a path the agent gave it in the command that started it. The PIDs found under it by parent PID are those of its descendants, read from the recorded PID down (`pgrep -P <pid>`, `ps --ppid <pid>`, `/proc/<pid>/task/*/children`), as when a wrapper such as `make` or `sh -c` started the server. Signalling the process group a recorded PID leads is stopping through that PID; a process leads a group only when it was started as its leader, for example with `setsid` or `set -m`. The ID the starting tool gave is one such as the ID of a background task in an agent tool, a shell's job number or a container's ID, used with that tool. A PID looked up later by name, command line or port is one the agent finds after the start that way, for example with `pgrep <pattern>`, `ps` and a search of its output, `lsof -i` or `fuser`.
+
+Violated when an agent stops, or tries to stop, a process it started other than through what this rule accepts; or when, meaning to stop such a process and having none of them, it does not tell whoever delegated the work which process is left running.
+'''
+zh = '''
+停一个进程，指向它发出要让它结束的信号，例如 `SIGTERM`、`SIGKILL`，或者请启动它的工具结束它。从启动它的东西那里拿到的 PID，例如 shell 的 `$!`、启动程序打印出来的 PID；PID 文件，指进程按 agent 在启动命令里给的路径写下的文件。按父进程 PID 在它下面找到的 PID，指从记下的 PID 往下读出的后代进程的 PID (`pgrep -P <pid>`、`ps --ppid <pid>`、`/proc/<pid>/task/*/children`)，例如服务器是由 `make` 或 `sh -c` 这类外壳启动的时候。向以记下的 PID 为首的进程组发信号，算通过这个 PID 停；进程只有作为组长启动时才是进程组的组长，例如用 `setsid` 或 `set -m` 启动。启动它的工具给的 ID，例如 agent 工具里后台任务的 ID、shell 的作业号、容器的 ID，通过这个工具使用。事后按名字、命令行或端口查出来的 PID，指启动之后用这些办法找到的 PID，例如用 `pgrep <pattern>`、在 `ps` 的输出里搜、用 `lsof -i` 或 `fuser` 查到的。
+
+agent 停、或者试图停自己起的进程，用的不是本规定认可的东西的；或者想停这样的进程、这些都没有，却没有告诉委派工作的一方哪个进程还在跑的，即为违反本规定。
+'''
+
+[translations]
+zh = "f9bd5577a00024a24431a8f55f77a83d0f8e8aa7babb1d094f7ddafe6877dbc7"
