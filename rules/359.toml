@@ -16,8 +16,8 @@ en = "Check a PID just before you send it a stopping signal"
 zh = "向 PID 发停进程的信号之前，先核对它"
 
 [text.statement]
-en = "Just before you send a PID a signal that stops its process, check that the process under that PID is the one you mean to stop; when no process is under it, take that process as ended, and when another one is, send no signal and tell whoever delegated the work which process may be left running."
-zh = "向一个 PID 发停进程的信号之前，先核对这个 PID 下的进程是不是自己要停的那个；这个 PID 下已经没有进程的，当作那个进程已经结束；是别的进程的，不发信号，告诉委派工作的一方哪个进程可能还在跑。"
+en = "Just before you send a PID a signal that stops its process, check that the process under that PID is the one you mean to stop, and send the signal only when the check shows it is; when no process is under it, take that process as ended, and when another one is or the check cannot tell, send no signal and tell whoever delegated the work which process may be left running."
+zh = "向一个 PID 发停进程的信号之前，先核对这个 PID 下的进程是不是自己要停的那个，核对表明是才发信号；这个 PID 下已经没有进程的，当作那个进程已经结束；是别的进程、或者核对分不清的，不发信号，告诉委派工作的一方哪个进程可能还在跑。"
 
 [text.reason]
 en = '''
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-This holds for every process, whoever started it. The check reads, in the same command as the signal or in the one just before it, what identifies the process under the PID, such as its command line (`ps -o args= -p <pid>`, `/proc/<pid>/cmdline`) or its start time (`ps -o lstart= -p <pid>`), and compares it with what the agent knows of the process it means: for one it started, the command it started or the start time it recorded; for any other, what it saw when it looked at that process. Stopping through a tool by the ID it gave, or by a name it resolves to the one process or container it manages, is not sending a signal to a PID and is outside this rule.
+This holds for every process, whoever started it. The check reads, in the same command as the signal or in the one just before it, what identifies the process under the PID, such as its command line (`ps -o args= -p <pid>`, `/proc/<pid>/cmdline`) or its start time (`ps -o lstart= -p <pid>`), and compares it with what the agent knows of the process it means: for one it started, the command it started or the start time it recorded; for any other, what it saw when it looked at that process. The check has to tell the process meant from every other process: where two processes run the same command line, the command line alone does not tell them apart, and the agent compares a property that differs between them, such as the parent PID, the owner, the working directory or the start time; when nothing tells them apart, the check cannot tell. Stopping through a tool by the ID it gave, or by a name it resolves to the one process or container it manages, is not sending a signal to a PID and is outside this rule.
 
-Violated when an agent sends a PID a signal that stops its process without such a check, or after the check shows another process under the PID; or when, the check showing another process, it does not tell whoever delegated the work.
+Violated when an agent sends a PID a signal that stops its process without such a check, or when the check shows another process under the PID or cannot tell; or when, the check showing another process or unable to tell, it does not tell whoever delegated the work.
 '''
 zh = '''
-本规定适用于所有进程，不论是谁起的。核对，指在发信号的同一条命令里、或者紧挨着的前一条命令里，读出这个 PID 下进程的标识，例如命令行 (`ps -o args= -p <pid>`、`/proc/<pid>/cmdline`) 或启动时间 (`ps -o lstart= -p <pid>`)，和 agent 对要停的进程所知道的比较：自己起的进程，比的是自己启动的命令或记下的启动时间；别的进程，比的是 agent 查看那个进程时看到的。通过某个工具、按它给的 ID 或者它解析成自己管理的那一个进程或容器的名字停，不是向 PID 发信号，不在本规定之内。
+本规定适用于所有进程，不论是谁起的。核对，指在发信号的同一条命令里、或者紧挨着的前一条命令里，读出这个 PID 下进程的标识，例如命令行 (`ps -o args= -p <pid>`、`/proc/<pid>/cmdline`) 或启动时间 (`ps -o lstart= -p <pid>`)，和 agent 对要停的进程所知道的比较：自己起的进程，比的是自己启动的命令或记下的启动时间；别的进程，比的是 agent 查看那个进程时看到的。核对要能把要停的进程和其他每一个进程区分开：两个进程运行着同一条命令行时，只看命令行分不清，agent 要比较它们之间不同的属性，例如父进程 PID、属主、工作目录或启动时间；什么都分不清的，就是核对分不清。通过某个工具、按它给的 ID 或者它解析成自己管理的那一个进程或容器的名字停，不是向 PID 发信号，不在本规定之内。
 
-agent 没有这样核对就向一个 PID 发停进程的信号，或者核对出这个 PID 下是别的进程仍然发了信号的；或者核对出是别的进程，却没有告诉委派工作的一方的，即为违反本规定。
+agent 没有这样核对就向一个 PID 发停进程的信号，或者核对出这个 PID 下是别的进程、或者核对分不清，仍然发了信号的；或者核对出是别的进程、或者核对分不清，却没有告诉委派工作的一方的，即为违反本规定。
 '''
 
 [translations]
-zh = "a960b8213ab9ba4173912824ba47a8b76d75c3efe90ed3fe0cbc24ed8c0b0ba4"
+zh = "22f7c1de092854bbe0feb39f80178566eb781d33bfd0b8ba91fb2a03e31bbad9"
