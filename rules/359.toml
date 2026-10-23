@@ -1,5 +1,5 @@
 id = 359
-slug = "check-a-recorded-pid-before-stopping"
+slug = "check-a-pid-before-stopping"
 revision = 1
 kind = "rule"
 status = "trial"
@@ -12,32 +12,32 @@ level = "project"
 check = "none"
 
 [title]
-en = "Check a recorded PID before you stop it"
-zh = "按记下的 PID 停进程之前，先核对它"
+en = "Check a PID just before you send it a stopping signal"
+zh = "向 PID 发停进程的信号之前，先核对它"
 
 [text.statement]
-en = "Before you signal a recorded PID to stop a process you started, check that the process now under that PID runs the command you started, and when it does not, send no signal and take the process you started as ended."
-zh = "按记下的 PID 发信号停自己起的进程之前，先核对这个 PID 下现在的进程运行的是不是自己启动的那条命令；不是的话，什么信号也不发，当作自己起的那个进程已经结束。"
+en = "Just before you send a PID a signal that stops its process, check that the process under that PID is the one you mean to stop; when no process is under it, take that process as ended, and when another one is, send no signal and tell whoever delegated the work which process may be left running."
+zh = "向一个 PID 发停进程的信号之前，先核对这个 PID 下的进程是不是自己要停的那个；这个 PID 下已经没有进程的，当作那个进程已经结束；是别的进程的，不发信号，告诉委派工作的一方哪个进程可能还在跑。"
 
 [text.reason]
 en = '''
-Once a process ends, the system can give its PID to another one: minutes after the process an agent started has exited, its recorded PID can name a process someone else started, and a signal to it stops that one ({@constitution:decency.legitimate-means}). Reading the command under the PID just before the signal tells the two apart.
+Once a process ends, the system can give its PID to another one: minutes after the process an agent means to stop has exited, the PID the agent holds can name a process someone else started, and a signal to it stops that one ({@constitution:decency.legitimate-means}). Looking at the process under the PID just before the signal tells the two apart. A process can also change how it shows its command line, so a mismatch does not prove that the one meant has ended; whoever delegated the work then decides.
 '''
 zh = '''
-进程结束之后，系统可能把它的 PID 分给别的进程：agent 起的进程退出几分钟后，记下的 PID 可能已经指向别人起的进程，这时发信号，停掉的就是那个进程 ({@constitution:decency.legitimate-means})。发信号之前读一下这个 PID 下的命令，就能分清两者。
+进程结束之后，系统可能把它的 PID 分给别的进程：agent 要停的进程退出几分钟后，它手里的 PID 可能已经指向别人起的进程，这时发信号，停掉的就是那个进程 ({@constitution:decency.legitimate-means})。发信号之前看一眼这个 PID 下的进程，就能分清两者。进程也可能改掉自己显示的命令行，所以对不上并不能证明要停的那个已经结束；这时由委派工作的一方来定。
 '''
 
 [text.verification]
 en = '''
-The check reads the command line of the process under that PID, in the same command as the signal or in the one just before it, for example with `ps -o args= -p <pid>` or from `/proc/<pid>/cmdline`, and compares it with the command the agent started. No process under that PID is a mismatch too. Stopping the process through the tool that started it, by the ID that tool gave it, is not signalling a recorded PID and is outside this rule.
+This holds for every process, whoever started it. The check reads, in the same command as the signal or in the one just before it, what identifies the process under the PID, such as its command line (`ps -o args= -p <pid>`, `/proc/<pid>/cmdline`) or its start time (`ps -o lstart= -p <pid>`), and compares it with what the agent knows of the process it means: for one it started, the command it started or the start time it recorded; for any other, what it saw when it looked at that process. Stopping through a tool by the ID it gave, or by a name it resolves to the one process or container it manages, is not sending a signal to a PID and is outside this rule.
 
-Violated when an agent signals a recorded PID to stop a process it started without first checking the command line under that PID, or signals it after the check shows a command other than the one it started.
+Violated when an agent sends a PID a signal that stops its process without such a check, or after the check shows another process under the PID; or when, the check showing another process, it does not tell whoever delegated the work.
 '''
 zh = '''
-核对，指在发信号的同一条命令里、或者紧挨着的前一条命令里，读出这个 PID 下进程的命令行 (例如用 `ps -o args= -p <pid>`，或者读 `/proc/<pid>/cmdline`)，和自己启动的命令比较。这个 PID 下已经没有进程的，也算不一致。通过启动它的工具、按这个工具给它的 ID 停，不是按记下的 PID 发信号，不在本规定之内。
+本规定适用于所有进程，不论是谁起的。核对，指在发信号的同一条命令里、或者紧挨着的前一条命令里，读出这个 PID 下进程的标识，例如命令行 (`ps -o args= -p <pid>`、`/proc/<pid>/cmdline`) 或启动时间 (`ps -o lstart= -p <pid>`)，和 agent 对要停的进程所知道的比较：自己起的进程，比的是自己启动的命令或记下的启动时间；别的进程，比的是 agent 查看那个进程时看到的。通过某个工具、按它给的 ID 或者它解析成自己管理的那一个进程或容器的名字停，不是向 PID 发信号，不在本规定之内。
 
-agent 按记下的 PID 发信号停自己起的进程，事先没有核对这个 PID 下进程的命令行，或者核对出运行的不是自己启动的那条命令仍然发了信号的，即为违反本规定。
+agent 没有这样核对就向一个 PID 发停进程的信号，或者核对出这个 PID 下是别的进程仍然发了信号的；或者核对出是别的进程，却没有告诉委派工作的一方的，即为违反本规定。
 '''
 
 [translations]
-zh = "a955fa5aa7b250cb68435770a259cf5535f0826e407300e44d75b86e79d78422"
+zh = "a960b8213ab9ba4173912824ba47a8b76d75c3efe90ed3fe0cbc24ed8c0b0ba4"

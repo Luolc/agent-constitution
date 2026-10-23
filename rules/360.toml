@@ -1,0 +1,43 @@
+id = 360
+slug = "signal-only-pids-named-one-by-one"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 267
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Send a stopping signal only to PIDs named one by one"
+zh = "停进程的信号，只发给逐个写明的 PID"
+
+[text.statement]
+en = "Send a signal that stops processes only to PIDs you name one by one, never through a command that picks the processes it signals by their name, command line or port."
+zh = "停进程的信号，只发给自己逐个写明的 PID，不用按名字、命令行或端口挑出要发信号的进程的命令。"
+
+[text.reason]
+en = '''
+A name, a command line or a port does not belong to one process alone: a pattern meant for a test server can also match a service that others rely on, or the agent's own shell, and a command that signals every match stops them too ({@constitution:decency.legitimate-means}). This has happened: a pattern meant for a test server also matched a production service and stopped it again and again. A PID named on its own reaches only the process it names.
+'''
+zh = '''
+名字、命令行和端口都不只属于一个进程：本想匹配测试服务器的模式，也可能匹配上别人正在用的服务，或者 agent 自己的 shell，给每个匹配项都发信号的命令就把它们一起停掉了 ({@constitution:decency.legitimate-means})。这样的事发生过：给测试服务器写的匹配模式同时匹配上了一个正式运行的服务，把它一次又一次停掉。单独写明的 PID 只会停掉它指的那个进程。
+'''
+
+[text.verification]
+en = '''
+This holds for every process, whoever started it; whether an agent may stop a process another task started at all is a matter of {@rule:336}. A signal that stops processes is one meant to end them, such as `SIGTERM` or `SIGKILL`. Commands that pick the processes they signal by name, command line or port include `pkill`, `killall`, `fuser -k`, `pgrep <pattern> | xargs kill`, `kill $(pgrep <pattern>)` and `kill $(lsof -t -i :<port>)`. Listing processes by a pattern, with `pgrep -a` or `ps`, to look at the candidates is not signalling them; signalling a PID taken from such a list is not picking processes by a pattern, and {@rule:359} says what to check before it. Signalling the process group of a PID the agent named is signalling that PID. Stopping through a tool that resolves the name it is given to the one process or container it manages, such as a container's ID or name or a service manager's unit, is not picking processes by name.
+
+Violated when an agent sends a signal that stops processes through a command that picks them by name, command line or port, whether or not it matches anything.
+'''
+zh = '''
+本规定适用于所有进程，不论是谁起的；agent 到底能不能停别的任务起的进程，由 {@rule:336} 管。停进程的信号，指要让进程结束的信号，例如 `SIGTERM`、`SIGKILL`。按名字、命令行或端口挑出要发信号的进程的命令，包括 `pkill`、`killall`、`fuser -k`、`pgrep <pattern> | xargs kill`、`kill $(pgrep <pattern>)`、`kill $(lsof -t -i :<port>)`。用模式列出进程 (`pgrep -a` 或 `ps`) 来看看有哪些候选，不是向它们发信号；从这样的列表里取一个 PID 再向它发信号，不算按模式挑进程，发信号之前要核对什么见 {@rule:359}。向 agent 写明的某个 PID 所在的进程组发信号，算向这个 PID 发信号。通过某个工具停，而这个工具把给它的名字解析成它管理的那一个进程或容器的 (例如容器的 ID 或名字、服务管理器的 unit)，不算按名字挑进程。
+
+agent 用按名字、命令行或端口挑进程的命令发停进程的信号的，不论有没有匹配上进程，即为违反本规定。
+'''
+
+[translations]
+zh = "9fd54378e85de8adec391bf0eb2a0aa814061a8722d91ba8fcf37fb11e3ded91"
