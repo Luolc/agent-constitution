@@ -1,0 +1,43 @@
+id = 359
+slug = "check-a-recorded-pid-before-stopping"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 267
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Check a recorded PID before you stop it"
+zh = "按记下的 PID 停进程之前，先核对它"
+
+[text.statement]
+en = "Before you signal a recorded PID to stop a process you started, check that the process now under that PID runs the command you started, and when it does not, send no signal and take the process you started as ended."
+zh = "按记下的 PID 发信号停自己起的进程之前，先核对这个 PID 下现在的进程运行的是不是自己启动的那条命令；不是的话，什么信号也不发，当作自己起的那个进程已经结束。"
+
+[text.reason]
+en = '''
+Once a process ends, the system can give its PID to another one: minutes after the process an agent started has exited, its recorded PID can name a process someone else started, and a signal to it stops that one ({@constitution:decency.legitimate-means}). Reading the command under the PID just before the signal tells the two apart.
+'''
+zh = '''
+进程结束之后，系统可能把它的 PID 分给别的进程：agent 起的进程退出几分钟后，记下的 PID 可能已经指向别人起的进程，这时发信号，停掉的就是那个进程 ({@constitution:decency.legitimate-means})。发信号之前读一下这个 PID 下的命令，就能分清两者。
+'''
+
+[text.verification]
+en = '''
+The check reads the command line of the process under that PID, in the same command as the signal or in the one just before it, for example with `ps -o args= -p <pid>` or from `/proc/<pid>/cmdline`, and compares it with the command the agent started. No process under that PID is a mismatch too. Stopping the process through the tool that started it, by the ID that tool gave it, is not signalling a recorded PID and is outside this rule.
+
+Violated when an agent signals a recorded PID to stop a process it started without first checking the command line under that PID, or signals it after the check shows a command other than the one it started.
+'''
+zh = '''
+核对，指在发信号的同一条命令里、或者紧挨着的前一条命令里，读出这个 PID 下进程的命令行 (例如用 `ps -o args= -p <pid>`，或者读 `/proc/<pid>/cmdline`)，和自己启动的命令比较。这个 PID 下已经没有进程的，也算不一致。通过启动它的工具、按这个工具给它的 ID 停，不是按记下的 PID 发信号，不在本规定之内。
+
+agent 按记下的 PID 发信号停自己起的进程，事先没有核对这个 PID 下进程的命令行，或者核对出运行的不是自己启动的那条命令仍然发了信号的，即为违反本规定。
+'''
+
+[translations]
+zh = "a955fa5aa7b250cb68435770a259cf5535f0826e407300e44d75b86e79d78422"

@@ -1,0 +1,43 @@
+id = 358
+slug = "stop-own-processes-by-recorded-pid"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 267
+default = "on"
+authority = ["decency.legitimate-means"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Stop a process you started only by the PID you recorded"
+zh = "停自己起的进程，只按启动时记下的 PID 停"
+
+[text.statement]
+en = "Stop a process you started only by the PID you recorded when you started it, never by picking processes by their name, command line or port; when you recorded none, do not stop it, and tell whoever delegated the work which process is left running."
+zh = "停自己起的进程，只按启动它时记下的 PID 停，不按名字、命令行或端口挑进程；没有记下 PID 的，不要停它，告诉委派工作的一方哪个进程还在跑。"
+
+[text.reason]
+en = '''
+A name, a command line or a port does not belong to the process an agent started alone: a pattern meant for a test server can also match a service that others rely on, or the agent's own shell, and the command then stops them too ({@constitution:decency.legitimate-means}). This has happened: a pattern meant for a test server also matched a production service and stopped it again and again. The PID recorded at the start names that one process, and it is also what whoever stands as the fallback for the process ({@rule:338}) needs to stop it.
+'''
+zh = '''
+名字、命令行和端口都不只属于 agent 起的那个进程：本想匹配测试服务器的模式，也可能匹配上别人正在用的服务，或者 agent 自己的 shell，命令就把它们一起停掉了 ({@constitution:decency.legitimate-means})。这样的事发生过：给测试服务器写的匹配模式同时匹配上了一个正式运行的服务，把它一次又一次停掉。启动时记下的 PID 只指那一个进程；为这个进程兜底的一方 ({@rule:338}) 要停掉它，靠的也是这个 PID。
+'''
+
+[text.verification]
+en = '''
+To stop a process is to send it a signal meant to end it, such as `SIGTERM` or `SIGKILL`. The PID an agent recorded is one it took, when it started the process, from what started it, such as the shell's `$!` or a PID a launcher prints, or one it reads later from a record that names only that process, such as a PID file the process writes at a path the agent gave it, or the children of a PID the agent recorded. Signalling the process group whose leader is a recorded PID is stopping by that PID. Stopping the process through the tool that started it, by the ID that tool gave it, such as the ID of a background task in an agent tool, a shell's job number or a container's ID, counts as stopping it by its recorded PID. Picking processes by their name, command line or port is what commands such as `pkill -f <pattern>`, `killall <name>`, `pgrep <pattern> | xargs kill`, `kill $(pgrep <pattern>)`, `fuser -k <port>/tcp` and `kill $(lsof -t -i :<port>)` do; looking a PID up that way and then signalling it is picking it that way too.
+
+Violated when an agent stops, or tries to stop, a process it started other than by a PID it recorded or such an ID, or, having recorded none, stops it in any other way instead of telling whoever delegated the work.
+'''
+zh = '''
+停一个进程，指向它发出要让它结束的信号，例如 `SIGTERM`、`SIGKILL`。记下的 PID，指 agent 启动进程时从启动它的东西那里拿到的 PID，例如 shell 的 `$!`、启动程序打印出来的 PID；或者事后从只指向这个进程的记录里读到的 PID，例如进程按 agent 给的路径写下的 PID 文件，或者 agent 记下的某个 PID 的子进程。向以记下的 PID 为首的进程组发信号，算按这个 PID 停。通过启动它的工具、按这个工具给它的 ID 停 (例如 agent 工具里后台任务的 ID、shell 的作业号、容器的 ID)，也算按记下的 PID 停。按名字、命令行或端口挑进程，就是 `pkill -f <pattern>`、`killall <name>`、`pgrep <pattern> | xargs kill`、`kill $(pgrep <pattern>)`、`fuser -k <port>/tcp`、`kill $(lsof -t -i :<port>)` 这类命令做的事；先这样查出 PID、再对它发信号，也算这样挑。
+
+agent 停、或者试图停自己起的进程，用的不是记下的 PID 或上面说的 ID，或者没有记下 PID、不告诉委派工作的一方却用别的办法把它停了的，即为违反本规定。
+'''
+
+[translations]
+zh = "82165131a0d7632b274da1e5bfa25af82ae1abe2adc9fd92bf709af9f9837001"

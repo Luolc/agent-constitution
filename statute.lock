@@ -1492,6 +1492,20 @@ original-sha256 = "c3c7f072c2629c246816bc787f468519e9a457fd7bc5972619b4a0e495d6e
 by = "default"
 
 [[rules]]
+rule = "R358"
+revision = 1
+sha256 = "9ce407b96c3a32bca84cbf081e7a54a0000f3b241e9f62124f61e762e1a628ad"
+original-sha256 = "a4d22a7fc050a56958fc2ca2ca7320ff837a7ccf66dd560fa5d3940788cef3a3"
+by = "default"
+
+[[rules]]
+rule = "R359"
+revision = 1
+sha256 = "416a4856d383bbd3df3ecd465b67369682594426a43369365d2476df77c94bfe"
+original-sha256 = "941f491c5ca208bf7ae171f532518c0529ff4395e7e5d6c0396c5c92e98ef6ca"
+by = "default"
+
+[[rules]]
 rule = "L1"
 revision = 1
 sha256 = "746d642f7628e9197a6e0c896225f7ce18121ece944bb858c37496b4593d7708"
