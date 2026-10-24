@@ -1,0 +1,47 @@
+id = 361
+slug = "rewrite-a-command-claude-code-denied"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 150
+default = "on"
+authority = ["guards", "automation-first.keep-moving"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "When Claude Code's own check denies a command, go on with a safer rewrite of it"
+zh = "命令被 Claude Code 自己的检查拒绝后，换一种更安全的写法接着做"
+
+[text.statement]
+en = "When Claude Code's own check on a command, not one a person or a project set up, denies the command without a person deciding, go on without waiting for a person: run in its place a command that does nothing the denied one would not have done and in which each part the check gave as its reason is left out, or written so that the reason no longer holds and the check reads it in the command itself. When you find no such command, are unsure of one, or the check denies it too, tell whoever delegated the work, an agent or a person, the denied command, the check's reason and why you did not rewrite it, and ask for a way forward."
+zh = "Claude Code 自己对命令做的检查 (不是人或项目设的检查) 拒绝了一条命令、作出拒绝的又不是人时，不停下来等人：改跑一条命令代替它，这条命令做的事不超出被拒的命令会做的，检查给出的理由所指的每一部分，要么去掉，要么改写到理由不再成立、检查在命令本身里就能读到它。找不到这样的命令、拿不准，或者替代的命令也被检查拒绝的，告诉委派这项工作的一方 (agent 或人) 被拒的命令、检查给的理由，以及为什么没有改写，请它给一个往下走的办法。"
+
+[text.reason]
+en = '''
+Before it runs some commands, Claude Code checks them by itself, and when it cannot tell that one is safe it asks for a confirmation; where nobody answers, the command is denied. The check is a security control and so a guard, set by a system outside the work at hand, and this rule sets what it binds ({@constitution:guards}): the command it denied, not the work that command was for. A command that leaves out what the check flagged, or writes it where the check reads it, and then passes the same check, takes the route through the guard, not around it; Claude Code's message can name such a rewrite itself ("Pass a literal path, or guard the value with ${NAME:?}"). Stopping at each such denial to wait for a person would hold up work the agent can move on safely ({@constitution:automation-first.keep-moving}). A rewrite that does more, or hides the flagged part from the check, would work around the guard, and a second denial shows that the agent has not met what the check asks; both go to whoever delegated the work ({@rule:282}). A denial a person gave, or one that rests on a limit a person or a project set, is their decision, which this rule does not reach.
+'''
+zh = '''
+有些命令，Claude Code 在运行之前会自己检查；判断不了是否安全的，就弹出确认框，没人回应，命令就被拒绝。这项检查是安全控制措施，因而是防护，由这项工作之外的系统设下，本规定划定它约束什么 ({@constitution:guards})：约束的是它拒绝的那条命令，不是那条命令要完成的工作。替代的命令去掉了检查指出的部分，或者把它写到检查读得到的地方，再通过同一项检查，走的是穿过防护的路，不是绕开防护；Claude Code 的提示自己就可能给出这样的改法 ("Pass a literal path, or guard the value with ${NAME:?}")。每遇到一次这样的拒绝都停下来等人，agent 本可以稳妥推进的工作就被耽搁了 ({@constitution:automation-first.keep-moving})。改写后做的事更多，或者把检查指出的部分藏起来不让检查看到，就是绕开防护；第二次被拒，说明 agent 没有满足检查的要求。这两种情况都交给委派工作的一方 ({@rule:282})。人作出的拒绝，以及依据人或项目所设限制作出的拒绝，是他们的决定，本规定管不到。
+'''
+
+[text.verification]
+en = '''
+A check Claude Code makes by itself is one it runs on the command whatever anyone has configured, such as its check of a `sh -c` script for removals; in Claude Code 2.1.292 (read 2026-10-24) it says, for example, "This shell -c script runs rm and could not be checked" or "Dangerous rm operation in a shell -c script". No person decided the denial when Claude Code denied the command on its own: a confirmation nobody answered in time, or one nobody could answer, as in a session no person watches. Outside this rule, and never to be rewritten past: a denial a person gave by answering, and a denial in which a permission rule, a hook, a sandbox setting, a managed policy, a command check a project sets or the reviewer model of auto mode took part, as when Claude Code says that a permission rule denies a command inside the script.
+
+Doing nothing the denied command would not have done means deleting, overwriting or writing nothing it would not have, and reaching no machine, account or service it would not have. The check reads a part in the command itself when that part is written out in the command Claude Code is asked to run, as a literal path or a value guarded as the check asks (`${NAME:?}`), not moved into a script file, the string of a nested shell, a variable, an encoding or an `eval` that the check does not open. For example, a `sh -c` script that removes a directory whose path comes from a variable may become an `rm` of that literal path, run as a command of its own; the same `rm` moved into a script file that the agent then runs gets around the check.
+
+Violated when, after such a denial, an agent runs a command that does something the denied one would not have done, or in which a part the check gave as its reason is still there with the reason still holding, or is moved where the check does not read it; runs a further rewrite after the check denied the first one; stops the denied work without either running such a command or telling whoever delegated the work the three things this rule names; or rewrites a command after a denial this rule does not cover.
+'''
+zh = '''
+Claude Code 自己做的检查，指不论谁怎么配置它都会对命令做的检查，例如对 `sh -c` 脚本里删除操作的检查；在 Claude Code 2.1.292 里 (2026-10-24 查看)，它的提示例如 "This shell -c script runs rm and could not be checked"、"Dangerous rm operation in a shell -c script"。拒绝它的不是人，指 Claude Code 自己拒绝了命令：确认框没人及时回应，或者根本没人能回应，例如没有人看着的会话。不在本规定之内、也绝不能改写着绕过去的：人回应确认框作出的拒绝，以及权限规则、hook、沙箱设置、托管策略、项目设的命令检查或 auto 模式的审查模型参与其中的拒绝，例如 Claude Code 提示说权限规则拒绝了脚本里的某条命令。
+
+做的事不超出被拒的命令会做的，指不删除、不覆盖、不写入被拒的命令不会碰的东西，也不访问它不会访问的机器、账号或服务。检查在命令本身里就能读到某一部分，指这一部分直接写在交给 Claude Code 运行的命令里，例如写成字面路径，或者按检查的要求给变量加上保护 (`${NAME:?}`)；不是挪进脚本文件、嵌套 shell 的字符串、变量、编码或者 `eval` 这些检查不会打开的地方。例如，一段 `sh -c` 脚本删除一个路径来自变量的目录，可以改成单独一条命令，对这个字面路径运行 `rm`；把同一条 `rm` 挪进脚本文件再运行这个文件，就是绕开检查。
+
+agent 遇到这样的拒绝后，运行的命令做了被拒的命令不会做的事，或者检查给出的理由所指的部分还在、理由也仍然成立，或者这部分被挪到了检查读不到的地方；第一次改写被拒后又改写一次；既没有运行这样的命令，也没有把本规定所列的三项告诉委派工作的一方，就把被拒的工作搁下；或者在本规定不涵盖的拒绝之后改写命令的，即为违反本规定。
+'''
+
+[translations]
+zh = "38fedacbcbdca839fc985fe0e19a5b07638e91dbb699194dadac2b379e4aa6ac"

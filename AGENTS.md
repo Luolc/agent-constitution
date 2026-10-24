@@ -356,6 +356,8 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 
 - R155 After any `/login`, or any experiment that touches the login state, read `oauthAccount.emailAddress` in `.claude.json` at once, check which account is logged in and report it to the principal.
 - R156 Keep the source of each project skill at `.agents/skills/<name>/SKILL.md` in the repository, and make `.claude/skills/<name>` a relative symlink to the directory `../../.agents/skills/<name>`, one per skill.
+- R361 When Claude Code's own check on a command, not one a person or a project set up, denies the command without a person deciding, go on without waiting for a person: run in its place a command that does nothing the denied one would not have done and in which each part the check gave as its reason is left out, or written so that the reason no longer holds and the check reads it in the command itself. When you find no such command, are unsure of one, or the check denies it too, tell whoever delegated the work, an agent or a person, the denied command, the check's reason and why you did not rewrite it, and ask for a way forward.
+- R362 Each time you run a command in place of one that Claude Code's own check denied (R361), write in your report to whoever delegated the work the denied command, the reason the check gave and the command you ran in its place.
 
 ### Codex
 
