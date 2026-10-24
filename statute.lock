@@ -1515,7 +1515,7 @@ by = "default"
 [[rules]]
 rule = "R361"
 revision = 1
-sha256 = "7cc15fd2cb592f9d67b915e4a79214f983027ebf6e07af1f872eae1e1bfa35fa"
+sha256 = "e8288db74229312d212f2d1b6731254844a86a9d72bdb6b2e9d48e2e26d72567"
 original-sha256 = "2a6ed43d7e8f0b31eada8c76c088021217f122dbf971d2c19934fab04142c196"
 by = "default"
 
