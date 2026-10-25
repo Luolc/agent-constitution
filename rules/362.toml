@@ -1,0 +1,44 @@
+id = 362
+slug = "report-rewritten-commands"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 150
+default = "on"
+requires = [361]
+authority = ["evidence.grounds"]
+constitution = ">=1"
+level = "project"
+check = "none"
+
+[title]
+en = "Report each command you ran in place of one Claude Code's own check denied"
+zh = "在报告里写下每一条替代被 Claude Code 自己的检查拒绝的命令"
+
+[text.statement]
+en = "Each time you run a command in place of one that Claude Code's own check denied ({@rule:361}), write in your report to whoever delegated the work the denied command, the reason the check gave and the command you ran in its place."
+zh = "每次改跑一条命令，替代被 Claude Code 自己的检查拒绝的命令 ({@rule:361})，都在给委派工作的一方的报告里写下被拒的命令、检查给的理由和替代它运行的命令。"
+
+[text.reason]
+en = '''
+Whether the command run in place of the denied one did no more and kept nothing the check flagged ({@rule:361}) can be judged only with the two commands and the reason side by side. With them in the report, whoever delegated the work, or a reviewer it names, can check that the agent went through the guard and not around it ({@constitution:evidence.grounds}).
+'''
+zh = '''
+替代的命令是否没有多做、是否没有保留检查指出的部分 ({@rule:361})，只有把两条命令和理由放在一起才判断得了。报告里有了这三项，委派工作的一方或它指定的审查方就能核对 agent 走的是穿过防护的路，而不是绕开了防护 ({@constitution:evidence.grounds})。
+'''
+
+[text.verification]
+en = '''
+The report is the one the agent gives whoever delegated the work when it reports the end of the task, or an earlier progress report of that task. A long command may be given by the part the check flagged together with what is needed to read it, and a credential in either command is left out, as in any report ({@rule:291}).
+
+Violated when an agent ran such a command and no report of that task to whoever delegated it gives the denied command, the reason and the command run in its place.
+'''
+zh = '''
+报告指 agent 报告任务结束时交给委派工作的一方的那份报告，或者这项任务之前的进展报告。命令很长的，可以只写检查指出的部分和读懂它所需的上下文；两条命令里的凭证都不写，与别的报告一样 ({@rule:291})。
+
+agent 运行了这样的命令，而这项任务交给委派工作的一方的报告里都没有写被拒的命令、理由和替代它运行的命令的，即为违反本规定。
+'''
+
+[translations]
+zh = "774d0974f9616285e44b19980ce6f89f5c230350d288d3e1d1cd07d8cb7a6ecb"
