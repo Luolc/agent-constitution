@@ -40,6 +40,7 @@ COUNT_URL = "https://api.anthropic.com/v1/messages/count_tokens"
 COUNT_TIMEOUT = (
   10  # seconds per connect or read; a stalled API must not hold up the build
 )
+ERROR_LENGTH = 300  # characters of each part of an API error that is printed
 VERSIONS = {"full": "", "agent": ".agent"}  # key in the JSON: file suffix
 
 
@@ -104,11 +105,41 @@ def credential(environ: Mapping[str, str]) -> dict[str, str] | None:
   return None
 
 
+def error_detail(error: urllib.error.HTTPError) -> str:
+  """Return what the API says about a failed call.
+
+  Only the error's type and message from the JSON body and the response's
+  request-id, each cut to ERROR_LENGTH characters on one line: never the
+  request, its headers or the whole body, which may hold the credential.
+
+  Args:
+    error: The failed call.
+
+  Returns:
+    "" when the body is not JSON with a string `error.type` and
+    `error.message`, else "; type: message (request-id: id)".
+  """
+  try:
+    body = json.load(error)["error"]
+    kind, message = body["type"], body["message"]
+  except OSError, http.client.HTTPException, ValueError, KeyError, TypeError:
+    return ""
+  if not isinstance(kind, str) or not isinstance(message, str):
+    return ""
+  request_id = error.headers.get("request-id") or "none"
+
+  def line(text: str) -> str:
+    return " ".join(text.split())[:ERROR_LENGTH]
+
+  return f"; {line(kind)}: {line(message)} (request-id: {line(request_id)})"
+
+
 def count_tokens(text: str, model: str, auth: dict[str, str]) -> int | None:
   """Count the tokens of text for model.
 
-  A failure prints one line with the HTTP status or the exception's class,
-  never the request or the exception, which may hold the credential.
+  A failure prints one line with the HTTP status and what error_detail()
+  gives, or the exception's class, never the request or the exception,
+  which may hold the credential.
 
   Args:
     text: The text to count.
@@ -133,7 +164,10 @@ def count_tokens(text: str, model: str, auth: dict[str, str]) -> int | None:
     with urllib.request.urlopen(request, timeout=COUNT_TIMEOUT) as response:
       return int(json.load(response)["input_tokens"])
   except urllib.error.HTTPError as e:
-    print(f"token count: HTTP {e.code}; tokens not counted", file=sys.stderr)
+    print(
+      f"token count: HTTP {e.code}{error_detail(e)}; tokens not counted",
+      file=sys.stderr,
+    )
   except (
     OSError,
     http.client.HTTPException,
