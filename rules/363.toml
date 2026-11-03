@@ -1,0 +1,40 @@
+id = 363
+slug = "slack-markdown-links"
+revision = 2
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 344
+default = "on"
+authority = ["purpose"]
+constitution = ">=1"
+level = "user"
+check = "none"
+uses = ["instructions"]
+
+[title]
+en = "Write Links in Slack Text as Labeled Markdown Links"
+zh = "给人看的 Slack 文字里的链接写成带文字的 Markdown 链接"
+
+[text.statement]
+en = "In a text you post to Slack for a person, such as a reply, a card or a report, write each link as a Markdown link with its text, `[text](URL)`, and never paste a bare URL."
+zh = "发到 Slack、给人看的文字 (回复、卡片、报告等) 里的链接，一律写成带说明文字的 Markdown 链接 `[文字](URL)`，不裸贴 URL。"
+
+[text.reason]
+en = '''
+The user has reported several times that a bare URL right after a Chinese punctuation mark, such as a full-width colon, did not become a link in Slack, so the person could not open it. A link written with its text tells the person what it is before they click ({@constitution:purpose}).
+'''
+zh = '''
+用户多次反映，紧跟在中文全角冒号等中文标点后面的裸 URL 没有在 Slack 里变成链接，人点不开。带说明文字的链接，点之前就让人知道它是什么 ({@constitution:purpose})。
+'''
+
+[text.verification]
+en = '''
+Violated when a text posted to Slack for a person contains a URL that is not the destination of a Markdown link, such as a URL pasted as plain text. A URL in a code span or a code block is not a link and does not count.
+'''
+zh = '''
+发到 Slack、给人看的文字里，有一个 URL 不是某个 Markdown 链接的目标，例如直接贴出的纯文本 URL，即为违反本规定。代码片段或代码块里的 URL 不是链接，不算。
+'''
+
+[translations]
+zh = "9f970cb422ab308dcc2c3a80957205f3698dd4c8394d25fee07c7bdeeebff1a4"
