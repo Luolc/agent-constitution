@@ -268,6 +268,7 @@ A lower-ranking provision or a principal may depart from a higher-ranking provis
 #### Slack
 
 - R345 When a text you write for a person, such as a reply, a card or a report, points to a Slack thread, card or message other than the thread the text is posted in, and the text may say where it is, give with it a link that opens that thread, card or message, never only its channel, thread key or timestamp.
+- R363 In a text you post to Slack for a person, such as a reply, a card or a report, write each link as a Markdown link with its text, `[text](URL)`, and never paste a bare URL.
 
 ### Shared Record
 
