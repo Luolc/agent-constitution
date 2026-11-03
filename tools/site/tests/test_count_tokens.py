@@ -100,6 +100,43 @@ class CountTokensTest(unittest.TestCase):
         self.assertIsNone(tokens)
         self.assertEqual(stderr, f"token count: {shown}; tokens not counted\n")
 
+  def test_http_error_detail(self):
+    def failure(body, headers=None):
+      message = http.client.HTTPMessage()
+      for name, value in (headers or {}).items():
+        message[name] = value
+      return urllib.error.HTTPError(
+        "https://api.anthropic.com/", 400, "Bad Request", message, body
+      )
+
+    long = "x" * 400
+    cases = [
+      (
+        b'{"type": "error", "error": {"type": "invalid_request_error", '
+        b'"message": "bad\\nmodel"}}',
+        {"request-id": "req_123"},
+        "HTTP 400; invalid_request_error: bad model (request-id: req_123)",
+      ),
+      (
+        json.dumps(
+          {"error": {"type": "invalid_request_error", "message": long}}
+        ).encode(),
+        {},
+        f"HTTP 400; invalid_request_error: {'x' * 300} (request-id: none)",
+      ),
+      (b"<html>Bad Request</html>", {"request-id": "req_1"}, "HTTP 400"),
+      (b'{"error": {"type": 1, "message": "m"}}', {}, "HTTP 400"),
+      (b'{"error": "text"}', {}, "HTTP 400"),
+    ]
+    for body, headers, shown in cases:
+      with self.subTest(shown=shown):
+        error = failure(io.BytesIO(body), headers)
+        self.addCleanup(error.close)
+        tokens, _, stderr = self.count(side_effect=error)
+        self.assertIsNone(tokens)
+        self.assertEqual(stderr, f"token count: {shown}; tokens not counted\n")
+        self.assertNotIn(KEY, stderr)
+
 
 class CommitShaTest(unittest.TestCase):
   """commit_sha in this repo's checkout."""

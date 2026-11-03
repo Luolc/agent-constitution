@@ -400,8 +400,10 @@ screenshots (Screenshots, below). The workflow
   `POST /v1/oauth/token`), sent as `Authorization: Bearer`; when both are
   set, the token is used, so a key left behind does not shadow the
   federation. The credential never reaches the output, the logs or the
-  page; a failure prints one line with the HTTP status or the exception's
-  class. Without a credential, or when the call fails or a connect or read
+  page; a failure prints one line with the HTTP status and, when the response
+  body is JSON with a string `error.type` and `error.message`, those two
+  (each cut to 300 characters) and the response's `request-id`, or with the
+  exception's class. Without a credential, or when the call fails or a connect or read
   stalls for 10 seconds, the page says the tokens were not counted and the
   build goes on; with `count-tokens --require-tokens` the count fails
   instead and writes no file. The
