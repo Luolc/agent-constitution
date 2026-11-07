@@ -1,8 +1,9 @@
 id = 325
 slug = "fednet-client-socket-read-answer"
-revision = 1
+revision = 2
 kind = "rule"
-status = "trial"
+status = "superseded"
+superseded-by = 365
 lang = "en"
 parent = 188
 default = "off"
