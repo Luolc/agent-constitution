@@ -363,7 +363,7 @@ default and requires the rule it fills in:
 | --- | --- | --- | --- |
 | `linux.container-image` | `debian:13` | R316 (domain R127) | R135 |
 | `ci.linux-runner-label` | `ubuntu-22.04` | R317 (domain R276) | R212 |
-| `fednet.client-socket` | `/run/fednet/client.sock` | R318 and R325 (domain R188) | R322 and R323 |
+| `fednet.client-socket` | `/run/fednet/client.sock` | R318 and R325 (domain R188), both superseded | R322 and R323 |
 
 One value names both the machines' release and the containers' base
 image, its name and tag, so the two cannot disagree. R135, R212, R322 and
@@ -371,6 +371,16 @@ R323 are not superseded, since what they require holds without the
 value: a rule set that enables them and not the new rules keeps them
 and says nothing about the value. A person sets the values as for the
 directories.
+
+R318 and R325 are superseded by R364 and R365, which fill in R322 and
+R323 with no value: no one path in a repository's instructions names
+the socket on both a Linux machine and a Mac, and from fednet v0.15.0
+(read 2026-11-07) a `fednet client` command without `-socket` takes the
+socket from `FEDNET_SOCKET`, else from a default built in for the
+system. R364 and R365 run the command with `FEDNET_SOCKET` cleared, so
+only that built-in default names the socket. No rule in force uses
+`fednet.client-socket`; it stays declared because the text of the
+superseded R318 and R325 still names it.
 
 The nineteen parameters are declared in `rules/params.toml`. The table
 `work-items` and the key `language.work-items` do not collide: one is

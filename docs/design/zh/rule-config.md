@@ -1,4 +1,4 @@
-<!-- en-sha256: 2cd868eeab14f2d4241c76f8a363c2e4612c997bca9f02ff449ea8fa33f650a5 -->
+<!-- en-sha256: a091d40a69ec0e5a222d553c7246167c4a43e1b423bad4b84c7a6831cc4d541a -->
 # 规定配置
 
 状态：已定；已实现。已经实现的部分见[命令与第一版](statute-command.md#the-command-and-the-first-version)，[它改变什么](#what-this-changes) 一节也列出了它们。这部分设计说明规定清单在规定列表之外还能设定的三样东西：仓库自己的规定放在哪个目录，规定留给下层的参数取什么值 (先做语言)，以及哪些领域和规定不必列出就会启用，由它们各自声明的开关决定；此外还有每条规定自己声明的一项：它是给干活的 agent、给审查方，还是两者都给。它也定下规定树的形状：规定不挂在规定下面。它以[规定清单与锁文件](rule-sets.md#rule-sets-and-the-lock-file)、[规定文件格式](rule-format.md#rule-file-format) 和[规定源](rule-sources.md) 为基础，也以用户配置目录里的[全局配置](global-configuration.md#the-global-configuration) `$XDG_CONFIG_HOME/statute/config.toml` (默认是 `~/.config/statute/config.toml`) 为基础：全局配置为用户的每份规定清单登记规定源，开启的规定只进私有输出。
@@ -169,9 +169,11 @@ R314 在领域 R161 (`fleet-cli`) 里，其余的在领域 R127 (`machine`) 里�
 | --- | --- | --- | --- |
 | `linux.container-image` | `debian:13` | R316 (领域 R127) | R135 |
 | `ci.linux-runner-label` | `ubuntu-22.04` | R317 (领域 R276) | R212 |
-| `fednet.client-socket` | `/run/fednet/client.sock` | R318 和 R325 (领域 R188) | R322 和 R323 |
+| `fednet.client-socket` | `/run/fednet/client.sock` | R318 和 R325 (领域 R188)，两条都已被取代 | R322 和 R323 |
 
 机器的发行版本和容器的基础镜像由同一个值 (镜像的名字和 tag) 给出，两者不会对不上。R135、R212、R322 和 R323 没有被取代，因为它们的要求不靠这个值也成立：启用它们而没打开新规定的规定清单仍有它们，只是不提这个值。取值的设定方式与目录相同。
+
+R318 和 R325 已被 R364 和 R365 取代，后两条为 R322 和 R323 补上的做法不用任何值：仓库的指令里写不出一个在 Linux 机器和 Mac 上都指向这个 socket 的路径，而从 fednet v0.15.0 起 (2026-11-07 读到的)，`fednet client` 的命令不带 `-socket` 时，从 `FEDNET_SOCKET` 取 socket，没有这个变量就取为所在系统内置的默认值。R364 和 R365 清掉 `FEDNET_SOCKET` 再运行命令，所以只由这个内置的默认值指定 socket。现行的规定都不用 `fednet.client-socket`；它仍然声明着，是因为已被取代的 R318 和 R325 的正文还写着它。
 
 这十九个参数都声明在 `rules/params.toml` 里。表 `work-items` 与键 `language.work-items` 不冲突：一个是规定清单的表，一个是表 `language` 里的键。
 
