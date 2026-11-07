@@ -18,7 +18,7 @@ zh = "经 fednet 内置的默认 socket 读线程"
 
 [text.statement]
 en = "When you run the `fednet client read-thread` that {@rule:322} asks for to open a Slack message relayed as a yes, leave out its `-socket <socket>` and run it as `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>`, with the thread key you were sent, so that fednet takes its built-in default for the system as the socket of the machine's FedNet client."
-zh = "按 {@rule:322} 运行 `fednet client read-thread` 打开作为同意转告的 Slack 消息时，去掉其中的 `-socket <socket>`，写成 `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>` 运行，thread key 用收到的那个，让 fednet 取它为所在系统内置的默认值作为本机 FedNet client 的 socket。"
+zh = "按 {@rule:322} 运行 `fednet client read-thread` 打开作为同意转告的 Slack 消息时，去掉其中的 `-socket <socket>`，写成 `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>` 运行，thread key 用收到的那个，让 fednet 用它为所在系统内置的默认值作本机 FedNet client 的 socket。"
 
 [text.reason]
 en = '''
@@ -30,15 +30,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The reviewer reads in the transcript the `fednet client read-thread` that the agent ran: it runs `fednet` through `env -u FEDNET_SOCKET` and gives no `-socket`. When the command fails, the agent does not run it again another way, such as with `-socket` or without `env -u FEDNET_SOCKET`; the yes does not count, as {@rule:322} says.
+The reviewer reads in the transcript the `fednet client read-thread` that the agent ran: it is `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>` as written, with nothing between `env -u FEDNET_SOCKET` and `fednet` (no other option of `env` and no assignment, of `FEDNET_SOCKET` least of all), and with no `-socket`. When the command fails, the agent does not run it again another way, such as with `-socket` or without `env -u FEDNET_SOCKET`; the yes does not count, as {@rule:322} says.
 
-Violated when an agent acts on a yes relayed from a Slack message and read the message with a `fednet client read-thread` that did not run through `env -u FEDNET_SOCKET` or that gave `-socket`.
+Violated when an agent acts on a yes relayed from a Slack message and read the message with a `fednet client read-thread` not run as `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>`: one that did not run through `env -u FEDNET_SOCKET`, that had anything between `env -u FEDNET_SOCKET` and `fednet`, or that gave `-socket`.
 '''
 zh = '''
-审查方在 transcript 里看 agent 运行的那条 `fednet client read-thread`：它经 `env -u FEDNET_SOCKET` 运行 `fednet`，而且不带 `-socket`。命令失败时，agent 不换一种写法重跑，例如加上 `-socket` 或者去掉 `env -u FEDNET_SOCKET`；如 {@rule:322} 所述，同意不成立。
+审查方在 transcript 里看 agent 运行的那条 `fednet client read-thread`：它照原样写成 `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>`，`env -u FEDNET_SOCKET` 与 `fednet` 之间什么也没有 (没有 `env` 的别的选项，也没有任何赋值，`FEDNET_SOCKET` 的赋值更不行)，也不带 `-socket`。命令失败时，agent 不换一种写法重跑，例如加上 `-socket` 或者去掉 `env -u FEDNET_SOCKET`；如 {@rule:322} 所述，同意不成立。
 
-agent 凭 Slack 消息转告的同意行事，而读消息时用的 `fednet client read-thread` 没有经 `env -u FEDNET_SOCKET` 运行，或者带了 `-socket` 的，即为违反本规定。
+agent 凭 Slack 消息转告的同意行事，而读消息时用的 `fednet client read-thread` 不是照 `env -u FEDNET_SOCKET fednet client read-thread -json <CHANNEL/TS>` 运行的，即没有经 `env -u FEDNET_SOCKET` 运行、`env -u FEDNET_SOCKET` 与 `fednet` 之间有别的东西，或者带了 `-socket` 的，即为违反本规定。
 '''
 
 [translations]
-zh = "74bf0709f312216116ddbc178f4cc67c737adfa4a1d185e7cc3ec53eafe463fb"
+zh = "029f844ec6051a4d84267a46a619addd8fad8ddabc3686218b66001bbb5a67cb"
