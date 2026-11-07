@@ -1,6 +1,6 @@
 id = 322
 slug = "verify-message-with-read-thread"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -29,15 +29,15 @@ zh = '''
 
 [text.verification]
 en = '''
-The yes counts only when all three checks of {@rule:320} hold on the message this command returns. When the message with that `ts` is not in the output, or the command fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). FedNet's output does not show whether a message was edited (read 2026-10-14), so the third check, that the yes still stands, rests on the text as read at the moment of acting. Which socket the client listens on is the machine's setup; {@rule:318}, where it is on, names it.
+The yes counts only when all three checks of {@rule:320} hold on the message this command returns. When the message with that `ts` is not in the output, or the command fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). FedNet's output does not show whether a message was edited (read 2026-10-14), so the third check, that the yes still stands, rests on the text as read at the moment of acting. Which socket the client listens on is the machine's setup; {@rule:364}, where it is on, has the command reach it through fednet's built-in default.
 
 Violated when an agent acts on a yes relayed from a Slack message without having itself read, through this command, the message with that `ts`.
 '''
 zh = '''
-{@rule:320} 的三点在这条命令返回的消息上都通过核对，同意才成立。输出里没有 `ts` 为那个值的消息，或者命令失败的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。FedNet 的输出看不出消息是否改过 (2026-10-14 读到的)，所以第三点 (同意是否仍然有效) 只能凭执行那一刻读到的正文判断。client 监听哪个 socket 由机器的配置决定，打开了 {@rule:318} 的，由它写明。
+{@rule:320} 的三点在这条命令返回的消息上都通过核对，同意才成立。输出里没有 `ts` 为那个值的消息，或者命令失败的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。FedNet 的输出看不出消息是否改过 (2026-10-14 读到的)，所以第三点 (同意是否仍然有效) 只能凭执行那一刻读到的正文判断。client 监听哪个 socket 由机器的配置决定，打开了 {@rule:364} 的，命令经 fednet 内置的默认值连到它。
 
 agent 凭 Slack 消息转告的同意行事，而没有亲自用这条命令读到 `ts` 为那个值的消息的，即为违反本规定。
 '''
 
 [translations]
-zh = "c6a7c20df510b3103622682363f66dc2859a9a9c5702d08dced15f69d0b35437"
+zh = "afaaccb792fcb743c801378fa91e87efafdbc3a0e36e4c2d697ca09115dfae3c"

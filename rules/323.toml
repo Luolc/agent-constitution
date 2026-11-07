@@ -1,6 +1,6 @@
 id = 323
 slug = "verify-card-with-read-answer"
-revision = 1
+revision = 2
 kind = "rule"
 status = "trial"
 lang = "en"
@@ -35,7 +35,7 @@ The yes counts only when all three checks of {@rule:320} hold on the card this c
 2. Content: the option the principal chose is the entry of `question.options` at `answer.choice.index`, with its `short` and `long` text. That option, read with `question.question` and `question.context`, together with `answer.note`, says yes to this action, and its key values are written in the question, the chosen option or the note. When `answer.choice` is null, the principal chose none of the options, and only the note counts.
 3. Still standing: `status` is `answered`. A card in any other status (`open`, `snoozed`, `closed` or `withdrawn`) holds no yes. A card no longer takes presses once it is answered, so its `answer` is final; a later message from the principal can still withdraw the yes, as {@rule:320} says. The agent looks for the card's ID in the records of earlier actions to see whether the yes is used up.
 
-When the command fails, the card holds no answer, or one check fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). Which socket the client listens on is the machine's setup; {@rule:325}, where it is on, names it.
+When the command fails, the card holds no answer, or one check fails, the yes does not count, and the agent asks the principal by the route set for asking ({@constitution:asking}). Which socket the client listens on is the machine's setup; {@rule:365}, where it is on, has the command reach it through fednet's built-in default.
 
 Violated when an agent acts on a yes relayed from a FedNet card without having itself read, through this command, that card with `status` `answered`.
 '''
@@ -46,10 +46,10 @@ zh = '''
 2. 内容：委托人选的选项是 `question.options` 里下标为 `answer.choice.index` 的那一项，包括它的 `short` 和 `long` 原文。这个选项连同 `question.question` 与 `question.context`，再加上 `answer.note`，同意的正是这一动作，关键参数写明在问题、所选选项或者补充里。`answer.choice` 为 null 的，委托人没有选任何一个选项，只看补充。
 3. 仍然有效：`status` 为 `answered`。其他状态 (`open`、`snoozed`、`closed`、`withdrawn`) 的卡片都不含同意。卡片回答之后不再接受点击，所以它的 `answer` 是最终回答；委托人之后的消息仍然可以撤回这一同意，如 {@rule:320} 所述。agent 在此前各次动作的记录里查找卡片的 ID，看这一同意是否已经用完。
 
-命令失败、卡片里没有回答，或者有一点未通过的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。client 监听哪个 socket 由机器的配置决定，打开了 {@rule:325} 的，由它写明。
+命令失败、卡片里没有回答，或者有一点未通过的，同意都不成立，agent 按既定的提问途径询问委托人 ({@constitution:asking})。client 监听哪个 socket 由机器的配置决定，打开了 {@rule:365} 的，命令经 fednet 内置的默认值连到它。
 
 agent 凭 FedNet 卡片转告的同意行事，而没有亲自用这条命令读到 `status` 为 `answered` 的那张卡片的，即为违反本规定。
 '''
 
 [translations]
-zh = "926a236b73346bf2418554a62bfce59eb8525d89cd58b3cfacc7ded2d6c35b79"
+zh = "fcda20398abc05b55b8e7796e5ee0ac268fed2006c93ab19d445d7913242db44"

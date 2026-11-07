@@ -1,0 +1,44 @@
+id = 365
+slug = "fednet-read-answer-default-socket"
+revision = 1
+kind = "rule"
+status = "trial"
+lang = "en"
+parent = 188
+default = "off"
+requires = [323]
+authority = ["explicit-yes.verification", "explicit-yes.rules"]
+constitution = ">=1"
+level = "user"
+check = "none"
+
+[title]
+en = "Read back a card through fednet's built-in default socket"
+zh = "经 fednet 内置的默认 socket 读回卡片"
+
+[text.statement]
+en = "When you run the `fednet client read-answer` that {@rule:323} asks for to read back a FedNet card relayed as a yes, leave out its `-socket <socket>` and run it as `env -u FEDNET_SOCKET fednet client read-answer -json <CARD-ID>`, with the card ID you were sent, so that fednet takes its built-in default for the system as the socket of the machine's FedNet client."
+zh = "按 {@rule:323} 运行 `fednet client read-answer` 读回作为同意转告的 FedNet 卡片时，去掉其中的 `-socket <socket>`，写成 `env -u FEDNET_SOCKET fednet client read-answer -json <CARD-ID>` 运行，卡片 ID 用收到的那个，让 fednet 用它为所在系统内置的默认值作本机 FedNet client 的 socket。"
+
+[text.reason]
+en = '''
+{@rule:323} has the acting agent read the card back through the FedNet client on its machine ({@constitution:explicit-yes.verification}) and leaves the socket to the machine's setup; this rule fills it in. From fednet v0.15.0 on (read 2026-11-07), a `fednet client` command that gives no `-socket` takes the socket from the environment variable `FEDNET_SOCKET`, and without it from a default built in for the system: `/run/fednet-client/fednet.sock` on Linux, and `~/.local/state/fednet-client/fednet.sock` on macOS, where there is no default when that path is too long for a socket. With `FEDNET_SOCKET` cleared only the built-in default is left, so neither the agent nor whoever started it or set its environment can point the command at another socket, and the same command reaches the machine's own client on a Linux machine and on a Mac, though no one path written into a repository's instructions exists on both. The rule rests on two things: the machine's FedNet client is fednet v0.15.0 or later, and it listens on fednet's built-in default socket. Where fednet is older or the system has no default, the command stops with a usage error, and where no client listens on the default socket, it cannot connect; either way {@rule:323} has the agent treat the card as a record it cannot open, so the yes does not count.
+'''
+zh = '''
+{@rule:323} 要求执行的 agent 经本机的 FedNet client 读回卡片 ({@constitution:explicit-yes.verification})，socket 留给机器的配置决定；本规定把它补上。从 fednet v0.15.0 起 (2026-11-07 读到的)，`fednet client` 的命令不带 `-socket` 时，从环境变量 `FEDNET_SOCKET` 取 socket，没有这个变量就取为所在系统内置的默认值：Linux 上是 `/run/fednet-client/fednet.sock`，macOS 上是 `~/.local/state/fednet-client/fednet.sock`，这个路径长到放不下 socket 时没有默认值。清掉 `FEDNET_SOCKET` 之后只剩内置的默认值，agent 自己、起它的一方、给它设环境的一方，都没法让命令连到别的 socket；同一条命令在 Linux 机器和 Mac 上都连到本机自己的 client，尽管仓库的指令里写不出一个两边都有的路径。本规定依赖两点：本机的 FedNet client 是 fednet v0.15.0 或更新的版本；它监听在 fednet 内置的默认 socket 上。fednet 版本更旧或者系统没有默认值的，命令报用法错误退出；默认 socket 上没有 client 监听的，命令连不上。两种情况下，{@rule:323} 都让 agent 把这张卡片按无法打开的原始记录处理，同意不成立。
+'''
+
+[text.verification]
+en = '''
+The reviewer reads in the transcript the `fednet client read-answer` that the agent ran: it is `env -u FEDNET_SOCKET fednet client read-answer -json <CARD-ID>` as written, with nothing between `env -u FEDNET_SOCKET` and `fednet` (no other option of `env` and no assignment, of `FEDNET_SOCKET` least of all), and with no `-socket`. When the command fails, the agent does not run it again another way, such as with `-socket` or without `env -u FEDNET_SOCKET`; the yes does not count, as {@rule:323} says.
+
+Violated when an agent acts on a yes relayed from a FedNet card and read the card back with a `fednet client read-answer` not run as `env -u FEDNET_SOCKET fednet client read-answer -json <CARD-ID>`: one that did not run through `env -u FEDNET_SOCKET`, that had anything between `env -u FEDNET_SOCKET` and `fednet`, or that gave `-socket`.
+'''
+zh = '''
+审查方在 transcript 里看 agent 运行的那条 `fednet client read-answer`：它照原样写成 `env -u FEDNET_SOCKET fednet client read-answer -json <CARD-ID>`，`env -u FEDNET_SOCKET` 与 `fednet` 之间什么也没有 (没有 `env` 的别的选项，也没有任何赋值，`FEDNET_SOCKET` 的赋值更不行)，也不带 `-socket`。命令失败时，agent 不换一种写法重跑，例如加上 `-socket` 或者去掉 `env -u FEDNET_SOCKET`；如 {@rule:323} 所述，同意不成立。
+
+agent 凭 FedNet 卡片转告的同意行事，而读回卡片时用的 `fednet client read-answer` 不是照 `env -u FEDNET_SOCKET fednet client read-answer -json <CARD-ID>` 运行的，即没有经 `env -u FEDNET_SOCKET` 运行、`env -u FEDNET_SOCKET` 与 `fednet` 之间有别的东西，或者带了 `-socket` 的，即为违反本规定。
+'''
+
+[translations]
+zh = "769423f1e10b4440223cbe79ef1776704347ecc2cb1ebf6541a90ecb2b0910bc"
